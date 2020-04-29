@@ -1,7 +1,7 @@
 {
   "name": "@dxatscale/sfpowerscripts.azpipelines",
   "private": true,
-  "version": "13.0.2",
+  "version": "13.0.3",
   "description": "CI/CD extensions for Salesforce",
   "repository": {
     "type": "git",
@@ -39,9 +39,6 @@
     "react-dom": "~16.8.1",
     "react-loader-spinner": "^3.1.5",
     "react-virtualized": "^9.21.2",
-    "shelljs": "^0.8.3",
-    "simple-git": "^1.132.0",
-    "unzip-stream": "0.3.0",
     "sfpowerscripts-analyzewithpmd-task": "file:BuildTasks\\AnalyzeWithPMDTask",
     "sfpowerscripts-authenticateorg-task": "file:BuildTasks\\AuthenticateOrgTaskCurrent",
     "sfpowerscripts-checkoutprojectfromartifact-task": "file:BuildTasks\\CheckoutProjectFromArtifactTask",
@@ -60,7 +57,10 @@
     "sfpowerscripts-triggerapextest-task": "file:BuildTasks\\TriggerApexTestTask",
     "sfpowerscripts-validateapextestcoverage-task": "file:BuildTasks\\ValidateApexCoverageTask",
     "sfpowerscripts-validatedxunlockedpackage-task": "file:BuildTasks\\ValidateDXUnlockedPackageTask",
-    "sfpowerscripts-validatetestcoverage-task": "file:BuildTasks\\ValidateTestCoveragePackageTask"
+    "sfpowerscripts-validatetestcoverage-task": "file:BuildTasks\\ValidateTestCoveragePackageTask",
+    "shelljs": "^0.8.3",
+    "simple-git": "^1.132.0",
+    "unzip-stream": "0.3.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^8.0.1",
