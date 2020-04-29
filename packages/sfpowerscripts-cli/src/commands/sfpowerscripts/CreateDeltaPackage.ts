@@ -84,7 +84,7 @@ export default class CreateDeltaPackage extends SfdxCommand {
       if (build_artifact_enabled) {  
         // Write artifact metadata 
   
-        let repository_url = 
+        let repository_url:any = 
           exec('git config --get remote.origin.url', {silent:true});
           // Remove new line '\n' from end of url
           repository_url = repository_url.slice(0,repository_url.length - 1);
