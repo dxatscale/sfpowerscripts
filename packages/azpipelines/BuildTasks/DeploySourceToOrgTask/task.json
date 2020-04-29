@@ -1,0 +1,129 @@
+{
+    "id": "dea3a185-c3f5-44a8-841b-1e5044864778",
+    "name": "sfpowerscript-deploysourcetoorg-task",
+    "friendlyName": "Deploy Source To the provided org using metadata api",
+    "description": "Deploy source to any org using a selected mechanism, This task is part of SFPowerscripts",
+    "helpMarkDown": "Deploy source to org using mdapi based deploy (converts source to mdapi and use mdapi deployment) ",
+    "category": "Build",
+    "author": "azlam.abdulsalam",
+    "version": {
+        "Major": 7,
+        "Minor": 0,
+        "Patch": 5
+    },
+    "runsOn": [
+        "Agent"
+    ],
+    "instanceNameFormat": "Deploy $(source_directory) to $(target_org)",
+    "inputs": [
+        {
+            "name": "target_org",
+            "type": "string",
+            "label": "Alias or username of the target org",
+            "defaultValue": "scratchorg",
+            "required": true,
+            "helpMarkDown": "Alias or username of the target org where the code should be deployed"
+        },
+        {
+            "name": "project_directory",
+            "type": "string",
+            "label": "Project Directory",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The  directory should contain a sfdx-project.json for this command to succeed"
+        },
+        {
+            "name": "source_directory",
+            "type": "string",
+            "label": "Package Directory to be deployed",
+            "defaultValue": "force-app",
+            "required": true,
+            "helpMarkDown": "The particular package directory in the project that needs to be deployed"
+        },
+        {
+            "name": "checkonly",
+            "type": "boolean",
+            "label": "Validate Deployment, Do not Deploy",
+            "defaultValue": true,
+            "required": true,
+            "helpMarkDown": "Validate a deployment, but don't save to the org, Use this for Stage 1/2 CI Run's"
+        },
+        {
+            "name": "wait_time",
+            "type": "string",
+            "label": "Wait Time",
+            "defaultValue": "20",
+            "required": true,
+            "helpMarkDown": "wait time for command to finish in minutes"
+        },
+        {
+            "name": "validation_ignore",
+            "type": "string",
+            "label": "Path to the .validationignore to use during validate only deployment",
+            "defaultValue": ".forceignore",
+            "required": false,
+            "helpMarkDown": "Validation only deployment has issues with certain metadata such as apexttestsuite, create a different file similar to .forceignore and use it during validate only deployment",
+            "visibleRule": "checkonly = true"
+        },
+        {
+            "name": "testlevel",
+            "type": "pickList",
+            "label": "Test Level",
+            "defaultValue": "NoTestRun",
+            "options": {
+                "NoTestRun": "NoTestRun",
+                "RunSpecifiedTests": "RunSpecifiedTests",
+                "RunApexTestSuite": "RunApexTestSuite",
+                "RunLocalTests": "RunLocalTests",
+                "RunAllTestsInOrg": "RunAllTestsInOrg"
+            },
+            "required": true,
+            "helpMarkDown": "The test level of the test that need to be executed when the code is to be deployed"
+        },
+        {
+            "name": "specified_tests",
+            "type": "string",
+            "label": "Tests to be executed",
+            "defaultValue": "",
+            "helpMarkDown": "Specify a comma seperated values of Apex Test that need to be executed during this deployment",
+            "required": true,
+            "visibleRule": "testlevel = RunSpecifiedTests"
+        },
+        {
+            "name": "apextestsuite",
+            "type": "string",
+            "label": "Apex Test Suite",
+            "defaultValue": "",
+            "helpMarkDown": "Name of the Apex Test  that need to be executed during this deployment",
+            "required": true,
+            "visibleRule": "testlevel = RunApexTestSuite"
+        },
+        {
+            "name": "isToBreakBuildIfEmpty",
+            "type": "boolean",
+            "label": "Break Build if the provided metadata folder is empty",
+            "defaultValue": true,
+            "required": true,
+            "helpMarkDown": "Uncheck this field, to allow for empty folders not to break build, useful in the case of pre/post step uniformity across projects"
+        },
+        {
+            "name": "isTelemetryEnabled",
+            "type": "boolean",
+            "label": "Send Anonymous Usage Telemetry",
+            "defaultValue": true,
+            "required": true,
+            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
+        }
+    ],
+    "OutputVariables": [
+        {
+            "name": "sfpowerkit_deploysource_id",
+            "description": "The ID of the deployment"
+        }
+    ],
+    "execution": {
+        "Node": {
+            "target": "lib/DeploySourceToOrgTask/DeploySourceToOrg.js"
+        }
+    }
+}

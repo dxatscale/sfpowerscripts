@@ -1,0 +1,265 @@
+name: Milestone13$(Rev:.r)
+
+resources:
+  repositories:
+  - repository: forcedi # The name used to reference this repository in the checkout step
+    type: git
+    name: force-di
+
+pr:
+  branches:
+    include:
+    - develop
+    - master
+  paths:
+    include:
+      - '*' 
+    exclude:
+      - 'docs/*' 
+
+trigger:
+  branches:
+    include:
+     - feature/*
+     - hoftix/*
+     - bugfix/*
+  paths:
+    exclude:
+    - 'docs/*' 
+
+
+variables:
+ - group: Tokens
+ - name: major
+   value: 13
+   
+ - name: minor
+   value: $[counter(variables['major'], 1)] 
+ 
+
+
+stages:
+- stage: Develop
+  condition: and( ne(variables['build.Reason'], 'PullRequest'), ne(variables['build.sourceBranch'], 'refs/heads/develop'), ne(variables['build.sourceBranch'], 'refs/heads/master') )
+  
+  jobs:
+
+  - job: InstallNodeModules
+    displayName: Install Node Dependencies
+    pool:
+      vmImage: 'windows-latest'
+    
+    steps:
+      - checkout:  self
+
+      - task: Cache@2
+        displayName: Cache NPM Modules
+        inputs:
+         key: 'npm | "$(Agent.OS)" | package-lock.json'
+         path: '$(System.DefaultWorkingDirectory)/node_modules'
+         cacheHitVar: 'npm | "$(Agent.OS)"'
+
+      - task: CmdLine@2
+        displayName: Install Node depdencies
+        inputs:
+          script: 'npm install'
+
+      
+      - task: CmdLine@2
+        inputs:
+          script: 'sh ./scripts/get-files-diff.sh'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+        displayName: 'Detect changes to packages' 
+        name: Builddeciderstep
+
+  - job: BuildCLI
+    displayName: 'Build To Validate CLI'
+    dependsOn: InstallNodeModules
+    #condition: and(succeeded('InstallNodeModules'),eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true))
+    timeoutInMinutes: 10
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+
+         - checkout: self
+
+         - task: Cache@2
+           displayName: Cache NPM Modules
+           inputs:
+              key: 'npm | "$(Agent.OS)" | package-lock.json'
+              path: '$(System.DefaultWorkingDirectory)/node_modules'
+              cacheHitVar: 'npm | "$(Agent.OS)"'            
+
+         - script: 'npx lerna bootstrap'
+           displayName: 'Bootstrap Lerna'
+
+         - script: 'npx lerna run build'
+           displayName: 'Build all packages'
+
+  - deployment: DeployToDevelop
+
+    displayName: 'Build and Deploy Azure Pipelines Extension to dev'
+    dependsOn: InstallNodeModules
+    #condition: and(succeeded('InstallNodeModules'), or( eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ),  eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'], true )  ))
+    variables:
+      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
+    timeoutInMinutes: 10
+    pool:
+      vmImage: 'windows-latest'
+    environment: dev
+    strategy:
+       runOnce:
+         deploy:
+           steps:
+
+             - template: build_templates/buildazpipelines.yml  
+               parameters:
+                name: 'DeployToDevelop'
+                commitToGit: false
+                stageToDeploy: 'dev'
+                version: 'auto'
+                environmentToDeploy: 'dev'
+                toBuild: true
+                organization: safebot
+                
+
+- stage: Review
+  condition:  or (  eq(variables['build.Reason'], 'PullRequest'), eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+  dependsOn: []
+  jobs:
+
+  - job: InstallNodeModules
+    displayName: Install Node Dependencies
+    pool:
+      vmImage: 'windows-latest'
+    
+    steps:
+      - checkout:  self
+
+      - task: Cache@2
+        displayName: Cache NPM Modules
+        inputs:
+         key: 'npm | "$(Agent.OS)" | package-lock.json'
+         path: '$(System.DefaultWorkingDirectory)/node_modules'
+         cacheHitVar: 'npm | "$(Agent.OS)"'
+
+      - task: CmdLine@2
+        displayName: Install Node depdencies
+        inputs:
+          script: 'npm install'
+
+      
+      - task: CmdLine@2
+        inputs:
+          script: 'sh ./scripts/get-files-diff.sh'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+        displayName: 'Detect changes to packages' 
+        name: Builddeciderstep
+
+  - job: BuildCLI
+    displayName: 'Build To Validate CLI'
+    dependsOn: InstallNodeModules
+    #condition: and(succeeded('InstallNodeModules'),eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true))
+    timeoutInMinutes: 10
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+
+         - checkout: self
+
+         - task: Cache@2
+           displayName: Cache NPM Modules
+           inputs:
+              key: 'npm | "$(Agent.OS)" | package-lock.json'
+              path: '$(System.DefaultWorkingDirectory)/node_modules'
+              cacheHitVar: 'npm | "$(Agent.OS)"'            
+
+         - script: 'npx lerna bootstrap'
+           displayName: 'Bootstrap Lerna'
+
+         - script: 'npx lerna run build'
+           displayName: 'Build all packages'
+
+  - deployment: DeployToReview
+    displayName: 'Build and Deploy Azure Pipelines Extension to Review'
+    dependsOn: InstallNodeModules
+    #condition: and(succeeded('InstallNodeModules'), or( eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ),  eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'], true )  ))
+    variables:
+      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
+    timeoutInMinutes: 10
+    pool:
+      vmImage: 'windows-latest'
+    environment: review
+    strategy:
+       runOnce:
+         deploy:
+           steps:
+
+             - template: build_templates/buildazpipelines.yml  
+               parameters:
+                name: 'DeployToReview'
+                commitToGit: false
+                stageToDeploy: 'review'
+                version: 'review'
+                environmentToDeploy: 'review'
+                toBuild: true
+                organization: azlamsalam
+                buildNumber: $(minor)
+  
+  - job: WaitPluginToInstallonReview
+    displayName: 'Wait for  Plugin To Install on Review'
+    dependsOn: DeployToReview
+    pool: server
+    steps:
+      - task: Delay@1
+        inputs:
+         delayForMinutes: '2' 
+
+  - template: build_templates/prtest.yml   
+    parameters:
+      name: 'TestPrOnLinux'
+      image: 'ubuntu-latest'
+      dependOnJob: 'WaitPluginToInstallonReview'
+      repositoryToCheckout: 'forcedi'
+      directory: 'force-di'
+      service_connection: $(devhub_service_connection)
+  
+  - template: build_templates/prtest.yml   
+    parameters:
+      name: 'TestPrOnWindows'
+      image: 'windows-latest'
+      dependOnJob: 'WaitPluginToInstallonReview'
+      repositoryToCheckout: 'forcedi'
+      directory: 'force-di'
+      service_connection: $(devhub_service_connection)
+
+- stage: Beta
+  condition: and(eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq(variables['build.Reason'], 'Manual') )
+  dependsOn: []
+  jobs:
+  - deployment: DeployToBeta
+    displayName: 'Build and Deploy Azure Pipelines Extension to Beta'
+    #condition: and(succeeded('InstallNodeModules'), or( eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ),  eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'], true )  ))
+    variables:
+      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
+    timeoutInMinutes: 10
+    pool:
+      vmImage: 'windows-latest'
+    environment: beta
+    strategy:
+       runOnce:
+         deploy:
+           steps:
+             - template: build_templates/buildall.yml  
+               parameters:
+                name: 'DeployToBeta'
+                commitToGit: true
+                stageToDeploy: 'beta'
+                version: 'beta'
+                environmentToDeploy: 'beta'
+                toBuild: true
+                organization: dxatscale
+                buildNumber: $(minor)
+
+
+    

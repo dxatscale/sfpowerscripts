@@ -1,0 +1,25 @@
+{
+  "name": "sfpowerscripts-checkoutprojectfromartifact-task",
+  "description": "sfpowerscripts-checkoutprojectfromartifact-task",
+  "version": "11.0.4",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/azlamsalam/sfpowerscripts.git"
+  },
+  "scripts": {
+    "version": "node ../../versionupdate.js && git add task.json",
+    "build": "rimraf lib && tsc -b"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "applicationinsights": "^1.6.0",
+    "azure-pipelines-task-lib": "^2.8.0",
+    "fs-extra": "^8.1.0",
+    "shelljs": "^0.8.3",
+    "simple-git": "^1.126.0"
+  },
+  "devDependencies": {
+    "@types/node": "^12.7.2"
+  }
+}

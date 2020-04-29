@@ -1,0 +1,8 @@
+lib
+tsconfig.tsbuildinfo
+node_modules
+build
+dist
+packages/azpipelines/.taskkey
+.npmrc
+lerna-debug.log

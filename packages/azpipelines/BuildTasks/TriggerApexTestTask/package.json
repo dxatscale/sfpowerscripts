@@ -1,0 +1,24 @@
+{
+  "name": "sfpowerscripts-triggerapextest-task",
+  "description": "sfpowerscripts-triggerapextest-task",
+  "version": "6.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/azlamsalam/sfpowerscripts.git"
+  },
+  "scripts": {
+    "version": "node ../../versionupdate.js && git add task.json",
+    "build": "rimraf lib && tsc -b"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@dxatscale/sfpowerscripts.core": "^0.0.26",
+    "applicationinsights": "^1.6.0",
+    "azure-pipelines-task-lib": "^2.8.0",
+    "fs-extra": "^8.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^12.7.2"
+  }
+}

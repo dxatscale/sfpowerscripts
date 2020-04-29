@@ -1,0 +1,141 @@
+parameters:
+  - name: name  # defaults for any parameters that aren't specified
+    default: ''
+  
+  - name: commitToGit
+    type: boolean 
+    default: false
+  
+  - name: branchToDeploy
+    type: string 
+    default: develop
+  
+  - name: stageToDeploy
+    type: string 
+    default: review
+  
+  - name: version
+    type: string 
+    default: auto
+  
+  - name: environmentToDeploy
+    type: string 
+    default: development
+
+  - name: organization
+    type: string 
+    default: ''
+
+
+  - name: buildNumber
+    type: string 
+    default: ''
+  
+  - name: toBuild
+    type: boolean 
+    default: false
+
+steps:
+          - checkout: self
+
+
+          - powershell: |
+              # see also https://github.com/microsoft/azure-pipelines-agent/issues/838
+              $SourceBranchLongName = switch ($env:Build_Reason) {
+                'PullRequest' { $env:Build_SourceBranch.Replace('refs/pull/','').Replace('/merge','') }
+                 default { $env:Build_SourceBranch.Replace('refs/heads/','').Replace('refs/tags/','') }
+               }
+               Write-Host "##vso[task.setvariable variable=fullbranchname]${SourceBranchLongName}"
+            displayName: Get Branch Name
+
+          - task: CmdLine@2
+            displayName: 'Checkout the current version of the branch'
+            condition:  and(succeeded(), eq( variables['isCoreUpdated'], true ) )
+            inputs:
+                 script: |
+                  git checkout $(fullbranchname)
+                 workingDirectory: '$(System.DefaultWorkingDirectory)'
+          
+          - task: CmdLine@2
+            displayName: "Set Git Config"
+            inputs:
+               script: |
+                 git config --global user.email "sfpowerkit.ci@dev.azure.com"
+                 git config --global user.name "sfpowerkitci"
+
+
+          - task: Cache@2
+            displayName: Cache NPM Modules
+            inputs:
+              key: 'npm | "$(Agent.OS)"  | package-lock.json'
+              path: '$(System.DefaultWorkingDirectory)/node_modules'
+              cacheHitVar: 'npm | "$(Agent.OS)"'            
+
+
+          - script: 'npx lerna bootstrap'
+            displayName: 'Bootstrap Lerna'
+
+       
+
+          - task: CmdLine@2
+            displayName: 'Increment Package Versions'
+            condition:  and(succeeded(), eq( variables['isCoreUpdated'], true ) )
+            inputs:
+                 script: 'lerna version patch --no-push'
+                 workingDirectory: '$(System.DefaultWorkingDirectory)'
+ 
+          - script: 'npx lerna run build'
+            displayName: 'Build  All  Packages'
+   
+ 
+         #
+        
+          #  - task: DownloadSecureFile@1
+          #    displayName: "Download App Tracker Configuration File"
+          #    name: config
+          #    inputs:
+          #     secureFile: 'config.json'
+        
+        
+          #  - task: CmdLine@2
+          #    displayName: "Copy App Tracker Configuration File to Build Directory"
+          #    inputs:
+          #     script: 'cp -f $(config.secureFilePath)  $(System.DefaultWorkingDirectory)/packages/azpipelines/build/BuildTasks/Common/config.json'
+
+          - task: CmdLine@2
+            displayName: 'Set Release Mode to ${{ parameters.stageToDeploy }}'
+            inputs:
+               script: |
+                npm run increment:azpipelines:version -- --version=${{ parameters.version }}  --stage=${{ parameters.stageToDeploy }} --buildNumber=${{ parameters.buildNumber }}
+                git add packages/azpipelines/vss-extension.json
+                git commit  -m "[skip ci] Updated Version"
+               workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines'
+          
+          - task: CmdLine@2
+            displayName: 'Create package'
+            inputs:
+              script: 'npm run package:azpipelines'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines'
+        
+          - task: CmdLine@2
+            displayName: 'Publish the package for ${{ parameters.stageToDeploy }}'
+            inputs:
+              script: |
+               npm run publish:azpipelines --  --version=$(Build.BuildNumber) --token=$(publish_token) --stage=${{ parameters.stageToDeploy }} --organization=${{ parameters.organization }}
+              workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines'
+ 
+          - task: CmdLine@2
+            displayName: 'Push to Repo'
+            inputs:
+              script: |
+                git push  https://$(github_pat)@github.com/azlamsalam/sfpowerscripts.git  HEAD:${{ parameters.branchToDeploy }}
+            condition: and(true, eq( ${{ parameters.commitToGit }},true))
+
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish Extension Artifiact
+            condition: always()
+            inputs:
+               pathtoPublish: '$(System.DefaultWorkingDirectory)/packages/azpipelines/dist' 
+               artifactName: 'drop' 
+               publishLocation: 'Container' 
