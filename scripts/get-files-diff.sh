@@ -22,6 +22,8 @@ changed_files=$files
           "core")	 
               echo "Files changed in Core"	 
               echo "##vso[task.setvariable variable=isCoreUpdated;isOutput=true]true"
+              echo "##vso[task.setvariable variable=isAzurePipelinesUpdated;isOutput=true]true"
+              echo "##vso[task.setvariable variable=isCLIUpdated;isOutput=true]true"
             ;;	
          "sfpowerscripts-cli")	
               echo "Files changed in UI-components"	
