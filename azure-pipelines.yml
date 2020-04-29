@@ -11,6 +11,7 @@ pr:
     include:
     - develop
     - master
+    - release/*
   paths:
     include:
       - '*' 
@@ -21,6 +22,7 @@ trigger:
   branches:
     include:
      - feature/*
+     - chore/*
      - hoftix/*
      - bugfix/*
   paths:
@@ -71,30 +73,6 @@ stages:
           workingDirectory: '$(System.DefaultWorkingDirectory)'
         displayName: 'Detect changes to packages' 
         name: Builddeciderstep
-
-  - job: BuildCLI
-    displayName: 'Build To Validate CLI'
-    dependsOn: InstallNodeModules
-    condition: and(succeeded('InstallNodeModules'),eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true))
-    timeoutInMinutes: 10
-    pool:
-      vmImage: 'windows-latest'
-    steps:
-
-         - checkout: self
-
-         - task: Cache@2
-           displayName: Cache NPM Modules
-           inputs:
-              key: 'npm | "$(Agent.OS)" | package-lock.json'
-              path: '$(System.DefaultWorkingDirectory)/node_modules'
-              cacheHitVar: 'npm | "$(Agent.OS)"'            
-
-         - script: 'npx lerna bootstrap'
-           displayName: 'Bootstrap Lerna'
-
-         - script: 'npx lerna run build'
-           displayName: 'Build all packages'
 
   - deployment: DeployToDevelop
 
@@ -234,7 +212,7 @@ stages:
       service_connection: $(devhub_service_connection)
 
 - stage: Beta
-  condition: and(eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq(variables['build.Reason'], 'Manual') )
+  condition: and(eq(variables['build.sourceBranch'], 'refs/heads/release/*'), eq(variables['build.Reason'], 'Manual') )
   dependsOn: []
   jobs:
   - deployment: DeployToBeta
@@ -282,10 +260,36 @@ stages:
                 commitToGit: true
                 stageToDeploy: 'beta'
                 version: 'beta'
-                branchToDeploy: 'master'
                 environmentToDeploy: 'beta'
                 toBuild: true
                 organization: dxatscale
                 buildNumber: $(minor)
 
-    
+- stage: Production
+  condition: or ( succeeded('Beta'), succeeded('Hotfix'))
+  dependsOn: 
+    - Beta
+    - Hotfix
+  jobs:
+  - deployment: DeployToProd
+    displayName: 'Build and Deploy Azure Pipelines Extension to Prod`'
+    variables:
+      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
+    timeoutInMinutes: 10
+    pool:
+      vmImage: 'windows-latest'
+    environment: prod
+    strategy:
+       runOnce:
+         deploy:
+           steps:
+             - template: build_templates/buildall.yml  
+               parameters:
+                name: 'DeployToProd'
+                commitToGit: false
+                stageToDeploy: 'prod'
+                version: 'prod'
+                environmentToDeploy: 'production'
+                toBuild: true
+                organization: dxatscale
+                buildNumber: $(minor)

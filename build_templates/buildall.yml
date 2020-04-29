@@ -6,10 +6,6 @@ parameters:
     type: boolean 
     default: false
   
-  - name: branchToDeploy
-    type: string 
-    default: develop
-  
   - name: stageToDeploy
     type: string 
     default: review
@@ -178,7 +174,7 @@ steps:
             displayName: 'Push to Repo'
             inputs:
               script: |
-                git push  https://$(github_pat)@github.com/Accenture/sfpowerscripts.git  HEAD:${{ parameters.branchToDeploy }}
+                git push  https://$(github_pat)@github.com/Accenture/sfpowerscripts.git  HEAD:$(fullbranchname)
             condition: and(true, eq( ${{ parameters.commitToGit }},true))
 
 
