@@ -235,7 +235,7 @@ stages:
 
 - stage: Beta
   condition: and(eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq(variables['build.Reason'], 'Manual') )
-  dependsOn: []
+  dependsOn: Review
   jobs:
   - deployment: DeployToBeta
     displayName: 'Build and Deploy Azure Pipelines Extension to Beta'

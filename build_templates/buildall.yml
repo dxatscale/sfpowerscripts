@@ -55,7 +55,6 @@ steps:
 
           - task: CmdLine@2
             displayName: 'Checkout the current version of the branch'
-            condition:  and(succeeded(), eq( variables['isCoreUpdated'], true ) )
             inputs:
                  script: |
                   git checkout $(fullbranchname)
