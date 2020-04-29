@@ -235,7 +235,7 @@ stages:
 
 - stage: Beta
   condition: and(eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq(variables['build.Reason'], 'Manual') )
-  dependsOn: Review
+  dependsOn: []
   jobs:
   - deployment: DeployToBeta
     displayName: 'Build and Deploy Azure Pipelines Extension to Beta'
@@ -261,5 +261,33 @@ stages:
                 organization: dxatscale
                 buildNumber: $(minor)
 
+- stage: Hotfix
+  condition: and(eq(variables['build.sourceBranch'], 'refs/heads/master'), ne(variables['build.Reason'], 'PullRequest') )
+  dependsOn: []
+  jobs:
+  - deployment: DeployToBeta
+    displayName: 'Build and Deploy Azure Pipelines Extension to Beta'
+    #condition: and(succeeded('InstallNodeModules'), or( eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ),  eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'], true )  ))
+    variables:
+      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
+    timeoutInMinutes: 10
+    pool:
+      vmImage: 'windows-latest'
+    environment: beta
+    strategy:
+       runOnce:
+         deploy:
+           steps:
+             - template: build_templates/buildall.yml  
+               parameters:
+                name: 'DeployToBeta'
+                commitToGit: true
+                stageToDeploy: 'beta'
+                version: 'beta'
+                branchToDeploy: 'master'
+                environmentToDeploy: 'beta'
+                toBuild: true
+                organization: dxatscale
+                buildNumber: $(minor)
 
     

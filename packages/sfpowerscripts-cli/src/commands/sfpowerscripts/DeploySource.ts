@@ -1,5 +1,5 @@
-import DeploySourceToOrgImpl from '@dxatscale/sfpowerscripts.core/sfdxwrappers/DeploySourceToOrgImpl';
-import DeploySourceResult from '@dxatscale/sfpowerscripts.core/sfdxwrappers/DeploySourceResult'
+import DeploySourceToOrgImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceToOrgImpl';
+import DeploySourceResult from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceResult'
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages, SfdxError } from '@salesforce/core';
 import { isNullOrUndefined } from 'util';

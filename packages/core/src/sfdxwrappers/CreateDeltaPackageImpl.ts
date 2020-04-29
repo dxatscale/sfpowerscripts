@@ -15,7 +15,8 @@ export default class CreateDeltaPackageImpl {
   public async exec(command: string): Promise<void> {
     let child = child_process.exec(
       command,
-      { encoding: "utf8", cwd: this.projectDirectory },
+      {  maxBuffer: 1024 * 1024 * 5,
+        encoding: "utf8", cwd: this.projectDirectory },
       (error, stdout, stderr) => {
         if (error) throw error;
       }

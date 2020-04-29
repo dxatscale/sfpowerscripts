@@ -1,4 +1,4 @@
-import ExportSourceFromAnOrgImpl from '@dxatscale/sfpowerscripts.core/sfdxwrappers/ExportSourceFromAnOrgImpl';
+import ExportSourceFromAnOrgImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/ExportSourceFromAnOrgImpl';
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 const fs = require("fs");

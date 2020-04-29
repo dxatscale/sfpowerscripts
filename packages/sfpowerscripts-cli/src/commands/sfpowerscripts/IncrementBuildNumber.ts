@@ -1,4 +1,4 @@
-import IncrementProjectBuildNumberImpl from '@dxatscale/sfpowerscripts.core/sfdxwrappers/IncrementProjectBuildNumberImpl';
+import IncrementProjectBuildNumberImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl';
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 const fs = require("fs");

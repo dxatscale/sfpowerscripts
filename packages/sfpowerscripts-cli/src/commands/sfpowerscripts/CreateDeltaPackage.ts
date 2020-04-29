@@ -1,6 +1,6 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
-import CreateDeltaPackageImpl from '@dxatscale/sfpowerscripts.core/sfdxwrappers/CreateDeltaPackageImpl';
+import CreateDeltaPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDeltaPackageImpl';
 import {isNullOrUndefined} from "util";
 import {exec} from "shelljs";
 const path = require("path");

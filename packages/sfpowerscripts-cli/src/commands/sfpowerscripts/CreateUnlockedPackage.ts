@@ -1,4 +1,4 @@
-import CreateUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/sfdxwrappers/CreateUnlockedPackageImpl';
+import CreateUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl';
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import {isNullOrUndefined} from "util";
