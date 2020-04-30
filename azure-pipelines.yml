@@ -43,7 +43,7 @@ variables:
 
 stages:
 - stage: Develop
-  condition: and( ne(variables['build.Reason'], 'PullRequest'), ne(variables['build.sourceBranch'], 'refs/heads/develop'), ne(variables['build.sourceBranch'], 'refs/heads/master') , startsWith(variables['build.sourceBranch'], 'refs/heads/release'))
+  condition: or( startsWith(variables['build.sourceBranch'], 'refs/heads/chore'), startsWith(variables['build.sourceBranch'], 'refs/heads/feature'), startsWith(variables['build.sourceBranch'], 'refs/heads/bugfix'))
   
   jobs:
 
