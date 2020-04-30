@@ -211,8 +211,34 @@ stages:
       directory: 'force-di'
       service_connection: $(devhub_service_connection)
 
+- stage: Alpha
+  condition: and (eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true ))
+  dependsOn: []
+  jobs:
+  - deployment: DeployToAlpha
+    displayName: 'Build and Deploy CLI to NPM'
+    timeoutInMinutes: 10
+    pool:
+      vmImage: 'windows-latest'
+    environment: alpha
+    strategy:
+       runOnce:
+         deploy:
+           steps:
+             - template: build_templates/buildcli.yml  
+               parameters:
+                name: 'DeployToAlpha'
+                commitToGit: true
+                stageToDeploy: 'alpha'
+                version: 'alpha'
+                environmentToDeploy: 'alpha'
+                toBuild: true
+                organization: dxatscale
+                buildNumber: $(minor)      
+
+
 - stage: Beta
-  condition: and(eq(variables['build.sourceBranch'], 'refs/heads/release/*'), eq(variables['build.Reason'], 'Manual') )
+  condition: startsWith(variables['build.sourceBranch'], 'refs/heads/release')
   dependsOn: []
   jobs:
   - deployment: DeployToBeta
@@ -239,7 +265,7 @@ stages:
                 buildNumber: $(minor)
 
 - stage: Hotfix
-  condition: and(eq(variables['build.sourceBranch'], 'refs/heads/master'), ne(variables['build.Reason'], 'PullRequest') )
+  condition: and(startsWith(variables['build.sourceBranch'], 'refs/heads/release'), eq(variables['build.Reason'], 'Manual') )
   dependsOn: []
   jobs:
   - deployment: DeployToBeta
