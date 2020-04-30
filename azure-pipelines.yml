@@ -25,6 +25,7 @@ trigger:
      - chore/*
      - hoftix/*
      - bugfix/*
+     - release/*
   paths:
     exclude:
     - 'docs/*' 
