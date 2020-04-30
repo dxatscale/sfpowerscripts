@@ -2,6 +2,7 @@ import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages, SfdxError } from '@salesforce/core';
 import AnalyzeWithPMDImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/AnalyzeWithPMDImpl';
 import xml2js = require('xml2js');
+import {isNullOrUndefined} from 'util'
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -34,7 +35,8 @@ export default class AnalyzeWithPMD extends SfdxCommand {
     outputpath: flags.string({char: 'o', description: messages.getMessage('outputPathFlagDescription')}),
     version: flags.string({description: messages.getMessage('versionFlagDescription'), default: '6.22.0'}),
     istobreakbuild: flags.boolean({char: 'b', description: messages.getMessage('isToBreakBuildFlagDescription')}),
-    projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')})
+    projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
+    refname: flags.string({required: true, description: messages.getMessage('refNameFlagDescription')})
   };
 
 
@@ -73,8 +75,13 @@ export default class AnalyzeWithPMD extends SfdxCommand {
         );
         let command = await pmdImpl.buildExecCommand();
         await pmdImpl.exec(command);
+        
+        if (!isNullOrUndefined(outputPath)) {
+            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_pmd_output_path=${outputPath}\n`, {flag:'a'});
+        } else {
+            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_pmd_output_path=${process.env.PWD}/pmd-output\n`, {flag:'a'});
+        }
     
-
         let artifactFilePath = path.join(
         os.homedir(),
         "sfpowerkit",

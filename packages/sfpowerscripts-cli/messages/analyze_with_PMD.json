@@ -7,5 +7,6 @@
     "outputPathFlagDescription": "The file to which the output for static analysis will be written",
     "versionFlagDescription": "The version of PMD to be used for static analysis",
     "isToBreakBuildFlagDescription": "Enable this option if the build should be reported as failure if 1 or more critical defects are reported during the analysis",
-    "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed"
+    "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
+    "refNameFlagDescription": "Reference name to be prefixed to output variables"
 }
