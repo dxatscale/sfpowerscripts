@@ -248,6 +248,7 @@ stages:
 
   - deployment: DeployToAlpha
     displayName: 'Build and Deploy CLI to NPM'
+    dependsOn: InstallNodeModules
     condition: and(succeeded('InstallNodeModules'),eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true ))
     timeoutInMinutes: 10
     pool:
