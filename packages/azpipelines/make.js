@@ -155,13 +155,28 @@ updateExtensionManifest = function(dir, options) {
     manifest.name = "sfpowerscripts" + " (" + "review" + ")";
     manifest.public = false;
     version = options.version;
-  } else if (options.stage == "beta") {
+  } else if (options.stage == "alpha") {
+    manifest.version = options.version;
+    manifest.id = "sfpowerscripts" + "-" + "alpha";
+    manifest.name = "sfpowerscripts" + " (" + "alpha" + ")";
+    manifest.public = false;
+    version = options.version;
+  } 
+   else if (options.stage == "beta") {
     manifest.version = options.version;
     manifest.id = "sfpowerscripts" + "-" + "beta";
     manifest.name = "sfpowerscripts" + " (" + "beta" + ")";
     manifest.public = false;
     version = options.version;
-  } else {
+  } 
+  else if (options.stage == "uat") {
+    manifest.version = options.version;
+    manifest.id = "sfpowerscripts" + "-" + "uat";
+    manifest.name = "sfpowerscripts" + " (" + "uat" + ")";
+    manifest.public = false;
+    version = options.version;
+  }
+  else {
     manifest.id = "sfpowerscripts";
     manifest.name = "sfpowerscripts";
     manifest.public = true;

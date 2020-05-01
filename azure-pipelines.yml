@@ -26,6 +26,7 @@ trigger:
      - hoftix/*
      - bugfix/*
      - release/*
+     - develop
   paths:
     exclude:
     - 'docs/*' 
@@ -42,124 +43,30 @@ variables:
 
 
 stages:
-- stage: Develop
-  condition: or( startsWith(variables['build.sourceBranch'], 'refs/heads/chore'), startsWith(variables['build.sourceBranch'], 'refs/heads/feature'), startsWith(variables['build.sourceBranch'], 'refs/heads/bugfix'))
-  
-  jobs:
 
-  - job: InstallNodeModules
-    displayName: Install Node Dependencies
-    pool:
-      vmImage: 'windows-latest'
-    
-    steps:
-      - checkout:  self
-
-      - task: Cache@2
-        displayName: Cache NPM Modules
-        inputs:
-         key: 'npm | "$(Agent.OS)" | package-lock.json'
-         path: '$(System.DefaultWorkingDirectory)/node_modules'
-         cacheHitVar: 'npm | "$(Agent.OS)"'
-
-      - task: CmdLine@2
-        displayName: Install Node depdencies
-        inputs:
-          script: 'npm install'
-
-      
-      - task: CmdLine@2
-        inputs:
-          script: 'sh ./scripts/get-files-diff.sh'
-          workingDirectory: '$(System.DefaultWorkingDirectory)'
-        displayName: 'Detect changes to packages' 
-        name: Builddeciderstep
-
-  - deployment: DeployToDevelop
-
-    displayName: 'Build and Deploy Azure Pipelines Extension to dev'
-    dependsOn: InstallNodeModules
-    condition: and(succeeded('InstallNodeModules'), or( eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ),  eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'], true )  ))
-    variables:
-      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
-    timeoutInMinutes: 10
-    pool:
-      vmImage: 'windows-latest'
-    environment: dev
-    strategy:
-       runOnce:
-         deploy:
-           steps:
-
-             - template: build_templates/buildazpipelines.yml  
-               parameters:
-                name: 'DeployToDevelop'
-                commitToGit: false
-                stageToDeploy: 'dev'
-                version: 'auto'
-                environmentToDeploy: 'dev'
-                toBuild: true
-                organization: safebot
-                
-
+#Pull Request Review : Triggered for any PRs               
 - stage: Review
-  condition:  or (  eq(variables['build.Reason'], 'PullRequest'), eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+  condition:  eq(variables['build.Reason'], 'PullRequest')
   dependsOn: []
   jobs:
 
-  - job: InstallNodeModules
-    displayName: Install Node Dependencies
-    pool:
-      vmImage: 'windows-latest'
-    
-    steps:
-      - checkout:  self
-
-      - task: Cache@2
-        displayName: Cache NPM Modules
-        inputs:
-         key: 'npm | "$(Agent.OS)" | package-lock.json'
-         path: '$(System.DefaultWorkingDirectory)/node_modules'
-         cacheHitVar: 'npm | "$(Agent.OS)"'
-
-      - task: CmdLine@2
-        displayName: Install Node depdencies
-        inputs:
-          script: 'npm install'
-
-      
-      - task: CmdLine@2
-        inputs:
-          script: 'sh ./scripts/get-files-diff.sh'
-          workingDirectory: '$(System.DefaultWorkingDirectory)'
-        displayName: 'Detect changes to packages' 
-        name: Builddeciderstep
+  - template: build_templates/deciderjob.yml  
 
   - job: BuildCLI
     displayName: 'Build To Validate CLI'
     dependsOn: InstallNodeModules
-    condition: and(succeeded('InstallNodeModules'),eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true))
+    condition: and( succeeded('InstallNodeModules'), eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true) )
     timeoutInMinutes: 10
     pool:
       vmImage: 'windows-latest'
     steps:
+      - template: build_templates/buildcli.yml  
+        parameters:
+         commitToGit: false
+         bump: 'prerelease'
+         publish: false   
 
-         - checkout: self
-
-         - task: Cache@2
-           displayName: Cache NPM Modules
-           inputs:
-              key: 'npm | "$(Agent.OS)" | package-lock.json'
-              path: '$(System.DefaultWorkingDirectory)/node_modules'
-              cacheHitVar: 'npm | "$(Agent.OS)"'            
-
-         - script: 'npx lerna bootstrap'
-           displayName: 'Bootstrap Lerna'
-
-         - script: 'npx lerna run build'
-           displayName: 'Build all packages'
-
-  - deployment: DeployToReview
+  - deployment: BuildAzPipelines
     displayName: 'Build and Deploy Azure Pipelines Extension to Review'
     dependsOn: InstallNodeModules
     condition: and(succeeded('InstallNodeModules'), or( eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ),  eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'], true )  ))
@@ -176,18 +83,17 @@ stages:
 
              - template: build_templates/buildazpipelines.yml  
                parameters:
-                name: 'DeployToReview'
                 commitToGit: false
                 stageToDeploy: 'review'
                 version: 'review'
                 environmentToDeploy: 'review'
                 toBuild: true
-                organization: azlamsalam
+                organization: dxatscale
                 buildNumber: $(minor)
   
   - job: WaitPluginToInstallonReview
     displayName: 'Wait for  Plugin To Install on Review'
-    dependsOn: DeployToReview
+    dependsOn: BuildAzPipelines
     pool: server
     steps:
       - task: Delay@1
@@ -212,12 +118,33 @@ stages:
       directory: 'force-di'
       service_connection: $(devhub_service_connection)
 
+#Merge to Develop, Deploy Alpha builds      
 - stage: Alpha
-  condition: and (eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true ))
+  condition: eq(variables['build.sourceBranch'], 'refs/heads/develop')
   dependsOn: []
   jobs:
-  - deployment: DeployToAlpha
-    displayName: 'Build and Deploy CLI to NPM'
+
+  - template: build_templates/deciderjob.yml  
+
+  - job: BuildCLI
+    dependsOn: InstallNodeModules
+    displayName: Deploy build of CLI and Core Packages
+    condition:  and( succeeded('InstallNodeModules'), eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true) )
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+             - template: build_templates/buildcli.yml  
+               parameters:
+                commitToGit: true
+                bump: 'prerelease' 
+                version: 'alpha'   
+                publish: true
+                     
+
+  - deployment: BuildAzPipelines
+    displayName: 'Build and Deploy Azure Pipelines Extension'
+    dependsOn: BuildCLI
+    condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
     timeoutInMinutes: 10
     pool:
       vmImage: 'windows-latest'
@@ -226,26 +153,46 @@ stages:
        runOnce:
          deploy:
            steps:
-             - template: build_templates/buildcli.yml  
+    
+             - template: build_templates/buildazpipelines.yml  
                parameters:
-                name: 'DeployToAlpha'
                 commitToGit: true
+                bump: 'prerelease' 
                 stageToDeploy: 'alpha'
                 version: 'alpha'
                 environmentToDeploy: 'alpha'
                 toBuild: true
-                organization: dxatscale
-                buildNumber: $(minor)      
-
-
+                organization: dxatscalereview
+                buildNumber: $(minor)
+    
+              
+#Beta Stage
 - stage: Beta
-  condition: startsWith(variables['build.sourceBranch'], 'refs/heads/release')
-  dependsOn: []
+  condition: and(succeeded('Alpha'),eq(variables['build.sourceBranch'], 'refs/heads/develop'))
+  dependsOn: Alpha
   jobs:
-  - deployment: DeployToBeta
-    displayName: 'Build and Deploy Azure Pipelines Extension to Beta'
-    variables:
-      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
+
+  - template: build_templates/deciderjob.yml  
+
+  - job: BuildCLI
+    displayName: Deploy build of CLI and Core Packages
+    dependsOn: InstallNodeModules
+    condition:  and( succeeded('InstallNodeModules'), eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true) )
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+             - template: build_templates/buildcli.yml  
+               parameters:
+                commitToGit: false
+                bump: 'prerelease'
+                version: 'beta'  
+                publish: true
+                     
+
+  - deployment: BuildAzPipelines
+    displayName: 'Build and Deploy Azure Pipelines Extension'
+    dependsOn: BuildCLI
+    condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
     timeoutInMinutes: 10
     pool:
       vmImage: 'windows-latest'
@@ -254,54 +201,45 @@ stages:
        runOnce:
          deploy:
            steps:
-             - template: build_templates/buildall.yml  
+    
+             - template: build_templates/buildazpipelines.yml  
                parameters:
-                name: 'DeployToBeta'
-                commitToGit: true
+                commitToGit: false
+                bump: 'prerelease'
                 stageToDeploy: 'beta'
                 version: 'beta'
                 environmentToDeploy: 'beta'
                 toBuild: true
-                organization: dxatscale
+                organization: dxatscalereview
                 buildNumber: $(minor)
 
-- stage: Hotfix
-  condition: and(startsWith(variables['build.sourceBranch'], 'refs/heads/release'), eq(variables['build.Reason'], 'Manual') )
-  dependsOn: []
+#Prod Stage
+- stage: Prod
+  condition: and(succeeded('Beta'),eq(variables['build.sourceBranch'], 'refs/heads/develop'))
+  dependsOn: Beta
   jobs:
-  - deployment: DeployToBeta
-    displayName: 'Build and Deploy Azure Pipelines Extension to Beta'
-    variables:
-      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
-    timeoutInMinutes: 10
+
+  - template: build_templates/deciderjob.yml  
+
+  - job: BuildCLI
+    displayName: Deploy build of CLI and Core Packages
+    dependsOn: InstallNodeModules
+    condition:  and( succeeded('InstallNodeModules'), eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true) )
     pool:
       vmImage: 'windows-latest'
-    environment: beta
-    strategy:
-       runOnce:
-         deploy:
-           steps:
-             - template: build_templates/buildall.yml  
+    steps:
+             - template: build_templates/buildcli.yml  
                parameters:
-                name: 'DeployToBeta'
-                commitToGit: true
-                stageToDeploy: 'beta'
-                version: 'beta'
-                environmentToDeploy: 'beta'
-                toBuild: true
-                organization: dxatscale
-                buildNumber: $(minor)
+                commitToGit: false
+                bump: 'patch'
+                version: 'prod'  
+                publish: true
+                     
 
-- stage: Production
-  condition: or ( succeeded('Beta'), succeeded('Hotfix'))
-  dependsOn: 
-    - Beta
-    - Hotfix
-  jobs:
-  - deployment: DeployToProd
-    displayName: 'Build and Deploy Azure Pipelines Extension to Prod`'
-    variables:
-      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
+  - deployment: BuildAzPipelines
+    displayName: 'Build and Deploy Azure Pipelines Extension'
+    dependsOn: BuildCLI
+    condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
     timeoutInMinutes: 10
     pool:
       vmImage: 'windows-latest'
@@ -310,13 +248,14 @@ stages:
        runOnce:
          deploy:
            steps:
-             - template: build_templates/buildall.yml  
+    
+             - template: build_templates/buildazpipelines.yml  
                parameters:
-                name: 'DeployToProd'
                 commitToGit: false
+                bump: 'patch'
                 stageToDeploy: 'prod'
                 version: 'prod'
-                environmentToDeploy: 'production'
+                environmentToDeploy: 'prod'
                 toBuild: true
-                organization: dxatscale
+                organization: dxatscalereview
                 buildNumber: $(minor)

@@ -1,6 +1,4 @@
 parameters:
-  - name: name  # defaults for any parameters that aren't specified
-    default: ''
   
   - name: commitToGit
     type: boolean 
@@ -34,6 +32,11 @@ parameters:
   - name: bump
     type: string 
     default: 'patch'
+
+  - name: publish
+    type: boolean 
+    default: false
+       
    
 
 steps:
@@ -50,21 +53,21 @@ steps:
             displayName: Get Branch Name
 
           - task: CmdLine@2
-            displayName: 'Checkout the current version of the branch'
-            condition: and(true, eq( ${{ parameters.commitToGit }},true))
-            inputs:
-                 script: |
-                  git checkout $(fullbranchname)
-                 workingDirectory: '$(System.DefaultWorkingDirectory)'
-            
-          
-          - task: CmdLine@2
             displayName: "Set Git Config"
             inputs:
                script: |
                  git config --global user.email "sfpowerkit.ci@dev.azure.com"
                  git config --global user.name "sfpowerkitci"
 
+
+          - task: CmdLine@2
+            displayName: 'Checkout the current version of the branch'
+            condition: eq( ${{ parameters.publish }},true)
+            inputs:
+                 script: |
+                  git checkout $(fullbranchname)
+                 workingDirectory: '$(System.DefaultWorkingDirectory)'
+            
 
           - task: Cache@2
             displayName: Cache NPM Modules
@@ -112,12 +115,19 @@ steps:
                 workingFile: 'packages/sfpowerscripts-cli/.npmrc'
                 customEndpoint: npm
             
-              
 
           - script: 'npx lerna bootstrap'
             displayName: 'Bootstrap Lerna'
+        
+          - script: 'npx lerna version ${{ parameters.bump }} --preid ${{ parameters.version }} --no-push'
+            displayName: 'Increment PreRelease version'
+            condition: and( eq( ${{ parameters.publish }},true ), eq( '${{ parameters.version }}','beta')  )
 
- 
+          - script: 'npx lerna version ${{ parameters.bump }}  --no-push -m [skip ci] updating versions'
+            displayName: 'Increment PreRelease version'
+            condition: and( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}','prod'))
+
+
           - script: 'npx lerna run build'
             displayName: 'Build  All  Packages'
 
@@ -127,12 +137,6 @@ steps:
             inputs:
                  script: 'lerna publish from-package --yes --force-publish --no-git-tag-version --no-push '
                  workingDirectory: '$(System.DefaultWorkingDirectory)'
- 
-          - task: CmdLine@2
-            displayName: 'Push to Repo'
-            inputs:
-              script: |
-                git push  https://$(github_pat)@github.com/Accenture/sfpowerscripts.git  HEAD:$(fullbranchname)
-            condition: and(true, eq( ${{ parameters.commitToGit }},true))
+
 
 

@@ -1,6 +1,4 @@
 parameters:
-  - name: name  # defaults for any parameters that aren't specified
-    default: ''
   
   - name: commitToGit
     type: boolean 
@@ -26,6 +24,10 @@ parameters:
     type: string 
     default: ''
 
+  - name: bump
+    type: string 
+    default: 'patch'  
+
 
   - name: buildNumber
     type: string 
@@ -49,19 +51,23 @@ steps:
             displayName: Get Branch Name
 
           - task: CmdLine@2
-            displayName: 'Checkout the current version of the branch'
-            condition:  and(succeeded(), eq( variables['isCoreUpdated'], true ) )
-            inputs:
-                 script: |
-                  git checkout $(fullbranchname)
-                 workingDirectory: '$(System.DefaultWorkingDirectory)'
-          
-          - task: CmdLine@2
             displayName: "Set Git Config"
+            condition: eq( ${{ parameters.commitToGit }},true)
             inputs:
                script: |
                  git config --global user.email "sfpowerkit.ci@dev.azure.com"
                  git config --global user.name "sfpowerkitci"
+
+
+          - task: CmdLine@2
+            displayName: 'Checkout the current version of the branch'
+            condition:   eq( '${{ parameters.version }}','alpha')
+            inputs:
+                 script: |
+                  git fetch origin
+                  git checkout $(fullbranchname)
+                 workingDirectory: '$(System.DefaultWorkingDirectory)'
+          
 
 
           - task: Cache@2
@@ -75,15 +81,14 @@ steps:
           - script: 'npx lerna bootstrap'
             displayName: 'Bootstrap Lerna'
 
-       
+          - script: 'npx lerna version ${{ parameters.bump }} --preid ${{ parameters.version }} --no-push'
+            displayName: 'Increment PreRelease version'
+            condition: eq( '${{ parameters.version }}','beta')  
 
-          - task: CmdLine@2
-            displayName: 'Increment Package Versions'
-            condition:  and(succeeded(), eq( variables['isCoreUpdated'], true ) )
-            inputs:
-                 script: 'lerna version patch --no-push'
-                 workingDirectory: '$(System.DefaultWorkingDirectory)'
- 
+          - script: 'npx lerna version ${{ parameters.bump }}  --no-push -m [skip ci] updating versions'
+            displayName: 'Increment PreRelease version'
+            condition:  eq( '${{ parameters.version }}','prod')
+
           - script: 'npx lerna run build'
             displayName: 'Build  All  Packages'
    
@@ -124,12 +129,12 @@ steps:
                npm run publish:azpipelines --  --version=$(Build.BuildNumber) --token=$(publish_token) --stage=${{ parameters.stageToDeploy }} --organization=${{ parameters.organization }}
               workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines'
  
-          - task: CmdLine@2
-            displayName: 'Push to Repo'
-            inputs:
-              script: |
-                git push  https://$(github_pat)@github.com/azlamsalam/sfpowerscripts.git  HEAD:${{ parameters.branchToDeploy }}
-            condition: and(true, eq( ${{ parameters.commitToGit }},true))
+          # - task: CmdLine@2
+          #   displayName: 'Push to Repo'
+          #   inputs:
+          #     script: |
+          #       git push  https://$(github_pat)@github.com/azlamsalam/sfpowerscripts.git  HEAD:${{ parameters.branchToDeploy }}
+          #   condition: eq( ${{ parameters.commitToGit }},true)
 
 
           - task: PublishBuildArtifacts@1
