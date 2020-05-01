@@ -26,6 +26,7 @@ trigger:
      - hoftix/*
      - bugfix/*
      - release/*
+     - develop
   paths:
     exclude:
     - 'docs/*' 
