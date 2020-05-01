@@ -214,11 +214,41 @@ stages:
       service_connection: $(devhub_service_connection)
 
 - stage: Alpha
-  condition: and (eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true ))
+  condition: eq(variables['build.sourceBranch'], 'refs/heads/develop')
   dependsOn: []
   jobs:
+
+  - job: InstallNodeModules
+    displayName: Install Node Dependencies
+    pool:
+      vmImage: 'windows-latest'
+    
+    steps:
+      - checkout:  self
+
+      - task: Cache@2
+        displayName: Cache NPM Modules
+        inputs:
+         key: 'npm | "$(Agent.OS)" | package-lock.json'
+         path: '$(System.DefaultWorkingDirectory)/node_modules'
+         cacheHitVar: 'npm | "$(Agent.OS)"'
+
+      - task: CmdLine@2
+        displayName: Install Node depdencies
+        inputs:
+          script: 'npm install'
+
+      
+      - task: CmdLine@2
+        inputs:
+          script: 'sh ./scripts/get-files-diff.sh'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+        displayName: 'Detect changes to packages' 
+        name: Builddeciderstep
+
   - deployment: DeployToAlpha
     displayName: 'Build and Deploy CLI to NPM'
+    condition: and(succeeded('InstallNodeModules'),eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true ))
     timeoutInMinutes: 10
     pool:
       vmImage: 'windows-latest'
