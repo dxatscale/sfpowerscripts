@@ -43,8 +43,10 @@ variables:
 
 
 stages:
+
+#Develop Stage: Triggered only manually for any of the feature branches, mainly to deploy something to developer org
 - stage: Develop
-  condition: or( startsWith(variables['build.sourceBranch'], 'refs/heads/chore'), startsWith(variables['build.sourceBranch'], 'refs/heads/feature'), startsWith(variables['build.sourceBranch'], 'refs/heads/bugfix'))
+  condition: and ( eq(variables['build.Reason'], 'Manual'), or( startsWith(variables['build.sourceBranch'], 'refs/heads/chore'), startsWith(variables['build.sourceBranch'], 'refs/heads/feature'), startsWith(variables['build.sourceBranch'], 'refs/heads/bugfix')))
   
   jobs:
 
@@ -101,10 +103,11 @@ stages:
                 environmentToDeploy: 'dev'
                 toBuild: true
                 organization: safebot
-                
+      
 
+#Pull Request Review : Triggered for any PRs               
 - stage: Review
-  condition:  or (  eq(variables['build.Reason'], 'PullRequest'), eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+  condition:  eq(variables['build.Reason'], 'PullRequest')
   dependsOn: []
   jobs:
 
@@ -213,6 +216,7 @@ stages:
       directory: 'force-di'
       service_connection: $(devhub_service_connection)
 
+#Merge to Develop, Deploy Alpha builds, only NPM for now..       
 - stage: Alpha
   condition: eq(variables['build.sourceBranch'], 'refs/heads/develop')
   dependsOn: []
@@ -249,7 +253,7 @@ stages:
   - deployment: DeployToAlpha
     displayName: 'Build and Deploy CLI to NPM'
     dependsOn: InstallNodeModules
-    condition: and(succeeded('InstallNodeModules'),eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true ))
+    condition: and(succeeded('InstallNodeModules'),eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true))
     timeoutInMinutes: 10
     pool:
       vmImage: 'windows-latest'
@@ -269,7 +273,7 @@ stages:
                 organization: dxatscale
                 buildNumber: $(minor)      
 
-
+#Beta Stage from a Release branch deploy, NPM and Azure Pipelines                
 - stage: Beta
   condition: startsWith(variables['build.sourceBranch'], 'refs/heads/release')
   dependsOn: []
@@ -297,6 +301,8 @@ stages:
                 organization: dxatscale
                 buildNumber: $(minor)
 
+      
+#Hotfix Stage from a Release branch deploy, NPM and Azure Pipelines.. environment need to be updated           
 - stage: Hotfix
   condition: and(startsWith(variables['build.sourceBranch'], 'refs/heads/release'), eq(variables['build.Reason'], 'Manual') )
   dependsOn: []
@@ -324,6 +330,7 @@ stages:
                 organization: dxatscale
                 buildNumber: $(minor)
 
+#Production                
 - stage: Production
   condition: or ( succeeded('Beta'), succeeded('Hotfix'))
   dependsOn: 
