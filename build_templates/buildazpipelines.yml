@@ -61,10 +61,8 @@ steps:
 
           - task: CmdLine@2
             displayName: 'Checkout the current version of the branch'
-            condition:   eq( '${{ parameters.version }}','alpha')
             inputs:
                  script: |
-                  git fetch origin
                   git checkout $(fullbranchname)
                  workingDirectory: '$(System.DefaultWorkingDirectory)'
           
