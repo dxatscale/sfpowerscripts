@@ -134,6 +134,7 @@ steps:
 
           - task: CmdLine@2
             displayName: 'Publish CLI/Core'
+            condition: eq( ${{ parameters.publish }},true)
             inputs:
                  script: 'lerna publish from-package --yes --force-publish --no-git-tag-version --no-push '
                  workingDirectory: '$(System.DefaultWorkingDirectory)'
