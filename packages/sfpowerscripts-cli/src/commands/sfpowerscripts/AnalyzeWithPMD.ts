@@ -2,7 +2,7 @@ import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages, SfdxError } from '@salesforce/core';
 import AnalyzeWithPMDImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/AnalyzeWithPMDImpl';
 import xml2js = require('xml2js');
-import {isNullOrUndefined} from 'util'
+import {isNullOrUndefined} from 'util';
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
