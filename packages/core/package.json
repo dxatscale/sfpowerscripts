@@ -1,11 +1,11 @@
 {
   "name": "@dxatscale/sfpowerscripts.core",
-  "version": "0.0.28-alpha.5",
+  "version": "0.0.28-alpha.6",
   "description": "Core Module used by sfpowerscripts",
   "main": "lib/index",
   "types": "lib/index",
   "files": [
-    "lib"       
+    "lib"
   ],
   "scripts": {
     "build": "npm run clean && npm run compile",
