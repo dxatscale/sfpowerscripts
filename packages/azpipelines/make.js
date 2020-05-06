@@ -1,4 +1,4 @@
-// parse command line options
+// parse command line options 
 var minimist = require("minimist");
 var mopts = {
   string: ["version", "stage", "taskId", "organization", "buildNumber"],
