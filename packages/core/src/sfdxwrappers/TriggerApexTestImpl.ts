@@ -70,8 +70,10 @@ export default class TriggerApexTestImpl {
 
       test_result.id = test_id;
 
+      
+
       //Print human readable output to console
-      if ((test_report_json.summary.outcome = "Failed")) {
+      if ((test_report_json.summary.outcome == "Failed")) {
         test_result.message = `${test_report_json.summary.failing} Tests failed with overall Test Run Coverage of ${test_report_json.summary.testRunCoverage}`;
         test_result.message += "\nFailed Test Cases:";
 
