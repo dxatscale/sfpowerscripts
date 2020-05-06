@@ -52,7 +52,7 @@ steps:
 
           - task: CmdLine@2
             displayName: "Set Git Config"
-            condition: eq( ${{ parameters.commitToGit }},true)
+            condition:  or ( eq( '${{ parameters.version }}','beta'), eq( '${{ parameters.version }}','prod'))
             inputs:
                script: |
                  git config --global user.email "sfpowerkit.ci@dev.azure.com"

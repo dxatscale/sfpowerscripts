@@ -5,7 +5,7 @@
   "description": "CI/CD extensions for Salesforce",
   "repository": {
     "type": "git",
-    "url": "https://github.com/accenture/sfpowerscripts.git"
+    "url": "https://github.com/accenture/sfpowerscripts.git" 
   },
   "keywords": [
     "vsts",
