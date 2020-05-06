@@ -40,6 +40,35 @@ parameters:
 steps:
           - checkout: self
 
+
+          - powershell: |
+              # see also https://github.com/microsoft/azure-pipelines-agent/issues/838
+              $SourceBranchLongName = switch ($env:Build_Reason) {
+                'PullRequest' { $env:Build_SourceBranch.Replace('refs/pull/','').Replace('/merge','') }
+                 default { $env:Build_SourceBranch.Replace('refs/heads/','').Replace('refs/tags/','') }
+               }
+               Write-Host "##vso[task.setvariable variable=fullbranchname]${SourceBranchLongName}"
+            displayName: Get Branch Name
+
+          - task: CmdLine@2
+            displayName: "Set Git Config"
+            condition: eq( ${{ parameters.commitToGit }},true)
+            inputs:
+               script: |
+                 git config --global user.email "sfpowerkit.ci@dev.azure.com"
+                 git config --global user.name "sfpowerkitci"
+
+
+          - task: CmdLine@2
+            displayName: 'Checkout the current version of the branch'
+            condition: or ( eq( '${{ parameters.version }}','beta'), eq( '${{ parameters.version }}','prod'))
+            inputs:
+                 script: |
+                  git checkout $(fullbranchname)
+                 workingDirectory: '$(System.DefaultWorkingDirectory)'
+          
+
+
           - task: Cache@2
             displayName: Cache NPM Modules
             inputs:
@@ -82,8 +111,6 @@ steps:
             inputs:
                script: |
                 npm run increment:azpipelines:version -- --version=${{ parameters.version }}  --stage=${{ parameters.stageToDeploy }} --buildNumber=${{ parameters.buildNumber }}
-                git add packages/azpipelines/vss-extension.json
-                git commit  -m "[skip ci] Updated Version"
                workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines'
           
           - task: CmdLine@2
