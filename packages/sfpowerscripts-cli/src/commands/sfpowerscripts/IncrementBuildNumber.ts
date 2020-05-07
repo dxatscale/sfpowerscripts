@@ -23,10 +23,12 @@ export default class IncrementBuildNumber extends SfdxCommand {
 
   protected static flagsConfig = {
     segment: flags.string({description: messages.getMessage('segmentFlagDescription'), options: ['Major', 'Minor', 'Patch', 'BuildNumber'], default: 'BuildNumber'}),
+    appendbuildnumber: flags.boolean({char: 'a', description: messages.getMessage('appendBuildNumberFlagDescription'), dependsOn: ['runnumber'] ,exclusive: ['segment', 'commitchanges']}),
     package: flags.string({char: 'n', description: messages.getMessage('packageFlagDescription')}),
     projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
     commitchanges: flags.boolean({char: 'c', description: messages.getMessage('commitChangesFlagDescription')}),
-    refname: flags.string({required: true, description: messages.getMessage('refNameFlagDescription')}) 
+    refname: flags.string({required: true, description: messages.getMessage('refNameFlagDescription')}),
+    runnumber: flags.string({char: 'r', description: messages.getMessage('runNumberFlagDescription'), dependsOn: ['appendbuildnumber']})
   };
 
   protected static requiresProject = true;
@@ -38,18 +40,19 @@ export default class IncrementBuildNumber extends SfdxCommand {
       const segment: string = this.flags.segment;
       const sfdx_package: string = this.flags.package;
       let project_directory: string = this.flags.projectdir;
-  
+      const appendBuildNumber: boolean = this.flags.appendbuildnumber;
       const commit_changes: boolean = this.flags.commitchanges;
   
       // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
      
+      const runNumber: string = this.flags.runnumber; 
   
       let incrementProjectBuildNumberImpl: IncrementProjectBuildNumberImpl = new IncrementProjectBuildNumberImpl(
         project_directory,
         sfdx_package,
         segment,
-        false,
-        ""
+        appendBuildNumber,
+        runNumber
       );
   
       let version_number: string = await incrementProjectBuildNumberImpl.exec();
@@ -60,7 +63,7 @@ export default class IncrementBuildNumber extends SfdxCommand {
       let repo_localpath = process.env.PWD;
     
   
-      if(commit_changes)
+      if(!appendBuildNumber && commit_changes)
       {
   
         child_process.execSync(" git config user.email sfpowerscripts@dxscale");
