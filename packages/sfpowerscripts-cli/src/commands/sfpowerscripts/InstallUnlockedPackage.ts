@@ -16,7 +16,7 @@ export default class InstallUnlockedPackage extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx InstallUnlockedPackage -n packagename -u sandboxalias -i  
+  `sfdx sfpowerscripts:InstallUnlockedPackage -n packagename -u sandboxalias -i  
   `
   ];
 

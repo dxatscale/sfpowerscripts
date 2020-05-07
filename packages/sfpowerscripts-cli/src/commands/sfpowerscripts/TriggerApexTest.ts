@@ -14,7 +14,7 @@ export default class TriggerApexTest extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx TriggerApexTest -u scratchorg -l RunLocalTests -s
+  `sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunLocalTests -s
   `
   ];
 

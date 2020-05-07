@@ -1,6 +1,7 @@
 import ExportSourceFromAnOrgImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/ExportSourceFromAnOrgImpl';
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
+import { isNullOrUndefined } from 'util';
 const fs = require("fs");
 
 // Initialize Messages with the current plugin directory
@@ -15,8 +16,10 @@ export default class ExportSource extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx ExportSource -u scratchorg -d metadata -x -e 
-  `
+  `sfdx sfpowerscripts:ExportSource -u scratchorg -d metadata -x -e\n` +
+  `Output variable:\n` +
+  `sfpowerscripts_exportedsource_zip_path\n` +
+  `<refname>_sfpowerscripts_exportedsource_zip_path`
   ];
 
 
@@ -26,7 +29,7 @@ export default class ExportSource extends SfdxCommand {
     quickfilter: flags.string({description: messages.getMessage('quickFilterFlagDescription')}),
     ismanagedpackagestobeexcluded: flags.boolean({char: 'x', description: messages.getMessage('isManagedPackagesToBeExcludedFlagDescription')}),
     isunzipenabled: flags.boolean({char: 'e', description: messages.getMessage('isUnzipEnabledFlagDescription')}),
-    refname: flags.string({required: true, description: messages.getMessage('refNameFlagDescription')})
+    refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
   };
 
 
@@ -57,9 +60,13 @@ export default class ExportSource extends SfdxCommand {
   
       let zipPath = await exportSourceFromAnOrgImpl.exec();
   
-      if(!isUnzipEnabled)
-      fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_exportedsource_zip_path=${zipPath}\n`, {flag:'a'});
-        
+      if(!isUnzipEnabled) {
+        if (!isNullOrUndefined(this.flags.refname)) {
+          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_exportedsource_zip_path=${zipPath}\n`, {flag:'a'});
+        } else {
+          fs.writeFileSync('.env', `sfpowerscripts_exportedsource_zip_path=${zipPath}\n`, {flag:'a'});
+        }
+      }
       // AppInsights.trackTask("sfpowerscript-exportsourcefromorg-task");
       // AppInsights.trackTaskEvent(
       //   "sfpowerscript-exportsourcefromorg-task",

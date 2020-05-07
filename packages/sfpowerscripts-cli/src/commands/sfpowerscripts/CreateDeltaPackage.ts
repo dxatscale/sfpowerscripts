@@ -18,8 +18,12 @@ export default class CreateDeltaPackage extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx CreateDeltaPackage -n packagename -r 61635fb -t 3cf01b9 -v 1.2.10 -b 
-  `
+  `sfdx sfpowerscripts:CreateDeltaPackage -n packagename -r 61635fb -t 3cf01b9 -v 1.2.10 -b\n` +
+  `Output variable:\n` +
+  `sfpowerscripts_delta_package_path\n` +
+  `<refname>_sfpowerscripts_delta_package_path\n` +
+  `sfpowerscripts_artifact_metadata_directory\n` +
+  `<refname>_sfpowerscripts_artifact_metadata_directory`
   ];
 
   protected static requiresProject = true;
@@ -36,7 +40,7 @@ export default class CreateDeltaPackage extends SfdxCommand {
     generatedestructivemanifest: flags.boolean({char: 'x', description: messages.getMessage('generateDestructiveManifestFlagDescription')}),
     bypassdirectories: flags.string({description: messages.getMessage('bypassDirectoriesFlagDescription')}),
     onlydifffor: flags.string({description: messages.getMessage('onlyDiffForFlagDescription')}),
-    refname: flags.string({required: true , description: messages.getMessage('refNameFlagDescription')})
+    refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
   };
 
 
@@ -78,9 +82,13 @@ export default class CreateDeltaPackage extends SfdxCommand {
         process.env.PWD,
         `${sfdx_package}_src_delta`
       );
-  
-      fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_delta_package_path=${artifactFilePath}\n`, {flag:'a'});
-  
+      
+      if (!isNullOrUndefined(this.flags.refname)) {
+        fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_delta_package_path=${artifactFilePath}\n`, {flag:'a'});
+      } else {
+        fs.writeFileSync('.env', `sfpowerscripts_delta_package_path=${artifactFilePath}\n`, {flag:'a'});
+      }
+
       if (build_artifact_enabled) {  
         // Write artifact metadata 
   
@@ -106,7 +114,11 @@ export default class CreateDeltaPackage extends SfdxCommand {
           JSON.stringify(metadata)
         );
         
-        fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+        if (!isNullOrUndefined(this.flags.refname)) {
+          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+        } else {
+          fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+        }
       }
     } catch (err) {
       console.log(err);

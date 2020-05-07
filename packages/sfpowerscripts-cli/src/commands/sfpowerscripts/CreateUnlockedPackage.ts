@@ -16,8 +16,12 @@ export default class CreateUnlockedPackage extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx CreateUnlockedPackage -n packagealias -b -x -v HubOrg --tag tagname 
-  `
+  `sfdx sfpowerscripts:CreateUnlockedPackage -n packagealias -b -x -v HubOrg --tag tagname\n` +
+  `Output variable:\n` +
+  `sfpowerscripts_package_version_id\n` +
+  `<refname>_sfpowerscripts_package_version_id\n` +
+  `sfpowerscripts_artifact_metadata_directory\n` +
+  `<refname>_sfpowerscripts_artifact_metadata_directory`
   ];
 
   protected static requiresProject = true;
@@ -37,7 +41,7 @@ export default class CreateUnlockedPackage extends SfdxCommand {
     isvalidationtobeskipped: flags.boolean({char: 's', description: messages.getMessage('isValidationToBeSkippedFlagDescription')}),
     tag: flags.string({description: messages.getMessage('tagFlagDescription')}),
     waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '120'}),
-    refname: flags.string({required: true, description: messages.getMessage('refNameFlagDescription')})
+    refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
   };
 
 
@@ -101,7 +105,11 @@ export default class CreateUnlockedPackage extends SfdxCommand {
           command
         );
         
-        fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_id=${package_version_id}\n`, {flag:'a'});
+        if (!isNullOrUndefined(this.flags.refname)) {
+          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_id=${package_version_id}\n`, {flag:'a'});
+        } else {
+          fs.writeFileSync('.env', `sfpowerscripts_package_version_id=${package_version_id}\n`, {flag:'a'});
+        }
 
         if (build_artifact_enabled) {
   
@@ -125,7 +133,11 @@ export default class CreateUnlockedPackage extends SfdxCommand {
           let artifactFileName:string = `/${sfdx_package}_artifact_metadata`;
 
           fs.writeFileSync(process.env.PWD + artifactFileName, JSON.stringify(metadata));
-          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+          if (!isNullOrUndefined(this.flags.refname)) {
+            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+          } else {
+            fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+          }
         }
     } catch(err) {
       // AppInsights.trackExcepiton("sfpwowerscripts-createunlockedpackage-task",err);

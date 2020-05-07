@@ -18,8 +18,10 @@ export default class DeploySource extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx DeploySource -u scratchorg -sourcedir force-app -c 
-  `
+  `sfdx sfpowerscripts:DeploySource -u scratchorg --sourcedir force-app -c\n` +
+  `Output variable:\n` +
+  `sfpowerkit_deploysource_id\n` +
+  `<refname_sfpowerkit_deploysource_id`
   ];
 
 
@@ -34,7 +36,7 @@ export default class DeploySource extends SfdxCommand {
     specifiedtests: flags.string({description: messages.getMessage('specifiedTestsFlagDescription')}),
     apextestsuite: flags.string({description: messages.getMessage('apexTestSuiteFlagDescription')}),
     istobreakbuildifempty: flags.boolean({char: 'b' , description: messages.getMessage('isToBreakBuildIfEmptyFlagDescription')}),
-    refname: flags.string({required: true, description: messages.getMessage('refNameFlagDescription')})
+    refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
   };
 
   protected static requiresProject = true;
@@ -86,7 +88,11 @@ export default class DeploySource extends SfdxCommand {
         let result: DeploySourceResult= await deploySourceToOrgImpl.exec();
 
         if (!isNullOrUndefined(result.deploy_id)) {
-          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerkit_deploysource_id=${result.deploy_id}\n`, {flag:'a'});
+          if (!isNullOrUndefined(this.flags.refname)) {
+            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerkit_deploysource_id=${result.deploy_id}\n`, {flag:'a'});
+          } else {
+            fs.writeFileSync('.env', `sfpowerkit_deploysource_id=${result.deploy_id}\n`, {flag:'a'});
+          }
         }
         
         if (!result.result) {
