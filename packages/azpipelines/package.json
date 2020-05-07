@@ -1,11 +1,11 @@
 {
   "name": "@dxatscale/sfpowerscripts.azpipelines",
   "private": true,
-  "version": "13.0.5-alpha.0",
+  "version": "13.0.5-alpha.1",
   "description": "CI/CD extensions for Salesforce",
   "repository": {
     "type": "git",
-    "url": "https://github.com/accenture/sfpowerscripts.git" 
+    "url": "https://github.com/accenture/sfpowerscripts.git"
   },
   "keywords": [
     "vsts",

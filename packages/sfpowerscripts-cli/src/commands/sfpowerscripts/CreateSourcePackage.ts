@@ -2,6 +2,7 @@ import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import {exec} from "shelljs";
 const fs = require("fs");
+import {isNullOrUndefined} from "util"
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -15,8 +16,10 @@ export default class CreateSourcePackage extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx CreateSourcePackage -n packagename -v 1.5.10
-  `
+  `sfdx sfpowerscripts:CreateSourcePackage -n packagename -v 1.5.10\n` +
+  `Output variable:\n` +
+  `sfpowerscripts_artifact_metadata_directory\n` +
+  `<refname>_sfpowerscripts_artifact_metadata_directory`
   ];
 
   protected static requiresUsername = false;
@@ -25,7 +28,7 @@ export default class CreateSourcePackage extends SfdxCommand {
   protected static flagsConfig = {
     package: flags.string({required: true, char: 'n', description: messages.getMessage('packageFlagDescription')}),
     versionnumber: flags.string({required: true, char: 'v', description: messages.getMessage('versionNumberFlagDescription')}),
-    refname: flags.string({required: true, description: messages.getMessage('refNameFlagDescription')})
+    refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
   };
 
 
@@ -56,8 +59,11 @@ export default class CreateSourcePackage extends SfdxCommand {
   
       fs.writeFileSync(process.env.PWD + artifactFileName, JSON.stringify(metadata));
       
-      fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
-
+      if (!isNullOrUndefined(this.flags.refname)) {
+        fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+      } else {
+        fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+      }
       // AppInsights.trackTask("sfpwowerscripts-createsourcepackage-task");
       // AppInsights.trackTaskEvent("sfpwowerscripts-createsourcepackage-task","source_package_created");
   
