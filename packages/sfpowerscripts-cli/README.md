@@ -29,6 +29,40 @@ EXAMPLE
 
 ...
 ```
+
+## Output variables
+Many of the commands listed below will output variables which may be consumed as inputs to other tasks. The output variables are written to an environment file `.env` in a `key=value` format. A `readVars.sh` helper script is included as part of this package that can be used to read the values stored in the `.env` file and export them as environment variables.
+
+One method of making the helper script globally invocable, is to install the NPM module as follows:
+```
+  $ npm install -g @dxatscale/sfpowerscripts
+```
+The script is then invocable as `source readVars` from the command-line.
+
+If you're using a Docker image as part of your build process, you could also `COPY` the script into the image and link it to `$PATH`.
+
+The following code snippet is an example of how output variables may be used.
+```
+$ sfdx sfpowerscripts:CreateDeltaPackage -n mypackage -r 61635fb -t 3cf01b9 -v 1.2.10 -b
+$ source readVars
+$ sfdx sfpowerscripts:DeploySource -u scratchorg --sourcedir ${sfpowerscripts_delta_package_path} -c
+```
+### Reference name
+Commands that output variables optionally accept a `--refname` flag that prefixes output variables with a user-specified string. The prefix is intended as a variable namespace that allows the same command to be invoked multiple times without overwriting the output variables.
+
+```
+$ sfdx sfpowerscripts:CreateUnlockedPackage --refname core -n core_package -b -x -v DevHub
+$ sfdx sfpowerscripts:CreateUnlockedPackage --refname utility -n utility_package -b -x -v Devhub
+
+$ source readVars
+$ echo $core_sfpowerscripts_package_version_id
+  04t2v000007X2YRAA0
+$ echo $utility_sfpowerscripts_package_version_id
+  04t2v000007X2YWAA0
+
+```
+
+
 <!-- usagestop -->
   ## Commands
   <!-- commands -->
@@ -98,7 +132,7 @@ OPTIONS
                                                                                      PMD to be used for static analysis
 
 EXAMPLE
-  sfdx sfpowerscripts:AnalyzeWithPMD -b
+  $ sfdx sfpowerscripts:AnalyzeWithPMD -b
   Output variable:
   sfpowerscripts_pmd_output_path
   <refname>_sfpowerscripts_pmd_output_path
@@ -161,7 +195,7 @@ OPTIONS
                                                                                     output variables
 
 EXAMPLE
-  sfdx sfpowerscripts:CreateDeltaPackage -n packagename -r 61635fb -t 3cf01b9 -v 1.2.10 -b
+  $ sfdx sfpowerscripts:CreateDeltaPackage -n packagename -r 61635fb -t 3cf01b9 -v 1.2.10 -b
   Output variable:
   sfpowerscripts_delta_package_path
   <refname>_sfpowerscripts_delta_package_path
@@ -198,7 +232,7 @@ OPTIONS
       Reference name to be prefixed to output variables
 
 EXAMPLE
-  sfdx sfpowerscripts:CreateSourcePackage -n packagename -v 1.5.10
+  $ sfdx sfpowerscripts:CreateSourcePackage -n packagename -v 1.5.10
   Output variable:
   sfpowerscripts_artifact_metadata_directory
   <refname>_sfpowerscripts_artifact_metadata_directory
@@ -269,7 +303,7 @@ OPTIONS
       [default: 120] wait time for command to finish in minutes
 
 EXAMPLE
-  sfdx sfpowerscripts:CreateUnlockedPackage -n packagealias -b -x -v HubOrg --tag tagname
+  $ sfdx sfpowerscripts:CreateUnlockedPackage -n packagealias -b -x -v HubOrg --tag tagname
   Output variable:
   sfpowerscripts_package_version_id
   <refname>_sfpowerscripts_package_version_id
@@ -310,7 +344,7 @@ OPTIONS
       [default: warn] logging level for this command invocation
 
 EXAMPLES
-  sfdx sfpowerscripts:DeployDestructiveManifest -u scratchorg -m Text -t "<?xml version="1.0" encoding="UTF-8"?>
+  $ sfdx sfpowerscripts:DeployDestructiveManifest -u scratchorg -m Text -t "<?xml version="1.0" encoding="UTF-8"?>
   <Package
   xmlns="http://soap.sforce.com/2006/04/metadata"><types><members>myobject__c</members><name>CustomObject</name></types>
   </Package>"
@@ -371,7 +405,7 @@ OPTIONS
       [default: 20] wait time for command to finish in minutes
 
 EXAMPLE
-  sfdx sfpowerscripts:DeploySource -u scratchorg --sourcedir force-app -c
+  $ sfdx sfpowerscripts:DeploySource -u scratchorg --sourcedir force-app -c
   Output variable:
   sfpowerkit_deploysource_id
   <refname_sfpowerkit_deploysource_id
@@ -417,7 +451,7 @@ OPTIONS
                                                                                     output variables
 
 EXAMPLE
-  sfdx sfpowerscripts:ExportSource -u scratchorg -d metadata -x -e
+  $ sfdx sfpowerscripts:ExportSource -u scratchorg -d metadata -x -e
   Output variable:
   sfpowerscripts_exportedsource_zip_path
   <refname>_sfpowerscripts_exportedsource_zip_path
@@ -465,7 +499,7 @@ OPTIONS
       [default: BuildNumber] Select the segment of the version
 
 EXAMPLE
-  sfdx IncrementBuildNumber --segment BuildNumber -n packagename -c
+  $ sfdx IncrementBuildNumber --segment BuildNumber -n packagename -c
   Output variable:
   sfpowerscripts_incremented_project_version
   <refname>_sfpowerscripts_incremented_project_version
@@ -524,7 +558,7 @@ OPTIONS
                                                                                     to finish in minutes
 
 EXAMPLE
-  sfdx InstallUnlockedPackage -n packagename -u sandboxalias -i
+  $ sfdx InstallUnlockedPackage -n packagename -u sandboxalias -i
 ```
 
 _See code: [lib/commands/sfpowerscripts/InstallUnlockedPackage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/InstallUnlockedPackage.js)_
@@ -568,7 +602,7 @@ OPTIONS
                                                                                      to finish in minutes
 
 EXAMPLE
-  sfdx TriggerApexTest -u scratchorg -l RunLocalTests -s
+  $ sfdx TriggerApexTest -u scratchorg -l RunLocalTests -s
 ```
 
 _See code: [lib/commands/sfpowerscripts/TriggerApexTest.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/TriggerApexTest.js)_
@@ -597,7 +631,7 @@ OPTIONS
                                                                                     this command invocation
 
 EXAMPLE
-  sfdx sfpowerscripts:ValidateApexCoverage -u scratchorg -t 80
+  $ sfdx sfpowerscripts:ValidateApexCoverage -u scratchorg -t 80
 ```
 
 _See code: [lib/commands/sfpowerscripts/ValidateApexCoverage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/ValidateApexCoverage.js)_
