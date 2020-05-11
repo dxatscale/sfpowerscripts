@@ -32,7 +32,7 @@ This task when used in a build pipeline features a report window that gets displ
 
 id: sfpwowerscripts-analyzewithpmd-task
 
-version: 4.3.10
+version: 5.0.9
 
 **Input Variables**
 
@@ -77,6 +77,7 @@ Select this option if you want the build to be failed, if PMD observes any criti
 
 **Changelog**
 
+* 5.0.9 Refactored to use revamped folder structure
 * 4.3.10 Minor Fixes for buffer size 
 * 4.3.0  Updated with minor changes for the data to be displayed in PMD Analysis Tab
 * 4\.0.1 Updated with Telemetry

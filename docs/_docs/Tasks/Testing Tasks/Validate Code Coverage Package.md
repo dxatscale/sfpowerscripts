@@ -20,7 +20,7 @@ Please note [Install SFDX with Sfpowerkit](/Tasks/Common-Utility-Tasks/Install%2
 
 id: sfpwowerscript-validatetestcoveragepackage-task
 
-version: 1.0.0
+version: 3.0.9
 
 **\*Input Variables&nbsp; - Visual Designer Labels (Yaml variables)**
 
@@ -50,5 +50,6 @@ None
 
 **Changelog**
 
+* 3.0.9 Refactored to use revamped folder structure
 * 2.0.1 Updated with telemetry
 * 1.0.0 Initial Version

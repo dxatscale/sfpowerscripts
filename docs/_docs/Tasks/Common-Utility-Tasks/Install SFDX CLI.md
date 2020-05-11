@@ -16,7 +16,7 @@ Please note this task is not supported in Hosted Mac Agents as of now
 
 id: sfpwowerscript-installsfdx-task
 
-version: 5.0.3
+version: 6.0.5
 
 **Input Variables \[Visual Designer Labels / Yaml variables\]**
 
@@ -49,6 +49,7 @@ None
 
 **Changelog**
 
+* 6.0.5 Refactored to use revamped folder structure
 * 5.0.3 Minor formatting fixes
 * 5.0.0 Add support for overriding api version to be used in commands
 * 4.0.5 Introduce support to work on Hosted Windows Agents and also support installation of additional plugins

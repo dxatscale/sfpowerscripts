@@ -13,7 +13,7 @@ This task is used to export the complete metadata (in source format) from a give
 
 id: sfpowerscript-exportsourcefromorg-task
 
-version: 1.0.2
+version: 2.0.9
 
 **Input Variables \[Visual Designer Labels / Yaml variables\]**
 
@@ -55,4 +55,5 @@ None
 
 **Changelog**
 
+* 2.0.9 Refactored to use revamped folder structure
 * 1.0.2 Initial Version

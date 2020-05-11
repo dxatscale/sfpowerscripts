@@ -15,7 +15,7 @@ Please note [Install SFDX with Sfpowerkit](/Tasks/Common-Utility-Tasks/Install%2
 
 id: sfpwowerscript-validateapextestcoverage-task
 
-version: 2.0.1
+version: 3.0.9
 
 
 **Input Variables***

@@ -23,7 +23,7 @@ Please note [Install SFDX with Sfpowerkit](/Tasks/Common-Utility-Tasks/Install%2
 
 id: sfpwowerscript-managescratchorg-task
 
-version: 5.0.2
+version: 7.0.4
 
 **Input Variables**
 
@@ -84,6 +84,7 @@ Provide the repo path for the working directory in a releaase pipeline
 
 **Changelog**
 
+* 7.0.4 Refactored to use revamped folder structure
 * 5.0.2 Minor Logging fixes
 * 5.0.1 Added option to review the created Scratch Org in Summary Tab, Scratch Org cleanup without using an additional delete task, automatically handled by as a post execution step
 * 4.1.1 Updated with Telemetry

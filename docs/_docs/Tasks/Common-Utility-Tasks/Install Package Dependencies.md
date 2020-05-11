@@ -18,7 +18,7 @@ Please&nbsp; note [Install SFDX with Sfpowerkit&nbsp;](/Tasks/Common-Utility-Tas
 
 id: sfpowerscript-installpackagedependencies-task
 
-version: 2.0.1
+version: 3.0.9
 
 **Input Variables&nbsp; - Visual Designer Labels (Yaml variables)**
 
@@ -64,5 +64,6 @@ None
 
 **Changelog**
 
-* 2\.0.1 Updated with Telemetry
-* 1\.8.0 Initial Version
+* 3.0.9 Refactored to use revamped folder structure
+* 2.0.1 Updated with Telemetry
+* 1.8.0 Initial Version

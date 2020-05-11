@@ -34,7 +34,7 @@ Please note [Install SFDX with Sfpowerkit](/Tasks/Common-Utility-Tasks/Install%2
 
 id: sfpwowerscript-authenticateorg-task
 
-version: 7.0.0
+version:  8.0.5
 
 **Input Variables \[Visual Designer Labels / Yaml variables\]**
 
@@ -92,6 +92,8 @@ JWT based authentication is the preferred approach and it is intendended for CI/
 
 **Changelog**
 
+
+* 8.0.5 Refactored to use revamped folder structure
 * 7.0.0 Add clarity for Dehub/Production for authentication
 * 6.0.0 Support Service Connection based Authentication
 * 5.2.0 Updated to work on Hosted Windows Agents

@@ -16,7 +16,7 @@ This task is used to create a build artifact for a source based repo (org deploy
 
 id: sfpwowerscripts-createsourcepackage-task
 
-version: 6.0.0
+version: 7.0.5
 
 **Input Variables&nbsp; - Visual Designer Labels (Yaml variables)**
 
@@ -50,6 +50,7 @@ None
 
 **Changelog**
 
+* 7.0.5 Refactored to use revamped folder structure
 * 6.0.0 Support for creation of multiple packages in a single build such as in a MonoRepo
 * 5.1.0 Minor changes in artifact that is getting stored
 * 5.0.1 Updated with Telemetry

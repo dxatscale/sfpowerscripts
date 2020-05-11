@@ -15,7 +15,7 @@ This task is used to checkout the code to a particular commit id from a GIT repo
 
 id: sfpwowerscript-checkoutprojectfromartifact-task
 
-version: 10.0.7
+version: 11.0.5
 
 **Input Variables&nbsp; - Visual Designer Labels (Yaml variables)**
 
@@ -81,6 +81,7 @@ None
 
 **Changelog**
 
+* 11.0.5 Refactored to use revamped folder structure
 * 10.0.7 Add support for artifacts generated from a mono repo
 * 8.0.1  Patch issue with azure Repo
 * 8.0.0  Add support for Delta Packaging
