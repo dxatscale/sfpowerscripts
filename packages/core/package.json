@@ -10,7 +10,7 @@
   "scripts": {
     "build": "npm run clean && npm run compile",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
-    "compile": "tsc -b tsconfig.json"
+    "compile": "tsc -b tsconfig.json" 
   },
   "dependencies": {
     "fs-extra": "^8.1.0",
