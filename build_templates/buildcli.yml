@@ -123,7 +123,7 @@ steps:
             displayName: 'Increment PreRelease version'
             condition: and( eq( ${{ parameters.publish }},true ), eq( '${{ parameters.version }}','beta')  )
 
-          - script: 'npx lerna version ${{ parameters.bump }}  --no-push -m [skip ci] updating versions'
+          - script: 'npx lerna version ${{ parameters.bump }}  --no-push'
             displayName: 'Increment PreRelease version'
             condition: and( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}','prod'))
 
