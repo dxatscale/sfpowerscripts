@@ -16,7 +16,7 @@ This task is used to increment the version number of the package version provide
 
 id: sfpwowerscript-incrementversionnumber-task
 
-version: 7.0.2
+version: 8.0.0
 
 **Input Variables&nbsp; - Visual Designer Labels (Yaml variables)**
 
@@ -106,7 +106,7 @@ None
 
 **Changelog**
 
-* 7.0.2 Refactored to use revamped folder structure
+* 8.0.0 Refactored to use revamped folder structure
 * 5.0.2 Bugfix for [#119](https://github.com/azlamsalam/sfpowerscripts/issues/119)
 * 5.0.1 Support for appending the build number, rather than incremening it based on the last build number
 * 4.0.0 Support for post increment, push the commited changes to repository 

@@ -17,7 +17,9 @@ changed_files=$files
         case $BASE_DIRECTORY in	            
           "azpipelines")
               echo "Files changed in AzurePipelines"	 
+              echo "##vso[task.setvariable variable=isCoreUpdated;isOutput=true]true"
               echo "##vso[task.setvariable variable=isAzurePipelinesUpdated;isOutput=true]true"
+              echo "##vso[task.setvariable variable=isCLIUpdated;isOutput=true]true"
             ;;
           "core")	 
               echo "Files changed in Core"	 
@@ -27,6 +29,8 @@ changed_files=$files
             ;;	
          "sfpowerscripts-cli")	
               echo "Files changed in UI-components"	
+              echo "##vso[task.setvariable variable=isCoreUpdated;isOutput=true]true"
+              echo "##vso[task.setvariable variable=isAzurePipelinesUpdated;isOutput=true]true"
               echo "##vso[task.setvariable variable=isCLIUpdated;isOutput=true]true"
             ;; 
         esac

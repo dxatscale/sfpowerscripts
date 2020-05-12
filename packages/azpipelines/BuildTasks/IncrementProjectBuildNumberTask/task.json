@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "azlam.abdulsalam",
     "version": {
-        "Major": 7,
+        "Major": 8,
         "Minor": 0,
-        "Patch": 2
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -172,7 +172,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "IncrementProjectBuildNumberTask/IncrementProjectBuildNumber.js"
+            "target": "lib/IncrementProjectBuildNumberTask/IncrementProjectBuildNumber.js"
         }
     },
     "postjobexecution": {
