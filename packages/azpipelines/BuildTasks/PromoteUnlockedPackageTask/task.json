@@ -1,0 +1,76 @@
+{
+    "id": "21beb425-4c3e-4acd-9f6b-1134dd3ec6c1",
+    "name": "sfpwowerscript-promoteunlockedpackage-task",
+    "friendlyName": "Promote an Unlocked Package",
+    "description": "This taks is used to promote an unlocked package before installing into production, This task is part of DX@Scale/SFPowerscripts",
+    "helpMarkDown": "Read more info about the task at https://sfpowerscripts.com/tasks/packaging-tasks/promote%20an%20unlocked%20package/, Ensure the required prerequisite tasks are run before this taks is executed",
+    "category": "Build",
+    "author": "azlam.abdulsalam",
+    "version": {
+        "Major": 3,
+        "Minor": 0,
+        "Patch": 9
+    },
+    "runsOn": [
+        "Agent"
+    ],
+    "instanceNameFormat": "Promote version of package $(package) ",
+    "inputs": [
+        {
+            "name": "package",
+            "type": "string",
+            "label": "Name of the package to be promoted",
+            "required": true,
+            "helpMarkDown": "Name of the package to be promoted,for informational purpose"
+        },
+        {
+            "name": "packagepromotedfrom",
+            "type": "pickList",
+            "label": "Package to be promoted From",
+            "defaultValue": "BuildArtifact",
+            "options": {
+                "BuildArtifact": "Utilize the version id from the attached build artifact",
+                "Custom": "Pass the package version id as an argument "
+            },
+            "required": true,
+            "helpMarkDown": "Select the option from where the package version is to be picked up for promotion"
+        },
+        {
+            "name": "package_version_id",
+            "type": "string",
+            "label": "Package Version ID",
+            "required": false,
+            "helpMarkDown": "Set the pipeline's build number to the the project's incremented version number",
+            "visibleRule": "packagepromotedfrom = Custom"
+        },
+        {
+            "name": "artifact",
+            "type": "string",
+            "label": "Name of the artifact that is attached to this release pipeline",
+            "required": false,
+            "helpMarkDown": "Provide the name of the artifact which is the input to this pipeline. Please note only sfpowerkit based build artifact will work with this command",
+            "visibleRule": "packagepromotedfrom = BuildArtifact"
+        },
+        {
+            "name": "devhub_alias",
+            "type": "string",
+            "label": "Alias/Username of the devhub",
+            "defaultValue": "HubOrg",
+            "required": true,
+            "helpMarkDown": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
+        },
+        {
+            "name": "isTelemetryEnabled",
+            "type": "boolean",
+            "label": "Send Anonymous Usage Telemetry",
+            "defaultValue": true,
+            "required": true,
+            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
+        }
+    ],
+    "execution": {
+        "Node": {
+            "target": "lib/PromoteUnlockedPackageTask/PromoteUnlockedPackage.js"
+        }
+    }
+}

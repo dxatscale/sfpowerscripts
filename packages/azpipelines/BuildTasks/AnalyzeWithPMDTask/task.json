@@ -1,0 +1,112 @@
+{
+    "id": "2d221ae3-0f82-4cac-a269-ffcd98a72d96",
+    "name": "sfpwowerscripts-analyzewithpmd-task",
+    "friendlyName": "Run a static analysis of apex classes with PMD",
+    "description": "This task is used to run a static analysis of the apex classes and triggers using PMD,This task is part of SFPowerscripts, Please ensure Install SFDX Task is used before utilizing this task",
+    "helpMarkDown": "Utilizes PMD 6.18.0 to run a static analysis and attaches the output to the build artifact",
+    "category": "Build",
+    "author": "azlam.abdulsalam",
+    "version": {
+        "Major": 5,
+        "Minor": 0,
+        "Patch": 9
+    },
+    "instanceNameFormat": "Analyze $(directory) using PMD",
+    "inputs": [
+        {
+            "name": "directory",
+            "type": "string",
+            "label": "Source directory that needs to be analyzed",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The directory that is to be analzed using PMD, If omitted default project diretory as mentioned in sfdx-project.json will be used"
+        },
+        {
+            "name": "ruleset",
+            "type": "pickList",
+            "label": "Select the ruleset to be used for analysis",
+            "defaultValue": "sfpowerkit",
+            "options": {
+                "sfpowerkit": "sfpowerkit",
+                "Custom": "Custom"
+            },
+            "required": false,
+            "helpMarkDown": "Inbuilt is the default ruleset that comes with the task, If you choose custom, please provide the path to the ruleset"
+        },
+        {
+            "name": "rulesetpath",
+            "type": "string",
+            "label": "Path to the ruleset",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The path to the ruleset if you are utilizing your own ruleset",
+            "visibleRule": "ruleset = Custom"
+        },
+        {
+            "name": "format",
+            "type": "pickList",
+            "label": "Format for the static analysis to be displayed in the console and written to the result file",
+            "defaultValue": "text",
+            "options": {
+                "text": "text",
+                "textcolor": "textcolor",
+                "csv": "csv",
+                "emacs": "emacs",
+                "summaryhtml": "summaryhtml",
+                "html": "html",
+                "xml": "xml",
+                "xslt": "xslt",
+                "yahtml": "yahtml",
+                "vbhtml": "vbhtml",
+                "textpad": "textpad"
+            },
+            "required": false,
+            "helpMarkDown": "https://pmd.github.io/latest/pmd_userdocs_cli_reference.html#available-report-formats"
+        },
+        {
+            "name": "outputPath",
+            "type": "string",
+            "label": "Output file",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The file to which the output for static analysis will be written"
+        },
+        {
+            "name": "version",
+            "type": "string",
+            "label": "Version of the pmd to be used",
+            "defaultValue": "6.18.0",
+            "required": false,
+            "helpMarkDown": "The version of PMD to be used for static analysis"
+        },
+        {
+            "name": "isToBreakBuild",
+            "type": "boolean",
+            "label": "Report the build as failure if there is critical defects",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Enable this option if the build should be reported as failure if 1 or more critical defects are reported during the analysis"
+        },
+        {
+            "name": "project_directory",
+            "type": "string",
+            "label": "Project Directory",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed"
+        },
+        {
+            "name": "isTelemetryEnabled",
+            "type": "boolean",
+            "label": "Send Anonymous Usage Telemetry",
+            "defaultValue": true,
+            "required": true,
+            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
+        }
+    ],
+    "execution": {
+        "Node": {
+            "target": "lib/AnalyzeWithPMDTask/AnalyzeWithPMD.js"
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "sfpowerscripts.common",
+  "private": true,
+  "description": "common",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/azlamsalam/sfpowerscripts.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "azure-pipelines-task-lib": "^2.8.0",
+    "azure-devops-node-api": "7.2.0",
+    "shelljs": "^0.8.3",
+    "applicationinsights": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^12.7.2"
+  }
+}

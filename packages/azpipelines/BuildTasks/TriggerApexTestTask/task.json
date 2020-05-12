@@ -1,0 +1,95 @@
+{
+    "id": "2f57114d-c08b-4014-96d7-a8981a2dae9b",
+    "name": "sfpwowerscript-triggerapextest-task",
+    "friendlyName": "Trigger Apex Test in an Org",
+    "description": "Triggers an asynchronous apex unit  test in an org, This task is part of DX@Scale/SFPowerscripts",
+    "helpMarkDown": "",
+    "category": "Build",
+    "author": "azlam.abdulsalam",
+    "version": {
+        "Major": 6,
+        "Minor": 0,
+        "Patch": 4
+    },
+    "runsOn": [
+        "Agent"
+    ],
+    "instanceNameFormat": "Trigger Apex Tests in $(target_org)",
+    "inputs": [
+        {
+            "name": "target_org",
+            "type": "string",
+            "label": "Alias or username of the target org",
+            "defaultValue": "scratchorg",
+            "required": true,
+            "helpMarkDown": "Path in the current working directory containing  config file for the scratch org"
+        },
+        {
+            "name": "testlevel",
+            "type": "pickList",
+            "label": "Test Level",
+            "defaultValue": "RunLocalTests",
+            "options": {
+                "RunSpecifiedTests": "RunSpecifiedTests",
+                "RunApexTestSuite": "RunApexTestSuite",
+                "RunLocalTests": "RunLocalTests",
+                "RunAllTestsInOrg": "RunAllTestsInOrg"
+            },
+            "required": true,
+            "helpMarkDown": "The test level of the test that need to be executed when the code is to be deployed"
+        },
+        {
+            "name": "specified_tests",
+            "type": "string",
+            "label": "Tests to be executed",
+            "defaultValue": "",
+            "helpMarkDown": "comma-separated list of Apex test class names or IDs and, if applicable, test methods to run",
+            "required": true,
+            "visibleRule": "testlevel = RunSpecifiedTests"
+        },
+        {
+            "name": "apextestsuite",
+            "type": "string",
+            "label": "Apex Test Suite",
+            "defaultValue": "",
+            "helpMarkDown": "comma-separated list of Apex test suite names to run",
+            "required": true,
+            "visibleRule": "testlevel = RunApexTestSuite"
+        },
+        {
+            "name": "synchronous",
+            "type": "boolean",
+            "label": "Run tests from a single class synchronously",
+            "defaultValue": false,
+            "helpMarkDown": "Select an option if the tests are to be run synchronously",
+            "required": false
+        },
+        {
+            "name": "wait_time",
+            "type": "string",
+            "label": "Wait Time",
+            "defaultValue": "60",
+            "required": true,
+            "helpMarkDown": "wait time for command to finish in minutes"
+        },
+        {
+            "name": "isTelemetryEnabled",
+            "type": "boolean",
+            "label": "Send Anonymous Usage Telemetry",
+            "defaultValue": true,
+            "required": true,
+            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
+        }
+    ],
+    "execution": {
+        "Node": {
+            "target": "lib/TriggerApexTestTask/TriggerApexTest.js"
+        }
+    },
+    "postjobexecution": {
+        "Node": {
+            "target": "lib/TriggerApexTestTask/PostTriggerApexTest.js",
+            "argumentFormat": ""
+        }
+    }
+}

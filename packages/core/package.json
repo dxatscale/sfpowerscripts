@@ -1,0 +1,38 @@
+{
+  "name": "@dxatscale/sfpowerscripts.core",
+  "version": "0.0.30-alpha.0",
+  "description": "Core Module used by sfpowerscripts",
+  "main": "lib/index",
+  "types": "lib/index",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "npm run clean && npm run compile",
+    "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
+    "compile": "tsc -b tsconfig.json" 
+  },
+  "dependencies": {
+    "fs-extra": "^8.1.0",
+    "rimraf": "^3.0.2",
+    "unzip-stream": "0.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Accenture/sfpowerscripts.git"
+  },
+  "keywords": [
+    "sfdx",
+    "cli",
+    "ci/cd"
+  ],
+  "author": "dxatscale",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Accenture/sfpowerscripts/issues"
+  },
+  "homepage": "https://github.com/Accenture/sfpowerscripts#readme",
+  "devDependencies": {
+    "@types/node": "^13.13.0"
+  }
+}

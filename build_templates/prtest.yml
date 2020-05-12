@@ -1,0 +1,104 @@
+parameters:
+   - name: name
+     default: 'TestPrOnLinux'
+
+   - name: repositoryToCheckout
+     type: string
+     default: 'forcedi' 
+
+   - name: directory
+     type: string
+     default: 'force-app' 
+    
+   - name: image
+     type: string
+     default: 'ubuntu-latest'
+
+   - name: dependOnJob
+     type: string
+     default: 'WaitPluginToInstallonDevelopment'
+
+   - name: service_connection
+     type: string
+     default: ''
+
+
+jobs:
+    - job: ${{ parameters.name }}
+      displayName: 'Test PR Pipleine  on ${{ parameters.image }}'
+      pool:
+        vmImage: '${{ parameters.image }}'
+      dependsOn: ${{ parameters.dependOnJob }}
+      steps:
+ 
+        - checkout: ${{ parameters.repositoryToCheckout }}
+ 
+        - task: sfpwowerscript-installsfdx-task@5
+          displayName: Install SFDX
+    
+        - task: sfpwowerscript-validatedxunlockedpackage-task@2
+          displayName: Validates Package for MetadataCoverage
+          inputs:
+            package: ${{ parameters.directory }}
+            isTelemetryEnabled: true
+        
+        - task: sfpwowerscripts-analyzewithpmd-task@4
+          displayName: Analyze Code with PMD
+          inputs:
+            directory:  ${{ parameters.directory }}
+            version: '6.21.0'
+            isTelemetryEnabled: true
+ 
+        - task: sfpwowerscript-authenticateorg-task@7
+          displayName: Authenticate DevHub
+          inputs:
+            method: 'ServiceConnection'
+            salesforce_connection: '${{ parameters.service_connection }}'
+            alias: 'HubOrg'
+            isTelemetryEnabled: true
+         
+        - task: sfpwowerscript-managescratchorg-task@5
+          displayName: Create Scratch Org
+          inputs:
+           action: 'Create'
+           config_file_path: 'config/project-scratch-def.json'
+           alias: 'scratchorg'
+           devhub_alias: 'HubOrg'
+           maintainorg: 'delete'
+           isTelemetryEnabled: true
+       
+        - task: sfpowerscript-installpackagedependencies-task@2
+          displayName: 'Install Package Dependencies to a target org'
+          inputs:
+            apexcompileonlypackage: true
+            target_org: 'scratchorg'
+            devhub_alias: 'HubOrg'
+         
+        - task: sfpowerscript-deploysourcetoorg-task@6
+          displayName: Deploy to  Scratch Org
+          inputs:
+            target_org: 'scratchorg'
+            source_directory:  ${{ parameters.directory }}
+            wait_time: '20'
+            testlevel: 'NoTestRun'
+            checkonly: false
+            isToBreakBuildIfEmpty: true
+            isTelemetryEnabled: true
+ 
+        
+        - task: sfpwowerscript-triggerapextest-task@4
+          displayName: Trigger Apex Test Task
+          continueOnError: true
+          inputs:
+           target_org: 'scratchorg'
+           testlevel: 'RunLocalTests'
+           wait_time: '60'
+           isTelemetryEnabled: true
+   
+        - task: sfpwowerscript-validateapextestcoverage-task@2
+          displayName: Validate Apex Test Coverage
+          inputs:
+              target_org: 'scratchorg'
+              test_coverage: '36'
+              isTelemetryEnabled: true
+ 

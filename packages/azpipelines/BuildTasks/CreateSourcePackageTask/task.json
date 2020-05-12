@@ -1,0 +1,57 @@
+{
+    "id": "50de2eba-73bc-4cd6-82bc-89853925830c",
+    "name": "sfpwowerscripts-createsourcepackage-task",
+    "friendlyName": "Creates a new  version of  Source Based Repo",
+    "description": "Creates a new  version of  Source Based Repo ,This task is part of DX@Scale/SFPowerscripts",
+    "helpMarkDown": "This task simulates a packaging experience similar to unlocking packaging, just by writing the commit id to an artifact. It is basically to help with the release pipelines",
+    "category": "Build",
+    "author": "azlam.abdulsalam",
+    "version": {
+        "Major": 7,
+        "Minor": 0,
+        "Patch": 5
+    },
+    "runsOn": [
+        "Agent"
+    ],
+    "instanceNameFormat": "Creates a new version of source baed repo for $(package)",
+    "inputs": [
+        {
+            "name": "package",
+            "type": "string",
+            "label": "Name of the package",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "The name of the package"
+        },
+        {
+            "name": "version_number",
+            "type": "string",
+            "label": "the version number of the package to be crated",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task"
+        },
+        {
+            "name": "project_directory",
+            "type": "string",
+            "label": "Project Directory",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed"
+        },
+        {
+            "name": "isTelemetryEnabled",
+            "type": "boolean",
+            "label": "Send Anonymous Usage Telemetry",
+            "defaultValue": true,
+            "required": true,
+            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
+        }
+    ],
+    "execution": {
+        "Node": {
+            "target": "lib/CreateSourcePackageTask/CreateSourcePackage.js"
+        }
+    }
+}

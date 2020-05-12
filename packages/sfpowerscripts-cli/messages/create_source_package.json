@@ -1,0 +1,6 @@
+{
+    "commandDescription": "This task simulates a packaging experience similar to unlocking packaging, just by writing the commit id to an artifact. It is basically to help with the release pipelines",
+    "packageFlagDescription": "The name of the package",
+    "versionNumberFlagDescription": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task",
+    "refNameFlagDescription": "Reference name to be prefixed to output variables"
+}

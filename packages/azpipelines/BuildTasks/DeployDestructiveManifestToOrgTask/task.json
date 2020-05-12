@@ -1,0 +1,70 @@
+{
+    "id": "a4bacb30-9a0c-45fe-8e6d-539dbd32d2ab",
+    "name": "sfpwowerscript-deploydestructivemanifest-task",
+    "friendlyName": "Deploy Destructive Manifest To the provided org",
+    "description": "Deploy destructive manifest to an authenticated org, This task is part of SFPowerscripts",
+    "helpMarkDown": "An empty package.xml will be automatically created, Read more about the task at  https://sfpowerscripts.com/tasks/deployment-tasks/deploy-destructive-maifest-to-an-org/",
+    "category": "Build",
+    "author": "azlam.abdulsalam",
+    "version": {
+        "Major": 3,
+        "Minor": 0,
+        "Patch": 9
+    },
+    "runsOn": [
+        "Agent"
+    ],
+    "instanceNameFormat": "Deploy destructive manifest to $(target_org)",
+    "inputs": [
+        {
+            "name": "target_org",
+            "type": "string",
+            "label": "Alias or username of the target org",
+            "defaultValue": "scratchorg",
+            "required": true,
+            "helpMarkDown": "Alias or username of the target org where the code should be deployed"
+        },
+        {
+            "name": "method",
+            "type": "pickList",
+            "label": "Destructive Manifest Location",
+            "defaultValue": "Text",
+            "options": {
+                "Text": "Text",
+                "FilePath": "FilePath"
+            },
+            "required": true,
+            "helpMarkDown": "If text is specified, add the members in the next field, if URL, pass in the location of the destructiveChanges.xml such as the raw git url"
+        },
+        {
+            "name": "destructive_manifest_text",
+            "type": "multiLine",
+            "label": "Enter the destructive manifest",
+            "defaultValue": "",
+            "helpMarkDown": "Type in the destructive manifest, follow the instructions, https://developer.salesforce.com/docs/atlas.en-us.daas.meta/daas/daas_destructive_changes.htm ",
+            "visibleRule": "method = Text"
+        },
+        {
+            "name": "destructive_manifest_filepath",
+            "type": "string",
+            "label": "The path to the destructive manifest xml",
+            "defaultValue": "",
+            "helpMarkDown": "The location to the xml file which contains the destructive changes",
+            "visibleRule": "method = FilePath"
+        },
+        {
+            "name": "isTelemetryEnabled",
+            "type": "boolean",
+            "label": "Send Anonymous Usage Telemetry",
+            "defaultValue": true,
+            "required": true,
+            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
+        }
+    ],
+    "OutputVariables": [],
+    "execution": {
+        "Node": {
+            "target": "lib/DeployDestructiveManifestToOrgTask/DeployDestructiveManifestToOrg.js"
+        }
+    }
+}

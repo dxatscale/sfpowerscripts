@@ -1,0 +1,25 @@
+{
+  "name": "sfpowerscripts-authenticateorg-task",
+  "description": "sfpowerscripts-authenticateorg-task",
+  "version": "8.0.5",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/azlamsalam/sfpowerscripts.git"
+  },
+  "scripts": {
+    "version": "node ../../versionupdate.js && git add task.json",
+    "build": "rimraf lib && tsc -b"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "applicationinsights": "^1.6.0",
+    "azure-devops-node-api": "7.2.0",
+    "azure-pipelines-task-lib": "^2.8.0",
+    "fs-extra": "^8.1.0",
+    "nanoid": "^2.1.8"
+  },
+  "devDependencies": {
+    "@types/node": "^12.7.2"
+  }
+}

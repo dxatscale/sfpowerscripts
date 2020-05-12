@@ -1,0 +1,132 @@
+{
+    "id": "7af1df5d-8a5a-4eaa-9df1-968393c43397",
+    "name": "sfpwowerscript-installunlockedpackage-task",
+    "friendlyName": "Install an unlocked package to an org",
+    "description": "Installs an unlocked package to an org",
+    "helpMarkDown": "Installs an unlocked package by passing the build artifact or by passing the package version id",
+    "category": "Deploy",
+    "author": "azlam.abdulsalam",
+    "version": {
+        "Major": 8,
+        "Minor": 0,
+        "Patch": 9
+    },
+    "runsOn": [
+        "Agent"
+    ],
+    "instanceNameFormat": "Install a version of  $(package) to $(envname) ",
+    "inputs": [
+        {
+            "name": "envname",
+            "type": "string",
+            "label": "Alias or username of the target environment",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Alias/Target User Name of the environment"
+        },
+        {
+            "name": "package",
+            "type": "string",
+            "label": "Name of the package to be installed",
+            "required": true,
+            "helpMarkDown": "Name of the package to be installed"
+        },
+        {
+            "name": "packageinstalledfrom",
+            "type": "pickList",
+            "label": "Package to be installed From",
+            "defaultValue": "BuildArtifact",
+            "options": {
+                "BuildArtifact": "Utilize the attached build artifact",
+                "Custom": "Pass the package version id as an argument "
+            },
+            "required": true,
+            "helpMarkDown": "Select the option from where the package version is to be picked up for install"
+        },
+        {
+            "name": "package_version_id",
+            "type": "string",
+            "label": "Package Version ID",
+            "required": false,
+            "helpMarkDown": "Set the pipeline's build number to the the project's incremented version number",
+            "visibleRule": "packageinstalledfrom = Custom"
+        },
+        {
+            "name": "artifact",
+            "type": "string",
+            "label": "Name of the source alias of the artifact that is attached to this release pipeline",
+            "required": false,
+            "helpMarkDown": "Provide the name of the artifact which is the input to this pipeline. Please note only sfpowerkit based build artifact will work with this command",
+            "visibleRule": "packageinstalledfrom = BuildArtifact"
+        },
+        {
+            "name": "installationkey",
+            "type": "string",
+            "label": "Installation Key",
+            "required": false,
+            "helpMarkDown": "installation key for key-protected package (default: null)"
+        },
+        {
+            "name": "apexcompileonlypackage",
+            "type": "boolean",
+            "label": "Compile Apex from only the package",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Each package installation triggers a compilation of apex,uncheck to trigger entire org compilation on every package installation"
+        },
+        {
+            "name": "security_type",
+            "type": "pickList",
+            "label": "Security access type for the installed package",
+            "defaultValue": "AllUsers",
+            "options": {
+                "AllUsers": "AllUsers",
+                "AdminsOnly": "AdminsOnly"
+            },
+            "required": true,
+            "helpMarkDown": "Select the security access for the package installation"
+        },
+        {
+            "name": "upgrade_type",
+            "type": "pickList",
+            "label": "Upgrade type for the installed package",
+            "defaultValue": "Mixed",
+            "options": {
+                "Mixed": "Mixed",
+                "DeprecateOnly": "DeprecateOnly",
+                "Delete": "Delete"
+            },
+            "required": true,
+            "helpMarkDown": "the upgrade type for the package installation"
+        },
+        {
+            "name": "wait_time",
+            "type": "string",
+            "label": "Wait Time",
+            "defaultValue": "120",
+            "required": false,
+            "helpMarkDown": "wait time for command to finish in minutes"
+        },
+        {
+            "name": "publish_wait_time",
+            "type": "string",
+            "label": "Publish Wait Time",
+            "defaultValue": "10",
+            "required": false,
+            "helpMarkDown": "number of minutes to wait for subscriber package version ID to become available in the target org"
+        },
+        {
+            "name": "isTelemetryEnabled",
+            "type": "boolean",
+            "label": "Send Anonymous Usage Telemetry",
+            "defaultValue": true,
+            "required": true,
+            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
+        }
+    ],
+    "execution": {
+        "Node": {
+            "target": "lib/InstallUnlockedPackageTask/InstallUnlockedPackage.js"
+        }
+    }
+}
