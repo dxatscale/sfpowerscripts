@@ -145,7 +145,7 @@ stages:
     displayName: 'Build and Deploy Azure Pipelines Extension'
     dependsOn: BuildCLI
     condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
-    timeoutInMinutes: 10
+    timeoutInMinutes: 20
     pool:
       vmImage: 'windows-latest'
     environment: alpha
@@ -193,7 +193,7 @@ stages:
     displayName: 'Build and Deploy Azure Pipelines Extension'
     dependsOn: BuildCLI
     condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
-    timeoutInMinutes: 10
+    timeoutInMinutes: 20
     pool:
       vmImage: 'windows-latest'
     environment: beta
@@ -240,7 +240,7 @@ stages:
     displayName: 'Build and Deploy Azure Pipelines Extension'
     dependsOn: BuildCLI
     condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
-    timeoutInMinutes: 10
+    timeoutInMinutes: 30
     pool:
       vmImage: 'windows-latest'
     environment: prod

@@ -3,7 +3,7 @@
     "id": "sfpowerscripts-beta",
     "publisher": "AzlamSalam",
     "name": "sfpowerscripts (beta)",
-    "version": "13.8000.9",
+    "version": "13.8000.10",
     "description": "Azure Pipelines tasks for working with Salesforce",
     "tags": [
         "Extension",
