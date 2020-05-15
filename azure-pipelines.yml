@@ -72,7 +72,7 @@ stages:
     condition: and(succeeded('InstallNodeModules'), or( eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ),  eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'], true )  ))
     variables:
       isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
-    timeoutInMinutes: 10
+    timeoutInMinutes: 40
     pool:
       vmImage: 'windows-latest'
     environment: review
