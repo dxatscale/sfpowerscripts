@@ -106,6 +106,7 @@ None
 
 **Changelog**
 
+* 8.0.1 Bugfix for Increment Task
 * 8.0.0 Refactored to use revamped folder structure
 * 5.0.2 Bugfix for [#119](https://github.com/azlamsalam/sfpowerscripts/issues/119)
 * 5.0.1 Support for appending the build number, rather than incremening it based on the last build number
