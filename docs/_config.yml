@@ -11,9 +11,9 @@ show_full_navigation: true
 logo: /siteicon.png
 description: SFPowerscripts - CI/CD for Salesforce utilizing Azure Pipelines
 author:
-  name: Azlam Abdulsalam
-  email: azlamnet@gmail.com
-  twitter: azlus
+  name: DXatScale
+  email: dxatscale@accenture.com
+  twitter: dxatscale
 social:
   name: 
   links:
