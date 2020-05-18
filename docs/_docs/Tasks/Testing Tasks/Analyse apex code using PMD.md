@@ -10,19 +10,15 @@ This task is used to run a static analyis of the apex classes in a project direc
 
 Please&nbsp; note [Install SFDX with Sfpowerkit&nbsp;](/Tasks/Common-Utility-Tasks/Install%20SFDX%20CLI/) task is added to the pipeline before utilizing this task
 
-
-
 **Task Snapshot**
 
 **![](/images/Analyze apex classes using pmd .png){: width="929" height="587"}**
 
-This task attaches the code analysis result into the build artifacts and also provides a timeline update in the build summary page. Please note this enahancement only works with 'Classic' pipelines only
+This task attaches the code analysis result into the build artifacts and also provides a timeline update in the build summary page. Please note this enahancement only works with ‘Classic’ pipelines only
 
 ![](/images/Build Analysis Summary.PNG){: width="1509" height="667"}
 
-
-This task when used in a build pipeline features a report window that gets displayed along with the logs. Please note there
-**![](/images/PMDDashbboard.png){: width="929" height="587"}**
+This task when used in a build pipeline features a report window that gets displayed along with the logs. Please note there **![](/images/PMDDashbboard.png){: width="929" height="587"}**
 
 &nbsp;
 
@@ -42,7 +38,7 @@ The directory that needs to be analyzed, If ignored, the sfpowerkit plugin will 
 
 * **Select the ruleset to be used for analysis(ruleset)**
 
-sfpowerkit comes with a default ruleset, Select the picklist to 'custom' if you want to utilize your own ruleset
+sfpowerkit comes with a default ruleset, Select the picklist to ‘custom’ if you want to utilize your own ruleset
 
 * **Path to the ruleset(rulesetpath)**
 
@@ -58,7 +54,7 @@ Provide the name or path to the file if you want the report to be saved to a par
 
 * **Report the build as failure if there is critical defects(isToBreakBuild)**
 
-Select this option if you want the build to be failed, if PMD observes any critical directory
+Select this option if you want the build to be failed, if PMD observes any critical defects in the code being analyzed
 
 * **Project Directory (project\_directory)**
 
@@ -66,19 +62,18 @@ Select this option if you want the build to be failed, if PMD observes any criti
 
 * **Send Anonymous Usage Telemetry (isTelemetryEnabled)**
 
-   Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
-
+  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
 
 **Output Variables**
 
 **Control Options**
 
-**Gotcha's**
+**Gotcha’s**
 
 **Changelog**
 
-* 5.0.9 Refactored to use revamped folder structure
-* 4.3.10 Minor Fixes for buffer size 
-* 4.3.0  Updated with minor changes for the data to be displayed in PMD Analysis Tab
+* 5\.0.9 Refactored to use revamped folder structure
+* 4\.3.10 Minor Fixes for buffer size
+* 4\.3.0 Updated with minor changes for the data to be displayed in PMD Analysis Tab
 * 4\.0.1 Updated with Telemetry
 * 3\.1.0 Initial Version
