@@ -143,7 +143,7 @@ stages:
 
   - deployment: BuildAzPipelines
     displayName: 'Build and Deploy Azure Pipelines Extension'
-    dependsOn: BuildCLI
+    dependsOn: InstallNodeModules
     condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
     timeoutInMinutes: 20
     pool:
@@ -191,7 +191,7 @@ stages:
 
   - deployment: BuildAzPipelines
     displayName: 'Build and Deploy Azure Pipelines Extension'
-    dependsOn: BuildCLI
+    dependsOn: InstallNodeModules
     condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
     timeoutInMinutes: 20
     pool:
