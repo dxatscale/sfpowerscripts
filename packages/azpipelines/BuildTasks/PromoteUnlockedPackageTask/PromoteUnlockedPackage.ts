@@ -11,6 +11,9 @@ async function run() {
     const package_installedfrom = tl.getInput("packagepromotedfrom", true);
     const sfdx_package: string = tl.getInput("package", true);
     let devhub_alias = tl.getInput("devhub_alias", true);
+    const projectDirectory = tl.getInput("project_directory", false);
+
+    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", false));
 
     let package_version_id;
 
@@ -58,7 +61,7 @@ async function run() {
 
  
 
-    let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
+    let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(projectDirectory,
       package_version_id,
       devhub_alias
     );
@@ -68,7 +71,7 @@ async function run() {
     AppInsights.trackTask("sfpwowerscript-promoteunlockedpackage-task");
     AppInsights.trackTaskEvent(
       "sfpwowerscript-promoteunlockedpackage-task",
-      "package_oromoted"
+      "package_promoted"
     );
   } catch (err) {
     AppInsights.trackExcepiton(

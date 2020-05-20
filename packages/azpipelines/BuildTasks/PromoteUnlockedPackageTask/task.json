@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "azlam.abdulsalam",
     "version": {
-        "Major": 3,
+        "Major": 4,
         "Minor": 0,
-        "Patch": 10
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -52,6 +52,14 @@
             "visibleRule": "packagepromotedfrom = BuildArtifact"
         },
         {
+            "name": "project_directory",
+            "type": "string",
+            "label": "Project Directory",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed"
+        },
+        {
             "name": "devhub_alias",
             "type": "string",
             "label": "Alias/Username of the devhub",
@@ -63,7 +71,7 @@
             "name": "isTelemetryEnabled",
             "type": "boolean",
             "label": "Send Anonymous Usage Telemetry",
-            "defaultValue": true,
+            "defaultValue": false,
             "required": true,
             "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
         }

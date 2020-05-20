@@ -2,7 +2,7 @@
   <img alt="sfpowerscripts" src="https://repository-images.githubusercontent.com/248449736/5d08c600-728e-11ea-8267-ae1aceebea60" width="480" height="400">
 </p>
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/b9ffe05d-af14-461e-bfc5-909ea0d7451f/deploy-status)](https://app.netlify.com/sites/sfpowerscripts/deploys) [![Build Status](https://dev.azure.com/dxatscale/sfpowerscripts/_apis/build/status/sfpowerscripts?branchName=master)](https://dev.azure.com/dxatscale/sfpowerscripts/_build/latest?definitionId=40&branchName=master) ![NPM Version](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/b9ffe05d-af14-461e-bfc5-909ea0d7451f/deploy-status)](https://app.netlify.com/sites/sfpowerscripts/deploys) [![Build Status](https://dev.azure.com/dxatscale/sfpowerscripts/_apis/build/status/sfpowerscripts?branchName=master)](https://dev.azure.com/dxatscale/sfpowerscripts/_build/latest?definitionId=40&branchName=develop) ![NPM Version](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts)
 ### sfpowerscripts
 
 sfpowerscripts is a wrapper around sfdx-cli and open source sfdx plugin [sfpowerkit]( 

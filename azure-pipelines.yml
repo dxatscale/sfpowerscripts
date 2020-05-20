@@ -1,4 +1,4 @@
-name: Milestone13$(Rev:.r)
+name: Milestone14$(Rev:.r)
 
 resources:
   repositories:
@@ -128,7 +128,7 @@ stages:
 
   - job: BuildCLI
     dependsOn: InstallNodeModules
-    displayName: Deploy build of CLI and Core Packages
+    displayName: sfdx-plugin
     condition:  and( succeeded('InstallNodeModules'), eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true) )
     pool:
       vmImage: 'windows-latest'
@@ -142,7 +142,7 @@ stages:
                      
 
   - deployment: BuildAzPipelines
-    displayName: 'Build and Deploy Azure Pipelines Extension'
+    displayName: azpipelines
     dependsOn: InstallNodeModules
     condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
     timeoutInMinutes: 20
@@ -175,7 +175,7 @@ stages:
   - template: build_templates/deciderjob.yml  
 
   - job: BuildCLI
-    displayName: Deploy build of CLI and Core Packages
+    displayName: sfdx-plugin
     dependsOn: InstallNodeModules
     condition:  and( succeeded('InstallNodeModules'), eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true) )
     pool:
@@ -190,7 +190,7 @@ stages:
                      
 
   - deployment: BuildAzPipelines
-    displayName: 'Build and Deploy Azure Pipelines Extension'
+    displayName: azpipelines
     dependsOn: InstallNodeModules
     condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
     timeoutInMinutes: 20
@@ -222,7 +222,7 @@ stages:
   - template: build_templates/deciderjob.yml  
 
   - job: BuildCLI
-    displayName: Deploy build of CLI and Core Packages
+    displayName: sfdx-plugin
     dependsOn: InstallNodeModules
     condition:  and( succeeded('InstallNodeModules'), eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true) )
     pool:
@@ -237,7 +237,7 @@ stages:
                      
 
   - deployment: BuildAzPipelines
-    displayName: 'Build and Deploy Azure Pipelines Extension'
+    displayName: azpipelines
     dependsOn: BuildCLI
     condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
     timeoutInMinutes: 30
