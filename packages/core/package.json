@@ -1,6 +1,6 @@
 {
   "name": "@dxatscale/sfpowerscripts.core",
-  "version": "0.0.30-alpha.0",
+  "version": "0.0.30-alpha.1",
   "description": "Core Module used by sfpowerscripts",
   "main": "lib/index",
   "types": "lib/index",
@@ -10,7 +10,7 @@
   "scripts": {
     "build": "npm run clean && npm run compile",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
-    "compile": "tsc -b tsconfig.json" 
+    "compile": "tsc -b tsconfig.json"
   },
   "dependencies": {
     "fs-extra": "^8.1.0",
