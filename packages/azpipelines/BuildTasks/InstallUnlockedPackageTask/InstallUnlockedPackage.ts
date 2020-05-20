@@ -32,8 +32,12 @@ async function run() {
         `${sfdx_package}_artifact_metadata`
       );
 
+      console.log(`Checking for directory ${package_version_id_file_path}`);
+
       //Fallback to older format
       if (!fs.existsSync(package_version_id_file_path)) {
+
+        console.log(`New Artifact format not found at the location ${package_version_id_file_path} `)
 
         console.log("Falling back to older artifact format");
         package_version_id_file_path = path.join(
