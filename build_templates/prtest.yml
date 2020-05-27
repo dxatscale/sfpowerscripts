@@ -33,7 +33,7 @@ jobs:
  
         - checkout: ${{ parameters.repositoryToCheckout }}
  
-        - task: sfpwowerscript-installsfdx-task@5
+        - task: sfpwowerscript-installsfdx-task@6
           displayName: Install SFDX
     
         - task: sfpwowerscript-validatedxunlockedpackage-task@2
@@ -42,14 +42,14 @@ jobs:
             package: ${{ parameters.directory }}
             isTelemetryEnabled: true
         
-        - task: sfpwowerscripts-analyzewithpmd-task@4
+        - task: sfpwowerscripts-analyzewithpmd-task@5
           displayName: Analyze Code with PMD
           inputs:
             directory:  ${{ parameters.directory }}
             version: '6.21.0'
             isTelemetryEnabled: true
  
-        - task: sfpwowerscript-authenticateorg-task@7
+        - task: sfpwowerscript-authenticateorg-task@8
           displayName: Authenticate DevHub
           inputs:
             method: 'ServiceConnection'
@@ -57,7 +57,7 @@ jobs:
             alias: 'HubOrg'
             isTelemetryEnabled: true
          
-        - task: sfpwowerscript-managescratchorg-task@5
+        - task: sfpwowerscript-managescratchorg-task@7
           displayName: Create Scratch Org
           inputs:
            action: 'Create'
@@ -67,7 +67,7 @@ jobs:
            maintainorg: 'delete'
            isTelemetryEnabled: true
        
-        - task: sfpowerscript-installpackagedependencies-task@2
+        - task: sfpowerscript-installpackagedependencies-task@3
           displayName: 'Install Package Dependencies to a target org'
           inputs:
             apexcompileonlypackage: true
@@ -86,7 +86,7 @@ jobs:
             isTelemetryEnabled: true
  
         
-        - task: sfpwowerscript-triggerapextest-task@4
+        - task: sfpwowerscript-triggerapextest-task@6
           displayName: Trigger Apex Test Task
           continueOnError: true
           inputs:
@@ -95,7 +95,7 @@ jobs:
            wait_time: '60'
            isTelemetryEnabled: true
    
-        - task: sfpwowerscript-validateapextestcoverage-task@2
+        - task: sfpwowerscript-validateapextestcoverage-task@3
           displayName: Validate Apex Test Coverage
           inputs:
               target_org: 'scratchorg'
