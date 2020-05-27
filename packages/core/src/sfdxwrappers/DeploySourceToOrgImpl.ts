@@ -184,7 +184,7 @@ export default class DeploySourceToOrgImpl {
       }
     } catch (err) {
       if (err.code === "ENOENT") {
-        throw err; // Re-throw error if .forceignore does not exist
+        throw new Error(`No such file or directory ${err.path}`); // Re-throw error if .forceignore does not exist
       }
       else if (!this.isToBreakBuildIfEmpty) {
         status.message = `Something wrong with the path provided  ${directoryToCheck},,but skipping `;
