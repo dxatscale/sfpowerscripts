@@ -8,8 +8,8 @@
     "author": "azlam.abdulsalam",
     "version": {
         "Major": 5,
-        "Minor": 0,
-        "Patch": 9
+        "Minor": 1,
+        "Patch": 0
     },
     "instanceNameFormat": "Analyze $(directory) using PMD",
     "inputs": [
