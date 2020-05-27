@@ -57,22 +57,22 @@ version: 7.0.9
 * **Test Level (testlevel)**
 
   Select the appropriate test level if test are required to be exectued along with the deployment, Possible values are the following
-  * "NoTestRun":  Do not run any tests 
+  * "NoTestRun":  Do not run any tests
   * "RunSpecifiedTests": Run specified tests mentioned in the following configuration item "Tests to be Executed(specifed_tests)
   * "RunApexTestSuite": Run an apex test suite (apextextsuite)
   * "RunLocalTests": Run all the local tests
   * "RunAllTestsInOrg": Run all the tests in the org
 
 * **Tests to be executed (specifed_tests)**
-  
+
   Only visible, if the testlevel is RunSpecifiedTests, Provide a comma seperated values of all the  test classes that need to be executed
- 
+
  * **ApexTextSuite (apextextsuite)**
-  
+
   Only visible, if the testlevel is RunApexTestSuite, Provide the name of the apex test suite that need to be executed
 
 * **Break Build if the provided metadata folder is empty(isToBreakBuildIfEmpty)** *
- 
+
    Enable this flag to break the build, if the metadata folder provide is empty, other wise the task will ignore and just move to the next task if encountering an empty metadata folder
 
 * **Send Anonymous Usage Telemetry (isTelemetryEnabled)**
@@ -94,7 +94,7 @@ None
 &nbsp;
 
 **Changelog**
-
+* 7.1.0 Apply forceignore to source directory when checking if the directory is empty
 * 7.0.9 Refactored to use revamped folder structure
 * 6.0.6 Support for installation of packages of a build that generate multiple artifacts such as MonoRepo and Bugfixes
 * 5.1.0 Break Build if empty metadata is encountered
