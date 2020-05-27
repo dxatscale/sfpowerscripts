@@ -5,6 +5,7 @@ import {
   copyFile,
   copyFileSync,
   readdirSync,
+  readFileSync,
   fstat,
   existsSync,
   stat,
@@ -12,6 +13,7 @@ import {
 import { isNullOrUndefined } from "util";
 import { onExit } from "../OnExit";
 let path = require("path");
+import ignore from "ignore";
 
 export interface DeploySourceResult {
   deploy_id: string;
@@ -181,7 +183,10 @@ export default class DeploySourceToOrgImpl {
         return status;
       }
     } catch (err) {
-      if (!this.isToBreakBuildIfEmpty) {
+      if (err.code === "ENOENT") {
+        throw new Error(`No such file or directory ${err.path}`); // Re-throw error if .forceignore does not exist
+      }
+      else if (!this.isToBreakBuildIfEmpty) {
         status.message = `Something wrong with the path provided  ${directoryToCheck},,but skipping `;
         status.result = "skip";
         return status;
@@ -286,6 +291,19 @@ export default class DeploySourceToOrgImpl {
 
   private isEmptyFolder(source_directory): boolean {
     let files: string[] = readdirSync(source_directory);
+
+    // Construct file paths that are relative to the project directory.
+    files.forEach( (file, index, files) => {
+      let filepath = path.join(source_directory, file);
+      files[index] = path.relative(process.cwd(), filepath);
+    });
+
+    // Ignore files that are listed in .forceignore
+    let forceignorePath = path.join(process.cwd(), ".forceignore");
+    files = ignore()
+      .add(readFileSync(forceignorePath).toString()) // Add ignore patterns from '.forceignore'.
+      .filter(files);
+
     if (files == null || files.length === 0) return true;
     else return false;
   }

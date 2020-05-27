@@ -1,6 +1,6 @@
 {
   "name": "@dxatscale/sfpowerscripts.core",
-  "version": "0.0.30-alpha.1",
+  "version": "0.1.0",
   "description": "Core Module used by sfpowerscripts",
   "main": "lib/index",
   "types": "lib/index",
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "fs-extra": "^8.1.0",
+    "ignore": "^5.1.6",
     "rimraf": "^3.0.2",
     "unzip-stream": "0.3.0"
   },
