@@ -36,7 +36,7 @@ jobs:
         - task: sfpwowerscript-installsfdx-task@6
           displayName: Install SFDX
     
-        - task: sfpwowerscript-validatedxunlockedpackage-task@2
+        - task: sfpwowerscript-validatedxunlockedpackage-task@3
           displayName: Validates Package for MetadataCoverage
           inputs:
             package: ${{ parameters.directory }}
@@ -74,7 +74,7 @@ jobs:
             target_org: 'scratchorg'
             devhub_alias: 'HubOrg'
          
-        - task: sfpowerscript-deploysourcetoorg-task@6
+        - task: sfpowerscript-deploysourcetoorg-task@7
           displayName: Deploy to  Scratch Org
           inputs:
             target_org: 'scratchorg'
