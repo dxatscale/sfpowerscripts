@@ -42,12 +42,12 @@ export default class IncrementProjectBuildNumberImpl {
 
     let segments = (selected_package["versionNumber"] as String).split(".");
 
-    if (this.segment == "Major") segments[0] += String(Number(segments[0]) + 1);
-    if (this.segment == "Minor") segments[1] += String(Number(segments[1]) + 1);
+    if (this.segment == "Major") segments[0] = String(Number(segments[0]) + 1);
+    if (this.segment == "Minor") segments[1] = String(Number(segments[1]) + 1);
     if (this.segment == "Patch") segments[2] = String(Number(segments[2]) + 1);
 
     if (segments[3] == "NEXT") {
-      throw new Error("NEXT not supported for this task, Please keep as the build version, which then this task can manipulate");
+      throw new Error("NEXT not supported for this task, Please keep a number as the build version, which then this task can manipulate");
     }
 
     if (this.segment == "BuildNumber" && !this.appendBuildNumber)

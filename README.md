@@ -28,9 +28,9 @@ The project intends to add native extension to other CI/CD platforms (which supp
 
 #### History
 
-sfpowerscripts initially began life in the form of a  Azure Pipelines Extension. available through the Visual Studio marketplace. The project was then expanded to support other Continous Build Platforms utilizing a sfdx-plugin. 
+sfpowerscripts initially began life in the form of a  Azure Pipelines Extension. available through the Visual Studio marketplace wrote by @azlam-abdulsalam as a personal project.
 
-The project is now migrated to  Accenture Open Source Program and a key component of Accenture DX@Scale initiative, a set of opinionated tool and practices for Enterprise Salesforce Development.
+The project was then migrated to Accenture Open Source Program and a key component of Accenture DX@Scale initiative, a set of opinionated tool and practices for Enterprise Salesforce Development.The project is currently being expanded to support other Continous Build Platforms utilizing a sfdx-plugin. 
 
 #### Maintainers
 
