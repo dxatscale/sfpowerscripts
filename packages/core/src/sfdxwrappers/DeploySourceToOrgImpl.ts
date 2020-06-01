@@ -298,11 +298,17 @@ export default class DeploySourceToOrgImpl {
       files[index] = path.relative(process.cwd(), filepath);
     });
 
+    let forceignorePath;
+    if (!isNullOrUndefined(this.project_directory))
+      forceignorePath = path.join(this.project_directory, ".forceignore");
+    else
+      forceignorePath = path.join(process.cwd(), ".forceignore");
+
     // Ignore files that are listed in .forceignore
-    let forceignorePath = path.join(process.cwd(), ".forceignore");
     files = ignore()
       .add(readFileSync(forceignorePath).toString()) // Add ignore patterns from '.forceignore'.
       .filter(files);
+
 
     if (files == null || files.length === 0) return true;
     else return false;
