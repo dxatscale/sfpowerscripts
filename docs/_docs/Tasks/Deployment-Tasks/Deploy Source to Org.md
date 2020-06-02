@@ -17,7 +17,6 @@ You can read about mdapi:deploy command [here](https://developer.salesforce.com/
 
 Please note [Install SFDX with Sfpowerkit](/Tasks/Common-Utility-Tasks/Install%20SFDX%20CLI/) task is added to the pipeline before utilizing this task
 
-
 **Task Snapshot**
 
 ![](/images/Deploy Source To Org.png){: width="951" height="629"}
@@ -26,7 +25,7 @@ Please note [Install SFDX with Sfpowerkit](/Tasks/Common-Utility-Tasks/Install%2
 
 id: sfpowerscript-deploysourcetoorg-task
 
-version: 7.0.9
+version: 7.1.4
 
 **Input Variables&nbsp; - Visual Designer Labels (Yaml variables)**
 
@@ -46,10 +45,9 @@ version: 7.0.9
 
   Enable this for doing a validate only. Utilise this mechanism for Pull Request against Sandbox to validate the metadata
 
-   Once enabling this the following action will be enabled, where a file such as .validationignore can be specified that can be used to ignore certain metadata during a validate only deployment.<br>This is needed to overcome certain salesforce quirks, where during a validate only deployment, it raise unwanted errors if your source contains say a metadata such as ApexTestSuite
+  Once enabling this the following action will be enabled, where a file such as .validationignore can be specified that can be used to ignore certain metadata during a validate only deployment.<br>This is needed to overcome certain salesforce quirks, where during a validate only deployment, it raise unwanted errors if your source contains say a metadata such as ApexTestSuite
 
   * ![](/uploads/deploy-source-to-org-validate-only-deployment.png){: width="800" height="147"}
-
 * **Wait Time (wait\_time)**
 
   Time to wait for this execution to complete,after this set wait time&nbsp; the next task in the pipeline will be executed. It is recommended to provide sufficient wait time so that the command can be made into a synchronous execution
@@ -57,27 +55,27 @@ version: 7.0.9
 * **Test Level (testlevel)**
 
   Select the appropriate test level if test are required to be exectued along with the deployment, Possible values are the following
-  * "NoTestRun":  Do not run any tests 
-  * "RunSpecifiedTests": Run specified tests mentioned in the following configuration item "Tests to be Executed(specifed_tests)
+
+  * "NoTestRun": Do not run any tests
+  * "RunSpecifiedTests": Run specified tests mentioned in the following configuration item "Tests to be Executed(specifed\_tests)
   * "RunApexTestSuite": Run an apex test suite (apextextsuite)
   * "RunLocalTests": Run all the local tests
   * "RunAllTestsInOrg": Run all the tests in the org
+* **Tests to be executed (specifed\_tests)**
 
-* **Tests to be executed (specifed_tests)**
-  
-  Only visible, if the testlevel is RunSpecifiedTests, Provide a comma seperated values of all the  test classes that need to be executed
- 
- * **ApexTextSuite (apextextsuite)**
-  
-  Only visible, if the testlevel is RunApexTestSuite, Provide the name of the apex test suite that need to be executed
+  Only visible, if the testlevel is RunSpecifiedTests, Provide a comma seperated values of all the test classes that need to be executed
 
-* **Break Build if the provided metadata folder is empty(isToBreakBuildIfEmpty)** *
- 
-   Enable this flag to break the build, if the metadata folder provide is empty, other wise the task will ignore and just move to the next task if encountering an empty metadata folder
+* **ApexTextSuite (apextextsuite)**
+
+Only visible, if the testlevel is RunApexTestSuite, Provide the name of the apex test suite that need to be executed
+
+* **Break Build if the provided metadata folder is empty(isToBreakBuildIfEmpty)** \*
+
+  Enable this flag to break the build, if the metadata folder provide is empty, other wise the task will ignore and just move to the next task if encountering an empty metadata folder
 
 * **Send Anonymous Usage Telemetry (isTelemetryEnabled)**
 
-   Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
+  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
 
 **Output Variables**
 
@@ -95,8 +93,9 @@ None
 
 **Changelog**
 
-* 7.0.9 Refactored to use revamped folder structure
-* 6.0.6 Support for installation of packages of a build that generate multiple artifacts such as MonoRepo and Bugfixes
-* 5.1.0 Break Build if empty metadata is encountered
-* 3.0.1 Updated with Telemetry
-* 2.8.0 Initial Version
+* 7\.1.4 Fix bug related to empty folder check
+* 7\.0.9 Refactored to use revamped folder structure
+* 6\.0.6 Support for installation of packages of a build that generate multiple artifacts such as MonoRepo and Bugfixes
+* 5\.1.0 Break Build if empty metadata is encountered
+* 3\.0.1 Updated with Telemetry
+* 2\.8.0 Initial Version
