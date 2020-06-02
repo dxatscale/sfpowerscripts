@@ -10,16 +10,15 @@ This task is used to promote an unlocked package to 'released' state before depl
 
 Please note [Install SFDX with Sfpowerkit](/Tasks/Common-Utility-Tasks/Install%20SFDX%20CLI/) task is added to the pipeline before utilizing this task
 
-
 **Task Snapshot**
 
-![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQYV2P4////fwAJ+wP9BUNFygAAAABJRU5ErkJggg==){: .cms-image-placeholder}![](/uploads/promote-an-unlocked-package.png){: width="800" height="457"}
+![](/uploads/promote-an-unlocked-package.png){: width="800" height="457"}
 
 **Task Version and Details**
 
 id: sfpwowerscript-promoteunlocked-task
 
-version: 3.0.9
+version: 4.0.1
 
 **Input Variables&nbsp; - Visual Designer Labels (Yaml variables)**
 
@@ -37,7 +36,7 @@ Provide the alias of the devhub previously authenticated, default value is HubOr
 
 * **Send Anonymous Usage Telemetry (isTelemetryEnabled)**
 
-   Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
+  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
 
 **Output Variables**
 
@@ -53,6 +52,7 @@ None
 
 **Changelog**
 
-* 3.0.9 Refactored to use revamped folder structure
-* 2.0.1 Updated with Telemetry
-* 1.6.0 Initial Version
+* 4\.0.1 Fix for \#18 Promote task failing to promote unlocked package
+* 3\.0.9 Refactored to use revamped folder structure
+* 2\.0.1 Updated with Telemetry
+* 1\.6.0 Initial Version
