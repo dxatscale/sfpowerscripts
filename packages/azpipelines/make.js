@@ -180,7 +180,7 @@ updateExtensionManifest = function(dir, options) {
     manifest.id = "sfpowerscripts";
     manifest.name = "sfpowerscripts";
     manifest.public = true;
-    version = manifest.version;
+    version = options.version;
   }
 
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 4));
