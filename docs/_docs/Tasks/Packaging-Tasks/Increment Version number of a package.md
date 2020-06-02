@@ -16,7 +16,7 @@ This task is used to increment the version number of the package version provide
 
 id: sfpwowerscript-incrementversionnumber-task
 
-version: 8.0.0
+version: 8.1.2
 
 **Input Variables&nbsp; - Visual Designer Labels (Yaml variables)**
 
@@ -24,14 +24,11 @@ version: 8.0.0
 
   Select the segment of the version number that needs to be incremented, Possible values are BuildNumber, Patch, Minor, Major
 
-* **Set the build segment of the version number to the build number rather than incremenenting(appendBuildNumber)**
-Check this flag, if you want to append the build number rather than incrementing it.
-
+* **Set the build segment of the version number to the build number rather than incremenenting(appendBuildNumber)** Check this flag, if you want to append the build number rather than incrementing it.
 
 * **Set the pipeline's build number to the the project's incremented version number" (set\_build\_number)**
 
 Check this flag, if the pipeline's build number to be updated with the incremented version,so its easy to undertand the job in Azure Pipelines
-
 
 * **Name of the package (package)**
 
@@ -41,23 +38,19 @@ Check this flag, if the pipeline's build number to be updated with the increment
 
   Leave it blank if the sfdx-project.json is in the root of the repository, else provide the folder directory containing the sfdx-project.json
 
-
 * **Create a commit of incremented sfdx-project.json (commit\_changes)**
 
   Check this flag, if you need the incremented version in sfdx=project.json to be committed back to the repo. Please not this only does the commit it doesnt do the Push yet
 
-
 * **Push incremented version changes to the repository (pushchanges)**
- 
-   Check this flag, if you need to push the incremented version back to the repostiory. This taks only supports HTTPS based repositories that has a PAT based authentication mechanism. Service Credential based authentication is supported for Github, Github enterprise, Bitubcket Cloud
 
+  Check this flag, if you need to push the incremented version back to the repostiory. This taks only supports HTTPS based repositories that has a PAT based authentication mechanism. Service Credential based authentication is supported for Github, Github enterprise, Bitubcket Cloud
 
 The below inputs are eanbled only when the "Push Incremented Version changes to the repository" is eanbled.
 
 * **Select a condtion for pushing the incremented version (pushoption)**
- 
-   Select the approprate condiation for the version increment to be pushed to repostory. The options are "Only if  All subsequent tasks succeeded" (onSucces) and "Even if subsequent tasks fails" (onFailure). OnSuccess will only push the changes if all subsequent tasks are successfull, while onFaiure will push to the repository even if any of the subsequent tasks fail.
 
+  Select the approprate condiation for the version increment to be pushed to repostory. The options are "Only if All subsequent tasks succeeded" (onSucces) and "Even if subsequent tasks fails" (onFailure). OnSuccess will only push the changes if all subsequent tasks are successfull, while onFaiure will push to the repository even if any of the subsequent tasks fail.
 
 * **Select the version control provider(versionControlProvider)**
 
@@ -80,15 +73,14 @@ The below inputs are eanbled only when the "Push Incremented Version changes to 
   * **Azure Repo (azureRepo)**
 
   If azure Repo is selected, the agent has to have the setting 'Allow Script to access OAuth Token' activated in the Agent Job settings, so that the task can access $(System.AccessToken) Variable and checkout the code
+
   * **Other Git (otherGit)**
 
-  If your repo is none of the above, then utilize this selection to pass in the username/password for a basic authentication schema to checkout the corresponding code. If this mode is selected please fill in Username (username) and Password (password) to push to  the repository\`
+  If your repo is none of the above, then utilize this selection to pass in the username/password for a basic authentication schema to checkout the corresponding code. If this mode is selected please fill in Username (username) and Password (password) to push to the repository\`
 
 * **Send Anonymous Usage Telemetry (isTelemetryEnabled)**
 
-   Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
-
-
+  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
 
 **Output Variables**
 
@@ -106,9 +98,10 @@ None
 
 **Changelog**
 
-* 8.0.0 Refactored to use revamped folder structure
-* 5.0.2 Bugfix for [#119](https://github.com/azlamsalam/sfpowerscripts/issues/119)
-* 5.0.1 Support for appending the build number, rather than incremening it based on the last build number
-* 4.0.0 Support for post increment, push the commited changes to repository 
-* 2.0.2 Updated with Telemetry
-* 1.9.0 Initial Version
+* 8\.1.2 Fixed \#24 Fail to increment for major and minor version numbers
+* 8\.0.0 Refactored to use revamped folder structure
+* 5\.0.2 Bugfix for [\#119](https://github.com/azlamsalam/sfpowerscripts/issues/119)
+* 5\.0.1 Support for appending the build number, rather than incremening it based on the last build number
+* 4\.0.0 Support for post increment, push the commited changes to repository
+* 2\.0.2 Updated with Telemetry
+* 1\.9.0 Initial Version
