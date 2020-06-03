@@ -101,14 +101,14 @@ export default class CreateUnlockedPackage extends SfdxCommand {
         
         console.log(`Package Creation Command: ${command}`)
   
-        let package_version_id: string = await createUnlockedPackageImpl.exec(
+        let result:{packageVersionId:string,versionNumber:string, testCoverage:number,hasPassedCoverageCheck:boolean} = await createUnlockedPackageImpl.exec(
           command
         );
         
         if (!isNullOrUndefined(this.flags.refname)) {
-          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_id=${package_version_id}\n`, {flag:'a'});
+          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_id=${result.packageVersionId}\n`, {flag:'a'});
         } else {
-          fs.writeFileSync('.env', `sfpowerscripts_package_version_id=${package_version_id}\n`, {flag:'a'});
+          fs.writeFileSync('.env', `sfpowerscripts_package_version_id=${result.packageVersionId}\n`, {flag:'a'});
         }
 
         if (build_artifact_enabled) {
@@ -123,12 +123,14 @@ export default class CreateUnlockedPackage extends SfdxCommand {
           
           let metadata = {
             package_name: sfdx_package,
-            package_version_number: version_number,
-            package_version_id: package_version_id,
+            package_version_number: result.versionNumber,
+            package_version_id: result.packageVersionId,
             sourceVersion: commit_id,
             repository_url:repository_url,
+            test_coverage:result.testCoverage,
+            has_passed_coverage_check:result.hasPassedCoverageCheck,
             package_type:"unlocked"
-          };
+         };
           
           let artifactFileName:string = `/${sfdx_package}_artifact_metadata`;
 
@@ -140,11 +142,7 @@ export default class CreateUnlockedPackage extends SfdxCommand {
           }
         }
     } catch(err) {
-      // AppInsights.trackExcepiton("sfpwowerscripts-createunlockedpackage-task",err);
-  
       console.log(err);
-      
-      // Fail the task when an error occurs
       process.exit(1); 
     } 
   }

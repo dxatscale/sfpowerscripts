@@ -45,8 +45,6 @@ export default class IncrementBuildNumber extends SfdxCommand {
       let project_directory: string = this.flags.projectdir;
       const appendBuildNumber: boolean = this.flags.appendbuildnumber;
       const commit_changes: boolean = this.flags.commitchanges;
-  
-      // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
      
       const runNumber: string = this.flags.runnumber; 
   
@@ -58,18 +56,18 @@ export default class IncrementBuildNumber extends SfdxCommand {
         runNumber
       );
   
-      let version_number: string = await incrementProjectBuildNumberImpl.exec();
+      let result:{status:boolean,ignore:boolean,versionNumber:string} = await incrementProjectBuildNumberImpl.exec();
   
       if (!isNullOrUndefined(this.flags.refname)) {
-        fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_incremented_project_version=${version_number}\n`, {flag:'a'});
+        fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_incremented_project_version=${result.versionNumber}\n`, {flag:'a'});
       } else {
-        fs.writeFileSync('.env', `sfpowerscripts_incremented_project_version=${version_number}\n`, {flag:'a'});
+        fs.writeFileSync('.env', `sfpowerscripts_incremented_project_version=${result.versionNumber}\n`, {flag:'a'});
       }
 
       let repo_localpath = process.env.PWD;
     
   
-      if(!appendBuildNumber && commit_changes)
+      if(!appendBuildNumber && commit_changes && !result.ignore)
       {
   
         child_process.execSync(" git config user.email sfpowerscripts@dxscale");
@@ -91,14 +89,8 @@ export default class IncrementBuildNumber extends SfdxCommand {
       }
       
       
-  
-    // AppInsights.trackTask("sfpwowerscript-incrementversionnumber-task");
-    // AppInsights.trackTaskEvent("sfpwowerscript-incrementversionnumber-task","project_version_incremented");    
-      
-    } catch (err) {
-      // AppInsights.trackExcepiton("sfpwowerscript-incrementversionnumber-task",err);    
+    } catch (err) {   
       console.log(err);
-  
       process.exit(1);
     }
   }

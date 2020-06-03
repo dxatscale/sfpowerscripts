@@ -26,19 +26,19 @@ async function run() {
       runNumber
     );
 
-    let version_number: string = await incrementProjectBuildNumberImpl.exec();
+    let result:{status:boolean,ignore:boolean,versionNumber:string} = await incrementProjectBuildNumberImpl.exec();
 
     if (set_build_number) {
-      console.log(`Updating build number to ${version_number}`);
-      tl.updateBuildNumber(version_number);
+      console.log(`Updating build number to ${result.versionNumber}`);
+      tl.updateBuildNumber(result.versionNumber);
     }
 
-    tl.setVariable("sfpowerscripts_incremented_project_version", version_number,false);
+    tl.setVariable("sfpowerscripts_incremented_project_version", result.versionNumber,false);
    
     let repo_localpath = tl.getVariable("build.repository.localpath");
   
 
-    if(!appendBuildNumber && commit_changes)
+    if(!appendBuildNumber && commit_changes && !result.ignore)
     {
 
       child_process.execSync(" git config user.email sfpowerscripts@dxscale");
