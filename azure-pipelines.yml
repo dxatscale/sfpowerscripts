@@ -1,4 +1,4 @@
-name: Milestone14$(Rev:.r)
+name: Milestone15$(Rev:.r)
 
 resources:
   repositories:
@@ -100,23 +100,58 @@ stages:
         inputs:
          delayForMinutes: '2' 
 
-  - template: build_templates/prtest.yml   
-    parameters:
-      name: 'TestPrOnLinux'
-      image: 'ubuntu-latest'
-      dependOnJob: 'WaitPluginToInstallonReview'
-      repositoryToCheckout: 'forcedi'
-      directory: 'force-di'
-      service_connection: $(devhub_service_connection)
-  
-  - template: build_templates/prtest.yml   
-    parameters:
-      name: 'TestPrOnWindows'
-      image: 'windows-latest'
-      dependOnJob: 'WaitPluginToInstallonReview'
-      repositoryToCheckout: 'forcedi'
-      directory: 'force-di'
-      service_connection: $(devhub_service_connection)
+  - job: TestPipelinesPR
+    displayName: 'Test pr tasks on dxatscalereview'
+    dependsOn: WaitPluginToInstallonReview
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+
+      - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@3
+        displayName: 'Trigger a new build of PR Validation Test in sfpowerscriptsReview'
+        continueOnError: true
+        inputs:
+          definitionIsInCurrentTeamProject: false
+          tfsServer: 'https://dev.azure.com/dxatscalereview'
+          teamProject: sfpowerscriptsreview
+          buildDefinition: 1
+          useSameBranch: false
+          branchToUse:  $(System.PullRequest.SourceBranch)
+          waitForQueuedBuildsToFinish: true
+          authenticationMethod: 'Basic Authentication'
+          username: 'azlam.abdulsalam'
+          password: '$(dxatscalereview_pat)'
+
+  - job: TestPipelinesPackaging
+    displayName: 'Test packaging tasks on dxatscalereview'
+    dependsOn: WaitPluginToInstallonReview
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+
+    - powershell: |
+       # see also https://github.com/microsoft/azure-pipelines-agent/issues/838
+        $SourceBranchLongName = switch ($env:Build_Reason) {
+         'PullRequest' { $env:Build_SourceBranch.Replace('refs/pull/','').Replace('/merge','') }
+          default { $env:Build_SourceBranch.Replace('refs/heads/','').Replace('refs/tags/','') }
+        }
+        Write-Debug ${SourceBranchLongName}
+        Write-Host "##vso[task.setvariable variable=fullbranchname]${SourceBranchLongName}"
+      displayName: Get Branch Name
+
+    - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@3
+      displayName: 'Trigger a new build of Packaging Test in sfpowerscriptsReview'
+      inputs:
+          definitionIsInCurrentTeamProject: false
+          tfsServer: 'https://dev.azure.com/dxatscalereview'
+          teamProject: sfpowerscriptsreview
+          buildDefinition: 2
+          useSameBranch: false
+          branchToUse: $(System.PullRequest.SourceBranch)
+          waitForQueuedBuildsToFinish: true
+          authenticationMethod: 'Basic Authentication'
+          username: 'azlam.abdulsalam'
+          password: '$(dxatscalereview_pat)'
 
 #Merge to Develop, Deploy Alpha builds      
 - stage: Alpha

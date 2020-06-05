@@ -463,6 +463,8 @@ _See code: [lib/commands/sfpowerscripts/ExportSource.js](https://github.com/Acce
 
 Increment the selected version counter by one and adds a commit to  to your repository. This task does not push the change to the repository. If a push to the repository is required, include a step after the package is created to push this commit to the repository.
 
+Please note this task skips all the options if it figures a .NEXT in the build number for an unlocked package
+
 ```
 USAGE
   $ sfdx sfpowerscripts:IncrementBuildNumber [--segment <string>] [-a -r <string>] [-n <string>] [-d <string>] [-c]

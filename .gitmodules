@@ -1,0 +1,3 @@
+[submodule "tests\\force-di"]
+	path = tests\\force-di
+	url = https://dxatscalereview@dev.azure.com/dxatscalereview/sfpowerscriptsreview/_git/force-di

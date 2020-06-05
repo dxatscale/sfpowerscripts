@@ -12,7 +12,7 @@ export default class IncrementProjectBuildNumberImpl {
     private buildNumber: string
   ) {}
 
-  public async exec(): Promise<string> {
+  public async exec(): Promise<{status:boolean,ignore:boolean,versionNumber:string}> {
     let project_config_path: string;
 
     if (!isNullOrUndefined(this.project_directory))
@@ -30,10 +30,8 @@ export default class IncrementProjectBuildNumberImpl {
     project_json["packageDirectories"].forEach(element => {
       if (this.sfdx_package == "default" && element["default"] == true) {
         selected_package = element;
-        return;
       } else if (this.sfdx_package == element["package"]) {
         selected_package = element;
-        return;
       }
     });
 
@@ -46,8 +44,12 @@ export default class IncrementProjectBuildNumberImpl {
     if (this.segment == "Minor") segments[1] = String(Number(segments[1]) + 1);
     if (this.segment == "Patch") segments[2] = String(Number(segments[2]) + 1);
 
+    //Don't do anything, just return let the platform take care of the increment
     if (segments[3] == "NEXT") {
-      throw new Error("NEXT not supported for this task, Please keep a number as the build version, which then this task can manipulate");
+
+      console.log("NEXT encountered in segment, will ignore all the option set in the task, Please use NEXT only for Unlocked/Runtime packages")
+      console.log(`Version : ${selected_package["versionNumber"]}`);
+      return {status:true, ignore:true,versionNumber:selected_package["versionNumber"]};
     }
 
     if (this.segment == "BuildNumber" && !this.appendBuildNumber)
@@ -76,7 +78,7 @@ export default class IncrementProjectBuildNumberImpl {
       );
     }
 
-    return selected_package["versionNumber"];
+    return {status:true, ignore:false,versionNumber:selected_package["versionNumber"]};
   }
 
   public async buildExecCommand(): Promise<void> {}
