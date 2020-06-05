@@ -1,4 +1,5 @@
 import CreateUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl';
+import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl';
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import {isNullOrUndefined} from "util";
@@ -34,10 +35,12 @@ export default class CreateUnlockedPackage extends SfdxCommand {
     installationkey: flags.string({char: 'k', description: messages.getMessage('installationKeyFlagDescription'), exclusive: ['installationkeybypass']}),
     installationkeybypass: flags.boolean({char: 'x', description: messages.getMessage('installationKeyBypassFlagDescription'), exclusive: ['installationkey']}),
     devhubalias: flags.string({char: 'v', description: messages.getMessage('devhubAliasFlagDescription'), default: 'HubOrg'}),
+    diffcheck: flags.boolean({description: messages.getMessage('diffCheckFlagDescription')}),
+    gittag: flags.boolean({description: messages.getMessage('gitTagFlagDescription')}),
     versionnumber: flags.string({description: messages.getMessage('versionNumberFlagDescription')}),
     configfilepath: flags.string({char: 'f', description: messages.getMessage('configFilePathFlagDescription'), default: 'config/project-scratch-def.json'}),
     projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
-    enablecoverage: flags.boolean({description: messages.getMessage('enableCoverageFlagDescription')}), 
+    enablecoverage: flags.boolean({description: messages.getMessage('enableCoverageFlagDescription')}),
     isvalidationtobeskipped: flags.boolean({char: 's', description: messages.getMessage('isValidationToBeSkippedFlagDescription')}),
     tag: flags.string({description: messages.getMessage('tagFlagDescription')}),
     waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '120'}),
@@ -46,24 +49,24 @@ export default class CreateUnlockedPackage extends SfdxCommand {
 
 
   public async run(){
-    try {  
+    try {
       let sfdx_package: string = this.flags.package;
       let version_number: string = this.flags.versionnumber;
-      
+
       if (isNullOrUndefined(version_number)) {
         let sfdx_project_json = fs.readFileSync(
           'sfdx-project.json',
-          'utf8'    
+          'utf8'
         );
 
         let sfdx_project = JSON.parse(sfdx_project_json);
-        
+
         // Set version_number to package version number if available
         sfdx_project.packageDirectories.forEach( (dir) => {
-          if (dir.package == sfdx_package) version_number = dir.versionNumber; 
+          if (dir.package == sfdx_package) version_number = dir.versionNumber;
         });
       }
-      
+
 
       let tag: string = this.flags.tag;
       let config_file_path = this.flags.configfilepath;
@@ -73,7 +76,7 @@ export default class CreateUnlockedPackage extends SfdxCommand {
 
       let installationkey;
 
-      if (!installationkeybypass) 
+      if (!installationkeybypass)
       installationkey = this.flags.installationkey;
 
       let project_directory = this.flags.projectdir;
@@ -82,7 +85,21 @@ export default class CreateUnlockedPackage extends SfdxCommand {
 
       let build_artifact_enabled = this.flags.buildartifactenabled;
 
-      let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
+      let runBuild: boolean;
+      if (this.flags.diffcheck) {
+        let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
+
+        runBuild = await packageDiffImpl.exec();
+
+        if ( runBuild )
+        console.log(`Detected changes to ${sfdx_package} package...proceeding`);
+        else
+        console.log(`No changes detected for ${sfdx_package} package...skipping`);
+
+      } else runBuild = true;
+
+      if (runBuild) {
+        let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
           sfdx_package,
           version_number,
           tag,
@@ -95,32 +112,34 @@ export default class CreateUnlockedPackage extends SfdxCommand {
           isCoverageEnabled,
           isSkipValidation
         );
-        
-  
+
+
         let command: string = await createUnlockedPackageImpl.buildExecCommand();
-        
+
         console.log(`Package Creation Command: ${command}`)
-  
+
         let result:{packageVersionId:string,versionNumber:string, testCoverage:number,hasPassedCoverageCheck:boolean} = await createUnlockedPackageImpl.exec(
           command
         );
-        
-        if (!isNullOrUndefined(this.flags.refname)) {
-          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_id=${result.packageVersionId}\n`, {flag:'a'});
-        } else {
-          fs.writeFileSync('.env', `sfpowerscripts_package_version_id=${result.packageVersionId}\n`, {flag:'a'});
+
+        if (this.flags.gittag) {
+          let tagname = `${sfdx_package}_v${version_number}`;
+          console.log(`Creating tag ${tagname}`);
+          exec(`git tag -a -m "${sfdx_package} Unlocked Package ${result.versionNumber}" ${tagname} HEAD`, {silent:true});
+          console.log(`Pushing tag ${tagname} to origin`);
+          exec(`git push origin ${tagname}`, {silent:true});
         }
 
         if (build_artifact_enabled) {
-  
-          let repository_url: string = 
+
+          let repository_url: string =
             exec('git config --get remote.origin.url', {silent:true});
             // Remove new line '\n' from end of url
             repository_url = repository_url.slice(0,repository_url.length - 1);
-            
+
           let commit_id = exec('git log --pretty=format:\'%H\' -n 1', {silent:true});
-  
-          
+
+
           let metadata = {
             package_name: sfdx_package,
             package_version_number: result.versionNumber,
@@ -130,20 +149,30 @@ export default class CreateUnlockedPackage extends SfdxCommand {
             test_coverage:result.testCoverage,
             has_passed_coverage_check:result.hasPassedCoverageCheck,
             package_type:"unlocked"
-         };
-          
+          };
+
           let artifactFileName:string = `/${sfdx_package}_artifact_metadata`;
 
           fs.writeFileSync(process.env.PWD + artifactFileName, JSON.stringify(metadata));
+
           if (!isNullOrUndefined(this.flags.refname)) {
+            console.log("\nOutput variables:");
+            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_id=${result.packageVersionId}\n`, {flag:'a'});
+            console.log(`${this.flags.refname}_sfpowerscripts_package_version_id}`);
             fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+            console.log(`${this.flags.refname}_sfpowerscripts_artifact_metadata_directory`);
           } else {
+            console.log("\nOutput variables:");
+            fs.writeFileSync('.env', `sfpowerscripts_package_version_id=${result.packageVersionId}\n`, {flag:'a'});
+            console.log("sfpowerscripts_package_version_id");
             fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+            console.log("sfpowerscripts_artifact_metadata_directory");
           }
         }
+      }
     } catch(err) {
       console.log(err);
-      process.exit(1); 
-    } 
+      process.exit(1);
+    }
   }
 }

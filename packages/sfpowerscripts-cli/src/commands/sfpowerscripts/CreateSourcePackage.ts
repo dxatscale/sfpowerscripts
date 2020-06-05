@@ -1,5 +1,6 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
+import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl';
 import {exec} from "shelljs";
 const fs = require("fs");
 import {isNullOrUndefined} from "util"
@@ -24,10 +25,13 @@ export default class CreateSourcePackage extends SfdxCommand {
 
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
-  
+
   protected static flagsConfig = {
     package: flags.string({required: true, char: 'n', description: messages.getMessage('packageFlagDescription')}),
     versionnumber: flags.string({required: true, char: 'v', description: messages.getMessage('versionNumberFlagDescription')}),
+    projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
+    diffcheck: flags.boolean({description: messages.getMessage('diffCheckFlagDescription')}),
+    gittag: flags.boolean({description: messages.getMessage('gitTagFlagDescription')}),
     refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
   };
 
@@ -36,43 +40,68 @@ export default class CreateSourcePackage extends SfdxCommand {
     try {
       let sfdx_package: string = this.flags.package;
       let version_number: string = this.flags.versionnumber;
-      let commit_id = exec('git log --pretty=format:\'%H\' -n 1', {silent:true});
-  
-      let repository_url: string = 
-        exec('git config --get remote.origin.url', {silent:true});
-        // Remove new line '\n' from end of url
-        repository_url = repository_url.slice(0,repository_url.length - 1);
-  
-  
-      // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
-  
-        
-      let metadata = {
-        package_name: sfdx_package,
-        package_version_number: version_number,
-        sourceVersion: commit_id,
-        repository_url:repository_url,
-        package_type:"source"
-      };
-  
-      let artifactFileName:string = `/${sfdx_package}_artifact_metadata`;
-  
-      fs.writeFileSync(process.env.PWD + artifactFileName, JSON.stringify(metadata));
-      
-      if (!isNullOrUndefined(this.flags.refname)) {
-        fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
-      } else {
-        fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+      let project_directory: string = this.flags.projectdir;
+
+      let runBuild: boolean;
+      if (this.flags.diffcheck) {
+        let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
+
+        runBuild = await packageDiffImpl.exec();
+
+        if ( runBuild )
+        console.log(`Detected changes to ${sfdx_package} package...proceeding`);
+        else
+        console.log(`No changes detected for ${sfdx_package} package...skipping`);
+
+      } else runBuild = true;
+
+      if (runBuild) {
+        let commit_id = exec('git log --pretty=format:\'%H\' -n 1', {silent:true});
+
+        let repository_url: string =
+          exec('git config --get remote.origin.url', {silent:true});
+          // Remove new line '\n' from end of url
+          repository_url = repository_url.slice(0,repository_url.length - 1);
+
+
+        // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
+
+
+        let metadata = {
+          package_name: sfdx_package,
+          package_version_number: version_number,
+          sourceVersion: commit_id,
+          repository_url:repository_url,
+          package_type:"source"
+        };
+
+        let artifactFileName:string = `/${sfdx_package}_artifact_metadata`;
+
+        fs.writeFileSync(process.env.PWD + artifactFileName, JSON.stringify(metadata));
+        console.log(`Created source package ${sfdx_package}_artifact_metadata`);
+
+        if (this.flags.gittag) {
+          let tagname = `${sfdx_package}_v${version_number}`;
+          console.log(`Creating tag ${tagname}`);
+          exec(`git tag -a -m "${sfdx_package} Source Package ${version_number}" ${tagname} HEAD`, {silent:true});
+          console.log(`Pushing tag ${tagname} to origin`);
+          exec(`git push origin ${tagname}`, {silent:true});
+        }
+
+        if (!isNullOrUndefined(this.flags.refname)) {
+          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+          console.log(`\nOutput variable:\n${this.flags.refname}_sfpowerscripts_artifact_metadata_directory`);
+        } else {
+          fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
+          console.log(`\nOutput variable:\nsfpowerscripts_artifact_metadata_directory`);
+        }
+
+        // AppInsights.trackTask("sfpwowerscripts-createsourcepackage-task");
+        // AppInsights.trackTaskEvent("sfpwowerscripts-createsourcepackage-task","source_package_created");
       }
-      // AppInsights.trackTask("sfpwowerscripts-createsourcepackage-task");
-      // AppInsights.trackTaskEvent("sfpwowerscripts-createsourcepackage-task","source_package_created");
-  
-  
     } catch (err) {
       // AppInsights.trackExcepiton("sfpwowerscripts-createsourcepackage-task",err);
-
       console.log(err);
-
       // Fail the task when an error occurs
       process.exit(1);
     }
