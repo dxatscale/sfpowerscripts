@@ -125,6 +125,8 @@
             "name": "isGitTag",
             "type": "boolean",
             "label": "Tag latest commit ID with package name and version",
+            "defaultValue": false,
+            "required": false,
             "helpMarkDown": "Tags the latest commit with the package name and version, upon successful build"
         },
         {

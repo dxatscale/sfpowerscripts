@@ -37,20 +37,20 @@ async function run() {
       true
     );
 
-    let runBuild: boolean;
+    let isRunBuild: boolean;
     if (isDiffCheck) {
       let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
 
-      runBuild = await packageDiffImpl.exec();
+      isRunBuild = await packageDiffImpl.exec();
 
-      if ( runBuild )
-      console.log(`Detected changes to ${sfdx_package} package...proceeding`);
+      if (isRunBuild)
+        console.log(`Detected changes to ${sfdx_package} package...proceeding`);
       else
-      console.log(`No changes detected for ${sfdx_package} package...skipping`);
+        console.log(`No changes detected for ${sfdx_package} package...skipping`);
 
-    } else runBuild = true;
+    } else isRunBuild = true;
 
-    if (runBuild) {
+    if (isRunBuild) {
       let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
         sfdx_package,
         version_number,
