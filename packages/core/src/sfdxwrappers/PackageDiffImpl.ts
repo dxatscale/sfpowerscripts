@@ -30,8 +30,8 @@ export default class PackageDiffImpl {
                 if (tag) {
                     console.log(`Found tag ${tag} for ${dir.package}`);
                     // Get the list of modified files between the tag and HEAD refs
-                    let modified_files = exec(`git diff ${tag} HEAD --name-only`, {silent:true});
-                    modified_files = modified_files.stdout.split("\n")
+                    let gitDiff = exec(`git diff ${tag} HEAD --name-only`, {silent:true});
+                    let modified_files: string[] = gitDiff.stdout.split("\n")
                     modified_files.pop(); // Remove last empty element
 
                     let forceignorePath: string;
@@ -63,8 +63,8 @@ export default class PackageDiffImpl {
     }
 
     private getLatestTag(sfdx_package): string {
-        let tag = exec(`git tag -l '${sfdx_package}_v*' --sort=version:refname | tail -n 1`, {silent:true});
-        tag = tag.stdout.slice(0,tag.stdout.length - 1); // Trim newline
+        let gitTag = exec(`git tag -l '${sfdx_package}_v*' --sort=version:refname | tail -n 1`, {silent:true});
+        let tag: string = gitTag.stdout.slice(0,gitTag.stdout.length - 1); // Trim newline
         return tag;
     }
 }
