@@ -48,6 +48,6 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "@types/shelljs": "^0.8.7"
+    "@types/shelljs": "^0.8.8"
   }
 }
