@@ -1,11 +1,5 @@
 name: Milestone15$(Rev:.r)
 
-resources:
-  repositories:
-  - repository: forcedi # The name used to reference this repository in the checkout step
-    type: git
-    name: force-di
-
 pr:
   branches:
     include:
@@ -43,6 +37,36 @@ variables:
 
 
 stages:
+
+- stage: Development
+  dependsOn: []
+  jobs:
+
+  - template: build_templates/deciderjob.yml  
+
+  - deployment: BuildAzPipelines
+    displayName: 'Build and Deploy Azure Pipelines Extension to Develop'
+    dependsOn: InstallNodeModules
+    variables:
+      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
+    timeoutInMinutes: 40
+    pool:
+      vmImage: 'windows-latest'
+    environment: develop
+    strategy:
+       runOnce:
+         deploy:
+           steps:
+
+             - template: build_templates/buildazpipelines.yml  
+               parameters:
+                commitToGit: false
+                stageToDeploy: 'dev'
+                version: 'dev'
+                environmentToDeploy: 'develop'
+                toBuild: true
+                organization: safebot
+                buildNumber: $(minor)
 
 #Pull Request Review : Triggered for any PRs               
 - stage: Review
