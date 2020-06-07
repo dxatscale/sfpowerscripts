@@ -16,7 +16,7 @@
     "fs-extra": "^8.1.0",
     "ignore": "^5.1.6",
     "rimraf": "^3.0.2",
-    "shelljs": "^0.8.4",
+    "simple-git": "^2.5.0",
     "unzip-stream": "0.3.0"
   },
   "repository": {
@@ -33,8 +33,5 @@
   "bugs": {
     "url": "https://github.com/Accenture/sfpowerscripts/issues"
   },
-  "homepage": "https://github.com/Accenture/sfpowerscripts#readme",
-  "devDependencies": {
-    "@types/node": "^13.13.0"
-  }
+  "homepage": "https://github.com/Accenture/sfpowerscripts#readme"
 }

@@ -2,7 +2,6 @@ import tl = require("azure-pipelines-task-lib/task");
 import child_process = require("child_process");
 import * as secureFilesCommon from "../Common/SecureFileHelpers";
 import { isNullOrUndefined } from "util";
-import { AppInsights } from "../Common/AppInsights";
 import fs = require("fs-extra");
 import path = require("path");
 const nanoid = require('nanoid')
@@ -14,8 +13,6 @@ async function run() {
     const isDevHub: boolean = tl.getBoolInput("isdevhub", true);
     const alias: string = tl.getInput("alias", true);
 
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
-    AppInsights.trackTask("sfpwowerscript-authenticateorg-task");
 
 
     if (tl.getVariable("Agent.OS") == "Windows_NT") {
@@ -40,7 +37,6 @@ async function run() {
 
       authUsingJWT(isDevHub, alias, clientid, jwt_key_filePath, username);
 
-      AppInsights.trackTaskEvent("sfpwowerscript-authenticateorg-task","authUsingJWT");
 
     } else if (method == "Credentials") {
       const username: string = tl.getInput("username", true);
@@ -48,8 +44,6 @@ async function run() {
       const securitytoken: string = tl.getInput("securitytoken", false);
 
       authUsingCreds(isDevHub, alias, username, password, securitytoken);
-
-      AppInsights.trackTaskEvent("sfpwowerscript-authenticateorg-task","authUsingCreds");
     }
     else if (method == "ServiceConnection")
     {
@@ -60,11 +54,10 @@ async function run() {
      const isDevHub: boolean = tl.getEndpointAuthorizationParameter(connection,"environment", false)=='Production'?true:false;
     
      authUsingCreds(isDevHub, alias, username, password, securitytoken);
-     AppInsights.trackTaskEvent("sfpwowerscript-authenticateorg-task","authUsingConn");
+
     }
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
-    AppInsights.trackExcepiton("sfpwowerscript-authenticateorg-task");
   }
 }
 

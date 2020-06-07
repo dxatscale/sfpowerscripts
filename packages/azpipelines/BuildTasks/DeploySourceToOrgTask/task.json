@@ -5,11 +5,11 @@
     "description": "Deploy source to any org using a selected mechanism, This task is part of SFPowerscripts",
     "helpMarkDown": "Deploy source to org using mdapi based deploy (converts source to mdapi and use mdapi deployment) ",
     "category": "Build",
-    "author": "azlam.abdulsalam",
+    "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 7,
-        "Minor": 1,
-        "Patch": 4
+        "Major": 8,
+        "Minor": 0,
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -105,14 +105,6 @@
             "defaultValue": true,
             "required": true,
             "helpMarkDown": "Uncheck this field, to allow for empty folders not to break build, useful in the case of pre/post step uniformity across projects"
-        },
-        {
-            "name": "isTelemetryEnabled",
-            "type": "boolean",
-            "label": "Send Anonymous Usage Telemetry",
-            "defaultValue": true,
-            "required": true,
-            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
         }
     ],
     "OutputVariables": [

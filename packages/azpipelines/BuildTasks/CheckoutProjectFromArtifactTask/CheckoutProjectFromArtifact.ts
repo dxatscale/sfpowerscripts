@@ -2,13 +2,12 @@ import tl = require("azure-pipelines-task-lib/task");
 var fs = require("fs-extra");
 const path = require("path");
 import simplegit from "simple-git/promise";
-import { AppInsights } from "../Common/AppInsights";
 import { isNullOrUndefined } from "util";
 var shell = require('shelljs');
 
 async function run() {
   try {
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
+ 
 
     const artifact = tl.getInput("artifact", true);
     const artifact_type = tl.getInput("typeOfArtifact", true);
@@ -152,16 +151,8 @@ async function run() {
 
     tl.setVariable("sfpowerscripts_checked_out_path", local_source_directory);
 
-    AppInsights.trackTask("sfpwowerscript-checkoutprojectfromartifact-task");
-    AppInsights.trackTaskEvent(
-      "sfpwowerscript-checkoutprojectfromartifact-task",
-      "project_checked_out"
-    );
+  
   } catch (err) {
-    AppInsights.trackExcepiton(
-      "sfpwowerscripts-checkoutprojectfromartifact-task",
-      err
-    );
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }

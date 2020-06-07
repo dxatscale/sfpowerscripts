@@ -2,7 +2,7 @@ import tl = require("azure-pipelines-task-lib/task");
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
 var fs = require("fs");
 const path = require("path");
-import { AppInsights } from "../Common/AppInsights";
+
 
 async function run() {
   try {
@@ -13,7 +13,7 @@ async function run() {
     let devhub_alias = tl.getInput("devhub_alias", true);
     const projectDirectory = tl.getInput("project_directory", false);
 
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", false));
+
 
     let package_version_id;
 
@@ -68,16 +68,8 @@ async function run() {
 
     await promoteUnlockedPackageImpl.exec();
 
-    AppInsights.trackTask("sfpwowerscript-promoteunlockedpackage-task");
-    AppInsights.trackTaskEvent(
-      "sfpwowerscript-promoteunlockedpackage-task",
-      "package_promoted"
-    );
+   
   } catch (err) {
-    AppInsights.trackExcepiton(
-      "sfpwowerscript-promoteunlockedpackage-task",
-      err
-    );
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }

@@ -2,14 +2,10 @@ import tl = require("azure-pipelines-task-lib/task");
 import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl";
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl";
 const fs = require("fs");
-import { AppInsights } from "../Common/AppInsights";
 import simplegit from "simple-git/promise";
 
 async function run() {
   try {
-
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
-    AppInsights.trackTask("sfpwowerscripts-createunlockedpackage-task");
 
 
     let sfdx_package: string = tl.getInput("package", true);
@@ -80,8 +76,7 @@ async function run() {
         await pushGitTag(tagname);
       }
 
-      AppInsights.trackTaskEvent("sfpwowerscripts-createunlockedpackage-task","created_package");
-
+ 
       if (set_build_number) {
         console.log(`Updating build number to ${result.versionNumber}`);
         tl.updateBuildNumber(result.versionNumber);
@@ -124,7 +119,6 @@ async function run() {
       }
     }
   } catch (err) {
-    AppInsights.trackExcepiton("sfpwowerscripts-createunlockedpackage-task",err);
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }

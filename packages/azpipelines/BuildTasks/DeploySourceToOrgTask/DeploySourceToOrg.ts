@@ -2,7 +2,6 @@ import tl = require("azure-pipelines-task-lib/task");
 import  DeploySourceToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceToOrgImpl";
 import  DeploySourceResult from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceResult";
 
-import { AppInsights } from "../Common/AppInsights";
 import { isNullOrUndefined } from "util";
 
 async function run() {
@@ -13,7 +12,6 @@ async function run() {
     const project_directory: string = tl.getInput("project_directory", false);
     const source_directory: string = tl.getInput("source_directory", true);
 
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
 
     let deploySourceToOrgImpl: DeploySourceToOrgImpl;
     let mdapi_options = {};
@@ -21,7 +19,7 @@ async function run() {
     mdapi_options["wait_time"] = tl.getInput("wait_time", true);
     mdapi_options["checkonly"] = tl.getBoolInput("checkonly", true);
 
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
+
 
     if (mdapi_options["checkonly"])
       mdapi_options["validation_ignore"] = tl.getInput(
@@ -65,13 +63,7 @@ async function run() {
       tl.setResult(tl.TaskResult.Succeeded, result.message);
     }
 
-    AppInsights.trackTask("sfpowerscript-deploysourcetoorg-task");
-    AppInsights.trackTaskEvent(
-      "sfpowerscript-deploysourcetoorg-task",
-      "source_deployed"
-    );
   } catch (err) {
-    AppInsights.trackExcepiton("sfpowerscript-deploysourcetoorg-task", err);
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }

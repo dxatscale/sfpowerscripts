@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-createdeltapackage-task",
   "description": "sfpowerscripts-createdeltapackage-task",
-  "version": "4.1.1",
+  "version": "5.0.0",
   "private": true,
   "repository": {
     "type": "git",
@@ -16,8 +16,5 @@
     "@dxatscale/sfpowerscripts.core": "^0.2.0-alpha.0",
     "applicationinsights": "^1.6.0",
     "azure-pipelines-task-lib": "^2.8.0"
-  },
-  "devDependencies": {
-    "@types/node": "^12.7.2"
   }
 }

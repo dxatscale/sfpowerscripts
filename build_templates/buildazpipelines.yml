@@ -139,5 +139,5 @@ steps:
             condition: always()
             inputs:
                pathtoPublish: '$(System.DefaultWorkingDirectory)/packages/azpipelines/dist' 
-               artifactName: 'drop' 
+               artifactName: 'vsix' 
                publishLocation: 'Container' 

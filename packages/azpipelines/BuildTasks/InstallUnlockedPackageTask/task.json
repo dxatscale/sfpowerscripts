@@ -124,14 +124,6 @@
             "required": false,
             "helpMarkDown": "Do not fail the task if attached artifact is missing,Use it to skip artifact installation by removing attached artifacts"
 
-        },
-        {
-            "name": "isTelemetryEnabled",
-            "type": "boolean",
-            "label": "Send Anonymous Usage Telemetry",
-            "defaultValue": true,
-            "required": true,
-            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
         }
     ],
     "execution": {

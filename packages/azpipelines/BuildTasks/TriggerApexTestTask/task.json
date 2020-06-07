@@ -5,11 +5,11 @@
     "description": "Triggers an asynchronous apex unit  test in an org, This task is part of DX@Scale/SFPowerscripts",
     "helpMarkDown": "",
     "category": "Build",
-    "author": "azlam.abdulsalam",
+    "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 6,
-        "Minor": 1,
-        "Patch": 1
+        "Major": 7,
+        "Minor": 0,
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -71,14 +71,6 @@
             "defaultValue": "60",
             "required": true,
             "helpMarkDown": "wait time for command to finish in minutes"
-        },
-        {
-            "name": "isTelemetryEnabled",
-            "type": "boolean",
-            "label": "Send Anonymous Usage Telemetry",
-            "defaultValue": true,
-            "required": true,
-            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
         }
     ],
     "execution": {

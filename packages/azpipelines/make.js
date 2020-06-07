@@ -118,18 +118,7 @@ target.publish = function() {
     );
   } else {
     shell.exec(
-      'tfx extension publish --vsix "' +
-        packagesPath +
-        "/AzlamSalam.sfpowerscripts-" +
-        options.stage +
-        "-" +
-        manifest.version +
-        '.vsix"' +
-        " --share-with " +
-        options.organization +
-        " --token " +
-        options.token +
-        " --trace-level debug"
+      `tfx extension publish --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${options.token} --root ${binariesPath} --manifest-globs vss-extension.json --trace-level=debug`
     );
   }
 };

@@ -1,7 +1,7 @@
 import tl = require("azure-pipelines-task-lib/task");
 import child_process = require("child_process");
 import { onExit } from "@dxatscale/sfpowerscripts.core/lib/OnExit";
-import { AppInsights } from "../Common/AppInsights";
+
 
 
 async function run() {
@@ -15,7 +15,7 @@ async function run() {
     const forceinstall:boolean=tl.getBoolInput("forceinstall",false);
     const working_directory: string = tl.getInput("working_directory", false);
 
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
+
 
     let command= `npx sfdx sfpowerkit:package:dependencies:install -u ${target_org} -v ${devhub_alias} -r`
     if(apexcompileonlypackage)
@@ -41,13 +41,7 @@ async function run() {
     await onExit(child);
   
 
-    
-
-    AppInsights.trackTask("sfpowerscript-installpackagedependencies-task");
-    AppInsights.trackTaskEvent("sfpowerscript-installpackagedependencies-task","dependencies_installed");    
-
   } catch (err) {
-    AppInsights.trackExcepiton("sfpowerscript-installpackagedependencies-task",err);    
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }

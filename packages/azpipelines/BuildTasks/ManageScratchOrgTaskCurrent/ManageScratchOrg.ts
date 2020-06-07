@@ -6,15 +6,12 @@ import FileSystemInteractions from "../Common/FileSystemInteractions";
 import fs = require("fs");
 import path = require("path");
 
-import { AppInsights } from "../Common/AppInsights";
-
 async function run() {
   try {
     const action: string = tl.getInput("action", true);
     const devhub_alias: string = tl.getInput("devhub_alias", true);
 
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
-
+   
     if (action == "Create") {
       console.log("SFPowerScript.. Create a scratch org");
       const alias: string = tl.getInput("alias", true);
@@ -77,10 +74,7 @@ async function run() {
           getExpiryDate(daysToMaintain)
         );
 
-      AppInsights.trackTaskEvent(
-        "sfpwowerscript-managescratchorg-task",
-        "scratchorg_created"
-      );
+     
     } else {
       console.log("SFPowerScript.. Delete a scratch org");
 
@@ -95,15 +89,12 @@ async function run() {
       tl.debug(command);
       await deleteScratchOrgImpl.exec(command);
 
-      AppInsights.trackTaskEvent(
-        "sfpwowerscript-managescratchorg-task",
-        "scratchorg_deleted"
-      );
+    
     }
 
-    AppInsights.trackTask("sfpwowerscript-managescratchorg-task");
+   
   } catch (err) {
-    AppInsights.trackExcepiton("sfpwowerscript-managescratchorg-task", err);
+   
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }

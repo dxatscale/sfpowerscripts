@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-createunlockedpackage-task",
   "description": "sfpowerscripts-createunlockedpackage-task",
-  "version": "9.0.1",
+  "version": "9.0.2",
   "private": true,
   "repository": {
     "type": "git",
@@ -17,8 +17,5 @@
     "applicationinsights": "^1.6.0",
     "azure-pipelines-task-lib": "^2.8.0",
     "simple-git": "^2.5.0"
-  },
-  "devDependencies": {
-    "@types/node": "^12.7.2"
   }
 }

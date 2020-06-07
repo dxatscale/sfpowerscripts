@@ -5,11 +5,11 @@
     "description": "Validates  apex test coverage in the org, This task is part of SFPowerscripts",
     "helpMarkDown": "",
     "category": "Build",
-    "author": "azlam.abdulsalam",
+    "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 3,
-        "Minor": 1,
-        "Patch": 1
+        "Major": 4,
+        "Minor": 0,
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -31,14 +31,6 @@
             "defaultValue": "",
             "helpMarkDown": "The percentage of test coverage for apex clasess, that should be as per the last test run status",
             "required": true
-        },
-        {
-            "name": "isTelemetryEnabled",
-            "type": "boolean",
-            "label": "Send Anonymous Usage Telemetry",
-            "defaultValue": true,
-            "required": true,
-            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
         }
     ],
     "execution": {

@@ -1,7 +1,6 @@
 import tl = require("azure-pipelines-task-lib/task");
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl";
 const fs = require("fs");
-import { AppInsights } from "../Common/AppInsights";
 import simplegit from "simple-git/promise";
 
 async function run() {
@@ -14,7 +13,6 @@ async function run() {
     let commit_id = tl.getVariable("build.sourceVersion");
     let repository_url = tl.getVariable("build.repository.uri");
 
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
 
     let isRunBuild: boolean;
     if (isDiffCheck) {
@@ -60,14 +58,9 @@ async function run() {
         await pushGitTag(tagname);
       }
 
-      AppInsights.trackTask("sfpwowerscripts-createsourcepackage-task");
-      AppInsights.trackTaskEvent(
-        "sfpwowerscripts-createsourcepackage-task",
-        "source_package_created"
-      );
+
     }
   } catch (err) {
-    AppInsights.trackExcepiton("sfpwowerscripts-createsourcepackage-task", err);
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }
