@@ -14,6 +14,8 @@ async function run() {
     let commit_id = tl.getVariable("build.sourceVersion");
     let repository_url = tl.getVariable("build.repository.uri");
 
+    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
+
     let isRunBuild: boolean;
     if (isDiffCheck) {
       let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
@@ -27,8 +29,6 @@ async function run() {
 
     } else isRunBuild = true;
 
-
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
 
     if (isRunBuild) {
 
