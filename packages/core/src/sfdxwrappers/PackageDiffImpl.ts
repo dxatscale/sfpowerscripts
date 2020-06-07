@@ -1,8 +1,8 @@
-import { exec } from "shelljs";
 import ignore from "ignore";
 const fs = require("fs");
 import { isNullOrUndefined } from "util";
 const path = require("path");
+import git from "simple-git/promise";
 
 export default class PackageDiffImpl {
     public constructor(
@@ -25,13 +25,14 @@ export default class PackageDiffImpl {
             if (this.sfdx_package == dir.package) {
                 console.log(`Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`);
 
-                let tag = this.getLatestTag(dir.package);
+                let tag = await this.getLatestTag(dir.package);
 
                 if (tag) {
                     console.log(`Found tag ${tag} for ${dir.package}`);
+
                     // Get the list of modified files between the tag and HEAD refs
-                    let gitDiff = exec(`git diff ${tag} HEAD --name-only`, {silent:true});
-                    let modified_files: string[] = gitDiff.stdout.split("\n")
+                    let gitDiffResult: string = await git().diff([`${tag}`, `HEAD`, `--name-only`]);
+                    let modified_files: string[] = gitDiffResult.split("\n");
                     modified_files.pop(); // Remove last empty element
 
                     let forceignorePath: string;
@@ -62,9 +63,11 @@ export default class PackageDiffImpl {
         throw new Error(`Unable to find ${this.sfdx_package} in package directories`);
     }
 
-    private getLatestTag(sfdx_package): string {
-        let gitTag = exec(`git tag -l '${sfdx_package}_v*' --sort=version:refname | tail -n 1`, {silent:true});
-        let tag: string = gitTag.stdout.slice(0,gitTag.stdout.length - 1); // Trim newline
-        return tag;
+    private async getLatestTag(sfdx_package): Promise<string> {
+        let gitTagResult: string = await git().tag([`-l`, `${sfdx_package}_v*`, `--sort=version:refname`]);
+        let tags: string[] = gitTagResult.split("\n");
+        tags.pop(); // Remove last empty element
+        let latestTag = tags.pop(); // Select latest tag
+        return latestTag;
     }
 }
