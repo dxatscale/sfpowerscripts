@@ -67,7 +67,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/InstallPackageDependenciesTask/InstallPackageDependencies.js"
+            "target": "lib/InstallPackageDependencies.js"
         }
     }
 }

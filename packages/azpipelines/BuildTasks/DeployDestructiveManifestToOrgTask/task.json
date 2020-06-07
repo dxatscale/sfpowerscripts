@@ -56,7 +56,7 @@
     "OutputVariables": [],
     "execution": {
         "Node": {
-            "target": "lib/DeployDestructiveManifestToOrgTask/DeployDestructiveManifestToOrg.js"
+            "target": "lib/DeployDestructiveManifestToOrg.js"
         }
     }
 }

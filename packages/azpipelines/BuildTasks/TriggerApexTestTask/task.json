@@ -75,12 +75,12 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/TriggerApexTestTask/TriggerApexTest.js"
+            "target": "lib/TriggerApexTest.js"
         }
     },
     "postjobexecution": {
         "Node": {
-            "target": "lib/TriggerApexTestTask/PostTriggerApexTest.js",
+            "target": "lib/PostTriggerApexTest.js",
             "argumentFormat": ""
         }
     }

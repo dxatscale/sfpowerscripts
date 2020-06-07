@@ -118,7 +118,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/CreateDeltaPackageTask/CreateDeltaPackage.js"
+            "target": "lib/CreateDeltaPackage.js"
         }
     }
 }

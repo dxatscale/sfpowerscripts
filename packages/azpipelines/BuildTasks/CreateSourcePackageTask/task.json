@@ -120,7 +120,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/CreateSourcePackageTask/CreateSourcePackage.js"
+            "target": "lib/CreateSourcePackage.js"
         }
     }
 }

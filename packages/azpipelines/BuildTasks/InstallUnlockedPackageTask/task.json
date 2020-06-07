@@ -128,7 +128,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/InstallUnlockedPackageTask/InstallUnlockedPackage.js"
+            "target": "lib/InstallUnlockedPackage.js"
         }
     }
 }

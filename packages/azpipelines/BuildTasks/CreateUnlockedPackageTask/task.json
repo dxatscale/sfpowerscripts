@@ -5,7 +5,7 @@
     "description": "Creates a new package version ,This task is part of DXatScale/SFPowerscripts",
     "helpMarkDown": "Creates a new package version , Utilize this task in a package build for DX Unlocked Package",
     "category": "Build",
-    "author": "dxatascale@accenture.com",
+    "author": "dxatscale@accenture.com",
     "version": {
         "Major": 9,
         "Minor": 0,
@@ -207,7 +207,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/CreateUnlockedPackageTask/CreateUnlockedPackage.js"
+            "target": "lib/CreateUnlockedPackage.js"
         }
     }
 }

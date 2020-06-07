@@ -40,7 +40,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/ValidateDXUnlockedPackageTask/ValidateDXUnlockedPackage.js"
+            "target": "lib/ValidateDXUnlockedPackage.js"
         }
     }
 }

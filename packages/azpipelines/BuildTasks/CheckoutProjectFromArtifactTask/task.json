@@ -115,7 +115,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/CheckoutProjectFromArtifactTask/CheckoutProjectFromArtifact.js"
+            "target": "lib/CheckoutProjectFromArtifact.js"
         }
     }
 }

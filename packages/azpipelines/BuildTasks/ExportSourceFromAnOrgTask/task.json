@@ -65,7 +65,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/ExportSourceFromAnOrgTask/ExportSourceFromAnOrg.js"
+            "target": "lib/ExportSourceFromAnOrg.js"
         }
     }
 }

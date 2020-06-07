@@ -15,12 +15,7 @@ pr:
 trigger:
   branches:
     include:
-     - feature/*
-     - chore/*
-     - hoftix/*
-     - bugfix/*
      - release/*
-     - issue/*
      - develop
   paths:
     exclude:
@@ -136,7 +131,7 @@ stages:
                 buildNumber: $(minor)
   
   - job: WaitPluginToInstallonReview
-    displayName: 'Wait for  Plugin To Install on Review'
+    displayName: 'Wait for  Plugin To Publish on Review'
     dependsOn: BuildAzPipelines
     pool: server
     steps:
@@ -144,8 +139,8 @@ stages:
         inputs:
          delayForMinutes: '2' 
 
-  - job: TestPipelinesPR
-    displayName: 'Test pr tasks on dxatscalereview'
+  - job: InstallExtension
+    displayName: 'Install Extension to Review'
     dependsOn: WaitPluginToInstallonReview
     pool:
       vmImage: 'ubuntu-latest'
@@ -169,6 +164,14 @@ stages:
             script: |
              az devops extension install --extension-id sfpowerscripts-review  --publisher-id AzlamSalam --org https://dev.azure.com/dxatscalereview  
    
+          
+  - job: TestPipelinesPR
+    displayName: 'Test pr tasks on dxatscalereview'
+    dependsOn: InstallExtension
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+   
     - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@3
       displayName: 'Trigger a new build of PR Validation Test in sfpowerscriptsReview'
       continueOnError: true
@@ -188,7 +191,7 @@ stages:
 
   - job: TestPipelinesPackaging
     displayName: 'Test packaging tasks on dxatscalereview'
-    dependsOn: WaitPluginToInstallonReview
+    dependsOn: InstallExtension
     pool:
       vmImage: 'windows-latest'
     steps:

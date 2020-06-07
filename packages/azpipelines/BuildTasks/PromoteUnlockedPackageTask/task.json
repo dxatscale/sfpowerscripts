@@ -70,7 +70,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/PromoteUnlockedPackageTask/PromoteUnlockedPackage.js"
+            "target": "lib/PromoteUnlockedPackage.js"
         }
     }
 }

@@ -75,7 +75,7 @@ target.incrementversion = function() {
   var manifestPath = path.join(__dirname, "vss-extension.json");
   var manifest = JSON.parse(fs.readFileSync(manifestPath));
 
-  if (options.stage === "dev") {
+  if (options.stage === "dev" || options.stage === "review") {
     var ref = new Date(2000, 1, 1);
     var now = new Date();
     var major = semver.major(manifest.version);
@@ -118,7 +118,18 @@ target.publish = function() {
     );
   } else {
     shell.exec(
-      `tfx extension publish --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${options.token} --root ${binariesPath} --manifest-globs vss-extension.json --trace-level=debug`
+      'tfx extension publish --vsix "' +
+        packagesPath +
+        "/AzlamSalam.sfpowerscripts-" +
+        options.stage +
+        "-" +
+        manifest.version +
+        '.vsix"' +
+        " --share-with " +
+        options.organization +
+        " --token " +
+        options.token +
+        " --trace-level debug"
     );
   }
 };
