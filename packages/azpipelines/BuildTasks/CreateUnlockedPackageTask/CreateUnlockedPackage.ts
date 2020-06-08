@@ -15,8 +15,8 @@ async function run() {
     let installationkeybypass = tl.getBoolInput("installationkeybypass", true);
     let isCoverageEnabled:boolean = tl.getBoolInput("enable_coverage",true);
     let isSkipValidation:boolean = tl.getBoolInput("isValidationToBeSkipped",true);
-    let isDiffCheck: boolean = tl.getBoolInput("isDiffCheck", false);
-    let isGitTag: boolean = tl.getBoolInput("isGitTag", false);
+    let isDiffCheckActive: boolean = tl.getBoolInput("isDiffCheck", false);
+    let isGitTagActive: boolean = tl.getBoolInput("isGitTag", false);
     const set_build_number: boolean = tl.getBoolInput("set_build_number",true);
 
     let installationkey;
@@ -34,7 +34,7 @@ async function run() {
     );
 
     let isRunBuild: boolean;
-    if (isDiffCheck) {
+    if (isDiffCheckActive) {
       let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
 
       isRunBuild = await packageDiffImpl.exec();
@@ -71,7 +71,7 @@ async function run() {
 
       tl.setVariable("sfpowerscripts_package_version_id", result.packageVersionId);
 
-      if (isGitTag) {
+      if (isGitTagActive) {
         let tagname: string = `${sfdx_package}_v${result.versionNumber}`;
         await pushGitTag(tagname);
       }
@@ -119,6 +119,7 @@ async function run() {
       }
     }
   } catch (err) {
+    console.log(err);
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }
