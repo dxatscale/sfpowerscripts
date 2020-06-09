@@ -200,6 +200,12 @@ async function pushGitTag(tagname: string): Promise<void> {
   }
 
   await git
+        .addConfig("user.name", "sfpowerscripts");
+
+  await git
+        .addConfig("user.email", "sfpowerscripts@dxscale");
+
+  await git
         .silent(false)
         .addAnnotatedTag(
           tagname,
