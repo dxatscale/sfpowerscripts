@@ -92,7 +92,6 @@ async function run() {
         let repository_url = tl.getVariable("build.repository.uri");
         let commit_id = tl.getVariable("build.sourceVersion");
 
-
         let metadata = {
           package_name: sfdx_package,
           package_version_number: result.versionNumber,
