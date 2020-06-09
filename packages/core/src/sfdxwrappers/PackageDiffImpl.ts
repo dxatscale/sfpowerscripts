@@ -22,12 +22,12 @@ export default class PackageDiffImpl {
                 this.project_directory,
                 "sfdx-project.json"
             );
-          git = simplegit(this.project_directory);
+            git = simplegit(this.project_directory);
         }
-        else 
+        else
         {
-        project_config_path = "sfdx-project.json";
-        git = simplegit();
+            project_config_path = "sfdx-project.json";
+            git = simplegit();
         }
 
         let project_json = JSON.parse(fs.readFileSync(project_config_path));
