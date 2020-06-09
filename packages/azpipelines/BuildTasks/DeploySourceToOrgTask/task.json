@@ -1,10 +1,10 @@
 {
     "id": "dea3a185-c3f5-44a8-841b-1e5044864778",
     "name": "sfpowerscript-deploysourcetoorg-task",
-    "friendlyName": "Deploy Source To the provided org using metadata api",
-    "description": "Deploy source to any org using a selected mechanism, This task is part of SFPowerscripts",
-    "helpMarkDown": "Deploy source to org using mdapi based deploy (converts source to mdapi and use mdapi deployment) ",
-    "category": "Build",
+    "friendlyName": "Deploy source to the provided org using metadata api",
+    "description": "Deploy source to any org using metadata api, This task is part of SFPowerscripts",
+    "helpMarkDown": "Deploy source to org using mdapi based deploy (converts the code in source format to mdapi and use mdapi deployment) ",
+    "category": "Deploy",
     "author": "dxatscale@accenture.com",
     "version": {
         "Major": 8,
