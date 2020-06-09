@@ -123,7 +123,7 @@ export default class CreateUnlockedPackage extends SfdxCommand {
         );
 
         if (this.flags.gittag) {
-          let tagname = `${sfdx_package}_v${version_number}`;
+          let tagname = `${sfdx_package}_v${result.versionNumber}`;
           console.log(`Creating tag ${tagname}`);
           exec(`git tag -a -m "${sfdx_package} Unlocked Package ${result.versionNumber}" ${tagname} HEAD`, {silent:true});
           console.log(`Pushing tag ${tagname} to origin`);
