@@ -146,12 +146,16 @@ async function pushGitTag(tagname: string): Promise<void> {
           'Unlocked Package'
         );
 
+  console.log(`Created tag ${tagname}`);
+
   await git
       .silent(false)
       .push(
         remote,
         tagname
       );
+
+  console.log(`Pushed tag ${tagname} to repo`);
 }
 
 run();
