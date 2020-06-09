@@ -3,69 +3,38 @@ import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxw
 var fs = require("fs");
 const path = require("path");
 
-
 async function run() {
   try {
     const envname: string = tl.getInput("envname", true);
     const sfdx_package: string = tl.getInput("package", true);
-
     const package_installedfrom = tl.getInput("packageinstalledfrom", true);
+    const artifact = tl.getInput("artifact", true);
+    let package_version_id:string;
 
-
-    let package_version_id;
-
-    if (package_installedfrom == "BuildArtifact") {
-      //Figure out the id from the artifact
-
-      const artifact = tl.getInput("artifact", true);
-
-      let artifact_directory = tl.getVariable("system.artifactsDirectory");
-
-      //Newer metadata filename
+    if (package_installedfrom == "Custom") {
+      package_version_id = tl.getInput("package_version_id", false);
+    } else {
       let package_version_id_file_path;
 
-      package_version_id_file_path = path.join(
-        artifact_directory,
-        artifact,
-        "sfpowerkit_artifact",
-        `${sfdx_package}_artifact_metadata`
-      );
-
-      console.log(`Checking for directory ${package_version_id_file_path}`);
-
-      //Fallback to older format
-      if (!fs.existsSync(package_version_id_file_path)) {
-
-        console.log(`New Artifact format not found at the location ${package_version_id_file_path} `)
-
-        console.log("Falling back to older artifact format");
-        package_version_id_file_path = path.join(
-          artifact_directory,
-          artifact,
-          "sfpowerkit_artifact",
-          `artifact_metadata`
+      if (package_installedfrom == "BuildArtifact")
+        package_version_id_file_path = fetchArtifactFilePathFromBuildArtifact(
+          sfdx_package,
+          artifact
         );
-      }
-
-     
+      else if (package_installedfrom == "AzureArtifact")
+        package_version_id_file_path = fetchArtifactFilePathFromAzureArtifact(
+          sfdx_package,
+          artifact
+        );
 
       let package_metadata_json = fs
         .readFileSync(package_version_id_file_path)
         .toString();
-
-       
-
       let package_metadata = JSON.parse(package_metadata_json);
       console.log("Package Metadata:");
       console.log(package_metadata);
-      
 
       package_version_id = package_metadata.package_version_id;
-
-      console.log(`Using Package Version Id ${package_version_id}`);
-
-    } else {
-      package_version_id = tl.getInput("package_version_id", false);
     }
 
     const installationkey = tl.getInput("installationkey", false);
@@ -83,7 +52,7 @@ async function run() {
       installationkey: installationkey,
       apexcompile: apexcompile,
       securitytype: security_type,
-      upgradetype: upgrade_type
+      upgradetype: upgrade_type,
     };
 
     let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
@@ -95,10 +64,68 @@ async function run() {
     );
 
     await installUnlockedPackageImpl.exec();
-
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
+}
+
+function fetchArtifactFilePathFromBuildArtifact(
+  sfdx_package: string,
+  artifact: string
+): string {
+  let artifact_directory = tl.getVariable("system.artifactsDirectory");
+  //Newer metadata filename
+  let package_version_id_file_path = path.join(
+    artifact_directory,
+    artifact,
+    "sfpowerkit_artifact",
+    `${sfdx_package}_artifact_metadata`
+  );
+
+  console.log(`Checking for directory ${package_version_id_file_path}`);
+  //Fallback to older format
+  if (!fs.existsSync(package_version_id_file_path)) {
+    console.log(
+      `New Artifact format not found at the location ${package_version_id_file_path} `
+    );
+
+    console.log("Falling back to older artifact format");
+    package_version_id_file_path = path.join(
+      artifact_directory,
+      artifact,
+      "sfpowerkit_artifact",
+      `artifact_metadata`
+    );
+
+    if (!fs.existsSync(package_version_id_file_path)) {
+      throw new Error(
+        `Artifact from Azuze Artifact for ${sfdx_package} not found at ${package_version_id_file_path}.. Please check the inputs`
+      );
+    }
+  }
+
+  return package_version_id_file_path;
+}
+
+function fetchArtifactFilePathFromAzureArtifact(
+  sfdx_package: string,
+  artifact: string
+): string {
+  let artifact_directory = tl.getVariable("system.artifactsDirectory");
+  //Newer metadata filename
+  let package_version_id_file_path = path.join(
+    artifact_directory,
+    artifact,
+    `${sfdx_package}_artifact_metadata`
+  );
+
+  if (!fs.existsSync(package_version_id_file_path)) {
+    throw new Error(
+      `Artifact from Azuze Artifact for ${sfdx_package} not found at ${package_version_id_file_path}.. Please check the inputs`
+    );
+  }
+
+  return package_version_id_file_path;
 }
 
 run();
