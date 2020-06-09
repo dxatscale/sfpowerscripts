@@ -35,7 +35,6 @@ export default class PackageDiffImpl {
         for (let dir of project_json["packageDirectories"]) {
 
             if (this.sfdx_package == dir.package) {
-
                 console.log(`Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`);
 
                 let tag = await this.getLatestTag(git,this.sfdx_package);
@@ -78,7 +77,7 @@ export default class PackageDiffImpl {
 
     private async getLatestTag(git:any,sfdx_package:string): Promise<string> {
 
-        let gitTagResult: string = await git.tag([`-l`, `${sfdx_package}_v*`]);
+        let gitTagResult: string = await git.tag([`-l`, `${sfdx_package}_v*`, `--sort=version:refname`]);
         console.log("Analzying tags:");
         console.log(gitTagResult);
         let tags: string[] = gitTagResult.split("\n");
