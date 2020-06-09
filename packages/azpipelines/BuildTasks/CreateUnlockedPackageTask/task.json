@@ -207,7 +207,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/CreateUnlockedPackage.js"
+            "target": "lib/CreateUnlockedPackageTask/CreateUnlockedPackage.js"
         }
     }
 }
