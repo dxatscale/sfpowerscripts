@@ -2,7 +2,6 @@ import ignore from "ignore";
 const fs = require("fs");
 import { isNullOrUndefined } from "util";
 const path = require("path");
-import git from "simple-git/promise";
 import simplegit from "simple-git/promise";
 
 export default class PackageDiffImpl {
