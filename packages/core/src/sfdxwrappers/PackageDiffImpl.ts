@@ -2,7 +2,7 @@ import ignore from "ignore";
 const fs = require("fs");
 import { isNullOrUndefined } from "util";
 const path = require("path");
-import simplegit from "simple-git/promise";
+import simplegit, {SimpleGit}  from "simple-git/promise";
 
 export default class PackageDiffImpl {
 
@@ -14,7 +14,7 @@ export default class PackageDiffImpl {
 
     public async exec(): Promise<boolean> {
 
-        let git;
+        let git:SimpleGit;
 
         let project_config_path: string;
         if (!isNullOrUndefined(this.project_directory)) {
@@ -78,7 +78,7 @@ export default class PackageDiffImpl {
 
     private async getLatestTag(git:any,sfdx_package:string): Promise<string> {
 
-        let gitTagResult: string = await git.tag([`-l`, `${sfdx_package}_v*`, `--sort=version:taggerdate`]);
+        let gitTagResult: string = await git.tag([`-l`, `${sfdx_package}_v*`]);
         console.log("Analzying tags:");
         console.log(gitTagResult);
         let tags: string[] = gitTagResult.split("\n");

@@ -35,6 +35,8 @@ async function run() {
 
     let isRunBuild: boolean;
     if (isDiffCheckActive) {
+
+      console.debug("Heading to package Diff Impl");
       let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
 
       isRunBuild = await packageDiffImpl.exec();
@@ -175,6 +177,8 @@ async function pushGitTag(tagname: string): Promise<void> {
 
   tl.debug(`Repository URL ${repository_url}`);
 
+
+  //Need to add checks to make it work in classic release pipeline
   const git = simplegit(tl.getVariable("Build.Repository.LocalPath"));
 
   let remote: string;
