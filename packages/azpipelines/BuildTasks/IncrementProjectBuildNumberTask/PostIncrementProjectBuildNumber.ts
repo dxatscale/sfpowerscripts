@@ -1,5 +1,5 @@
 import tl = require("azure-pipelines-task-lib/task");
-import { AppInsights } from "../Common/AppInsights";
+
 import simplegit from "simple-git/promise";
 
 async function run() {
@@ -17,8 +17,7 @@ async function run() {
 
 
 
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
-
+  
     const isPushChanges = tl.getBoolInput("pushchanges", false);
     const pushOption = tl.getInput("pushoption", false);
 
@@ -120,16 +119,9 @@ async function run() {
       }
     }
 
-    AppInsights.trackTask("sfpwowerscript-incrementversionnumber-task");
-    AppInsights.trackTaskEvent(
-      "sfpwowerscript-incrementversionnumber-task",
-      "git_pushed"
-    );
+   
   } catch (err) {
-    AppInsights.trackExcepiton(
-      "sfpwowerscript-incrementversionnumber-task",
-      err
-    );
+   
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }

@@ -75,7 +75,7 @@ target.incrementversion = function() {
   var manifestPath = path.join(__dirname, "vss-extension.json");
   var manifest = JSON.parse(fs.readFileSync(manifestPath));
 
-  if (options.stage === "dev") {
+  if (options.stage === "dev" || options.stage === "review") {
     var ref = new Date(2000, 1, 1);
     var now = new Date();
     var major = semver.major(manifest.version);

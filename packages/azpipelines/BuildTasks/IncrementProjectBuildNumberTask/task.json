@@ -5,10 +5,10 @@
     "description": "Increment the selected version number mentioned in the sfdx-project.json",
     "helpMarkDown": "Increment the selected version counter by one and adds a commit to  to your repository, it doesnt push the change to the repository, have a step after the package is created to push this commit to the repository ",
     "category": "Build",
-    "author": "azlam.abdulsalam",
+    "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 8,
-        "Minor": 3,
+        "Major": 9,
+        "Minor": 0,
         "Patch": 0
     },
     "runsOn": [
@@ -154,14 +154,6 @@
             "required": true,
             "helpMarkDown": "App Password/PAT for the Version Control Provider",
             "visibleRule": "versionControlProvider = otherGit"
-        },
-        {
-            "name": "isTelemetryEnabled",
-            "type": "boolean",
-            "label": "Send Anonymous Usage Telemetry",
-            "defaultValue": true,
-            "required": true,
-            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
         }
     ],
     "OutputVariables": [
@@ -172,12 +164,12 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/IncrementProjectBuildNumberTask/IncrementProjectBuildNumber.js"
+            "target": "lib/IncrementProjectBuildNumber.js"
         }
     },
     "postjobexecution": {
         "Node": {
-            "target": "lib/IncrementProjectBuildNumberTask/PostIncrementProjectBuildNumber.js",
+            "target": "lib/PostIncrementProjectBuildNumber.js",
             "argumentFormat": ""
         }
     }

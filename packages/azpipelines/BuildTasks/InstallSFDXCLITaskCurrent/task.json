@@ -5,11 +5,11 @@
     "description": "This plugin installs SFDX CLI, SFPowerkit plugin, Please install this task as the first task before any other tasks in the plugin This task is part of sfpowerscripts.",
     "helpMarkDown": "Install SFDX - Use this task to install sfdx plugin and the open source sfpowerkit by providing the respective version. More details available at https://sfpowerscripts.com/tasks/common-utility-tasks/install%20sfdx%20cli",
     "category": "Utility",
-    "author": "azlam.abdulsalam",
+    "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 6,
+        "Major": 7,
         "Minor": 0,
-        "Patch": 5
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -47,19 +47,11 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "Provide the list of other plugins seperated by comma in the format \"pluginame1@version,pluginname2@version)\""
-        },
-        {
-            "name": "isTelemetryEnabled",
-            "type": "boolean",
-            "label": "Send Anonymous Usage Telemetry",
-            "defaultValue": true,
-            "required": true,
-            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
         }
     ],
     "execution": {
         "Node": {
-            "target": "lib/InstallSFDXCLITaskCurrent/InstallSFDXCLI.js"
+            "target": "lib/InstallSFDXCLI.js"
         }
     }
 }

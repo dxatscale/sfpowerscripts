@@ -1,6 +1,6 @@
 
 
-SET INPUT_DIRECTORY=C:\Projects\force-di
+SET INPUT_DIRECTORY=..\..\..\..\tests\force-di
 SET INPUT_RULESET=sfpowerkit
 SET INPUT_FORMAT=text
 SET INPUT_VERSION=6.21.0

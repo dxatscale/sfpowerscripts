@@ -1,5 +1,4 @@
 import tl = require("azure-pipelines-task-lib/task");
-import { AppInsights } from "../Common/AppInsights";
 import { isNullOrUndefined } from "util";
 import CreateDeltaPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDeltaPackageImpl";
 const path = require("path");
@@ -40,8 +39,7 @@ async function run() {
       tl.updateBuildNumber(versionName);
     }
 
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
-
+  
     let createDeltaPackageImp = new CreateDeltaPackageImpl(
       projectDirectory,
       sfdx_package,

@@ -1,11 +1,5 @@
 name: Milestone15$(Rev:.r)
 
-resources:
-  repositories:
-  - repository: forcedi # The name used to reference this repository in the checkout step
-    type: git
-    name: force-di
-
 pr:
   branches:
     include:
@@ -21,10 +15,6 @@ pr:
 trigger:
   branches:
     include:
-     - feature/*
-     - chore/*
-     - hoftix/*
-     - bugfix/*
      - release/*
      - develop
   paths:
@@ -35,7 +25,7 @@ trigger:
 variables:
  - group: Tokens
  - name: major
-   value: 13
+   value: 15
    
  - name: minor
    value: $[counter(variables['major'], 1)] 
@@ -43,6 +33,55 @@ variables:
 
 
 stages:
+
+- stage: Development
+  dependsOn: []
+  condition:  eq(variables['build.Reason'], 'Manual')
+  jobs:
+
+  - template: build_templates/deciderjob.yml  
+
+  - deployment: BuildAzPipelines
+    displayName: 'Build and Deploy Azure Pipelines Extension to Develop'
+    dependsOn: InstallNodeModules
+    variables:
+      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
+    timeoutInMinutes: 40
+    pool:
+      vmImage: 'windows-latest'
+    environment: develop
+    strategy:
+       runOnce:
+         deploy:
+           steps:
+
+             - template: build_templates/buildazpipelines.yml  
+               parameters:
+                commitToGit: false
+                stageToDeploy: 'dev'
+                version: 'dev'
+                environmentToDeploy: 'develop'
+                toBuild: true
+                organization: safebot
+                buildNumber: $(minor)
+ 
+             - task: CmdLine@2
+               displayName: 'Login to the org'
+               inputs:
+                     script: |
+                      echo $(safebot_pat) | az devops login --org  https://dev.azure.com/safebot
+
+             - task: CmdLine@2
+               displayName: 'Uninstall the extension'
+               inputs:
+                     script: |
+                      az devops extension uninstall --extension-id sfpowerscripts-dev  --publisher-id AzlamSalam --org https://dev.azure.com/safebot -y
+
+             - task: CmdLine@2
+               displayName: 'Install the new version of the plugin'
+               inputs:
+                     script: |
+                      az devops extension install --extension-id sfpowerscripts-dev  --publisher-id AzlamSalam --org https://dev.azure.com/safebot 
 
 #Pull Request Review : Triggered for any PRs               
 - stage: Review
@@ -92,7 +131,7 @@ stages:
                 buildNumber: $(minor)
   
   - job: WaitPluginToInstallonReview
-    displayName: 'Wait for  Plugin To Install on Review'
+    displayName: 'Wait for  Plugin To Publish on Review'
     dependsOn: BuildAzPipelines
     pool: server
     steps:
@@ -100,17 +139,43 @@ stages:
         inputs:
          delayForMinutes: '2' 
 
-  - job: TestPipelinesPR
-    displayName: 'Test pr tasks on dxatscalereview'
+  - job: InstallExtension
+    displayName: 'Install Extension to Review'
     dependsOn: WaitPluginToInstallonReview
     pool:
       vmImage: 'ubuntu-latest'
     steps:
 
-      - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@3
-        displayName: 'Trigger a new build of PR Validation Test in sfpowerscriptsReview'
-        continueOnError: true
-        inputs:
+    - task: CmdLine@2
+      displayName: 'Login to the org'
+      inputs:
+            script: |
+             echo $(dxatscalereview_extension_pat) | az devops login --org  https://dev.azure.com/dxatscalereview
+
+    - task: CmdLine@2
+      displayName: 'Uninstall the extension'
+      inputs:
+            script: |
+             az devops extension uninstall --extension-id sfpowerscripts-review  --publisher-id AzlamSalam --org https://dev.azure.com/dxatscalereview -y
+
+    - task: CmdLine@2
+      displayName: 'Install the new version of the plugin'
+      inputs:
+            script: |
+             az devops extension install --extension-id sfpowerscripts-review  --publisher-id AzlamSalam --org https://dev.azure.com/dxatscalereview  
+   
+          
+  - job: TestPipelinesPR
+    displayName: 'Test pr tasks on dxatscalereview'
+    dependsOn: InstallExtension
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+   
+    - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@3
+      displayName: 'Trigger a new build of PR Validation Test in sfpowerscriptsReview'
+      continueOnError: true
+      inputs:
           definitionIsInCurrentTeamProject: false
           tfsServer: 'https://dev.azure.com/dxatscalereview'
           teamProject: sfpowerscriptsreview
@@ -122,9 +187,11 @@ stages:
           username: 'azlam.abdulsalam'
           password: '$(dxatscalereview_pat)'
 
+  
+
   - job: TestPipelinesPackaging
     displayName: 'Test packaging tasks on dxatscalereview'
-    dependsOn: WaitPluginToInstallonReview
+    dependsOn: InstallExtension
     pool:
       vmImage: 'windows-latest'
     steps:

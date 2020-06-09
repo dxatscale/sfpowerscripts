@@ -2,7 +2,6 @@ import tl = require("azure-pipelines-task-lib/task");
 import IncrementProjectBuildNumberImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl";
 import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
-import { AppInsights } from "../Common/AppInsights";
 
 async function run() {
   try {
@@ -14,7 +13,7 @@ async function run() {
 
     const commit_changes: boolean = tl.getBoolInput("commit_changes",false);
 
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
+
    
      const runNumber = tl.getVariable('build.buildNumber');
 
@@ -59,13 +58,10 @@ async function run() {
       console.log(exec_result.toString());
     }
     
-    
-
-  AppInsights.trackTask("sfpwowerscript-incrementversionnumber-task");
-  AppInsights.trackTaskEvent("sfpwowerscript-incrementversionnumber-task","project_version_incremented");    
+ 
     
   } catch (err) {
-    AppInsights.trackExcepiton("sfpwowerscript-incrementversionnumber-task",err);    
+
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }

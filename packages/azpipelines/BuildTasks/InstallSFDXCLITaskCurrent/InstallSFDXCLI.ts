@@ -1,6 +1,5 @@
 import tl = require("azure-pipelines-task-lib/task");
 import child_process = require("child_process");
-import { AppInsights } from "../Common/AppInsights";
 import fs = require("fs-extra");
 import { isNullOrUndefined } from "util";
 import path = require("path");
@@ -8,7 +7,6 @@ import path = require("path");
 
 async function run() {
   try {
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
     console.log("SFPowerScript.. Install SFDX/SFPowerkit");
 
     const cli_version: string = tl.getInput("sfdx_cli_version", false);
@@ -99,11 +97,8 @@ async function run() {
 
    
 
-    AppInsights.trackTask("sfpwowerscript-installsfdx-task");
-    AppInsights.trackTaskEvent("sfpwowerscript-installsfdx-task");
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
-    AppInsights.trackExcepiton("Install SFDX with sfpowerkit", err);
   }
 }
 

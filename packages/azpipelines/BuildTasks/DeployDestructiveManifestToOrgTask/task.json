@@ -5,11 +5,11 @@
     "description": "Deploy destructive manifest to an authenticated org, This task is part of SFPowerscripts",
     "helpMarkDown": "An empty package.xml will be automatically created, Read more about the task at  https://sfpowerscripts.com/tasks/deployment-tasks/deploy-destructive-maifest-to-an-org/",
     "category": "Build",
-    "author": "azlam.abdulsalam",
+    "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 3,
-        "Minor": 1,
-        "Patch": 1
+        "Major": 4,
+        "Minor": 0,
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -51,20 +51,12 @@
             "defaultValue": "",
             "helpMarkDown": "The location to the xml file which contains the destructive changes",
             "visibleRule": "method = FilePath"
-        },
-        {
-            "name": "isTelemetryEnabled",
-            "type": "boolean",
-            "label": "Send Anonymous Usage Telemetry",
-            "defaultValue": true,
-            "required": true,
-            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
         }
     ],
     "OutputVariables": [],
     "execution": {
         "Node": {
-            "target": "lib/DeployDestructiveManifestToOrgTask/DeployDestructiveManifestToOrg.js"
+            "target": "lib/DeployDestructiveManifestToOrg.js"
         }
     }
 }

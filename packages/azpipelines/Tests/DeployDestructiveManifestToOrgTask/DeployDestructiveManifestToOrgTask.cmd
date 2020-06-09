@@ -1,6 +1,6 @@
 SET INPUT_TARGET_ORG=test_ci_demo
 SET INPUT_METHOD=FilePath
-SET INPUT_DESTRUCTIVE_MANIFEST_FILEPATH=C:\Projects\force-di\destructiveChanges.xml
+SET INPUT_DESTRUCTIVE_MANIFEST_FILEPATH=..\..\..\..\tests\force-di\destructiveChanges.xml
 
 
 

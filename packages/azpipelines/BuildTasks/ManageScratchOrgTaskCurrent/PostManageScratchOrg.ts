@@ -1,7 +1,6 @@
 import tl = require("azure-pipelines-task-lib/task");
 import DeleteScratchOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeleteScratchOrgImpl";
 
-import { AppInsights } from "../Common/AppInsights";
 
 
 async function run() {
@@ -22,15 +21,10 @@ async function run() {
       tl.debug(command);
       await deleteScratchOrgImpl.exec(command);
 
-      AppInsights.trackTaskEvent(
-        "sfpwowerscript-managescratchorg-task",
-        "scratchorg_deleted"
-      );
-
-      AppInsights.trackTask("sfpwowerscript-managescratchorg-task");
+    
     }
   } catch (err) {
-    AppInsights.trackExcepiton("sfpwowerscript-managescratchorg-task", err);
+
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }

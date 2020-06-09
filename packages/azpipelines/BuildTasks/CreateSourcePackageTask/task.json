@@ -1,15 +1,15 @@
 {
     "id": "50de2eba-73bc-4cd6-82bc-89853925830c",
     "name": "sfpwowerscripts-createsourcepackage-task",
-    "friendlyName": "Creates a new  version of  Source Based Repo",
-    "description": "Creates a new  version of  Source Based Repo ,This task is part of DX@Scale/SFPowerscripts",
+    "friendlyName": "Creates a new  version of  Source Based Package",
+    "description": "Creates a new  version of  Source Based Package ,This task is part of DX@Scale/SFPowerscripts",
     "helpMarkDown": "This task simulates a packaging experience similar to unlocking packaging, just by writing the commit id to an artifact. It is basically to help with the release pipelines",
     "category": "Build",
-    "author": "azlam.abdulsalam",
+    "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 7,
+        "Major": 8,
         "Minor": 0,
-        "Patch": 5
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -33,6 +33,22 @@
             "helpMarkDown": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task"
         },
         {
+            "name": "isDiffCheck",
+            "type": "boolean",
+            "label": "Only run task if package has changed",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Check this box to enable package creation only when the package has been modified"
+        },
+        {
+            "name": "isGitTag",
+            "type": "boolean",
+            "label": "Tag latest commit ID with package name and version",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Tags the latest commit with the package name and version, upon successful build"
+        },
+        {
             "name": "project_directory",
             "type": "string",
             "label": "Project Directory",
@@ -41,12 +57,65 @@
             "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed"
         },
         {
-            "name": "isTelemetryEnabled",
-            "type": "boolean",
-            "label": "Send Anonymous Usage Telemetry",
-            "defaultValue": true,
+            "name": "versionControlProvider",
+            "type": "pickList",
+            "label": "Select the version control provider",
+            "defaultValue": "github",
+            "options": {
+                "github": "GitHub",
+                "githubEnterprise": "GitHub Enterprise",
+                "bitbucket": "BitBucket Cloud",
+                "azureRepo": "Azure Repo",
+                "otherGit": "Other Git"
+            },
+            "required": false,
+            "helpMarkDown": "Select a version control provider from the dropdown",
+            "visibleRule": "isGitTag = true"
+        },
+        {
+            "name": "github_connection",
+            "type": "connectedService:github:OAuth,PersonalAccessToken,OAuth2",
+            "label": "GitHub Connection",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Specify the service connection name for your GitHub connection. Please note this service connection have permissions to read to the correspinding repostiory. Learn more about service connections [here](https://aka.ms/AA3am5s).",
+            "visibleRule": "versionControlProvider = github"
+        },
+        {
+            "name": "bitbucket_connection",
+            "type": "connectedService:bitbucket:OAuth,PersonalAccessToken,OAuth2",
+            "label": "BitBucket Connection",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Specify the service connection name for your BitBucket connection. Please note this service connection have permissions to read to the correspinding repostiory. Learn more about service connections [here](https://aka.ms/AA3am5s).",
+            "visibleRule": "versionControlProvider = bitbucket"
+        },
+        {
+            "name": "github_enterprise_connection",
+            "type": "connectedService:githubenterprise:OAuth,PersonalAccessToken,OAuth2",
+            "label": "GitHub Enterprise Connection",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Specify the service connection name for your Git Hub Enterprise connection. Please note this service connection have permissions to read from the correspinding repostiory. Learn more about service connections [here](https://aka.ms/AA3am5s).",
+            "visibleRule": "versionControlProvider = githubEnterprise"
+        },
+        {
+            "name": "username",
+            "type": "string",
+            "label": "Username",
+            "defaultValue": "",
+            "helpMarkDown": "Username for the Version Control Provider",
             "required": true,
-            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
+            "visibleRule": "versionControlProvider = otherGit"
+        },
+        {
+            "name": "password",
+            "type": "string",
+            "label": "Password",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "App Password/PAT for the Version Control Provider",
+            "visibleRule": "versionControlProvider = otherGit"
         }
     ],
     "execution": {

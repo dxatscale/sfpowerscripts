@@ -5,11 +5,11 @@
     "description": "This taks is used to promote an unlocked package before installing into production, This task is part of DX@Scale/SFPowerscripts",
     "helpMarkDown": "Read more info about the task at https://sfpowerscripts.com/tasks/packaging-tasks/promote%20an%20unlocked%20package/, Ensure the required prerequisite tasks are run before this taks is executed",
     "category": "Build",
-    "author": "azlam.abdulsalam",
+    "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 4,
+        "Major": 5,
         "Minor": 0,
-        "Patch": 1
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -66,19 +66,11 @@
             "defaultValue": "HubOrg",
             "required": true,
             "helpMarkDown": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
-        },
-        {
-            "name": "isTelemetryEnabled",
-            "type": "boolean",
-            "label": "Send Anonymous Usage Telemetry",
-            "defaultValue": false,
-            "required": true,
-            "helpMarkDown": "Enabling this will help us to collect information on the tasks and improve services. All information collected is anonymised, please check code repository to understand what data is collected"
         }
     ],
     "execution": {
         "Node": {
-            "target": "lib/PromoteUnlockedPackageTask/PromoteUnlockedPackage.js"
+            "target": "lib/PromoteUnlockedPackage.js"
         }
     }
 }

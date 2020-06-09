@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-deploysourcetoorg-task",
   "description": "sfpowerscripts-deploysourcetoorg-task",
-  "version": "7.1.4",
+  "version": "8.0.0",
   "private": true,
   "repository": {
     "type": "git",
@@ -14,11 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "@dxatscale/sfpowerscripts.core": "^0.2.0-alpha.0",
-    "applicationinsights": "^1.6.0",
     "azure-pipelines-task-lib": "^2.8.0",
     "rimraf": "^3.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^12.7.2"
   }
 }

@@ -25,9 +25,6 @@
   "author": "dxatscale",
   "license": "MIT",
   "dependencies": {
-    "adm-zip": "^0.4.14",
-    "applicationinsights": "^1.7.3",
-    "axios": "^0.19.2",
     "azure-devops-extension-api": "~1.157.0",
     "azure-devops-extension-sdk": "~2.0.11",
     "azure-devops-node-api": "7.2.0",
@@ -37,7 +34,6 @@
     "nanoid": "^2.1.11",
     "react": "~16.8.1",
     "react-dom": "~16.8.1",
-    "react-loader-spinner": "^3.1.5",
     "react-virtualized": "^9.21.2",
     "sfpowerscripts-analyzewithpmd-task": "file:BuildTasks\\AnalyzeWithPMDTask",
     "sfpowerscripts-authenticateorg-task": "file:BuildTasks\\AuthenticateOrgTaskCurrent",
@@ -59,7 +55,7 @@
     "sfpowerscripts-validatedxunlockedpackage-task": "file:BuildTasks\\ValidateDXUnlockedPackageTask",
     "sfpowerscripts-validatetestcoverage-task": "file:BuildTasks\\ValidateTestCoveragePackageTask",
     "shelljs": "^0.8.3",
-    "simple-git": "^1.132.0",
+    "simple-git": "2.0.0",
     "unzip-stream": "0.3.0"
   },
   "devDependencies": {

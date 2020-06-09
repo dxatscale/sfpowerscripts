@@ -1,13 +1,12 @@
 import tl = require("azure-pipelines-task-lib/task");
-import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl"
+import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl";
+import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl";
+import authGit from "../Common/VersionControlAuth";
 const fs = require("fs");
-import { AppInsights } from "../Common/AppInsights";
+import simplegit from "simple-git/promise";
 
 async function run() {
   try {
-
-    AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
-    AppInsights.trackTask("sfpwowerscripts-createunlockedpackage-task");
 
 
     let sfdx_package: string = tl.getInput("package", true);
@@ -17,6 +16,8 @@ async function run() {
     let installationkeybypass = tl.getBoolInput("installationkeybypass", true);
     let isCoverageEnabled:boolean = tl.getBoolInput("enable_coverage",true);
     let isSkipValidation:boolean = tl.getBoolInput("isValidationToBeSkipped",true);
+    let isDiffCheckActive: boolean = tl.getBoolInput("isDiffCheck", false);
+    let isGitTagActive: boolean = tl.getBoolInput("isGitTag", false);
     const set_build_number: boolean = tl.getBoolInput("set_build_number",true);
 
     let installationkey;
@@ -33,78 +34,128 @@ async function run() {
       true
     );
 
-   
+    let isRunBuild: boolean;
+    if (isDiffCheckActive) {
 
-    let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
-      sfdx_package,
-      version_number,
-      tag,
-      config_file_path,
-      installationkeybypass,
-      installationkey,
-      project_directory,
-      devhub_alias,
-      wait_time,
-      isCoverageEnabled,
-      isSkipValidation
-    );
+      console.log("Heading to package Diff Impl");
+      let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
 
-    let command: string = await createUnlockedPackageImpl.buildExecCommand();
+      isRunBuild = await packageDiffImpl.exec();
 
-    console.log(`Package Creation Command: ${command}`)
+      if (isRunBuild)
+        console.log(`Detected changes to ${sfdx_package} package...proceeding`);
+      else
+        console.log(`No changes detected for ${sfdx_package} package...skipping`);
 
-    let result:{packageVersionId:string,versionNumber:string, testCoverage:number,hasPassedCoverageCheck:boolean} = await createUnlockedPackageImpl.exec(
-      command
-    );
+    } else isRunBuild = true;
 
-    tl.setVariable("sfpowerscripts_package_version_id", result.packageVersionId);
+    if (isRunBuild) {
+      let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
+        sfdx_package,
+        version_number,
+        tag,
+        config_file_path,
+        installationkeybypass,
+        installationkey,
+        project_directory,
+        devhub_alias,
+        wait_time,
+        isCoverageEnabled,
+        isSkipValidation
+      );
 
-    AppInsights.trackTaskEvent("sfpwowerscripts-createunlockedpackage-task","created_package");
+      let command: string = await createUnlockedPackageImpl.buildExecCommand();
 
-    if (set_build_number) {
-      console.log(`Updating build number to ${result.versionNumber}`);
-      tl.updateBuildNumber(result.versionNumber);
-    }
+      console.log(`Package Creation Command: ${command}`)
+
+      let result:{packageVersionId:string,versionNumber:string, testCoverage:number,hasPassedCoverageCheck:boolean} = await createUnlockedPackageImpl.exec(
+        command
+      );
+
+      tl.setVariable("sfpowerscripts_package_version_id", result.packageVersionId);
+
+      if (isGitTagActive) {
+        let tagname: string = `${sfdx_package}_v${result.versionNumber}`;
+        await pushGitTag(tagname);
+      }
+
+
+      if (set_build_number) {
+        console.log(`Updating build number to ${result.versionNumber}`);
+        tl.updateBuildNumber(result.versionNumber);
+      }
 
 
 
-    if (build_artifact_enabled) {
+      if (build_artifact_enabled) {
 
-      let repository_url = tl.getVariable("build.repository.uri");
-      let commit_id = tl.getVariable("build.sourceVersion");
+        let repository_url = tl.getVariable("build.repository.uri");
+        let commit_id = tl.getVariable("build.sourceVersion");
 
 
-      let metadata = {
-        package_name: sfdx_package,
-        package_version_number: result.versionNumber,
-        package_version_id: result.packageVersionId,
-        sourceVersion: commit_id,
-        repository_url:repository_url,
-        test_coverage:result.testCoverage,
-        has_passed_coverage_check:result.hasPassedCoverageCheck,
-        package_type:"unlocked"
-     };
+        let metadata = {
+          package_name: sfdx_package,
+          package_version_number: result.versionNumber,
+          package_version_id: result.packageVersionId,
+          sourceVersion: commit_id,
+          repository_url:repository_url,
+          test_coverage:result.testCoverage,
+          has_passed_coverage_check:result.hasPassedCoverageCheck,
+          package_type:"unlocked"
+        };
 
-     let artifactFileName:string = `/${sfdx_package}_artifact_metadata`;
+        let artifactFileName:string = `/${sfdx_package}_artifact_metadata`;
 
-      fs.writeFileSync(__dirname + artifactFileName, JSON.stringify(metadata));
+        fs.writeFileSync(__dirname + artifactFileName, JSON.stringify(metadata));
 
-      let data = {
-        artifacttype: "container",
-        artifactname: "sfpowerkit_artifact"
-      };
+        let data = {
+          artifacttype: "container",
+          artifactname: "sfpowerkit_artifact"
+        };
 
-      // upload or copy
-      data["containerfolder"] = "sfpowerkit_artifact";
+        // upload or copy
+        data["containerfolder"] = "sfpowerkit_artifact";
 
-      // add localpath to ##vso command's properties for back compat of old Xplat agent
-      data["localpath"] = __dirname + artifactFileName;
-      tl.command("artifact.upload", data, __dirname + artifactFileName);
+        // add localpath to ##vso command's properties for back compat of old Xplat agent
+        data["localpath"] = __dirname + artifactFileName;
+        tl.command("artifact.upload", data, __dirname + artifactFileName);
+      }
     }
   } catch (err) {
-    AppInsights.trackExcepiton("sfpwowerscripts-createunlockedpackage-task",err);
+    console.log(err);
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
+}
+
+async function pushGitTag(tagname: string): Promise<void> {
+  //Need to add checks to make it work in classic release pipeline
+  const git = simplegit(tl.getVariable("Build.Repository.LocalPath"));
+
+  let remote = await authGit();
+
+  await git
+        .addConfig("user.name", "sfpowerscripts");
+
+  await git
+        .addConfig("user.email", "sfpowerscripts@dxscale");
+
+  await git
+        .silent(false)
+        .addAnnotatedTag(
+          tagname,
+          'Unlocked Package'
+        );
+
+  console.log(`Created tag ${tagname}`);
+
+  await git
+      .silent(false)
+      .push(
+        remote,
+        tagname
+      );
+
+  console.log(`Pushed tag ${tagname} to repo`);
 }
 
 run();
