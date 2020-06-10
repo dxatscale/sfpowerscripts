@@ -5,5 +5,6 @@
     "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
     "diffCheckFlagDescription": "Only build when the package has changed",
     "gitTagFlagDescription": "Tag the current commit ID with an annotated tag containing the package name and version",
+    "repoUrlFlagDescription": "Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config",
     "refNameFlagDescription": "Reference name to be prefixed to output variables"
 }
