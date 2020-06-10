@@ -123,7 +123,6 @@
             "defaultValue": false,
             "required": false,
             "helpMarkDown": "Do not fail the task if attached artifact is missing,Use it to skip artifact installation by removing attached artifacts"
-
         }
     ],
     "execution": {
