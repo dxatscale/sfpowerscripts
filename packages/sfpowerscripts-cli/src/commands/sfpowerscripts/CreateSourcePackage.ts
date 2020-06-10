@@ -32,6 +32,7 @@ export default class CreateSourcePackage extends SfdxCommand {
     projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
     diffcheck: flags.boolean({description: messages.getMessage('diffCheckFlagDescription')}),
     gittag: flags.boolean({description: messages.getMessage('gitTagFlagDescription')}),
+    repourl: flags.string({char: 'r', description: messages.getMessage('repoUrlFlagDescription')}),
     refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
   };
 
@@ -58,11 +59,12 @@ export default class CreateSourcePackage extends SfdxCommand {
       if (runBuild) {
         let commit_id = exec('git log --pretty=format:\'%H\' -n 1', {silent:true});
 
-        let repository_url: string =
-          exec('git config --get remote.origin.url', {silent:true});
+        let repository_url: string;
+        if (isNullOrUndefined(this.flags.repourl)) {
+          repository_url = exec('git config --get remote.origin.url', {silent:true});
           // Remove new line '\n' from end of url
           repository_url = repository_url.slice(0,repository_url.length - 1);
-
+        } else repository_url = this.flags.repourl;
 
         // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
 

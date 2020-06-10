@@ -36,6 +36,7 @@ export default class CreateDeltaPackage extends SfdxCommand {
     revisionto : flags.string({char: 't', description: messages.getMessage('revisionToFlagDescription')}),
     versionname: flags.string({required: true, char: 'v', description: messages.getMessage('versionNameFlagDescription')}),
     buildartifactenabled : flags.boolean({char: 'b', description: messages.getMessage('buildArtifactEnabledFlagDescription')}),
+    repourl: flags.string({description: messages.getMessage('repoUrlFlagDescription')}),
     projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
     generatedestructivemanifest: flags.boolean({char: 'x', description: messages.getMessage('generateDestructiveManifestFlagDescription')}),
     bypassdirectories: flags.string({description: messages.getMessage('bypassDirectoriesFlagDescription')}),
@@ -49,23 +50,23 @@ export default class CreateDeltaPackage extends SfdxCommand {
       const sfdx_package = this.flags.package;
       const projectDirectory = this.flags.projectdir;
       const versionName: string = this.flags.versionname;
-    
+
       let revisionFrom: string = this.flags.revisionfrom;
       let revision_to: string = this.flags.revisionto;
       let options:any = {};
-    
+
       options['bypass_directories']= this.flags.bypassdirectories;
       options['only_diff_for']= this.flags.onlydifffor;
-      
+
       if (isNullOrUndefined(revision_to)) {
         revision_to = exec('git log --pretty=format:\'%H\' -n 1', {silent:true});
       }
-    
+
       const generate_destructivemanifest = this.flags.generatedestructivemanifest;
       const build_artifact_enabled = this.flags.buildartifactenabled;
-    
+
       // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
-    
+
       let createDeltaPackageImp = new CreateDeltaPackageImpl(
         projectDirectory,
         sfdx_package,
@@ -75,30 +76,32 @@ export default class CreateDeltaPackage extends SfdxCommand {
         options
       );
       let command = await createDeltaPackageImp.buildExecCommand();
-  
+
       await createDeltaPackageImp.exec(command);
-  
+
       let artifactFilePath = path.join(
         process.env.PWD,
         `${sfdx_package}_src_delta`
       );
-      
+
       if (!isNullOrUndefined(this.flags.refname)) {
         fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_delta_package_path=${artifactFilePath}\n`, {flag:'a'});
       } else {
         fs.writeFileSync('.env', `sfpowerscripts_delta_package_path=${artifactFilePath}\n`, {flag:'a'});
       }
 
-      if (build_artifact_enabled) {  
-        // Write artifact metadata 
-  
-        let repository_url:any = 
-          exec('git config --get remote.origin.url', {silent:true});
+      if (build_artifact_enabled) {
+        // Write artifact metadata
+
+        let repository_url: string;
+        if (isNullOrUndefined(this.flags.repourl)) {
+          repository_url = exec('git config --get remote.origin.url', {silent:true});
           // Remove new line '\n' from end of url
           repository_url = repository_url.slice(0,repository_url.length - 1);
-  
+        } else repository_url = this.flags.repourl;
+
         let commit_id = exec('git log --pretty=format:\'%H\' -n 1', {silent:true});
-  
+
         let metadata = {
           package_name: sfdx_package,
           sourceVersion: commit_id,
@@ -106,14 +109,14 @@ export default class CreateDeltaPackage extends SfdxCommand {
           package_type: "delta",
           package_version_name: versionName
         };
-        
+
         let artifactFileName: string = `/${sfdx_package}_artifact_metadata`;
-  
+
         fs.writeFileSync(
           process.env.PWD + artifactFileName,
           JSON.stringify(metadata)
         );
-        
+
         if (!isNullOrUndefined(this.flags.refname)) {
           fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
         } else {
@@ -123,7 +126,7 @@ export default class CreateDeltaPackage extends SfdxCommand {
     } catch (err) {
       console.log(err);
       // Fail the task when an error occurs
-      process.exit(1); 
-    }  
+      process.exit(1);
+    }
   }
 }
