@@ -3,7 +3,7 @@
     "name": "sfpwowerscript-installunlockedpackage-task",
     "friendlyName": "Install an unlocked package to an org",
     "description": "Installs an unlocked package to an org",
-    "helpMarkDown": "Installs an unlocked package by passing the build artifact or by passing the package version id",
+    "helpMarkDown": "Installs an unlocked package by passing the build artifact, azure artifact or by passing the package version id",
     "category": "Deploy",
     "author": "dxatscale@accenture.com",
     "version": {
@@ -55,17 +55,17 @@
         {
             "name": "artifact",
             "type": "string",
-            "label": "Name of the source alias of the artifact that is attached to this release pipeline",
+            "label": "Name of the artifact (source alias ) that is attached to this release pipeline",
             "required": false,
             "helpMarkDown": "Provide the name of the artifact which is the input to this pipeline. Please note only sfpowerkit based build artifact will work with this command",
-            "visibleRule": "packageinstalledfrom = BuildArtifact"
+            "visibleRule": "packageinstalledfrom = BuildArtifact || packageinstalledfrom = AzureArtifact"
         },
         {
             "name": "installationkey",
             "type": "string",
             "label": "Installation Key",
             "required": false,
-            "helpMarkDown": "installation key for key-protected package (default: null)"
+            "helpMarkDown": "Installation key for key-protected package (default: null)"
         },
         {
             "name": "apexcompileonlypackage",
@@ -114,7 +114,7 @@
             "label": "Publish Wait Time",
             "defaultValue": "10",
             "required": false,
-            "helpMarkDown": "number of minutes to wait for subscriber package version ID to become available in the target org"
+            "helpMarkDown": "Number of minutes to wait for subscriber package version ID to become available in the target org"
         },
         {
             "name": "skip_on_missing_artifact",

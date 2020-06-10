@@ -3,18 +3,17 @@ var fs = require("fs-extra");
 const path = require("path");
 import simplegit from "simple-git/promise";
 import { isNullOrUndefined } from "util";
-var shell = require('shelljs');
+var shell = require("shelljs");
 
 async function run() {
   try {
- 
-
     const artifact = tl.getInput("artifact", true);
     const artifact_type = tl.getInput("typeOfArtifact", true);
+    const attachedArtifactType = tl.getInput("attachedArtifactType", true);
     let packageName = tl.getInput("package", false);
-
+    let package_version_id_file_path: string;
     let version_control_provider: string;
-    let token;
+    let token: string;
     let username: string;
 
     //Read Git User Endpoint
@@ -65,12 +64,24 @@ async function run() {
       ? "artifact_metadata"
       : packageName + "_artifact_metadata";
 
-    let package_version_id_file_path = path.join(
-      artifact_directory,
-      artifact,
-      "sfpowerkit_artifact",
-      artifactFileNameSelector
-    );
+    if (attachedArtifactType == 'AzureArtifact') {
+
+      package_version_id_file_path = path.join(
+        artifact_directory,
+        artifact,
+        artifactFileNameSelector
+      );
+
+    } else {
+
+      package_version_id_file_path = path.join(
+        artifact_directory,
+        artifact,
+        "sfpowerkit_artifact",
+        artifactFileNameSelector
+      );
+      
+    }
 
     let package_metadata_json = fs
       .readFileSync(package_version_id_file_path)
@@ -78,25 +89,24 @@ async function run() {
 
     let package_metadata = JSON.parse(package_metadata_json);
 
-     //Create Location
+    //Create Location
 
-      //For Backward Compatibility, packageName could be null when upgraded
-      let local_source_directory = isNullOrUndefined(packageName)
-        ? path.join(artifact_directory, artifact, "source")
-        : path.join(artifact_directory, artifact, packageName, "source");
+    //For Backward Compatibility, packageName could be null when upgraded
+    let local_source_directory = isNullOrUndefined(packageName)
+      ? path.join(artifact_directory, artifact, "source")
+      : path.join(artifact_directory, artifact, packageName, "source");
 
-      shell.mkdir('-p', local_source_directory);
-      
-      console.log(`Source Directory created at ${local_source_directory}`);
-      console.log(`The Package Type : ${package_metadata.package_type}`);
+    shell.mkdir("-p", local_source_directory);
+
+    console.log(`Source Directory created at ${local_source_directory}`);
+    console.log(`The Package Type : ${package_metadata.package_type}`);
 
     if (
       package_metadata.package_type === "source" ||
       package_metadata.package_type === "unlocked"
     ) {
-     
       //Strinp https
-      const removeHttps = input => input.replace(/^https?:\/\//, "");
+      const removeHttps = (input) => input.replace(/^https?:\/\//, "");
 
       let repository_url = removeHttps(package_metadata.repository_url);
 
@@ -125,33 +135,38 @@ async function run() {
 
       console.log(`Checked Out ${package_metadata.sourceVersion} sucessfully`);
     } else if (package_metadata.package_type === "delta") {
-  
       //For Backward Compatibility, packageName could be null when upgraded
       let delta_artifact_location = isNullOrUndefined(packageName)
-        ? path.join(artifact_directory, artifact, "sfpowerscripts_delta_package")
-        : path.join(artifact_directory, artifact, `${packageName}_sfpowerscripts_delta_package`);
+        ? path.join(
+            artifact_directory,
+            artifact,
+            "sfpowerscripts_delta_package"
+          )
+        : path.join(
+            artifact_directory,
+            artifact,
+            `${packageName}_sfpowerscripts_delta_package`
+          );
 
       tl.debug(`Delta Directory is at ${delta_artifact_location}`);
 
       tl.debug("Files in Delta Location");
-      fs.readdirSync(delta_artifact_location).forEach(file => {
+      fs.readdirSync(delta_artifact_location).forEach((file) => {
         tl.debug(file);
       });
 
       tl.debug("Copying Files to a source directory");
       fs.copySync(delta_artifact_location, local_source_directory, {
-        overwrite: true
+        overwrite: true,
       });
     }
 
     console.log("Files in source Location");
-    fs.readdirSync(local_source_directory).forEach(file => {
+    fs.readdirSync(local_source_directory).forEach((file) => {
       console.log(file);
     });
 
     tl.setVariable("sfpowerscripts_checked_out_path", local_source_directory);
-
-  
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
