@@ -134,7 +134,14 @@ steps:
 
           - task: CmdLine@2
             displayName: 'Publish CLI/Core'
-            condition: eq( ${{ parameters.publish }},true)
+            condition: and( eq( ${{ parameters.publish }},true), or( eq( '${{ parameters.version }}','alpha'), eq( '${{ parameters.version }}','beta')) )
             inputs:
                  script: 'lerna publish from-package --yes --force-publish --no-git-tag-version --no-push --dist-tag ${{ parameters.version }}'
+                 workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+          - task: CmdLine@2
+            displayName: 'Publish CLI/Core'
+            condition: and( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}','prod'))
+            inputs:
+                 script: 'lerna publish from-package --yes --force-publish --no-git-tag-version --no-push --dist-tag latest'
                  workingDirectory: '$(System.DefaultWorkingDirectory)'
