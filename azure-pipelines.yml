@@ -94,7 +94,7 @@ stages:
   - job: BuildCLI
     displayName: 'Build To Validate CLI'
     dependsOn: InstallNodeModules
-    condition: and( succeeded('InstallNodeModules'), eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true) )
+    condition:  succeeded('InstallNodeModules')
     timeoutInMinutes: 10
     pool:
       vmImage: 'windows-latest'
@@ -108,7 +108,7 @@ stages:
   - deployment: BuildAzPipelines
     displayName: 'Build and Deploy Azure Pipelines Extension to Review'
     dependsOn: InstallNodeModules
-    condition: and(succeeded('InstallNodeModules'), or( eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ),  eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'], true )  ))
+    condition:   succeeded('InstallNodeModules')
     variables:
       isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
     timeoutInMinutes: 40
@@ -231,7 +231,7 @@ stages:
   - job: BuildCLI
     dependsOn: InstallNodeModules
     displayName: sfdx-plugin
-    condition:  and( succeeded('InstallNodeModules'), eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true) )
+    condition:   succeeded('InstallNodeModules')
     pool:
       vmImage: 'windows-latest'
     steps:
@@ -246,7 +246,7 @@ stages:
   - deployment: BuildAzPipelines
     displayName: azpipelines
     dependsOn: InstallNodeModules
-    condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
+    condition:  succeeded('InstallNodeModules')
     timeoutInMinutes: 20
     pool:
       vmImage: 'windows-latest'
@@ -279,7 +279,7 @@ stages:
   - job: BuildCLI
     displayName: sfdx-plugin
     dependsOn: InstallNodeModules
-    condition:  and( succeeded('InstallNodeModules'), eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true) )
+    condition:   succeeded('InstallNodeModules')
     pool:
       vmImage: 'windows-latest'
     steps:
@@ -294,7 +294,7 @@ stages:
   - deployment: BuildAzPipelines
     displayName: azpipelines
     dependsOn: InstallNodeModules
-    condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
+    condition:  succeeded('InstallNodeModules')
     timeoutInMinutes: 20
     pool:
       vmImage: 'windows-latest'
@@ -326,7 +326,7 @@ stages:
   - job: BuildCLI
     displayName: sfdx-plugin
     dependsOn: InstallNodeModules
-    condition:  and( succeeded('InstallNodeModules'), eq(dependencies.InstallNodeModules.outputs['Builddeciderstep.isCLIUpdated'], true) )
+    condition:   succeeded('InstallNodeModules')
     pool:
       vmImage: 'windows-latest'
     steps:
@@ -341,7 +341,7 @@ stages:
   - deployment: BuildAzPipelines
     displayName: azpipelines
     dependsOn: BuildCLI
-    condition: and(succeeded('InstallNodeModules'), eq( dependencies.InstallNodeModules.outputs['Builddeciderstep.isAzurePipelinesUpdated'], true ))
+    condition:  succeeded('InstallNodeModules')
     timeoutInMinutes: 30
     pool:
       vmImage: 'windows-latest'
