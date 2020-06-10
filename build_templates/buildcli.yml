@@ -1,43 +1,43 @@
 parameters:
-  
+
   - name: commitToGit
-    type: boolean 
+    type: boolean
     default: false
-  
+
   - name: stageToDeploy
-    type: string 
+    type: string
     default: review
-  
+
   - name: version
-    type: string 
+    type: string
     default: auto
-  
+
   - name: environmentToDeploy
-    type: string 
+    type: string
     default: development
 
   - name: organization
-    type: string 
+    type: string
     default: ''
 
 
   - name: buildNumber
-    type: string 
+    type: string
     default: ''
-  
+
   - name: toBuild
-    type: boolean 
+    type: boolean
     default: false
 
   - name: bump
-    type: string 
+    type: string
     default: 'patch'
 
   - name: publish
-    type: boolean 
+    type: boolean
     default: false
-       
-   
+
+
 
 steps:
           - checkout: self
@@ -67,21 +67,21 @@ steps:
                  script: |
                   git checkout $(fullbranchname)
                  workingDirectory: '$(System.DefaultWorkingDirectory)'
-            
+
 
           - task: Cache@2
             displayName: Cache NPM Modules
             inputs:
               key: 'npm | "$(Agent.OS)"  | package-lock.json'
               path: '$(System.DefaultWorkingDirectory)/node_modules'
-              cacheHitVar: 'npm | "$(Agent.OS)"'            
+              cacheHitVar: 'npm | "$(Agent.OS)"'
 
           - task: DownloadSecureFile@1
             displayName: 'Download secure file .npmrc'
             name: npmrc
             inputs:
                 secureFile: '8abaf6dc-ff2e-427a-971b-a98cbd48af34' # Need to change this
-            
+
 
           - task: CmdLine@2
             displayName: "Copy npmrc file to packages"
@@ -89,8 +89,8 @@ steps:
               script: |
                copy $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)\.npmrc
                copy $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)\packages\core\.npmrc
-               copy $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)\packages\sfpowerscripts-cli\.npmrc            
-               
+               copy $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)\packages\sfpowerscripts-cli\.npmrc
+
           - task: Npm@1
             displayName: 'npm install'
             inputs:
@@ -102,23 +102,23 @@ steps:
             inputs:
                 workingFile: .npmrc
                 customEndpoint: npm
-            
+
           - task: npmAuthenticate@0
             displayName: 'npm Authenticate packages/core/.npmrc'
             inputs:
                 workingFile: packages/core/.npmrc
                 customEndpoint: npm
-            
+
           - task: npmAuthenticate@0
             displayName: 'npm Authenticate packages/sfpowerscripts-cli/.npmrc'
             inputs:
                 workingFile: 'packages/sfpowerscripts-cli/.npmrc'
                 customEndpoint: npm
-            
+
 
           - script: 'npx lerna bootstrap'
             displayName: 'Bootstrap Lerna'
-        
+
           - script: 'npx lerna version ${{ parameters.bump }} --preid ${{ parameters.version }} --no-push'
             displayName: 'Increment PreRelease version'
             condition: and( eq( ${{ parameters.publish }},true ),  eq( '${{ parameters.version }}','beta'))
@@ -136,8 +136,5 @@ steps:
             displayName: 'Publish CLI/Core'
             condition: eq( ${{ parameters.publish }},true)
             inputs:
-                 script: 'lerna publish from-package --yes --force-publish --no-git-tag-version --no-push '
+                 script: 'lerna publish from-package --yes --force-publish --no-git-tag-version --no-push --dist-tag ${{ parameters.version }}'
                  workingDirectory: '$(System.DefaultWorkingDirectory)'
-
-
-
