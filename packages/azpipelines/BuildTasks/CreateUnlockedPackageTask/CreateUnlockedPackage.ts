@@ -76,7 +76,7 @@ async function run() {
 
       if (isGitTagActive) {
         let tagname: string = `${sfdx_package}_v${result.versionNumber}`;
-        await pushGitTag(tagname);
+        await pushGitTag(tagname,project_directory);
       }
 
 
@@ -126,9 +126,15 @@ async function run() {
   }
 }
 
-async function pushGitTag(tagname: string): Promise<void> {
-  //Need to add checks to make it work in classic release pipeline
-  const git = simplegit(tl.getVariable("Build.Repository.LocalPath"));
+async function pushGitTag(tagname: string,project_directory:string): Promise<void> {
+
+let tasktype = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
+
+  let git;
+  if(tasktype == 'Build')
+   git = simplegit(tl.getVariable("Build.Repository.LocalPath"));
+  else
+    git = simplegit(project_directory);
 
   let remote = await authGit();
 
