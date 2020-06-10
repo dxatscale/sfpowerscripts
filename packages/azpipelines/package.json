@@ -55,7 +55,7 @@
     "sfpowerscripts-validatedxunlockedpackage-task": "file:BuildTasks\\ValidateDXUnlockedPackageTask",
     "sfpowerscripts-validatetestcoverage-task": "file:BuildTasks\\ValidateTestCoveragePackageTask",
     "shelljs": "^0.8.3",
-    "simple-git": "2.0.0",
+    "simple-git": "2.5.0",
     "unzip-stream": "0.3.0"
   },
   "devDependencies": {
