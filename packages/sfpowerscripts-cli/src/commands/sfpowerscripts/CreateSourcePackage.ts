@@ -91,11 +91,17 @@ export default class CreateSourcePackage extends SfdxCommand {
         }
 
         if (!isNullOrUndefined(this.flags.refname)) {
+          console.log("\nOutput variables:");
           fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
-          console.log(`\nOutput variable:\n${this.flags.refname}_sfpowerscripts_artifact_metadata_directory`);
+          console.log(`${this.flags.refname}_sfpowerscripts_artifact_metadata_directory`);
+          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});
+          console.log(`${this.flags.refname}_sfpowerscripts_package_version_number`);
         } else {
+          console.log("\nOutput variables:");
           fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
-          console.log(`\nOutput variable:\nsfpowerscripts_artifact_metadata_directory`);
+          console.log(`sfpowerscripts_artifact_metadata_directory`);
+          fs.writeFileSync('.env', `sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});
+          console.log(`sfpowerscripts_package_version_number`);
         }
 
         // AppInsights.trackTask("sfpwowerscripts-createsourcepackage-task");
