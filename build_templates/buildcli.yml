@@ -121,6 +121,10 @@ steps:
 
           - script: 'npx lerna version ${{ parameters.bump }} --preid ${{ parameters.version }} --no-push'
             displayName: 'Increment PreRelease version'
+            condition: and( eq( ${{ parameters.publish }},true ),  eq( '${{ parameters.version }}','alpha'))
+
+          - script: 'npx lerna version ${{ parameters.bump }} --preid ${{ parameters.version }} --no-push'
+            displayName: 'Increment PreRelease version'
             condition: and( eq( ${{ parameters.publish }},true ),  eq( '${{ parameters.version }}','beta'))
 
           - script: 'npx lerna version ${{ parameters.bump }}  --no-push'
