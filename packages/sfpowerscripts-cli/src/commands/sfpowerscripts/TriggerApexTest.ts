@@ -38,27 +38,32 @@ export default class TriggerApexTest extends SfdxCommand {
       test_options["wait_time"] = this.flags.waittime;
       test_options["testlevel"] = this.flags.testlevel;
       test_options["synchronous"] = this.flags.synchronous;
-  
+
       if (test_options["testlevel"] == "RunSpecifiedTests")
       test_options["specified_tests"] = this.flags.specifiedtests;
       if (test_options["testlevel"] == "RunApexTestSuite")
       test_options["apextestsuite"] = this.flags.apextestsuite;
-  
-      let stagingDir: string = path.join(
-        process.env.PWD as String,
-        ".testresults"
+
+      let stagingDir: string = path.join(".testresults");
+      console.log(stagingDir);
+
+      test_options["outputdir"] = stagingDir;
+
+      const triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
+        this.flags.targetorg,
+        test_options
       );
-  
-      test_options["outputdir"] = stagingDir; 
-      
-      const triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(this.flags.targetorg, test_options)
       console.log("Executing command");
-      await triggerApexTestImpl.exec();
+      let result = await triggerApexTestImpl.exec();
+
+      if (!result.result) {
+        throw new Error(`${result.message}`);
+      } else {
+        console.log(`${result.message}`);
+      }
     } catch(err) {
-      // AppInsights.trackExcepiton("sfpwowerscript-triggerapextest-task",err);    
-  
+      // AppInsights.trackExcepiton("sfpwowerscript-triggerapextest-task",err);
       console.log(err);
-      
       // Fail the task when an error occurs
       process.exit(1);
     }
