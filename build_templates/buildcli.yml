@@ -118,12 +118,12 @@ steps:
 
           - script: 'npx lerna bootstrap'
             displayName: 'Bootstrap Lerna'
-            condition: or( eq( ${{ parameters.publish }},true), eq( ${{ parameters.version }}, 'review') )
+            condition: or( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}', 'review') )
 
 
           - script: 'npx lerna run build'
             displayName: 'Build  All  Packages'
-            condition: or( eq( ${{ parameters.publish }},true), eq( ${{ parameters.version }}, 'review') )
+            condition: or( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}', 'review') )
 
           - task: CmdLine@2
             displayName: 'Publish CLI/Core'
@@ -134,7 +134,7 @@ steps:
 
           - task: CmdLine@2
             displayName: 'Promote package'
-            condition: or( eq( ${{ parameters.version }}, 'beta'), eq( ${{ parameters.version }}, 'latest') )
+            condition: or( eq( '${{ parameters.version }}', 'beta'), eq( '${{ parameters.version }}', 'latest') )
             inputs:
                  script: |
                    FOR /F "tokens=* USEBACKQ" %%F IN (`jq -r ".version" packages/core/package.json`)
