@@ -8,9 +8,9 @@ pr:
     - release/*
   paths:
     include:
-      - '*' 
+      - '*'
     exclude:
-      - 'docs/*' 
+      - 'docs/*'
 
 trigger:
   branches:
@@ -19,17 +19,17 @@ trigger:
      - develop
   paths:
     exclude:
-    - 'docs/*' 
+    - 'docs/*'
 
 
 variables:
  - group: Tokens
  - name: major
    value: 15
-   
+
  - name: minor
-   value: $[counter(variables['major'], 200)] 
- 
+   value: $[counter(variables['major'], 200)]
+
 
 
 stages:
@@ -39,7 +39,7 @@ stages:
   condition:  eq(variables['build.Reason'], 'Manual')
   jobs:
 
-  - template: build_templates/deciderjob.yml  
+  - template: build_templates/deciderjob.yml
 
   - deployment: BuildAzPipelines
     displayName: 'Build and Deploy Azure Pipelines Extension to Develop'
@@ -55,7 +55,7 @@ stages:
          deploy:
            steps:
 
-             - template: build_templates/buildazpipelines.yml  
+             - template: build_templates/buildazpipelines.yml
                parameters:
                 commitToGit: false
                 stageToDeploy: 'dev'
@@ -64,7 +64,7 @@ stages:
                 toBuild: true
                 organization: safebot
                 buildNumber: $(minor)
- 
+
              - task: CmdLine@2
                displayName: 'Login to the org'
                inputs:
@@ -81,15 +81,15 @@ stages:
                displayName: 'Install the new version of the plugin'
                inputs:
                      script: |
-                      az devops extension install --extension-id sfpowerscripts-dev  --publisher-id AzlamSalam --org https://dev.azure.com/safebot 
+                      az devops extension install --extension-id sfpowerscripts-dev  --publisher-id AzlamSalam --org https://dev.azure.com/safebot
 
-#Pull Request Review : Triggered for any PRs               
+#Pull Request Review : Triggered for any PRs
 - stage: Review
   condition:  eq(variables['build.Reason'], 'PullRequest')
   dependsOn: []
   jobs:
 
-  - template: build_templates/deciderjob.yml  
+  - template: build_templates/deciderjob.yml
 
   - job: BuildCLI
     displayName: 'Build To Validate CLI'
@@ -99,11 +99,12 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
-      - template: build_templates/buildcli.yml  
+      - template: build_templates/buildcli.yml
         parameters:
          commitToGit: false
          bump: 'prerelease'
-         publish: false   
+         version: 'review'
+         publish: false
 
   - deployment: BuildAzPipelines
     displayName: 'Build and Deploy Azure Pipelines Extension to Review'
@@ -120,7 +121,7 @@ stages:
          deploy:
            steps:
 
-             - template: build_templates/buildazpipelines.yml  
+             - template: build_templates/buildazpipelines.yml
                parameters:
                 commitToGit: false
                 stageToDeploy: 'review'
@@ -129,7 +130,7 @@ stages:
                 toBuild: true
                 organization: dxatscale
                 buildNumber: $(minor)
-  
+
   - job: WaitPluginToInstallonReview
     displayName: 'Wait for  Plugin To Publish on Review'
     dependsOn: BuildAzPipelines
@@ -137,7 +138,7 @@ stages:
     steps:
       - task: Delay@1
         inputs:
-         delayForMinutes: '2' 
+         delayForMinutes: '2'
 
   - job: InstallExtension
     displayName: 'Install Extension to Review'
@@ -162,16 +163,16 @@ stages:
       displayName: 'Install the new version of the plugin'
       inputs:
             script: |
-             az devops extension install --extension-id sfpowerscripts-review  --publisher-id AzlamSalam --org https://dev.azure.com/dxatscalereview  
-   
-          
+             az devops extension install --extension-id sfpowerscripts-review  --publisher-id AzlamSalam --org https://dev.azure.com/dxatscalereview
+
+
   - job: TestPipelinesPR
     displayName: 'Test pr tasks on dxatscalereview'
     dependsOn: InstallExtension
     pool:
       vmImage: 'windows-latest'
     steps:
-   
+
     - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@3
       displayName: 'Trigger a new build of PR Validation Test in sfpowerscriptsReview'
       continueOnError: true
@@ -187,7 +188,7 @@ stages:
           username: 'azlam.abdulsalam'
           password: '$(dxatscalereview_pat)'
 
-  
+
 
   - job: TestPipelinesPackaging
     displayName: 'Test packaging tasks on dxatscalereview'
@@ -220,13 +221,13 @@ stages:
           username: 'azlam.abdulsalam'
           password: '$(dxatscalereview_pat)'
 
-#Merge to Develop, Deploy Alpha builds      
+#Merge to Develop, Deploy Alpha builds
 - stage: Alpha
   condition: eq(variables['build.sourceBranch'], 'refs/heads/develop')
   dependsOn: []
   jobs:
 
-  - template: build_templates/deciderjob.yml  
+  - template: build_templates/deciderjob.yml
 
   - job: BuildCLI
     dependsOn: InstallNodeModules
@@ -235,13 +236,13 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
-             - template: build_templates/buildcli.yml  
+             - template: build_templates/buildcli.yml
                parameters:
                 commitToGit: true
-                bump: 'prerelease' 
-                version: 'alpha'   
+                bump: 'prerelease'
+                version: 'alpha'
                 publish: true
-                     
+
 
   - deployment: BuildAzPipelines
     displayName: azpipelines
@@ -255,26 +256,26 @@ stages:
        runOnce:
          deploy:
            steps:
-    
-             - template: build_templates/buildazpipelines.yml  
+
+             - template: build_templates/buildazpipelines.yml
                parameters:
                 commitToGit: true
-                bump: 'prerelease' 
+                bump: 'prerelease'
                 stageToDeploy: 'alpha'
                 version: 'alpha'
                 environmentToDeploy: 'alpha'
                 toBuild: true
                 organization: dxatscalereview
                 buildNumber: $(minor)
-    
-              
+
+
 #Beta Stage
 - stage: Beta
   condition: and(succeeded('Alpha'),eq(variables['build.sourceBranch'], 'refs/heads/develop'))
   dependsOn: Alpha
   jobs:
 
-  - template: build_templates/deciderjob.yml  
+  - template: build_templates/deciderjob.yml
 
   - job: BuildCLI
     displayName: sfdx-plugin
@@ -283,13 +284,13 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
-             - template: build_templates/buildcli.yml  
+             - template: build_templates/buildcli.yml
                parameters:
                 commitToGit: false
                 bump: 'prerelease'
-                version: 'beta'  
-                publish: true
-                     
+                version: 'beta'
+                publish: false
+
 
   - deployment: BuildAzPipelines
     displayName: azpipelines
@@ -303,8 +304,8 @@ stages:
        runOnce:
          deploy:
            steps:
-    
-             - template: build_templates/buildazpipelines.yml  
+
+             - template: build_templates/buildazpipelines.yml
                parameters:
                 commitToGit: false
                 bump: 'prerelease'
@@ -321,7 +322,7 @@ stages:
   dependsOn: Beta
   jobs:
 
-  - template: build_templates/deciderjob.yml  
+  - template: build_templates/deciderjob.yml
 
   - job: BuildCLI
     displayName: sfdx-plugin
@@ -330,13 +331,13 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
-             - template: build_templates/buildcli.yml  
+             - template: build_templates/buildcli.yml
                parameters:
                 commitToGit: false
                 bump: 'patch'
-                version: 'prod'  
-                publish: true
-                     
+                version: 'latest'
+                publish: false
+
 
   - deployment: BuildAzPipelines
     displayName: azpipelines
@@ -350,8 +351,8 @@ stages:
        runOnce:
          deploy:
            steps:
-    
-             - template: build_templates/buildazpipelines.yml  
+
+             - template: build_templates/buildazpipelines.yml
                parameters:
                 commitToGit: false
                 bump: 'patch'
