@@ -50,7 +50,7 @@ async function run() {
           "AccessToken",
           true
         );
-      } else {
+      } else if( version_control_provider == "otherGit") {
         username = tl.getInput("username", true);
         token = tl.getInput("password", true);
       }
@@ -130,7 +130,15 @@ async function run() {
         remote = `https://${username}:${token}@${repository_url}`;
       }
 
-      await git.silent(false).clone(remote, local_source_directory);
+      // git already authenticated.. say hosted agent.. get the repository_url directly from the artifact
+      if(version_control_provider == "hostedAgentGit")
+        await git.silent(false).clone(package_metadata.repository_url, local_source_directory);
+      else
+         await git.silent(false).clone(remote, local_source_directory);
+
+
+
+      //Checkout the particular commit
       await git.checkout(package_metadata.sourceVersion);
 
       console.log(`Checked Out ${package_metadata.sourceVersion} sucessfully`);
