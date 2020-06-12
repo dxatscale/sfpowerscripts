@@ -73,6 +73,7 @@ async function run() {
       );
 
       tl.setVariable("sfpowerscripts_package_version_id", result.packageVersionId);
+      tl.setVariable("sfpowerscripts_package_version_number", result.versionNumber);
 
       if (isGitTagActive) {
         let tagname: string = `${sfdx_package}_v${result.versionNumber}`;

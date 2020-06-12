@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 8,
+        "Major": 9,
         "Minor": 0,
-        "Patch": 1
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -116,6 +116,12 @@
             "required": true,
             "helpMarkDown": "App Password/PAT for the Version Control Provider",
             "visibleRule": "versionControlProvider = otherGit"
+        }
+    ],
+    "OutputVariables": [
+        {
+            "name": "sfpowerscripts_package_version_number",
+            "description": "The version number of the package that was created"
         }
     ],
     "execution": {

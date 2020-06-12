@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 9,
+        "Major": 10,
         "Minor": 0,
-        "Patch": 1
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -203,6 +203,10 @@
         {
             "name": "sfpowerscripts_package_version_id",
             "description": "The id of the package version that was created "
+        },
+        {
+            "name": "sfpowerscripts_package_version_number",
+            "description": "The version number of the package that was created"
         }
     ],
     "execution": {

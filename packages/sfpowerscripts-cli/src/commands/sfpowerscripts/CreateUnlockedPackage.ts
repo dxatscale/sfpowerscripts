@@ -161,15 +161,19 @@ export default class CreateUnlockedPackage extends SfdxCommand {
           if (!isNullOrUndefined(this.flags.refname)) {
             console.log("\nOutput variables:");
             fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_id=${result.packageVersionId}\n`, {flag:'a'});
-            console.log(`${this.flags.refname}_sfpowerscripts_package_version_id}`);
+            console.log(`${this.flags.refname}_sfpowerscripts_package_version_id`);
             fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
             console.log(`${this.flags.refname}_sfpowerscripts_artifact_metadata_directory`);
+            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_number=${result.versionNumber}\n`, {flag:'a'});
+            console.log(`${this.flags.refname}_sfpowerscripts_package_version_number`);
           } else {
             console.log("\nOutput variables:");
             fs.writeFileSync('.env', `sfpowerscripts_package_version_id=${result.packageVersionId}\n`, {flag:'a'});
             console.log("sfpowerscripts_package_version_id");
             fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
             console.log("sfpowerscripts_artifact_metadata_directory");
+            fs.writeFileSync('.env', `sfpowerscripts_package_version_number=${result.versionNumber}\n`, {flag:'a'});
+            console.log(`sfpowerscripts_package_version_number`);
           }
         }
       }
@@ -179,4 +183,3 @@ export default class CreateUnlockedPackage extends SfdxCommand {
     }
   }
 }
-

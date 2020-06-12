@@ -43,10 +43,9 @@ export default class TriggerApexTestImpl {
 
       await onExit(child);
     } catch (err) {
-   
+
     }
 
-    console.log(output);
 
     try {
       let test_id = fs
@@ -70,7 +69,7 @@ export default class TriggerApexTestImpl {
 
       test_result.id = test_id;
 
-      
+
 
       //Print human readable output to console
       if ((test_report_json.summary.outcome == "Failed")) {

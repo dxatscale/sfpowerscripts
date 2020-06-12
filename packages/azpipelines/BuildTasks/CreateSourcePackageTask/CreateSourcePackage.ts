@@ -55,6 +55,8 @@ async function run() {
       data["localpath"] = __dirname + artifactFileName;
       tl.command("artifact.upload", data, __dirname + artifactFileName);
 
+      tl.setVariable("sfpowerscripts_package_version_number", version_number);
+
       if (isGitTag) {
         let tagname: string = `${sfdx_package}_v${version_number}`;
         await pushGitTag(tagname,project_directory);

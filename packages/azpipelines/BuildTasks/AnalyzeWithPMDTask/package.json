@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-analyzewithpmd-task",
   "description": "sfpowerscripts-analyzewithpmd-task",
-  "version": "6.0.1",
+  "version": "6.0.2",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^0.4.0",
+    "@dxatscale/sfpowerscripts.core": "^0.4.1",
     "azure-pipelines-task-lib": "^2.8.0",
     "xml2js": "^0.4.22"
   }
