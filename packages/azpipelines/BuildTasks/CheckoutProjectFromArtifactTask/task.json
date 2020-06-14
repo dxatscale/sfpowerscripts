@@ -7,9 +7,9 @@
     "category": "Utility",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 12,
+        "Major": 13,
         "Minor": 0,
-        "Patch": 2
+        "Patch": 1
     },
     "runsOn": [
         "Agent"
@@ -39,7 +39,8 @@
                 "githubEnterprise": "GitHub Enterprise",
                 "bitbucket": "BitBucket Cloud",
                 "azureRepo": "Azure Repo",
-                "otherGit": "Other Git"
+                "otherGit": "Other Git",
+                "hostedAgentGit":"Git which is already authenticated at the agent level"
             },
             "required": false,
             "helpMarkDown": "Select a version control provider from the dropdown",
