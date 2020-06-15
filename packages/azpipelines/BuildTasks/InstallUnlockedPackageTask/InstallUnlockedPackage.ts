@@ -75,6 +75,7 @@ function fetchArtifactFilePathFromBuildArtifact(
   artifact: string
 ): string {
   let artifact_directory = tl.getVariable("system.artifactsDirectory");
+
   //Newer metadata filename
   let package_version_id_file_path = path.join(
     artifact_directory,
@@ -83,8 +84,7 @@ function fetchArtifactFilePathFromBuildArtifact(
     `${sfdx_package}_artifact_metadata`
   );
 
-  console.log(`Checking for directory ${package_version_id_file_path}`);
-  //Fallback to older format
+  console.log(`Checking for ${sfdx_package} Build Artifact at path ${package_version_id_file_path}`);
   if (!fs.existsSync(package_version_id_file_path)) {
     console.log(
       `New Artifact format not found at the location ${package_version_id_file_path} `
@@ -98,11 +98,7 @@ function fetchArtifactFilePathFromBuildArtifact(
       `artifact_metadata`
     );
 
-    if (!fs.existsSync(package_version_id_file_path)) {
-      throw new Error(
-        `Artifact from Azuze Artifact for ${sfdx_package} not found at ${package_version_id_file_path}.. Please check the inputs`
-      );
-    }
+    existsPackageVersionIdFilePath(package_version_id_file_path);
   }
 
   return package_version_id_file_path;
@@ -113,6 +109,7 @@ function fetchArtifactFilePathFromAzureArtifact(
   artifact: string
 ): string {
   let artifact_directory = tl.getVariable("system.artifactsDirectory");
+
   //Newer metadata filename
   let package_version_id_file_path = path.join(
     artifact_directory,
@@ -120,13 +117,23 @@ function fetchArtifactFilePathFromAzureArtifact(
     `${sfdx_package}_artifact_metadata`
   );
 
-  if (!fs.existsSync(package_version_id_file_path)) {
-    throw new Error(
-      `Artifact from Azuze Artifact for ${sfdx_package} not found at ${package_version_id_file_path}.. Please check the inputs`
-    );
-  }
+  console.log(`Checking for ${sfdx_package} Azure Artifact at path ${package_version_id_file_path}`);
+  existsPackageVersionIdFilePath(package_version_id_file_path);
 
   return package_version_id_file_path;
+}
+
+function existsPackageVersionIdFilePath(package_version_id_file_path: string): void {
+  let skip_on_missing_artifact = tl.getBoolInput("skip_on_missing_artifact", false);
+
+  if (!fs.existsSync(package_version_id_file_path) && !skip_on_missing_artifact) {
+    throw new Error(
+      `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
+    );
+  } else if(!fs.existsSync(package_version_id_file_path) && skip_on_missing_artifact) {
+    tl.setResult(tl.TaskResult.Skipped, `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`);
+    process.exit(0);
+  }
 }
 
 run();

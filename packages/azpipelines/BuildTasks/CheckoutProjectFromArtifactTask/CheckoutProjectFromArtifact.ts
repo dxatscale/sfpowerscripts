@@ -50,13 +50,12 @@ async function run() {
           "AccessToken",
           true
         );
-      } else if( version_control_provider == "otherGit") {
+      } else if (version_control_provider == "otherGit") {
         username = tl.getInput("username", true);
         token = tl.getInput("password", true);
       }
     }
 
-    //Read Artifact Metadata
     let artifact_directory = tl.getVariable("system.artifactsDirectory");
 
     //For Backward Compatibility, packageName could be null when upgraded
@@ -64,23 +63,18 @@ async function run() {
       ? "artifact_metadata"
       : packageName + "_artifact_metadata";
 
-    if (attachedArtifactType == 'AzureArtifact') {
-
-      package_version_id_file_path = path.join(
+    if (attachedArtifactType == "AzureArtifact") {
+      package_version_id_file_path = fetchArtifactFilePathFromAzureArtifact(
         artifact_directory,
         artifact,
         artifactFileNameSelector
       );
-
-    } else {
-
-      package_version_id_file_path = path.join(
+    } else if (attachedArtifactType == "BuildArtifact") {
+      package_version_id_file_path = fetchArtifactFilePathFromBuildArtifact(
         artifact_directory,
         artifact,
-        "sfpowerkit_artifact",
         artifactFileNameSelector
       );
-      
     }
 
     let package_metadata_json = fs
@@ -131,12 +125,11 @@ async function run() {
       }
 
       // git already authenticated.. say hosted agent.. get the repository_url directly from the artifact
-      if(version_control_provider == "hostedAgentGit")
-        await git.silent(false).clone(package_metadata.repository_url, local_source_directory);
-      else
-         await git.silent(false).clone(remote, local_source_directory);
-
-
+      if (version_control_provider == "hostedAgentGit")
+        await git
+          .silent(false)
+          .clone(package_metadata.repository_url, local_source_directory);
+      else await git.silent(false).clone(remote, local_source_directory);
 
       //Checkout the particular commit
       await git.checkout(package_metadata.sourceVersion);
@@ -177,6 +170,74 @@ async function run() {
     tl.setVariable("sfpowerscripts_checked_out_path", local_source_directory);
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
+  }
+}
+
+function fetchArtifactFilePathFromBuildArtifact(
+  artifact_directory: string,
+  artifact: string,
+  artifactFileNameSelector: string
+): string {
+
+  let package_version_id_file_path = path.join(
+    artifact_directory,
+    artifact,
+    "sfpowerkit_artifact",
+    artifactFileNameSelector
+  );
+
+  console.log(
+    `Checking for ${artifactFileNameSelector} Build Artifact at path ${package_version_id_file_path}`
+  );
+  existsPackageVersionIdFilePath(package_version_id_file_path);
+
+  return package_version_id_file_path;
+}
+
+function fetchArtifactFilePathFromAzureArtifact(
+  artifact_directory: string,
+  artifact: string,
+  artifactFileNameSelector: string
+): string {
+
+  let package_version_id_file_path = path.join(
+    artifact_directory,
+    artifact,
+    artifactFileNameSelector
+  );
+
+  console.log(
+    `Checking for ${artifactFileNameSelector} Azure Artifact at path ${package_version_id_file_path}`
+  );
+  existsPackageVersionIdFilePath(package_version_id_file_path);
+
+  return package_version_id_file_path;
+}
+
+function existsPackageVersionIdFilePath(
+  package_version_id_file_path: string
+): void {
+  let skip_on_missing_artifact: boolean = tl.getBoolInput(
+    "skip_on_missing_artifact",
+    false
+  );
+
+  if (
+    !fs.existsSync(package_version_id_file_path) &&
+    !skip_on_missing_artifact
+  ) {
+    throw new Error(
+      `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
+    );
+  } else if (
+    !fs.existsSync(package_version_id_file_path) &&
+    skip_on_missing_artifact
+  ) {
+    tl.setResult(
+      tl.TaskResult.Skipped,
+      `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`
+    );
+    process.exit(0);
   }
 }
 
