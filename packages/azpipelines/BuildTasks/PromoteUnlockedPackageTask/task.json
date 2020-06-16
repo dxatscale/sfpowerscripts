@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 5,
+        "Major": 6,
         "Minor": 0,
-        "Patch": 2
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -30,6 +30,7 @@
             "defaultValue": "BuildArtifact",
             "options": {
                 "BuildArtifact": "Utilize the version id from the attached build artifact",
+                "AzureArtifact": "Utilize universal artifacts published to Azure Artifacts",
                 "Custom": "Pass the package version id as an argument "
             },
             "required": true,
@@ -66,6 +67,14 @@
             "defaultValue": "HubOrg",
             "required": true,
             "helpMarkDown": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
+        },
+        {
+            "name": "skip_on_missing_artifact",
+            "type": "boolean",
+            "label": "Skip If no artifact is found",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Do not fail the task if attached artifact is missing,Use it to skip artifact installation by removing attached artifacts"
         }
     ],
     "execution": {
