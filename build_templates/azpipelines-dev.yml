@@ -1,0 +1,85 @@
+name: Milestone15$(Rev:.r)
+
+pr:
+  branches:
+    include:
+    - develop
+    - master
+    - release/*
+  paths:
+    include:
+      - '*'
+    exclude:
+      - 'docs/*'
+
+trigger:
+  branches:
+    include:
+     - release/*
+     - develop
+  paths:
+    exclude:
+    - 'docs/*'
+
+
+variables:
+ - group: Tokens
+ - name: major
+   value: 15
+
+ - name: minor
+   value: $[counter(variables['major'], 200)]
+
+
+
+stages:
+
+- stage: Development
+  dependsOn: []
+  condition:  eq(variables['build.Reason'], 'Manual')
+  jobs:
+
+  - template: deciderjob.yml
+
+  - deployment: BuildAzPipelines
+    displayName: 'Build and Deploy Azure Pipelines Extension to Develop'
+    dependsOn: InstallNodeModules
+    variables:
+      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
+    timeoutInMinutes: 40
+    pool:
+      vmImage: 'windows-latest'
+    environment: develop
+    strategy:
+       runOnce:
+         deploy:
+           steps:
+
+             - template: buildazpipelines.yml
+               parameters:
+                commitToGit: false
+                stageToDeploy: 'dev'
+                version: 'dev'
+                environmentToDeploy: 'develop'
+                toBuild: true
+                organization: safebot
+                buildNumber: $(minor)
+
+             - task: CmdLine@2
+               displayName: 'Login to the org'
+               inputs:
+                     script: |
+                      echo $(safebot_pat) | az devops login --org  https://dev.azure.com/safebot
+
+             - task: CmdLine@2
+               displayName: 'Uninstall the extension'
+               inputs:
+                     script: |
+                      az devops extension uninstall --extension-id sfpowerscripts-dev  --publisher-id AzlamSalam --org https://dev.azure.com/safebot -y
+
+             - task: CmdLine@2
+               displayName: 'Install the new version of the plugin'
+               inputs:
+                     script: |
+                      az devops extension install --extension-id sfpowerscripts-dev  --publisher-id AzlamSalam --org https://dev.azure.com/safebot
+

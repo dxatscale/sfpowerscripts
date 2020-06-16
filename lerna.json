@@ -22,6 +22,7 @@
     "packages/azpipelines/BuildTasks/ValidateApexCoverageTask",
     "packages/azpipelines/BuildTasks/ValidateDXUnlockedPackageTask",
     "packages/azpipelines/BuildTasks/ValidateTestCoveragePackageTask",
+    "packages/azpipelines/BuildTasks/PostPackageCreateTask",
     "packages/azpipelines"
   ],
   "version": "independent",

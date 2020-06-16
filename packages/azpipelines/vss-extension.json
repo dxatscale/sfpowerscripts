@@ -3,7 +3,7 @@
     "id": "sfpowerscripts-beta",
     "publisher": "AzlamSalam",
     "name": "sfpowerscripts",
-    "version": "15.2.0",
+    "version": "15.3.0",
     "description": "Azure Pipelines tasks for working with Salesforce",
     "tags": [
         "Extension",
@@ -147,6 +147,19 @@
             "path": "BuildTasks/CreateDeltaPackageTask"
         },
         {
+            "path": "BuildTasks/PostDecorators/CreatePackagePostDecorator.yml",
+            "addressable":true,
+            "contentType": "text/plain"
+        },
+        {
+            "path": "BuildTasks/PreDecorators/InstallSFDXPreDecorator.yml",
+            "addressable":true,
+            "contentType": "text/plain"
+        },
+        {
+            "path": "BuildTasks/PostPackageCreateTask"
+        },
+        {
             "path": "UI",
             "addressable": true
         }
@@ -165,6 +178,28 @@
                 "supportsTasks": [
                     "2d221ae3-0f82-4cac-a269-ffcd98a72d96"
                 ]
+            }
+        },
+        {
+            "id": "sfpowerscripts-createpackage-postjobdecorator",
+            "type": "ms.azure-pipelines.pipeline-decorator",
+            "targets": [
+                "ms.azure-pipelines-agent-job.post-job-tasks",
+                 "ms.azure-release-pipelines-agent-job.post-job-tasks"
+            ],
+            "properties": {
+                "template": "BuildTasks/PostDecorators/CreatePackagePostDecorator.yml"
+            }
+        },
+        {
+            "id": "sfpowerscripts-installsfdx-prejobdecorator",
+            "type": "ms.azure-pipelines.pipeline-decorator",
+            "targets": [
+                "ms.azure-pipelines-agent-job.pre-job-tasks",
+                "ms.azure-release-pipelines-agent-job.pre-job-tasks"
+            ],
+            "properties": {
+                "template": "BuildTasks/PreDecorators/InstallSFDXPreDecorator.yml"
             }
         },
         {
@@ -353,6 +388,16 @@
             ],
             "properties": {
                 "name": "BuildTasks/CreateUnlockedPackageTask"
+            }
+        },
+        {
+            "id": "sfpowerscripts-postcreatepackage-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "BuildTasks/PostPackageCreateTask"
             }
         },
         {

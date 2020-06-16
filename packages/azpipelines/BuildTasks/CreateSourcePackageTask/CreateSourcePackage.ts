@@ -59,7 +59,7 @@ async function run() {
 
       if (isGitTag) {
         let tagname: string = `${sfdx_package}_v${version_number}`;
-        await pushGitTag(tagname,project_directory);
+        await createGitTag(tagname,project_directory);
       }
 
 
@@ -69,7 +69,7 @@ async function run() {
   }
 }
 
-async function pushGitTag(tagname: string,project_directory:string): Promise<void> {
+async function createGitTag(tagname: string,project_directory:string): Promise<void> {
 
 
   let tasktype = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
@@ -82,6 +82,8 @@ async function pushGitTag(tagname: string,project_directory:string): Promise<voi
 
 
   let remote = await authGit();
+
+  tl.setVariable("git_remote_url",remote);
 
   await git
   .addConfig("user.name", "sfpowerscripts");

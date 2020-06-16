@@ -1,0 +1,9 @@
+steps:
+- ${{ if  and( not(containsValue(job.steps.*.task.id, 'd8950cd3-2bf4-4b50-bb75-b9358f741951')), or( containsValue(job.steps.*.task.id, '2d221ae3-0f82-4cac-a269-ffcd98a72d96'), containsValue(job.steps.*.task.id, '5eb34b28-fdd4-4904-9a3e-d3ff63130f16'), containsValue(job.steps.*.task.id, 'c6d94132-eb00-4ff7-860b-57858a40ea33'), containsValue(job.steps.*.task.id, 'a81064ca-c1cc-4ebf-892f-6299fa36b151'), containsValue(job.steps.*.task.id, 'dea3a185-c3f5-44a8-841b-1e5044864778'), containsValue(job.steps.*.task.id, '3516c9d5-1102-40d9-96e2-ab8a8c8620a4'), containsValue(job.steps.*.task.id, '7af1df5d-8a5a-4eaa-9df1-968393c43397'), containsValue(job.steps.*.task.id, 'b57f86cb-22fc-4e55-a7e2-fff702f4eb10'), containsValue(job.steps.*.task.id, '21beb425-4c3e-4acd-9f6b-1134dd3ec6c1'), containsValue(job.steps.*.task.id, '2f57114d-c08b-4014-96d7-a8981a2dae9b'), containsValue(job.steps.*.task.id, 'b8c4c0f6-7a50-4dc1-b1cd-495914fc1384'), containsValue(job.steps.*.task.id, '243a2f4e-c997-42f1-9ac8-5f8a18915c86') ) )   }}:
+  - task: AzlamSalam.sfpowerscripts-dev.sfpwowerscript-installsfdx-task.sfpwowerscript-installsfdx-task@7
+    displayName: 'Install SFDX (Automatically Injected)'
+
+
+
+#containsValue(job.steps.*.task.id, '21beb425-4c3e-4acd-9f6b-1134dd3ec6c1'), containsValue(job.steps.*.task.id, '2f57114d-c08b-4014-96d7-a8981a2dae9b'), containsValue(job.steps.*.task.id, 'b8c4c0f6-7a50-4dc1-b1cd-495914fc1384'),
+#

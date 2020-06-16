@@ -1,0 +1,6 @@
+steps:
+- ${{ if  and( not(containsValue(job.steps.*.task.id, '7bbde44a-052a-4331-bdab-08e257e4bcda')),  containsValue(job.steps.*.task.id, '50de2eba-73bc-4cd6-82bc-89853925830c'),  containsValue(job.steps.*.task.id, '50de2eba-73bc-4cd6-82bc-89853925830c') )  }}:
+  - task: AzlamSalam.sfpowerscripts-dev.sfpowerscripts-postcreatepackage-task.sfpowerscripts-postcreatepackage-task@1
+    displayName: 'Post Execution for Create Package Tasks (Automatically Injected)'
+
+
