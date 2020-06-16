@@ -154,12 +154,12 @@ let tasktype = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
 
   console.log(`Created tag ${tagname}`);
 
-  await git
-      .silent(false)
-      .push(
-        remote,
-        tagname
-      );
+  // await git
+  //     .silent(false)
+  //     .push(
+  //       remote,
+  //       tagname
+  //     );
 
   console.log(`Pushed tag ${tagname} to repo`);
 }

@@ -98,12 +98,12 @@ async function pushGitTag(tagname: string,project_directory:string): Promise<voi
 
   console.log(`Created tag ${tagname}`);
 
-  await git
-      .silent(false)
-      .push(
-        remote,
-        tagname
-      );
+  // await git
+  //     .silent(false)
+  //     .push(
+  //       remote,
+  //       tagname
+  //     );
 
   console.log(`Pushed tag ${tagname} to repo`);
 }

@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-createsourcepackage-task",
   "description": "sfpowerscripts-createsourcepackage-task",
-  "version": "9.0.0",
+  "version": "9.1.0",
   "private": true,
   "repository": {
     "type": "git",
