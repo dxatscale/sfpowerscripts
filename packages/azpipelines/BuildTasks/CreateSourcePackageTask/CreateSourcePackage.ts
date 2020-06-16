@@ -18,7 +18,9 @@ async function run() {
     let isRunBuild: boolean;
     if (isDiffCheck) {
       console.log("Heading to package Diff Impl");
+  
       let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
+      
 
       isRunBuild = await packageDiffImpl.exec();
 
@@ -59,7 +61,7 @@ async function run() {
 
       if (isGitTag) {
         let tagname: string = `${sfdx_package}_v${version_number}`;
-        await pushGitTag(tagname,project_directory);
+        await createGitTag(tagname,project_directory);
       }
 
 
@@ -69,7 +71,7 @@ async function run() {
   }
 }
 
-async function pushGitTag(tagname: string,project_directory:string): Promise<void> {
+async function createGitTag(tagname: string,project_directory:string): Promise<void> {
 
 
   let tasktype = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
@@ -82,6 +84,8 @@ async function pushGitTag(tagname: string,project_directory:string): Promise<voi
 
 
   let remote = await authGit();
+
+  tl.setVariable("git_remote_url",remote);
 
   await git
   .addConfig("user.name", "sfpowerscripts");
@@ -97,15 +101,6 @@ async function pushGitTag(tagname: string,project_directory:string): Promise<voi
         );
 
   console.log(`Created tag ${tagname}`);
-
-  // await git
-  //     .silent(false)
-  //     .push(
-  //       remote,
-  //       tagname
-  //     );
-
-  console.log(`Pushed tag ${tagname} to repo`);
 }
 
 run();

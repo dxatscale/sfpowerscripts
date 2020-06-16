@@ -7,14 +7,14 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 9,
-        "Minor": 1,
+        "Major": 10,
+        "Minor": 0,
         "Patch": 0
     },
     "runsOn": [
         "Agent"
     ],
-    "instanceNameFormat": "Creates a new version of source baed repo for $(package)",
+    "instanceNameFormat": "Creates a new version of Source Based Package for  $(package)",
     "inputs": [
         {
             "name": "package",
@@ -127,6 +127,12 @@
     "execution": {
         "Node": {
             "target": "lib/CreateSourcePackageTask/CreateSourcePackage.js"
+        }
+    },
+     "postjobexecution": {
+        "Node": {
+            "target": "lib/CreateSourcePackageTask/PostPackageTaskCheck.js",
+            "argumentFormat": ""
         }
     }
 }

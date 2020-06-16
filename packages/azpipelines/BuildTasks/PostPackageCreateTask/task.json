@@ -1,0 +1,23 @@
+{
+    "id": "7bbde44a-052a-4331-bdab-08e257e4bcda",
+    "name": "sfpowerscripts-postcreatepackage-task",
+    "friendlyName": "Execute Post Steps after creating a package",
+    "description": "This task executes steps after a package creation job ,This task is part of DX@Scale/SFPowerscripts",
+    "helpMarkDown": "This task has to be aded to a pipeline which has package creation task",
+    "category": "Utility",
+    "author": "dxatscale@accenture.com",
+    "version": {
+        "Major": 1,
+        "Minor": 1,
+        "Patch": 0
+    },
+    "runsOn": [
+        "Agent"
+    ],
+    "instanceNameFormat": "Post Execution for Create Package Tasks",
+    "execution": {
+        "Node": {
+            "target": "lib/PostPackageCreate.js"
+        }
+    }
+}

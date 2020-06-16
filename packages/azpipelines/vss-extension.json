@@ -3,7 +3,7 @@
     "id": "sfpowerscripts-beta",
     "publisher": "AzlamSalam",
     "name": "sfpowerscripts",
-    "version": "15.2.0",
+    "version": "15.3.0",
     "description": "Azure Pipelines tasks for working with Salesforce",
     "tags": [
         "Extension",
@@ -145,6 +145,9 @@
         },
         {
             "path": "BuildTasks/CreateDeltaPackageTask"
+        },
+        {
+            "path": "BuildTasks/PostPackageCreateTask"
         },
         {
             "path": "UI",
@@ -353,6 +356,16 @@
             ],
             "properties": {
                 "name": "BuildTasks/CreateUnlockedPackageTask"
+            }
+        },
+        {
+            "id": "sfpowerscripts-postcreatepackage-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "BuildTasks/PostPackageCreateTask"
             }
         },
         {
