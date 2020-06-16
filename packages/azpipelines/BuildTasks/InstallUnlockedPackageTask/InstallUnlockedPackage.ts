@@ -9,6 +9,14 @@ async function run() {
     const sfdx_package: string = tl.getInput("package", true);
     const package_installedfrom = tl.getInput("packageinstalledfrom", true);
     const artifact = tl.getInput("artifact", true);
+    let skip_on_missing_artifact = tl.getBoolInput("skip_on_missing_artifact", false);
+    const installationkey = tl.getInput("installationkey", false);
+    const apexcompileonlypackage = tl.getBoolInput("apexcompileonlypackage", false);
+    const security_type = tl.getInput("security_type", false);
+    const upgrade_type = tl.getInput("upgrade_type", false);
+    const wait_time = tl.getInput("wait_time", false);
+    const publish_wait_time = tl.getInput("publish_wait_time", false);
+
     let package_version_id:string;
 
     if (package_installedfrom == "Custom") {
@@ -27,6 +35,8 @@ async function run() {
           artifact
         );
 
+      missingArtifactDecider(package_version_id_file_path, skip_on_missing_artifact);
+
       let package_metadata_json = fs
         .readFileSync(package_version_id_file_path)
         .toString();
@@ -38,20 +48,9 @@ async function run() {
       console.log(`Using Package Version Id ${package_version_id}`);
     }
 
-    const installationkey = tl.getInput("installationkey", false);
-    const apexcompileonlypackage = tl.getInput("apexcompileonlypackage", false);
-    const security_type = tl.getInput("security_type", false);
-    const upgrade_type = tl.getInput("upgrade_type", false);
-    const wait_time = tl.getInput("wait_time", false);
-    const publish_wait_time = tl.getInput("publish_wait_time", false);
-
-    let apexcompile;
-    if (apexcompileonlypackage) apexcompile = `package`;
-    else apexcompile = `all`;
-
     let options = {
       installationkey: installationkey,
-      apexcompile: apexcompile,
+      apexcompile: apexcompileonlypackage ? `package` : `all`,
       securitytype: security_type,
       upgradetype: upgrade_type,
     };
@@ -75,6 +74,7 @@ function fetchArtifactFilePathFromBuildArtifact(
   artifact: string
 ): string {
   let artifact_directory = tl.getVariable("system.artifactsDirectory");
+
   //Newer metadata filename
   let package_version_id_file_path = path.join(
     artifact_directory,
@@ -83,8 +83,7 @@ function fetchArtifactFilePathFromBuildArtifact(
     `${sfdx_package}_artifact_metadata`
   );
 
-  console.log(`Checking for directory ${package_version_id_file_path}`);
-  //Fallback to older format
+  console.log(`Checking for ${sfdx_package} Build Artifact at path ${package_version_id_file_path}`);
   if (!fs.existsSync(package_version_id_file_path)) {
     console.log(
       `New Artifact format not found at the location ${package_version_id_file_path} `
@@ -97,12 +96,6 @@ function fetchArtifactFilePathFromBuildArtifact(
       "sfpowerkit_artifact",
       `artifact_metadata`
     );
-
-    if (!fs.existsSync(package_version_id_file_path)) {
-      throw new Error(
-        `Artifact from Azuze Artifact for ${sfdx_package} not found at ${package_version_id_file_path}.. Please check the inputs`
-      );
-    }
   }
 
   return package_version_id_file_path;
@@ -113,6 +106,7 @@ function fetchArtifactFilePathFromAzureArtifact(
   artifact: string
 ): string {
   let artifact_directory = tl.getVariable("system.artifactsDirectory");
+
   //Newer metadata filename
   let package_version_id_file_path = path.join(
     artifact_directory,
@@ -120,13 +114,22 @@ function fetchArtifactFilePathFromAzureArtifact(
     `${sfdx_package}_artifact_metadata`
   );
 
-  if (!fs.existsSync(package_version_id_file_path)) {
-    throw new Error(
-      `Artifact from Azuze Artifact for ${sfdx_package} not found at ${package_version_id_file_path}.. Please check the inputs`
-    );
-  }
+  console.log(`Checking for ${sfdx_package} Azure Artifact at path ${package_version_id_file_path}`);
 
   return package_version_id_file_path;
+}
+
+function missingArtifactDecider(package_version_id_file_path: string, skip_on_missing_artifact: boolean): void {
+
+  if (!fs.existsSync(package_version_id_file_path) && !skip_on_missing_artifact) {
+    throw new Error(
+      `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
+    );
+  } else if(!fs.existsSync(package_version_id_file_path) && skip_on_missing_artifact) {
+    console.log(`Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`);
+    tl.setResult(tl.TaskResult.Skipped, `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`);
+    process.exit(0);
+  }
 }
 
 run();
