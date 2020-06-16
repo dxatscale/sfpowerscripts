@@ -7,10 +7,13 @@ var shell = require("shelljs");
 
 async function run() {
   try {
+    let artifact_directory = tl.getVariable("system.artifactsDirectory");
     const artifact = tl.getInput("artifact", true);
     const artifact_type = tl.getInput("typeOfArtifact", true);
     const attachedArtifactType = tl.getInput("attachedArtifactType", true);
     let packageName = tl.getInput("package", false);
+    let skip_on_missing_artifact: boolean = tl.getBoolInput("skip_on_missing_artifact",false);
+
     let package_version_id_file_path: string;
     let version_control_provider: string;
     let token: string;
@@ -56,8 +59,6 @@ async function run() {
       }
     }
 
-    let artifact_directory = tl.getVariable("system.artifactsDirectory");
-
     //For Backward Compatibility, packageName could be null when upgraded
     let artifactFileNameSelector = isNullOrUndefined(packageName)
       ? "artifact_metadata"
@@ -76,6 +77,8 @@ async function run() {
         artifactFileNameSelector
       );
     }
+
+    missingArtifactDecider(package_version_id_file_path, skip_on_missing_artifact);
 
     let package_metadata_json = fs
       .readFileSync(package_version_id_file_path)
@@ -189,8 +192,6 @@ function fetchArtifactFilePathFromBuildArtifact(
   console.log(
     `Checking for ${artifactFileNameSelector} Build Artifact at path ${package_version_id_file_path}`
   );
-  existsPackageVersionIdFilePath(package_version_id_file_path);
-
   return package_version_id_file_path;
 }
 
@@ -209,19 +210,13 @@ function fetchArtifactFilePathFromAzureArtifact(
   console.log(
     `Checking for ${artifactFileNameSelector} Azure Artifact at path ${package_version_id_file_path}`
   );
-  existsPackageVersionIdFilePath(package_version_id_file_path);
-
   return package_version_id_file_path;
 }
 
-function existsPackageVersionIdFilePath(
-  package_version_id_file_path: string
+function missingArtifactDecider(
+  package_version_id_file_path: string,
+  skip_on_missing_artifact: boolean
 ): void {
-  let skip_on_missing_artifact: boolean = tl.getBoolInput(
-    "skip_on_missing_artifact",
-    false
-  );
-
   if (
     !fs.existsSync(package_version_id_file_path) &&
     !skip_on_missing_artifact
@@ -233,6 +228,7 @@ function existsPackageVersionIdFilePath(
     !fs.existsSync(package_version_id_file_path) &&
     skip_on_missing_artifact
   ) {
+    console.log(`Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`);
     tl.setResult(
       tl.TaskResult.Skipped,
       `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`

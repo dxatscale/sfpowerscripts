@@ -9,6 +9,14 @@ async function run() {
     const sfdx_package: string = tl.getInput("package", true);
     const package_installedfrom = tl.getInput("packageinstalledfrom", true);
     const artifact = tl.getInput("artifact", true);
+    let skip_on_missing_artifact = tl.getBoolInput("skip_on_missing_artifact", false);
+    const installationkey = tl.getInput("installationkey", false);
+    const apexcompileonlypackage = tl.getBoolInput("apexcompileonlypackage", false);
+    const security_type = tl.getInput("security_type", false);
+    const upgrade_type = tl.getInput("upgrade_type", false);
+    const wait_time = tl.getInput("wait_time", false);
+    const publish_wait_time = tl.getInput("publish_wait_time", false);
+
     let package_version_id:string;
 
     if (package_installedfrom == "Custom") {
@@ -27,6 +35,8 @@ async function run() {
           artifact
         );
 
+      missingArtifactDecider(package_version_id_file_path, skip_on_missing_artifact);
+
       let package_metadata_json = fs
         .readFileSync(package_version_id_file_path)
         .toString();
@@ -38,20 +48,9 @@ async function run() {
       console.log(`Using Package Version Id ${package_version_id}`);
     }
 
-    const installationkey = tl.getInput("installationkey", false);
-    const apexcompileonlypackage = tl.getInput("apexcompileonlypackage", false);
-    const security_type = tl.getInput("security_type", false);
-    const upgrade_type = tl.getInput("upgrade_type", false);
-    const wait_time = tl.getInput("wait_time", false);
-    const publish_wait_time = tl.getInput("publish_wait_time", false);
-
-    let apexcompile;
-    if (apexcompileonlypackage) apexcompile = `package`;
-    else apexcompile = `all`;
-
     let options = {
       installationkey: installationkey,
-      apexcompile: apexcompile,
+      apexcompile: apexcompileonlypackage ? `package` : `all`,
       securitytype: security_type,
       upgradetype: upgrade_type,
     };
@@ -97,8 +96,6 @@ function fetchArtifactFilePathFromBuildArtifact(
       "sfpowerkit_artifact",
       `artifact_metadata`
     );
-
-    existsPackageVersionIdFilePath(package_version_id_file_path);
   }
 
   return package_version_id_file_path;
@@ -118,19 +115,18 @@ function fetchArtifactFilePathFromAzureArtifact(
   );
 
   console.log(`Checking for ${sfdx_package} Azure Artifact at path ${package_version_id_file_path}`);
-  existsPackageVersionIdFilePath(package_version_id_file_path);
 
   return package_version_id_file_path;
 }
 
-function existsPackageVersionIdFilePath(package_version_id_file_path: string): void {
-  let skip_on_missing_artifact = tl.getBoolInput("skip_on_missing_artifact", false);
+function missingArtifactDecider(package_version_id_file_path: string, skip_on_missing_artifact: boolean): void {
 
   if (!fs.existsSync(package_version_id_file_path) && !skip_on_missing_artifact) {
     throw new Error(
       `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
     );
   } else if(!fs.existsSync(package_version_id_file_path) && skip_on_missing_artifact) {
+    console.log(`Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`);
     tl.setResult(tl.TaskResult.Skipped, `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`);
     process.exit(0);
   }

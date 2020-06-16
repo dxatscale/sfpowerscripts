@@ -43,8 +43,15 @@ export default class InstallUnlockedPackage extends SfdxCommand {
    try {
       const envname: string = this.flags.envname;
       const sfdx_package: string = this.flags.package;
-
+      let skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;
       const package_installedfrom = this.flags.packageinstalledfrom;
+
+      const installationkey = this.flags.installationkey;
+      const apexcompileonlypackage = this.flags.apexcompileonlypackage;
+      const security_type = this.flags.securitytype;
+      const upgrade_type = this.flags.upgradetype;
+      const wait_time = this.flags.waittime;
+      const publish_wait_time = this.flags.publishwaittime;
 
       let package_version_id;
 
@@ -72,7 +79,6 @@ export default class InstallUnlockedPackage extends SfdxCommand {
             'artifact_metadata'
           );
 
-          let skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;
           if (!fs.existsSync(package_version_id_file_path) && !skip_on_missing_artifact) {
             throw new Error(
               `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
@@ -98,23 +104,9 @@ export default class InstallUnlockedPackage extends SfdxCommand {
         package_version_id = this.flags.packageversionid;
       }
 
-      const installationkey = this.flags.installationkey;
-      const apexcompileonlypackage = this.flags.apexcompileonlypackage;
-      const security_type = this.flags.securitytype;
-      const upgrade_type = this.flags.upgradetype;
-      const wait_time = this.flags.waittime;
-      const publish_wait_time = this.flags.publishwaittime;
-
-      let apexcompile;
-      if (apexcompileonlypackage) {
-        apexcompile = `package`;
-      } else {
-        apexcompile = `all`;
-      }
-
       let options = {
         installationkey: installationkey,
-        apexcompile: apexcompile,
+        apexcompile: apexcompileonlypackage ? `package` : `all`,
         securitytype: security_type,
         upgradetype: upgrade_type
       };
@@ -131,9 +123,7 @@ export default class InstallUnlockedPackage extends SfdxCommand {
 
     } catch(err) {
       // AppInsights.trackTaskEvent("sfpwowerscript-installunlockedpackage-task",err);
-
       console.log(err);
-
       // Fail the task when an error occurs
       process.exit(1);
     }
