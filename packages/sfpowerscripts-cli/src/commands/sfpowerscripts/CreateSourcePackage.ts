@@ -83,11 +83,14 @@ export default class CreateSourcePackage extends SfdxCommand {
         console.log(`Created source package ${sfdx_package}_artifact_metadata`);
 
         if (this.flags.gittag) {
+          exec(`git config --global user.email "sfpowerscripts@dxscale"`);
+          exec(`git config --global user.name "sfpowerscripts"`);
+
           let tagname = `${sfdx_package}_v${version_number}`;
           console.log(`Creating tag ${tagname}`);
-          exec(`git tag -a -m "${sfdx_package} Source Package ${version_number}" ${tagname} HEAD`, {silent:true});
+          exec(`git tag -a -m "${sfdx_package} Source Package ${version_number}" ${tagname} HEAD`, {silent:false});
           console.log(`Pushing tag ${tagname} to origin`);
-          exec(`git push origin ${tagname}`, {silent:true});
+          exec(`git push origin ${tagname}`, {silent:false});
         }
 
         if (!isNullOrUndefined(this.flags.refname)) {
