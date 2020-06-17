@@ -130,8 +130,6 @@ export default class CreateUnlockedPackage extends SfdxCommand {
           let tagname = `${sfdx_package}_v${result.versionNumber}`;
           console.log(`Creating tag ${tagname}`);
           exec(`git tag -a -m "${sfdx_package} Unlocked Package ${result.versionNumber}" ${tagname} HEAD`, {silent:false});
-          console.log(`Pushing tag ${tagname} to origin`);
-          exec(`git push origin ${tagname}`, {silent:false});
         }
 
         if (build_artifact_enabled) {

@@ -89,8 +89,6 @@ export default class CreateSourcePackage extends SfdxCommand {
           let tagname = `${sfdx_package}_v${version_number}`;
           console.log(`Creating tag ${tagname}`);
           exec(`git tag -a -m "${sfdx_package} Source Package ${version_number}" ${tagname} HEAD`, {silent:false});
-          console.log(`Pushing tag ${tagname} to origin`);
-          exec(`git push origin ${tagname}`, {silent:false});
         }
 
         if (!isNullOrUndefined(this.flags.refname)) {
