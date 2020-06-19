@@ -18,6 +18,7 @@ async function run() {
     let isRunBuild: boolean;
     if (isDiffCheck) {
       console.log("Heading to package Diff Impl");
+  
       let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
 
       isRunBuild = await packageDiffImpl.exec();
@@ -99,15 +100,6 @@ async function createGitTag(tagname: string,project_directory:string): Promise<v
         );
 
   console.log(`Created tag ${tagname}`);
-
-  // await git
-  //     .silent(false)
-  //     .push(
-  //       remote,
-  //       tagname
-  //     );
-
-  console.log(`Pushed tag ${tagname} to repo`);
 }
 
 run();

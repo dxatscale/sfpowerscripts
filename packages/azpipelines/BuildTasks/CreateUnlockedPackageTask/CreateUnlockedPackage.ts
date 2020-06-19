@@ -77,7 +77,7 @@ async function run() {
 
       if (isGitTagActive) {
         let tagname: string = `${sfdx_package}_v${result.versionNumber}`;
-        await pushGitTag(tagname,project_directory);
+        await createGitTag(tagname,project_directory);
       }
 
 
@@ -127,7 +127,7 @@ async function run() {
   }
 }
 
-async function pushGitTag(tagname: string,project_directory:string): Promise<void> {
+async function createGitTag(tagname: string,project_directory:string): Promise<void> {
 
 let tasktype = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
 
@@ -154,14 +154,7 @@ let tasktype = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
 
   console.log(`Created tag ${tagname}`);
 
-  // await git
-  //     .silent(false)
-  //     .push(
-  //       remote,
-  //       tagname
-  //     );
-
-  console.log(`Pushed tag ${tagname} to repo`);
+  
 }
 
 run();
