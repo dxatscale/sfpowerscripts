@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "fs-extra": "^8.1.0",
-    "ignore": "^5.1.6",
+    "ignore": "^5.1.8",
     "rimraf": "^3.0.2",
     "simple-git": "2.0.0",
     "unzip-stream": "0.3.0"
