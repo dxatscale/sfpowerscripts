@@ -6,7 +6,6 @@
         "composite": false
     },
     "files": [
-        "CreateSourcePackage.ts",
-        "PostPackageTaskCheck.ts"
+        "PostPackageCreate.ts"
     ]
   }

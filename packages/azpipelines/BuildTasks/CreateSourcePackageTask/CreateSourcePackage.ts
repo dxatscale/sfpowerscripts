@@ -3,6 +3,7 @@ import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/Pac
 import authGit from "../Common/VersionControlAuth";
 const fs = require("fs");
 import simplegit from "simple-git/promise";
+import { isNullOrUndefined } from "util";
 
 async function run() {
   try {
@@ -18,7 +19,9 @@ async function run() {
     let isRunBuild: boolean;
     if (isDiffCheck) {
       console.log("Heading to package Diff Impl");
+  
       let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
+      
 
       isRunBuild = await packageDiffImpl.exec();
 
@@ -59,7 +62,11 @@ async function run() {
 
       if (isGitTag) {
         let tagname: string = `${sfdx_package}_v${version_number}`;
-        await pushGitTag(tagname,project_directory);
+         tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`,tagname);
+         if(isNullOrUndefined(project_directory))
+           tl.setVariable(`${sfdx_package}_sfpowerscripts_source_directory_path`,tl.getVariable("Build.Repository.LocalPath"));  
+         else
+            tl.setVariable(`${sfdx_package}_sfpowerscripts_source_directory_path`,project_directory);  
       }
 
 
@@ -69,43 +76,6 @@ async function run() {
   }
 }
 
-async function pushGitTag(tagname: string,project_directory:string): Promise<void> {
 
-
-  let tasktype = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
-
-  let git;
-  if(tasktype == 'Build')
-   git = simplegit(tl.getVariable("Build.Repository.LocalPath"));
-  else
-    git = simplegit(project_directory);
-
-
-  let remote = await authGit();
-
-  await git
-  .addConfig("user.name", "sfpowerscripts");
-
-  await git
-  .addConfig("user.email", "sfpowerscripts@dxscale");
-
-  await git
-        .silent(false)
-        .addAnnotatedTag(
-          tagname,
-          'Unlocked Package'
-        );
-
-  console.log(`Created tag ${tagname}`);
-
-  await git
-      .silent(false)
-      .push(
-        remote,
-        tagname
-      );
-
-  console.log(`Pushed tag ${tagname} to repo`);
-}
 
 run();

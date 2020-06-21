@@ -7,14 +7,14 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 9,
+        "Major": 10,
         "Minor": 0,
         "Patch": 0
     },
     "runsOn": [
         "Agent"
     ],
-    "instanceNameFormat": "Creates a new version of source baed repo for $(package)",
+    "instanceNameFormat": "Creates a new version of Source Based Package for  $(package)",
     "inputs": [
         {
             "name": "package",
@@ -55,67 +55,6 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed"
-        },
-        {
-            "name": "versionControlProvider",
-            "type": "pickList",
-            "label": "Select the version control provider",
-            "defaultValue": "github",
-            "options": {
-                "github": "GitHub",
-                "githubEnterprise": "GitHub Enterprise",
-                "bitbucket": "BitBucket Cloud",
-                "azureRepo": "Azure Repo",
-                "otherGit": "Other Git"
-            },
-            "required": false,
-            "helpMarkDown": "Select a version control provider from the dropdown",
-            "visibleRule": "isGitTag = true"
-        },
-        {
-            "name": "github_connection",
-            "type": "connectedService:github:OAuth,PersonalAccessToken,OAuth2",
-            "label": "GitHub Connection",
-            "defaultValue": "",
-            "required": false,
-            "helpMarkDown": "Specify the service connection name for your GitHub connection. Please note this service connection have permissions to read to the correspinding repostiory. Learn more about service connections [here](https://aka.ms/AA3am5s).",
-            "visibleRule": "versionControlProvider = github"
-        },
-        {
-            "name": "bitbucket_connection",
-            "type": "connectedService:bitbucket:OAuth,PersonalAccessToken,OAuth2",
-            "label": "BitBucket Connection",
-            "defaultValue": "",
-            "required": false,
-            "helpMarkDown": "Specify the service connection name for your BitBucket connection. Please note this service connection have permissions to read to the correspinding repostiory. Learn more about service connections [here](https://aka.ms/AA3am5s).",
-            "visibleRule": "versionControlProvider = bitbucket"
-        },
-        {
-            "name": "github_enterprise_connection",
-            "type": "connectedService:githubenterprise:OAuth,PersonalAccessToken,OAuth2",
-            "label": "GitHub Enterprise Connection",
-            "defaultValue": "",
-            "required": false,
-            "helpMarkDown": "Specify the service connection name for your Git Hub Enterprise connection. Please note this service connection have permissions to read from the correspinding repostiory. Learn more about service connections [here](https://aka.ms/AA3am5s).",
-            "visibleRule": "versionControlProvider = githubEnterprise"
-        },
-        {
-            "name": "username",
-            "type": "string",
-            "label": "Username",
-            "defaultValue": "",
-            "helpMarkDown": "Username for the Version Control Provider",
-            "required": true,
-            "visibleRule": "versionControlProvider = otherGit"
-        },
-        {
-            "name": "password",
-            "type": "string",
-            "label": "Password",
-            "defaultValue": "",
-            "required": true,
-            "helpMarkDown": "App Password/PAT for the Version Control Provider",
-            "visibleRule": "versionControlProvider = otherGit"
         }
     ],
     "OutputVariables": [
@@ -127,6 +66,12 @@
     "execution": {
         "Node": {
             "target": "lib/CreateSourcePackageTask/CreateSourcePackage.js"
+        }
+    },
+     "postjobexecution": {
+        "Node": {
+            "target": "lib/CreateSourcePackageTask/PostPackageTaskCheck.js",
+            "argumentFormat": ""
         }
     }
 }
