@@ -2,37 +2,63 @@ import tl = require("azure-pipelines-task-lib/task");
 import { exec } from "shelljs";
 import { readdirSync, statSync } from "fs-extra";
 import { join } from "path";
+import authGit from "../Common/VersionControlAuth";
+import simplegit from "simple-git/promise";
 
 async function run() {
   console.log("Pushing Tags if any... ");
-  console.log("Remote", tl.getVariable("git_remote_url"));
   tl.setVariable("post_package_task_executed","true");
-  await pushGitTag();
+
+  let tagsToPush:tl.VariableInfo[]= tl.getVariables().filter( variable => variable.name.includes("_sfpowerscripts_git_tag"));
+
+  tagsToPush.forEach(element => {
+   //slice variable to figure package name
+   let sfdx_package:string = element.name.split('_')[0];
+   createandPushGitTag(tl.getVariable(element.name),tl.getVariable(`${sfdx_package}_sfpowerscripts_git_tag_directory_path`));
+  });
+
+
+
 }
 
-async function pushGitTag(): Promise<void> {
+async function createandPushGitTag(tagname: string,project_directory:string): Promise<void> {
+
+ 
   let tasktype = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
+  
+    let git;
+    if(tasktype == 'Build')
+     git = simplegit(tl.getVariable("Build.Repository.LocalPath"));
+    else
+      git = simplegit(project_directory);
+  
+    let remote = await authGit();
+  
+    await git
+          .addConfig("user.name", "sfpowerscripts");
+  
+    await git
+          .addConfig("user.email", "sfpowerscripts@dxscale");
+  
+    await git
+          .silent(false)
+          .addAnnotatedTag(
+            tagname,
+            'Unlocked Package'
+          );
+  
+    console.log(`Created tag ${tagname}`);
+  
+    await git
+      .silent(false)
+      .push(
+        remote,
+        tagname
+      );
 
-  console.log("Task Type", tasktype);
-
-  if (tasktype == "Build") {
-    tl.cd(tl.getVariable("Build.Repository.LocalPath"));
-    exec(`git push origin  --tags`, { silent: false });
-  } else {
-    tl.cd(tl.getVariable("system.artifactsDirectory"));
-    console.log(process.cwd());
-    const findDirs = (p) =>
-      readdirSync(p).filter((f) => statSync(join(p, f)).isDirectory());
-    let dirs: string[] = findDirs(process.cwd());
-
-    dirs.forEach((element) => {
-      tl.cd(element);
-      console.log("Scanning Directory for tag", process.cwd());
-      exec(`git push origin  --tags`, { silent: false });
-      tl.cd(tl.getVariable("system.artifactsDirectory"));
-    });
+  console.log(`Pushed tag ${tagname} to repo`);
+    
   }
-  console.log(`Completed Post Processing for Create Package Task`);
-}
+  
 
 run();
