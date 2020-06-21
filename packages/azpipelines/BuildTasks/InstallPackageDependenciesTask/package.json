@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-installpackagedependencies-task",
   "description": "sfpowerscripts-installpackagedependencies-task",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^0.4.1",
+    "@dxatscale/sfpowerscripts.core": "^0.4.2",
     "azure-pipelines-task-lib": "^2.8.0"
   }
 }
