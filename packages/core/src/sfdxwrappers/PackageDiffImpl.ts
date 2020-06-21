@@ -65,9 +65,9 @@ export default class PackageDiffImpl {
                             return true;
                         }
                     }
-                    return false;
+
+                    return await this.isPackageVersionChanged(git, tag, dir.versionNumber);
                 } else {
-                    // Assume package has changed if tag does not exist
                     console.log(`Tag missing for ${this.sfdx_package}...marking package for build anyways`);
                     return true;
                 }
@@ -116,5 +116,19 @@ export default class PackageDiffImpl {
             );
 
         return tagsPointingToBranch;
+    }
+
+    private async isPackageVersionChanged(git:any, latestTag: string, packageVersionHead: string): Promise<boolean> {
+        let project_config: string = await git.show([`${latestTag}:sfdx-project.json`]);
+        let project_json = JSON.parse(project_config);
+
+        let packageVersionLatestTag: string;
+        for (let dir of project_json["packageDirectories"]) {
+            if (this.sfdx_package == dir.package) {
+                packageVersionLatestTag = dir.versionNumber;
+            }
+        }
+
+        return packageVersionHead != packageVersionLatestTag
     }
 }
