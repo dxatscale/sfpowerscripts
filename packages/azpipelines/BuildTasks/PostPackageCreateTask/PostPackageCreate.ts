@@ -13,14 +13,13 @@ async function run() {
   console.log("Found Tags To Push", JSON.stringify(tagsToPush));
 
   for (const element of tagsToPush) {
-    //slice variable to figure package name
     try
     {
-    let sfdx_package: string = element.name.split("_")[0];
+    let sfdx_package: string = element.name.substring(0,element.name.indexOf("_sfpowerscripts_git_tag"));
     console.log("Package", sfdx_package);
     await createandPushGitTag(
       tl.getVariable(element.name),
-      tl.getVariable(`${sfdx_package}_sfpowerscripts_git_tag_directory_path`)
+      tl.getVariable(`${sfdx_package}_sfpowerscripts_source_directory_path`)
     );
     }
     catch(error) {
