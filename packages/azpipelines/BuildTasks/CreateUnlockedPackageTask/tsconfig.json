@@ -6,6 +6,7 @@
         "composite": false
     },
     "files": [
-        "CreateUnlockedPackage.ts"
+        "CreateUnlockedPackage.ts",
+        "PostPackageTaskCheck.ts"
     ]
   }

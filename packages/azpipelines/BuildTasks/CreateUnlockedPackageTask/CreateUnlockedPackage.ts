@@ -4,6 +4,7 @@ import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/Pac
 import authGit from "../Common/VersionControlAuth";
 const fs = require("fs");
 import simplegit from "simple-git/promise";
+import { isNullOrUndefined } from "util";
 
 async function run() {
   try {
@@ -19,6 +20,9 @@ async function run() {
     let isDiffCheckActive: boolean = tl.getBoolInput("isDiffCheck", false);
     let isGitTagActive: boolean = tl.getBoolInput("isGitTag", false);
     const set_build_number: boolean = tl.getBoolInput("set_build_number",true);
+
+
+    let tagname;
 
     let installationkey;
 
@@ -76,8 +80,7 @@ async function run() {
       tl.setVariable("sfpowerscripts_package_version_number", result.versionNumber);
 
       if (isGitTagActive) {
-        let tagname: string = `${sfdx_package}_v${result.versionNumber}`;
-        await pushGitTag(tagname,project_directory);
+         tagname = `${sfdx_package}_v${result.versionNumber}`;
       }
 
 
@@ -106,6 +109,15 @@ async function run() {
 
         let artifactFileName:string = `/${sfdx_package}_artifact_metadata`;
 
+        if(isGitTagActive)
+         {
+          tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`,tagname);
+          if(isNullOrUndefined(project_directory))
+            tl.setVariable(`${sfdx_package}_sfpowerscripts_project_directory_path`,tl.getVariable("Build.Repository.LocalPath"));
+          else
+             tl.setVariable(`${sfdx_package}_sfpowerscripts_project_directory_path`,project_directory);
+         }
+
         fs.writeFileSync(__dirname + artifactFileName, JSON.stringify(metadata));
 
         let data = {
@@ -127,41 +139,5 @@ async function run() {
   }
 }
 
-async function pushGitTag(tagname: string,project_directory:string): Promise<void> {
-
-let tasktype = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
-
-  let git;
-  if(tasktype == 'Build')
-   git = simplegit(tl.getVariable("Build.Repository.LocalPath"));
-  else
-    git = simplegit(project_directory);
-
-  let remote = await authGit();
-
-  await git
-        .addConfig("user.name", "sfpowerscripts");
-
-  await git
-        .addConfig("user.email", "sfpowerscripts@dxscale");
-
-  await git
-        .silent(false)
-        .addAnnotatedTag(
-          tagname,
-          'Unlocked Package'
-        );
-
-  console.log(`Created tag ${tagname}`);
-
-  await git
-      .silent(false)
-      .push(
-        remote,
-        tagname
-      );
-
-  console.log(`Pushed tag ${tagname} to repo`);
-}
 
 run();

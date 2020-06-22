@@ -1,13 +1,16 @@
 name: Milestone15$(Rev:.r)
 
-trigger:
+pr:
   branches:
     include:
-     - release/*
-     - develop
+    - develop
+    - master
+    - release/*
   paths:
+    include:
+      - '*'
     exclude:
-    - 'docs/*'
+      - 'docs/*'
 
 
 variables:
@@ -159,145 +162,3 @@ stages:
           authenticationMethod: 'Basic Authentication'
           username: 'azlam.abdulsalam'
           password: '$(dxatscalereview_pat)'
-
-#Merge to Develop, Deploy Alpha builds
-- stage: Alpha
-  condition: eq(variables['build.sourceBranch'], 'refs/heads/develop')
-  dependsOn: []
-  jobs:
-
-  - template: build_templates/deciderjob.yml
-
-  - job: BuildCLI
-    dependsOn: InstallNodeModules
-    displayName: sfdx-plugin
-    condition:   succeeded('InstallNodeModules')
-    pool:
-      vmImage: 'windows-latest'
-    steps:
-             - template: build_templates/buildcli.yml
-               parameters:
-                commitToGit: true
-                bump: 'prerelease'
-                version: 'alpha'
-                publish: true
-
-
-  - deployment: BuildAzPipelines
-    displayName: azpipelines
-    dependsOn: InstallNodeModules
-    condition:  succeeded('InstallNodeModules')
-    timeoutInMinutes: 20
-    pool:
-      vmImage: 'windows-latest'
-    environment: alpha
-    strategy:
-       runOnce:
-         deploy:
-           steps:
-
-             - template: build_templates/buildazpipelines.yml
-               parameters:
-                commitToGit: true
-                bump: 'prerelease'
-                stageToDeploy: 'alpha'
-                version: 'alpha'
-                environmentToDeploy: 'alpha'
-                toBuild: true
-                organization: dxatscalereview
-                buildNumber: $(minor)
-
-
-#Beta Stage
-- stage: Beta
-  condition: and(succeeded('Alpha'),eq(variables['build.sourceBranch'], 'refs/heads/develop'))
-  dependsOn: Alpha
-  jobs:
-
-  - template: build_templates/deciderjob.yml
-
-  - job: BuildCLI
-    displayName: sfdx-plugin
-    dependsOn: InstallNodeModules
-    condition:   succeeded('InstallNodeModules')
-    pool:
-      vmImage: 'windows-latest'
-    steps:
-             - template: build_templates/buildcli.yml
-               parameters:
-                commitToGit: false
-                bump: 'prerelease'
-                version: 'beta'
-                publish: false
-
-
-  - deployment: BuildAzPipelines
-    displayName: azpipelines
-    dependsOn: InstallNodeModules
-    condition:  succeeded('InstallNodeModules')
-    timeoutInMinutes: 20
-    pool:
-      vmImage: 'windows-latest'
-    environment: beta
-    strategy:
-       runOnce:
-         deploy:
-           steps:
-
-             - template: build_templates/buildazpipelines.yml
-               parameters:
-                commitToGit: false
-                bump: 'prerelease'
-                stageToDeploy: 'beta'
-                version: 'beta'
-                environmentToDeploy: 'beta'
-                toBuild: true
-                organization: dxatscalereview
-                buildNumber: $(minor)
-
-#Prod Stage
-- stage: Prod
-  condition: and(succeeded('Beta'),eq(variables['build.sourceBranch'], 'refs/heads/develop'))
-  dependsOn: Beta
-  jobs:
-
-  - template: build_templates/deciderjob.yml
-
-  - job: BuildCLI
-    displayName: sfdx-plugin
-    dependsOn: InstallNodeModules
-    condition:   succeeded('InstallNodeModules')
-    pool:
-      vmImage: 'windows-latest'
-    steps:
-             - template: build_templates/buildcli.yml
-               parameters:
-                commitToGit: false
-                bump: 'patch'
-                version: 'latest'
-                publish: false
-
-
-  - deployment: BuildAzPipelines
-    displayName: azpipelines
-    dependsOn: BuildCLI
-    condition:  succeeded('InstallNodeModules')
-    timeoutInMinutes: 30
-    pool:
-      vmImage: 'windows-latest'
-    environment: prod
-    strategy:
-       runOnce:
-         deploy:
-           steps:
-
-             - template: build_templates/buildazpipelines.yml
-               parameters:
-                commitToGit: false
-                bump: 'patch'
-                stageToDeploy: 'prod'
-                version: 'prod'
-                environmentToDeploy: 'prod'
-                toBuild: true
-                organization: dxatscalereview
-                buildNumber: $(minor)

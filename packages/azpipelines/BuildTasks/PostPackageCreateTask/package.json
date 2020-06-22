@@ -1,11 +1,11 @@
 {
-  "name": "sfpowerscripts-createunlockedpackage-task",
-  "description": "sfpowerscripts-createunlockedpackage-task",
-  "version": "11.0.0",
+  "name": "sfpowerscripts-postcreatepackage-task",
+  "description": "sfpowerscripts-postcreatepackage-task",
+  "version": "1.0.0",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/azlamsalam/sfpowerscripts.git"
+    "url": "https://github.com/accenture/sfpowerscripts.git"
   },
   "scripts": {
     "version": "node ../../versionupdate.js && git add task.json",
@@ -13,8 +13,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^0.4.2",
     "azure-pipelines-task-lib": "^2.8.0",
+    "fs-extra": "^8.1.0",
     "simple-git": "2.0.0"
   }
 }
