@@ -39,7 +39,7 @@ stages:
     condition:  succeeded('InstallNodeModules')
     timeoutInMinutes: 10
     pool:
-      vmImage: 'windows-latest'
+      vmImage: 'ubuntu-latest'
     steps:
       - template: build_templates/buildcli.yml
         parameters:
@@ -56,7 +56,7 @@ stages:
       isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
     timeoutInMinutes: 40
     pool:
-      vmImage: 'windows-latest'
+      vmImage: 'ubuntu-latest'
     environment: review
     strategy:
        runOnce:
@@ -112,7 +112,7 @@ stages:
     displayName: 'Test pr tasks on dxatscalereview'
     dependsOn: InstallExtension
     pool:
-      vmImage: 'windows-latest'
+      vmImage: 'ubuntu-latest'
     steps:
 
     - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@3
@@ -136,18 +136,8 @@ stages:
     displayName: 'Test packaging tasks on dxatscalereview'
     dependsOn: InstallExtension
     pool:
-      vmImage: 'windows-latest'
+      vmImage: 'ubuntu-latest'
     steps:
-
-    - powershell: |
-       # see also https://github.com/microsoft/azure-pipelines-agent/issues/838
-        $SourceBranchLongName = switch ($env:Build_Reason) {
-         'PullRequest' { $env:Build_SourceBranch.Replace('refs/pull/','').Replace('/merge','') }
-          default { $env:Build_SourceBranch.Replace('refs/heads/','').Replace('refs/tags/','') }
-        }
-        Write-Debug ${SourceBranchLongName}
-        Write-Host "##vso[task.setvariable variable=fullbranchname]${SourceBranchLongName}"
-      displayName: Get Branch Name
 
     - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@3
       displayName: 'Trigger a new build of Packaging Test in sfpowerscriptsReview'

@@ -2,7 +2,7 @@ jobs:
 - job: InstallNodeModules
   displayName: Install Node Dependencies
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'ubuntu-latest'
   
   steps:
     - checkout:  self
