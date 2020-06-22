@@ -42,7 +42,7 @@ async function run() {
     if (isDiffCheckActive) {
 
       console.log("Heading to package Diff Impl");
-      let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
+      let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory, config_file_path);
 
       isRunBuild = await packageDiffImpl.exec();
 
