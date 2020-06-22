@@ -50,9 +50,9 @@ export default class CreateSourcePackage extends SfdxCommand {
         runBuild = await packageDiffImpl.exec();
 
         if ( runBuild )
-        console.log(`Detected changes to ${sfdx_package} package...proceeding`);
+        console.log(`Detected changes to ${sfdx_package} package...proceeding\n`);
         else
-        console.log(`No changes detected for ${sfdx_package} package...skipping`);
+        console.log(`No changes detected for ${sfdx_package} package...skipping\n`);
 
       } else runBuild = true;
 

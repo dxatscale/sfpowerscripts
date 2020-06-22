@@ -43,9 +43,9 @@ async function run() {
       isRunBuild = await packageDiffImpl.exec();
 
       if (isRunBuild)
-        console.log(`Detected changes to ${sfdx_package} package...proceeding`);
+        console.log(`Detected changes to ${sfdx_package} package...proceeding\n`);
       else
-        console.log(`No changes detected for ${sfdx_package} package...skipping`);
+        console.log(`No changes detected for ${sfdx_package} package...skipping\n`);
 
     } else isRunBuild = true;
 
