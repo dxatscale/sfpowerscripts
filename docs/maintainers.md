@@ -16,5 +16,8 @@ title: Maintainers
 
 ![](/images/mithun-kt.jpg){: width="200" height="200"}<br><br> Mithun is a Full Stack Developer and a creative technology enthusiast keen to make tech life easy and simple.
 
+## Alan Ly
 
+[![](/uploads/linkedin-icon-81.png){: width="40" height="40"}](https://au.linkedin.com/in/alan-ly-893668180)
 
+![](/images/alan-ly.jpg){: width="133" height="200"}<br><br> Alan is a software developer, who is currently focused on DevOps and automation within the Salesforce domain.
