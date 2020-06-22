@@ -19,7 +19,7 @@ async function run() {
     console.log("Package", sfdx_package);
     await createandPushGitTag(
       tl.getVariable(element.name),
-      tl.getVariable(`${sfdx_package}_sfpowerscripts_source_directory_path`)
+      tl.getVariable(`${sfdx_package}_sfpowerscripts_project_directory_path`)
     );
     }
     catch(error) {

@@ -19,9 +19,9 @@ async function run() {
     let isRunBuild: boolean;
     if (isDiffCheck) {
       console.log("Heading to package Diff Impl");
-  
+
       let packageDiffImpl = new PackageDiffImpl(sfdx_package, project_directory);
-      
+
 
       isRunBuild = await packageDiffImpl.exec();
 
@@ -64,9 +64,9 @@ async function run() {
         let tagname: string = `${sfdx_package}_v${version_number}`;
          tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`,tagname);
          if(isNullOrUndefined(project_directory))
-           tl.setVariable(`${sfdx_package}_sfpowerscripts_source_directory_path`,tl.getVariable("Build.Repository.LocalPath"));  
+           tl.setVariable(`${sfdx_package}_sfpowerscripts_project_directory_path`,tl.getVariable("Build.Repository.LocalPath"));
          else
-            tl.setVariable(`${sfdx_package}_sfpowerscripts_source_directory_path`,project_directory);  
+            tl.setVariable(`${sfdx_package}_sfpowerscripts_project_directory_path`,project_directory);
       }
 
 

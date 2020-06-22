@@ -113,9 +113,9 @@ async function run() {
          {
           tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`,tagname);
           if(isNullOrUndefined(project_directory))
-            tl.setVariable(`${sfdx_package}_sfpowerscripts_source_directory_path`,tl.getVariable("Build.Repository.LocalPath"));  
+            tl.setVariable(`${sfdx_package}_sfpowerscripts_project_directory_path`,tl.getVariable("Build.Repository.LocalPath"));
           else
-             tl.setVariable(`${sfdx_package}_sfpowerscripts_source_directory_path`,project_directory);  
+             tl.setVariable(`${sfdx_package}_sfpowerscripts_project_directory_path`,project_directory);
          }
 
         fs.writeFileSync(__dirname + artifactFileName, JSON.stringify(metadata));
