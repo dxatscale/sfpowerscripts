@@ -40,21 +40,12 @@ steps:
           - checkout: self
 
 
-          - powershell: |
-              # see also https://github.com/microsoft/azure-pipelines-agent/issues/838
-              $SourceBranchLongName = switch ($env:Build_Reason) {
-                'PullRequest' { $env:Build_SourceBranch.Replace('refs/pull/','').Replace('/merge','') }
-                 default { $env:Build_SourceBranch.Replace('refs/heads/','').Replace('refs/tags/','') }
-               }
-               Write-Host "##vso[task.setvariable variable=fullbranchname]${SourceBranchLongName}"
-            displayName: Get Branch Name
-
           - task: CmdLine@2
             displayName: 'Checkout the current version of the branch'
             condition: and(true, eq( ${{ parameters.commitToGit }},true))
             inputs:
                  script: |
-                  git checkout $(fullbranchname)
+                  git checkout  $(System.PullRequest.SourceBranch)
                  workingDirectory: '$(System.DefaultWorkingDirectory)'
           
           - task: CmdLine@2
@@ -175,7 +166,7 @@ steps:
             displayName: 'Push to Repo'
             inputs:
               script: |
-                git push  https://$(github_pat)@github.com/Accenture/sfpowerscripts.git  HEAD:$(fullbranchname)
+                git push  https://$(github_pat)@github.com/Accenture/sfpowerscripts.git  HEAD:$(System.PullRequest.SourceBranch)
             condition: and(true, eq( ${{ parameters.commitToGit }},true))
 
 
