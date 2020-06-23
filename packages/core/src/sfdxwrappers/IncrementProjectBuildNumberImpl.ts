@@ -60,8 +60,6 @@ export default class IncrementProjectBuildNumberImpl {
 
       if (isNaN(numberToBeAppended))
         throw new Error("BuildNumber should be a number");
-      else if (numberToBeAppended > 999)
-        throw new Error("BuildNumber should be less than 999");
       else segments[3] = this.buildNumber;
     }
 

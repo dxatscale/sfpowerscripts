@@ -9,13 +9,13 @@
     "version": {
         "Major": 1,
         "Minor": 0,
-        "Patch": 0
+        "Patch": 1
     },
     "runsOn": [
         "Agent"
     ],
     "instanceNameFormat": "Post Execution for Create Package Tasks",
-    "inputs":[
+    "inputs": [
         {
             "name": "versionControlProvider",
             "type": "pickList",
