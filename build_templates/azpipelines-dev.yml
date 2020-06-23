@@ -48,7 +48,7 @@ stages:
       isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
     timeoutInMinutes: 40
     pool:
-      vmImage: 'windows-latest'
+      vmImage: 'ubuntu-latest'
     environment: develop
     strategy:
        runOnce:

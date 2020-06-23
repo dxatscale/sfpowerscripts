@@ -40,16 +40,6 @@ parameters:
 steps:
           - checkout: self
 
-
-          - powershell: |
-              # see also https://github.com/microsoft/azure-pipelines-agent/issues/838
-              $SourceBranchLongName = switch ($env:Build_Reason) {
-                'PullRequest' { $env:Build_SourceBranch.Replace('refs/pull/','').Replace('/merge','') }
-                 default { $env:Build_SourceBranch.Replace('refs/heads/','').Replace('refs/tags/','') }
-               }
-               Write-Host "##vso[task.setvariable variable=fullbranchname]${SourceBranchLongName}"
-            displayName: Get Branch Name
-
           - task: CmdLine@2
             displayName: "Set Git Config"
             condition:  or ( eq( '${{ parameters.version }}','beta'), eq( '${{ parameters.version }}','prod'))
@@ -64,7 +54,7 @@ steps:
             condition: or ( eq( '${{ parameters.version }}','beta'), eq( '${{ parameters.version }}','prod'))
             inputs:
                  script: |
-                  git checkout $(fullbranchname)
+                  git checkout  $(System.PullRequest.SourceBranch)
                  workingDirectory: '$(System.DefaultWorkingDirectory)'
           
 
