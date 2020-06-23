@@ -119,7 +119,7 @@ steps:
             displayName: 'Publish CLI/Core'
             condition: eq( ${{ parameters.publish }},true)
             inputs:
-                 script: 'lerna publish from-package --yes --force-publish --no-git-tag-version --no-push --dist-tag ${{ parameters.version }}'
+                 script: 'npx lerna publish from-package --yes --force-publish --no-git-tag-version --no-push --dist-tag ${{ parameters.version }}'
                  workingDirectory: '$(System.DefaultWorkingDirectory)'
 
           - task: CmdLine@2
