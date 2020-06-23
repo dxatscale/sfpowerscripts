@@ -130,5 +130,4 @@ steps:
                     CORE_VERSION=$(jq -r ".version" packages/core/package.json)
                     CLI_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)
                     npm dist-tag add @dxatscale/sfpowerscripts.core@${CORE_VERSION} ${{ parameters.version }}
-                    npm dist-tag add @dxatscale/sfpowerscripts.core@${CLI_VERSION} ${{ parameters.version }}
-                    
+                    npm dist-tag add @dxatscale/sfpowerscripts@${CLI_VERSION} ${{ parameters.version }}
