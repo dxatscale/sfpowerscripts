@@ -2,9 +2,11 @@
 title: Overview
 ---
 
-SFPowerscripts is an open source and free Azure Pipelines Extension that converts Azure Pipelines into a CI/CD platform for Salesforce. The extension features the following tasks. Install the plugin from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=AzlamSalam.sfpowerscripts) and read the documentation on how to configure a highly customizable Salesforce CI/CD Pipeline.
+sfpowerscripts (azure pipelines extension) is an open source and free Azure Pipelines Extension that converts Azure Pipelines into a CI/CD platform for Salesforce.. Install the plugin from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=AzlamSalam.sfpowerscripts) and read the documentation on how to configure a highly customizable Salesforce CI/CD Pipeline.
 
-Please note this extension only works with the newer source format based repositories only and  works with both Hosted Linux and Windows Agents
+Please note this extension only works with the newer source format based repositories test to work with both Hosted Linux and Windows Agents.
+
+The extension features the following tasks
 
 #### Common/Utility Tasks
 
@@ -16,8 +18,8 @@ Please note this extension only works with the newer source format based reposit
 
 #### Deployment Related Tasks
 
-* Checkout a source based artifact from Git using PAT
-* Deploy a source format based repo to an org (scratch org/sandbox/prod)
+* Checkout a source based artifact from Git (using PAT) / Azure Artifacts
+* Deploy a source format based package to an org (scratch org/sandbox/prod)
 * Deploy an unlocked package to an org
 * Deploy destructive manifest to an org
 
@@ -30,32 +32,33 @@ Please note this extension only works with the newer source format based reposit
 #### Testing / Code Quality Related Tasks
 
 * Trigger Apex Test
-* Validate Apex Test Coverge of an org
+* Validate Apex Test Coverage of an org
 * Validate Code Coverage of a second generation package
 
 #### How does it work?
 
-* The extension is designed with tasks which are granular, which means all the above tasks have to be orchestrated in a valid order required to reach the required objective. This allows one to utilise other commands or extensions between the tasks and be highly effective rather than getting tied to a single task. This ensures maximum flexibility while building the pipeline.
+The extension is designed with tasks which are granular, which means all the above tasks have to be orchestrated in a valid order required to reach the required objective. This allows one to utilize other commands or extensions between the tasks and be highly effective rather than getting tied to a single task. This ensures maximum flexibility while building the pipeline.
 
 For eg: a Pull Request validation for an unlocked package should feature the tasks in this order
 
-![PR Pipeline](/images/PR Pipeline ScratchOrg.png)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;![PR Pipeline](/images/PR Pipeline ScratchOrg.png)
 
 1. Install the SFDX CLI
 2. Validate the unlocked package for metadata coverage
-3. Authenticate DevHub
-4. Create a Scratch Org
-5. Install Package Dependencies in the target scratch org
+3. &nbsp;Analyze force-app using PMD
+4. Authenticate DevHub
+5. Create a Scratch Org
 6. Deploy source to the target scratch org
-7. Delete the scratch org ( optional :  Utilize post action on create scratch org task )
+7. Trigger Apex Tests in ScratchOrg
+8. Validate Apex Test Coverage&nbsp;
 
-* Most of the tasks are very thin wrappers around the equivalent sfdx cli commands or the open-source sfpowerkit (SFDX CLI extension). Almost all parameters that are required during a CI run is exposed. If you feel that is not enough for the task at hand, one can quickly fall back to command line parameterized just for the taskMost of the tasks are very thin wrappers aroud the equivalent sfdx cli commands or the open source sfpowerkit (SFDX CLI extension). Almost all parameters that are requred during a CI run is exposed. If you feel that is not enough for the task at hand, one can quickly fall back to command line parameterized just for the task
+* Most of the tasks are very thin wrappers around the equivalent sfdx cli commands or the open-source sfpowerkit (SFDX CLI extension). Almost all parameters that are required during a CI run is exposed. If you feel that is not enough for the task at hand, one can quickly fall back to command line&nbsp; task just for the task.&nbsp;
 
 * Though the tasks can all be utilized fully in build pipeline. It is recommended to utilize the Release Pipeline to deploy the artifact to make the full use of Azure Pipelines Capability.
 
 #### Getting Started
 
-Checkout SFPowerscripts documentation here on how to [Get Started](https://sfpowerscripts.com/gettingstarted/) with these tasks. The [repo](https://github.com/azlamsalam/sfpowerscripts/tree/release/SamplePipelines) also features sample pipelines that demonstrate the usage of pipelines.
+Checkout sfpowerscripts documentation here on how to [Get Started](https://sfpowerscripts.com/gettingstarted/) with these tasks. The [repo](https://github.com/azlamsalam/sfpowerscripts/tree/release/SamplePipelines) also features sample pipelines that demonstrate the usage of pipelines.
 
 #### What if there is an issue with the extension?
 
