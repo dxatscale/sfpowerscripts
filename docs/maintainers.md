@@ -10,11 +10,7 @@ title: Maintainers
 
 ![](/images/azlam-abdulsalam.jpg){: width="200" height="200"}<br><br>Azlam is a Tech Architect with a particular interest on delivering iterative software. He is passionate on developer enablement utilizing plugins, frameworks along with automation. These days, he is focused on improving the speed and quality of Salesforce Development
 
-## Mithun K T
 
-[![](/uploads/linkedin-icon-81.png){: width="40" height="40"}](https://www.linkedin.com/in/mithun-kt-6548b4a1)
-
-![](/images/mithun-kt.jpg){: width="200" height="200"}<br><br> Mithun is a Full Stack Developer and a creative technology enthusiast keen to make tech life easy and simple.
 
 ## Alan Ly
 
