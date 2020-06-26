@@ -5,11 +5,12 @@ import DeleteScratchOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrapper
 
 async function run() {
   try {
+    const action: string = tl.getInput("action", true);
     const maintainorg: string = tl.getInput("maintainorg", true);
     const devhub_alias: string = tl.getInput("devhub_alias", true);
     const target_org: string = tl.getInput("target_org", true);
 
-    if (maintainorg == "delete") {
+    if (action == "Create" && maintainorg == "delete") {
       console.log("SFPowerScript.. Delete the created scratch org");
 
       let deleteScratchOrgImpl: DeleteScratchOrgImpl = new DeleteScratchOrgImpl(
@@ -22,6 +23,13 @@ async function run() {
       await deleteScratchOrgImpl.exec(command);
 
     
+    }
+    else
+    {
+      tl.setResult(
+        tl.TaskResult.Skipped,
+        `Skipping Post Job as the Action for this task is ${action} or the option set for this org is to  ${maintainorg}`
+      );
     }
   } catch (err) {
 
