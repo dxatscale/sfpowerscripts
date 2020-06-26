@@ -10,23 +10,27 @@ This task is used to validate the apex test coverage of an org
 
 Please note [Install SFDX with Sfpowerkit](/Tasks/Common-Utility-Tasks/Install%20SFDX%20CLI/) task is added to the pipeline before utilizing this task
 
+Task Snapshot
+
+![](/uploads/validatecodecoverageorg.PNG){: width="800" height="364"}
 
 **Task Version and Details**
 
 id: sfpwowerscript-validateapextestcoverage-task
 
-version: 3.0.9
+version: 4.0.4
 
+**Input Variables**\*
 
-**Input Variables***
-
- **Send Anonymous Usage Telemetry (isTelemetryEnabled)**
-
-   Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
-
+* **Alias or username of the target org(target\_org)**<br><br>Provide the alias or username of the target org&nbsp; on which the unlocked package is to be deployed
+* **Tests coverage %&nbsp;to be validated&nbsp; (test\_coverage)**<br><br>The percentage of test coverage for apex clasess, that should be as per the last test run status
 
 **Output Variables**
 
 **Control Options**
 
-**Gotcha's**
+**Gotcha’s**
+
+**Changelog**
+
+* 4\.0.4&nbsp; Removed Telemetry Collection
