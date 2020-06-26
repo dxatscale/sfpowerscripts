@@ -14,11 +14,11 @@ Please&nbsp; note [Install SFDX with Sfpowerkit&nbsp;](/Tasks/Common-Utility-Tas
 
 **![](/images/Analyze apex classes using pmd .png){: width="929" height="587"}**
 
-This task attaches the code analysis result into the build artifacts and also provides a timeline update in the build summary page. Please note this enahancement only works with ‘Classic’ pipelines only
+This task attaches the code analysis result into the build artifacts and also provides a timeline update in the build summary page. Please note this enhancement only works with ‘Classic’ pipelines only
 
 ![](/images/Build Analysis Summary.PNG){: width="1509" height="667"}
 
-This task when used in a build pipeline features a report window that gets displayed along with the logs. Please note there&nbsp; (This feature is currently blocked pending a bugfix from Microsoft)
+This task when used in a build pipeline features a report window that gets displayed along with the logs. (This feature is currently blocked pending a bugfix from Microsoft)
 
 **![](/images/PMDDashbboard.png){: width="929" height="587"}**
 
