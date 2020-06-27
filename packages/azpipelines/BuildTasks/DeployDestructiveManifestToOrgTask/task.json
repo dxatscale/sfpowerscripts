@@ -51,6 +51,15 @@
             "defaultValue": "",
             "helpMarkDown": "The location to the xml file which contains the destructive changes",
             "visibleRule": "method = FilePath"
+        },
+        {
+            "name": "skip_on_missing_manifest",
+            "type": "boolean",
+            "label": "Skip if unable to find destructive manfiest file",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "When enabled, a missing destructive manifest file does not cause the task to fail",
+            "visibleRule": "method = FilePath"
         }
     ],
     "OutputVariables": [],

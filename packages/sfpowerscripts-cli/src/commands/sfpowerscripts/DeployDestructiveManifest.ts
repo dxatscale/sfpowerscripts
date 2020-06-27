@@ -21,10 +21,28 @@ export default class DeployDestructiveManifest extends SfdxCommand {
     ];
 
     protected static flagsConfig = {
-        targetorg: flags.string({char: 'u', description: messages.getMessage('targetOrgFlagDescription'), default: 'scratchorg'}),
-        method: flags.string({char: 'm', description: messages.getMessage('methodFlagDescription'), options: ['Text', 'FilePath'], default: 'Text'}),
-        destructivemanifesttext: flags.string({char: 't', description: messages.getMessage('destructiveManifestTextFlagDescription')}),
-        destructivemanifestfilepath: flags.string({char: 'f', description: messages.getMessage('destructiveManifestFilePathFlagDescription')}),
+        targetorg: flags.string({
+          char: 'u',
+          description: messages.getMessage('targetOrgFlagDescription'),
+          default: 'scratchorg'}),
+        method: flags.string({
+          char: 'm',
+          description: messages.getMessage('methodFlagDescription'),
+          options: ['Text', 'FilePath'],
+          default: 'Text'
+        }),
+        destructivemanifesttext: flags.string({
+          char: 't',
+          description: messages.getMessage('destructiveManifestTextFlagDescription')
+        }),
+        destructivemanifestfilepath: flags.string({
+          char: 'f',
+          description: messages.getMessage('destructiveManifestFilePathFlagDescription'),
+          exclusive: ['destructivemanifesttext']
+        }),
+        skiponmissingmanifest: flags.boolean({
+          description: messages.getMessage('skipOnMissingManifestFlagDescription')
+        })
     };
 
     protected static requiresProject = true;
@@ -34,53 +52,58 @@ export default class DeployDestructiveManifest extends SfdxCommand {
     public async run() {
         try {
             console.log("SFPowerScript.. Deploy Destructive Manifest to Org");
-        
+
             const targetOrg: string = this.flags.targetorg;
             const method: string = this.flags.method;
-        
+            const skiponmissingmanifest: boolean = this.flags.skiponmissingmanifest;
             // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
-        
+
             let destructiveManifestPath = null;
-        
+
             if(method == "Text")
             {
-        
+
               let destructiveManifest=  this.flags.destructivemanifesttext;
-              console.log(destructiveManifest);
               destructiveManifestPath = path.join(__dirname,"destructiveChanges.xml")
               fs.writeFileSync(destructiveManifestPath,destructiveManifest);
-            //   AppInsights.trackTaskEvent("sfpwowerscript-deploydestructivemanifest-task","destructive_using_text"); 
+              console.log(destructiveManifestPath);
+            //   AppInsights.trackTaskEvent("sfpwowerscript-deploydestructivemanifest-task","destructive_using_text");
             }
             else
             {
               destructiveManifestPath =  this.flags.destructivemanifestfilepath;
               console.log(`Destructive Manifest File Path: ${destructiveManifestPath}`);
-            //   AppInsights.trackTaskEvent("sfpwowerscript-deploydestructivemanifest-task","destructive_using_filepath"); 
+            //   AppInsights.trackTaskEvent("sfpwowerscript-deploydestructivemanifest-task","destructive_using_filepath");
               if(!fs.existsSync(destructiveManifestPath))
               {
-                throw new SfdxError("Unable to find the specified manifest file");
+                if (skiponmissingmanifest) {
+                  console.log("Unable to find the specified manifest file");
+                  return
+                } else {
+                  throw new SfdxError("Unable to find the specified manifest file...Skipping");
+                }
               }
             }
-        
+
             console.log("Displaying Destructive Manifest");
-            
+
             let destructiveManifest:Buffer = fs.readFileSync(destructiveManifestPath);
             console.log(destructiveManifest.toString());
-        
+
             let  deploySourceToOrgImpl:DeployDestructiveManifestToOrgImpl = new DeployDestructiveManifestToOrgImpl(targetOrg,destructiveManifestPath);
-            
+
             let command:string = await deploySourceToOrgImpl.buildExecCommand();
             await deploySourceToOrgImpl.exec(command);
-        
-         
+
+
             console.log("Destuctive Changes succesfully deployed");
-        
-           
+
+
             // AppInsights.trackTask("sfpwowerscript-deploydestructivemanifest-task");
-            // AppInsights.trackTaskEvent("sfpwowerscript-deploydestructivemanifest-task","destructive_deployed");    
-        
+            // AppInsights.trackTaskEvent("sfpwowerscript-deploydestructivemanifest-task","destructive_deployed");
+
           } catch (err) {
-            // AppInsights.trackExcepiton("sfpwowerscript-deploydestructivemanifest-task",err); 
+            // AppInsights.trackExcepiton("sfpwowerscript-deploydestructivemanifest-task",err);
             console.log(err);
             process.exit(1);
           }
