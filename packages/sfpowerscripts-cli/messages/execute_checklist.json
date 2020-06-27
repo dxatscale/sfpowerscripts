@@ -1,0 +1,6 @@
+{
+    "commandDescription": "Executes runbook, prompting the user with tasks and outputing a log of task completion statuses",
+    "filePathFlagDescription": "The path to the checklist file",
+    "reportFlagDescription": "The file path to which the output is written",
+    "envFlagDescription": "The environment on which to execute the checklist"
+  }
