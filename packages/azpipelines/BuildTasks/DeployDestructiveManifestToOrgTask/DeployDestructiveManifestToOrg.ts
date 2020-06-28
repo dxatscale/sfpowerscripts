@@ -29,6 +29,7 @@ async function run() {
       {
         if (skipOnMissingManifest) {
           tl.setResult(tl.TaskResult.Skipped, "Unable to find the specified manifest file");
+          return;
         } else {
           tl.setResult(tl.TaskResult.Failed,"Unable to find the specified manifest file");
           return;
