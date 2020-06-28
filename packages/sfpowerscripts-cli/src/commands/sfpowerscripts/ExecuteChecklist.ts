@@ -6,7 +6,7 @@ const yaml = require("js-yaml");
 const path = require("path");
 const fs = require("fs");
 const chalk = require("chalk");
-const validate = require('jsonschema').validate;
+const Validator = require('jsonschema').Validator;
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -47,10 +47,11 @@ export default class ExecuteChecklist extends SfdxCommand {
             let report: string = this.flags.report;
             const alias: string = this.flags.alias;
 
-            const checklist: checklist = yaml.safeLoad(fs.readFileSync(filepath, "utf8"));
-            // validate(4, checlist);
 
-            console.log(checklist);
+            const checklist: checklist = yaml.safeLoad(fs.readFileSync(filepath, "utf8"));
+            this.validateChecklist(checklist);
+
+            // console.log(checklist);
             console.log(`\n\n\n`);
 
             let result = {
@@ -119,6 +120,64 @@ export default class ExecuteChecklist extends SfdxCommand {
         chalk.bold(`s`) +
         ` elapsed\n`
     );
+  }
+
+  private validateChecklist(checklist: checklist): void {
+    let v = new Validator();
+
+    const taskSchema = {
+        "id": "/task",
+        "type": "object",
+        "properties": {
+            "task": {
+                "type": "string"
+            },
+            "id": {
+                "type": "number"
+            },
+            "steps": {
+                "type": "string"
+            },
+            "runOnlyOn": {
+                "type": "string"
+            },
+            "condition": {
+                "type": "string"
+            }
+        },
+        "required": ["task", "id", "steps", "runOnlyOn"]
+    };
+
+    const refSchema = {
+        "type": "object",
+        "properties": {
+            "runbook": {
+                "type": "string"
+            },
+            "version": {
+                "type": "number"
+            },
+            "metadata": {
+                "type": "string"
+            },
+            "schema_version": {
+                "type": "number"
+            },
+            "tasks": {
+                "type": "array",
+                "items": {
+                    "$ref": "/task"
+                }
+            }
+        },
+        "required": ["runbook", "version", "metadata", "schema_version", "tasks"]
+    };
+
+    v.addSchema(taskSchema, '/task');
+    let validationResult = v.validate(checklist, refSchema);
+    if (validationResult.errors.length > 0) {
+        throw validationResult.errors;
+    }
   }
 }
 
