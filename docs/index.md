@@ -2,7 +2,7 @@
 title: Overview
 ---
 
-sfpowerscripts (azure pipelines extension) is an open source and free Azure Pipelines Extension that converts Azure Pipelines into a CI/CD platform for Salesforce.. Install the plugin from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=AzlamSalam.sfpowerscripts) and read the documentation on how to configure a highly customizable Salesforce CI/CD Pipeline.
+sfpowerscripts (azure pipelines extension) is an open source and free Azure Pipelines Extension that converts Azure Pipelines into a CI/CD platform for Salesforce. Install the plugin from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=AzlamSalam.sfpowerscripts) and read the documentation on how to configure a highly customizable Salesforce CI/CD Pipeline.
 
 Please note this extension only works with the newer source format based repositories test to work with both Hosted Linux and Windows Agents.
 
@@ -12,9 +12,9 @@ The extension features the following tasks
 
 * Install SFDX CLI along with SFPowerkit Plugin
 * Authenticate an Org using JWT or Username/Password/Security Token
-* Validate a Unlocked package for metadata coverage
+* Create/Delete a scratch org
 * Install all package dependencies of an unlocked package
-* Run apex code analysis using PMD
+* Export metadata from an org for backup
 
 #### Deployment Related Tasks
 
@@ -26,11 +26,15 @@ The extension features the following tasks
 #### Packaging Related Tasks
 
 * Increment Project Version Number similar to npm version patch, which can be utilized before an unlocked / source based packaging
+* Validate Unlocked Package for Metadata Coverage
 * Create an unlocked package
-* Create a build artifact for unlocked/source based packaging, which can be utilized in Release Pipelines
+* Create a source based package
+* Create a delta (incremental change) based package
+* Promote an unlocked package
 
 #### Testing / Code Quality Related Tasks
 
+* Run apex code analysis using PMD
 * Trigger Apex Test
 * Validate Apex Test Coverage of an org
 * Validate Code Coverage of a second generation package
