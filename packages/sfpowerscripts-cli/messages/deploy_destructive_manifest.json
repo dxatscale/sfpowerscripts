@@ -3,5 +3,6 @@
     "targetOrgFlagDescription": "Alias or username of the target org where the code should be deployed",
     "methodFlagDescription": "If text is specified, add the members in the next field, if URL, pass in the location of the destructiveChanges.xml such as the raw git url",
     "destructiveManifestTextFlagDescription": "Type in the destructive manifest, follow the instructions, https://developer.salesforce.com/docs/atlas.en-us.daas.meta/daas/daas_destructive_changes.htm",
-    "destructiveManifestFilePathFlagDescription": "The location to the xml file which contains the destructive changes"
+    "destructiveManifestFilePathFlagDescription": "The location to the xml file which contains the destructive changes",
+    "skipOnMissingManifestFlagDescription": "Skip if unable to find destructive manfiest file"
 }
