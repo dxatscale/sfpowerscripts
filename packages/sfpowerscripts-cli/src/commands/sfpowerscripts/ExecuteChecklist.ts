@@ -2,9 +2,12 @@ import { flags, SfdxCommand, FlagsConfig } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import { Messages, SfdxError } from "@salesforce/core";
 import * as inquirer from "inquirer";
+import { string } from "@oclif/command/lib/flags";
+import { isNullOrUndefined } from "util";
 const yaml = require("js-yaml");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 const chalk = require("chalk");
 const Validator = require('jsonschema').Validator;
 
@@ -29,30 +32,33 @@ export default class ExecuteChecklist extends SfdxCommand {
             description: messages.getMessage("filePathFlagDescription"),
             required: true
         }),
-        report: flags.filepath({
+        outputdir: flags.directory({
             char: "o",
-            description: messages.getMessage("reportFlagDescription"),
+            description: messages.getMessage("outputDirFlagDescription"),
             required: true
         }),
         alias: flags.string({
             description: messages.getMessage("envFlagDescription"),
-            required: true,
             parse: (input) => input.toLowerCase()
+        }),
+        executionlog: flags.filepath({
+            description: messages.getMessage("executionLogFlagDescription"),
         })
     };
 
     public async run(): Promise<void> {
         try {
             const filepath: string = this.flags.filepath;
-            let report: string = this.flags.report;
-            const alias: string = this.flags.alias;
+            const executionLog: string = this.flags.executionlog;
+            let alias: string = this.flags.alias;
 
+            let outputDir: string = path.join(
+                this.flags.outputdir,
+                alias
+            );
 
             const checklist: checklist = yaml.safeLoad(fs.readFileSync(filepath, "utf8"));
             this.validateChecklist(checklist);
-
-            // console.log(checklist);
-            console.log(`\n\n\n`);
 
             let result = {
                 runbook: checklist["runbook"],
@@ -66,35 +72,73 @@ export default class ExecuteChecklist extends SfdxCommand {
                 tasks: []
             };
 
-            for (let task of checklist["tasks"]) {
-                if (task.runOnlyOn.toLowerCase() == alias) {
-                    this.printTaskInfo(task, checklist["tasks"].length);
+            let taskQueue = [];
 
-                    let start_timestamp: number = Date.now();
-                    let responses: any = await inquirer.prompt([
-                        {
-                        name: "status",
-                        type: "list",
-                        message: "Task outcome:",
-                        choices: ["Completed", "Skipped"]
-                        },
-                    ]);
+            if (!isNullOrUndefined(executionLog)) {
+                if (fs.existsSync(executionLog)) {
+                    let executionLogJson = JSON.parse(fs.readFileSync(executionLog, "utf8"));
+                    alias = executionLogJson["inputs"]["alias"];
+                    result["tasks"] = result["tasks"].concat(executionLogJson["tasks"]);
 
-                    let end_timestamp: number = Date.now();
-                    let duration_ms = (end_timestamp - start_timestamp);
-
-                    this.printDurationMinSec(duration_ms);
-
-                    task["status"] = responses["status"];
-
-                    result["tasks"].push(task);
-                }
+                    let latestTaskId = executionLogJson["tasks"][executionLogJson["tasks"].length-1]["id"];
+                    taskQueue = checklist["tasks"].slice(latestTaskId); // what if id's are wrong?
+                } else throw new Error(`Cannot find file ${executionLog}`);
+            } else {
+                taskQueue = checklist["tasks"];
             }
 
-            console.log(result);
+            if (taskQueue.length == 0)
+                console.log(`No tasks remaining in ${executionLog}`);
+            else {
+                for (let task of taskQueue) {
+                    if (
+                        isNullOrUndefined(task.runOnlyOn) ||
+                        task.runOnlyOn.toLowerCase() == alias
+                    ) {
+                        this.printTaskInfo(task, checklist["tasks"].length);
 
-            fs.writeFileSync(report, JSON.stringify(result, null, 2));
+                        let start_timestamp: number = Date.now();
+                        let responses: any = await inquirer.prompt([
+                            {
+                            name: "status",
+                            type: "list",
+                            message: "Task action:",
+                            choices: ["Done", "Skip", "Quit"]
+                            },
+                        ]);
+                        // skip reason
 
+                        if (responses["status"] == "Quit") {
+                            break;
+                        }
+
+                        let end_timestamp: number = Date.now();
+                        let duration_ms = (end_timestamp - start_timestamp);
+
+                        this.printDurationMinSec(duration_ms);
+
+                        task["status"] = responses["status"];
+                        task["timeTaken"] = duration_ms;
+                        task["User"] = os.hostname();
+                        task["Date"] = new Date();
+
+                        result["tasks"].push(task);
+                    }
+                }
+
+                console.log(result);
+
+                if (!fs.existsSync(outputDir))
+                    fs.mkdirSync(outputDir);
+
+                let outputPath = path.join(
+                    outputDir,
+                    `execution_log_${new Date()}`
+                );
+
+                if (result["tasks"].length > 0)
+                    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+            }
 
         } catch (err) {
             console.log(err);
@@ -145,7 +189,7 @@ export default class ExecuteChecklist extends SfdxCommand {
                 "type": "string"
             }
         },
-        "required": ["task", "id", "steps", "runOnlyOn"]
+        "required": ["task", "id", "steps"]
     };
 
     const refSchema = {
