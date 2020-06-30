@@ -57,6 +57,18 @@ export default class ExecuteChecklist extends SfdxCommand {
                 alias
             );
 
+            if (!fs.existsSync(outputDir))
+                fs.mkdirSync(outputDir);
+
+            let startDate = new Date();
+            let ddmmyyyy = this.getDate(startDate);
+            let time = this.getTime(startDate);
+
+            let outputPath = path.join(
+                outputDir,
+                `execution_log_${ddmmyyyy}-${time}`
+            );
+
             const checklist: checklist = yaml.safeLoad(fs.readFileSync(filepath, "utf8"));
             this.validateChecklist(checklist);
 
@@ -90,12 +102,15 @@ export default class ExecuteChecklist extends SfdxCommand {
             if (taskQueue.length == 0)
                 console.log(`No tasks remaining in ${executionLog}`);
             else {
+                console.log(`Executing checklist ${checklist["runbook"]} v${checklist["version"]}`);
+                let taskNum = 0;
                 for (let task of taskQueue) {
                     if (
                         isNullOrUndefined(task.runOnlyOn) ||
                         task.runOnlyOn.toLowerCase() == alias
                     ) {
-                        this.printTaskInfo(task, checklist["tasks"].length);
+                        taskNum++;
+                        this.printTaskInfo(task, taskNum, taskQueue.length);
 
                         let start_timestamp: number = Date.now();
                         let responses: any = await inquirer.prompt([
@@ -107,7 +122,9 @@ export default class ExecuteChecklist extends SfdxCommand {
                             },
                         ]);
                         // skip reason
-
+                        // print id
+                        // reason for skipping over tasks
+                        // Executing checklist ${name}
                         if (responses["status"] == "Quit") {
                             break;
                         }
@@ -123,21 +140,14 @@ export default class ExecuteChecklist extends SfdxCommand {
                         task["Date"] = new Date();
 
                         result["tasks"].push(task);
+
+                        fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
                     }
                 }
 
                 console.log(result);
 
-                if (!fs.existsSync(outputDir))
-                    fs.mkdirSync(outputDir);
 
-                let outputPath = path.join(
-                    outputDir,
-                    `execution_log_${new Date()}`
-                );
-
-                if (result["tasks"].length > 0)
-                    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
             }
 
         } catch (err) {
@@ -146,8 +156,9 @@ export default class ExecuteChecklist extends SfdxCommand {
         }
   }
 
-  private printTaskInfo(task, nTasks): void {
-    console.log(`Progress: Task ` + chalk.bold(`${task.id}`) + ` of ${nTasks}\n`);
+  private printTaskInfo(task, taskNum, nTasks): void {
+    console.log(`Progress: Task ` + chalk.bold(`${taskNum}`) + ` of ${nTasks}\n`);
+    console.log(`Id: ${task.id}`);
     console.log(chalk.blue.bold(`${task.task}`));
     console.log(`${task.steps}`);
   }
@@ -164,6 +175,24 @@ export default class ExecuteChecklist extends SfdxCommand {
         chalk.bold(`s`) +
         ` elapsed\n`
     );
+  }
+
+  private getDate(date: Date): string {
+    let day = date.getDate();
+    let month = date.getMonth();
+    let year = date.getFullYear();
+    let pad = (n) => n<10 ? '0'+n : n;
+
+    return pad(day) + "-" + pad(month+1) + "-" + year;
+  }
+
+  private getTime(date: Date): string {
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    let seconds = date.getSeconds();
+    let pad = (n) => n<10 ? '0'+n : n;
+
+    return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
   }
 
   private validateChecklist(checklist: checklist): void {
