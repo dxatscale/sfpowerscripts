@@ -1,8 +1,6 @@
 # Table of contents
 
 * [Overview](README.md)
-* [FAQ's](faqs.md)
-* [Maintainers](maintainers.md)
 
 ## Concepts <a id="concepts-1"></a>
 
@@ -52,6 +50,8 @@
 
 ---
 
+* [FAQ's](faqs.md)
 * [Change Log](change-log.md)
+* [Maintainers](maintainers.md)
 * [Contributing to sfpowerscripts](contributing-to-sfpowerscripts.md)
 

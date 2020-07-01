@@ -1,6 +1,6 @@
 # Generate Artifacts on Build Stage
 
-sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts for all kinds of package,  creation tasks, irrespective whether its unlocked or not, which then could be versioned, uploaded into an artifact provider or utilized in subsequent stages for deployment orchestration. 
+sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts for all kinds of package creation tasks, irrespective whether its unlocked or not, which then could be versioned, uploaded into an artifact provider or utilized in subsequent stages for deployment orchestration. 
 
 The following package creation commands outlines this concept in action
 
