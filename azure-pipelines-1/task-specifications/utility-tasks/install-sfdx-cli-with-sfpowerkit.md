@@ -10,7 +10,7 @@ Please note this task is not supported in Hosted Mac Agents as of now
 
 **Task Snapshop**
 
-![](../../../.gitbook/assets/image%20%281%29.png)
+![](../../../.gitbook/assets/sfdx-install-screenshot.png)
 
 **Parameters**
 
