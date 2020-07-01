@@ -10,7 +10,7 @@ The following package creation commands outlines this concept in action
 
 These tasks should be invoked on a build stage \( when a feature branch merges into a integration branch\).   We also provide tasks such as Create Source Package \( for projects which do not use an unlocked package\) to produce these artifacts.
 
-
+![Use of artifacts across different stages](../.gitbook/assets/build-deploy.png)
 
 These commands create an JSON based artifact with format `<package-name>_artifact_metadata` . We plan to extend this schema with more metadata as applicable in the future.
 
