@@ -1,46 +1,64 @@
 # Install SFDX CLI with SFPowerkit
 
+| Task Id | Version |
+| :--- | :--- |
+| sfpwowerscript-installsfdx-task | 6.0.5 |
+
 This task is usually the first task of any pipeline you build using sfpowerscripts. It installs the SFDX CLI along with the open source extension ‘sfpowerkit’.
 
 Please note this task is not supported in Hosted Mac Agents as of now
 
 **Task Snapshot**
 
-**Task Version and Details**
+{% tabs %}
+{% tab title="First Tab" %}
 
-id: sfpwowerscript-installsfdx-task
+{% endtab %}
 
-version: 6.0.5
+{% tab title="Second Tab" %}
 
-**Input Variables \[Visual Designer Labels / Yaml variables\]**
+{% endtab %}
+{% endtabs %}
 
-* **Override Default Salesforce API Version used by the CLI and Plugins \(salesforce\_api\_version\)**
+**Parameters**
 
-  Provide an API version which the CLI commands should utilize, if ignored, the latest GA version used by the sfdx cli is used
+{% tabs %}
+{% tab title="Input Parameters" %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
-* **SFDX CLI Version \(sfdx\_cli\_version\)**
+* **Override Default Salesforce API Version used by the CLI and Plugins /** _salesforce\_api\_version_
 
-  By default, the latest SFDX CLI version will be installed. You can override this by providing the version number found in [Salesforce CLI Release Notes](https://developer.salesforce.com/media/salesforce-cli/releasenotes.html)
+  Provide an API version which the CLI commands should utilize, if ignored, the latest GA version used by the sfdx cli is used  
 
-* **SFPowerkit Version \(sfpowerkit\_version\)**
+* **SFDX CLI Version /** _sfdx\_cli\_version_
 
-  By default, the latest SFPowerkit version will be installed. You can override this by providing the version number found in [SFPowerkit Release Notes](https://github.com/Accenture/sfpowerkit/releases)
+  By default, the latest SFDX CLI version will be installed. You can override this by providing the version number found in [Salesforce CLI Release Notes](https://developer.salesforce.com/media/salesforce-cli/releasenotes.html)  
 
-* **Additional Plugins to be installed  \(plugins\)**
+* **SFPowerkit Version /** _sfpowerkit\_version_
 
-  Provide additional sfdx plugins to be installed, when this task is run. The format to be followed is **pluginame1@version,pluginname2@version** and so forth.
+  By default, the latest SFPowerkit version will be installed. You can override this by providing the version number found in [SFPowerkit Release Notes](https://github.com/Accenture/sfpowerkit/releases)  
 
-* **Send Anonymous Usage Telemetry \( isTelemetryEnabled \)**
+* **Additional Plugins to be installed /** _plugins_
+
+  Provide additional sfdx plugins to be installed, when this task is run. The format to be followed is **pluginame1@version,pluginname2@version** and so forth.  
+
+* **Send Anonymous Usage Telemetry /** _isTelemetryEnabled_ ****
 
   Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task.
+{% endtab %}
 
-**Output Variables**
-
+{% tab title="Output Parameters" %}
 None
+{% endtab %}
 
-**Control Options**
-
+{% tab title="Control Options" %}
 None
+{% endtab %}
+
+{% tab title="YAML Sample" %}
+
+{% endtab %}
+{% endtabs %}
 
 **Gotcha’s**
 
