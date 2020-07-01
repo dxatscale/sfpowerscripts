@@ -1,6 +1,10 @@
 # Create/Delete a Scratch Org
 
-This task is used to create and delete a scratch org and mostly used in a Pull Request validation pipeline. The task is an exact wrapper over the sfdx force:org:create/ sfdx force:org:delete command. The task also features a post execution script which provides maintenance options such as delete the scratch org after all subsequent tasks are completed,maintain the scratch org for the provided number of days and also a ‘do nothing’ option, where the management is left to the end user.
+| Task Id | Version |
+| :--- | :--- |
+| sfpwowerscript-managescratchorg-task | 8.0.5 |
+
+This task is used to create and delete a scratch org and mostly used in a Pull Request validation pipeline. The task is an exact wrapper over the sfdx force:org:create/ sfdx force:org:delete command. The task also features a post execution script which provides maintenance options such as delete the scratch org after all subsequent tasks are completed, maintain the scratch org for the provided number of days and also a ‘do nothing’ option, where the management is left to the end user.
 
 To retain scratch org’s for review purposes, the maintain org has to be selected and the link to the scratch org along with the expiry timeline will be available in the summary tab as shown below.
 
@@ -10,22 +14,29 @@ Please note [Install SFDX with Sfpowerkit](install-sfdx-cli-with-sfpowerkit.md) 
 
 **Task Snapshot**
 
-**Task Version and Details**
+**Parameters**
 
-id: sfpwowerscript-managescratchorg-task
+{% tabs %}
+{% tab title="Input Paramters" %}
+* **Action /** _action_  Select the action that this task should do, either create or delete an existing scratch or delete an existing scratch org.  Values: Create OR Delete
+* **Config File Path** / _action_ The path to the file containing the configurations of the scratch org to be created. This field is only visible when Create mode is selected.
+* **Alias /** _alias_ Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated
+{% endtab %}
 
-version: 7.0.4
+{% tab title="Output Parameters" %}
+
+{% endtab %}
+
+{% tab title="Control Options" %}
+
+{% endtab %}
+
+{% tab title="YAML Example" %}
+
+{% endtab %}
+{% endtabs %}
 
 **Input Variables**
-
-* **Action\(action\)** Select the action that this task should do, either create or delete an existting scratch org. Possible values are Create and Delete
-* **Config File Path\(config\_file\_path\)**
-
-The path to the file containing the configurations of the scratch org to be created. This field is only visible when Create mode is selected.
-
-* **Alias\(alias\)**
-
-Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated
 
 * **Alias or username of the target org\(alias\)**
 

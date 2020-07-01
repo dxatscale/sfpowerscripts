@@ -10,11 +10,7 @@ Please note this task is not supported in Hosted Mac Agents as of now
 
 **Task Snapshop**
 
-{% tabs %}
-{% tab title="Task Snapshot" %}
-![](../../../.gitbook/assets/image.png)
-{% endtab %}
-{% endtabs %}
+![](../../../.gitbook/assets/image%20%281%29.png)
 
 **Parameters**
 
