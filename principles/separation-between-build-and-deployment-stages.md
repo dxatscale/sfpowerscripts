@@ -34,11 +34,11 @@ The above JSON based schema is written to a file and is then treated as the buil
 
 The extension also has helper tasks that helps to install packages directly utilizing these artifacts. Check out these tasks to understand how to use these artifacts
 
-{% page-ref page="../azure-pipelines-1/task-specifications/packaging-tasks/create-source-based-package.md" %}
+{% page-ref page="../azure-pipelines/task-specifications/packaging-tasks/create-source-based-package.md" %}
 
-{% page-ref page="../azure-pipelines-1/task-specifications/deployment-tasks/checkout-a-build-artifact.md" %}
+{% page-ref page="../azure-pipelines/task-specifications/deployment-tasks/checkout-a-build-artifact.md" %}
 
-{% page-ref page="../azure-pipelines-1/task-specifications/deployment-tasks/deploy-a-source-repo-to-org.md" %}
+{% page-ref page="../azure-pipelines/task-specifications/deployment-tasks/deploy-a-source-repo-to-org.md" %}
 
-{% page-ref page="../azure-pipelines-1/task-specifications/deployment-tasks/install-an-unlocked-package-to-an-org.md" %}
+{% page-ref page="../azure-pipelines/task-specifications/deployment-tasks/install-an-unlocked-package-to-an-org.md" %}
 
