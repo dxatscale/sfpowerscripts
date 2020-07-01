@@ -2,9 +2,9 @@
 
 * [Overview](README.md)
 
-## Concepts <a id="concepts-1"></a>
+## Opinions <a id="concepts-1"></a>
 
-* [Separation between build and deployment stages](concepts-1/separation-between-build-and-deployment-stages.md)
+* [Versioned artifacts over branches](concepts-1/separation-between-build-and-deployment-stages.md)
 * [Source Packages](concepts-1/source-driven-packages.md)
 * [Artifacts over branches](concepts-1/artifacts-over-branches.md)
 
