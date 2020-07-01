@@ -8,15 +8,11 @@ This task is usually the first task of any pipeline you build using sfpowerscrip
 
 Please note this task is not supported in Hosted Mac Agents as of now
 
-**Task Snapshot**
+**Task Snapshop**
 
 {% tabs %}
-{% tab title="First Tab" %}
-
-{% endtab %}
-
-{% tab title="Second Tab" %}
-
+{% tab title="Task Snapshot" %}
+![](../../../.gitbook/assets/image.png)
 {% endtab %}
 {% endtabs %}
 
@@ -56,7 +52,11 @@ None
 {% endtab %}
 
 {% tab title="YAML Sample" %}
-
+```text
+#Install SFDX 
+- task: sfpwowerscript-installsfdx-task@6
+              displayName: Install SFDX
+```
 {% endtab %}
 {% endtabs %}
 
