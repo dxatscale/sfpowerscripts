@@ -1,6 +1,8 @@
 # Table of contents
 
 * [Overview](README.md)
+* [FAQ's](faqs.md)
+* [Maintainers](maintainers.md)
 
 ## Opinions <a id="concepts-1"></a>
 
@@ -44,6 +46,7 @@
     * [Validate Apex Test Coverage](azure-pipelines-1/task-specifications/testing-tasks/validate-apex-test-coverage.md)
     * [Validate Code Coverage of a Package](azure-pipelines-1/task-specifications/testing-tasks/validate-code-coverage-of-a-package.md)
     * [Run a static analysis of apex classes with PMD](azure-pipelines-1/task-specifications/testing-tasks/run-a-static-analysis-of-apex-classes-with-pmd.md)
+* [Troubleshooting](azure-pipelines-1/troubleshooting.md)
 
 ## CLI
 
