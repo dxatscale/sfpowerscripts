@@ -1,9 +1,0 @@
-{
-    "commandDescription": "Export source from any org for storing to backup or further analysis, This task is part of SFPowerscripts",
-    "targetOrgFlagDescription": "Alias or username of the target org where metadata is to be retrieved", 
-    "sourceDirectoryFlagDescription": "The directory to which the source should be exported to",
-    "quickFilterFlagDescription": "Comma separated values  of metadata type, member or file names to be excluded while building the manifest",
-    "isManagedPackagesToBeExcludedFlagDescription": "Exclude managed package components from the export", 
-    "isUnzipEnabledFlagDescription": "Unzip the exported metadata/source from the zip into the provided folder",
-    "refNameFlagDescription": "Reference name to be prefixed to output variables"
-}

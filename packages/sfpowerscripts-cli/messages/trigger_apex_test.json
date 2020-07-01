@@ -1,9 +1,0 @@
-{
-    "commandDescription": "Triggers an asynchronous apex unit test in an org, This task is part of DX@Scale/SFPowerscripts",
-    "targetOrgFlagDescription": "username or alias for the target org; overrides default target org",
-    "testLevelFlagDescription": "The test level of the test that need to be executed when the code is to be deployed",
-    "synchronousFlagDescription": "Select an option if the tests are to be run synchronously",
-    "specifiedTestsFlagDescription": "comma-separated list of Apex test class names or IDs and, if applicable, test methods to run",
-    "apexTestSuiteFlagDescription": "comma-separated list of Apex test suite names to run",
-    "waitTimeFlagDescription": "wait time for command to finish in minutes"
-}
