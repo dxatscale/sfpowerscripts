@@ -1,11 +1,7 @@
 # Table of contents
 
 * [Overview](README.md)
-
-## principles
-
-* [Easy to Replace](principles/easy-to-replace.md)
-* [Generate Artifacts on Build Stage](principles/separation-between-build-and-deployment-stages.md)
+* [Principles](principles-1.md)
 
 ## Azure Pipelines
 
