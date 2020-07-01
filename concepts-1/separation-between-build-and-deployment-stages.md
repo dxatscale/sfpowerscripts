@@ -1,12 +1,16 @@
-# Artifacts for all Packaging Tasks
+# Generate Artifacts on Build Stage
 
-sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts on all packaging tasks which then could be versioned, uploaded into an artifact provider or utilized in subsequent stages for deployment orchestration. 
+sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts for all kinds of package,  creation tasks, irrespective whether its unlocked or not, which then could be versioned, uploaded into an artifact provider or utilized in subsequent stages for deployment orchestration. 
 
 The following package creation commands outlines this concept in action
 
 * Create Source Package
 * Create Unlocked Package
 * Create Delta Package
+
+These tasks should be invoked on a build stage \( when a feature branch merges into a integration branch\).   We also provide tasks such as Create Source Package \( for projects which do not use an unlocked package\) to produce these artifacts.
+
+
 
 These commands create an JSON based artifact with format `<package-name>_artifact_metadata` . We plan to extend this schema with more metadata as applicable in the future.
 
@@ -29,6 +33,8 @@ These commands create an JSON based artifact with format `<package-name>_artifac
 The above JSON based schema is written to a file and is then treated as the build output a \(In the case of azure pipelines, there are options build artifact\) and could be uploaded to an artifact provider such as Azure Artifact.
 
 The extension also has helper tasks that helps to install packages directly utilizing these artifacts. Check out these tasks to understand how to use these artifacts
+
+{% page-ref page="../azure-pipelines-1/task-specifications/packaging-tasks/create-source-based-package.md" %}
 
 {% page-ref page="../azure-pipelines-1/task-specifications/deployment-tasks/checkout-a-build-artifact.md" %}
 

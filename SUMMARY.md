@@ -6,7 +6,7 @@
 
 ## Concepts <a id="concepts-1"></a>
 
-* [Artifacts for all Packaging Tasks](concepts-1/separation-between-build-and-deployment-stages.md)
+* [Generate Artifacts on Build Stage](concepts-1/separation-between-build-and-deployment-stages.md)
 
 ## Azure Pipelines <a id="azure-pipelines-1"></a>
 
