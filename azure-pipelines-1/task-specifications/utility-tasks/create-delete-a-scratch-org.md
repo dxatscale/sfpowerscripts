@@ -14,41 +14,34 @@ Please note [Install SFDX with Sfpowerkit](install-sfdx-cli-with-sfpowerkit.md) 
 
 **Task Snapshot**
 
+![](../../../.gitbook/assets/image%20%282%29.png)
+
 **Parameters**
 
 {% tabs %}
 {% tab title="Input Paramters" %}
-* **Action /** _action_  Select the action that this task should do, either create or delete an existing scratch or delete an existing scratch org.  Values: Create OR Delete
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+
+* **Action /** _action_  Select the action that this task should do, either create or delete an existing scratch or delete an existing scratch org. The options 
+
+```text
+- "create": create a scratch org
+- "delete": delete an existing scratch org
+```
+
 * **Config File Path** / _action_ The path to the file containing the configurations of the scratch org to be created. This field is only visible when Create mode is selected.
 * **Alias /** _alias_ Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated
-{% endtab %}
+* **Alias or username of the target org /** _alias_ 
 
-{% tab title="Output Parameters" %}
+  Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated
 
-{% endtab %}
+* **Alias/username of the DevHub /** _devhub\_alias_
 
-{% tab title="Control Options" %}
+  Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Org task
 
-{% endtab %}
+* **Select an option for deleting this scratch org /** _maintain_
 
-{% tab title="YAML Example" %}
-
-{% endtab %}
-{% endtabs %}
-
-**Input Variables**
-
-* **Alias or username of the target org\(alias\)**
-
-Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated
-
-* **Alias/username of the DevHub \(devhub\_alias\)**
-
-Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Org task
-
-* **Select an option for deleting this scratch org \(maintain\)**
-
-The following options are available to be executed post the run of this command. The options are the following
+  The following options are available to be executed post the run of this command. The options are the following
 
 ```text
   - "delete": "Delete this org after all subsequent tasks are executed",
@@ -56,33 +49,35 @@ The following options are available to be executed post the run of this command.
   - "donothing": "Do Nothing, Deletion of the scratch org will be handled explicitly"
 ```
 
-* **Number of days this scratch org has to be maintained \(daystomaintain\)**
-
-This option is only visible if the value for maintain is set to “Maintain this org for x number of days \(maintain\)”. Provide the number of days for which the scratch org has to be maintained for reviewing the Pull Request
-
-* **Working directory to be installed\(working\_directory\)**
-
-The root directory that contains the sfdx-project.json. In build pipelines you can craete this blank, however when used in release pipelines mention the repo directory
-
-* **Send Anonymous Usage Telemetry \(isTelemetryEnabled\)**
+* **Number of days this scratch org has to be maintained /** _daystomaintain_ ****This option is only visible if the value for maintain is set to “Maintain this org for x number of days \(maintain\)”. Provide the number of days for which the scratch org has to be maintained for reviewing the Pull Request 
+* **Working directory to be installed /** _working\_directory_ The root directory that contains the sfdx-project.json. In build pipelines you can create this blank, however when used in release pipelines mention the repo directory 
+* **Send Anonymous Usage Telemetry /** _isTelemetryEnabled_
 
   Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
+{% endtab %}
 
-**Output Variables**
-
-* **sfpowerscripts\_scratch\_org\_url**
+{% tab title="Output Parameters" %}
+* **powerscripts\_scratch\_org\_url**
 
 The url of the scratch org that was created
 
 * **sfpowerscripts\_scratch\_org\_username**
 
 The username of the scratch org that was created
+{% endtab %}
 
-**Control Options**
+{% tab title="Control Options" %}
+None
+{% endtab %}
+
+{% tab title="YAML Example" %}
+
+{% endtab %}
+{% endtabs %}
 
 **Gotcha’s**
 
-Provide the repo path for the working directory in a releaase pipeline
+Provide the repo path for the working directory in a release pipeline
 
 **Changelog**
 
