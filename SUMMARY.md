@@ -4,11 +4,9 @@
 * [FAQ's](faqs.md)
 * [Maintainers](maintainers.md)
 
-## Opinions <a id="concepts-1"></a>
+## Concepts <a id="concepts-1"></a>
 
 * [Artifacts for all Packaging Tasks](concepts-1/separation-between-build-and-deployment-stages.md)
-* [Source Packages](concepts-1/source-driven-packages.md)
-* [Artifacts over branches](concepts-1/artifacts-over-branches.md)
 
 ## Azure Pipelines <a id="azure-pipelines-1"></a>
 
