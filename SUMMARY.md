@@ -4,6 +4,7 @@
 
 ## Concepts <a id="concepts-1"></a>
 
+* [Easy to Replace](concepts-1/easy-to-replace.md)
 * [Generate Artifacts on Build Stage](concepts-1/separation-between-build-and-deployment-stages.md)
 
 ## Azure Pipelines <a id="azure-pipelines-1"></a>
