@@ -6,7 +6,7 @@
 
 ## Opinions <a id="concepts-1"></a>
 
-* [Versioned artifacts over branches](concepts-1/separation-between-build-and-deployment-stages.md)
+* [Artifacts for all Packaging Tasks](concepts-1/separation-between-build-and-deployment-stages.md)
 * [Source Packages](concepts-1/source-driven-packages.md)
 * [Artifacts over branches](concepts-1/artifacts-over-branches.md)
 
