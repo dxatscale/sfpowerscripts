@@ -1,3 +1,7 @@
+---
+description: Build Stage
+---
+
 # Continous Integration Pipeline - Org Based
 
 This pipeline demonstrates how you can build a continuous integration pipeline for if you are using  an [org model of development](https://trailhead.salesforce.com/en/content/learn/modules/org-development-model)  . Here is a snapshot of the steps we have used to configure a pipeline. The pipeline mimics creating a version number as in [Continous Integration \(Unlocked Packaging\) pipeline](continous-integration-pipeline-unlocked-package.md) to simulate version based deployment in the release pipelines and create meaningful dashboards

@@ -1,3 +1,7 @@
+---
+description: Deploy Stage
+---
+
 # Release Pipeline - Unlocked Package
 
 Release pipelines are one of the most exciting benefits of using Azure Pipelines, which is not just for Continous Integration but can also act us an automated release orchestrator. This sample pipeline demonstrates how to orchestrate an installation of an unlocked package across various environments.

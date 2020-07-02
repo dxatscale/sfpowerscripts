@@ -1,6 +1,18 @@
+---
+description: Guiding principles followed by the project
+---
+
 # Principles
 
-### Easy to Replace
+### Utilize your Salesforce deployment knowhow
+
+The tasks or commands should be easy to use.  One don't need to resort to complex scripts to orchestrate a pipeline . A knowledge of what you need to achieve from a pipeline and salesforce deployment \(such as DX, Unlocked Package, Org Based deployment mode\) should be enough to get you going. We will also strive to provide sample pipelines to quickly get you started. Our azure pipelines extension is built with the classic \(UI based\) configuration in mind.
+
+### Integrate with CI/CD platform wherever applicable
+
+The native extensions provided by the project will integrate with CI/CD platform features wherever applicable, rather than providing our own dashboards/reports or rolling out features that break the platform conventions.
+
+### Easy to replace
 
 sfpowerscripts will strive to keep the tasks as granular as possible, thus enabling the pipeline author to replace tasks with ease. A pipeline author should be able to utilize any in place replacement for any tasks provided through the extension.
 
@@ -32,7 +44,7 @@ pkg_output=`sfdx force:package:version:create -p "$(packageName)" -x -w 180 --de
 
 That being said we are monitoring the need for further use cases for higher level abstractions, such as a consolidated task executor command \(Refer to Issue [68](https://github.com/Accenture/sfpowerscripts/issues/68) \), such commands will always be optional and will not feature in the sample pipelines
 
-### Generate Artifacts on Build Stage
+### Generate artifacts on build stage
 
 sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts for all kinds of package creation tasks, irrespective whether its unlocked or not, which then could be versioned, uploaded into an artifact provider or utilized in subsequent stages for deployment orchestration. 
 
@@ -65,8 +77,4 @@ These commands create an JSON based artifact with format `<package-name>_artifac
 ```
 
 The above JSON based schema is written to a file and is then treated as the build output a \(In the case of azure pipelines, there are options build artifact\) and could be uploaded to an artifact provider such as Azure Artifact.
-
-
-
-
 
