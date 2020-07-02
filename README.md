@@ -27,7 +27,7 @@ The project was then migrated to Accenture Open Source Program and a key compone
 
 A list of people maintaining sfpowerscripts and these pages is available [here](maintainers.md)
 
-### How do I submit a query to sfpowerscripts?\?
+### How do I submit a query to sfpowerscripts?
 
 Please create an issue using the methods listed [here](https://sfpowerscripts.com/support/).
 
