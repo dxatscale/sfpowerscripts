@@ -20,7 +20,7 @@
     * [Install SFDX CLI with SFPowerkit](azure-pipelines/task-specifications/utility-tasks/install-sfdx-cli-with-sfpowerkit.md)
     * [Create/Delete a Scratch Org](azure-pipelines/task-specifications/utility-tasks/create-delete-a-scratch-org.md)
     * [Export Metadata from an org](azure-pipelines/task-specifications/utility-tasks/export-metadata-from-an-org.md)
-    * [Install Package Dependencies](azure-pipelines/task-specifications/utility-tasks/install-package-dependencies.md)
+    * [Install package dependencies](azure-pipelines/task-specifications/utility-tasks/install-package-dependencies.md)
     * [Increment Version Number of a package](azure-pipelines/task-specifications/utility-tasks/increment-version-number-of-a-package.md)
   * [Packaging Tasks](azure-pipelines/task-specifications/packaging-tasks/README.md)
     * [Validate Unlocked Package for Metadata Coverage](azure-pipelines/task-specifications/packaging-tasks/validate-unlocked-package-for-metadata-coverage.md)

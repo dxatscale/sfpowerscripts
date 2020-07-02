@@ -1,4 +1,4 @@
-# Install Package Dependencies
+# Install package dependencies
 
 This task is a wrapper over sfpowerkit:package:dependencies:install command. It is used to install any unlocked or managed package dependencies for an unlocked package
 

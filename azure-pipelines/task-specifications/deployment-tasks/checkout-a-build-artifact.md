@@ -1,14 +1,14 @@
 # Checkout a build artifact
 
-This task is used to checkout the code to a particular commit id from a GIT repo as mentioned in the build artifact produced by SFPowerscript Packaging Task. This task is used in a release pipeline to have access to the code either for a source deployment or for a pre/post deployment of an unlocked package. The repo URL and commit id are already stored in the artifact produced by Packaging Tasks. This task at the moment only supports Git providers with HTTPS access.
+| Task Id | Version |
+| :--- | :--- |
+| sfpwowerscript-checkoutprojectfromartifact-task | 13.1.2 |
+
+This task is used to checkout the code to a particular commit id from a GIT repo as mentioned in the build artifact produced by any  sfpowerscripts packaging tasks. This task is used in a release pipeline to have access to the code either for a source deployment or for a pre/post deployment of an unlocked package. The repo URL and commit id are already stored in the artifact produced by Packaging Tasks. This task at the moment only supports Git providers with HTTPS access.
 
 **Task Snapshot**
 
-**Task Version and Details**
 
-id: sfpwowerscript-checkoutprojectfromartifact-task
-
-version: 11.0.5
 
 **Input Variables  - Visual Designer Labels \(Yaml variables\)**
 
