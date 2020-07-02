@@ -42,7 +42,7 @@
 
 ## CLI
 
-* [Getting Started](cli/getting-started.md)
+* [Using sfpowerscripts-cli sfdx extension](cli/getting-started.md)
 
 ---
 
