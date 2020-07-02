@@ -8,9 +8,9 @@ This task is usually the first task of any pipeline you build using sfpowerscrip
 
 Please note this task is not supported in Hosted Mac Agents as of now
 
-**Task Snapshop**
+**Task Snapshot**
 
-![](../../../.gitbook/assets/sfdx-install-screenshot.png)
+![Install SFDX with sfpowerkit](../../../.gitbook/assets/sfdx-install-screenshot.png)
 
 **Parameters**
 
@@ -33,10 +33,6 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 * **Additional Plugins to be installed /** _plugins_
 
   Provide additional sfdx plugins to be installed, when this task is run. The format to be followed is **pluginame1@version,pluginname2@version** and so forth.  
-
-* **Send Anonymous Usage Telemetry /** _isTelemetryEnabled_ ****
-
-  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task.
 {% endtab %}
 
 {% tab title="Output Parameters" %}
@@ -56,7 +52,7 @@ None
 {% endtab %}
 {% endtabs %}
 
-**Gotcha’s**
+\*\*\*\*
 
 **Changelog**
 

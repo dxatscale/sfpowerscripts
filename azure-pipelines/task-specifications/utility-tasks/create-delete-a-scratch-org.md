@@ -25,35 +25,32 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 * **Action /** _action_  Select the action that this task should do, either create or delete an existing scratch or delete an existing scratch org. The options 
 
 ```text
-- "create": create a scratch org
-- "delete": delete an existing scratch org
+"create": create a scratch org
+"delete": delete an existing scratch org
 ```
 
-* **Config File Path** / _action_ The path to the file containing the configurations of the scratch org to be created. This field is only visible when Create mode is selected.
-* **Alias /** _alias_ Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated
+* **Config File Path** / _action_ The path to the file containing the configurations of the scratch org to be created. This field is only visible when Create mode is selected. 
+* **Alias /** _alias_ Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated 
 * **Alias or username of the target org /** _alias_ 
 
-  Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated
+  Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated  
 
 * **Alias/username of the DevHub /** _devhub\_alias_
 
-  Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Org task
+  Provide the alias of the devhub previously authenticated.  
 
 * **Select an option for deleting this scratch org /** _maintain_
 
   The following options are available to be executed post the run of this command. The options are the following
 
 ```text
-  - "delete": "Delete this org after all subsequent tasks are executed",
-  - "maintain": "Maintain this org for x number of days",
-  - "donothing": "Do Nothing, Deletion of the scratch org will be handled explicitly"
+  "delete": "Delete this org after all subsequent tasks are executed",
+  "maintain": "Maintain this org for x number of days",
+  "donothing": "Do Nothing, Deletion of the scratch org will be handled explicitly"
 ```
 
-* **Number of days this scratch org has to be maintained /** _daystomaintain_ ****This option is only visible if the value for maintain is set to “Maintain this org for x number of days \(maintain\)”. Provide the number of days for which the scratch org has to be maintained for reviewing the Pull Request 
-* **Working directory to be installed /** _working\_directory_ The root directory that contains the sfdx-project.json. In build pipelines you can create this blank, however when used in release pipelines mention the repo directory 
-* **Send Anonymous Usage Telemetry /** _isTelemetryEnabled_
-
-  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
+* **Number of days this scratch org has to be maintained /** _daystomaintain_ ****This option is only activated if the value for maintain is set to “Maintain this org for x number of days \(maintain\)”. Provide the number of days for which the scratch org has to be maintained for reviewing the Pull Request 
+* **Project Directory /** _working\_directory_ The root directory that contains the sfdx-project.json. In build pipelines you can create this blank, however when used in release pipelines mention the repo directory 
 {% endtab %}
 
 {% tab title="Output Parameters" %}
@@ -75,9 +72,11 @@ None
 {% endtab %}
 {% endtabs %}
 
-**Gotcha’s**
 
-Provide the repo path for the working directory in a release pipeline
+
+{% hint style="warning" %}
+If for some reason, you are using this task in a release pipeline,  Project Directory has to be mentioned and has to match the directory \(the artifact\) is checked out to. You can read more about release artifacts here [https://docs.microsoft.com/en-us/azure/devops/pipelines/release/artifacts?view=azure-devops](https://docs.microsoft.com/en-us/azure/devops/pipelines/release/artifacts?view=azure-devops)
+{% endhint %}
 
 **Changelog**
 
