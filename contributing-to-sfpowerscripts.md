@@ -16,7 +16,7 @@ By contributing to this project you agree that:
 
 **What does “contributing” mean?**
 
-Creating an issue is the simplest form of contributing to the project. But there are many ways to contribute, including the following:
+Creating an issue is the simplest form of contributing to the project. But there are other ways to contribute:
 
 * Updating or correcting documentation
 * Feature requests
