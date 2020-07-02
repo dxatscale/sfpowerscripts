@@ -9,14 +9,22 @@ The service connection currently features only credentials based authentication 
 {% tabs %}
 {% tab title="Creating a Service Connection" %}
 ![Select the Salesforce Service Connection](../../../.gitbook/assets/selecting-service-connection.png)
+
+1. Open the **Service connections** page from the [project settings page](https://docs.microsoft.com/en-us/azure/devops/project/navigation/go-to-service-page?view=azure-devops#open-project-settings). 
+2. Choose **+ New service connection** and select **Salesforce** type of service connection.
+
+ 
 {% endtab %}
 
 {% tab title="Configuring the Service Connection" %}
 ![Configure the service connection](../../../.gitbook/assets/salesforce-service-connection.png)
+
+
+
+1. Fill in the parameters for the service connection. The list of parameters differs for each type of service connection - see the [following list](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#ep-types).
+2. Decide if you want the service connection to be accessible for any pipeline by setting the **Allow all pipelines to use this connection** option. This option allows pipelines defined in YAML, which are not automatically authorized for service connections, to use this service connection. See [Use a service connection](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#use-connection).
 {% endtab %}
 {% endtabs %}
-
-
 
 Once a service connection is created, it could be used with ‘Authenticating a Salesforce Org’ task in Pipelines
 
