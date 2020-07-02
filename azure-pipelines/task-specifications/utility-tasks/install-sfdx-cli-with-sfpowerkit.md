@@ -56,6 +56,7 @@ None
 
 **Changelog**
 
+* 7.0.4 Updated major versions to remove telemetry collection
 * 6.0.5 Refactored to use revamped folder structure
 * 5.0.3 Minor formatting fixes
 * 5.0.0 Add support for overriding api version to be used in commands

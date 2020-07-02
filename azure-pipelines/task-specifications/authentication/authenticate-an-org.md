@@ -110,6 +110,7 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 **Changelog**
 
+* 9.0.5 Updated major versions to remove telemetry collection
 * 8.0.5 Refactored to use revamped folder structure
 * 7.0.0 Add clarity for DevHub / Production for authentication
 * 6.0.0 Support Service Connection based Authentication
