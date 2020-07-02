@@ -80,6 +80,9 @@ If for some reason, you are using this task in a release pipeline,  Project Dire
 
 **Changelog**
 
+* 8.0.5
+  * Removed Telemetry collection 
+  * Fix [\#63](https://github.com/Accenture/sfpowerscripts/issues/63) Manage ScratchOrg Task fails when it is used for delete action
 * 7.0.4 Refactored to use revamped folder structure
 * 5.0.2 Minor Logging fixes
 * 5.0.1 Added option to review the created Scratch Org in Summary Tab, Scratch Org cleanup without using an additional delete task, automatically handled by as a post execution step
