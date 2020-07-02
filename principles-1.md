@@ -6,7 +6,11 @@ description: Guiding principles followed by the project
 
 ### Utilize your Salesforce deployment knowhow
 
-The tasks or commands should be easy to use.  One don't need to resort to complex scripts to orchestrate a pipeline . A knowledge of what you need to achieve from a pipeline and salesforce deployment \(such as DX, Unlocked Package, Org Based deployment mode\) should be enough to get you going. We will also strive to provide sample pipelines to quickly get you started. Our azure pipelines extension is built with the classic \(UI based\) configuration in mind.
+The tasks or commands should be easy to use.  You don't need to resort to complex scripts to orchestrate a pipeline . A knowledge of what you need to achieve from a pipeline and salesforce deployment \(such as DX, Unlocked Package, Org Based deployment mode\*\) should be enough to get you going.
+
+We will also strive to provide sample pipelines to quickly get you started. Our azure pipelines extension is built with the classic \(UI based\) configuration in mind.
+
+\*If you have no knowledge or need a refresh on Salesforce DX, Unlocked Packages or Org Based Deployment, checkout some of the available trailhead modules [here](https://trailhead.salesforce.com/en/users/azlam/trailmixes/salesforce-dx)
 
 ### Integrate with CI/CD platform wherever applicable
 
@@ -14,7 +18,7 @@ The native extensions provided by the project will integrate with CI/CD platform
 
 ### Easy to replace
 
-sfpowerscripts will strive to keep the tasks as granular as possible, thus enabling the pipeline author to replace tasks with ease. A pipeline author should be able to utilize any in place replacement for any tasks provided through the extension.
+sfpowerscripts will strive to keep the tasks as small as possible, thus enabling the pipeline author to replace tasks with ease. A pipeline author should be able to utilize any in place replacement for any tasks provided through the extension.
 
 For eg: sfpowerscripts provides a task to create a new version unlocked package, This task can be replaced by the following shell script
 
@@ -42,19 +46,19 @@ pkg_output=`sfdx force:package:version:create -p "$(packageName)" -x -w 180 --de
  # In a subsequent task either use the PAKAGE_VERSION_ID or write to a file as a build artifact
 ```
 
-That being said we are monitoring the need for further use cases for higher level abstractions, such as a consolidated task executor command \(Refer to Issue [68](https://github.com/Accenture/sfpowerscripts/issues/68) \), such commands will always be optional and will not feature in the sample pipelines
+That being said we are monitoring the need for further use cases for higher level abstractions, such as a consolidated task executor command \(Refer to Issue [68](https://github.com/Accenture/sfpowerscripts/issues/68)\), such commands will always be optional and will not feature in the sample pipelines
 
 ### Generate artifacts on build stage
 
-sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts for all kinds of package creation tasks, irrespective whether its unlocked or not, which then could be versioned, uploaded into an artifact provider or utilized in subsequent stages for deployment orchestration. 
+sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts for package creation tasks, unlocked or not, which then could be versioned, uploaded into an artifact provider or utilized in subsequent stages for deployment. 
 
-The following package creation commands outlines this concept in action
+The following package creation commands shows this in action
 
 * Create Source Package
 * Create Unlocked Package
 * Create Delta Package
 
-These tasks should be invoked on a build stage \( when a feature branch merges into a integration branch\).   We also provide tasks such as Create Source Package \( for projects which do not use an unlocked package\) to produce these artifacts.
+These tasks should be invoked on a build stage when a feature branch merges into an integration branch.  We also provide tasks such as '_Create Source Package'_  for projects which do not use an unlocked package to produce these artifacts.
 
 ![Use of artifacts across different stages](.gitbook/assets/build-deploy.png)
 
