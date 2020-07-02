@@ -32,9 +32,7 @@ Check this option to exclude managed package metadata components to be exported 
 
   The exported metadata is in a zip format. Check this option to unzip the zipped extract from the org to the provided directory.
 
-* **Send Anonymous Usage Telemetry \(isTelemetryEnabled \)**
-
-Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task.
+\*\*\*\*
 
 **Output Variables**
 

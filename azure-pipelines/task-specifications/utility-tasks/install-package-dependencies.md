@@ -40,10 +40,6 @@ version: 3.0.9
 
   Leave it blank if the sfdx-project.json is in the root of the repository, else provide the folder directory containing the sfdx-project.json
 
-* **Send Anonymous Usage Telemetry \(isTelemetryEnabled\)**
-
-  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
-
 **Output Variables**
 
 None

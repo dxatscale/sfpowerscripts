@@ -69,9 +69,7 @@ The below inputs are eanbled only when the “Push Incremented Version changes t
 
   If your repo is none of the above, then utilize this selection to pass in the username/password for a basic authentication schema to checkout the corresponding code. If this mode is selected please fill in Username \(username\) and Password \(password\) to push to the repository\`
 
-* **Send Anonymous Usage Telemetry \(isTelemetryEnabled\)**
-
-  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
+\*\*\*\*
 
 **Output Variables**
 
