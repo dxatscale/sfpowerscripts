@@ -10,7 +10,7 @@ Azlam is a Tech Architect with a particular interest on delivering iterative sof
 
 ![Alan Ly](.gitbook/assets/alan-ly.png)
 
-Alan is an Application Development Associate with a particular interest in Matt Damon and Ben Affleck. He spends his days with his whiteboard, attempting to solve the impossible. Alan is currently dreaming of a day when we are not in a global pandemic and he can get within 1.5 meters of another human being. 
+Alan is an Application Development Associate with a particular interest in Matt Damon and Ben Affleck. He spends his days with his whiteboard, attempting to solve puzzles which he is constantly told are impossible. Alan is currently dreaming of a day when we are not in a global pandemic and he can get within 1.5 meters of another human being. 
 
 ![Caitlyn Mills](.gitbook/assets/caitlyn-mills.png)
 
