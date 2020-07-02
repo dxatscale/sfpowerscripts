@@ -1,12 +1,10 @@
 # FAQ's
 
-## Can I become who I want to be?
+## Why are some of the task names "pwowerscripts"?
 
-That's a tough question but thankfully, our team is on it. Please bear with us while we're investigating.
+It was an early typo that has not fully been depreciated. We are working on it and hope that this question will one day be able to be depreciated. 
 
-## Have you had a chance to answer the previous question?
-
-Yes, after a few months we finally found the answer. Sadly, Mike is on vacations right now so I'm afraid we are not able to provide the answer at this point.
+## 
 
 
 

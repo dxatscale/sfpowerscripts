@@ -1,16 +1,16 @@
 # Contributing to sfpowerscripts
 
-First and foremost, thank you! We appreciate that you want to contribute to sfpowerscripts, your time is valuable, and your contributions mean a lot to us.
+First and foremost, **thank you**! We appreciate that you want to contribute to sfpowerscripts, your time is valuable, and your contributions mean a lot to us.
 
 ## Important! <a id="important"></a>
 
-By contributing to this project, you:
+By contributing to this project you agree that:
 
-* Agree that you have authored 100% of the content
-* Agree that you have the necessary rights to the content
-* Agree that you have received the necessary permissions from your employer to make the contributions \(if applicable\)
-* Agree that the content you contribute may be provided under the Project license\(s\)
-* Agree that, if you did not author 100% of the content, the appropriate licenses and copyrights have been added along with any other necessary attribution.
+* you have authored 100% of the content
+* you have the necessary rights to the content
+* you have received the necessary permissions from your employer to make the contributions \(if applicable\)
+* the content you contribute may be provided under the Project license\(s\)
+* if you did not author 100% of the content, the appropriate licenses and copyrights have been added along with any other necessary attribution.
 
 ## Getting started <a id="getting-started"></a>
 
