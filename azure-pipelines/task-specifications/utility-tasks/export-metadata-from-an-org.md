@@ -2,15 +2,37 @@
 
 This task is used to export the complete metadata \(in source format\) from a given org. This task is helpful for daily backups or further analysis of metadata
 
-**Task Snapshot**
+| Task Id | Version |
+| :--- | :--- |
+| sfpowerscript-exportsourcefromorg-task | 3.0.4 |
 
-**Task Version and Details**
+**Parameters**
 
-id: sfpowerscript-exportsourcefromorg-task
+{% tabs %}
+{% tab title="Input Parameters" %}
 
-version: 3.0.5
+{% endtab %}
+
+{% tab title="Output Parameters" %}
+
+{% endtab %}
+
+{% tab title="Control Options" %}
+
+{% endtab %}
+
+{% tab title="YAML Sample" %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+
+* **Alias or username of the target org /** _target\_org_
+* **Directory to which the source should be exported to /** _source\_directory_
+* 
+{% endtab %}
+{% endtabs %}
 
 **Input Variables \[Visual Designer Labels / Yaml variables\]**
+
+version: 3.0.5
 
 * **Alias or username of the target org\(target\_org\)**
 

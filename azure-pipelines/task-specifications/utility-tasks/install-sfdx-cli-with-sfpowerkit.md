@@ -10,7 +10,7 @@ Please note this task is not supported in Hosted Mac Agents as of now
 
 **Task Snapshot**
 
-![Install SFDX with sfpowerkit](../../../.gitbook/assets/sfdx-install-screenshot.png)
+![](../../../.gitbook/assets/sfdx-install-screenshot.png)
 
 **Parameters**
 
