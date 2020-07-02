@@ -87,6 +87,10 @@ None
 
 **Changelog**
 
+* 9.0.4 Removed collection of telemetry data
+* 8.2.0 Support for version numbers with .NEXT for unlocked packages
+* 8.0.1 Bugfix for Increment Task
+* 8.0.0 Refactored to use revamped folder structure
 * 8.1.2 Fixed \#24 Fail to increment for major and minor version numbers
 * 8.0.0 Refactored to use revamped folder structure
 * 5.0.2 Bugfix for [\#119](https://github.com/azlamsalam/sfpowerscripts/issues/119)
