@@ -14,11 +14,11 @@ This task is used to export the complete metadata \(in source format\) from a gi
 {% endtab %}
 
 {% tab title="Output Parameters" %}
-
+sfpowerscripts\_exportedsource\_zip\_path
 {% endtab %}
 
 {% tab title="Control Options" %}
-
+None
 {% endtab %}
 
 {% tab title="YAML Sample" %}
@@ -55,14 +55,6 @@ Check this option to exclude managed package metadata components to be exported 
   The exported metadata is in a zip format. Check this option to unzip the zipped extract from the org to the provided directory.
 
 \*\*\*\*
-
-**Output Variables**
-
-* sfpowerscripts\_exportedsource\_zip\_path
-
-**Control Options**
-
-None
 
 **Gotcha’s**
 
