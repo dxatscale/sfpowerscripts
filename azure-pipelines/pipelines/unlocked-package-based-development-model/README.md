@@ -1,2 +1,2 @@
-# Unlocked Package based Development Model
+# Unlocked Package based Deployment Model
 
