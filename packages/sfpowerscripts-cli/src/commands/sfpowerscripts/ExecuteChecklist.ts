@@ -2,7 +2,6 @@ import { flags, SfdxCommand, FlagsConfig } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import { Messages, SfdxError } from "@salesforce/core";
 import * as inquirer from "inquirer";
-import { string } from "@oclif/command/lib/flags";
 import { isNullOrUndefined } from "util";
 const yaml = require("js-yaml");
 const path = require("path");
@@ -127,7 +126,7 @@ export default class ExecuteChecklist extends SfdxCommand {
             if (taskQueue.length == 0)
                 console.log(`No tasks remaining in ${executionLog}`);
             else {
-                console.log(`Executing checklist ${checklist["runbook"]} v${checklist["version"]}`);
+                this.ux.styledHeader(`Executing checklist ${checklist["runbook"]} v${checklist["version"]}`);
                 let taskNum = 0;
                 for (let task of taskQueue) {
                     taskNum++;
@@ -142,10 +141,7 @@ export default class ExecuteChecklist extends SfdxCommand {
                         choices: ["Done", "Skip", "Quit"]
                         },
                     ]);
-                    // skip reason
-                    // print id
                     // reason for skipping over tasks
-                    // Executing checklist ${name}
                     if (responses["status"] == "Quit") {
                         break;
                     }
@@ -167,12 +163,9 @@ export default class ExecuteChecklist extends SfdxCommand {
 
                     fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
                 }
-
-                console.log(result);
-
-
+                console.log(chalk.rgb(0,100,0)(`\nExecution log written to ${outputPath}`));
             }
-
+            console.log(chalk.bold(`\nFinished executing!`))
         } catch (err) {
             console.log(err);
             process.exit(1);
@@ -181,9 +174,9 @@ export default class ExecuteChecklist extends SfdxCommand {
 
   private printTaskInfo(task, taskNum, nTasks): void {
     console.log(`Progress: Task ` + chalk.bold(`${taskNum}`) + ` of ${nTasks}\n`);
+    console.log(chalk.rgb(0,0,255).bold(`${task.task}`));
     console.log(`Id: ${task.id}`);
-    console.log(chalk.blue.bold(`${task.task}`));
-    console.log(`${task.steps}`);
+    console.log(chalk.bold(`\nInstructions:\n`) + `${task.steps}\n`);
   }
 
   private printDurationMinSec(duration_ms) {
@@ -191,13 +184,8 @@ export default class ExecuteChecklist extends SfdxCommand {
     duration_sec = Math.floor(duration_sec);
     let display_minutes = Math.floor(duration_sec / 60);
     let display_seconds = duration_sec % 60;
-    console.log(
-        `${display_minutes}` +
-        chalk.bold(`m`) +
-        ` ${display_seconds}` +
-        chalk.bold(`s`) +
-        ` elapsed\n`
-    );
+
+    console.log(`${display_minutes}m ${display_seconds}s elapsed\n`);
   }
 
   private getDate(date: Date): string {
