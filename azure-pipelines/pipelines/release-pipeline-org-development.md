@@ -2,7 +2,7 @@
 description: Deploy Stage
 ---
 
-# Release Pipeline - Org Development
+# Release Pipeline - Org Based Deployment
 
 Release pipelines are one of the most exciting benefits of using Azure Pipelines, which is not just for Continous Integration but can also act us an automated release orchestrator. This sample pipeline demonstrates how to orchestrate during an org wide development model. We simulate the creation of an build artifact utilizing the Continous Integration Pipeline - Org Based
 

@@ -1,24 +1,34 @@
-# Deploy a Source Package to Org
+# Deploy a Package \(Source Format\) to an Org
+
+| Task Id | Version |
+| :--- | :--- |
+| sfpwowerscript-checkoutprojectfromartifact-task | 13.2.0 |
 
 This task is used to deploy/validate metadata which is in source format \(newer format\) to any org, be it a scratch org, sandbox or production. The task does the following things.
 
-1. Converts the source directory to metadata using source:convert command
-2. Use mdapi:deploy to deploy/validate the converted metadata to an org
-3. Run any associated test runs supported along with the mdapi:deploy command
+1. Converts the source directory to metadata using **source:convert** command
+2. Use **mdapi:deploy** to deploy/validate the converted metadata to an org
+3. Run any associated test runs supported along with the **mdapi:deploy** command
 
 You can read about mdapi:deploy command [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference_force_mdapi.htm) and understand the various options
 
+This task is typically used in a Validation Stage \( such as [pull request validation pipeline](../../pipelines/pull-request-validation-using-scratch-org.md) or in a release pipelines \(  [Org Based](../../pipelines/release-pipeline-org-development.md) / Hybrid  deployment models\) where the  package directory in a checked out project is deployed to an org.
+
 **Prerequisites**
 
-Please note [Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+Please note [Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md)  task is added to the pipeline before utilizing this task
 
 **Task Snapshot**
 
-**Task Version and Details**
+{% tabs %}
+{% tab title="Deploy a Package \(Source Format\) in  a Build Pipeline" %}
+![Deploy a package directory to a scratch org in a build pipeline](../../../.gitbook/assets/deploy-source-to-org-in-a-build-pipeline.png)
+{% endtab %}
 
-id: sfpowerscript-deploysourcetoorg-task
-
-version: 7.1.4
+{% tab title="Deploy a Package \(Source Format\) in a Release Pipeline" %}
+![Deploy a Package Directory to a Sandbox in Release Pipeline ](../../../.gitbook/assets/deploy-source-to-org-in-a-release-pipeline.png)
+{% endtab %}
+{% endtabs %}
 
 **Input Variables  - Visual Designer Labels \(Yaml variables\)**
 

@@ -29,6 +29,14 @@ This task is used to checkout the code to a particular commit id from a 'git' re
 Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 * **Select the packaging type of the associated artifact /** _typeOfArtifact_ ****Select the associated artifact that needs to be checked out from the repository, possible values are Source Package \(source\), Delta Package\(delta\) and Unlocked Package \(unlocked\). This parameter is used to drive the other parameters when configuring in classic mode 
+* **Name of the artifact attached to this pipeline that needs to be checked out /** _artifact_ The source alias of the artifact that is attached to this release pipeline.  
+* **Name of the package that is generated as part of the artifact /** _package_
+
+  Name of the sfdx package that generated this artifact
+
+ 
+
+* **Artifact Provider for the attached artifact /** artifactProvider The provider for the particular artifact that is attached to the pipeline, The task supports these possible values  - **BuildArtifact** : If your artifact is the output of a build pipeline, use this provider -  **AzureArtifact**: If you are using Azure Artifacts to store your artifacts, use this provider 
 * **Select the version control provider /** _versionControlProvider_  
   The version control provider that hosts the particular repository. Select the appropriate repository type from the drop down \(in UI\) or pass the name of the service connection. You can read more on using service connections  [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml).  
 
@@ -52,13 +60,6 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
   
   - **Git which is already authenticated at the agent level /** hostedAgentGit  
   Use this option if the agent is already authenticated to Git repository \(typically used in a self hosted agent or if none of the above methods are not suffice to connect to your git repository\)  
-
-* **Name of the artifact attached to this pipeline that needs to be checked out /** _artifact_ The source alias of the artifact that is attached to this release pipeline.  
-* **Name of the package that is generated as part of the artifact /** _package_
-
-  Name of the sfdx package that generated this artifact
-
- 
 {% endtab %}
 
 {% tab title="Output Parameters" %}
