@@ -16,10 +16,10 @@ You can import and modify this pipeline using the file provide in the [link](htt
 
 The steps that are part of the pipeline in an individual stage are
 
-1. [Checkout the build artifact](../task-specifications/deployment-tasks/checkout-a-build-artifact.md)
-2. [Install SFDX CLI](../task-specifications/utility-tasks/install-sfdx-cli-with-sfpowerkit.md)
-3. [Authenticate an Org](../task-specifications/authentication/authenticate-an-org.md)\( In this case, it is authenticating against the Sandbox to be deployed\)
-4. [Deploy a Source Repo to Org](../task-specifications/deployment-tasks/deploy-a-source-repo-to-org.md)
+1. [Checkout the build artifact](../../task-specifications/deployment-tasks/checkout-a-build-artifact.md)
+2. [Install SFDX CLI](../../task-specifications/utility-tasks/install-sfdx-cli-with-sfpowerkit.md)
+3. [Authenticate an Org](../../task-specifications/authentication/authenticate-an-org.md)\( In this case, it is authenticating against the Sandbox to be deployed\)
+4. [Deploy a Source Repo to Org](../../task-specifications/deployment-tasks/deploy-a-source-repo-to-org.md)
 
 It is recommended to have a variable group created per environment,such as in the figure and associate it with each stage of the pipeline
 
