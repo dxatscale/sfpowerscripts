@@ -8,7 +8,7 @@ description: Deployment Helper Task -
 | :--- | :--- |
 | sfpwowerscript-checkoutprojectfromartifact-task | 13.2.0 |
 
-This task is used to checkout the code to a particular commit id from a 'git' repo as specified in the artifact produced by any  sfpowerscripts packaging tasks. This task is used in a release pipeline to have access to the code either for a source deployment or for a pre/post deployment of an unlocked package. The repo URL and commit id are already stored in the artifact produced by Packaging Tasks. This task at the moment only authenticating a few git  providers with HTTPS access. There is also an option for authenticating the agent with a preferred method before using this function \(.. already authenticate at the agent level\)
+This task is used to checkout the code to a particular commit id from a 'git' repo as specified in the artifact produced by any  sfpowerscripts packaging tasks. This task is used in a release pipeline to have access to the code either for [deploying a package \(source format\) to an org](deploy-a-source-repo-to-org.md). The repo URL and commit id are already stored in the artifact produced by Packaging Tasks. This task at the moment only authenticating a few git  providers with HTTPS access. There is also an option for authenticating the agent with a preferred method before using this function \(.. already authenticate at the agent level\)
 
 **Task Snapshot**
 
