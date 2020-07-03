@@ -1,6 +1,6 @@
 # Getting Started
 
-Getting started with sfpowerscripts is easy,  starter sample pipelines are available in GitHub Releases and can be imported using Azure DevOps Demo Generator
+Getting started with sfpowerscripts is easy.  The starter sample pipelines are available in GitHub Releases. They can be imported using Azure DevOps Demo Generator
 
 If you are already well versed  with Azure Pipelines, skip the below steps, directly import the sample pipelines once the extension is installed or compose pipelines using the classic designer or yaml 
 
@@ -14,7 +14,7 @@ If you are already well versed  with Azure Pipelines, skip the below steps, dire
 
   4. Select your organization
 
-  5. Type in a project name for the to be created project
+  5. Type in a project name for the "to-be" created project
 
 ![](../.gitbook/assets/create-new-project.png)
 
