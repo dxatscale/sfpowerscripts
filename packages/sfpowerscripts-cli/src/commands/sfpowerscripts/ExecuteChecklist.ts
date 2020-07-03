@@ -84,7 +84,10 @@ export default class ExecuteChecklist extends SfdxCommand {
                 tasks: []
             };
 
-            let taskQueue = [];
+            let taskQueue = checklist["tasks"];
+
+
+
 
             if (!isNullOrUndefined(executionLog)) {
                 if (fs.existsSync(executionLog)) {
@@ -92,11 +95,33 @@ export default class ExecuteChecklist extends SfdxCommand {
                     alias = executionLogJson["inputs"]["alias"];
                     result["tasks"] = result["tasks"].concat(executionLogJson["tasks"]);
 
-                    let latestTaskId = executionLogJson["tasks"][executionLogJson["tasks"].length-1]["id"];
-                    taskQueue = checklist["tasks"].slice(latestTaskId); // what if id's are wrong?
+
+
+                    let executionLogChecksum = executionLogJson["checksum"];
+                    let checksum = this.generateChecksum(executionLogJson);
+
+                    if ( (checksum ^ executionLogChecksum) != 0 )
+                        throw new Error("Corrupted execution log, please do not manually edit execution log");
+
+
+                    taskQueue = taskQueue.filter( (task) => {
+                        let isExecutedAlready: boolean = false;
+                        for (let executionLogTask of executionLogJson["tasks"]) {
+                            if (executionLogTask["id"] == task["id"])
+                                isExecutedAlready = true;
+                        }
+                        if (!isExecutedAlready && (isNullOrUndefined(task["runOnlyOn"]) || task["runOnlyOn"].toLowerCase() == alias))
+                            return true;
+                        else
+                            return false;
+                    });
+                    // let latestTaskId = executionLogJson["tasks"][executionLogJson["tasks"].length-1]["id"];
+                    // taskQueue = checklist["tasks"].slice(latestTaskId); // what if id's are wrong?
                 } else throw new Error(`Cannot find file ${executionLog}`);
             } else {
-                taskQueue = checklist["tasks"];
+                taskQueue = taskQueue.filter( (task) => {
+                    return isNullOrUndefined(task["runOnlyOn"]) || task["runOnlyOn"].toLowerCase() == alias
+                });
             }
 
             if (taskQueue.length == 0)
@@ -105,44 +130,42 @@ export default class ExecuteChecklist extends SfdxCommand {
                 console.log(`Executing checklist ${checklist["runbook"]} v${checklist["version"]}`);
                 let taskNum = 0;
                 for (let task of taskQueue) {
-                    if (
-                        isNullOrUndefined(task.runOnlyOn) ||
-                        task.runOnlyOn.toLowerCase() == alias
-                    ) {
-                        taskNum++;
-                        this.printTaskInfo(task, taskNum, taskQueue.length);
+                    taskNum++;
+                    this.printTaskInfo(task, taskNum, taskQueue.length);
 
-                        let start_timestamp: number = Date.now();
-                        let responses: any = await inquirer.prompt([
-                            {
-                            name: "status",
-                            type: "list",
-                            message: "Task action:",
-                            choices: ["Done", "Skip", "Quit"]
-                            },
-                        ]);
-                        // skip reason
-                        // print id
-                        // reason for skipping over tasks
-                        // Executing checklist ${name}
-                        if (responses["status"] == "Quit") {
-                            break;
-                        }
-
-                        let end_timestamp: number = Date.now();
-                        let duration_ms = (end_timestamp - start_timestamp);
-
-                        this.printDurationMinSec(duration_ms);
-
-                        task["status"] = responses["status"];
-                        task["timeTaken"] = duration_ms;
-                        task["User"] = os.hostname();
-                        task["Date"] = new Date();
-
-                        result["tasks"].push(task);
-
-                        fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+                    let start_timestamp: number = Date.now();
+                    let responses: any = await inquirer.prompt([
+                        {
+                        name: "status",
+                        type: "list",
+                        message: "Task action:",
+                        choices: ["Done", "Skip", "Quit"]
+                        },
+                    ]);
+                    // skip reason
+                    // print id
+                    // reason for skipping over tasks
+                    // Executing checklist ${name}
+                    if (responses["status"] == "Quit") {
+                        break;
                     }
+
+                    let end_timestamp: number = Date.now();
+                    let duration_ms = (end_timestamp - start_timestamp);
+
+                    this.printDurationMinSec(duration_ms);
+
+                    task["status"] = responses["status"];
+                    task["timeTaken"] = duration_ms;
+                    task["User"] = os.hostname();
+                    task["Date"] = new Date();
+
+                    result["tasks"].push(task);
+
+                    let checksum = this.generateChecksum(result);
+                    result["checksum"]=checksum;
+
+                    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
                 }
 
                 console.log(result);
@@ -193,6 +216,28 @@ export default class ExecuteChecklist extends SfdxCommand {
     let pad = (n) => n<10 ? '0'+n : n;
 
     return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+  }
+
+  private generateChecksum(payloadObject) {
+    // Generate checksum using Parity Word algorithm
+
+    if (!isNullOrUndefined(payloadObject["checksum"]))
+        delete payloadObject["checksum"];
+
+    let payload = JSON.stringify(payloadObject)
+
+    let buffer: number[] = [];
+    for (let i=0; i<payload.length; i++) {
+        let payload_word = payload.charCodeAt(i);
+        buffer.push(payload_word);
+    }
+
+    let checksum = buffer[0];
+    for (let i = 0; i < buffer.length-1; i++) {
+        checksum = checksum ^ buffer[i+1];
+    }
+
+    return checksum
   }
 
   private validateChecklist(checklist: checklist): void {
