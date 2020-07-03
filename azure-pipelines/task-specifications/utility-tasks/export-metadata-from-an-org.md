@@ -17,10 +17,6 @@ This task is used to export the complete metadata \(in source format\) from a gi
 sfpowerscripts\_exportedsource\_zip\_path
 {% endtab %}
 
-{% tab title="Control Options" %}
-None
-{% endtab %}
-
 {% tab title="YAML Sample" %}
 Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 

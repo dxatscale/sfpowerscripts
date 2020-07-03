@@ -60,10 +60,6 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 Please note to add a reference name before using this in any of the tasks
 {% endtab %}
 
-{% tab title="Control Options" %}
-None
-{% endtab %}
-
 {% tab title="YAML Example" %}
 
 {% endtab %}

@@ -8,7 +8,7 @@ This task is usually the first task of any pipeline you build using sfpowerscrip
 
 Please note this task is not supported in Hosted Mac Agents as of now
 
-**Task Snapshot**
+#### **Task Snapshot**
 
 ![](../../../.gitbook/assets/sfdx-install-screenshot.png)
 
@@ -36,10 +36,6 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 {% endtab %}
 
 {% tab title="Output Parameters" %}
-None
-{% endtab %}
-
-{% tab title="Control Options" %}
 None
 {% endtab %}
 

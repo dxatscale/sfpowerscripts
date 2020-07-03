@@ -6,9 +6,11 @@
 
 This task is used to create a build artifact for a source based repo \(org deployment\), which can then be associated with a release pipeline.
 
+**Task Snapshot**
+
 ![](../../../.gitbook/assets/screen-shot-2020-07-03-at-11.09.14-pm.png)
 
-### Parameters
+#### Parameters
 
 {% tabs %}
 {% tab title="Input" %}
@@ -26,7 +28,7 @@ Enable this option to conditionally build the source package only if there has b
 
 **Tag latest commit ID with package name and version /** _isGitTag_
 
-_Enable this option to tag the latest commit ID with an annotated Git tag that shows the package name and version. To push the tag to your repository, please refer to_ [_Execute Post Steps after Creating a Package_](execute-post-steps-after-creating-a-package.md)_._ 
+Enable this option to tag the latest commit ID with an annotated Git tag that shows the package name and version. To push the tag to your repository, please refer to [Execute Post Steps after Creating a Package](execute-post-steps-after-creating-a-package.md). 
 
 **Project Directory /** _project\_directory_
 
@@ -58,14 +60,12 @@ steps:
 {% endtab %}
 {% endtabs %}
 
-**Control Options**
-
-None
-
-**Gotcha’s**
-
 **Changelog**
 
+* 10.0.1 
+  * Removed Telemetry Collection
+  * Added Options to tag a package
+  * Added Options only to create a package if there is only change
 * 7.0.5 Refactored to use revamped folder structure
 * 6.0.0 Support for creation of multiple packages in a single build such as in a MonoRepo
 * 5.1.0 Minor changes in artifact that is getting stored
