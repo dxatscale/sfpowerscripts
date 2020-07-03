@@ -6,7 +6,7 @@ description: Guiding principles followed by the project
 
 ### Utilize your Salesforce deployment knowhow
 
-The tasks or commands should be easy to use.  You don't need to resort to complex scripts to orchestrate a pipeline . A knowledge of what you need to achieve from a pipeline and salesforce deployment \(such as DX, Unlocked Package, Org Based deployment mode\*\) should be enough to get you going.
+The tasks or commands should be easy to use.  You don't need to resort to complex scripts to orchestrate a pipeline . A knowledge of what you need to achieve from a pipeline and salesforce deployment \(such as DX, Unlocked Package, Org Based deployment model\*\) should be enough to get you going.
 
 We will also strive to provide sample pipelines to quickly get you started. Our azure pipelines extension is built with the classic \(UI based\) configuration in mind.
 

@@ -54,13 +54,10 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 {% endtab %}
 
 {% tab title="Output Parameters" %}
-* **powerscripts\_scratch\_org\_url**
+* **sfpowerscripts\_scratch\_org\_url** The url of the scratch org that was created
+* **sfpowerscripts\_scratch\_org\_username** The username of the scratch org that was created
 
-The url of the scratch org that was created
-
-* **sfpowerscripts\_scratch\_org\_username**
-
-The username of the scratch org that was created
+Please note to add a reference name before using this in any of the tasks
 {% endtab %}
 
 {% tab title="Control Options" %}

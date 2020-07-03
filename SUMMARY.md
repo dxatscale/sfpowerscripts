@@ -17,7 +17,7 @@
     * [Connecting to Salesforce Org using ServiceConnection](azure-pipelines/task-specifications/authentication/connecting-to-salesforce-using-serviceconnection.md)
     * [Authenticate a Salesforce Org](azure-pipelines/task-specifications/authentication/authenticate-an-org.md)
   * [Utility Tasks](azure-pipelines/task-specifications/utility-tasks/README.md)
-    * [Install SFDX CLI with SFPowerkit](azure-pipelines/task-specifications/utility-tasks/install-sfdx-cli-with-sfpowerkit.md)
+    * [Install SFDX CLI with sfpowerkit](azure-pipelines/task-specifications/utility-tasks/install-sfdx-cli-with-sfpowerkit.md)
     * [Create/Delete a Scratch Org](azure-pipelines/task-specifications/utility-tasks/create-delete-a-scratch-org.md)
     * [Export Metadata from an org](azure-pipelines/task-specifications/utility-tasks/export-metadata-from-an-org.md)
     * [Install package dependencies](azure-pipelines/task-specifications/utility-tasks/install-package-dependencies.md)

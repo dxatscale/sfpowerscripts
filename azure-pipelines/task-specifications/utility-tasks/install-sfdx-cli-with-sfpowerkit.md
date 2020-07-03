@@ -1,4 +1,4 @@
-# Install SFDX CLI with SFPowerkit
+# Install SFDX CLI with sfpowerkit
 
 | Task Id | Version |
 | :--- | :--- |
@@ -47,7 +47,7 @@ None
 ```text
 #Install SFDX 
 - task: sfpwowerscript-installsfdx-task@6
-              displayName: Install SFDX
+  displayName: Install SFDX
 ```
 {% endtab %}
 {% endtabs %}
