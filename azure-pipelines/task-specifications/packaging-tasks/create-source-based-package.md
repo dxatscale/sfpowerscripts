@@ -1,36 +1,62 @@
 # Create Source based Package
 
+| Task ID | Latest version |
+| :--- | :--- |
+| sfpwowerscripts-createsourcepackage-task | 10.0.1 |
+
 This task is used to create a build artifact for a source based repo \(org deployment\), which can then be associated with a release pipeline.
 
-**Task Snapshot**
+![](../../../.gitbook/assets/screen-shot-2020-07-03-at-11.09.14-pm.png)
 
-**Task Version and Details**
+### Parameters
 
-id: sfpwowerscripts-createsourcepackage-task
+{% tabs %}
+{% tab title="Input" %}
+**Name of the package /** _package_
 
-version: 7.0.5
+Provide the name of the package.
 
-**Input Variables  - Visual Designer Labels \(Yaml variables\)**
+**The version number of the package to be created” /** _version\_number_
 
-* **Name of the package\(package\)**
+The format is `major.minor.patch.buildnumber` . This will override the build number mentioned in the `sfdx-project.json`. Consider running the [Increment Version Number task](../utility-tasks/increment-version-number-of-a-package.md) before this task and passing the `sfpowerscripts_incremented_project_version` variable as an input to this field. 
 
-  Provide a name of the package
+**Only run task if package has changed /** _isDiffCheck_
 
-* **the version number of the package to be created” \(version\_number\)**
+Enable this option to conditionally build the source package only if there has been a change to the package. To determine whether a package has changed, also enable 'Tag latest commit ID with package name and version'.
 
-  The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of [Increment Version Number task](../utility-tasks/increment-version-number-of-a-package.md) before this task
+**Tag latest commit ID with package name and version /** _isGitTag_
 
-* **SFDX Project directory that needs to be deployed \(project\_directory\)**
+_Enable this option to tag the latest commit ID with an annotated Git tag that shows the package name and version. To push the tag to your repository, please refer to_ [_Execute Post Steps after Creating a Package_](execute-post-steps-after-creating-a-package.md)_._ 
 
-  Leave it blank if the sfdx-project.json is in the root of the repository, else provide the folder directory containing the sfdx-project.json
+**Project Directory /** _project\_directory_
 
-* **Send Anonymous Usage Telemetry \(isTelemetryEnabled\)**
+This parameter may be left blank if the `sfdx-project.json` is in the root of the repository, else provide the folder directory containing the `sfdx-project.json` .
 
-  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
+**Send Anonymous Usage Telemetry /** _isTelemetryEnabled_
 
-**Output Variables**
+Enable this flag to send anonymous usage telemetry to track usage and help bring further improvements to this task.
+{% endtab %}
 
-None
+{% tab title="Output" %}
+**sfpowerscripts\_package\_version\_number**
+
+The version number of the package that was created**.**
+{% endtab %}
+
+{% tab title="YAML" %}
+```text
+steps:
+- task: sfpwowerscripts-createsourcepackage-task@<version>
+  displayName: 'Creates a new version of Source Based Package for <mypackage>'
+  inputs:
+    package: <mypackage>
+    version_number: <'$(sfpowerscripts_incremented_project_version)'>
+    isDiffCheck: false
+    isGitTag: false
+    project_directory: [dir]
+```
+{% endtab %}
+{% endtabs %}
 
 **Control Options**
 

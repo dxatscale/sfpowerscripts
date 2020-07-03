@@ -28,6 +28,7 @@
     * [Create a Delta Package](azure-pipelines/task-specifications/packaging-tasks/create-a-delta-package.md)
     * [Create a new version of Unlocked Package](azure-pipelines/task-specifications/packaging-tasks/create-a-new-version-of-unlocked-package.md)
     * [Promote an Unlocked Package](azure-pipelines/task-specifications/packaging-tasks/promote-an-unlocked-package.md)
+    * [Execute Post Steps after Creating a Package](azure-pipelines/task-specifications/packaging-tasks/execute-post-steps-after-creating-a-package.md)
   * [Deployment Tasks](azure-pipelines/task-specifications/deployment-tasks/README.md)
     * [Checkout the project from repository for the associated artifact](azure-pipelines/task-specifications/deployment-tasks/checkout-a-build-artifact.md)
     * [Deploy a Source Package to Org](azure-pipelines/task-specifications/deployment-tasks/deploy-a-source-repo-to-org.md)

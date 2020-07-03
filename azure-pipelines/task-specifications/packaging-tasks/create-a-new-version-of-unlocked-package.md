@@ -22,7 +22,7 @@ version: 8.0.9
 
 * **the version number of the package to be created” \(version\_number\)**
 
-  The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of [Increment Version Number task](../utility-tasks/increment-version-number-of-a-package.md)before this task
+  The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of [Increment Version Number task](../utility-tasks/increment-version-number-of-a-package.md) before this task
 
 * **Tag of the package version\(tag\)**
 
