@@ -8,7 +8,7 @@ description: Deployment Helper Task -
 | :--- | :--- |
 | sfpwowerscript-checkoutprojectfromartifact-task | 13.2.0 |
 
-This task is used to checkout the code to a particular commit id from a 'git' repo as specified in the artifact produced by any  sfpowerscripts packaging tasks. This task is used in a release pipeline to have access to the code either for a source deployment or for a pre/post deployment of an unlocked package. The repo URL and commit id are already stored in the artifact produced by Packaging Tasks. This task at the moment only supports Git providers with HTTPS access.
+This task is used to checkout the code to a particular commit id from a 'git' repo as specified in the artifact produced by any  sfpowerscripts packaging tasks. This task is used in a release pipeline to have access to the code either for a source deployment or for a pre/post deployment of an unlocked package. The repo URL and commit id are already stored in the artifact produced by Packaging Tasks. This task at the moment only authenticating a few git  providers with HTTPS access. There is also an option for authenticating the agent with a preferred method before using this function \(.. already authenticate at the agent level\)
 
 **Task Snapshot**
 
@@ -36,12 +36,13 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
  
 
-* **Artifact Provider for the attached artifact /** artifactProvider The provider for the particular artifact that is attached to the pipeline, The task supports these possible values  - **BuildArtifact** : If your artifact is the output of a build pipeline, use this provider -  **AzureArtifact**: If you are using Azure Artifacts to store your artifacts, use this provider 
+* **Artifact Provider for the attached artifact /** artifactProvider The provider for the particular artifact that is attached to the pipeline, The task supports these possible values  - **Build Artifact** / _BuildArtifact_ ****: If your artifact is the output of a build pipeline, use this provider -  Azure Artifact / _AzureArtifact_: If you are using Azure Artifacts to store your artifacts, use this provider 
 * **Select the version control provider /** _versionControlProvider_  
   The version control provider that hosts the particular repository. Select the appropriate repository type from the drop down \(in UI\) or pass the name of the service connection. You can read more on using service connections  [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml).
 
   
   The supported options are    
+  
   -  **Github Connection /** github\_connection  
     Use this if your repository  provider is GitHub  
   -  **GitHub Enterprise Connection /** _github\_enterprise\_connection_   
@@ -50,7 +51,6 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
      ****Use this if your repository provider is Bitbucket  
   **- Azure Repo /** _azureRepo_  
    ****Use this if your repository provider is Azure Repo. Please ensure the agent has the right permissions for authenticating to the Azure Repo \( enabled by  '[Allow Scripts to access the OAuth Token'](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/options?view=azure-devops#allow-scripts-to-access-the-oauth-token) \)  
-  
   **- Other Git /** _otherGit_  
    ****Any other Git provider which can be authenticated using a username/password based basic authentication schema.  
   
@@ -60,10 +60,6 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 {% tab title="Output Parameters" %}
 * **sfpowerscripts\_checked\_out\_path** The path to the directory where the source code is checked out
-{% endtab %}
-
-{% tab title="Control Options" %}
-N/A
 {% endtab %}
 
 {% tab title="YAML Example" %}
@@ -79,7 +75,9 @@ N/A
 {% endtab %}
 {% endtabs %}
 
-\*\*\*\*
+{% hint style="info" %}
+When using the option Git which is already authenticate at the agent level, the task will fetch the repository using the URL mentioned in the artifact. Ensure the artifact is produced with the correct URL during the build phase.
+{% endhint %}
 
 **Changelog**
 
