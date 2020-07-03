@@ -1,75 +1,92 @@
-# Checkout a build artifact
+---
+description: Deployment Helper Task -
+---
+
+# Checkout the project from repository for the associated artifact
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-checkoutprojectfromartifact-task | 13.1.2 |
+| sfpwowerscript-checkoutprojectfromartifact-task | 13.2.0 |
 
-This task is used to checkout the code to a particular commit id from a GIT repo as mentioned in the build artifact produced by any  sfpowerscripts packaging tasks. This task is used in a release pipeline to have access to the code either for a source deployment or for a pre/post deployment of an unlocked package. The repo URL and commit id are already stored in the artifact produced by Packaging Tasks. This task at the moment only supports Git providers with HTTPS access.
+This task is used to checkout the code to a particular commit id from a GIT repo as mentioned in the artifact produced by any  sfpowerscripts packaging tasks. This task is used in a release pipeline to have access to the code either for a source deployment or for a pre/post deployment of an unlocked package. The repo URL and commit id are already stored in the artifact produced by Packaging Tasks. This task at the moment only supports Git providers with HTTPS access.
 
 **Task Snapshot**
 
+{% tabs %}
+{% tab title="Package Type Selection" %}
+![Checkout package artifacts support multiple types of packages](../../../.gitbook/assets/checkout-source-from-a-build-artifact.png)
+{% endtab %}
+
+{% tab title="Repository Provider Selection" %}
+![Repository Provider Selection](../../../.gitbook/assets/checkout-source-from-a-build-artifact-reposiitory-options.png)
+{% endtab %}
+{% endtabs %}
+
+#### **P**arameters
+
+{% tabs %}
+{% tab title="Input Parameters " %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+
+* **Select the packaging type of the associated artifact /** _typeOfArtifact_ ****Select the associated artifact that needs to be checked out from the repository, possible values are Source Package \(source\), Delta Package\(delta\) and Unlocked Package \(unlocked\). This parameter is used to drive the other parameters when configuring in classic mode 
+* **Select the version control provider /** _versionControlProvider_  
+  The version control provider that hosts the particular repository. Select the appropriate repository type from the drop down \(in UI\) or pass the name of the service connection. You can read more on using service connections  [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml).  
 
 
-**Input Variables  - Visual Designer Labels \(Yaml variables\)**
+  The supported options are    
+  
+  -  **Github Connection /** github\_connection  
+    Use this if your repository  provider is GitHub  
+  
+  -  **GitHub Enterprise Connection /** _github\_enterprise\_connection_   
+     Use this if your repository provider is GitHub Enterprise  
+  
+  __**- Bitbucket Connection /** _bitbucket\_connection_  
+     ****Use this if your repository provider is Bitbucket  
+  __  
+  **- Azure Repo /** _azureRepo_  
+   ****Use this if your repository provider is Azure Repo. Please ensure the agent has the right permissions for authenticating to the Azure Repo \( enabled by  '[Allow Scripts to access the OAuth Token'](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/options?view=azure-devops#allow-scripts-to-access-the-oauth-token) \)  
+  
+  **- Other Git /** _otherGit_  
+   ****Any other Git provider which can be authenticated using a username/password based basic authentication schema.  
+  
+  - **Git which is already authenticated at the agent level /** hostedAgentGit  
+  Use this option if the agent is already authenticated to Git repository \(typically used in a self hosted agent or if none of the above methods are not suffice to connect to your git repository\)  
 
-* **Select the packaging type of the associated artifact\(typeOfArtifact\)**
+* **Name of the artifact attached to this pipeline that needs to be checked out /** _artifact_ The source alias of the artifact that is attached to this release pipeline.  
+* **Name of the package that is generated as part of the artifact /** _package_
 
-  Select the associated artifact associated with this pipeline, possible values are Source Deployment\(source\), Delta Deployment\(delta\) and Unlocked Package \(unlocked\). This parameter is used to drive the other parameters when configuring in classic mode
+  Name of the sfdx package that generated this artifact
 
-* **Select the version control provider\(versionControlProvider\)**
+ 
+{% endtab %}
 
-  The version control provider that hosts the particular repo. The available options are Github \(github\), GitHub Enterprise \(githubEnterprise\), BitBucket Cloud \(bitbucket\), Azure Repo \(azureRepo\), Other Git \(otherGit\).
+{% tab title="Output Parameters" %}
+* **sfpowerscripts\_checked\_out\_path** The path to the directory where the source code is checked out
+{% endtab %}
 
-  Following are the connection types supported and have to be assigned for this command to work
+{% tab title="Control Options" %}
+N/A
+{% endtab %}
 
-  * **GitHub Connection\(github\_connection\)**
+{% tab title="YAML Example" %}
+```text
+- task: sfpwowerscript-checkoutprojectfromartifact-task.sfpwowerscript-checkoutprojectfromartifact-task@13
+  displayName: 'Checkout _sfdc-async-tasks from repositrory'
+  inputs:
+    github_connection: 'github.com_my_github_connection'
+    artifact: '_sfdc-async-tasks'
+    package: 'async-framework'
 
-  Select the corresponding Github service connection from the dropdown \(in the classic mode\) or set the variable with appropriate connection name if used in a Yaml pipeline. Read more instruction on using connectedService [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)
+```
+{% endtab %}
+{% endtabs %}
 
-  * **GitHub Enterprise Connection\(github\_enterprise\_connection\)**
-
-  Select the corresponding Github Enterprise service connection from the dropdown \(in the classic mode\) or set the variable with appropriate connection name if used in a Yaml pipeline. Read more instruction on using connectedService [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)
-
-  * **Bitbucket Connection\(bitbucket\_connection\)**
-
-  Select the corresponding Bitbucket cloud service connection from the dropdown \(in the classic mode\) or set the variable with appropriate connection name if used in a Yaml pipeline. Read more instruction on using connectedService [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml)
-
-  * **Azure Repo \(azureRepo\)**
-
-  If azure Repo is selected, the agent has to have the setting ‘Allow Script to access OAuth Token’ activated in the Agent Job settings, so that the task can access $\(System.AccessToken\) Variable and checkout the code
-
-  * **Other Git \(otherGit\)**
-
-  If your repo is none of the above, then utilize this selection to pass in the username/password for a basic authentication schema to checkout the corresponding code. If this mode is selected please fill in Username \(username\) and Password \(password\) to checkout the repository\`
-
-* * **Name of the artifact attached to this pipeline that needs to be checked out\(artifact\)**
-
-  The name of the artifact that is attached to this release pipeline. Please note it will only take artifact generated by Create SFDX Unlocked Package or Create Source based packaging.Please note this is not a generic utility and will only work for artifacts created by SFPowerscripts
-
-* **Name of the package that is genrated as part of the artifact\(package\)**
-
-  Name of the package that generated this artifact, Leave blank to support artifacts generated by older version of Create Tasks
-
-* **Send Anonymous Usage Telemetry \(isTelemetryEnabled\)**
-
-  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
-
-**Output Variables**
-
-* sfpowerscripts\_checked\_out\_path
-
-The path to the directory where the source code is checked out
-
-**Control Options**
-
-None
-
-**Gotcha’s**
-
-None
+\*\*\*\*
 
 **Changelog**
 
+* 13.2.0   -  Added support for git authentication where the agent is already authenticated earlier -   Removed telemetry collection 
 * 11.0.5 Refactored to use revamped folder structure
 * 10.0.7 Add support for artifacts generated from a mono repo
 * 8.0.1 Patch issue with azure Repo

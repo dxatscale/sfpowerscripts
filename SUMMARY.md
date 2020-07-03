@@ -29,7 +29,7 @@
     * [Create a new version of Unlocked Package](azure-pipelines/task-specifications/packaging-tasks/create-a-new-version-of-unlocked-package.md)
     * [Promote an Unlocked Package](azure-pipelines/task-specifications/packaging-tasks/promote-an-unlocked-package.md)
   * [Deployment Tasks](azure-pipelines/task-specifications/deployment-tasks/README.md)
-    * [Checkout a build artifact](azure-pipelines/task-specifications/deployment-tasks/checkout-a-build-artifact.md)
+    * [Checkout the project from repository for the associated artifact](azure-pipelines/task-specifications/deployment-tasks/checkout-a-build-artifact.md)
     * [Deploy a Source Package to Org](azure-pipelines/task-specifications/deployment-tasks/deploy-a-source-repo-to-org.md)
     * [Deploy Destructive Maifest to an org](azure-pipelines/task-specifications/deployment-tasks/deploy-destructive-maifest-to-an-org.md)
     * [Install an Unlocked Package to an org](azure-pipelines/task-specifications/deployment-tasks/install-an-unlocked-package-to-an-org.md)
