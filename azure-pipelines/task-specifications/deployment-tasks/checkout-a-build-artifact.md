@@ -38,20 +38,16 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 * **Artifact Provider for the attached artifact /** artifactProvider The provider for the particular artifact that is attached to the pipeline, The task supports these possible values  - **BuildArtifact** : If your artifact is the output of a build pipeline, use this provider -  **AzureArtifact**: If you are using Azure Artifacts to store your artifacts, use this provider 
 * **Select the version control provider /** _versionControlProvider_  
-  The version control provider that hosts the particular repository. Select the appropriate repository type from the drop down \(in UI\) or pass the name of the service connection. You can read more on using service connections  [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml).  
+  The version control provider that hosts the particular repository. Select the appropriate repository type from the drop down \(in UI\) or pass the name of the service connection. You can read more on using service connections  [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml).
 
-
-  The supported options are    
   
+  The supported options are    
   -  **Github Connection /** github\_connection  
     Use this if your repository  provider is GitHub  
-  
   -  **GitHub Enterprise Connection /** _github\_enterprise\_connection_   
      Use this if your repository provider is GitHub Enterprise  
-  
   __**- Bitbucket Connection /** _bitbucket\_connection_  
      ****Use this if your repository provider is Bitbucket  
-  __  
   **- Azure Repo /** _azureRepo_  
    ****Use this if your repository provider is Azure Repo. Please ensure the agent has the right permissions for authenticating to the Azure Repo \( enabled by  '[Allow Scripts to access the OAuth Token'](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/options?view=azure-devops#allow-scripts-to-access-the-oauth-token) \)  
   
