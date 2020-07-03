@@ -33,6 +33,6 @@ This pipeline need to be enabled only with PR triggers, CI triggers for pipeline
 {% endhint %}
 
 {% hint style="info" %}
-Please note this is just a sample of the steps that you need to 
+Please note this is just a sample of the minimal steps that you need to add to do a PR validation. 
 {% endhint %}
 

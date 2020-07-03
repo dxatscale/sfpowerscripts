@@ -1,6 +1,6 @@
 # Overview
 
-sfpowerscripts is a wrapper around sfdx-cli and open source sfdx plugin [sfpowerkit](https://github.com/Accenture/sfpowerkit) aimed at eliminating wasted efforts in writing boiler plate code \(often written using bash scripts\) while setting up a Continuous Build system for Salesforce. 
+sfpowerscripts is a wrapper around sfdx-cli and open source sfdx plugin [sfpowerkit](https://github.com/Accenture/sfpowerkit) aimed at reducing efforts in writing boiler plate code \(often written using bash scripts\) while setting up a Continuous Build system for Salesforce. 
 
 The project supports the following targets
 
