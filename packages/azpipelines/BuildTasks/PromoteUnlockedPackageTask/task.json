@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 6,
+        "Major": 7,
         "Minor": 0,
-        "Patch": 3
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -50,7 +50,7 @@
             "label": "Name of the artifact that is attached to this release pipeline",
             "required": false,
             "helpMarkDown": "Provide the name of the artifact which is the input to this pipeline. Please note only sfpowerkit based build artifact will work with this command",
-            "visibleRule": "packagepromotedfrom = BuildArtifact"
+            "visibleRule": "packagepromotedfrom = BuildArtifact || packagepromotedfrom = AzureArtifact"
         },
         {
             "name": "project_directory",
