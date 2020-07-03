@@ -12,6 +12,20 @@ Please note [Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-wit
 
 id: sfpwowerscript-deploydestructivemanifest-task
 
+{% tabs %}
+{% tab title="Input Parameters" %}
+
+{% endtab %}
+
+{% tab title="Output Variables" %}
+
+{% endtab %}
+
+{% tab title="YAML Examples" %}
+
+{% endtab %}
+{% endtabs %}
+
 version: 3.0.9
 
 **Input Variables  - Visual Designer Labels \(Yaml variables\)**
