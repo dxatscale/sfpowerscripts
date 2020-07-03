@@ -5,7 +5,6 @@ const path = require("path");
 
 async function run() {
   try {
-    
     console.log(`SFPowerScript.. Promote Unlocked Package`);
 
     const package_installedfrom = tl.getInput("packagepromotedfrom", true);
@@ -13,7 +12,10 @@ async function run() {
     const devhub_alias = tl.getInput("devhub_alias", true);
     const projectDirectory = tl.getInput("project_directory", false);
     const artifact = tl.getInput("artifact", true);
-    const skip_on_missing_artifact = tl.getBoolInput("skip_on_missing_artifact", false);
+    const skip_on_missing_artifact = tl.getBoolInput(
+      "skip_on_missing_artifact",
+      false
+    );
 
     let package_version_id;
 
@@ -37,7 +39,20 @@ async function run() {
         package_version_id_file_path,
         skip_on_missing_artifact
       );
+
+   //Read Package_Version_id
+     let package_metadata_json = fs
+    .readFileSync(package_version_id_file_path)
+    .toString();
+
+     let package_metadata = JSON.parse(package_metadata_json);
+
+     package_version_id = package_metadata.package_version_id;
+    console.log(`Found Package Version Id in artifact ${package_version_id}`);
+
     }
+
+   
 
     let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
       projectDirectory,
