@@ -36,7 +36,7 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
  
 
-* **Artifact Provider for the attached artifact /** artifactProvider The provider for the particular artifact that is attached to the pipeline, The task supports these possible values  - **Build Artifact** / _BuildArtifact_ ****: If your artifact is the output of a build pipeline, use this provider -  Azure Artifact / _AzureArtifact_: If you are using Azure Artifacts to store your artifacts, use this provider 
+* **Artifact Provider for the attached artifact /** artifactProvider The provider for the particular artifact that is attached to the pipeline, The task supports these possible values  - **Build Artifact** / _BuildArtifact_ ****: If your artifact is the output of a build pipeline, use this provider -  **Azure Artifact** / _AzureArtifact_: If you are using Azure Artifacts to store your artifacts, use this provider 
 * **Select the version control provider /** _versionControlProvider_  
   The version control provider that hosts the particular repository. Select the appropriate repository type from the drop down \(in UI\) or pass the name of the service connection. You can read more on using service connections  [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml).
 
