@@ -8,8 +8,8 @@
     "author": "dxatscale@accenture.com",
     "version": {
         "Major": 13,
-        "Minor": 1,
-        "Patch": 2
+        "Minor": 2,
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -22,8 +22,8 @@
             "label": "Select the packaging type of the associated artifact",
             "defaultValue": "source",
             "options": {
-                "source": "Source Deployment",
-                "delta": "Delta Deployment",
+                "source": "Source Package",
+                "delta": "Delta Package",
                 "unlocked": "Unlocked Package"
             },
             "required": false,
