@@ -4,7 +4,7 @@
 | :--- | :--- |
 | sfpwowerscripts-createsourcepackage-task | 10.0.1 |
 
-This task is used to create a build artifact for a source based repo \(org deployment\), which can then be associated with a release pipeline.
+This task is used to create a build artifact for a package directory  in your project typically to be used for  org based deployment / pre/post metadata installation of an unlocked package or using a hybrid \(org+unlocked development model\), which can then be associated with a release pipeline. You can read about [`checkout artifact task` ](../deployment-tasks/checkout-a-build-artifact.md)to understand further how both are interrelated.
 
 **Task Snapshot**
 
@@ -33,10 +33,6 @@ Enable this option to tag the latest commit ID with an annotated Git tag that sh
 **Project Directory /** _project\_directory_
 
 This parameter may be left blank if the `sfdx-project.json` is in the root of the repository, else provide the folder directory containing the `sfdx-project.json` .
-
-**Send Anonymous Usage Telemetry /** _isTelemetryEnabled_
-
-Enable this flag to send anonymous usage telemetry to track usage and help bring further improvements to this task.
 {% endtab %}
 
 {% tab title="Output" %}
