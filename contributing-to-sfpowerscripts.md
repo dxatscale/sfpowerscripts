@@ -28,3 +28,9 @@ Please only create issues for bug reports or feature requests at [SFPowerscripts
 
 Do not create issues about bumping dependencies unless a bug has been identified and you can demonstrate that it effects this [repo.](https://github.com/azlamsalam/sfpowerscripts)
 
+## GitBook Errors
+
+If you have found spelling mistakes or other errors on this website and do not feel comfortable raising a Pull Request please contact us out using the below form
+
+//Form TODO - CM 
+

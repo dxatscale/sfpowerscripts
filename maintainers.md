@@ -14,5 +14,5 @@ Alan is a software developer who is currently focused on DevOps and automation w
 
 ![Caitlyn Mills](.gitbook/assets/caitlyn-mills.png)
 
-Caitlyn is an Application Development Associate currently specialising in Salesforce DevOps Engineering. She has software degree in Game Design and is currently enjoying playing Luigi's Mansion, Diablo III and Just Dance. 
+Caitlyn is an Application Development Associate currently specialising in Salesforce DevOps Engineering. She has software degree in Game Design and is currently enjoying playing Luigi's Mansion, Diablo III and Just Dance.
 
