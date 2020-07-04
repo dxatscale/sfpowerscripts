@@ -5,7 +5,7 @@ sfpowerscripts is a wrapper around sfdx-cli and open source sfdx plugin [sfpower
 The project supports the following targets
 
 * **Azure Pipelines** through a native extension. 
-* For other **Continuous Build platforms**, through a sfdx-plugin. 
+* other **Continuous Build platforms**, through a sfdx-plugin. 
 
 The project intends to add native extension to other CI/CD platforms \(which supports an extension based model\) or provide sample pipelines to get started with minimal efforts.
 
@@ -13,10 +13,10 @@ The project intends to add native extension to other CI/CD platforms \(which sup
 
 Why should you use sfpowerscripts? 
 
-* Using sfdx-cli commands are relatively simple, however there is bit of of code that would be required to parse the JSON output and set it to environment variables etc. for use within the next task.
-* Additional scripts are needed to integrate with a Continuous Build system's native dashboards. For eg: In the case of Azure Pipelines, integrating with Test Reports etc.
-* Providing additional functionality that is either not supported by the sfdx-cli, especially around orchestration, such as build only packages that are changed in a mono-repo.
-* Ease of use, one should not be spending too much time building a pipeline.
+* Using sfdx-cli commands are relatively simple, however there is bit of of code that would be required to parse the JSON output and set it to environment and other variables for use within the next task.
+* Additional scripts are needed to integrate with a Continuous Build system's native dashboards.  eg: In the case of Azure Pipelines, integrating with Test Reports etc.
+* Providing additional functionality that is not supported by the sfdx-cli, especially around orchestration, such as build only packages that are changed in a mono-repo.
+* Ease of use, it avoids spending too much time building a pipeline.
 
 ### History
 
