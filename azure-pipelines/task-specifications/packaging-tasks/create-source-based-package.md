@@ -14,24 +14,21 @@ This task is used to create a build artifact for a package directory  in your pr
 
 {% tabs %}
 {% tab title="Input" %}
-**Name of the package /** _package_
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
-Provide the name of the package.
+**Name of the package /** _package_  
+****Provide the name of the package.
 
-**The version number of the package to be created” /** _version\_number_
-
+**The version number of the package to be created” /** _version\_number_  
 The format is `major.minor.patch.buildnumber` . This will override the build number mentioned in the `sfdx-project.json`. Consider running the [Increment Version Number task](../utility-tasks/increment-version-number-of-a-package.md) before this task and passing the `sfpowerscripts_incremented_project_version` variable as an input to this field. 
 
-**Only run task if package has changed /** _isDiffCheck_
-
+**Only run task if package has changed /** _isDiffCheck_  
 Enable this option to conditionally build the source package only if there has been a change to the package. To determine whether a package has changed, also enable 'Tag latest commit ID with package name and version'.
 
-**Tag latest commit ID with package name and version /** _isGitTag_
-
+**Tag latest commit ID with package name and version /** _isGitTag_  
 Enable this option to tag the latest commit ID with an annotated Git tag that shows the package name and version. To push the tag to your repository, please refer to [Execute Post Steps after Creating a Package](execute-post-steps-after-creating-a-package.md). 
 
-**Project Directory /** _project\_directory_
-
+**Project Directory /** _project\_directory_  
 This parameter may be left blank if the `sfdx-project.json` is in the root of the repository, else provide the folder directory containing the `sfdx-project.json` .
 {% endtab %}
 
