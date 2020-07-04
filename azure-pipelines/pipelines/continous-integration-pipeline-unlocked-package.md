@@ -16,9 +16,9 @@ You can import and modify this pipeline using the file provide in the [link](htt
 
 The steps that are part of this pipeline are \(in the exact order\)
 
-1. [Install SFDX CLI](../../task-specifications/utility-tasks/install-sfdx-cli-with-sfpowerkit.md)
-2. [Authenticate an Org](../../task-specifications/authentication/authenticate-an-org.md)\( In this case, it is authenticating against DevHub\)
-3. [Increment the version number](../../task-specifications/utility-tasks/increment-version-number-of-a-package.md) \( optional step, if you want to increment the build number or any segment number\)
+1. [Install SFDX CLI](../task-specifications/utility-tasks/install-sfdx-cli-with-sfpowerkit.md)
+2. [Authenticate an Org](../task-specifications/authentication/authenticate-an-org.md)\( In this case, it is authenticating against DevHub\)
+3. [Increment the version number](../task-specifications/utility-tasks/increment-version-number-of-a-package.md) \( optional step, if you want to increment the build number or any segment number\)
 4. [Create a new version of the unlocked package](https://sfpowerscripts.com/Tasks/Packaging-Tasks/Create%20SFDX%20Unlocked%20Package/)
 
 **Pipeline Trigger**

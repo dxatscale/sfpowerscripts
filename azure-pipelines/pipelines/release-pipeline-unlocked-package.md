@@ -16,10 +16,10 @@ You can import and modify this pipeline using the file provide in the [link](htt
 
 The steps that are part of the pipeline in an individual stage are
 
-1. [Install SFDX CLI](../../task-specifications/utility-tasks/install-sfdx-cli-with-sfpowerkit.md)
-2. [Authenticate an Org](../../task-specifications/authentication/authenticate-an-org.md) \( In this case, it is authenticating against DevHub\)
-3. [Authenticate an Org](../../task-specifications/authentication/authenticate-an-org.md) \( In this case, it is authenticating against the Sandbox to be deployed\)
-4. [Install a version of the unlocked package to the target environment](../../task-specifications/deployment-tasks/install-an-unlocked-package-to-an-org.md)
+1. [Install SFDX CLI](../task-specifications/utility-tasks/install-sfdx-cli-with-sfpowerkit.md)
+2. [Authenticate an Org](../task-specifications/authentication/authenticate-an-org.md) \( In this case, it is authenticating against DevHub\)
+3. [Authenticate an Org](../task-specifications/authentication/authenticate-an-org.md) \( In this case, it is authenticating against the Sandbox to be deployed\)
+4. [Install a version of the unlocked package to the target environment](../task-specifications/deployment-tasks/install-an-unlocked-package-to-an-org.md)
 
 
 

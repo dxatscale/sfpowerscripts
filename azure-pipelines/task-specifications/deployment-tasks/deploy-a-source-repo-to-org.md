@@ -16,7 +16,7 @@ This task is used to deploy/validate metadata which is in source format \(newer 
 
 You can read about mdapi:deploy command [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference_force_mdapi.htm) and understand the various options
 
-This task is typically used in a Validation Stage \( such as [pull request validation pipeline](../../pipelines/pull-request-validation-using-scratch-org.md) or in a release pipelines \(  [Org Based](../../pipelines/org-based-development-model/release-pipeline-org-development.md) / Hybrid  deployment models\) where the  package directory in a checked out project is deployed to an org.
+This task is typically used in a Validation Stage \( such as [pull request validation pipeline](../../pipelines/pull-request-validation-using-scratch-org.md) or in a release pipelines \(  [Org Based](../../pipelines/release-pipeline-org-development.md) / Hybrid  deployment models\) where the  package directory in a checked out project is deployed to an org.
 
 **Prerequisites**
 
