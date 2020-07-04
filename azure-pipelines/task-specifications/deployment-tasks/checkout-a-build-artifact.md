@@ -8,7 +8,7 @@ description: Deployment Helper Task / Release Pipelines
 | :--- | :--- |
 | sfpwowerscript-checkoutprojectfromartifact-task | 13.2.0 |
 
-This task is used to checkout the code to a particular commit id from a 'git' repo as specified in the artifact produced by any  sfpowerscripts packaging tasks. This task is used in a release pipeline to have access to the code either for [deploying a package \(source format\) to an org](deploy-a-source-repo-to-org.md). The repo URL and commit id are already stored in the artifact produced by Packaging Tasks. This task at the moment only authenticating a few git  providers with HTTPS access. There is also an option for authenticating the agent with a preferred method before using this function \(.. already authenticate at the agent level\)
+This task is used to checkout the code to a particular commit id from a 'git' repo as specified in the artifact produced by any  sfpowerscripts packaging tasks. This task is used in a release pipeline to have access to the code  for utilizing [deploying a package \(source format\) to an org](deploy-a-source-repo-to-org.md) task or any other source manipulations. The repo URL and commit id are already specified in the artifact produced by Packaging Tasks. This task at the moment only authenticating a few git  providers with HTTPS access. There is also an option for authenticating the agent with a preferred method before using this function \(.. already authenticate at the agent level\)
 
 **Task Snapshot**
 
@@ -53,7 +53,6 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
    ****Use this if your repository provider is Azure Repo. Please ensure the agent has the right permissions for authenticating to the Azure Repo \( enabled by  '[Allow Scripts to access the OAuth Token'](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/options?view=azure-devops#allow-scripts-to-access-the-oauth-token) \)  
   **- Other Git /** _otherGit_  
    ****Any other Git provider which can be authenticated using a username/password based basic authentication schema.  
-  
   - **Git which is already authenticated at the agent level /** hostedAgentGit  
   Use this option if the agent is already authenticated to Git repository \(typically used in a self hosted agent or if none of the above methods are not suffice to connect to your git repository\)  
 {% endtab %}
@@ -64,12 +63,7 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 {% tab title="YAML Example" %}
 ```text
-- task: sfpwowerscript-checkoutprojectfromartifact-task.sfpwowerscript-checkoutprojectfromartifact-task@13
-  displayName: 'Checkout _sfdc-async-tasks from repositrory'
-  inputs:
-    github_connection: 'github.com_my_github_connection'
-    artifact: '_sfdc-async-tasks'
-    package: 'async-framework'
+Currently only tested in classic release pipeline
 
 ```
 {% endtab %}

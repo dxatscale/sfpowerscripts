@@ -42,49 +42,47 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 * **Alias or username of the target org  /** _target\_org_
 
-  Provide the alias or username of the target org  on which the source directory is to be deployed
+  Provide the alias or username of the target org  on which the source directory is to be deployed  
 
-* **SFDX Project directory that needs to be deployed  /** project\_directory
+* **Project Directory  /** project\_directory
 
-  Leave it blank if the sfdx-project.json is in the root of the repository, else provide the folder directory containing the sfdx-project.json
+  Leave it blank if the sfdx-project.json is in the root of the repository, else provide the folder directory containing the sfdx-project.json  
 
-* **Source Directory to be deployed  /** _source\_directory_
+* **Source/Package directory to be deployed  /** _source\_directory_
 
-  mention the source directory in your project directory that needs to be deployed
+  The relative path of the source/package directory that needs to be deployed within the Project Directory  
 
 * **Validate Deployment, do not deploy /**  _checkonly_
 
-  Enable this for doing a validate only. Utilise this mechanism for Pull Request against Sandbox to validate the metadata
+  Enable this for doing a [validate only deployment](https://help.salesforce.com/articleView?id=deploy_monitoring.htm&type=5). Utilize this mechanism for Pull Request against Sandbox to validate the metadata or if you prefer a validate deployment before doing a quick deployment.  
 
-  Once enabling this the following action will be enabled, where a file such as .validationignore can be specified that can be used to ignore certain metadata during a validate only deployment.  
-  This is needed to overcome certain salesforce quirks, where during a validate only deployment, it raise unwanted errors if your source contains say a metadata such as ApexTestSuite
-
+* **Path to the .validationignore to use during validate only deployment /** _validation\_ignore_ Only enabled when _checkonly_ is enabled , this  is optional field  for specifying a path to .validationignore  \( a file following the same notions of .forceignore af\) that  can be specified  to ignore certain metadata during a validate only deployment. This is needed to overcome certain salesforce quirks, where certain metadata is not allowed for a validate only deployment 
 * **Wait Time  /** wait\_time
 
-  Time to wait for this execution to complete,after this set wait time  the next task in the pipeline will be executed. It is recommended to provide sufficient wait time so that the command can be made into a synchronous execution
+  Time to wait for this execution to complete,after this set wait time  the next task in the pipeline will be executed. It is recommended to provide sufficient wait time so that the command can be made into a synchronous execution  
 
-* **Test Level \(testlevel\)**
+* **Test Level /** _testlevel_
 
   Select the appropriate test level if test are required to be exectued along with the deployment, Possible values are the following
 
-  * “NoTestRun”: Do not run any tests
-  * “RunSpecifiedTests”: Run specified tests mentioned in the following configuration item “Tests to be Executed\(specifed\_tests\)
-  * “RunApexTestSuite”: Run an apex test suite \(apextextsuite\)
-  * “RunLocalTests”: Run all the local tests
-  * “RunAllTestsInOrg”: Run all the tests in the org
+  * **NoTestRun /** _NoTestRun ****_: Do not run any tests
+  * **RunSpecifiedTests /** _RunSpecifiedTests ****_: Run specified tests mentioned in the following configuration item “Tests to be Executed\(specifed\_tests\)
+  * **RunApexTestSuite /** _RunApexTestSuite_: Run an apex test suite \(apextextsuite\)
+  * **RunLocalTests /** _RunLocalTests ****_: Run all the local tests
+  * **RunAllTestsInOrg /** RunAllTestsInOrg: Run all the tests in the org 
 
 * **Tests to be executed  /** _specifed\_tests_
 
-  Only visible, if the testlevel is RunSpecifiedTests, Provide a comma seperated values of all the test classes that need to be executed
+  Only visible, if the testlevel is RunSpecifiedTests, Provide a comma seperated values of all the test classes that need to be executed  
 
-* **ApexTextSuite  /** apextextsuite  ****Only visible, if the testlevel is RunApexTestSuite, Provide the name of the apex test suite that need to be executed
+* **ApexTextSuite  /** apextextsuite  ****Only visible, if the test level is RunApexTestSuite, Provide the name of the apex test suite that need to be executed. An apex test suite should be available in the  
 * **Break Build if the provided metadata folder is empty /** _isToBreakBuildIfEmpty_  
 
   Enable this flag to break the build, if the metadata folder provide is empty, other wise the task will ignore and just move to the next task if encountering an empty metadata folder
 {% endtab %}
 
 {% tab title="Output Parameters" %}
-
+* **sfpowerkit\_deploysource\_id** The id for this particular deployment job.
 {% endtab %}
 
 {% tab title="YAML Example" %}
