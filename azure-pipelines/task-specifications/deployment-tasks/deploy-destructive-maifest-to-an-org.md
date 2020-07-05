@@ -4,21 +4,36 @@ description: Deployment Tasks
 
 # Deploy Destructive Maifest to an org
 
-This task is a thin wrapper over sfpowerkit:org:destruct \([link](https://github.com/Accenture/sfpowerkit)\). Typically, destructive manifest are deployed as a seperate pipeline in Org based development model. This task helps one to build a pipeline
+| Task Id | Version |
+| :--- | :--- |
+| sfpwowerscript-deploydestructivemanifest-task | 13.2.0 |
+
+  
+This task is a wrapper over sfpowerkit:org:destruct \([link](https://github.com/Accenture/sfpowerkit)\). This is a helper task to delete metadata from an org using path to a destructive changeset \(destructiveChanges.xml\)  or by mentioning the contents in a multiline text field.
+
+> This  task is typically used in standalone release pipeline to orchestrate deletion of metadata across multiple sandboxes or used along with [Create a Delta Package task](../packaging-tasks/create-a-delta-package.md) which produces the destructive changes
 
 **Prerequisites**
 
-Please note [Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+Please note [Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
 
-**Task Snapshot**
+**Task Snapshot**  
 
-**Task Version and Details**
 
-id: sfpwowerscript-deploydestructivemanifest-task
+#### Parameters
 
 {% tabs %}
 {% tab title="Input Parameters" %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
+* **Alias or username of the target org  /** _target\_org_
+
+  Provide the alias or username of the target org  on which the source directory is to be deployed  
+
+* **Destructive Manifest Type** / type Possible values include  -  **Text /** text  - For Inline entry of destructive changes -   **Filepath /** filepath - Path to destructiveChanges.xml file 
+* **Enter the destructive manifes**t /  destructive\_manifest\_text This option is enabled if the type selected is text, Enter the contents that need to be destric 
+* **The path to the destructive manifest xml** / destructive\_manifest\_path This option is enabled if the type selected is filepath, Provide an absolute filepath to the destructiveChanges.xml  
+* **Skip if unable to find destructive manifest file** / skip\_on\_missing\_manifest Enable this option if you are using this task along with an automatic generation of destructive manifest file \( such as [Create a Delta Package](../packaging-tasks/create-a-delta-package.md) \) and do no want the task to fail if there is no destructive manifest generated in the task above.
 {% endtab %}
 
 {% tab title="Output Variables" %}
@@ -30,44 +45,13 @@ id: sfpwowerscript-deploydestructivemanifest-task
 {% endtab %}
 {% endtabs %}
 
-version: 3.0.9
 
-**Input Variables  - Visual Designer Labels \(Yaml variables\)**
 
-* **Alias or username of the target org\(target\_org\)**
 
-  Provide the alias or username of the target org  on which destructive manifest has to be udpdated
-
-* **Method \(method\)**
-
-  Choose the mode, if text \(Text\) is selected, please enter a multi line destructive changes in the next field, or alternatively select filePath \(FilePath\) to mention the path to where destructive changes should be deployed.
-
-* **Enter the destructive manifest \(destructive\_manifest\_text\)**
-
-If text is the preferred method, please follow the instructions here \(https://developer.salesforce.com/docs/atlas.en-us.daas.meta/daas/daas\_destructive\_changes.htm \) on how to create the file
-
-* **The path to the destrucive manifest file \(destructive\_manifest\_filepath”\)**
-
-If FilePath is the preferred mode, please provide the path to the file in the checkout code repository associated with the build
-
-* **Send Anonymous Usage Telemetry \(isTelemetryEnabled\)**
-
-  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
-
-**Output Variables**
-
-None
-
-**Control Options**
-
-None
-
-**Gotcha’s**
-
-None
 
 **Changelog**
 
+* 5.0.0  - Removed Telemetry  Collection - Added option to skip the task on missing destructive manifest file \([\#15](https://github.com/Accenture/sfpowerscripts/issues/15)\)
 * 3.0.9 Refactored to use revamped folder structure
 * 2.0.1 Updated with Telemetry
 * 1.7.0 Initial Version
