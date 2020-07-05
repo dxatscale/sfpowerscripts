@@ -1,6 +1,10 @@
 # Create a new version of Unlocked Package
 
-This task is used to create a new version of a Unlocked Package. You can read more about unlocked packages [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_dev2gp.htm)
+| Task ID | Latest Version |
+| :--- | :--- |
+| sfpwowerscripts-createunlockedpackage-task | 11.0.1 |
+
+This task is used to create a new version of an Unlocked Package. The task can optionally generate a build artifact, containing metadata such as the package ID, name, version, repository URL and the commit ID from which it was generated. The build artifact can then be used in release pipelines to install the associated unlocked package in a Salesforce org. You can read more about unlocked packages [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_dev2gp.htm). 
 
 **Prerequisites**
 
@@ -8,67 +12,101 @@ Please note [Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-wit
 
 **Task Snapshot**
 
-**Task Version and Details**
+![](../../../.gitbook/assets/screen-shot-2020-07-05-at-5.36.09-pm.png)
 
-id: sfpwowerscripts-createunlockedpackage-task
+### Parameters
 
-version: 8.0.9
-
-**Input Variables  - Visual Designer Labels \(Yaml variables\)**
-
-* **ID or alias of the package\(package\)**
+{% tabs %}
+{% tab title="Input" %}
+* **ID or alias of the package /** _package_
 
   Provide the alias or username of the target org  on which the source directory is to be deployed
 
-* **the version number of the package to be created” \(version\_number\)**
+* **the version number of the package to be created /** _version\_number_
 
-  The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of [Increment Version Number task](../utility-tasks/increment-version-number-of-a-package.md) before this task
+  The format is `major.minor.patch.buildnumber`. This will override the build number mentioned in the `sfdx-project.json`. Consider using the [Increment Version Number task](../utility-tasks/increment-version-number-of-a-package.md) before this task and passing the`sfpowerscripts_incremented_project_version` variable as an input to this field. 
 
-* **Tag of the package version\(tag\)**
+* **Tag of the package version /** _tag_
 
-The Tag of the package version to be created
+  The tag of the package version to be created
 
-* **Enable generation of test coverage of this paritcular package\(enable\_coverage\)**
+* **Enable generation of test coverage of this particular package /** _enable\_coverage_
 
-Calculate and store the code coverage percentage by running the Apex tests included in this package version.
+  Calculate and store the code coverage percentage by running the Apex tests included in this package version.
 
-* **Skip Validation of Dependencies,Ancestors etc\(isValidationToBeSkipped\)**
+* **Skip Validation of Dependencies,Ancestors etc /** _isValidationToBeSkipped_
 
-Enable this flag to skip validation of dependencies,while creating a package. A package created using this flag cannot be promoted to production
+  Skips validation of dependencies, package ancestors, and metadata during package version creation. Skipping validation reduces the time it takes to create a new package version, but package versions created without validation can’t be promoted.
 
-* **Config File Path\(config\_file\_path\)**
+* **Config File Path /** _config\_file\_path_
 
   Path in the current project directory containing config file for the packaging org
 
-* **Bypass Installation Key\(installationkeybypass\)**
+* **Bypass Installation Key /** _installationkeybypass_
 
-  Check this flage, if you have to bypass the requirement for having an installation key for this version of the package
+  Bypass the requirement for having an installation key for this version of the package.
 
-* **Installation Key\(installationkey\)**
+* **Installation Key /** _installationkey_
 
-  If the Bypass Installation key is not checked, use this field to provide an installation key
+  Installation key for this package
 
-* **Project directory \(project\_directory\)**
+* **Project directory /** _project\_directory_
 
-  Leave it blank if the sfdx-project.json is in the root of the repository, else provide the folder directory containing the sfdx-project.json
+  Leave it blank if the `sfdx-project.json` is in the root of the repository, else provide the folder directory containing the `sfdx-project.json`.
 
-* **Wait Time \(wait\_time\)**
+* **Alias/username of the Dev Hub**
+
+  Provide the alias of the Dev Hub previously authenticated, default value is `HubOrg` if using the [Authenticate Devhub task](../authentication/).
+
+* **Wait Time /** _wait\_time_
 
   Time to wait for this execution to complete,after this set wait time  the next task in the pipeline will be executed. It is recommended to provide sufficient wait time so that the command can be made into a synchronous execution
 
-* **Create a build artifact with the package id if the package creation is successful”\(build\_artifact\_enabled\)**
+* **Create a build artifact with the package id if the package creation is successful” /** _build\_artifact\_enabled_
 
-  Check this flag to associate this version along with metadata details like package\_version\_id ,sourceVersion and repository\_url as a build artifact associated with this build pipeline, which allows the build pipeline to be associated with a release pipeline
+  Check this flag to associate this version along with metadata details like package\_version\_id , sourceVersion and repository\_url as a build artifact associated with this build pipeline, which allows the build pipeline to be associated with a release pipeline.
 
-* **Send Anonymous Usage Telemetry \(isTelemetryEnabled\)**
+* **Only run task if package has changed /** _isDiffCheck_
+
+  Enable this option to conditionally build the source package only if there has been a change to the package. To determine whether a package has changed, also enable 'Tag latest commit ID with package name and version'.
+
+* **Tag latest commit ID with package name and version** / _isGitTag_
+
+  Enable this option to tag the latest commit ID with an annotated Git tag that shows the package name and version. To push the tag to your repository, please refer to [Execute Post Steps after Creating a Package](execute-post-steps-after-creating-a-package.md). 
+
+* **Display the package's version number as the pipeline build number** / _set\_build\_number_
+
+  Set the pipeline's build number to the the package's incremented version number. Useful when one is using NEXT as the build number.
+
+* **Send Anonymous Usage Telemetry /** _isTelemetryEnabled_
 
   Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
+{% endtab %}
 
-**Output Variables**
+{% tab title="Output" %}
+**sfpowerscripts\_package\_version\_id**
 
-* **sfpowerscripts\_package\_version\_id**
+This variable holds the id of the package version. Use this package version to install it or use it for any other subsequent tasks.
 
-This variable holds the id of the package version. Use this package version to install it or use it for any other subsequent tasks
+**sfpowerscripts\_package\_version\_number**
+
+The version number of the package that was created
+{% endtab %}
+
+{% tab title="YAML" %}
+```text
+steps:
+- task: sfpwowerscripts-createunlockedpackage-task@11
+  displayName: 'Creates a new version of  <mypackage>'
+  inputs:
+    package: <mypackage>
+    enable_coverage: false
+    isValidationToBeSkipped: true
+    isDiffCheck: false
+    isGitTag: false
+```
+{% endtab %}
+{% endtabs %}
 
 **Control Options**
 
