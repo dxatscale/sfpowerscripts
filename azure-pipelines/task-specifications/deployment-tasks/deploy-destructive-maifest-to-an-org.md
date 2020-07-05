@@ -6,7 +6,7 @@ description: Deployment Tasks
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-deploydestructivemanifest-task | 13.2.0 |
+| sfpwowerscript-deploydestructivemanifest-task | 5.0.0 |
 
   
 This task is a wrapper over sfpowerkit:org:destruct \([link](https://github.com/Accenture/sfpowerkit)\). This is a helper task to delete metadata from an org using path to a destructive changeset \(destructiveChanges.xml\)  or by mentioning the contents in a multiline text field.
