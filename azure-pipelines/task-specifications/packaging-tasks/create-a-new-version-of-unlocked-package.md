@@ -18,6 +18,8 @@ Please note [Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-wit
 
 {% tabs %}
 {% tab title="Input" %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+
 * **ID or alias of the package /** _package_
 
   Provide the alias or username of the target org  on which the source directory is to be deployed  
