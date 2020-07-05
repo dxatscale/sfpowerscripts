@@ -16,55 +16,51 @@ This task utilizes the sfpowerkit:project:diff. In case you face any issues with
 
 {% tabs %}
 {% tab title="Input" %}
-
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 * **Name of the package /** _package_
 
-  Provide a name of the package
+  Provide a name of the package  
 
 * **The name of the version that needs to be associated with the diff package /**  _version\_name_
 
-  Provide a version name to identify this particular delta/diff when used in the release pipeline.
+  Provide a version name to identify this particular delta/diff when used in the release pipeline.  
 
 * **Revision ID \(Git Commit ID\) from where the diff should baselined on /** _revision\_from_
 
-  Provide the full SHA Commit ID, from where the diff should be generated from
+  Provide the full SHA Commit ID, from where the diff should be generated from  
 
 * **Revision ID \(Git Commit ID\) from where the diff should baselined upto /** _revision\_to_
 
-  Provide the full SHA Commit ID, from where the diff should baselined upto
+  Provide the full SHA Commit ID, from where the diff should baselined upto  
 
 * **Generate Destructive Manifest based on the diff /** _generate\_destructivemanifest_
 
-  Check this option to generate a destructive manifest, based on the delta/diff between the provided commits
+  Check this option to generate a destructive manifest, based on the delta/diff between the provided commits  
 
 * **SFDX Project directory that needs to be deployed /** _project\_directory_
 
-  Leave it blank if the sfdx-project.json is in the root of the repository, else provide the folder directory containing the sfdx-project.json
+  Leave it blank if the sfdx-project.json is in the root of the repository, else provide the folder directory containing the sfdx-project.json  
 
 * **Set the pipeline’s build number to the the version name mentioned in the task /** _set\_build\_name_
 
-  Check this option if the build number of the pipeline has to match the Version Name\(version\_name\)
+  Check this option if the build number of the pipeline has to match the version name provided in the field version\_name  
 
 * **Create a build artifact with the package id if the delta package creation is successful /** _build\_artifact\_enabled_
 
-  Create a build artifact, so that this pipeline can be consumed by a release pipeline
+  Create a build artifact, so that this pipeline can be consumed by a release pipeline  
 
 * **Bypass directories\*\* /** _bypass\_directories_
 
-  Exclude a comma-separated list of directories from the generated diff.
+  Exclude a comma-separated list of directories from the generated diff.  
 
 * **Generate diff only for the directories mentioned\*\* /** _only\_diff\_for_
 
-  Define a comma-separated whitelist of directories to be included in the generated diff. Creates a sfdx-project.json to support deployment.
+  Define a comma-separated whitelist of directories to be included in the generated diff. Creates a sfdx-project.json to support deployment.  
 
 * **API version to be used if sfdx-project.json is generated\*\*** / _apiversion_
 
   Define the API version if a `sfdx-project.json` was generated as part of the the 'Generate diff only for the directories mentioned' parameter.
-
-* **Send Anonymous Usage Telemetry /** _isTelemetryEnabled_
-
-  Enable this flag to send anonymous usage telemetry to track usage and help bring further improvements to this task
 
 \*\* Experimental commands
 {% endtab %}
@@ -89,14 +85,11 @@ steps:
 {% endtab %}
 {% endtabs %}
 
-**Control Options**
 
-None
-
-**Gotcha’s**
 
 **Changelog**
 
+* 5.0.4 Remove Telemetry Collection
 * 4.0.9 Refactored to use revamped folder structure
 * 3.0.0 Support for this task in release pipelines
 * 2.0.5 Support for creation of multiple packages in a single build such as in a MonoRepo
