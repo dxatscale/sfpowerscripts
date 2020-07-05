@@ -4,13 +4,21 @@ description: Deploy Stage
 
 # Release Pipeline - Unlocked Package Based Deployment
 
-Release pipelines are one of the most exciting benefits of using Azure Pipelines, which is not just for Continous Integration but can also act us an automated release orchestrator. This sample pipeline demonstrates how to orchestrate an installation of an unlocked package across various environments.
+Release pipelines are one of the most exciting benefits of using Azure Pipelines, which is not just for Continuous Integration but can also act us an automated release orchestrator. This sample pipeline demonstrates how to orchestrate an installation of an unlocked package across various environments.
 
-[This pipeline](https://raw.githubusercontent.com/azlamsalam/sfpowerscripts/release/SamplePipelines/sfpowerscripts-sample-pipelines/ReleaseDefinitions/Unlocked%20Packaged%20Deployment%20Pipeline%20using%20sfpowerscripts.json) is manually triggered by some one releasing a previously build artifact to the the environment. This could be automated using the various mechanisms available in Azure Pipelines
+This pipeline can be triggered manually by some one releasing a previously build artifact to the the environment or automated. This could be automated using the various mechanisms available in Azure Pipelines
 
 **Pipeline Snapshot**
 
-You can import and modify this pipeline using the file provide in the [link](https://raw.githubusercontent.com/azlamsalam/sfpowerscripts/release/SamplePipelines/sfpowerscripts-sample-pipelines/ReleaseDefinitions/Unlocked%20Packaged%20Deployment%20Pipeline%20using%20sfpowerscripts.json)
+{% tabs %}
+{% tab title="Release Pipeline" %}
+![](../../.gitbook/assets/unlocked-packages-cd-pipeline.png)
+{% endtab %}
+
+{% tab title="Tasks in a stage" %}
+![Minimal Tasks in a stage of unlocked package deployment](../../.gitbook/assets/unlocked-package-cd-pipeline-tasks.png)
+{% endtab %}
+{% endtabs %}
 
 **Tasks Snapshot in one of the stages**
 
@@ -22,4 +30,8 @@ The steps that are part of the pipeline in an individual stage are
 4. [Install a version of the unlocked package to the target environment](../task-specifications/deployment-tasks/install-an-unlocked-package-to-an-org.md)
 
 
+
+{% hint style="info" %}
+Please note, we still recommend at this stage to use classic pipelines for Continuous Delivery. YAML Pipelines are missing some elements like Manual Intervention which are essential for modelling Salesforce Deployment
+{% endhint %}
 

@@ -6,11 +6,13 @@ description: Review Stage
 
 [This pipeline](https://raw.githubusercontent.com/azlamsalam/sfpowerscripts/release/SamplePipelines/sfpowerscripts-sample-pipelines/BuildDefinitions/PR%20Source%20Format%20%5BScratch%20Orgs%5D%20using%20sfpowerscripts.json) demonstrates how you can build a pull request validation pipeline using scratch org. Here is a snapshot of the steps we have used to configure a pipeline. The intend of this pipeline is to validate a pull/merge request into the integration branch upon completion of a feature branch by developers.
 
+> The pipeline demonstrated below is a quite simple one, assuming there is only one package directory in your project. If you are having a mono repo with multiple package directories, the PR validation Job will feature multiple deploy tasks
+
 This pipeline is triggered on every pull request raised against a develop/master branch depending on your git flow.
 
 **Pipeline Snapshot**
 
-You can import and modify this pipeline using the file provide in the [link](https://raw.githubusercontent.com/azlamsalam/sfpowerscripts/release/SamplePipelines/sfpowerscripts-sample-pipelines/BuildDefinitions/PR%20Source%20Format%20%5BScratch%20Orgs%5D%20using%20sfpowerscripts.json)
+The pipeline is available as part of the sample pipelines.
 
 ![A Build Pipeline used for PR/Validation Stage in Classic Designer](../../.gitbook/assets/pr-pipeline-scratchorg.png)
 
