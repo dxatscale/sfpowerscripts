@@ -47,7 +47,14 @@ None
 {% endtab %}
 
 {% tab title="YAML Example" %}
-
+```text
+      - task: sfpwowerscripts-analyzewithpmd-task@4
+        displayName: PMD Static Code Coverage
+        inputs:
+          ruleset: Custom
+          rulesetpath: '$(Parameters.rulesetpath)'
+          format: html
+```
 {% endtab %}
 {% endtabs %}
 
