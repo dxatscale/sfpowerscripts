@@ -9,7 +9,7 @@
     "version": {
         "Major": 5,
         "Minor": 0,
-        "Patch": 4
+        "Patch": 5
     },
     "instanceNameFormat": "Create Delta Package based on two commits",
     "inputs": [
@@ -76,14 +76,6 @@
             "defaultValue": true,
             "required": true,
             "helpMarkDown": "Set the pipeline's build number to the the version name mentioned in the task"
-        },
-        {
-            "name": "build_artifact_enabled",
-            "type": "boolean",
-            "label": "Create a build artifact with the package id  if the delta package creation is successful",
-            "defaultValue": true,
-            "required": true,
-            "helpMarkDown": "Create a build artifact, so that this pipeline can be consumed by a release pipeline"
         },
         {
             "name": "bypass_directories",
