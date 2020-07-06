@@ -2,10 +2,9 @@
 
 sfpowerscripts is an actively maintained open source project with multiple implementations utilizing these task to automate Salesforce Deployments daily. Reach out to the sfpowerscripts community using the below channels for resolution of issues, influencing roadmap and your contributions.
 
-You can use the following channels to reach out in case of any issues.  
+You can use the following channels to reach out in case of any issues.
 
-
-![](.gitbook/assets/github_logo.png)
+![](.gitbook/assets/github_logo%20%281%29.png)
 
 Please feel free to raise an issue in Github [repo](https://github.com/Accenture/sfpowerscripts)
 
