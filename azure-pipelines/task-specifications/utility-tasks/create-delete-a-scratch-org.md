@@ -10,7 +10,7 @@ To retain scratch org’s for review purposes, the maintain org has to be select
 
 **Prerequisites**
 
-Please note [Install SFDX with Sfpowerkit](install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+[Install SFDX with Sfpowerkit](install-sfdx-cli-with-sfpowerkit.md) task must be added to the pipeline before utilizing this task
 
 **Task Snapshot** 
 

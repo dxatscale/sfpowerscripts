@@ -1,6 +1,10 @@
-# Packaging Tasks
+---
+description: >-
+  Outlines the various build/packaging tasks available within sfpowerscripts.
+  These tasks can be used within pipelines to build an artifact.
+---
 
-This section outlines the various build/packaging tasks available within sfpowerscripts. These tasks are typically used in the build pipelines \(classic/YAML\) to build an artifact
+# Packaging Tasks
 
 {% page-ref page="validate-unlocked-package-for-metadata-coverage.md" %}
 

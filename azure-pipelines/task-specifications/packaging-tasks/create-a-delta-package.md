@@ -10,7 +10,7 @@ This task utilizes the sfpowerkit:project:diff. In case you face any issues with
 
 **Prerequisites**
 
-Please ensure that the [Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+[Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task must be added to the pipeline before utilizing this task
 
 **Task Snapshot**
 

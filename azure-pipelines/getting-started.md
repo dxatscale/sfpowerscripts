@@ -2,7 +2,10 @@
 
 Getting started with sfpowerscripts is easy.  The starter sample pipelines are available in GitHub Releases. They can be imported using Azure DevOps Demo Generator
 
-If you are already well versed  with Azure Pipelines, skip the below steps, directly import the sample pipelines once the extension is installed or compose pipelines using the classic designer or yaml 
+{% hint style="success" %}
+If you are competent with Azure Pipelines, skip the below steps.   
+Directly import the sample pipelines once the extension is installed or compose pipelines using the classic designer or yaml. 
+{% endhint %}
 
 {% embed url="https://www.youtube.com/watch?v=BeWfwvw6VVQ" %}
 

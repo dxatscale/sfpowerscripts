@@ -1,3 +1,7 @@
+---
+description: How can you contribute to sfpowerscripts?
+---
+
 # Contributing to sfpowerscripts
 
 First and foremost, **thank you**! We appreciate that you want to contribute to sfpowerscripts, your time is valuable, and your contributions mean a lot to us.

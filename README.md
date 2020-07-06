@@ -30,5 +30,5 @@ A list of people maintaining sfpowerscripts and these pages is available [here](
 
 ### How do I submit a query to sfpowerscripts?
 
-Please create an issue using the methods listed [here](https://sfpowerscripts.com/support/).
+Please create an issue using the methods listed [here](contributing-to-sfpowerscripts.md).
 

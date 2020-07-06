@@ -1,8 +1,8 @@
+---
+description: How to utilize sfpowerscripts to build various pipelines
+---
+
 # Build your pipelines
-
-This section outlines how you could utilize sfpowerscripts to build various pipelines
-
-
 
 Build a pull request validation pipeline using scratch org
 

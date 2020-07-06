@@ -20,7 +20,7 @@ This task is typically used in a Validation Stage \( such as [pull request valid
 
 **Prerequisites**
 
-Please note [Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md)  task is added to the pipeline before utilizing this task
+[Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md)  task must be added to the pipeline before utilizing this task
 
 **Task Snapshot**
 

@@ -10,7 +10,7 @@ The tasks or commands should be easy to use.  You don't need to resort to comple
 
 We will also strive to provide sample pipelines to quickly get you started. Our azure pipelines extension is built with the classic \(UI based\) configuration in mind.
 
-\*If you have no knowledge or need a refresh on Salesforce DX, Unlocked Packages or Org Based Deployment, checkout some of the available trailhead modules [here](https://trailhead.salesforce.com/en/users/azlam/trailmixes/salesforce-dx)
+\*If you need a refresh on Salesforce DX, Unlocked Packages or Org Based Deployment, checkout some of the available trailhead modules [here](https://trailhead.salesforce.com/en/users/azlam/trailmixes/salesforce-dx)
 
 ### Integrate with CI/CD platform wherever applicable
 
@@ -20,7 +20,7 @@ The native extensions provided by the project will integrate with CI/CD platform
 
 sfpowerscripts will strive to keep the tasks as small as possible, thus enabling the pipeline author to replace tasks with ease. A pipeline author should be able to utilize any in place replacement for any tasks provided through the extension.
 
-For eg: sfpowerscripts provides a task to create a new version unlocked package, This task can be replaced by the following shell script
+E.g.: sfpowerscripts provides a task to create a new version unlocked package, This task can be replaced by the following shell script
 
 ```text
 #assuming packageName is passed as the parameter

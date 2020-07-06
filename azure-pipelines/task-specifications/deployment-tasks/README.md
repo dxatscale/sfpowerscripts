@@ -1,6 +1,11 @@
-# Deployment Tasks
+---
+description: >-
+  The deployment tasks available within sfpowerscripts. These tasks are
+  typically used in the release pipelines to orchestrate a deployment across
+  multiple environments.
+---
 
-This section outlines the various deployment tasks available within sfpowerscripts. These tasks are typically used in the release pipelines to orchestrate a deployment across multiple environments.
+# Deployment Tasks
 
 {% page-ref page="checkout-a-build-artifact.md" %}
 

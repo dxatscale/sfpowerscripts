@@ -6,6 +6,10 @@ This task is used to export the complete metadata \(in source format\) from a gi
 | :--- | :--- |
 | sfpowerscript-exportsourcefromorg-task | 3.0.4 |
 
+**Prerequisites**
+
+[Install SFDX CLI with sfpowerkit](install-sfdx-cli-with-sfpowerkit.md)  task must be added to the pipeline before utilizing this task
+
 **Task Snapshot**
 
 ![](../../../.gitbook/assets/export-source-metadata.png)

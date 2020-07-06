@@ -15,7 +15,7 @@ This task is a wrapper over sfpowerkit:org:destruct \([link](https://github.com/
 
 **Prerequisites**
 
-Please note [Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+[Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task must be added to the pipeline before utilizing this task
 
 **Task Snapshot**  
 

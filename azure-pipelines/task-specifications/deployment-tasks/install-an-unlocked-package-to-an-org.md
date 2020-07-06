@@ -13,7 +13,7 @@ description: Deployment Tasks
 
 **Prerequisites**
 
-Please note [Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+[Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) must be added to the pipeline before utilizing this task
 
 **Task Snapshot**
 

@@ -8,7 +8,7 @@ This task is a wrapper over sfpowerkit:package:dependencies:install command. It 
 
 **Prerequisites**
 
-[Install SFDX with Sfpowerkit](install-sfdx-cli-with-sfpowerkit.md)
+[Install SFDX CLI with sfpowerkit](install-sfdx-cli-with-sfpowerkit.md) task must be added to the pipeline before utilizing this task
 
 **Task Snapshot**
 

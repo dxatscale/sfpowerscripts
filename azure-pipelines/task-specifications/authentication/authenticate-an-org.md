@@ -10,7 +10,7 @@ This task is used to authenticate against a salesforce org to do further actions
 
 **Prerequisites**
 
-Please note [Install sfdx with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md)  task is added to the pipeline before utilizing this task
+[Install sfdx with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task must be added to the pipeline before utilizing this task
 
 #### **Task Snapshot**
 
