@@ -12,7 +12,7 @@ async function run() {
 
     if( isNullOrUndefined(package_version_id)  || !package_version_id.startsWith("04t"))
     {
-      tl.setResult(tl.TaskResult.Failed, "Invalid Package Id Provided");
+      tl.setResult(tl.TaskResult.Failed, "Invalid Package Id Provided, Check Inputs");
       return;
     }
 
