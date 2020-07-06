@@ -40,6 +40,16 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 {% tab title="Output" %}
 None
 {% endtab %}
+
+{% tab title="" %}
+```text
+steps:
+- task: sfpowerscripts-postcreatepackage-task@1
+  displayName: 'Post Execution for Create Package Tasks'
+  inputs:
+    github_connection: 'GitHub connection 1'
+```
+{% endtab %}
 {% endtabs %}
 
 {% hint style="info" %}
