@@ -12,7 +12,7 @@ This task is used to trigger apex unit tests in an org and also captures the res
 
 **Task Snapshot**
 
-\*\*\*\*
+![](../../../.gitbook/assets/trigger-apex-test.png)
 
 {% tabs %}
 {% tab title="Input Parameters" %}
@@ -43,7 +43,16 @@ None
 {% endtab %}
 
 {% tab title="YAML Example" %}
-
+```text
+- task: sfpwowerscript-triggerapextest-task@3
+            displayName: Trigger Apex Test Task
+            continueOnError: true
+            inputs:
+             target_org: 'scratchorg'
+             testlevel: 'RunLocalTests'
+             wait_time: '60'
+             isTelemetryEnabled: true
+```
 {% endtab %}
 {% endtabs %}
 
