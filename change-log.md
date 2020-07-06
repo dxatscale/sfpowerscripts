@@ -1,12 +1,27 @@
 # Change Log
 
+## Release 14
+
+This release features the following
+
+* Azure Pipelines - 14.0.4
+* CLI - 0.1.4
+
+Enhancement
+
+* [\#19](https://github.com/Accenture/sfpowerscripts/issues/19) Deploy Source task should identify source directory as empty if it only contains ignored files
+
+Bugfixes
+
+* [\#18](https://github.com/Accenture/sfpowerscripts/issues/18) Promote task failing to promote unlocked package bug
+* [\#24](https://github.com/Accenture/sfpowerscripts/issues/24) Increment version number task fails to increment major and minor segments bug
+* [\#22](https://github.com/Accenture/sfpowerscripts/pull/22) fix: increment task bug for major and minor versions bug
+
 ## Release 13.8000.9
 
 May 16, 2020 minor
 
 This release is a hotfix for Increment Build Number Task, as the earlier task was not reflecting the correct build task in the package and sample pipelines.
-
-[**✎** Update Entry](cloudcannon:collections/_posts/2020-05-16-release-13-8000-9.md)
 
 ## Release 13.8000.7
 
@@ -22,8 +37,6 @@ sfpowerscripts has been migrated as an Accenture supported/hosted open source pr
 **Fixes:**
 
 \*  None
-
-[**✎** Update Entry](cloudcannon:collections/_posts/2020-05-16-release-13-8000-7.md)
 
 ## Release 11.0.59
 
@@ -47,8 +60,6 @@ This release introduces
 
 \#119 Create Packages Tasks are failing when mulitple runs of the same task are triggered
 
-[**✎** Update Entry](cloudcannon:collections/_posts/2020-04-03-release-11-0-59.md)
-
 ## Release 11.0.59
 
 April 02, 2020 major
@@ -71,8 +82,6 @@ This release introduces
 
 \#119 Create Packages Tasks are failing when mulitple runs of the same task are triggered
 
-[**✎** Update Entry](cloudcannon:collections/_posts/2020-04-02-release-11-0-59.md)
-
 ## Release 10.0.45
 
 February 27, 2020 major
@@ -92,8 +101,6 @@ This release introduces
 \* \#93 Fixed Tagging while creating unlocked packages
 
 \* \#87 Fixed Issues with apex task not getting triggered in release pipeliens
-
-[**✎** Update Entry](cloudcannon:collections/_posts/2020-02-27-release-10-0-45.md)
 
 ## Release 8.0.6
 
@@ -117,8 +124,6 @@ This release introduces some major changes to the plugin
 
 \* None
 
-[**✎** Update Entry](cloudcannon:collections/_posts/2020-01-14-release-8-0-6.md)
-
 ## Release 7.0.3
 
 January 02, 2020 major
@@ -140,8 +145,6 @@ This release is the first milestone where integration with Azure Pipelines UI is
 
 \* None
 
-[**✎** Update Entry](cloudcannon:collections/_posts/2020-01-02-release-7-0-3.md)
-
 ## Release 6.0.13
 
 December 23, 2019 major
@@ -160,8 +163,6 @@ This release introduces
 
 \* Minor Fixes to documentation
 
-[**✎** Update Entry](cloudcannon:collections/_posts/2019-12-23-release-6-0-13.md)
-
 ## Release 5.0.5
 
 December 09, 2019 minor
@@ -175,8 +176,6 @@ This release introduces
 **Fixes:**
 
 \* Hotfix for Package Version Create command failing when an exception is reported
-
-[**✎** Update Entry](cloudcannon:collections/_posts/2019-12-09-release-5-0-5.md)
 
 ## Release 5.0.2
 
@@ -196,8 +195,6 @@ This release introduces
 
 \*  Fixes to documentation
 
-[**✎** Update Entry](cloudcannon:collections/_posts/2019-12-09-release-5-0-2.md)
-
 ## Release 4.0.1
 
 November 29, 2019 major
@@ -216,8 +213,6 @@ Due to this change, all task versions is incremented and will be updated in the 
 **Fixes:**
 
 \* None
-
-[**✎** Update Entry](cloudcannon:collections/_posts/2019-11-29-release-4-0-1.md)
 
 ## Release 3.0.19
 
@@ -243,8 +238,6 @@ This release features several changes. Please read the following summary
 
 \* Minor fixes in formatting and other UI fixes.
 
-[**✎** Update Entry](cloudcannon:collections/_posts/2019-11-24-release-3-0-19.md)
-
 ## Release 2.0.23
 
 October 16, 2019 major
@@ -258,8 +251,6 @@ This release has the following updates
 **Fixes:**
 
 \* Minor task description fixes
-
-[**✎** Update Entry](cloudcannon:collections/_posts/2019-10-16-release-2-0-23.md)
 
 ## Release 1.1.1
 
@@ -275,8 +266,6 @@ This release introduces
 
 \*None
 
-[**✎** Update Entry](cloudcannon:collections/_posts/2019-10-04-release-1-1-1.md)
-
 ## 1.0.142
 
 September 28, 2019 minor
@@ -286,8 +275,6 @@ This release features the following
 **Fixes:**
 
 \* Minor release to fix some documentation and links to pipelines
-
-[**✎** Update Entry](cloudcannon:collections/_posts/2019-09-28-1-0-142.md)
 
 ## Release 1.0.137
 
@@ -322,6 +309,4 @@ This release introduces SFPowerscripts, an open source extension for Azure Pipel
 **Fixes:**
 
 \* None
-
-[**✎** Update Entry](cloudcannon:collections/_posts/2019-09-24-release-1-0-137.md)
 
