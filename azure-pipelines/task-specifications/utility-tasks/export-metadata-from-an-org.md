@@ -1,10 +1,10 @@
 # Export Metadata from an org
 
-This task is used to export the complete metadata \(in source format\) from a given org. This task is helpful for daily backups or further analysis of metadata
-
 | Task Id | Version |
 | :--- | :--- |
 | sfpowerscript-exportsourcefromorg-task | 3.0.4 |
+
+This task is used to export the complete metadata \(in source format\) from a given org. This task is helpful for daily backups or further analysis of metadata
 
 **Prerequisites**
 

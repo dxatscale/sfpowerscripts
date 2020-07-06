@@ -1,14 +1,14 @@
 # Trigger Apex Test
 
-This task is used to trigger apex unit tests in an org and also captures the results as an artifact and publishes the result in the tests tab.
-
 | **Task Id** | Version |
 | :--- | :--- |
 | sfpwowerscript-triggerapextest-task | 7.0.4 |
 
+This task is used to trigger apex unit tests in an org and also captures the results as an artifact and publishes the result in the tests tab.
+
 **Prerequisites**
 
-[Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+[Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md)  task must be added to the pipeline before utilizing this task
 
 **Task Snapshot**
 
@@ -18,35 +18,33 @@ This task is used to trigger apex unit tests in an org and also captures the res
 {% tab title="Input Parameters" %}
 Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
-* **Alias or username of the target org** / _targetOrg_ The alias or username of the target org
-* **Test Level** / _testlevel_ Select the testlevel for this task for the list of possible values: 
+* **Alias or username of the target org** / _targetOrg_ The alias or username of the target org 
+* **Test Level** / _testlevel_ Select the testlevel for this task for the list of possible values:   -  **Run only specified tests /** _RunSpecifiedTests   -_  **Run an apex test suite** / RunApexTestSuite  -  **Run Local Tests** / RunLocalTests  -  **Run All Tests in the org** / RunAllTestsInOrg     __
+* **Tests to be executed** / _specified\_tests_ A list of apex test classes to be executed, separated by a comma
 
-```text
-- RunSpecifiedTests (Run only specified tests)
-- RunApexTestSuite (Run an apex test suite)
-- RunLocalTests (Run Local Tests)
-- RunAllTestsInOrg (Run All Tests in the org)
-```
+{% hint style="info" %}
+This field is only visible/valid  if the Test Level is "RunSpecifiedTests"
+{% endhint %}
 
-* **Tests to be executed** / _specified\_tests_ A list of apex test classes to be executed, separated by a comma **Note:** This field is only visible if the Test Level is "RunSpecifiedTests"
-* **Apex Test Suite** / _apextestsuite_ The name of the apex test suite to be executed **Note:** This field is only visible if the Test Level is "RunApexTestSuite"
-* **Wait Time** / _wait\_time_ The time this task should wait for the result to be generated.  **Default wait time:** 60 minutes
-* **Send anonymous usage telemetry /** _isTelemetryEnabled_ Send anonymous usage telemetry to track usage and bring further improvements to this task
+* **Apex Test Suite** / _apextestsuite_ The name of the apex test suite to be executed 
+
+{% hint style="info" %}
+This field is only visible/valid  if the Test Level is "RunApexTestSuite"
+{% endhint %}
+
+
+
+* **Wait Time** / _wait\_time_ The time this task should wait for the result to be generated. 
 {% endtab %}
 
 {% tab title="Output Parameters" %}
 None
 {% endtab %}
 
-{% tab title="Control Options" %}
-None
-{% endtab %}
-
 {% tab title="YAML Example" %}
 ```text
-- task: sfpwowerscript-triggerapextest-task@3
+- task: sfpwowerscript-triggerapextest-task@<version>
             displayName: Trigger Apex Test Task
-            continueOnError: true
             inputs:
              target_org: 'scratchorg'
              testlevel: 'RunLocalTests'
