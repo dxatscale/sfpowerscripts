@@ -1,30 +1,46 @@
 # Validate Apex Test Coverage
 
-## Testing \ Code Quality Tasks
-
-### Validate Apex Test Coverage
+| Task Id | Version |
+| :--- | :--- |
+| sfpwowerscript-validateapextestcoverage-task | 4.0.4 |
 
 This task is used to validate the apex test coverage of an org
 
 **Prerequisites**
 
-Please note [Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+[Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task must be added to the pipeline before utilizing this task
 
-**Task Version and Details**
+**Task Snapshot**
 
-id: sfpwowerscript-validateapextestcoverage-task
+![](../../../.gitbook/assets/validate-apex-test-coverage.png)
 
-version: 3.0.9
+**Parameters**
 
-**Input Variables**\*
+{% tabs %}
+{% tab title="Input Parameters" %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
-**Send Anonymous Usage Telemetry \(isTelemetryEnabled\)**
+* **Alias or username of the target org** / _targetOrg_ The alias or username of the target org
+* **Send anonymous usage telemetry** / _isTelemetryEnabled_ Enable to send anonymous usage telemetry to track usage and bring further improvements to this task
+{% endtab %}
 
-Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
+{% tab title="Output Parameters" %}
+None
+{% endtab %}
 
-**Output Variables**
+{% tab title="Control Options" %}
+None
+{% endtab %}
 
-**Control Options**
-
-**Gotcha’s**
+{% tab title="YAML Example" %}
+```text
+          - task: sfpwowerscript-validateapextestcoverage-task@2
+            displayName: Validate Apex Test Coverage
+            inputs:
+                target_org: 'scratchorg'
+                test_coverage: '36'
+                isTelemetryEnabled: true
+```
+{% endtab %}
+{% endtabs %}
 
