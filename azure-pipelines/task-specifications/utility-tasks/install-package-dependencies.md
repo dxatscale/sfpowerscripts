@@ -2,53 +2,51 @@
 
 This task is a wrapper over sfpowerkit:package:dependencies:install command. It is used to install any unlocked or managed package dependencies for an unlocked package
 
+| Task Id | Version |
+| :--- | :--- |
+| sfpowerscript-installpackagedependencies-task | 4.0.4 |
+
 **Prerequisites**
 
-Please  note [Install SFDX with Sfpowerkit ](install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+[Install SFDX with Sfpowerkit](install-sfdx-cli-with-sfpowerkit.md)
 
 **Task Snapshot**
 
-**Task Version and Details**
+![](../../../.gitbook/assets/install-package-dependencies-task.png)
 
-id: sfpowerscript-installpackagedependencies-task
+**Parameters**
 
-version: 3.0.9
+{% tabs %}
+{% tab title="Input Parameters" %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
-**Input Variables  - Visual Designer Labels \(Yaml variables\)**
+* **Alias or username of the target org /** _target\_org_ Username or alias of the target org on which the source directory is to be deployed
+* **Alias/Username of the devhub** / _devhub\_alias_ Provide the alias or username of the devhub which houses the unlocked packages
+* **Installation Keys** / _keys_ Installation key for key-protected packages in the dependencies _**Format:**_ 1:MyPackage1Key 2: 3:MyPackage3Key This format allows for a mixture of packages with and without installation keys
+* **Compile Apex from only the package** / _checkonly **For unlocked packages only**_ Specifies whether to compile all Apex in the org and package or only the Apex in the package
+* **Force upgrade the package /** _forceinstall_ Update all packages even if they are installed in the target org
+* **Project Directory /** _working\_directory_ The path to the folder directory containing the sfdx-project.json file.  _**Note:**_ Leave blank if the sfdx-project.json is in the root of the repository 
+{% endtab %}
 
-* **Alias or username of the target org\(target\_org\)**
-
-  Provide the alias or username of the target org  on which the source directory is to be deployed
-
-* **Alias/Username of the devhub \(devhub\_alias\)**
-
-  Provide the alias or username of the devhub which houses these unlocked packages
-
-* **Installation Keys”\(keys\)**
-
-  Installation key for key-protected packages in the dependencies \(format is 1:MyPackage1Key 2: 3:MyPackage3Key… to allow some packages without installation key\)
-
-* **Compile Apex from only the package \(checkonly\)** 
-
-  For unlocked packages only, specifies whether to compile all Apex in the org and package, or only the Apex in the package.
-
-* **Force Upgrade the package \(forceinstall\)**
-
-  Update all packages even if they are installed in the target org
-
-* **Project Directory \(working\_directory\)**
-
-  Leave it blank if the sfdx-project.json is in the root of the repository, else provide the folder directory containing the sfdx-project.json
-
-**Output Variables**
-
+{% tab title="Output Parameters" %}
 None
+{% endtab %}
 
-**Control Options**
-
+{% tab title="Control Options" %}
 None
+{% endtab %}
 
-**Gotcha’s**
+{% tab title="YAML Example" %}
+```text
+ - task: sfpowerscript-installpackagedependencies-task@2
+            displayName: 'Install Package Dependencies to a target org'
+            inputs:
+              apexcompileonlypackage: true
+              target_org: 'scratchorg'
+              devhub_alias: 'HubOrg'
+```
+{% endtab %}
+{% endtabs %}
 
 **Changelog**
 
