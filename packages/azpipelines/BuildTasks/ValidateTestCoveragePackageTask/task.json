@@ -9,7 +9,7 @@
     "version": {
         "Major": 4,
         "Minor": 0,
-        "Patch": 4
+        "Patch": 5
     },
     "runsOn": [
         "Agent"
@@ -22,7 +22,7 @@
             "label": "Alias or username of the DevHub",
             "defaultValue": "HubOrg",
             "required": true,
-            "helpMarkDown": "Provide the DevHub against which the package version i created"
+            "helpMarkDown": "Provide the DevHub against which the package version was created"
         },
         {
             "name": "test_coverage",
