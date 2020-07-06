@@ -4,7 +4,7 @@ This task is used to trigger apex unit tests in an org and also captures the res
 
 | **Task Id** | Version |
 | :--- | :--- |
-| sfpwowerscript-triggerapextest-task | 6.0.4 |
+| sfpwowerscript-triggerapextest-task | 7.0.4 |
 
 **Prerequisites**
 
