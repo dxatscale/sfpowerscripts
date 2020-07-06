@@ -1,9 +1,7 @@
 import tl = require("azure-pipelines-task-lib/task");
 import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl";
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl";
-import authGit from "../Common/VersionControlAuth";
 const fs = require("fs");
-import simplegit from "simple-git/promise";
 import { isNullOrUndefined } from "util";
 
 async function run() {
@@ -22,7 +20,6 @@ async function run() {
     const set_build_number: boolean = tl.getBoolInput("set_build_number",true);
 
 
-    let tagname;
 
     let installationkey;
 
@@ -33,10 +30,7 @@ async function run() {
     let devhub_alias = tl.getInput("devhub_alias", true);
     let wait_time = tl.getInput("wait_time", true);
 
-    let build_artifact_enabled = tl.getBoolInput(
-      "build_artifact_enabled",
-      true
-    );
+    let build_artifact_enabled = true;
 
     let isRunBuild: boolean;
     if (isDiffCheckActive) {
@@ -80,7 +74,12 @@ async function run() {
       tl.setVariable("sfpowerscripts_package_version_number", result.versionNumber);
 
       if (isGitTagActive) {
-         tagname = `${sfdx_package}_v${result.versionNumber}`;
+         let tagname = `${sfdx_package}_v${result.versionNumber}`;
+         tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`,tagname);
+          if(isNullOrUndefined(project_directory))
+            tl.setVariable(`${sfdx_package}_sfpowerscripts_project_directory_path`,tl.getVariable("Build.Repository.LocalPath"));
+          else
+            tl.setVariable(`${sfdx_package}_sfpowerscripts_project_directory_path`,project_directory);
       }
 
 
@@ -108,15 +107,6 @@ async function run() {
         };
 
         let artifactFileName:string = `/${sfdx_package}_artifact_metadata`;
-
-        if(isGitTagActive)
-         {
-          tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`,tagname);
-          if(isNullOrUndefined(project_directory))
-            tl.setVariable(`${sfdx_package}_sfpowerscripts_project_directory_path`,tl.getVariable("Build.Repository.LocalPath"));
-          else
-             tl.setVariable(`${sfdx_package}_sfpowerscripts_project_directory_path`,project_directory);
-         }
 
         fs.writeFileSync(__dirname + artifactFileName, JSON.stringify(metadata));
 

@@ -17,6 +17,8 @@ export default async function auth(): Promise<string> {
     case "bitbucket":
     connection = tl.getInput("bitbucket_connection", true);
     break;
+    case "hostedAgentGit":
+    return getRepositoryUrl();
     }
 
     let token;

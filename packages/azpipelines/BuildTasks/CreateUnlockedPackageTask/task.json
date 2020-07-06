@@ -9,7 +9,7 @@
     "version": {
         "Major": 11,
         "Minor": 0,
-        "Patch": 1
+        "Patch": 2
     },
     "runsOn": [
         "Agent"
@@ -106,14 +106,6 @@
             "helpMarkDown": "wait time for command to finish in minutes"
         },
         {
-            "name": "build_artifact_enabled",
-            "type": "boolean",
-            "label": "Create a build artifact with the package id  if the package creation is successful",
-            "defaultValue": true,
-            "required": true,
-            "helpMarkDown": "Create a build artifact, so that this pipeline can be consumed by a release pipeline"
-        },
-        {
             "name": "isDiffCheck",
             "type": "boolean",
             "label": "Only run task if package has changed",
@@ -150,12 +142,12 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/CreateUnlockedPackageTask/CreateUnlockedPackage.js"
+            "target": "lib/CreateUnlockedPackage.js"
         }
     },
     "postjobexecution": {
         "Node": {
-            "target": "lib/CreateUnlockedPackageTask/PostPackageTaskCheck.js",
+            "target": "lib/PostPackageTaskCheck.js",
             "argumentFormat": ""
         }
     }

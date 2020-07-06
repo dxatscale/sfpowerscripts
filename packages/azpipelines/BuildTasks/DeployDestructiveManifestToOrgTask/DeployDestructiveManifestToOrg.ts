@@ -9,13 +9,13 @@ async function run() {
     console.log("SFPowerScript.. Deploy Destructive Manifest to Org");
 
     const targetOrg: string = tl.getInput("target_org", true);
-    const method: string = tl.getInput("method", true);
+    const type: string = tl.getInput("type", true);
     const skipOnMissingManifest: boolean = tl.getBoolInput("skip_on_missing_manifest", false);
 
 
     let destructiveManifestPath = null;
 
-    if(method == "Text")
+    if(type == "text")
     {
       let destructiveManifest=  tl.getInput("destructive_manifest_text",true);
       destructiveManifestPath = path.join(__dirname,"destructiveChanges.xml")

@@ -10,7 +10,7 @@ async function run() {
     let artifact_directory = tl.getVariable("system.artifactsDirectory");
     const artifact = tl.getInput("artifact", true);
     const artifact_type = tl.getInput("typeOfArtifact", true);
-    const attachedArtifactType = tl.getInput("attachedArtifactType", true);
+    const artifactProvider = tl.getInput("artifactProvider", true);
     let packageName = tl.getInput("package", false);
     let skip_on_missing_artifact: boolean = tl.getBoolInput("skip_on_missing_artifact",false);
 
@@ -64,13 +64,13 @@ async function run() {
       ? "artifact_metadata"
       : packageName + "_artifact_metadata";
 
-    if (attachedArtifactType == "AzureArtifact") {
+    if (artifactProvider == "AzureArtifact") {
       package_version_id_file_path = fetchArtifactFilePathFromAzureArtifact(
         artifact_directory,
         artifact,
         artifactFileNameSelector
       );
-    } else if (attachedArtifactType == "BuildArtifact") {
+    } else if (artifactProvider == "BuildArtifact") {
       package_version_id_file_path = fetchArtifactFilePathFromBuildArtifact(
         artifact_directory,
         artifact,

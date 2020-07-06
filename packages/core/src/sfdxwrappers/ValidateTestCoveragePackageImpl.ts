@@ -22,7 +22,7 @@ export default class ValidateTestCoveragePackageImpl {
   }
 
   public async buildExecCommand(): Promise<string> {
-    let command = `npx sfdx sfpowerkit:package:version:codecoverage -u  ${this.target_org} -i ${this.package_version_id} --json`;
+    let command = `npx sfdx sfpowerkit:package:version:codecoverage -v  ${this.target_org} -i ${this.package_version_id} --json`;
 
     return command;
   }
