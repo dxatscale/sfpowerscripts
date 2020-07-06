@@ -4,7 +4,7 @@
 | :--- | :--- |
 | sfpowerscripts-postcreatepackage-task | 1.0.1 |
 
-This task is intended to be added to the end of a pipeline, where its responsibility is to create and push Git tags.
+This task is typically appended to the end of a pipeline if tagging is enabled in the Create Source or Unlocked Package tasks. The Execute Post Steps task will persist the Git tag by pushing it to the source code repository.   A reminder to add this task to the pipeline is provided if a Create Package command exists in the pipeline with the tagging option enabled.
 
 ![](../../../.gitbook/assets/screen-shot-2020-07-06-at-9.24.53-am.png)
 
@@ -12,29 +12,28 @@ This task is intended to be added to the end of a pipeline, where its responsibi
 
 {% tabs %}
 {% tab title="Input" %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+
 **Select the version control provider /** _versionControlProvider_
 
-Select the version control provider that is hosting your source code.
+* The version control provider that hosts the particular repository. Select the appropriate repository type from the drop down \(in UI\) or pass the name of the service connection. You can read more on using service connections  [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml).
 
-_**GitHub Connection /**_ github\_connection
+  
+  The supported options are    
+  
+  -  **Github Connection /** github\_connection  
+     Use this if your repository  provider is GitHub  
+  -  **GitHub Enterprise Connection /** _github\_enterprise\_connection_   
+     Use this if your repository provider is GitHub Enterprise  
+  __**- Bitbucket Connection /** _bitbucket\_connection_  
+     ****Use this if your repository provider is Bitbucket  
+  **- Azure Repo /** _azureRepo_
 
-Specify the service connection name for your GitHub connection. Please note this service connection have permissions to read to the corresponding repository. Learn more about service connections [here](https://aka.ms/AA3am5s).
-
-**BitBucket Connection /** _bitbucket\_connection_
-
-Specify the service connection name for your BitBucket connection. Please note this service connection have permissions to read to the corresponding repository. Learn more about service connections [here](https://aka.ms/AA3am5s).
-
-**GitHub Enterprise Connection** _/ github\_enterprise\_connection_
-
-Specify the service connection name for your Git Hub Enterprise connection. Please note this service connection have permissions to read from the corresponding repository. Learn more about service connections [here](https://aka.ms/AA3am5s).
-
-**Username** _/ username_
-
-When 'Other Git' is selected as the version control provider, provide the username credential required for authentication.
-
-**Password** _/ password_ 
-
-When 'Other Git' is selected as the version control provider, provide the password credential required for authentication.
+  Use this if your repository provider is Azure Repo. Please ensure the agent has the right             permissions for authenticating to the Azure Repo \( enabled by  '[Allow Scripts to access the OAuth Token'](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/options?view=azure-devops#allow-scripts-to-access-the-oauth-token) \)  
+  **- Other Git /** _otherGit_  
+  ****Any other Git provider which can be authenticated using a username/password based basic authentication schema.  
+  - **Git which is already authenticated at the agent level /** hostedAgentGit  
+  Use this option if the agent is already authenticated to Git repository \(typically used in a self hosted agent or if none of the above methods are not suffice to connect to your git repository\)
 {% endtab %}
 
 {% tab title="Output" %}
