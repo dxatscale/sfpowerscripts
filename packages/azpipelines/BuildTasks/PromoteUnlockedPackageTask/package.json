@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-promoteunlocked-task",
   "description": "sfpowerscripts-promoteunlocked-task",
-  "version": "6.0.3",
+  "version": "7.0.0",
   "private": true,
   "repository": {
     "type": "git",
