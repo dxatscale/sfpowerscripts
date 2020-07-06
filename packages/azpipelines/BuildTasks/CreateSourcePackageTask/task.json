@@ -65,12 +65,12 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/CreateSourcePackageTask/CreateSourcePackage.js"
+            "target": "lib/CreateSourcePackage.js"
         }
     },
     "postjobexecution": {
         "Node": {
-            "target": "lib/CreateSourcePackageTask/PostPackageTaskCheck.js",
+            "target": "lib/PostPackageTaskCheck.js",
             "argumentFormat": ""
         }
     }

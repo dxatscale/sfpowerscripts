@@ -142,12 +142,12 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/CreateUnlockedPackageTask/CreateUnlockedPackage.js"
+            "target": "lib/CreateUnlockedPackage.js"
         }
     },
     "postjobexecution": {
         "Node": {
-            "target": "lib/CreateUnlockedPackageTask/PostPackageTaskCheck.js",
+            "target": "lib/PostPackageTaskCheck.js",
             "argumentFormat": ""
         }
     }
