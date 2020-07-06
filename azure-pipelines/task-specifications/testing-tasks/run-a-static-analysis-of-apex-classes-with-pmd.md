@@ -1,62 +1,55 @@
 # Run a static analysis of apex classes with PMD
 
+| Task Id | Version |
+| :--- | :--- |
+| sfpwowerscripts-analyzewithpmd-task | 6.0.4 |
+
 This task is used to run a static analyis of the apex classes in a project directory using PMD. This is a task execution wrapper around the command sfpowerkit:source:pmd which you can read [here](https://github.com/Accenture/sfpowerkit)
-
-**Prerequisites**
-
-Please  note [Install SFDX with Sfpowerkit ](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
-
-**Task Snapshot**
 
 This task attaches the code analysis result into the build artifacts and also provides a timeline update in the build summary page. Please note this enahancement only works with ‘Classic’ pipelines only
 
-This task when used in a build pipeline features a report window that gets displayed along with the logs. Please note there 
+This task when used in a build pipeline features a report window that gets displayed along with the logs. 
 
-**Task Version and Details**
+**Prerequisites**
 
-id: sfpwowerscripts-analyzewithpmd-task
+[Install SFDX with Sfpowerkit ](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
 
-version: 5.0.9
+**Task Snapshot**
 
-**Input Variables**
+![](../../../.gitbook/assets/static-analysis-apex-with-pmd.png)
 
-* **Source directory that needs to be analyzed\(directory\)**
+**Parameters**
 
-The directory that needs to be analyzed, If ignored, the sfpowerkit plugin will pickup the default directory mentioned in the sfdx-project.json.
+{% tabs %}
+{% tab title="Input Parameters" %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
-* **Select the ruleset to be used for analysis\(ruleset\)**
-
-sfpowerkit comes with a default ruleset, Select the picklist to ‘custom’ if you want to utilize your own ruleset
-
-* **Path to the ruleset\(rulesetpath\)**
-
-If you select a custom ruleset option, provide the ruleset path for PMD
-
-* **Format for the static analysis to be displayed in the console and written to the result file\(format\)**
-
-Select the format for the code analysis report to be generated, All the options as of PMD 6.18.0 are supported
-
-* **Output file \(outputPath\)**
-
-Provide the name or path to the file if you want the report to be saved to a particular location, Ignoring it will result in using the default options as of sfpowerkit. Irrespective of this, the result of PMD analysis will be uploaded into the build artifacts
-
-* **Report the build as failure if there is critical defects\(isToBreakBuild\)**
-
-Select this option if you want the build to be failed, if PMD observes any critical defects in the code being analyzed
-
-* **Project Directory \(project\_directory\)**
-
-  Leave it blank if the sfdx-project.json is in the root of the repository, else provide the folder directory containing the sfdx-project.json
-
-* **Send Anonymous Usage Telemetry \(isTelemetryEnabled\)**
+* **Source directory that needs to be analyzed /** _directory_ The directory to be analyzed.  **Note:** If left blank, the default directory from sfdx-project.json will be used  
+* **Select the ruleset to be used for analysis** / _ruleset_ sfpowerkit comes with a default ruleset. Select custom if you want to use your own ruleset 
+* **Path to ruleset** / _rulesetpath_ Specify the ruleset path for PMD if using the custom option  
+* **Format for the static analysis to be displayed in the console and written to the result file** / _format_ Select the format for the code analysis report to be generated **NOTE:** All options as of PMD 6.18.0 are supported 
+* **Output file** / _outputPath T_he name or path to the file if you want the report to be saved to a particular location,  **Notes:** 
+  * leaving this blank will result in using the default options as of sfpowerkit
+  * the result of PMD analysis will also be uploaded into the build artifacts 
+* **Report the build as failure if there is critical defects** / _isToBreakBuild_ Select this option if you want the build to be failed if PMD observes any critical defects in the code being analyzed 
+* **Project Directory** / _project\_directory_ The directory to the folder containing the sfdx-project.json file **Note:** Leave this blank if the sfdx-project.json file is in the root of the repository 
+* **Send Anonymous Usage Telemetry /** _isTelemetryEnabled_
 
   Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
+{% endtab %}
 
-**Output Variables**
+{% tab title="Output Parameters" %}
+None
+{% endtab %}
 
-**Control Options**
+{% tab title="Control Options" %}
+None
+{% endtab %}
 
-**Gotcha’s**
+{% tab title="YAML Example" %}
+
+{% endtab %}
+{% endtabs %}
 
 **Changelog**
 
