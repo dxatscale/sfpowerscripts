@@ -1,44 +1,42 @@
 # Validate Code Coverage of a Package
 
+| Task Id | Version |
+| :--- | :--- |
+| sfpwowerscript-validatetestcoveragepackage-task | 4.0.4 |
+
 This task is used to validate the code coverage of a second generation package.
 
 **Prerequisites**
 
-Please note [Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+[Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
 
 **Task Snapshot**
 
-**Task Version and Details**
+![](../../../.gitbook/assets/validate-coverage-unlocked-package.png)
 
-id: sfpwowerscript-validatetestcoveragepackage-task
+**Parameters**
 
-version: 3.0.9
+{% tabs %}
+{% tab title="Input Parameters" %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
-**\*Input Variables  - Visual Designer Labels \(Yaml variables\)**
+* **Alias or username of the DevHub** / _target\_org_ The alias or username of the target org
+* **Code coverage % to be validated**  / _test\_coverage_ The percentage of the code coverage that should be validated
+* **Package Version Id** / _package\_version\_id_ The version of the package which should be validated for code coverage  **Note:** If you are using this task after 'Create Unlocked Package', utilize the output variable to reference the package version id
+{% endtab %}
 
-* **Alias or username of the devhub\(target\_org\)**
-
-Provide the alias or username of the target org  on which the package version is created
-
-* **Code coverage % to be validated\(test\_coverage\)**
-
-The percentage of code coverage, that should be validated
-
-* **Package Version Id \(package\_version\_id\)**
-
-The version of the package which should be validated for code coverage, If you are using this task after Create Unlocked Package, please utilize the output variable to reference the package version id
-
-**Output Variables**
-
+{% tab title="Output Parameters" %}
 None
+{% endtab %}
 
-**Control Options**
-
+{% tab title="Control Options" %}
 None
+{% endtab %}
 
-**Gotcha’s**
+{% tab title="YAML example" %}
 
-None
+{% endtab %}
+{% endtabs %}
 
 **Changelog**
 
