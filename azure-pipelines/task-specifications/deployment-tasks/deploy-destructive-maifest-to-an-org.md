@@ -20,6 +20,8 @@ Please note [Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli
 **Task Snapshot**  
 
 
+![Task Snapshot of deploying a destructive manifest using the Classic UI](../../../.gitbook/assets/deploy-destructive-manifest-to-org.png)
+
 #### Parameters
 
 {% tabs %}
@@ -41,7 +43,15 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 {% endtab %}
 
 {% tab title="YAML Examples" %}
+```text
+- task: sfpwowerscript-deploydestructivemanifest-task@<version>
+  displayName: 'Deploy destructive manifest to scratchorg'
+  inputs:
+    method: FilePath
+    destructive_manifest_filepath: destructiveChanges.xml
+    skip_on_missing_manifest: true
 
+```
 {% endtab %}
 {% endtabs %}
 

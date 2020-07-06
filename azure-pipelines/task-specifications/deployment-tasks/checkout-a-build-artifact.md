@@ -55,6 +55,11 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
    ****Any other Git provider which can be authenticated using a username/password based basic authentication schema.  
   - **Git which is already authenticated at the agent level /** hostedAgentGit  
   Use this option if the agent is already authenticated to Git repository \(typically used in a self hosted agent or if none of the above methods are not suffice to connect to your git repository\)  
+
+* **Skip if no artifact is found** / skip\_on\_missing\_artifact  
+  Once enabled, the task will be skipped if the artifact mentioned is not attached to the release pipeline. This option is useful if the artifacts are attached to the release pipeline dynamically
+
+  
 {% endtab %}
 
 {% tab title="Output Parameters" %}
@@ -75,7 +80,7 @@ When using the option Git which is already authenticate at the agent level, the 
 
 **Changelog**
 
-* 13.2.0   -  Added support for git authentication where the agent is already authenticated earlier -   Removed telemetry collection 
+* 13.2.0   -  Added support for git authentication where the agent is already authenticated earlier -   Removed telemetry collection  -  Add support of the task to skipped if there is no artifact for 
 * 11.0.5 Refactored to use revamped folder structure
 * 10.0.7 Add support for artifacts generated from a mono repo
 * 8.0.1 Patch issue with azure Repo
