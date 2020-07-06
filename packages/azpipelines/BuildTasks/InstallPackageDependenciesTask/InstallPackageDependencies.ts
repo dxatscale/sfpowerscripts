@@ -14,32 +14,32 @@ async function run() {
     const apexcompileonlypackage:boolean=tl.getBoolInput("apexcompileonlypackage",false);
     const forceinstall:boolean=tl.getBoolInput("forceinstall",false);
     const working_directory: string = tl.getInput("working_directory", false);
+    const wait_time: string = tl.getInput("wait_time", true);
 
 
+    let command = `npx sfdx sfpowerkit:package:dependencies:install -u ${target_org} -v ${devhub_alias} -r -w ${wait_time}`;
 
-    let command= `npx sfdx sfpowerkit:package:dependencies:install -u ${target_org} -v ${devhub_alias} -r`
-    if(apexcompileonlypackage)
-    command+=` -a`
-    if(keys!=null && keys.length>0)
-    command+=` ${keys}`
+    if (apexcompileonlypackage)
+      command += ` -a`;
+    if (keys!=null && keys.length>0)
+      command += ` -k ${keys}`;
+    if (forceinstall)
+      command += ` -o`;
 
-    if(forceinstall)
-    command+=` -o`
-    
     tl.debug(command);
 
 
-  
+
     let child=child_process.exec(command,  { cwd: working_directory,encoding: "utf8" },(error,stdout,stderr)=>{
 
       if(error)
          throw error;
     });
-   
+
     child.stdout.on("data",data=>{console.log(data.toString()); });
 
     await onExit(child);
-  
+
 
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);

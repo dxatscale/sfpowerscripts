@@ -63,6 +63,14 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "The working directory should contain a sfdx-project.json for this command to succeed"
+        },
+        {
+            "name": "wait_time",
+            "type": "string",
+            "label": "Wait Time",
+            "defaultValue": "30",
+            "required": true,
+            "helpMarkDown": "wait time for command to finish in minutes"
         }
     ],
     "execution": {
