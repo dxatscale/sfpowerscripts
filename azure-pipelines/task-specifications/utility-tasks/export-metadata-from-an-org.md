@@ -6,53 +6,35 @@ This task is used to export the complete metadata \(in source format\) from a gi
 | :--- | :--- |
 | sfpowerscript-exportsourcefromorg-task | 3.0.4 |
 
+**Task Snapshot**
+
+![](../../../.gitbook/assets/export-source-metadata.png)
+
 **Parameters**
 
 {% tabs %}
 {% tab title="Input Parameters" %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
+* **Alias or username of the target\_org**  The alias or username of the target org  on which the source directory is to be deployed 
+* **Directory to which the source should be exported** The path to the directory, where the metadata from the org should be exported. The path will be created if it doesn't exist.  **Note:** The export from the org is in a zip format, Check the ‘Unzip the exported metadata/source from the zip into the provided folder’ 
+* **Metadata that needs to be excluded while exporting from the org**  Any metadata types separated by comma, that need to be excluded while exporting. Useful to exclude types such as Connected App, Named Credential etc. 
+* **Exclude managed package components** Check this option to exclude managed package metadata components to be exported from the target org 
+* **Unzip the exported metadata/source from the zip into the provided folder** The exported metadata is in a zip format. Check this option to unzip the zipped extract from the org to the provided directory
 {% endtab %}
 
 {% tab title="Output Parameters" %}
 sfpowerscripts\_exportedsource\_zip\_path
 {% endtab %}
 
-{% tab title="YAML Sample" %}
-Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+{% tab title="Control Options" %}
+None
+{% endtab %}
 
-* **Alias or username of the target org /** _target\_org_
-* **Directory to which the source should be exported to /** _source\_directory_
-* 
+{% tab title="YAML Sample" %}
+
 {% endtab %}
 {% endtabs %}
-
-**Input Variables \[Visual Designer Labels / Yaml variables\]**
-
-version: 3.0.5
-
-* **Alias or username of the target org\(target\_org\)**
-
-  Provide the alias or username of the target org  on which the source directory is to be deployed
-
-* **Directory to which the source should be exported to\(target\_org\)**
-
-The path to the directory, where the metadata from the org should be exported to. The path will be created if it doesnt exist. The export from the org is in a zip format, Check the ‘Unzip the exported metadata/source from the zip into the provided folder’
-
-* **Metadata that need to be excluded while exporing from the org\(target\_org\)**
-
-Mention the metadata types seperated by comma, that need to be excluded while exporting. Useful to exclude types such as Connected App, Named Credential etc.
-
-* **Exclude managed package components\(target\_org\)**
-
-Check this option to exclude managed package metadata components to be exported from the target org
-
-* **Unzip the exported metadata/source from the zip into the provided folder\(target\_org\)**
-
-  The exported metadata is in a zip format. Check this option to unzip the zipped extract from the org to the provided directory.
-
-\*\*\*\*
-
-**Gotcha’s**
 
 **Changelog**
 

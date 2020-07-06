@@ -61,7 +61,17 @@ Please note to add a reference name before using this in any of the tasks
 {% endtab %}
 
 {% tab title="YAML Example" %}
-
+```text
+- task: sfpwowerscript-managescratchorg-task@5
+            displayName: Create Scratch Org
+            inputs:
+             action: 'Create'
+             config_file_path: 'config/project-scratch-def.json'
+             alias: 'scratchorg'
+             devhub_alias: 'HubOrg'
+             maintainorg: 'delete'
+             isTelemetryEnabled: true
+```
 {% endtab %}
 {% endtabs %}
 
