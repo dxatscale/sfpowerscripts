@@ -2,6 +2,8 @@
 
 ## Release 14
 
+Jun 2, 2020 Major
+
 This release features the following
 
 * Azure Pipelines - 14.0.4
