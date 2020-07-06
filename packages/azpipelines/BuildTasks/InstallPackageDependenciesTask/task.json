@@ -38,7 +38,7 @@
             "label": "Installation Keys",
             "defaultValue": "",
             "required": false,
-            "helpMarkDown": "installation key for key-protected packages (format is 1:MyPackage1Key 2: 3:MyPackage3Key... to allow some packages without installation key)"
+            "helpMarkDown": "installation key for key-protected packages (format is packagename:key e.g. core:key nCino:key vlocity:key)"
         },
         {
             "name": "apexcompileonlypackage",
