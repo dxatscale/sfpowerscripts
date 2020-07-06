@@ -268,7 +268,7 @@ This release introduces
 
 \*None
 
-## 1.0.142
+## Release 1.0.142
 
 September 28, 2019 minor
 
