@@ -8,6 +8,10 @@ This task is used to build a changeset \(Delta/Diff between two git commits\) ba
 
 This task utilizes the sfpowerkit:project:diff. In case you face any issues with the diff not being accurate, please raise an issue in the [sfpowerkit](https://github.com/Accenture/sfpowerkit) github repository.
 
+**Prerequisites**
+
+Please ensure that the [Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+
 **Task Snapshot**
 
 ![](../../../.gitbook/assets/screen-shot-2020-07-05-at-5.02.07-pm.png)

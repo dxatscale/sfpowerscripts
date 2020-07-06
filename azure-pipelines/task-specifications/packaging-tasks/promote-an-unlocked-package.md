@@ -10,9 +10,11 @@ This task is used to promote an unlocked package to ‘released’ state before 
 
 Please ensure that the [Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task.
 
+**Task Snapshot**
+
 ![](../../../.gitbook/assets/screen-shot-2020-07-05-at-6.30.58-pm.png)
 
-### Parameters
+#### Parameters
 
 {% tabs %}
 {% tab title="Input" %}
@@ -22,7 +24,8 @@ Please ensure that the [Install SFDX with Sfpowerkit](../utility-tasks/install-s
 
 * **Package to be promoted from /** _packagepromotedfrom_
 
-  This task has three options, ‘BuildArtifact,’ 'AzureArtifact' or ‘Custom’. Choose BuildArtifact if the sfpowerscript package artifact was created as part of an Azure Build pipeline, and provide the name of the artifact. The AzureArtifact option is intended for attached artifacts from the Azure Artifacts registry \(e.g. Universal packages\); it also requires the name of the artifact to be passed. Finally, the Custom option allows the package version ID to be passed in as an identifier for the package to be promoted.
+  This task has three options, ‘**BuildArtifact/** _****BuildArtifact_,’ '**AzureArtifact** / _AzureArtifact_' or ‘**Custom/**_Custom_ ****’.   
+  Choose BuildArtifact if the package artifact was created as part of an Azure Build pipeline, and provide the name of the artifact. The AzureArtifact option is intended for attached artifacts from the Azure Artifacts registry \(e.g. Universal packages\); it also requires the name of the artifact to be passed. Finally, the Custom option allows the package version ID to be passed in as an identifier for the package to be promoted.
 
 * **Package Version ID** / _package\_version\_id_
 
@@ -34,9 +37,7 @@ Please ensure that the [Install SFDX with Sfpowerkit](../utility-tasks/install-s
 
 * **Project directory** / _project\_directory_
 
-  The directory containing the `sfdx-project.json.`
-
-  \`\`
+  The directory containing the `sfdx-project.json.`  
 
 * **Alias/username of the DevHub /** _devhub\_alias_
 
@@ -45,10 +46,6 @@ Please ensure that the [Install SFDX with Sfpowerkit](../utility-tasks/install-s
 * **Skip if no artifact is found /** _skip\_on\_missing\_artifact_
 
   Enable this option to remove attached artifacts for a specific release, without having to remove the corresponding task from the release pipeline.
-
-* **Send Anonymous Usage Telemetry /** _isTelemetryEnabled_
-
-  Enable this flag to send anonymous usage telemetry to track usage and bring further improvements to this task
 {% endtab %}
 
 {% tab title="Output" %}
@@ -69,16 +66,15 @@ steps:
 {% endtab %}
 {% endtabs %}
 
-**Control Options**
-
-None
-
-**Gotcha’s**
-
-None
+{% hint style="warning" %}
+Please note for this task to succeeded, the task needs access to the project directory. If you are using this task in the release pipeline, ensure the project directory is available.
+{% endhint %}
 
 **Changelog**
 
+* 7.0.0 
+  * Removed Telemetry Collection
+  * Add support for Azure Artifacts
 * 4.0.1 Fix for \#18 Promote task failing to promote unlocked package
 * 3.0.9 Refactored to use revamped folder structure
 * 2.0.1 Updated with Telemetry

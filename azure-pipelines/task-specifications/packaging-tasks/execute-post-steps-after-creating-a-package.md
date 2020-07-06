@@ -6,6 +6,8 @@
 
 This task is typically appended to the end of a pipeline if tagging is enabled in the Create Source or Unlocked Package tasks. The Execute Post Steps task will persist the Git tag by pushing it to the source code repository.   A reminder to add this task to the pipeline is provided if a Create Package command exists in the pipeline with the tagging option enabled.
 
+**Task Snapshot**
+
 ![](../../../.gitbook/assets/screen-shot-2020-07-06-at-9.24.53-am.png)
 
 ### Parameters
@@ -20,7 +22,6 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
   
   The supported options are    
-  
   -  **Github Connection /** github\_connection  
      Use this if your repository  provider is GitHub  
   -  **GitHub Enterprise Connection /** _github\_enterprise\_connection_   
@@ -41,5 +42,13 @@ None
 {% endtab %}
 {% endtabs %}
 
+{% hint style="info" %}
+When using the option Git which is already authenticate at the agent level, the task will push to the repository using the URL mentioned in the artifact. Ensure the artifact is produced with the correct URL during the build phase.
+{% endhint %}
 
+
+
+**Changelog**
+
+* 1.0.1 Initial Version
 

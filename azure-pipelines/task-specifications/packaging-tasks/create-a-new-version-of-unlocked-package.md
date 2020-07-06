@@ -8,7 +8,7 @@ This task is used to create a new version of an Unlocked Package. The task can o
 
 **Prerequisites**
 
-Please note [Install SFDX with Sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task is added to the pipeline before utilizing this task
+Please ensure [Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md)  task is added to the pipeline before utilizing this task
 
 **Task Snapshot**
 

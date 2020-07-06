@@ -6,6 +6,8 @@
 
 This task is used to create a build artifact for a package directory  in your project typically to be used for  org based deployment / pre/post metadata installation of an unlocked package or using a hybrid \(org+unlocked development model\), which can then be associated with a release pipeline. You can read about [`checkout artifact task` ](../deployment-tasks/checkout-a-build-artifact.md)to understand further how both are interrelated.
 
+
+
 **Task Snapshot**
 
 ![](../../../.gitbook/assets/screen-shot-2020-07-03-at-11.09.14-pm.png)
