@@ -14,7 +14,6 @@
   "license": "MIT",
   "dependencies": {
     "@dxatscale/sfpowerscripts.core": "^0.4.3",
-    "azure-pipelines-task-lib": "^2.8.0",
-    "simple-git": "2.0.0"
+    "azure-pipelines-task-lib": "^2.8.0"
   }
 }
