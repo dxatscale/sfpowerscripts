@@ -1,8 +1,6 @@
 import tl = require("azure-pipelines-task-lib/task");
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl";
-import authGit from "../Common/VersionControlAuth";
 const fs = require("fs");
-import simplegit from "simple-git/promise";
 import { isNullOrUndefined } from "util";
 
 async function run() {

@@ -9,7 +9,7 @@
     "version": {
         "Major": 10,
         "Minor": 0,
-        "Patch": 1
+        "Patch": 2
     },
     "runsOn": [
         "Agent"
@@ -65,12 +65,12 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/CreateSourcePackageTask/CreateSourcePackage.js"
+            "target": "lib/CreateSourcePackage.js"
         }
     },
     "postjobexecution": {
         "Node": {
-            "target": "lib/CreateSourcePackageTask/PostPackageTaskCheck.js",
+            "target": "lib/PostPackageTaskCheck.js",
             "argumentFormat": ""
         }
     }

@@ -19,7 +19,7 @@ async function run() {
 
     options['bypass_directories']=tl.getInput("bypass_directories", false);
     options['only_diff_for']=tl.getInput("only_diff_for", false);
-    
+
 
 
     if (isNullOrUndefined(revision_to)) {
@@ -29,17 +29,14 @@ async function run() {
       "generate_destructivemanifest",
       false
     );
-    const build_artifact_enabled = tl.getBoolInput(
-      "build_artifact_enabled",
-      true
-    );
+    const build_artifact_enabled = true;
 
     if (setBuildName) {
       console.log(`Updating build number to ${versionName}`);
       tl.updateBuildNumber(versionName);
     }
 
-  
+
     let createDeltaPackageImp = new CreateDeltaPackageImpl(
       projectDirectory,
       sfdx_package,
@@ -68,8 +65,8 @@ async function run() {
     tl.setVariable("sfpowerscripts_delta_package_path", artifactFilePath);
 
     if (build_artifact_enabled && taskType == "Build") {
-  
-   
+
+
       //Write Artifact  Delta
 
        tl.command(
@@ -78,9 +75,9 @@ async function run() {
       artifactFilePath
     );
 
- 
+
       //Write artifact Metadata
-      
+
       let repository_url = tl.getVariable("build.repository.uri");
       let commit_id = tl.getVariable("build.sourceVersion");
       let metadata = {
