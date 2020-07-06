@@ -12,7 +12,7 @@ Please ensure [Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-c
 
 **Task Snapshot**
 
-![](../../../.gitbook/assets/screen-shot-2020-07-05-at-5.36.09-pm.png)
+![](../../../.gitbook/assets/createunlockedpackagesnapshot.png)
 
 ### Parameters
 

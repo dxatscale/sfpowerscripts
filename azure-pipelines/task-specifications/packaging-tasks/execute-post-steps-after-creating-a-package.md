@@ -8,7 +8,7 @@ This task is typically appended to the end of a pipeline if tagging is enabled i
 
 **Task Snapshot**
 
-![](../../../.gitbook/assets/screen-shot-2020-07-06-at-9.24.53-am.png)
+![](../../../.gitbook/assets/executepackagingpoststepssnapshot.png)
 
 ### Parameters
 

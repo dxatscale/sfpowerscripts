@@ -14,7 +14,7 @@ Please ensure that the [Install SFDX with Sfpowerkit](../utility-tasks/install-s
 
 **Task Snapshot**
 
-![](../../../.gitbook/assets/screen-shot-2020-07-05-at-5.02.07-pm.png)
+![](../../../.gitbook/assets/createdeltapackagesnapshot.png)
 
 ### Parameters
 

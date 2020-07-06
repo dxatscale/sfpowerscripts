@@ -12,7 +12,7 @@ Please ensure that the [Install SFDX with Sfpowerkit](../utility-tasks/install-s
 
 **Task Snapshot**
 
-![](../../../.gitbook/assets/screen-shot-2020-07-05-at-6.30.58-pm.png)
+![](../../../.gitbook/assets/promoteunlockedpackagesnapshot.png)
 
 #### Parameters
 

@@ -10,7 +10,7 @@ This task is used to create a build artifact for a package directory  in your pr
 
 **Task Snapshot**
 
-![](../../../.gitbook/assets/screen-shot-2020-07-03-at-11.09.14-pm.png)
+![](../../../.gitbook/assets/createsourcepackagesnapshot.png)
 
 #### Parameters
 
