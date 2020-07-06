@@ -72,9 +72,6 @@ None
           commit_changes: true
           pushchanges: true
           versionControlProvider: 'azureRepo'
-          isTelemetryEnabled: true
-        env:
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 ```
 {% endtab %}
 {% endtabs %}
