@@ -16,6 +16,8 @@ Please ensure that the [Install SFDX with Sfpowerkit](../utility-tasks/install-s
 
 {% tabs %}
 {% tab title="Input" %}
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+
 * **Name of the package to be promoted /** _package_
 
   The name of the package that is to be promoted to the released state. This name does not have any significant value addition other than being just displayed in the task execution.
@@ -35,6 +37,8 @@ Please ensure that the [Install SFDX with Sfpowerkit](../utility-tasks/install-s
 * **Project directory** / _project\_directory_
 
   The directory containing the `sfdx-project.json.`
+
+  \`\`
 
 * **Alias/username of the DevHub /** _devhub\_alias_
 
