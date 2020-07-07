@@ -23,7 +23,7 @@ Directly import the sample pipelines once the extension is installed or compose 
 
     6. Click on choose template and then navigate to the private tab
 
-    7. Choose URL and use the following url  [sfpowerscripts sample pipelines](https://github.com/Accenture/sfpowerscripts/releases/download/14.X/sfpowerscripts_sample_pipelines.zip)
+    7. Choose Local Drive and use  the zip file downloaded from the url  [sfpowerscripts sample pipelines](https://github.com/Accenture/sfpowerscripts/releases/download/Release_15/sfpowerscripts_sample_pipelines.zip)
 
     8. Click on Create Project and wait for the project to be completed
 
