@@ -64,6 +64,12 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 {% tab title="Output Parameters" %}
 * **sfpowerscripts\_checked\_out\_path** The path to the directory where the source code is checked out
+
+{% hint style="danger" %}
+If this task is used in a Task Group, the output parameters would not be available, subsequent tasks, the checked out path follow this notion  
+  
+$`(System.ArtifactsDirectory)/<artifact_alias>/<name_of_package>/source`
+{% endhint %}
 {% endtab %}
 
 {% tab title="YAML Example" %}
