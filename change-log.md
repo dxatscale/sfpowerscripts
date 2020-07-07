@@ -1,5 +1,31 @@
 # Change Log
 
+## Release 15
+
+July 7, 2020 Major
+
+This release features the following versions
+
+* Azure Pipelines : 15.4.0
+* CLI: 0.5.5
+
+New Features
+
+* [\#36](https://github.com/Accenture/sfpowerscripts/issues/36) Support for Azure Artifacts as another source for build artifacts \(useful for scenarios where your CI is non Azure Pipeline\)
+* [\#21](https://github.com/Accenture/sfpowerscripts/issues/21) Generate build artifacts only if there is change Enhancements
+* [\#15](https://github.com/Accenture/sfpowerscripts/issues/15) Deploy destructive manifest breaks when destructiveChanges.xml file not generated
+* [\#44](https://github.com/Accenture/sfpowerscripts/pull/44) Add an option for git authentication where the agent is already authenticated to the repository
+* [\#23](https://github.com/Accenture/sfpowerscripts/issues/23) Support for .NEXT in Increment Version for unlocked packages
+* [\#45](https://github.com/Accenture/sfpowerscripts/pull/45) SkipOnMissingArtifact Flag , Deployment tasks can skip if the artifact is missing, Useful when you are working in a monorepo and only deploy a certain artifact
+
+Bug Fixes
+
+* [\#63](https://github.com/Accenture/sfpowerscripts/issues/63) Manage Scratchorg Task can be used for creating/deleting a scratchorg. When this task is used exclusively only for a delete scenario, \(where a scratchorg is fetched from the pool\) the post job of the task fails, as the scratchorg would already be deleted by the delete action.
+* [\#80](https://github.com/Accenture/sfpowerscripts/pull/80) Update Validate Package Test Coverage Task to work with recent breaking updates from sfpowerkit
+* [\#79](https://github.com/Accenture/sfpowerscripts/pull/79) Update Install Dependencies Task with the recent updates of sfpowerkit on package keys
+
+Thanks to [@Caitlyn-Mills](https://github.com/Caitlyn-Mills) and [@aly76](https://github.com/aly76) We have a whole new updated docs website and thanks to @gitbook.io for hosting the website
+
 ## Release 14
 
 Jun 2, 2020 Major
