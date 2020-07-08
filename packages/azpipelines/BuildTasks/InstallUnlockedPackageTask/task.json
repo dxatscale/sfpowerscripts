@@ -7,8 +7,8 @@
     "category": "Deploy",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 9,
-        "Minor": 2,
+        "Major": 10,
+        "Minor": 0,
         "Patch": 0
     },
     "runsOn": [

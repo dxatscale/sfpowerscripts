@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-triggerapextest-task",
   "description": "sfpowerscripts-triggerapextest-task",
-  "version": "7.0.4",
+  "version": "7.0.5",
   "private": true,
   "repository": {
     "type": "git",

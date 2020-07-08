@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-managescratchorg-task",
   "description": "Creates/Deletes a Scratch Org",
-  "version": "8.0.5",
+  "version": "8.0.6",
   "private": true,
   "repository": {
     "type": "git",
