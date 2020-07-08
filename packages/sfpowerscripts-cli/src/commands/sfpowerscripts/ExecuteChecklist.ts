@@ -277,7 +277,11 @@ export default class ExecuteChecklist extends SfdxCommand {
                 "type": "string"
             }
         },
-        "required": ["task", "id", "steps"]
+        "required": [
+            "task",
+            "id",
+            "steps"
+        ]
     };
 
     const refSchema = {
@@ -295,6 +299,10 @@ export default class ExecuteChecklist extends SfdxCommand {
             "schema_version": {
                 "type": "number"
             },
+            "mode": {
+                "type": "string",
+                "pattern": /^run-once$|^recurring$/i
+            },
             "tasks": {
                 "type": "array",
                 "items": {
@@ -302,7 +310,14 @@ export default class ExecuteChecklist extends SfdxCommand {
                 }
             }
         },
-        "required": ["runbook", "version", "metadata", "schema_version", "tasks"]
+        "required": [
+            "runbook",
+            "version",
+            "metadata",
+            "schema_version",
+            "mode",
+            "tasks"
+        ]
     };
 
     v.addSchema(taskSchema, '/task');
