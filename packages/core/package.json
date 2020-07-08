@@ -17,7 +17,7 @@
     "ignore": "^5.1.6",
     "rimraf": "^3.0.2",
     "shelljs": "^0.8.4",
-    "simple-git": "2.0.0",
+    "simple-git": "2.7.0",
     "unzip-stream": "0.3.0"
   },
   "repository": {
