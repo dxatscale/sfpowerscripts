@@ -128,9 +128,9 @@ export default class ExecuteChecklist extends SfdxCommand {
             else {
                 this.ux.styledHeader(`Executing checklist ${checklist["runbook"]} v${checklist["version"]}`);
                 let taskNum = 0;
-                for (let task of taskQueue) {
+                for (let i = 0; i < taskQueue.length; i++) {
                     taskNum++;
-                    this.printTaskInfo(task, taskNum, taskQueue.length);
+                    this.printTaskInfo(taskQueue[i], taskNum, taskQueue.length);
 
                     let start_timestamp: number = Date.now();
                     let responses: any = await inquirer.prompt([
@@ -140,9 +140,31 @@ export default class ExecuteChecklist extends SfdxCommand {
                         message: "Task action:",
                         choices: ["Done", "Skip", "Quit"]
                         },
+                        {
+                            name: "skip_reason",
+                            type: "input",
+                            message: "Reason for skipping task?",
+                            when: (elem) => {
+                                return elem["status"] == "Skip";
+                            }
+                        },
+                        {
+                            name: "confirm_exit",
+                            type: "confirm",
+                            message: "Are you sure?",
+                            when: (elem) => {
+                                return elem["status"] == "Quit";
+                            }
+                        }
                     ]);
-                    // reason for skipping over tasks
-                    if (responses["status"] == "Quit") {
+
+                    if (responses["confirm_exit"] === false) {
+                        // Repeat current task
+                        i--
+                        taskNum--
+                        continue;
+                    } else if (responses["confirm_exit"]) {
+                        console.log("To resume execution at a later point, pass the execution log to the execute command.");
                         break;
                     }
 
@@ -151,12 +173,16 @@ export default class ExecuteChecklist extends SfdxCommand {
 
                     this.printDurationMinSec(duration_ms);
 
-                    task["status"] = responses["status"];
-                    task["timeTaken"] = duration_ms;
-                    task["User"] = os.hostname();
-                    task["Date"] = new Date();
+                    taskQueue[i]["status"] = responses["status"];
 
-                    result["tasks"].push(task);
+                    if (!isNullOrUndefined(responses["skip_reason"]))
+                        taskQueue[i]["reason"] = responses["skip_reason"];
+
+                    taskQueue[i]["timeTaken"] = duration_ms;
+                    taskQueue[i]["User"] = os.hostname();
+                    taskQueue[i]["Date"] = new Date();
+
+                    result["tasks"].push(taskQueue[i]);
 
                     let checksum = this.generateChecksum(result);
                     result["checksum"]=checksum;
