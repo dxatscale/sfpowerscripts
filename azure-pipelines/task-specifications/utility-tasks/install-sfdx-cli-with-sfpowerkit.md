@@ -10,8 +10,6 @@ Please note this task is not supported in Hosted Mac Agents as of now
 
 #### **Task Snapshot**
 
-![](../../../.gitbook/assets/sfdx-install-screenshot.png)
-
 **Parameters**
 
 {% tabs %}

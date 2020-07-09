@@ -14,8 +14,6 @@ To retain scratch org’s for review purposes, the maintain org has to be select
 
 **Task Snapshot** 
 
-![](../../../.gitbook/assets/create-delete-scratch-org-screenshot.png)
-
 **Parameters**
 
 {% tabs %}
