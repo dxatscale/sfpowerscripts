@@ -23,14 +23,16 @@ Directly import the sample pipelines once the extension is installed or compose 
 
     6. Click on choose template and then navigate to the private tab
 
-    7. Choose Local Drive and use  the zip file downloaded from the url  [sfpowerscripts sample pipelines](https://github.com/Accenture/sfpowerscripts/releases/download/Release_15/sfpowerscripts_sample_pipelines.zip)
+    7.Navigate to this URL and download the predefined sample pipelines  [sfpowerscripts sample pipelines](https://github.com/Accenture/sfpowerscripts/releases/download/14.X/sfpowerscripts_sample_pipelines.zip)
 
-    8. Click on Create Project and wait for the project to be completed
+   8. Select the zip option and upload the zip file downloaded in step 7 earlier.  
 
-    9.  Navigate to the newly created project in your Azure Pipelines Org
+    9. Click on Create Project and wait for the project to be completed
 
-  10. Confirm the build and release pipelines are created. Now you may configure the tasks accordingly.
+    10.  Navigate to the newly created project in your Azure Pipelines Org
 
-Head over to[ Task Specifications](task-specifications/) for details on configuring the task  
+  11. Confirm the build and release pipelines are created. Now you may configure the tasks accordingly.
+
+Head over to[ Task Specifications](task-specifications/) for details on configuring the task for your project, of if you need  further guided advice head over to the next section '[Build your pipelines](pipelines/)'  
 
 
