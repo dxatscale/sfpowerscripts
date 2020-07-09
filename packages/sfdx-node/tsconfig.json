@@ -1,0 +1,14 @@
+{
+  "extends": "./node_modules/@salesforce/dev-config/tsconfig",
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowJs": true
+  },
+  "include": [
+    "./src/**/*"
+  ]
+}

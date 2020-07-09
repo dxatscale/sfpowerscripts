@@ -1,0 +1,80 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "linterOptions": {
+    "exclude": [
+      "src/types/custom.d.ts"
+    ]
+  },
+  "jsRules": {},
+  "rules": {
+    "align": [
+      true,
+      "statements",
+      "members",
+      "elements"
+    ],
+    "completed-docs": false,
+    "quotemark": [
+      true,
+      "single"
+    ],
+    "eofline": false,
+    "function-name": false,
+    "forin": false,
+    "interface-name": false,
+    "import-name": false,
+    "max-classes-per-file": false,
+    "max-line-length": [
+      true,
+      120
+    ],
+    "missing-jsdoc": false,
+    "newline-before-return": false,
+    "no-any": false,
+    "no-bitwise": false,
+    "no-empty": false,
+    "no-empty-interface": false,
+    "no-for-in": false,
+    "no-console": false,
+    "no-default-export": false,
+    "no-reserved-keywords": false,
+    "no-submodule-imports": false,
+    "no-trailing-whitespace": false,
+    "no-implicit-dependencies": false,
+    "no-import-side-effect": [
+      true,
+      {
+        "ignore-module": "(\\.css)$"
+      }
+    ],
+    "no-increment-decrement": [
+      "allow-for-loops"
+    ],
+    "no-unnecessary-class": false,
+    "no-unused-variable": false,
+    "no-relative-imports": false,
+    "one-variable-per-declaration": false,
+    "react-a11y-event-has-role": false,
+    "static-this": true,
+    "interface-over-type-literal": false,
+    "arrow-parens": false,
+    "typedef": [
+      true,
+      "call-signature",
+      "parameter",
+      "property-declaration",
+      "member-variable-declaration",
+      "object-destructuring",
+      "array-destructuring"
+    ],
+    "trailing-comma": false,
+    "variable-name": [
+      true,
+      "check-format",
+      "allow-leading-underscore"
+    ]
+  }
+}

@@ -60,7 +60,8 @@ async function run() {
       envname,
       options,
       wait_time,
-      publish_wait_time
+      publish_wait_time,
+      true
     );
 
     await installUnlockedPackageImpl.exec();
