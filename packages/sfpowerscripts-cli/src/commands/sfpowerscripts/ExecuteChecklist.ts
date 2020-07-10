@@ -71,27 +71,25 @@ export default class ExecuteChecklist extends SfdxCommand {
             const checklist: checklist = yaml.safeLoad(fs.readFileSync(filepath, "utf8"));
             this.validateChecklist(checklist);
 
-            let result = {
+            const result = {
                 runbook: checklist["runbook"],
                 version: checklist["version"],
                 metadata: checklist["metadata"],
                 schema_version: checklist["schema_version"],
-                inputs: {
-                    checklist_filepath: filepath,
-                    alias: alias
-                },
+                alias: alias,
                 tasks: []
             };
-
-            let taskQueue = checklist["tasks"];
-
-
 
 
             if (!isNullOrUndefined(executionLog)) {
                 if (fs.existsSync(executionLog)) {
                     let executionLogJson = JSON.parse(fs.readFileSync(executionLog, "utf8"));
-                    alias = executionLogJson["inputs"]["alias"];
+
+                    result["runbook"] = executionLogJson["runbook"],
+                    result["version"] = executionLogJson["version"],
+                    result["metadata"] = executionLogJson["metadata"],
+                    result["schema_version"] = executionLogJson["schema_version"],
+                    result["alias"] = executionLogJson["alias"],
                     result["tasks"] = result["tasks"].concat(executionLogJson["tasks"]);
 
 
@@ -102,35 +100,29 @@ export default class ExecuteChecklist extends SfdxCommand {
                     if ( (checksum ^ executionLogChecksum) != 0 )
                         throw new Error("Corrupted execution log, please do not manually edit execution log");
 
-
-                    taskQueue = taskQueue.filter( (task) => {
-                        let isExecutedAlready: boolean = false;
-                        for (let executionLogTask of executionLogJson["tasks"]) {
-                            if (executionLogTask["id"] == task["id"])
-                                isExecutedAlready = true;
-                        }
-                        if (!isExecutedAlready && (isNullOrUndefined(task["runOnlyOn"]) || task["runOnlyOn"].toLowerCase() == alias))
-                            return true;
-                        else
-                            return false;
-                    });
-                    // let latestTaskId = executionLogJson["tasks"][executionLogJson["tasks"].length-1]["id"];
-                    // taskQueue = checklist["tasks"].slice(latestTaskId); // what if id's are wrong?
+                    this.ux.styledHeader(`Continuing execution of ${executionLog}`);
                 } else throw new Error(`Cannot find file ${executionLog}`);
             } else {
-                taskQueue = taskQueue.filter( (task) => {
+                result["tasks"] = result["tasks"].concat(checklist["tasks"]);
+                result["tasks"] = result["tasks"].filter( (task) => {
                     return isNullOrUndefined(task["runOnlyOn"]) || task["runOnlyOn"].toLowerCase() == alias
                 });
+                result["tasks"].forEach( (task) => {
+                    task["status"] = "Unexecuted";
+                });
+                this.ux.styledHeader(`Executing`);
             }
 
-            if (taskQueue.length == 0)
-                console.log(`No tasks remaining in ${executionLog}`);
-            else {
-                this.ux.styledHeader(`Executing checklist ${checklist["runbook"]} v${checklist["version"]}`);
-                let taskNum = 0;
-                for (let i = 0; i < taskQueue.length; i++) {
+
+            this.ux.styledHeader(`Executing checklist ${checklist["runbook"]} v${checklist["version"]}`);
+            let taskNum = 0;
+            for (let i = 0; i < result["tasks"].length; i++) {
+                if ( result["tasks"][i]["status"] == "Done" || result["tasks"][i]["status"] == "Skip") {
+                    taskNum++
+                    continue;
+                } else {
                     taskNum++;
-                    this.printTaskInfo(taskQueue[i], taskNum, taskQueue.length);
+                    this.printTaskInfo(result["tasks"][i], taskNum, result["tasks"].length);
 
                     let start_timestamp: number = Date.now();
                     let responses: any = await inquirer.prompt([
@@ -173,24 +165,24 @@ export default class ExecuteChecklist extends SfdxCommand {
 
                     this.printDurationMinSec(duration_ms);
 
-                    taskQueue[i]["status"] = responses["status"];
+                    result["tasks"][i]["status"] = responses["status"];
 
                     if (!isNullOrUndefined(responses["skip_reason"]))
-                        taskQueue[i]["reason"] = responses["skip_reason"];
+                        result["tasks"][i]["reason"] = responses["skip_reason"];
 
-                    taskQueue[i]["timeTaken"] = duration_ms;
-                    taskQueue[i]["User"] = os.hostname();
-                    taskQueue[i]["Date"] = new Date();
+                    result["tasks"][i]["timeTaken"] = duration_ms;
+                    result["tasks"][i]["User"] = os.hostname();
+                    result["tasks"][i]["Date"] = new Date();
 
-                    result["tasks"].push(taskQueue[i]);
 
                     let checksum = this.generateChecksum(result);
                     result["checksum"]=checksum;
 
                     fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
                 }
-                console.log(chalk.rgb(0,100,0)(`\nExecution log written to ${outputPath}`));
             }
+            console.log(chalk.rgb(0,100,0)(`\nExecution log written to ${outputPath}`));
+
             console.log(chalk.bold(`\nFinished executing!`))
         } catch (err) {
             console.log(err);
@@ -231,6 +223,10 @@ export default class ExecuteChecklist extends SfdxCommand {
 
     return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
   }
+
+//   private convertJson2Markdown(Json) {
+
+//   }
 
   private generateChecksum(payloadObject) {
     // Generate checksum using Parity Word algorithm
@@ -307,7 +303,8 @@ export default class ExecuteChecklist extends SfdxCommand {
                 "type": "array",
                 "items": {
                     "$ref": "/task"
-                }
+                },
+                "minItems": 1
             }
         },
         "required": [
