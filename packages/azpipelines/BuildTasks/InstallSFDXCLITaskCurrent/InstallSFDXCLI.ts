@@ -13,6 +13,7 @@ async function run() {
     const sfpowerkit_version: string = tl.getInput("sfpowerkit_version", false);
     const sfdx_plugins:string = tl.getInput("plugins",false);
     const salesforce_api_version:string = tl.getInput("salesforce_api_version",false);
+    const module_path:string=tl.getInput("module_path",false);
     
     let plugins:string[]=[];
     let sfdx_homedirectory;
@@ -78,9 +79,10 @@ async function run() {
       console.log(output);
 
 
-      console.log("Setting API Version if any..")
+     
       if(!isNullOrUndefined(salesforce_api_version))
       {
+      console.log("Setting API Version if any..")
         
        let output = child_process.execSync(
          `sfdx force:config:set apiVersion=${salesforce_api_version}`, { encoding: "utf8" }
@@ -90,6 +92,7 @@ async function run() {
        console.log("API Version set succesfully");
       }
   
+       tl.setVariable("sfpowerkit_module_path",module_path);
 
     });
    

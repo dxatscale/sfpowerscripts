@@ -7,6 +7,7 @@ const command_1 = require("@salesforce/command");
 class ExampleCommand extends command_1.default {
     async run() {
         console.log('example command');
+        console.log(this.config.dataDir);
     }
 }
 exports.default = ExampleCommand;

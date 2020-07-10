@@ -16,9 +16,7 @@
     "@salesforce/command": "^3.0.1",
     "@salesforce/core": "^2.7.0",
     "fs-extra": "^8.1.0",
-    "hook-std": "^2.0.0",
-    "salesforce-alm": "^48.8.0",
-    "sfpowerkit": "^1.46.6"
+    "hook-std": "^2.0.0"
   },
   "devDependencies": {
     "@salesforce/dev-config": "1.4.1",

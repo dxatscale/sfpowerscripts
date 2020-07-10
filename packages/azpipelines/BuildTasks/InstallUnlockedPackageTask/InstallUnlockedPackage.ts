@@ -9,15 +9,30 @@ async function run() {
     const sfdx_package: string = tl.getInput("package", true);
     const package_installedfrom = tl.getInput("packageinstalledfrom", true);
     const artifact = tl.getInput("artifact", true);
-    let skip_on_missing_artifact = tl.getBoolInput("skip_on_missing_artifact", false);
+    let skip_on_missing_artifact = tl.getBoolInput(
+      "skip_on_missing_artifact",
+      false
+    );
     const installationkey = tl.getInput("installationkey", false);
-    const apexcompileonlypackage = tl.getBoolInput("apexcompileonlypackage", false);
+    const apexcompileonlypackage = tl.getBoolInput(
+      "apexcompileonlypackage",
+      false
+    );
     const security_type = tl.getInput("security_type", false);
     const upgrade_type = tl.getInput("upgrade_type", false);
     const wait_time = tl.getInput("wait_time", false);
     const publish_wait_time = tl.getInput("publish_wait_time", false);
 
-    let package_version_id:string;
+    let module_path = tl.getVariable("sfpowerkit_module_path");
+    if (module_path == null || module_path == undefined) {
+      tl.setResult(
+        tl.TaskResult.Failed,
+        "Ensure Install SFDX Task with sfpowerkit is added to the pipeline"
+      );
+      return;
+    }
+
+    let package_version_id: string;
 
     if (package_installedfrom == "Custom") {
       package_version_id = tl.getInput("package_version_id", false);
@@ -35,7 +50,10 @@ async function run() {
           artifact
         );
 
-      missingArtifactDecider(package_version_id_file_path, skip_on_missing_artifact);
+      missingArtifactDecider(
+        package_version_id_file_path,
+        skip_on_missing_artifact
+      );
 
       let package_metadata_json = fs
         .readFileSync(package_version_id_file_path)
@@ -61,7 +79,8 @@ async function run() {
       options,
       wait_time,
       publish_wait_time,
-      true
+      true,
+      module_path
     );
 
     await installUnlockedPackageImpl.exec();
@@ -84,7 +103,9 @@ function fetchArtifactFilePathFromBuildArtifact(
     `${sfdx_package}_artifact_metadata`
   );
 
-  console.log(`Checking for ${sfdx_package} Build Artifact at path ${package_version_id_file_path}`);
+  console.log(
+    `Checking for ${sfdx_package} Build Artifact at path ${package_version_id_file_path}`
+  );
   if (!fs.existsSync(package_version_id_file_path)) {
     console.log(
       `New Artifact format not found at the location ${package_version_id_file_path} `
@@ -115,20 +136,35 @@ function fetchArtifactFilePathFromAzureArtifact(
     `${sfdx_package}_artifact_metadata`
   );
 
-  console.log(`Checking for ${sfdx_package} Azure Artifact at path ${package_version_id_file_path}`);
+  console.log(
+    `Checking for ${sfdx_package} Azure Artifact at path ${package_version_id_file_path}`
+  );
 
   return package_version_id_file_path;
 }
 
-function missingArtifactDecider(package_version_id_file_path: string, skip_on_missing_artifact: boolean): void {
-
-  if (!fs.existsSync(package_version_id_file_path) && !skip_on_missing_artifact) {
+function missingArtifactDecider(
+  package_version_id_file_path: string,
+  skip_on_missing_artifact: boolean
+): void {
+  if (
+    !fs.existsSync(package_version_id_file_path) &&
+    !skip_on_missing_artifact
+  ) {
     throw new Error(
       `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
     );
-  } else if(!fs.existsSync(package_version_id_file_path) && skip_on_missing_artifact) {
-    console.log(`Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`);
-    tl.setResult(tl.TaskResult.Skipped, `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`);
+  } else if (
+    !fs.existsSync(package_version_id_file_path) &&
+    skip_on_missing_artifact
+  ) {
+    console.log(
+      `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`
+    );
+    tl.setResult(
+      tl.TaskResult.Skipped,
+      `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`
+    );
     process.exit(0);
   }
 }

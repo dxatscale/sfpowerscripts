@@ -7,9 +7,9 @@
     "category": "Utility",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 7,
+        "Major": 8,
         "Minor": 0,
-        "Patch": 5
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -47,7 +47,16 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "Provide the list of other plugins seperated by comma in the format \"pluginame1@version,pluginname2@version)\""
+        },
+        {
+            "name": "module_path",
+            "type": "string",
+            "label": "Path to the directory where sfpowerkit is installed",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Provide the path of the directory where sfpowerkit is installed,The command will try to autolocate within a certain known locations, in case if you changed, please provide here"
         }
+
     ],
     "execution": {
         "Node": {

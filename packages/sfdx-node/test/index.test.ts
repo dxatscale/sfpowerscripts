@@ -6,6 +6,8 @@ should();
 // tslint:disable-next-line:no-var-requires no-require-imports
 use(require('chai-as-promised'));
 
+
+
 describe('sfdx force', () => {
     it('sfdx object properties', () => {
         expect(sfdx).to.haveOwnProperty('force');

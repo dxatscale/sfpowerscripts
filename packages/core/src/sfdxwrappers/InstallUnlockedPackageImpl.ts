@@ -1,10 +1,8 @@
 import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
 import { onExit } from "../OnExit";
-import * as path from "path";
-import { registerNamespace } from "sfdx-node";
-import { sfdx } from "sfdx-node";
-const SFPOWERKIT_PATH = path.dirname(require.resolve("sfpowerkit"));
+import { loadsfpowerkit } from "../Loadsfpowerkit";
+ import { sfdx } from "sfdx-node";
 
 
 export default class InstallUnlockedPackageImpl {
@@ -14,13 +12,11 @@ export default class InstallUnlockedPackageImpl {
     private options: any,
     private wait_time: string,
     private publish_wait_time: string,
-    private skipIfAlreadyInstalled: boolean
+    private skipIfAlreadyInstalled: boolean,
+    private configDir:string
   ) {
     
-    registerNamespace({
-      commandsDir: path.join(SFPOWERKIT_PATH, "commands"),
-      namespace: "sfpowerkit",
-    });
+
   }
 
   public async exec(): Promise<void> {
@@ -28,6 +24,8 @@ export default class InstallUnlockedPackageImpl {
     //get all packages in the org
     if(this.skipIfAlreadyInstalled)
     {
+      loadsfpowerkit(this.configDir);
+      
       let packages=await sfdx.sfpowerkit.package.version.info(
         {
            targetusername:this.targetusername,
