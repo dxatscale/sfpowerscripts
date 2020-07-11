@@ -92,21 +92,22 @@ export default class ExecuteChecklist extends SfdxCommand {
                 throw new Error("Command requires either a checklist --filepath or --executionlog");
             }
 
+            let startDate = new Date();
+            let ddmmyyyy = this.getDate(startDate);
+            let time = this.getTime(startDate);
+
             let outputDir: string = path.join(
                 this.flags.outputdir,
-                alias
+                alias,
+                ddmmyyyy
             );
 
             if (!fs.existsSync(outputDir))
                 mkdir('-p', outputDir);
 
-            let startDate = new Date();
-            let ddmmyyyy = this.getDate(startDate);
-            let time = this.getTime(startDate);
-
             let outputPath = path.join(
                 outputDir,
-                `execution_log_${ddmmyyyy}${time}`
+                `execution_log_${time}`
             );
 
 
@@ -183,8 +184,9 @@ export default class ExecuteChecklist extends SfdxCommand {
                 }
             }
             if (fs.existsSync(`${outputPath}.json`)) {
-                // console.log("To resume execution at a later point, pass the execution log to the execute command.");
-                console.log(chalk.rgb(0,100,0)(`\nExecution log written to ${outputPath}`));
+                console.log(chalk.rgb(0,100,0)(`\nExecution log written to ${outputPath}.json`));
+                if (taskNum == -1)
+                    console.log("To resume execution at a later point, use the --executionlog parameter");
                 console.log(chalk.bold(`\nFinished executing!`));
             } else if (taskNum >= 0) {
                 console.log(chalk.bold(`\nNo tasks remaining to execute.`));
@@ -233,9 +235,7 @@ export default class ExecuteChecklist extends SfdxCommand {
     try {
         let executionLogResultKeys: string[] = Object.keys(executionLogResult);
         let payload: string = "";
-        // executionLogResultHeaderKeys: string[] = executionLogResultKeys.filter( (keys) => {
-        //     if ( keys )
-        // });
+
         executionLogResultKeys.forEach( (key) => {
             if (key != "tasks" && key != "checksum") {
                 payload += `\n### ${key}: ${executionLogResult[key]}`;
@@ -257,10 +257,6 @@ export default class ExecuteChecklist extends SfdxCommand {
     } catch (err) {
         console.warn("Failed to convert execution log to Markdown format");
     }
-    // payload = executionLogResult["runbook"];
-    // payload += `\n ${executionLogResult["version"]}`;
-    // payload += `\n ${executionLogResult["metadata"]}`;
-    // payload += `\n ${executionLogResult["schema_version"]}`;
   }
 
   private generateChecksum(payloadObject) {
