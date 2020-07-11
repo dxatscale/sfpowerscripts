@@ -41,7 +41,7 @@ export default class ExecuteChecklist extends SfdxCommand {
             parse: (input) => input.toLowerCase()
         }),
         executionlog: flags.filepath({
-            description: messages.getMessage("executionLogFlagDescription"),
+            description: messages.getMessage("executionLogFlagDescription")
         })
     };
 
@@ -65,7 +65,7 @@ export default class ExecuteChecklist extends SfdxCommand {
 
             let outputPath = path.join(
                 outputDir,
-                `execution_log_${ddmmyyyy}-${time}`
+                `execution_log_${ddmmyyyy}${time}`
             );
 
             const checklist: checklist = yaml.safeLoad(fs.readFileSync(filepath, "utf8"));
@@ -110,11 +110,11 @@ export default class ExecuteChecklist extends SfdxCommand {
                 result["tasks"].forEach( (task) => {
                     task["status"] = "Unexecuted";
                 });
-                this.ux.styledHeader(`Executing`);
+                this.ux.styledHeader(`Executing...`);
             }
 
 
-            this.ux.styledHeader(`Executing checklist ${checklist["runbook"]} v${checklist["version"]}`);
+            console.log(chalk.bold(`Checklist ${checklist["runbook"]} v${checklist["version"]}`));
             let taskNum = 0;
             for (let i = 0; i < result["tasks"].length; i++) {
                 if ( result["tasks"][i]["status"] == "Done" || result["tasks"][i]["status"] == "Skip") {
@@ -156,7 +156,7 @@ export default class ExecuteChecklist extends SfdxCommand {
                         taskNum--
                         continue;
                     } else if (responses["confirm_exit"]) {
-                        console.log("To resume execution at a later point, pass the execution log to the execute command.");
+                        taskNum = -1;
                         break;
                     }
 
@@ -178,12 +178,18 @@ export default class ExecuteChecklist extends SfdxCommand {
                     let checksum = this.generateChecksum(result);
                     result["checksum"]=checksum;
 
-                    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+                    fs.writeFileSync(`${outputPath}.json`, JSON.stringify(result, null, 2));
+
+                    this.generateExecutionLogMarkdown(result, outputPath);
                 }
             }
-            console.log(chalk.rgb(0,100,0)(`\nExecution log written to ${outputPath}`));
-
-            console.log(chalk.bold(`\nFinished executing!`))
+            if (fs.existsSync(`${outputPath}.json`)) {
+                // console.log("To resume execution at a later point, pass the execution log to the execute command.");
+                console.log(chalk.rgb(0,100,0)(`\nExecution log written to ${outputPath}`));
+                console.log(chalk.bold(`\nFinished executing!`));
+            } else if (taskNum >= 0) {
+                console.log(chalk.bold(`\nNo tasks remaining to execute.`));
+            }
         } catch (err) {
             console.log(err);
             process.exit(1);
@@ -212,7 +218,7 @@ export default class ExecuteChecklist extends SfdxCommand {
     let year = date.getFullYear();
     let pad = (n) => n<10 ? '0'+n : n;
 
-    return pad(day) + "-" + pad(month+1) + "-" + year;
+    return `${pad(day)}` + `${pad(month+1)}` + `${year}`;
   }
 
   private getTime(date: Date): string {
@@ -221,12 +227,42 @@ export default class ExecuteChecklist extends SfdxCommand {
     let seconds = date.getSeconds();
     let pad = (n) => n<10 ? '0'+n : n;
 
-    return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+    return `${pad(hours)}` + `${pad(minutes)}` + `${pad(seconds)}`;
   }
 
-//   private convertJson2Markdown(Json) {
+  private generateExecutionLogMarkdown(executionLogResult, outputPath) {
+    try {
+        let executionLogResultKeys: string[] = Object.keys(executionLogResult);
+        let payload: string = "";
+        // executionLogResultHeaderKeys: string[] = executionLogResultKeys.filter( (keys) => {
+        //     if ( keys )
+        // });
+        executionLogResultKeys.forEach( (key) => {
+            if (key != "tasks" && key != "checksum") {
+                payload += `\n### ${key}: ${executionLogResult[key]}`;
+            } else if (key == "tasks") {
+                payload += `\n#### Tasks`;
+                executionLogResult[key].forEach( (task) => {
+                    payload += `\n\n##### Task: ${task["task"]}`;
+                    payload += `\n- ID: ${task["id"]}`;
+                    payload += `\n- Steps:\n${task["steps"]}`;
+                    payload += `\n- Status: ${task["status"]}`;
+                    payload += `\n- Time taken: ${task["timetaken"]}`;
+                    payload += `\n- User: ${task["User"]}`;
+                    payload += `\n- Date: ${task["Date"]}`;
+                })
+            }
+        });
 
-//   }
+        fs.writeFileSync(`${outputPath}.md`, payload);
+    } catch (err) {
+        console.warn("Failed to convert execution log to Markdown format");
+    }
+    // payload = executionLogResult["runbook"];
+    // payload += `\n ${executionLogResult["version"]}`;
+    // payload += `\n ${executionLogResult["metadata"]}`;
+    // payload += `\n ${executionLogResult["schema_version"]}`;
+  }
 
   private generateChecksum(payloadObject) {
     // Generate checksum using Parity Word algorithm
