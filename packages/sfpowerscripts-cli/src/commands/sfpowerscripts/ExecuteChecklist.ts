@@ -24,12 +24,15 @@ const messages = Messages.loadMessages(
 export default class ExecuteChecklist extends SfdxCommand {
     public static description = messages.getMessage("commandDescription");
 
-    public static examples = [`$ sfdx sfpowerkit:runbook:execute `];
+    public static examples = [
+        `$ sfdx sfpowerkit:runbook:execute -f path/to/checklist.yaml -o . --alias SIT\n` +
+        `$ sfdx sfpowerkit:runbook:execute --executionlog path/to/execution_log.json -o .`
+    ];
 
     protected static flagsConfig: FlagsConfig = {
-        filepath: flags.filepath({
+        checklistfilepath: flags.filepath({
             char: "f",
-            description: messages.getMessage("filePathFlagDescription"),
+            description: messages.getMessage("checklistFilePathFlagDescription"),
         }),
         outputdir: flags.directory({
             char: "o",
@@ -37,7 +40,7 @@ export default class ExecuteChecklist extends SfdxCommand {
             required: true
         }),
         alias: flags.string({
-            description: messages.getMessage("envFlagDescription"),
+            description: messages.getMessage("aliasFlagDescription"),
             parse: (input) => input.toLowerCase()
         }),
         executionlog: flags.filepath({
@@ -47,14 +50,14 @@ export default class ExecuteChecklist extends SfdxCommand {
 
     public async run(): Promise<void> {
         try {
-            const filepath: string = this.flags.filepath;
+            const checklist_filepath: string = this.flags.checklistfilepath;
             const executionLog: string = this.flags.executionlog;
             let alias: string = this.flags.alias;
 
 
             const result = {};
-            if (!isNullOrUndefined(filepath) && isNullOrUndefined(executionLog)) {
-                let checklist: checklist = yaml.safeLoad(fs.readFileSync(filepath, "utf8"));
+            if (!isNullOrUndefined(checklist_filepath) && isNullOrUndefined(executionLog)) {
+                let checklist: checklist = yaml.safeLoad(fs.readFileSync(checklist_filepath, "utf8"));
                 this.validateChecklist(checklist);
 
                 result["runbook"] = checklist["runbook"];
@@ -73,12 +76,13 @@ export default class ExecuteChecklist extends SfdxCommand {
                 this.ux.styledHeader(`Executing...`);
             } else if (!isNullOrUndefined(executionLog)) {
                 let executionLogJson = JSON.parse(fs.readFileSync(executionLog, "utf8"));
+                alias = executionLogJson["alias"];
 
                 result["runbook"] = executionLogJson["runbook"];
                 result["version"] = executionLogJson["version"];
                 result["metadata"] = executionLogJson["metadata"];
                 result["schema_version"] = executionLogJson["schema_version"];
-                result["alias"] = executionLogJson["alias"];
+                result["alias"] = alias;
                 result["tasks"] = executionLogJson["tasks"];
 
                 let executionLogChecksum = executionLogJson["checksum"];
@@ -89,7 +93,7 @@ export default class ExecuteChecklist extends SfdxCommand {
 
                 this.ux.styledHeader(`Continuing execution of ${executionLog}`);
             } else {
-                throw new Error("Command requires either a checklist --filepath or --executionlog");
+                throw new Error("Command requires either a --checklistfilepath or --executionlog");
             }
 
             let startDate = new Date();
@@ -98,7 +102,7 @@ export default class ExecuteChecklist extends SfdxCommand {
 
             let outputDir: string = path.join(
                 this.flags.outputdir,
-                alias,
+                alias ? alias : "",
                 ddmmyyyy
             );
 
@@ -304,6 +308,7 @@ export default class ExecuteChecklist extends SfdxCommand {
                 "type": "string"
             }
         },
+        "additionalProperties": false,
         "required": [
             "task",
             "id",
@@ -338,6 +343,7 @@ export default class ExecuteChecklist extends SfdxCommand {
                 "minItems": 1
             }
         },
+        "additionalProperties": false,
         "required": [
             "runbook",
             "version",

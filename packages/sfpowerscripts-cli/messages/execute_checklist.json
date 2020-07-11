@@ -1,7 +1,7 @@
 {
-    "commandDescription": "Executes runbook, prompting the user with tasks and outputing a log of task completion statuses",
-    "filePathFlagDescription": "The path to the checklist file",
-    "outputDirFlagDescription": "The directory to output execution logs",
-    "envFlagDescription": "The environment on which to execute the checklist",
-    "executionLogFlagDescription": "File path of log from which to continue execution"
+    "commandDescription": "Interactive tool for keeping track of the manual steps performed during a release. The command can execute a checklist of tasks or resume execution of an execution log.",
+    "checklistFilePathFlagDescription": "The path to the checklist, containing tasks to be run. Visit [link] for the checklist schema",
+    "outputDirFlagDescription": "The directory to output execution logs. Sub-directories for the alias & date are automatically created",
+    "aliasFlagDescription": "Execute tasks with the alias or username e.g. SIT",
+    "executionLogFlagDescription": "File path of the execution log from which to resume execution"
   }
