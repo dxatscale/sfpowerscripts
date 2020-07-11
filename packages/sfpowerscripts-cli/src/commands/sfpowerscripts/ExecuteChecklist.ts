@@ -9,6 +9,7 @@ const fs = require("fs");
 const os = require("os");
 const chalk = require("chalk");
 const Validator = require('jsonschema').Validator;
+import { mkdir } from "shelljs";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -29,7 +30,6 @@ export default class ExecuteChecklist extends SfdxCommand {
         filepath: flags.filepath({
             char: "f",
             description: messages.getMessage("filePathFlagDescription"),
-            required: true
         }),
         outputdir: flags.directory({
             char: "o",
@@ -51,13 +51,54 @@ export default class ExecuteChecklist extends SfdxCommand {
             const executionLog: string = this.flags.executionlog;
             let alias: string = this.flags.alias;
 
+
+            const result = {};
+            if (!isNullOrUndefined(filepath) && isNullOrUndefined(executionLog)) {
+                let checklist: checklist = yaml.safeLoad(fs.readFileSync(filepath, "utf8"));
+                this.validateChecklist(checklist);
+
+                result["runbook"] = checklist["runbook"];
+                result["version"] = checklist["version"];
+                result["metadata"] = checklist["metadata"];
+                result["schema_version"] = checklist["schema_version"];
+                result["alias"] = alias;
+                result["tasks"] = checklist["tasks"];
+
+                result["tasks"] = result["tasks"].filter( (task) => {
+                    return isNullOrUndefined(task["runOnlyOn"]) || task["runOnlyOn"].toLowerCase() == alias
+                });
+                result["tasks"].forEach( (task) => {
+                    task["status"] = "Unexecuted";
+                });
+                this.ux.styledHeader(`Executing...`);
+            } else if (!isNullOrUndefined(executionLog)) {
+                let executionLogJson = JSON.parse(fs.readFileSync(executionLog, "utf8"));
+
+                result["runbook"] = executionLogJson["runbook"];
+                result["version"] = executionLogJson["version"];
+                result["metadata"] = executionLogJson["metadata"];
+                result["schema_version"] = executionLogJson["schema_version"];
+                result["alias"] = executionLogJson["alias"];
+                result["tasks"] = executionLogJson["tasks"];
+
+                let executionLogChecksum = executionLogJson["checksum"];
+                let checksum = this.generateChecksum(executionLogJson);
+
+                if ( (checksum ^ executionLogChecksum) != 0 )
+                    throw new Error("Corrupted execution log, please do not manually edit execution log");
+
+                this.ux.styledHeader(`Continuing execution of ${executionLog}`);
+            } else {
+                throw new Error("Command requires either a checklist --filepath or --executionlog");
+            }
+
             let outputDir: string = path.join(
                 this.flags.outputdir,
                 alias
             );
 
             if (!fs.existsSync(outputDir))
-                fs.mkdirSync(outputDir);
+                mkdir('-p', outputDir);
 
             let startDate = new Date();
             let ddmmyyyy = this.getDate(startDate);
@@ -68,53 +109,8 @@ export default class ExecuteChecklist extends SfdxCommand {
                 `execution_log_${ddmmyyyy}${time}`
             );
 
-            const checklist: checklist = yaml.safeLoad(fs.readFileSync(filepath, "utf8"));
-            this.validateChecklist(checklist);
 
-            const result = {
-                runbook: checklist["runbook"],
-                version: checklist["version"],
-                metadata: checklist["metadata"],
-                schema_version: checklist["schema_version"],
-                alias: alias,
-                tasks: []
-            };
-
-
-            if (!isNullOrUndefined(executionLog)) {
-                if (fs.existsSync(executionLog)) {
-                    let executionLogJson = JSON.parse(fs.readFileSync(executionLog, "utf8"));
-
-                    result["runbook"] = executionLogJson["runbook"],
-                    result["version"] = executionLogJson["version"],
-                    result["metadata"] = executionLogJson["metadata"],
-                    result["schema_version"] = executionLogJson["schema_version"],
-                    result["alias"] = executionLogJson["alias"],
-                    result["tasks"] = result["tasks"].concat(executionLogJson["tasks"]);
-
-
-
-                    let executionLogChecksum = executionLogJson["checksum"];
-                    let checksum = this.generateChecksum(executionLogJson);
-
-                    if ( (checksum ^ executionLogChecksum) != 0 )
-                        throw new Error("Corrupted execution log, please do not manually edit execution log");
-
-                    this.ux.styledHeader(`Continuing execution of ${executionLog}`);
-                } else throw new Error(`Cannot find file ${executionLog}`);
-            } else {
-                result["tasks"] = result["tasks"].concat(checklist["tasks"]);
-                result["tasks"] = result["tasks"].filter( (task) => {
-                    return isNullOrUndefined(task["runOnlyOn"]) || task["runOnlyOn"].toLowerCase() == alias
-                });
-                result["tasks"].forEach( (task) => {
-                    task["status"] = "Unexecuted";
-                });
-                this.ux.styledHeader(`Executing...`);
-            }
-
-
-            console.log(chalk.bold(`Checklist ${checklist["runbook"]} v${checklist["version"]}`));
+            console.log(chalk.bold(`Checklist ${result["runbook"]} v${result["version"]}`));
             let taskNum = 0;
             for (let i = 0; i < result["tasks"].length; i++) {
                 if ( result["tasks"][i]["status"] == "Done" || result["tasks"][i]["status"] == "Skip") {
@@ -191,7 +187,7 @@ export default class ExecuteChecklist extends SfdxCommand {
                 console.log(chalk.bold(`\nNo tasks remaining to execute.`));
             }
         } catch (err) {
-            console.log(err);
+            console.error(chalk.red(err.message));
             process.exit(1);
         }
   }
@@ -355,11 +351,22 @@ export default class ExecuteChecklist extends SfdxCommand {
 
     v.addSchema(taskSchema, '/task');
     let validationResult = v.validate(checklist, refSchema);
+
     if (validationResult.errors.length > 0) {
-        throw validationResult.errors;
+        let errorMsg: string =
+            `Checklist does not meet schema requirements, ` +
+            `found ${validationResult.errors.length} validation errors:\n`;
+
+        validationResult.errors.forEach( (error, errorNum) => {
+            errorMsg += `\n${errorNum+1}. ${error.stack}`;
+            if (!isNullOrUndefined(error.instance))
+                errorMsg += `\nReceived: ${JSON.stringify(error.instance)}\n`;
+        });
+        throw new Error(errorMsg);
     }
   }
 }
+
 
 interface checklist {
     runbook: string,
