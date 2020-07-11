@@ -113,7 +113,7 @@ export default class ExecuteChecklist extends SfdxCommand {
             console.log(chalk.bold(`Checklist ${result["runbook"]} v${result["version"]}`));
             let taskNum = 0;
             for (let i = 0; i < result["tasks"].length; i++) {
-                if ( result["tasks"][i]["status"] == "Done" || result["tasks"][i]["status"] == "Skip") {
+                if ( result["tasks"][i]["status"] == "Done" ) {
                     taskNum++
                     continue;
                 } else {
@@ -160,6 +160,9 @@ export default class ExecuteChecklist extends SfdxCommand {
                     let duration_ms = (end_timestamp - start_timestamp);
 
                     this.printDurationMinSec(duration_ms);
+
+                    if (result["tasks"][i]["status"] == "Skip")
+                        delete result["tasks"][i]["reason"];
 
                     result["tasks"][i]["status"] = responses["status"];
 
