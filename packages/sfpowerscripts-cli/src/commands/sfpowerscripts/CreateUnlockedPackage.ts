@@ -4,7 +4,9 @@ import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import {isNullOrUndefined} from "util";
 import {exec} from "shelljs";
-const fs = require("fs");
+const fs = require("fs-extra");
+const path = require("path");
+
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
@@ -25,7 +27,6 @@ export default class CreateUnlockedPackage extends SfdxCommand {
   `<refname>_sfpowerscripts_artifact_metadata_directory`
   ];
 
-  protected static requiresProject = true;
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
@@ -39,8 +40,9 @@ export default class CreateUnlockedPackage extends SfdxCommand {
     gittag: flags.boolean({description: messages.getMessage('gitTagFlagDescription')}),
     repourl: flags.string({char: 'r', description: messages.getMessage('repoUrlFlagDescription')}),
     versionnumber: flags.string({description: messages.getMessage('versionNumberFlagDescription')}),
-    configfilepath: flags.string({char: 'f', description: messages.getMessage('configFilePathFlagDescription'), default: 'config/project-scratch-def.json'}),
-    projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
+    configfilepath: flags.filepath({char: 'f', description: messages.getMessage('configFilePathFlagDescription'), default: 'config/project-scratch-def.json'}),
+    projectdir: flags.directory({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
+    artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription')}),
     enablecoverage: flags.boolean({description: messages.getMessage('enableCoverageFlagDescription')}),
     isvalidationtobeskipped: flags.boolean({char: 's', description: messages.getMessage('isValidationToBeSkippedFlagDescription')}),
     tag: flags.string({description: messages.getMessage('tagFlagDescription')}),
@@ -51,39 +53,20 @@ export default class CreateUnlockedPackage extends SfdxCommand {
 
   public async run(){
     try {
-      let sfdx_package: string = this.flags.package;
-      let version_number: string = this.flags.versionnumber;
-
-      if (isNullOrUndefined(version_number)) {
-        let sfdx_project_json = fs.readFileSync(
-          'sfdx-project.json',
-          'utf8'
-        );
-
-        let sfdx_project = JSON.parse(sfdx_project_json);
-
-        // Set version_number to package version number if available
-        sfdx_project.packageDirectories.forEach( (dir) => {
-          if (dir.package == sfdx_package) version_number = dir.versionNumber;
-        });
-      }
-
+      const sfdx_package: string = this.flags.package;
+      const version_number: string = this.flags.versionnumber;
+      const project_directory: string = this.flags.projectdir;
+      const artifact_directory: string = this.flags.artifactdir;
+      const refname: string = this.flags.refname;
 
       let tag: string = this.flags.tag;
       let config_file_path = this.flags.configfilepath;
       let installationkeybypass = this.flags.installationkeybypass;
       let isCoverageEnabled:boolean = this.flags.enablecoverage;
       let isSkipValidation:boolean = this.flags.isvalidationtobeskipped;
-
-      let installationkey;
-
-      if (!installationkeybypass)
-      installationkey = this.flags.installationkey;
-
-      let project_directory = this.flags.projectdir;
+      let installationkey = this.flags.installationkey;
       let devhub_alias = this.flags.devhubalias;
       let wait_time = this.flags.waittime;
-
       let build_artifact_enabled = this.flags.buildartifactenabled;
 
       let runBuild: boolean;
@@ -117,7 +100,7 @@ export default class CreateUnlockedPackage extends SfdxCommand {
 
         let command: string = await createUnlockedPackageImpl.buildExecCommand();
 
-        console.log(`Package Creation Command: ${command}`)
+        console.log(`Package Creation Command: ${command}`);
 
         let result:{packageVersionId:string,versionNumber:string, testCoverage:number,hasPassedCoverageCheck:boolean} = await createUnlockedPackageImpl.exec(
           command
@@ -155,26 +138,48 @@ export default class CreateUnlockedPackage extends SfdxCommand {
             package_type:"unlocked"
           };
 
-          let artifactFileName:string = `/${sfdx_package}_artifact_metadata`;
 
-          fs.writeFileSync(process.env.PWD + artifactFileName, JSON.stringify(metadata));
-
-          if (!isNullOrUndefined(this.flags.refname)) {
-            console.log("\nOutput variables:");
-            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_id=${result.packageVersionId}\n`, {flag:'a'});
-            console.log(`${this.flags.refname}_sfpowerscripts_package_version_id`);
-            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
-            console.log(`${this.flags.refname}_sfpowerscripts_artifact_metadata_directory`);
-            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_number=${result.versionNumber}\n`, {flag:'a'});
-            console.log(`${this.flags.refname}_sfpowerscripts_package_version_number`);
+          let abs_artifact_directory: string;
+          if (!isNullOrUndefined(project_directory)) {
+            // Base artifact directory on the project directory
+            if (!isNullOrUndefined(artifact_directory)) {
+              abs_artifact_directory = path.resolve(project_directory, artifact_directory);
+              fs.mkdirpSync(abs_artifact_directory);
+            } else {
+              abs_artifact_directory = path.resolve(project_directory);
+            }
           } else {
-            console.log("\nOutput variables:");
+            // Base artifact directory on the CWD
+            if (!isNullOrUndefined(artifact_directory)) {
+              abs_artifact_directory = path.resolve(artifact_directory);
+              fs.mkdirpSync(abs_artifact_directory);
+            } else {
+              abs_artifact_directory = process.cwd();
+            }
+          }
+
+          let artifactFilePath: string = path.join(
+            abs_artifact_directory,
+            `${sfdx_package}_artifact_metadata`
+          );
+
+          fs.writeFileSync(artifactFilePath, JSON.stringify(metadata));
+
+          console.log("\nOutput variables:");
+          if (!isNullOrUndefined(refname)) {
+            fs.writeFileSync('.env', `${refname}_sfpowerscripts_package_version_id=${result.packageVersionId}\n`, {flag:'a'});
+            console.log(`${refname}_sfpowerscripts_package_version_id=${result.packageVersionId}`);
+            fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_metadata_directory=${artifactFilePath}\n`, {flag:'a'});
+            console.log(`${refname}_sfpowerscripts_artifact_metadata_directory=${artifactFilePath}`);
+            fs.writeFileSync('.env', `${refname}_sfpowerscripts_package_version_number=${result.versionNumber}\n`, {flag:'a'});
+            console.log(`${refname}_sfpowerscripts_package_version_number=${result.versionNumber}`);
+          } else {
             fs.writeFileSync('.env', `sfpowerscripts_package_version_id=${result.packageVersionId}\n`, {flag:'a'});
-            console.log("sfpowerscripts_package_version_id");
-            fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
-            console.log("sfpowerscripts_artifact_metadata_directory");
+            console.log(`sfpowerscripts_package_version_id=${result.packageVersionId}`);
+            fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${artifactFilePath}\n`, {flag:'a'});
+            console.log(`sfpowerscripts_artifact_metadata_directory=${artifactFilePath}`);
             fs.writeFileSync('.env', `sfpowerscripts_package_version_number=${result.versionNumber}\n`, {flag:'a'});
-            console.log(`sfpowerscripts_package_version_number`);
+            console.log(`sfpowerscripts_package_version_number=${result.versionNumber}`);
           }
         }
       }

@@ -3,6 +3,7 @@
     "packageFlagDescription": "The name of the package",
     "versionNumberFlagDescription": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task",
     "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
+    "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
     "diffCheckFlagDescription": "Only build when the package has changed",
     "gitTagFlagDescription": "Tag the current commit ID with an annotated tag containing the package name and version - does not push tag",
     "repoUrlFlagDescription": "Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config",

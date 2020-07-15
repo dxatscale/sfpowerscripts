@@ -1,9 +1,11 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl';
-import {exec} from "shelljs";
-const fs = require("fs");
-import {isNullOrUndefined} from "util"
+import { exec } from "shelljs";
+const fs = require("fs-extra");
+import {isNullOrUndefined} from "util";
+import { string } from '@oclif/command/lib/flags';
+const path = require("path");
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -29,7 +31,8 @@ export default class CreateSourcePackage extends SfdxCommand {
   protected static flagsConfig = {
     package: flags.string({required: true, char: 'n', description: messages.getMessage('packageFlagDescription')}),
     versionnumber: flags.string({required: true, char: 'v', description: messages.getMessage('versionNumberFlagDescription')}),
-    projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
+    projectdir: flags.directory({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
+    artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription')}),
     diffcheck: flags.boolean({description: messages.getMessage('diffCheckFlagDescription')}),
     gittag: flags.boolean({description: messages.getMessage('gitTagFlagDescription')}),
     repourl: flags.string({char: 'r', description: messages.getMessage('repoUrlFlagDescription')}),
@@ -39,9 +42,11 @@ export default class CreateSourcePackage extends SfdxCommand {
 
   public async run(){
     try {
-      let sfdx_package: string = this.flags.package;
-      let version_number: string = this.flags.versionnumber;
-      let project_directory: string = this.flags.projectdir;
+      const sfdx_package: string = this.flags.package;
+      const version_number: string = this.flags.versionnumber;
+      const project_directory: string = this.flags.projectdir;
+      const artifact_directory: string = this.flags.artifactdir;
+      const refname: string = this.flags.refname;
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
@@ -77,9 +82,35 @@ export default class CreateSourcePackage extends SfdxCommand {
           package_type:"source"
         };
 
-        let artifactFileName:string = `/${sfdx_package}_artifact_metadata`;
 
-        fs.writeFileSync(process.env.PWD + artifactFileName, JSON.stringify(metadata));
+        let abs_artifact_directory: string;
+        if (!isNullOrUndefined(project_directory)) {
+          // Base artifact directory on the project directory
+          if (!isNullOrUndefined(artifact_directory)) {
+            abs_artifact_directory = path.resolve(project_directory, artifact_directory);
+            fs.mkdirpSync(abs_artifact_directory);
+          } else {
+            abs_artifact_directory = path.resolve(project_directory);
+          }
+        } else {
+          // Base artifact directory on the CWD
+          if (!isNullOrUndefined(artifact_directory)) {
+            abs_artifact_directory = path.resolve(artifact_directory);
+            fs.mkdirpSync(abs_artifact_directory);
+          } else {
+            abs_artifact_directory = process.cwd();
+          }
+        }
+
+        let artifactFilePath: string = path.join(
+          abs_artifact_directory,
+          `${sfdx_package}_artifact_metadata`
+        );
+
+        fs.writeFileSync(
+          artifactFilePath,
+          JSON.stringify(metadata)
+        );
         console.log(`Created source package ${sfdx_package}_artifact_metadata`);
 
         if (this.flags.gittag) {
@@ -91,18 +122,17 @@ export default class CreateSourcePackage extends SfdxCommand {
           exec(`git tag -a -m "${sfdx_package} Source Package ${version_number}" ${tagname} HEAD`, {silent:false});
         }
 
-        if (!isNullOrUndefined(this.flags.refname)) {
-          console.log("\nOutput variables:");
-          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
-          console.log(`${this.flags.refname}_sfpowerscripts_artifact_metadata_directory`);
-          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});
-          console.log(`${this.flags.refname}_sfpowerscripts_package_version_number`);
+        console.log("\nOutput variables:");
+        if (!isNullOrUndefined(refname)) {
+          fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_metadata_directory=${artifactFilePath}\n`, {flag:'a'});
+          console.log(`${refname}_sfpowerscripts_artifact_metadata_directory=${artifactFilePath}`);
+          fs.writeFileSync('.env', `${refname}_sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});
+          console.log(`${refname}_sfpowerscripts_package_version_number=${version_number}`);
         } else {
-          console.log("\nOutput variables:");
-          fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${process.env.PWD}/${sfdx_package}_artifact_metadata\n`, {flag:'a'});
-          console.log(`sfpowerscripts_artifact_metadata_directory`);
+          fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${artifactFilePath}\n`, {flag:'a'});
+          console.log(`sfpowerscripts_artifact_metadata_directory=${artifactFilePath}`);
           fs.writeFileSync('.env', `sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});
-          console.log(`sfpowerscripts_package_version_number`);
+          console.log(`sfpowerscripts_package_version_number=${version_number}`);
         }
 
         // AppInsights.trackTask("sfpwowerscripts-createsourcepackage-task");

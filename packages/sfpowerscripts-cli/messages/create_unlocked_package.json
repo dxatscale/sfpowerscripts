@@ -11,6 +11,7 @@
     "versionNumberFlagDescription": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task",
     "configFilePathFlagDescription": "Path in the current project directory containing  config file for the packaging org",
     "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
+    "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
     "enableCoverageFlagDescription": "Please note this command takes a longer time to compute, activating this on every packaging build might not necessary",
     "isValidationToBeSkippedFlagDescription": "Skips validation of dependencies, package ancestors, and metadata during package version creation. Skipping validation reduces the time it takes to create a new package version, but package versions created without validation can’t be promoted.",
     "tagFlagDescription": "the package version's tag",
