@@ -13,7 +13,7 @@
     "@oclif/config": "^1",
     "@oclif/errors": "^1",
     "@salesforce/command": "^2",
-    "@salesforce/core": "^2",
+    "@salesforce/core": "^2.6.0",
     "fs-extra": "^9.0.1",
     "shelljs": "^0.8.3"
   },
