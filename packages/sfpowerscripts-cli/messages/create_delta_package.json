@@ -6,6 +6,7 @@
     "buildArtifactEnabledFlagDescription": "Create a build artifact, so that this pipeline can be consumed by a release pipeline",
     "repoUrlFlagDescription": "Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config",
     "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
+    "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
     "versionNameFlagDescription": "Provide a meaningful name such as the default value, so this artifact can be identified in the release",
     "generateDestructiveManifestFlagDescription": "Check this option to generate a destructive manifest to be deployed",
     "bypassDirectoriesFlagDescription": "Ignore a comma seperated list of directories that need to be ignored while a diff is generated",

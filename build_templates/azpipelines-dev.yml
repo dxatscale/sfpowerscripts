@@ -1,4 +1,4 @@
-name: Milestone15$(Rev:.r)
+name: Milestone16$(Rev:.r)
 
 pr:
   branches:
@@ -82,4 +82,3 @@ stages:
                inputs:
                      script: |
                       az devops extension install --extension-id sfpowerscripts-dev  --publisher-id AzlamSalam --org https://dev.azure.com/safebot
-
