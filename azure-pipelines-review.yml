@@ -31,12 +31,9 @@ stages:
   dependsOn: []
   jobs:
 
-  - template: build_templates/deciderjob.yml
 
   - job: BuildCLI
     displayName: 'Build To Validate CLI'
-    dependsOn: InstallNodeModules
-    condition:  succeeded('InstallNodeModules')
     timeoutInMinutes: 10
     pool:
       vmImage: 'ubuntu-latest'
@@ -50,10 +47,6 @@ stages:
 
   - deployment: BuildAzPipelines
     displayName: 'Build and Deploy Azure Pipelines Extension to Review'
-    dependsOn: InstallNodeModules
-    condition:   succeeded('InstallNodeModules')
-    variables:
-      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
     timeoutInMinutes: 40
     pool:
       vmImage: 'ubuntu-latest'
