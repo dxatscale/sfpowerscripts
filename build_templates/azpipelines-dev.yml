@@ -1,31 +1,11 @@
 name: Milestone16$(Rev:.r)
 
-pr:
-  branches:
-    include:
-    - develop
-    - master
-    - release/*
-  paths:
-    include:
-      - '*'
-    exclude:
-      - 'docs/*'
-
-trigger:
-  branches:
-    include:
-     - release/*
-     - develop
-  paths:
-    exclude:
-    - 'docs/*'
 
 
 variables:
  - group: Tokens
  - name: major
-   value: 15
+   value: 16
 
  - name: minor
    value: $[counter(variables['major'], 200)]
@@ -39,13 +19,9 @@ stages:
   condition:  eq(variables['build.Reason'], 'Manual')
   jobs:
 
-  - template: deciderjob.yml
 
   - deployment: BuildAzPipelines
     displayName: 'Build and Deploy Azure Pipelines Extension to Develop'
-    dependsOn: InstallNodeModules
-    variables:
-      isCoreUpdated: $[ dependencies.InstallNodeModules.outputs['Builddeciderstep.isCoreUpdated'] ]
     timeoutInMinutes: 40
     pool:
       vmImage: 'ubuntu-latest'

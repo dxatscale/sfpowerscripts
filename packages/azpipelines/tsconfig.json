@@ -6,11 +6,16 @@
       "lib": [ "es6","DOM" ],
       "sourceMap": true,
       "strict": false,
+      "noImplicitAny": false,
       "strictNullChecks": false,
       "removeComments": true,
       "resolveJsonModule": true,
       "esModuleInterop": true  
-    }
+    },
+    "exclude": [
+      "node_modules",
+      "lib"
+    ]
   }
   
   
