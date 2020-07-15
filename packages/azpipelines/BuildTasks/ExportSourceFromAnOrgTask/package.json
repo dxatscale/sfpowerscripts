@@ -15,6 +15,6 @@
   "dependencies": {
     "@dxatscale/sfpowerscripts.core": "^0.4.4",
     "applicationinsights": "^1.6.0",
-    "azure-pipelines-task-lib": "^2.8.0"
+    "azure-pipelines-task-lib": "^2.9.6"
   }
 }

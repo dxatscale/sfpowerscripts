@@ -29,7 +29,7 @@
     "azure-devops-extension-sdk": "~2.0.11",
     "azure-devops-node-api": "7.2.0",
     "azure-devops-ui": "^1.160.4",
-    "azure-pipelines-task-lib": "^2.9.3",
+    "azure-pipelines-task-lib": "^2.9.6",
     "fs-extra": "^8.1.0",
     "nanoid": "^2.1.11",
     "react": "~16.8.1",

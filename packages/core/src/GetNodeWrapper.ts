@@ -26,7 +26,7 @@ export async function loadSFDX(sfdxmoduleDirectory: string) {
         ),
         path.join(yarnGlobalPath, "node_modules/salesforce-alm"),
         path.join(npmGlobalPath, "salesforce-alm"),
-        sfdxmoduleDirectory,
+        sfdxmoduleDirectory==null || sfdxmoduleDirectory==undefined?"":sfdxmoduleDirectory
       ],
     })
   );

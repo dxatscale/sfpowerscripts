@@ -13,8 +13,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "azure-devops-node-api": "7.2.0",
-    "azure-pipelines-task-lib": "^2.8.0",
+    "azure-devops-node-api": "10.1.1",
+    "azure-pipelines-task-lib": "^2.9.6",
     "fs-extra": "^8.1.0",
     "nanoid": "^2.1.8"
   }
