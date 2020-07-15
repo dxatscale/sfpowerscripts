@@ -24,13 +24,13 @@ async function run() {
     const publish_wait_time = tl.getInput("publish_wait_time", false);
 
     let module_path = tl.getVariable("sfpowerkit_module_path");
-    if (module_path == null || module_path == undefined) {
-      tl.setResult(
-        tl.TaskResult.Failed,
-        "Ensure Install SFDX Task with sfpowerkit is added to the pipeline"
-      );
-      return;
-    }
+    // if (module_path == null || module_path == undefined) {
+    //   tl.setResult(
+    //     tl.TaskResult.Failed,
+    //     "Ensure Install SFDX Task with sfpowerkit is added to the pipeline"
+    //   );
+    //   return;
+    // }
 
     let package_version_id: string;
 

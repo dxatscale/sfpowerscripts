@@ -1,6 +1,6 @@
 import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl';
-import { flags, SfdxCommand } from '@salesforce/command';
-import { Messages } from '@salesforce/core';
+import { flags, SfdxCommand } from "@salesforce/command";
+import { Messages } from "@salesforce/core";
 const fs = require("fs");
 const path = require("path");
 
@@ -9,43 +9,79 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_unlocked_package');
+const messages = Messages.loadMessages(
+  "@dxatscale/sfpowerscripts",
+  "install_unlocked_package"
+);
 
 export default class InstallUnlockedPackage extends SfdxCommand {
-
-  public static description = messages.getMessage('commandDescription');
+  public static description = messages.getMessage("commandDescription");
 
   public static examples = [
-  `sfdx sfpowerscripts:InstallUnlockedPackage -n packagename -u sandboxalias -i
-  `
+    `sfdx sfpowerscripts:InstallUnlockedPackage -n packagename -u sandboxalias -i
+  `,
   ];
 
-
   protected static flagsConfig = {
-    package: flags.string({char: 'n', description: messages.getMessage('packageFlagDescription')}),
-    envname: flags.string({char: 'u', description: messages.getMessage('envNameFlagDescription')}),
-    packageinstalledfrom: flags.boolean({char: 'i', description: messages.getMessage('packageInstalledFromFlagDescription')}),
-    packageversionid: flags.string({char: 'v', description: messages.getMessage('packageVersionIdFlagDescription'), exclusive: ['packageinstalledfrom']}),
-    installationkey : flags.string({char: 'k', description: messages.getMessage('installationKeyFlagDescription')}),
-    apexcompileonlypackage : flags.boolean({char: 'a', description: messages.getMessage('apexCompileOnlyPackageFlagDescription')}),
-    securitytype : flags.string({description: messages.getMessage('securityTypeFlagDescription'), options: ['AllUsers', 'AdminsOnly'], default: 'AllUsers'}),
-    skiponmissingartifact: flags.boolean({char: 's', description: messages.getMessage('skipOnMissingArtifactFlagDescription'), dependsOn: ['packageinstalledfrom']}),
-    skipifalreadyinstalled:flags.boolean({char: 'f', description: messages.getMessage('skipIfAlreadyInstalled')}),
-    upgradetype: flags.string({description: messages.getMessage('upgradeTypeFlagDescription'), options: ['DeprecateOnly', 'Mixed', 'Delete'], default: 'Mixed'}),
-    waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '120'}),
-    publishwaittime: flags.string({description: messages.getMessage('publishWaitTimeFlagDescription'), default: '10'})
+    package: flags.string({
+      char: "n",
+      description: messages.getMessage("packageFlagDescription"),
+    }),
+    envname: flags.string({
+      char: "u",
+      description: messages.getMessage("envNameFlagDescription"),
+    }),
+    packageinstalledfrom: flags.boolean({
+      char: "i",
+      description: messages.getMessage("packageInstalledFromFlagDescription"),
+    }),
+    packageversionid: flags.string({
+      char: "v",
+      description: messages.getMessage("packageVersionIdFlagDescription"),
+      exclusive: ["packageinstalledfrom"],
+    }),
+    installationkey: flags.string({
+      char: "k",
+      description: messages.getMessage("installationKeyFlagDescription"),
+    }),
+    apexcompileonlypackage: flags.boolean({
+      char: "a",
+      description: messages.getMessage("apexCompileOnlyPackageFlagDescription"),
+    }),
+    securitytype: flags.string({
+      description: messages.getMessage("securityTypeFlagDescription"),
+      options: ["AllUsers", "AdminsOnly"],
+      default: "AllUsers",
+    }),
+    skiponmissingartifact: flags.boolean({
+      char: "s",
+      description: messages.getMessage("skipOnMissingArtifactFlagDescription"),
+      dependsOn: ["packageinstalledfrom"],
+    }),
+    skipifalreadyinstalled: flags.boolean({
+      char: "f",
+      description: messages.getMessage("skipIfAlreadyInstalled"),
+    }),
+    upgradetype: flags.string({
+      description: messages.getMessage("upgradeTypeFlagDescription"),
+      options: ["DeprecateOnly", "Mixed", "Delete"],
+      default: "Mixed",
+    }),
+    waittime: flags.string({
+      description: messages.getMessage("waitTimeFlagDescription"),
+      default: "120",
+    }),
+    publishwaittime: flags.string({
+      description: messages.getMessage("publishWaitTimeFlagDescription"),
+      default: "10",
+    }),
   };
-
 
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async run(){
-   try {
-
-
-
-
+  public async run() {
+    try {
       const envname: string = this.flags.envname;
       const sfdx_package: string = this.flags.package;
       let skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;
@@ -74,7 +110,9 @@ export default class InstallUnlockedPackage extends SfdxCommand {
           `${sfdx_package}_artifact_metadata`
         );
 
-        console.log(`Checking for ${sfdx_package} Build Artifact at path ${package_version_id_file_path}`);
+        console.log(
+          `Checking for ${sfdx_package} Build Artifact at path ${package_version_id_file_path}`
+        );
         if (!fs.existsSync(package_version_id_file_path)) {
           console.log(
             `New Artifact format not found at the location ${package_version_id_file_path} `
@@ -82,15 +120,23 @@ export default class InstallUnlockedPackage extends SfdxCommand {
           console.log("Falling back to older artifact format");
           package_version_id_file_path = path.join(
             artifact_directory,
-            'artifact_metadata'
+            "artifact_metadata"
           );
 
-          if (!fs.existsSync(package_version_id_file_path) && !skip_on_missing_artifact) {
+          if (
+            !fs.existsSync(package_version_id_file_path) &&
+            !skip_on_missing_artifact
+          ) {
             throw new Error(
               `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
             );
-          } else if(!fs.existsSync(package_version_id_file_path) && skip_on_missing_artifact) {
-            console.log(`Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${skip_on_missing_artifact}`);
+          } else if (
+            !fs.existsSync(package_version_id_file_path) &&
+            skip_on_missing_artifact
+          ) {
+            console.log(
+              `Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${skip_on_missing_artifact}`
+            );
             process.exit(0);
           }
         }
@@ -105,7 +151,6 @@ export default class InstallUnlockedPackage extends SfdxCommand {
 
         package_version_id = package_metadata.package_version_id;
         console.log(`Using Package Version Id ${package_version_id}`);
-
       } else {
         package_version_id = this.flags.packageversionid;
       }
@@ -114,7 +159,7 @@ export default class InstallUnlockedPackage extends SfdxCommand {
         installationkey: installationkey,
         apexcompile: apexcompileonlypackage ? `package` : `all`,
         securitytype: security_type,
-        upgradetype: upgrade_type
+        upgradetype: upgrade_type,
       };
 
       let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
@@ -128,8 +173,7 @@ export default class InstallUnlockedPackage extends SfdxCommand {
       );
 
       await installUnlockedPackageImpl.exec();
-
-    } catch(err) {
+    } catch (err) {
       // AppInsights.trackTaskEvent("sfpwowerscript-installunlockedpackage-task",err);
       console.log(err);
       // Fail the task when an error occurs
@@ -137,3 +181,4 @@ export default class InstallUnlockedPackage extends SfdxCommand {
     }
   }
 }
+
