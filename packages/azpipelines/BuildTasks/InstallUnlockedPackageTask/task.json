@@ -123,6 +123,14 @@
             "defaultValue": false,
             "required": false,
             "helpMarkDown": "Do not fail the task if attached artifact is missing,Use it to skip artifact installation by removing attached artifacts"
+        },
+        {
+            "name": "skip_if_package_installed",
+            "type": "boolean",
+            "label": "Skip If the package is already installed in the org",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Skip installation of package, if its already installed in the org"
         }
     ],
     "execution": {

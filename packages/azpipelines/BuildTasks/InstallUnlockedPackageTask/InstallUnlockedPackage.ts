@@ -9,6 +9,7 @@ async function run() {
     const sfdx_package: string = tl.getInput("package", true);
     const package_installedfrom = tl.getInput("packageinstalledfrom", true);
     const artifact = tl.getInput("artifact", true);
+    const skip_if_package_installed= tl.getBoolInput("skip_if_package_installed",false);
     let skip_on_missing_artifact = tl.getBoolInput(
       "skip_on_missing_artifact",
       false
@@ -73,7 +74,7 @@ async function run() {
       options,
       wait_time,
       publish_wait_time,
-      true,
+      skip_if_package_installed,
       module_path
     );
 
