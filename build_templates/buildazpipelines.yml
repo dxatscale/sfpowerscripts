@@ -43,11 +43,17 @@ steps:
 
           - task: Cache@2
             displayName: Cache NPM Modules
+            continueOnError: true
             inputs:
-              key: 'npm | "$(Agent.OS)"  | package-lock.json'
+              key: 'npm | "$(Agent.OS)" | package-lock.json'
               path: '$(System.DefaultWorkingDirectory)/node_modules'
-              cacheHitVar: 'npm | "$(Agent.OS)"'            
+              cacheHitVar: 'npm | "$(Agent.OS)"'   
 
+          - task: CmdLine@2
+            displayName: Install Node depdencies
+            inputs:
+              script: 'npm install'
+           
 
           - script: 'npx lerna bootstrap'
             displayName: 'Bootstrap Lerna'

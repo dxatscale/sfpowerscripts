@@ -13,7 +13,7 @@ trigger:
 variables:
  - group: Tokens
  - name: major
-   value: 15
+   value: 16
 
  - name: minor
    value: $[counter(variables['major'], 200)]
@@ -28,12 +28,9 @@ stages:
   dependsOn: []
   jobs:
 
-  - template: build_templates/deciderjob.yml
 
   - job: BuildCLI
-    dependsOn: InstallNodeModules
     displayName: sfdx-plugin
-    condition:   succeeded('InstallNodeModules')
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -47,8 +44,6 @@ stages:
 
   - deployment: BuildAzPipelines
     displayName: azpipelines
-    dependsOn: InstallNodeModules
-    condition:  succeeded('InstallNodeModules')
     timeoutInMinutes: 20
     pool:
       vmImage: 'ubuntu-latest'
@@ -76,12 +71,9 @@ stages:
   dependsOn: Alpha
   jobs:
 
-  - template: build_templates/deciderjob.yml
 
   - job: BuildCLI
     displayName: sfdx-plugin
-    dependsOn: InstallNodeModules
-    condition:   succeeded('InstallNodeModules')
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -95,8 +87,6 @@ stages:
 
   - deployment: BuildAzPipelines
     displayName: azpipelines
-    dependsOn: InstallNodeModules
-    condition:  succeeded('InstallNodeModules')
     timeoutInMinutes: 20
     pool:
       vmImage: 'ubuntu-latest'
@@ -123,12 +113,9 @@ stages:
   dependsOn: Beta
   jobs:
 
-  - template: build_templates/deciderjob.yml
 
   - job: BuildCLI
     displayName: sfdx-plugin
-    dependsOn: InstallNodeModules
-    condition:   succeeded('InstallNodeModules')
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -143,7 +130,6 @@ stages:
   - deployment: BuildAzPipelines
     displayName: azpipelines
     dependsOn: BuildCLI
-    condition:  succeeded('InstallNodeModules')
     timeoutInMinutes: 30
     pool:
       vmImage: 'ubuntu-latest'
