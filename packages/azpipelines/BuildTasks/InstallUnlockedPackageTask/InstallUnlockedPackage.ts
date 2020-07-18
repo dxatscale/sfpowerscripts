@@ -16,6 +16,7 @@ async function run() {
     const upgrade_type = tl.getInput("upgrade_type", false);
     const wait_time = tl.getInput("wait_time", false);
     const publish_wait_time = tl.getInput("publish_wait_time", false);
+    const skip_if_package_installed= tl.getBoolInput("skip_if_package_installed",false);
 
     let package_version_id:string;
 
@@ -60,7 +61,8 @@ async function run() {
       envname,
       options,
       wait_time,
-      publish_wait_time
+      publish_wait_time,
+      skip_if_package_installed
     );
 
     await installUnlockedPackageImpl.exec();

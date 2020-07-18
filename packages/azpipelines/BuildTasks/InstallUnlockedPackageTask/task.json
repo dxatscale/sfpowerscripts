@@ -117,6 +117,14 @@
             "helpMarkDown": "Number of minutes to wait for subscriber package version ID to become available in the target org"
         },
         {
+            "name": "skip_if_package_installed",
+            "type": "boolean",
+            "label": "Skip If the package is already installed in the org",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Skip installation of package, if its already installed in the org"
+        },
+        {
             "name": "skip_on_missing_artifact",
             "type": "boolean",
             "label": "Skip If no artifact is found",
