@@ -12,7 +12,7 @@ export default class InstallUnlockedPackageImpl {
     private skip_if_package_installed: boolean
   ) {}
 
-  public async exec(): Promise<void> {
+  public async exec(): Promise<PackageInstallationResult> {
 
 
     
@@ -24,7 +24,9 @@ export default class InstallUnlockedPackageImpl {
     if (!isPackageInstalled) {
       let command = this.buildPackageInstallCommand();
       let child = child_process.exec(command, (error, stdout, stderr) => {
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
       });
 
       child.stdout.on("data", (data) => {
@@ -32,8 +34,10 @@ export default class InstallUnlockedPackageImpl {
       });
 
       await onExit(child);
+      return PackageInstallationResult.Succeeded;
     } else {
       console.log("Skipping Package Installation")
+      return PackageInstallationResult.Skipped
     }
   }
 
@@ -76,10 +80,14 @@ export default class InstallUnlockedPackageImpl {
       console.log(
         "Unable to check whether this package is installed in the target org"
       );
-      console.log(error);
       return false;
     }
   }
+}
+
+export enum PackageInstallationResult {
+  Skipped,
+  Succeeded
 }
 
 interface PackageInfo {

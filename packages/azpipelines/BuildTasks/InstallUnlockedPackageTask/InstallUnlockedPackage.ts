@@ -1,5 +1,5 @@
 import tl = require("azure-pipelines-task-lib/task");
-import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
+import InstallUnlockedPackageImpl, { PackageInstallationResult } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
 var fs = require("fs");
 const path = require("path");
 
@@ -65,7 +65,19 @@ async function run() {
       skip_if_package_installed
     );
 
-    await installUnlockedPackageImpl.exec();
+    
+    let result:PackageInstallationResult = await installUnlockedPackageImpl.exec();
+    if(result == PackageInstallationResult.Skipped)
+    {
+      tl.setResult(tl.TaskResult.Skipped,"Skipping Package Installation as already installed");
+    }
+    else
+    {
+      tl.setResult(tl.TaskResult.Succeeded,"Package Installed Successfully");
+    }
+
+
+
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
