@@ -8,8 +8,8 @@ async function run() {
     const envname: string = tl.getInput("envname", true);
     const sfdx_package: string = tl.getInput("package", true);
     const package_installedfrom = tl.getInput("packageinstalledfrom", true);
-    const artifact = tl.getInput("artifact", true);
-    let skip_on_missing_artifact = tl.getBoolInput("skip_on_missing_artifact", false);
+    const artifact = tl.getInput("artifact", false);
+    const skip_on_missing_artifact = tl.getBoolInput("skip_on_missing_artifact", false);
     const installationkey = tl.getInput("installationkey", false);
     const apexcompileonlypackage = tl.getBoolInput("apexcompileonlypackage", false);
     const security_type = tl.getInput("security_type", false);
