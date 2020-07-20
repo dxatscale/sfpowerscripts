@@ -1,5 +1,5 @@
 import tl = require("azure-pipelines-task-lib/task");
-import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
+import InstallUnlockedPackageImpl, { PackageInstallationResult } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
 var fs = require("fs");
 const path = require("path");
 
@@ -8,14 +8,15 @@ async function run() {
     const envname: string = tl.getInput("envname", true);
     const sfdx_package: string = tl.getInput("package", true);
     const package_installedfrom = tl.getInput("packageinstalledfrom", true);
-    const artifact = tl.getInput("artifact", true);
-    let skip_on_missing_artifact = tl.getBoolInput("skip_on_missing_artifact", false);
+    const artifact = tl.getInput("artifact", false);
+    const skip_on_missing_artifact = tl.getBoolInput("skip_on_missing_artifact", false);
     const installationkey = tl.getInput("installationkey", false);
     const apexcompileonlypackage = tl.getBoolInput("apexcompileonlypackage", false);
     const security_type = tl.getInput("security_type", false);
     const upgrade_type = tl.getInput("upgrade_type", false);
     const wait_time = tl.getInput("wait_time", false);
     const publish_wait_time = tl.getInput("publish_wait_time", false);
+    const skip_if_package_installed= tl.getBoolInput("skip_if_package_installed",false);
 
     let package_version_id:string;
 
@@ -60,10 +61,23 @@ async function run() {
       envname,
       options,
       wait_time,
-      publish_wait_time
+      publish_wait_time,
+      skip_if_package_installed
     );
 
-    await installUnlockedPackageImpl.exec();
+    
+    let result:PackageInstallationResult = await installUnlockedPackageImpl.exec();
+    if(result == PackageInstallationResult.Skipped)
+    {
+      tl.setResult(tl.TaskResult.Skipped,"Skipping Package Installation as already installed");
+    }
+    else
+    {
+      tl.setResult(tl.TaskResult.Succeeded,"Package Installed Successfully");
+    }
+
+
+
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
   }

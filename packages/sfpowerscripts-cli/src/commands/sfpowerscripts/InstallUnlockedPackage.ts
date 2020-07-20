@@ -29,6 +29,7 @@ export default class InstallUnlockedPackage extends SfdxCommand {
     installationkey : flags.string({char: 'k', description: messages.getMessage('installationKeyFlagDescription')}),
     apexcompileonlypackage : flags.boolean({char: 'a', description: messages.getMessage('apexCompileOnlyPackageFlagDescription')}),
     securitytype : flags.string({description: messages.getMessage('securityTypeFlagDescription'), options: ['AllUsers', 'AdminsOnly'], default: 'AllUsers'}),
+    skipifalreadyinstalled: flags.boolean({char: "f",description: messages.getMessage("skipIfAlreadyInstalled")}),
     skiponmissingartifact: flags.boolean({char: 's', description: messages.getMessage('skipOnMissingArtifactFlagDescription'), dependsOn: ['packageinstalledfrom']}),
     upgradetype: flags.string({description: messages.getMessage('upgradeTypeFlagDescription'), options: ['DeprecateOnly', 'Mixed', 'Delete'], default: 'Mixed'}),
     waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '120'}),
@@ -52,6 +53,7 @@ export default class InstallUnlockedPackage extends SfdxCommand {
       const upgrade_type = this.flags.upgradetype;
       const wait_time = this.flags.waittime;
       const publish_wait_time = this.flags.publishwaittime;
+      const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
 
       let package_version_id;
 
@@ -116,7 +118,8 @@ export default class InstallUnlockedPackage extends SfdxCommand {
         envname,
         options,
         wait_time,
-        publish_wait_time
+        publish_wait_time,
+        skipIfAlreadyInstalled
       );
 
       await installUnlockedPackageImpl.exec();

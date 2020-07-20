@@ -66,6 +66,13 @@ steps:
               path: '$(System.DefaultWorkingDirectory)/node_modules'
               cacheHitVar: 'npm | "$(Agent.OS)"'
 
+      
+          - task: CmdLine@2
+            displayName: Install Node depdencies
+            inputs:
+              script: 'npm install'
+           
+
           - task: DownloadSecureFile@1
             displayName: 'Download secure file .npmrc'
             name: npmrc
