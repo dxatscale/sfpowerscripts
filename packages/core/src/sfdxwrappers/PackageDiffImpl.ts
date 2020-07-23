@@ -113,8 +113,12 @@ export default class PackageDiffImpl {
       tags
     );
 
-    console.log("Analzying tags:");
-    console.log(tagsPointingToBranch.toString().replace(/,/g, "\n"));
+    console.log("Analysing tags:");
+    if (tagsPointingToBranch.length > 10) {
+      console.log(tagsPointingToBranch.slice(-10).toString().replace(/,/g, "\n"));
+    } else {
+      console.log(tagsPointingToBranch.toString().replace(/,/g, "\n"));
+    }
 
     let latestTag = tagsPointingToBranch.pop(); // Select latest tag
     return latestTag;
