@@ -17,12 +17,15 @@ export default class CreateUnlockedPackage extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:CreateUnlockedPackage -n packagealias -b -x -v HubOrg --tag tagname\n` +
-  `Output variable:\n` +
-  `sfpowerscripts_package_version_id\n` +
-  `<refname>_sfpowerscripts_package_version_id\n` +
-  `sfpowerscripts_artifact_metadata_directory\n` +
-  `<refname>_sfpowerscripts_artifact_metadata_directory`
+    `$ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
+    `$ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
+    `Output variable:`,
+    `sfpowerscripts_package_version_id`,
+    `<refname>_sfpowerscripts_package_version_id`,
+    `sfpowerscripts_artifact_metadata_directory`,
+    `<refname>_sfpowerscripts_artifact_metadata_directory`,
+    `sfpowerscripts_package_version_number`,
+    `<refname>_sfpowerscripts_package_version_number`
   ];
 
   protected static requiresProject = true;

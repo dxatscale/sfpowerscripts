@@ -1,6 +1,6 @@
 # sfpowerscripts
 
-Simple wrappers around sfdx commands to help set up CI/CD quickly. These commands are universal and may be used on any automation platform, as long as a shell process is available for executing the commands.  
+Simple wrappers around sfdx commands to help set up CI/CD quickly. These commands are universal and may be used on any automation platform, as long as a shell process is available for executing the commands.
 
 ## Installation
 The [SFDX CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) and [sfpowerkit plugin](https://github.com/Accenture/sfpowerkit) are required for this plugin to work. If you have not already done so, please install both of these before continuing.
@@ -72,6 +72,7 @@ $ echo $utility_sfpowerscripts_package_version_id
 * [`sfpowerscripts:CreateUnlockedPackage`](#sfpowerscriptscreateunlockedpackage)
 * [`sfpowerscripts:DeployDestructiveManifest`](#sfpowerscriptsdeploydestructivemanifest)
 * [`sfpowerscripts:DeploySource`](#sfpowerscriptsdeploysource)
+* [`sfpowerscripts:ExecuteChecklist`](#sfpowerscriptsexecutechecklist)
 * [`sfpowerscripts:ExportSource`](#sfpowerscriptsexportsource)
 * [`sfpowerscripts:IncrementBuildNumber`](#sfpowerscriptsincrementbuildnumber)
 * [`sfpowerscripts:InstallUnlockedPackage`](#sfpowerscriptsinstallunlockedpackage)
@@ -194,8 +195,9 @@ OPTIONS
   --refname=refname                                                                 Reference name to be prefixed to
                                                                                     output variables
 
-EXAMPLE
-  $ sfdx sfpowerscripts:CreateDeltaPackage -n packagename -r 61635fb -t 3cf01b9 -v 1.2.10 -b
+EXAMPLES
+  $ sfdx sfpowerscripts:CreateDeltaPackage -n <packagename> -r <61635fb> -t <3cf01b9> -v <version> -b
+
   Output variable:
   sfpowerscripts_delta_package_path
   <refname>_sfpowerscripts_delta_package_path
@@ -231,11 +233,15 @@ OPTIONS
   --refname=refname
       Reference name to be prefixed to output variables
 
-EXAMPLE
-  $ sfdx sfpowerscripts:CreateSourcePackage -n packagename -v 1.5.10
+EXAMPLES
+  $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --refname <name>
+  $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --diffcheck --gittag
+
   Output variable:
   sfpowerscripts_artifact_metadata_directory
   <refname>_sfpowerscripts_artifact_metadata_directory
+  sfpowerscripts_package_version_number
+  <refname>_sfpowerscripts_package_version_number
 ```
 
 _See code: [lib/commands/sfpowerscripts/CreateSourcePackage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/CreateSourcePackage.js)_
@@ -302,13 +308,17 @@ OPTIONS
   --waittime=waittime
       [default: 120] wait time for command to finish in minutes
 
-EXAMPLE
-  $ sfdx sfpowerscripts:CreateUnlockedPackage -n packagealias -b -x -v HubOrg --tag tagname
+EXAMPLES
+  $ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --refname <name>
+  $ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag
+
   Output variable:
   sfpowerscripts_package_version_id
   <refname>_sfpowerscripts_package_version_id
   sfpowerscripts_artifact_metadata_directory
   <refname>_sfpowerscripts_artifact_metadata_directory
+  sfpowerscripts_package_version_number
+  <refname>_sfpowerscripts_package_version_number
 ```
 
 _See code: [lib/commands/sfpowerscripts/CreateUnlockedPackage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/CreateUnlockedPackage.js)_
@@ -412,6 +422,37 @@ EXAMPLE
 ```
 
 _See code: [lib/commands/sfpowerscripts/DeploySource.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/DeploySource.js)_
+
+## `sfpowerscripts:ExecuteChecklist`
+
+Interactive tool for keeping track of the manual steps performed during a release. The command can execute a checklist of tasks or resume execution of an execution log.
+
+```
+USAGE
+  $ sfdx sfpowerscripts:ExecuteChecklist -o <directory> [-f <filepath>] [--alias <string>] [--executionlog <filepath>] [--json] [--loglevel
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -f, --checklistfilepath=checklistfilepath                                         The path to the checklist, containing tasks to be run.
+                                                                                    Visit [link] for the checklist schema
+
+  -o, --outputdir=outputdir                                                         (required) The directory to output execution logs.
+                                                                                    Sub-directories for the alias & date are automatically
+                                                                                    created
+
+  --alias=alias                                                                     Execute tasks with the alias or username e.g. SIT
+
+  --executionlog=executionlog                                                       File path of the execution log from which to resume
+                                                                                    execution
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for this command invocation
+
+EXAMPLE
+  $ sfdx sfpowerscripts:ExecuteChecklist -f path/to/checklist.yaml -o . --alias SIT
+  $ sfdx sfpowerscripts:ExecuteChecklist --executionlog path/to/execution_log.json -o .
+```
 
 ## `sfpowerscripts:ExportSource`
 

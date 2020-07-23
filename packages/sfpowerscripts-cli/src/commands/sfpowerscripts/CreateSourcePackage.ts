@@ -17,10 +17,13 @@ export default class CreateSourcePackage extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:CreateSourcePackage -n packagename -v 1.5.10\n` +
-  `Output variable:\n` +
-  `sfpowerscripts_artifact_metadata_directory\n` +
-  `<refname>_sfpowerscripts_artifact_metadata_directory`
+    `$ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --refname <name>`,
+    `$ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --diffcheck --gittag\n`,
+    `Output variable:`,
+    `sfpowerscripts_artifact_metadata_directory`,
+    `<refname>_sfpowerscripts_artifact_metadata_directory`,
+    `sfpowerscripts_package_version_number`,
+    `<refname>_sfpowerscripts_package_version_number`
   ];
 
   protected static requiresUsername = false;

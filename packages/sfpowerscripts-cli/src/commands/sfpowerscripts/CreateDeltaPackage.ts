@@ -18,12 +18,12 @@ export default class CreateDeltaPackage extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:CreateDeltaPackage -n packagename -r 61635fb -t 3cf01b9 -v 1.2.10 -b\n` +
-  `Output variable:\n` +
-  `sfpowerscripts_delta_package_path\n` +
-  `<refname>_sfpowerscripts_delta_package_path\n` +
-  `sfpowerscripts_artifact_metadata_directory\n` +
-  `<refname>_sfpowerscripts_artifact_metadata_directory`
+    `$ sfdx sfpowerscripts:CreateDeltaPackage -n <packagename> -r <61635fb> -t <3cf01b9> -v <version> -b\n`,
+    `Output variable:`,
+    `sfpowerscripts_delta_package_path`,
+    `<refname>_sfpowerscripts_delta_package_path`,
+    `sfpowerscripts_artifact_metadata_directory`,
+    `<refname>_sfpowerscripts_artifact_metadata_directory`
   ];
 
   protected static requiresProject = true;

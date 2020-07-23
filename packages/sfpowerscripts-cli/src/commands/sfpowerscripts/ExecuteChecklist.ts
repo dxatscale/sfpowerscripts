@@ -25,8 +25,8 @@ export default class ExecuteChecklist extends SfdxCommand {
     public static description = messages.getMessage("commandDescription");
 
     public static examples = [
-        `$ sfdx sfpowerkit:runbook:execute -f path/to/checklist.yaml -o . --alias SIT\n` +
-        `$ sfdx sfpowerkit:runbook:execute --executionlog path/to/execution_log.json -o .`
+        `$ sfdx sfpowerscripts:ExecuteChecklist -f path/to/checklist.yaml -o . --alias SIT`,
+        `$ sfdx sfpowerscripts:ExecuteChecklist --executionlog path/to/execution_log.json -o .`
     ];
 
     protected static flagsConfig: FlagsConfig = {
