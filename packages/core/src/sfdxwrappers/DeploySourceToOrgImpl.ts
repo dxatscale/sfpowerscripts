@@ -204,6 +204,10 @@ export default class DeploySourceToOrgImpl {
         (error, stdout, stderr) => {}
       );
 
+      child.stderr.on("data", (data) => {
+        messageString += data.toString();
+      });
+
       child.stdout.on("data", (data) => {
         messageString += data.toString();
       });
@@ -241,6 +245,13 @@ export default class DeploySourceToOrgImpl {
       command += ` -r ${apexclasses}`;
     } else {
       command += ` -l ${this.deployment_options["testlevel"]}`;
+    }
+
+    if(this.deployment_options["ignore_warnings"]) {
+      command += ` --ignorewarnings`;
+    }
+    if(this.deployment_options["ignore_errors"]) {
+      command += ` --ignoreerrors`;
     }
 
     return command;
