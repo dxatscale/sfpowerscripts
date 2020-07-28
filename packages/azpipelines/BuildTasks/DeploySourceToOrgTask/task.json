@@ -62,7 +62,7 @@
             "label": "Ignore any errors during a deployment",
             "defaultValue": false,
             "required": false,
-            "helpMarkDown": "Check this field to ignore any errors during deployment,if enabled failed components will be ignoredn , h, bl,"
+            "helpMarkDown": "Check this field to ignore any errors during deployment,if enabled failed components will be ignored"
         },
         {
             "name": "wait_time",
