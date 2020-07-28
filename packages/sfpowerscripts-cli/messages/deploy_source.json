@@ -11,6 +11,6 @@
     "apexTestSuiteFlagDescription": "Name of the Apex Test Suite that needs to be executed during this deployment",
     "isToBreakBuildIfEmptyFlagDescription": "Uncheck this field, to allow for empty folders not to break build, useful in the case of pre/post step uniformity across projects",
     "refNameFlagDescription": "Reference name to be prefixed to output variables",
-    "ignoreWarningsFlagDescription":"If a warning occurs and ignoreWarnings is set to true, the success field in DeployMessage is true.",
+    "ignoreWarningsFlagDescription":"Ignores any warnings generated during metadata deployment",
     "ignoreErrorsFlagDescription":"Ignores the deploy errors, and continues with the deploy operation"
 }
