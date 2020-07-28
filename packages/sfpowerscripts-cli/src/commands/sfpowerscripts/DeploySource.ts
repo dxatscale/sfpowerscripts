@@ -35,6 +35,8 @@ export default class DeploySource extends SfdxCommand {
     testlevel: flags.string({char: 'l', description: messages.getMessage('testLevelFlagDescription'), options: ['NoTestRun', 'RunSpecifiedTests', 'RunApexTestSuite', 'RunLocalTests', 'RunAllTestsInOrg'], default: 'NoTestRun'}),
     specifiedtests: flags.string({description: messages.getMessage('specifiedTestsFlagDescription')}),
     apextestsuite: flags.string({description: messages.getMessage('apexTestSuiteFlagDescription')}),
+    ignorewarnings: flags.boolean({description: messages.getMessage('ignoreWarningsFlagDescription')}),
+    ignoreerrors: flags.boolean({description: messages.getMessage('ignoreErrorsFlagDescription')}),
     istobreakbuildifempty: flags.boolean({char: 'b' , description: messages.getMessage('isToBreakBuildIfEmptyFlagDescription')}),
     refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
   };
@@ -72,8 +74,12 @@ export default class DeploySource extends SfdxCommand {
           mdapi_options["specified_tests"] = this.flags.specifiedtests;
         if (mdapi_options["testlevel"] == "RunApexTestSuite")
           mdapi_options["apextestsuite"] = this.flags.apextestsuite;
+
+        mdapi_options["ignore_warnings"]=this.flags.ignorewarnings;
+        mdapi_options["ignore_errors"]=this.flags.ignoreerrors;
+
   
-          let isToBreakBuildIfEmpty= this.flags.istobreakbuildifempty;
+        let isToBreakBuildIfEmpty= this.flags.istobreakbuildifempty;
   
       
       

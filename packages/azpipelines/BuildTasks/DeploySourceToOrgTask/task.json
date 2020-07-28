@@ -9,7 +9,7 @@
     "version": {
         "Major": 9,
         "Minor": 0,
-        "Patch": 1
+        "Patch": 2
     },
     "runsOn": [
         "Agent"
@@ -47,6 +47,22 @@
             "defaultValue": true,
             "required": true,
             "helpMarkDown": "Validate a deployment, but don't save to the org, Use this for Stage 1/2 CI Run's"
+        },
+        {
+            "name": "ignorewarnings",
+            "type": "boolean",
+            "label": "Ignore any warning during a deployment",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Check this field to ignore warnings, default behaviour results in warnings treated as errors"
+        },
+        {
+            "name": "ignoreerror",
+            "type": "boolean",
+            "label": "Ignore any errors during a deployment",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Check this field to ignore any errors during deployment,if enabled failed components will be ignored"
         },
         {
             "name": "wait_time",
