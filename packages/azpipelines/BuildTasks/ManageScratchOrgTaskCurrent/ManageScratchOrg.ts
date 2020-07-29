@@ -37,7 +37,7 @@ async function run() {
 
       let result = await createScratchOrg.exec(createCommand);
 
-      tl.setTaskVariable(
+      tl.setVariable(
         "sfpowerscripts_scratch_org_username",
         result.result.username,
         false
