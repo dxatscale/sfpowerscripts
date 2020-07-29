@@ -177,7 +177,7 @@ export default class ExecuteChecklist extends SfdxCommand {
                         result["tasks"][i]["reason"] = responses["skip_reason"];
 
                     result["tasks"][i]["timeTaken"] = duration_ms;
-                    result["tasks"][i]["User"] = os.hostname();
+                    result["tasks"][i]["User"] = os.userInfo()["username"];
                     result["tasks"][i]["Date"] = new Date();
 
 
