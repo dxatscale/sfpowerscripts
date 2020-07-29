@@ -252,7 +252,7 @@ export default class ExecuteChecklist extends SfdxCommand {
                     payload += `\n- ID: ${task["id"]}`;
                     payload += `\n- Steps:\n${task["steps"]}`;
                     payload += `\n- Status: ${task["status"]}`;
-                    payload += `\n- Time taken: ${task["timetaken"]}`;
+                    payload += `\n- Time taken: ${task["timeTaken"]}`;
                     payload += `\n- User: ${task["User"]}`;
                     payload += `\n- Date: ${task["Date"]}`;
                 })
