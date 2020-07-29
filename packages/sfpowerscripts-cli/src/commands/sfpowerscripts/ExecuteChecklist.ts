@@ -64,6 +64,7 @@ export default class ExecuteChecklist extends SfdxCommand {
                 result["version"] = checklist["version"];
                 result["metadata"] = checklist["metadata"];
                 result["schema_version"] = checklist["schema_version"];
+                result["mode"]=checklist["mode"];
                 result["alias"] = alias;
                 result["tasks"] = checklist["tasks"];
 
@@ -82,6 +83,7 @@ export default class ExecuteChecklist extends SfdxCommand {
                 result["version"] = executionLogJson["version"];
                 result["metadata"] = executionLogJson["metadata"];
                 result["schema_version"] = executionLogJson["schema_version"];
+                result["mode"]= executionLogJson["mode"];
                 result["alias"] = alias;
                 result["tasks"] = executionLogJson["tasks"];
 
