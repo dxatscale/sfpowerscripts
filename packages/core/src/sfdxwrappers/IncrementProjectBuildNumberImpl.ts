@@ -35,6 +35,13 @@ export default class IncrementProjectBuildNumberImpl {
       }
     });
 
+
+    if( isNullOrUndefined(selected_package["package"]) || isNullOrUndefined(selected_package["versionNumber"]))
+    {
+      throw new Error("The sfdx.project json is missing package or versionNumber attribute, Please verify!");
+    }
+
+
     console.log(`Package : ${selected_package["package"]}`);
     console.log(`Version : ${selected_package["versionNumber"]}`);
 
