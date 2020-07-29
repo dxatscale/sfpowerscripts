@@ -25,8 +25,8 @@ export default class TriggerApexTest extends SfdxCommand {
    synchronous: flags.boolean({char: 's', description: messages.getMessage('synchronousFlagDescription')}),
    specifiedtests: flags.string({description: messages.getMessage('specifiedTestsFlagDescription')}),
    apextestsuite: flags.string({description: messages.getMessage('apexTestSuiteFlagDescription')}),
-   validatecoverage: flags.boolean({char: 'c', description: messages.getMessage('validateCoverageFlagDescription')}),
-   coveragepercent: flags.integer({char: 'p', description: messages.getMessage('coveragePercentFlagDescription'), dependsOn: ['validatecoverage'], default: 75}),
+   validatecoverage: flags.boolean({char: 'c', description: messages.getMessage('validateCoverageFlagDescription'), default: false}),
+   coveragepercent: flags.integer({char: 'p', description: messages.getMessage('coveragePercentFlagDescription'), default: 75}),
    waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '60'})
   };
 
