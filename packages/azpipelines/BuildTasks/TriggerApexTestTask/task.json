@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 7,
+        "Major": 8,
         "Minor": 0,
-        "Patch": 6
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -63,6 +63,23 @@
             "defaultValue": false,
             "helpMarkDown": "Select an option if the tests are to be run synchronously",
             "required": false
+        },
+        {
+            "name": "isValidateCoverage",
+            "type": "boolean",
+            "label": "Validate code coverage of individual test classes",
+            "defaultValue": false,
+            "helpMarkDown": "When enabled, verifies whether indvidual test classes meet minimum code coverage requirement",
+            "required": false
+        },
+        {
+            "name": "coverageThreshold",
+            "type": "string",
+            "label": "Minimum percentage coverage required per test class",
+            "defaultValue": "75",
+            "helpMarkDown": "Minimum coverage required per test class, in order for the task to succeed",
+            "required": false,
+            "visibleRule": "isValidateCoverage = true"
         },
         {
             "name": "wait_time",

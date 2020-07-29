@@ -9,12 +9,12 @@ async function run() {
 
   try {
     const target_org: string = tl.getInput("target_org", true);
-
     test_options["wait_time"] = tl.getInput("wait_time", true);
-
-   
     test_options["testlevel"] = tl.getInput("testlevel", true);
     test_options["synchronous"] = tl.getBoolInput("synchronous", false);
+    test_options["isValidateCoverage"] = tl.getBoolInput("isValidateCoverage", false);
+    test_options["coverageThreshold"] = parseInt(tl.getInput("coverageThreshold", false), 10);
+
 
     if (test_options["testlevel"] == "RunSpecifiedTests")
       test_options["specified_tests"] = tl.getInput("specified_tests", true);

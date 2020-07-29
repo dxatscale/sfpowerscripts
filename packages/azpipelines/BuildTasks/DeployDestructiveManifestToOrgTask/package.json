@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-deploydestructivemanifesttoorg-task",
   "description": "sfpowerscripts-deploydestructivemanifesttoorg-task",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^0.4.4",
+    "@dxatscale/sfpowerscripts.core": "^1.1.0",
     "azure-pipelines-task-lib": "^2.8.0",
     "rimraf": "^3.0.0"
   }
