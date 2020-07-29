@@ -65,6 +65,23 @@
             "required": false
         },
         {
+            "name": "isValidateCoverage",
+            "type": "boolean",
+            "label": "Validate code coverage of individual test classes",
+            "defaultValue": false,
+            "helpMarkDown": "When enabled, verifies whether indvidual test classes meet minimum code coverage requirement",
+            "required": false
+        },
+        {
+            "name": "coverageThreshold",
+            "type": "string",
+            "label": "Minimum percentage coverage required per test class",
+            "defaultValue": "75",
+            "helpMarkDown": "Minimum coverage required per test class, in order for the task to succeed",
+            "required": false,
+            "visibleRule": "isValidateCoverage = true"
+        },
+        {
             "name": "wait_time",
             "type": "string",
             "label": "Wait Time",

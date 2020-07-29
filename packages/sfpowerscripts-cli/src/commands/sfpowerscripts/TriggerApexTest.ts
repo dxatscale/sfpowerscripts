@@ -25,6 +25,8 @@ export default class TriggerApexTest extends SfdxCommand {
    synchronous: flags.boolean({char: 's', description: messages.getMessage('synchronousFlagDescription')}),
    specifiedtests: flags.string({description: messages.getMessage('specifiedTestsFlagDescription')}),
    apextestsuite: flags.string({description: messages.getMessage('apexTestSuiteFlagDescription')}),
+   validatecoverage: flags.boolean({char: 'c', description: messages.getMessage('validateCoverageFlagDescription')}),
+   coveragepercent: flags.integer({char: 'p', description: messages.getMessage('coveragePercentFlagDescription'), dependsOn: ['validatecoverage'], default: 75}),
    waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '60'})
   };
 
@@ -38,6 +40,8 @@ export default class TriggerApexTest extends SfdxCommand {
       test_options["wait_time"] = this.flags.waittime;
       test_options["testlevel"] = this.flags.testlevel;
       test_options["synchronous"] = this.flags.synchronous;
+      test_options["isValidateCoverage"] = this.flags.validatecoverage;
+      test_options["coverageThreshold"] = this.flags.coveragepercent;
 
       if (test_options["testlevel"] == "RunSpecifiedTests")
       test_options["specified_tests"] = this.flags.specifiedtests;
@@ -63,7 +67,7 @@ export default class TriggerApexTest extends SfdxCommand {
       }
     } catch(err) {
       // AppInsights.trackExcepiton("sfpwowerscript-triggerapextest-task",err);
-      console.log(err);
+      console.error(err);
       // Fail the task when an error occurs
       process.exit(1);
     }
