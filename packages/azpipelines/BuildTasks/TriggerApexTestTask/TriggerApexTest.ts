@@ -3,18 +3,28 @@ import child_process = require("child_process");
 import TriggerApexTestImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TriggerApexTestImpl";
 import path = require("path");
 import os = require("os");
+import { isNullOrUndefined } from "util";
 
 async function run() {
   let test_options = {};
 
   try {
     const target_org: string = tl.getInput("target_org", true);
+    const project_directory: string = tl.getInput("project_directory", false);
+
     test_options["wait_time"] = tl.getInput("wait_time", true);
     test_options["testlevel"] = tl.getInput("testlevel", true);
     test_options["synchronous"] = tl.getBoolInput("synchronous", false);
     test_options["isValidateCoverage"] = tl.getBoolInput("isValidateCoverage", false);
     test_options["coverageThreshold"] = parseInt(tl.getInput("coverageThreshold", false), 10);
+    test_options["packageToValidate"] = tl.getInput("packageToValidate", false);
 
+    if (
+      test_options["isValidateCoverage"] &&
+      isNullOrUndefined(test_options["packageToValidate"])
+    ) {
+      throw new Error("Package to validate must be specified when validating individual class coverage");
+    }
 
     if (test_options["testlevel"] == "RunSpecifiedTests")
       test_options["specified_tests"] = tl.getInput("specified_tests", true);
@@ -40,7 +50,8 @@ async function run() {
 
     let triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
       target_org,
-      test_options
+      test_options,
+      project_directory
     );
     console.log("Executing command");
     let result = await triggerApexTestImpl.exec();
