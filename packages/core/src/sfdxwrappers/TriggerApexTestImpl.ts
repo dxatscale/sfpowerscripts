@@ -1,9 +1,9 @@
 import child_process = require("child_process");
 import { onExit } from "../OnExit";
-import { isNullOrUndefined, promisify } from "util";
+import { isNullOrUndefined } from "util";
 let fs = require("fs-extra");
 let path = require("path");
-const xml2js = require("xml2js");
+import getPackageManifest from "../getPackageManifest";
 
 export default class TriggerApexTestImpl {
   public constructor(
@@ -18,8 +18,7 @@ export default class TriggerApexTestImpl {
     message: string;
   }> {
 
-
-    let test_result: { id: string; result: boolean; message: string } = {
+    const test_result: { id: string; result: boolean; message: string } = {
       id: "",
       result: false,
       message: ""
@@ -46,10 +45,14 @@ export default class TriggerApexTestImpl {
       });
 
       await onExit(child);
+
     } catch (err) {
+
+    } finally {
+      console.log(output);
     }
 
-
+    let test_report_json;
     try {
       let test_id = fs
         .readFileSync(
@@ -58,6 +61,7 @@ export default class TriggerApexTestImpl {
         .toString();
 
       console.log('test_id',test_id);
+      test_result.id = test_id;
 
       let test_report_json_file = fs
         .readFileSync(
@@ -68,11 +72,7 @@ export default class TriggerApexTestImpl {
         )
         .toString();
 
-      let test_report_json = JSON.parse(test_report_json_file);
-
-      test_result.id = test_id;
-
-
+      test_report_json = JSON.parse(test_report_json_file);
 
       //Print human readable output to console
       if ((test_report_json.summary.outcome == "Failed")) {
@@ -85,113 +85,92 @@ export default class TriggerApexTestImpl {
           }
         });
         test_result.result = false;
-        console.error(output);
-      } else {
-        const classesWithInvalidCoverage: string[] = [];
-
-        if (this.test_options["isValidateCoverage"]) {
-          console.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
-
-          let projectConfig: string;
-          if (!isNullOrUndefined(this.project_directory)) {
-            projectConfig = path.join(
-              this.project_directory,
-              "sfdx-project.json"
-            );
-          } else {
-            projectConfig = "sfdx-project.json";
-          }
-
-          let projectJson = JSON.parse(
-            fs.readFileSync(projectConfig, "utf8")
-          );
-
-          let packageDirectory: string;
-          projectJson["packageDirectories"].forEach( (pkg) => {
-            if (this.test_options["packageToValidate"] == pkg["package"])
-              packageDirectory = pkg["path"];
-          });
-
-          let packageClasses: string[];
-          if (isNullOrUndefined(packageDirectory)) {
-            throw new Error("Package or package directory to validate does not exist");
-          } else {
-            let mdapiDir: string = `${this.makefolderid(5)}_mdapi`;
-            await this.convertSourceToMDAPI(packageDirectory, mdapiDir);
-
-            let parser = new xml2js.Parser({ explicitArray: false });
-            let parseString = promisify(parser.parseString);
-
-            let packageXmlPath: string
-            if (!isNullOrUndefined(this.project_directory)) {
-              packageXmlPath = path.join(
-                this.project_directory,
-                mdapiDir,
-                "package.xml"
-              );
-            } else {
-              packageXmlPath = path.join(
-                mdapiDir,
-                "package.xml"
-              );
-            }
-
-            let packageXml: string = fs.readFileSync(
-              packageXmlPath,
-              "utf8"
-            );
-            let packageJson = await parseString(packageXml);
-
-            for (let type of packageJson["Package"]["types"]) {
-              if (type["name"] == "ApexClass") {
-                packageClasses = type["members"];
-                break;
-              }
-            }
-          }
-
-          let code_coverage = fs.readFileSync(
-            path.join(
-              this.test_options["outputdir"],
-              `test-result-codecoverage.json`
-            ),
-            "utf8"
-          );
-          let code_coverage_json = JSON.parse(code_coverage);
-
-          if (!isNullOrUndefined(packageClasses)) {
-            code_coverage_json = code_coverage_json.filter( (classCoverage) => {
-              for (let packageClass of packageClasses) {
-                if (packageClass == classCoverage["name"])
-                  return true;
-              }
-              return false;
-            });
-          }
-
-          for (let testClass of code_coverage_json) {
-            if (testClass["coveredPercent"] < this.test_options["coverageThreshold"]) {
-              classesWithInvalidCoverage.push(testClass["name"]);
-            }
-          }
-        }
-
-        if (classesWithInvalidCoverage.length == 0) {
-          test_result.message = `${test_report_json.summary.passing} Tests passed with overall Test Run Coverage of ${test_report_json.summary.testRunCoverage} percent`;
-          test_result.result = true;
-        } else {
-          test_result.message=`The test classes ${classesWithInvalidCoverage.toString()} do not meet the required code coverage of ${this.test_options["coverageThreshold"]}`;
-          test_result.result = false;
-        }
-        console.log(output);
+        return test_result;
       }
-
-      return test_result;
     } catch (err) {
       test_result.result = false;
       test_result.message = error;
       return test_result;
     }
+
+
+
+    const classesWithInvalidCoverage: string[] = [];
+
+    if (this.test_options["isValidateCoverage"]) {
+      console.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
+
+      let projectConfig: string;
+      if (!isNullOrUndefined(this.project_directory)) {
+        projectConfig = path.join(
+          this.project_directory,
+          "sfdx-project.json"
+        );
+      } else {
+        projectConfig = "sfdx-project.json";
+      }
+
+      let projectJson = JSON.parse(
+        fs.readFileSync(projectConfig, "utf8")
+      );
+
+      let packageDirectory: string;
+      projectJson["packageDirectories"].forEach( (pkg) => {
+        if (this.test_options["packageToValidate"] == pkg["package"])
+          packageDirectory = pkg["path"];
+      });
+
+      let packageClasses: string[];
+      if (isNullOrUndefined(packageDirectory)) {
+        throw new Error("Package or package directory to validate does not exist");
+      } else {
+        let packageJson = await getPackageManifest(
+          this.project_directory,
+          packageDirectory
+        );
+
+        for (let type of packageJson["Package"]["types"]) {
+          if (type["name"] == "ApexClass") {
+            packageClasses = type["members"];
+            break;
+          }
+        }
+      }
+
+      let code_coverage = fs.readFileSync(
+        path.join(
+          this.test_options["outputdir"],
+          `test-result-codecoverage.json`
+        ),
+        "utf8"
+      );
+      let code_coverage_json = JSON.parse(code_coverage);
+
+      if (!isNullOrUndefined(packageClasses)) {
+        code_coverage_json = code_coverage_json.filter( (classCoverage) => {
+          for (let packageClass of packageClasses) {
+            if (packageClass == classCoverage["name"])
+              return true;
+          }
+          return false;
+        });
+      }
+
+      for (let testClass of code_coverage_json) {
+        if (testClass["coveredPercent"] < this.test_options["coverageThreshold"]) {
+          classesWithInvalidCoverage.push(testClass["name"]);
+        }
+      }
+    }
+
+    if (classesWithInvalidCoverage.length == 0) {
+      test_result.message = `${test_report_json.summary.passing} Tests passed with overall Test Run Coverage of ${test_report_json.summary.testRunCoverage} percent`;
+      test_result.result = true;
+    } else {
+      test_result.message=`The test classes ${classesWithInvalidCoverage.toString()} do not meet the required code coverage of ${this.test_options["coverageThreshold"]}`;
+      test_result.result = false;
+    }
+    return test_result;
   }
 
   private buildExecCommand(): string {
@@ -222,37 +201,5 @@ export default class TriggerApexTestImpl {
 
     console.log(`Generated Command: ${command}`);
     return command;
-  }
-
-  private async convertSourceToMDAPI(sourceDirectory, mdapiDir): Promise<void> {
-    try {
-      if (!isNullOrUndefined(this.project_directory))
-        console.log(
-          `Converting to Source Format ${sourceDirectory} in project directory  ${this.project_directory}`
-        );
-      else
-        console.log(
-          `Converting to Source Format ${sourceDirectory} in project directory`
-        );
-      child_process.execSync(
-        `npx sfdx force:source:convert -r ${sourceDirectory}  -d ${mdapiDir}`,
-        { cwd: this.project_directory, encoding: "utf8" }
-      );
-      console.log("Converting to Source Format Completed");
-    } catch (error) {
-      console.log("Unable to convert source, exiting" + error.code);
-      throw error;
-    }
-  }
-
-  private makefolderid(length): string {
-    var result = "";
-    var characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    var charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
   }
 }

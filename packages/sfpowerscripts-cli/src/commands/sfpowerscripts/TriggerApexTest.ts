@@ -87,7 +87,7 @@ export default class TriggerApexTest extends SfdxCommand {
       }
     } catch(err) {
       // AppInsights.trackExcepiton("sfpwowerscript-triggerapextest-task",err);
-      console.error(err);
+      console.error(err.message);
       // Fail the task when an error occurs
       process.exit(1);
     }
