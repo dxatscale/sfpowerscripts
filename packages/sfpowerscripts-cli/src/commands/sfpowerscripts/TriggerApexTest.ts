@@ -2,6 +2,8 @@ import TriggerApexTestImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 const path = require("path");
+import { isNullOrUndefined } from "util";
+
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
@@ -25,8 +27,10 @@ export default class TriggerApexTest extends SfdxCommand {
    synchronous: flags.boolean({char: 's', description: messages.getMessage('synchronousFlagDescription')}),
    specifiedtests: flags.string({description: messages.getMessage('specifiedTestsFlagDescription')}),
    apextestsuite: flags.string({description: messages.getMessage('apexTestSuiteFlagDescription')}),
-   validatecoverage: flags.boolean({char: 'c', description: messages.getMessage('validateCoverageFlagDescription'), default: false}),
+   validateindividualclasscoverage: flags.boolean({char: 'c', description: messages.getMessage('validateIndividualClassCoverageFlagDescription'), default: false}),
    coveragepercent: flags.integer({char: 'p', description: messages.getMessage('coveragePercentFlagDescription'), default: 75}),
+   packagetovalidate: flags.string({char: 't', description: messages.getMessage('packageToValidateFlagDescription')}),
+   projectdir: flags.directory({char: 'd', description: messages.getMessage('projectDirFlagDescription')}),
    waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '60'})
   };
 
@@ -40,8 +44,23 @@ export default class TriggerApexTest extends SfdxCommand {
       test_options["wait_time"] = this.flags.waittime;
       test_options["testlevel"] = this.flags.testlevel;
       test_options["synchronous"] = this.flags.synchronous;
-      test_options["isValidateCoverage"] = this.flags.validatecoverage;
+      test_options["isValidateCoverage"] = this.flags.validateindividualclasscoverage;
       test_options["coverageThreshold"] = this.flags.coveragepercent;
+      test_options["packageToValidate"] = this.flags.packagetovalidate;
+
+      if (test_options["isValidateCoverage"]) {
+        if (
+          test_options["testlevel"] == "RunLocalTests" ||
+          test_options["testlevel"] == "RunAllTestsInOrg"
+        ) {
+          throw new Error("Individual class coverage validation is only supported for RunApexTestSuite & RunSpecifiedTests");
+        }
+        else if (
+          isNullOrUndefined(test_options["packageToValidate"])
+        ) {
+          throw new Error("Package to validate must be specified when validating individual class coverage");
+        }
+      }
 
       if (test_options["testlevel"] == "RunSpecifiedTests")
       test_options["specified_tests"] = this.flags.specifiedtests;
@@ -55,7 +74,8 @@ export default class TriggerApexTest extends SfdxCommand {
 
       const triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
         this.flags.targetorg,
-        test_options
+        test_options,
+        this.flags.projectdir
       );
       console.log("Executing command");
       let result = await triggerApexTestImpl.exec();
