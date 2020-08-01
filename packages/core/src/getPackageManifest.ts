@@ -1,15 +1,12 @@
 import child_process = require("child_process");
 let fs = require("fs-extra");
 let path = require("path");
-import { isNullOrUndefined, promisify } from "util";
-const xml2js = require("xml2js");
+import { isNullOrUndefined } from "util";
+const xmlParser = require("xml2js").Parser({ explicitArray: false });
 
 export default async function getPackageManifest(projectDirectory, sourceDirectory) {
     let mdapiDir: string = `${makefolderid(5)}_mdapi`;
     await convertSourceToMDAPI(projectDirectory, sourceDirectory, mdapiDir);
-
-    let parser = new xml2js.Parser({ explicitArray: false });
-    let parseString = promisify(parser.parseString);
 
     let packageXmlPath: string
     if (!isNullOrUndefined(projectDirectory)) {
@@ -29,7 +26,7 @@ export default async function getPackageManifest(projectDirectory, sourceDirecto
         packageXmlPath,
         "utf8"
     );
-    return await parseString(packageXml);
+    return await xml2json(packageXml);
 }
 
 async function convertSourceToMDAPI(projectDir, sourceDirectory, mdapiDir): Promise<void> {
@@ -62,4 +59,15 @@ function makefolderid(length): string {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
-  }
+}
+
+async function xml2json(xml) {
+    return new Promise( (resolve, reject) => {
+        xmlParser.parseString(xml, function (err, json) {
+            if (err)
+                reject(err);
+            else
+                resolve(json);
+        });
+    });
+}
