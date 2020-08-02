@@ -180,7 +180,7 @@ export default class TriggerApexTestImpl {
       packageDirectory
     );
 
-    for (let type of packageManifest["Package"]["types"]) {
+    for (let type of packageManifest["manifest"]["Package"]["types"]) {
       if (type["name"] == "ApexClass") {
         packageClasses = type["members"];
         break;

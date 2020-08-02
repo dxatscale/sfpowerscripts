@@ -5,32 +5,23 @@ import { isNullOrUndefined } from "util";
 const xmlParser = require("xml2js").Parser({ explicitArray: false });
 
 export default async function getPackageManifest(projectDirectory, sourceDirectory) {
-    let mdapiDir: string = `${makefolderid(5)}_mdapi`;
-    await convertSourceToMDAPI(projectDirectory, sourceDirectory, mdapiDir);
-
-    let packageXmlPath: string
-    if (!isNullOrUndefined(projectDirectory)) {
-        packageXmlPath = path.join(
-        projectDirectory,
-        mdapiDir,
-        "package.xml"
-        );
-    } else {
-        packageXmlPath = path.join(
-        mdapiDir,
-        "package.xml"
-        );
-    }
+    const manifest = {};
+    let mdapiDir: string = convertSourceToMDAPI(projectDirectory, sourceDirectory);
+    manifest["directory"] = mdapiDir;
 
     let packageXml: string = fs.readFileSync(
-        packageXmlPath,
+        path.join(mdapiDir, "package.xml"),
         "utf8"
     );
-    return await xml2json(packageXml);
+
+    manifest["manifest"] = await xml2json(packageXml);
+    return manifest;
 }
 
-async function convertSourceToMDAPI(projectDir, sourceDirectory, mdapiDir): Promise<void> {
+function convertSourceToMDAPI(projectDir, sourceDirectory): string {
     try {
+        let mdapiDir: string = `${makefolderid(5)}_mdapi`;
+
         if (!isNullOrUndefined(projectDir))
         console.log(
             `Converting to Source Format ${sourceDirectory} in project directory ${projectDir}`
@@ -44,6 +35,18 @@ async function convertSourceToMDAPI(projectDir, sourceDirectory, mdapiDir): Prom
         { cwd: projectDir, encoding: "utf8" }
         );
         console.log("Converting to Source Format Completed");
+
+
+        let outputDir: string;
+        if (!isNullOrUndefined(projectDir)) {
+            outputDir = path.join(
+                projectDir,
+                mdapiDir
+            );
+        } else {
+            outputDir = mdapiDir;
+        }
+        return outputDir;
     } catch (error) {
         console.log("Unable to convert source, exiting " + error.code);
         throw error;
