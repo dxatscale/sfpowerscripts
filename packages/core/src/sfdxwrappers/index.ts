@@ -14,6 +14,8 @@ export * from "./DeployDestructiveManifestToOrgImpl";
 export * from "./DeploySourceToOrgImpl";
 export * from "./DeploySourceResult"
 export * from "./ExportSourceFromAnOrgImpl"
+export * from "./CreateSourcePackageImpl"
+export * from "./PackageMetadata"
 
 
 

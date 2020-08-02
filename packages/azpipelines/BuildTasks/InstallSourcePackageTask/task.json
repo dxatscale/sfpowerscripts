@@ -1,0 +1,106 @@
+{
+  "id": "504c3963-fee4-47f1-8820-95c294c4e2e6",
+  "name": "sfpowerscript-installsourcepackage-task",
+  "friendlyName": "Installs a source package to an org",
+  "description": "Installs a sfpowerscripts source package to a given org",
+  "helpMarkDown": "Installs an sfpowerscripts source package by passing the build artifact or azure artifact, This package has to be created by sfpowerscripts Create Source Package Task either using CLI or using Azure Pipelines",
+  "category": "Deploy",
+  "author": "dxatscale@accenture.com",
+  "version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "runsOn": ["Agent"],
+  "instanceNameFormat": "Install a $(package) source package to $(target_org)",
+  "inputs": [
+    {
+      "name": "target_org",
+      "type": "string",
+      "label": "Alias or username of the target org",
+      "defaultValue": "scratchorg",
+      "required": true,
+      "helpMarkDown": "Alias or username of the target org where the code should be deployed"
+    },
+    {
+      "name": "packageinstalledfrom",
+      "type": "pickList",
+      "label": "Package to be installed From",
+      "defaultValue": "BuildArtifact",
+      "options": {
+        "BuildArtifact": "Build Artifact",
+        "AzureArtifact": "Azure Artifact"
+      },
+      "required": true,
+      "helpMarkDown": "Select the option from where the package version is to be picked up for install"
+    },
+    
+    {
+      "name": "artifact",
+      "type": "string",
+      "label": "Name of the artifact (source alias ) that is attached to this release pipeline",
+      "required": false,
+      "helpMarkDown": "Provide the name of the artifact which is the input to this pipeline. Please note only sfpowerkit based build artifact will work with this command"
+    },
+    {
+      "name": "package",
+      "type": "string",
+      "label": "Name of the package to be installed",
+      "required": true,
+      "helpMarkDown": "Name of the package to be installed"
+    },
+    {
+      "name": "subdirectory",
+      "type": "string",
+      "label": "Install only a specific folder in the package",
+      "required": false,
+      "helpMarkDown": "Install only a specific folder in the package"
+    },
+    {
+      "name": "wait_time",
+      "type": "string",
+      "label": "Wait Time",
+      "defaultValue": "20",
+      "required": true,
+      "helpMarkDown": "wait time for command to finish in minutes"
+    },
+    {
+      "name": "upgrade_type",
+      "type": "pickList",
+      "label": "Upgrade type for the installed package",
+      "defaultValue": "Ignore",
+      "options": {
+        "Ignore": "Ignore"
+      },
+      "required": true,
+      "helpMarkDown": "the upgrade type for the package installation"
+    },
+    {
+      "name": "skip_if_package_installed",
+      "type": "boolean",
+      "label": "Skip If the package is already installed in the org",
+      "defaultValue": false,
+      "required": false,
+      "helpMarkDown": "Skip installation of package, if its already installed in the org"
+    },
+    {
+      "name": "skip_on_missing_artifact",
+      "type": "boolean",
+      "label": "Skip If no artifact is found",
+      "defaultValue": false,
+      "required": false,
+      "helpMarkDown": "Do not fail the task if attached artifact is missing,Use it to skip artifact installation by removing attached artifacts"
+    }
+  ],
+  "OutputVariables": [
+    {
+      "name": "sfpowerkit_deploysource_id",
+      "description": "The ID of the deployment"
+    }
+  ],
+  "execution": {
+    "Node": {
+      "target": "lib/InstallSourcePackageTask/InstallSourcePackageToOrg.js"
+    }
+  }
+}

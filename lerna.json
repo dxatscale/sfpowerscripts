@@ -16,6 +16,7 @@
     "packages/azpipelines/BuildTasks/InstallPackageDependenciesTask",
     "packages/azpipelines/BuildTasks/InstallSFDXCLITaskCurrent",
     "packages/azpipelines/BuildTasks/InstallUnlockedPackageTask",
+    "packages/azpipelines/BuildTasks/InstallSourcePackageTask",
     "packages/azpipelines/BuildTasks/ManageScratchOrgTaskCurrent",
     "packages/azpipelines/BuildTasks/PromoteUnlockedPackageTask",
     "packages/azpipelines/BuildTasks/TriggerApexTestTask",

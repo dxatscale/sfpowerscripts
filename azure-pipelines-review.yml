@@ -1,4 +1,4 @@
-name: Milestone16$(Rev:.r)
+name: Milestone17$(Rev:.r)
 
 pr:
   branches:

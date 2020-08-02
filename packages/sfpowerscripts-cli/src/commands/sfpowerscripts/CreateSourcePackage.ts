@@ -1,17 +1,14 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl';
+import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
 import { exec } from "shelljs";
 const fs = require("fs-extra");
-import {isNullOrUndefined} from "util";
-import { string } from '@oclif/command/lib/flags';
+import {isNullOrUndefined} from "util"
 const path = require("path");
 
-// Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
-
-// Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
-// or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_source_package');
 
 export default class CreateSourcePackage extends SfdxCommand {
@@ -32,6 +29,8 @@ export default class CreateSourcePackage extends SfdxCommand {
     package: flags.string({required: true, char: 'n', description: messages.getMessage('packageFlagDescription')}),
     versionnumber: flags.string({required: true, char: 'v', description: messages.getMessage('versionNumberFlagDescription')}),
     projectdir: flags.directory({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
+    apextestsuite: flags.directory({description: messages.getMessage('apextestsuiteFlagDescription')}),
+    destructivemanifestfilepath:flags.directory({description: messages.getMessage('destructiveManiFestFilePathFlagDescription')}),
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription')}),
     diffcheck: flags.boolean({description: messages.getMessage('diffCheckFlagDescription')}),
     gittag: flags.boolean({description: messages.getMessage('gitTagFlagDescription')}),
@@ -47,6 +46,8 @@ export default class CreateSourcePackage extends SfdxCommand {
       const project_directory: string = this.flags.projectdir;
       const artifact_directory: string = this.flags.artifactdir;
       const refname: string = this.flags.refname;
+      const destructiveManifestFilePath:string = this.flags.destructivemanifestfilePath;
+      const apextestsuite:string=this.flags.destructivemanifestfilePath;
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
@@ -71,16 +72,38 @@ export default class CreateSourcePackage extends SfdxCommand {
           repository_url = repository_url.slice(0,repository_url.length - 1);
         } else repository_url = this.flags.repourl;
 
-        // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
+        
+         //Convert to MDAPI
+      let createSourcePackageImpl = new CreateSourcePackageImpl(
+        project_directory,
+        sfdx_package,
+        destructiveManifestFilePath
+      );
+      let sourcePackage = await createSourcePackageImpl.exec();
+
+      console.log(JSON.stringify(sourcePackage));
+
+      if (sourcePackage.isApexFound && isNullOrUndefined(apextestsuite)) {
+        console.warn(
+          "This package has apex classes/triggers and an apex test suite is not specified, You would not be able to deply to production if each class do not have coverage of 75% and above"
+        );
+      }
 
 
-        let metadata = {
+
+        let metadata:PackageMetadata = {
           package_name: sfdx_package,
           package_version_number: version_number,
           sourceVersion: commit_id,
           repository_url:repository_url,
-          package_type:"source"
+          package_type:"source",
+          apextestsuite: apextestsuite,
+          isApexFound: sourcePackage.isApexFound,
+          isDestructiveChangesFound:sourcePackage.isDestructiveChangesFound,
+          payload:sourcePackage.manifestAsJSON
         };
+
+
 
 
         let abs_artifact_directory: string;
@@ -98,12 +121,18 @@ export default class CreateSourcePackage extends SfdxCommand {
             abs_artifact_directory = path.resolve(artifact_directory);
             fs.mkdirpSync(abs_artifact_directory);
           } else {
-            abs_artifact_directory = process.cwd();
+            abs_artifact_directory = path.join(process.cwd(),"artifacts");
           }
         }
 
+        fs.mkdirpSync(path.join(abs_artifact_directory,`${sfdx_package}_artifact`));
+        fs.mkdirpSync(path.join(abs_artifact_directory,`${sfdx_package}_artifact`,`${sfdx_package}_sfpowerscripts_source_package`));
+        fs.copySync(sourcePackage.mdapiDir, path.join(abs_artifact_directory,`${sfdx_package}_artifact`,`${sfdx_package}_sfpowerscripts_source_package`))
+
+
         let artifactFilePath: string = path.join(
           abs_artifact_directory,
+          `${sfdx_package}_artifact`,
           `${sfdx_package}_artifact_metadata`
         );
 
@@ -134,12 +163,8 @@ export default class CreateSourcePackage extends SfdxCommand {
           fs.writeFileSync('.env', `sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});
           console.log(`sfpowerscripts_package_version_number=${version_number}`);
         }
-
-        // AppInsights.trackTask("sfpwowerscripts-createsourcepackage-task");
-        // AppInsights.trackTaskEvent("sfpwowerscripts-createsourcepackage-task","source_package_created");
       }
     } catch (err) {
-      // AppInsights.trackExcepiton("sfpwowerscripts-createsourcepackage-task",err);
       console.log(err);
       // Fail the task when an error occurs
       process.exit(1);

@@ -47,6 +47,7 @@
     "sfpowerscripts-incrementprojectbuildnumber-task": "file:BuildTasks\\IncrementProjectBuildNumberTask",
     "sfpowerscripts-installpackagedependencies-task": "file:BuildTasks\\InstallPackageDependenciesTask",
     "sfpowerscripts-installsfdx-task": "file:BuildTasks\\InstallSFDXCLITaskCurrent",
+    "sfpowerscript-installsourcepackage-task":"file:BuildTasks\\InstallSourcePackageTask",
     "sfpowerscripts-installunlockedpackage-task": "file:BuildTasks\\InstallUnlockedPackageTask",
     "sfpowerscripts-managescratchorg-task": "file:BuildTasks\\ManageScratchOrgTaskCurrent",
     "sfpowerscripts-promoteunlocked-task": "file:BuildTasks\\PromoteUnlockedPackageTask",

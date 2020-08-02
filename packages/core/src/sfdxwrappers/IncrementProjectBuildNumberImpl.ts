@@ -54,7 +54,7 @@ export default class IncrementProjectBuildNumberImpl {
     //Don't do anything, just return let the platform take care of the increment
     if (segments[3] == "NEXT") {
 
-      console.log("NEXT encountered in segment, will ignore all the option set in the task, Please use NEXT only for Unlocked/Runtime packages")
+      console.log("NEXT encountered in segment, will ignore all the option set in the task")
       console.log(`Version : ${selected_package["versionNumber"]}`);
       return {status:true, ignore:true,versionNumber:selected_package["versionNumber"]};
     }
