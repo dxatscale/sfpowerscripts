@@ -15,10 +15,10 @@ export interface CodeAnalysisResult {
 }
 
 export default class CodeAnalysisArtifactProcessor {
-  reportContents: string;
+  pmdResult: any;
 
-  constructor(reportContents) {
-    this.reportContents = reportContents;
+  constructor(pmdResult) {
+    this.pmdResult = pmdResult;
   }
 
   public async processCodeQualityFromArtifact(): Promise<CodeAnalysisResult> {
@@ -28,19 +28,18 @@ export default class CodeAnalysisArtifactProcessor {
     let criticaldefects = 0;
     let details: CodeAnalyisDetail[] = new Array<CodeAnalyisDetail>();
 
-    xml2js.parseString(this.reportContents, (err, data) => {
-      // If the file is not XML, or is not from PMD, return immediately
-      if (!data || !data.pmd) {
-        console.debug(`Empty or unrecognized PMD xml report`);
-        return undefined;
+  
+      if (!this.pmdResult.file || this.pmdResult.file.length === 0) {
+        return {
+          name,
+          violationCount,
+          affectedFileCount,
+          criticaldefects,
+          details
+        };
       }
 
-      if (!data.pmd.file || data.pmd.file.length === 0) {
-        // No files with violations, return now that it has been marked for upload
-        return undefined;
-      }
-
-      data.pmd.file.forEach((file: any) => {
+      this.pmdResult.file.forEach((file: any) => {
         var i = 0;
         if (file.violation) {
           affectedFileCount++;
@@ -48,13 +47,13 @@ export default class CodeAnalysisArtifactProcessor {
         }
       });
 
-      for (let i = 0; i < data.pmd.file.length; i++) {
-        data.pmd.file[i].violation.forEach(element => {
+      for (let i = 0; i < this.pmdResult.file.length; i++) {
+        this.pmdResult.file[i].violation.forEach(element => {
 
           //Crappy stuff.. need better logic here.. strip of path's
-          let fileName:string = data.pmd.file[i]["$"]["name"].substring(data.pmd.file[i]["$"]["name"].indexOf(`/home/vsts/work/1/s`)+19);
+          let fileName:string = this.pmdResult.file[i]["$"]["name"].substring(this.pmdResult.file[i]["$"]["name"].indexOf(`/home/vsts/work/1/s`)+19);
           if(fileName.includes('d:\\a\\1\\s`'))
-          fileName =  fileName.substring(data.pmd.file[i]["$"]["name"].indexOf(`d:\\a\\1\\s`)+8);
+          fileName =  fileName.substring(this.pmdResult.file[i]["$"]["name"].indexOf(`d:\\a\\1\\s`)+8);
 
           let detail: CodeAnalyisDetail = { 
            filename: fileName,
@@ -70,7 +69,7 @@ export default class CodeAnalysisArtifactProcessor {
           }
         });
       }
-    });
+    
 
     return {
       name,
