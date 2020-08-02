@@ -1,6 +1,6 @@
 # sfpowerscripts
 
-Simple wrappers around sfdx commands to help set up CI/CD quickly. These commands are universal and may be used on any automation platform, as long as a shell process is available for executing the commands.  
+Simple wrappers around sfdx commands to help set up CI/CD quickly. These commands are universal and may be used on any automation platform, as long as a shell process is available for executing the commands.
 
 ## Installation
 The [SFDX CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) and [sfpowerkit plugin](https://github.com/Accenture/sfpowerkit) are required for this plugin to work. If you have not already done so, please install both of these before continuing.
@@ -604,7 +604,9 @@ OPTIONS
                                                                                      to finish in minutes
 
 EXAMPLE
-  $ sfdx TriggerApexTest -u scratchorg -l RunLocalTests -s
+  $ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunLocalTests -s
+  $ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunApexTestSuite --apextestsuite <test_suite>
+  $ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunApexTestSuite --apextestsuite <test_suite> -c -t <package>
 ```
 
 _See code: [lib/commands/sfpowerscripts/TriggerApexTest.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/TriggerApexTest.js)_
