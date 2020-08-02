@@ -100,42 +100,7 @@ export default class TriggerApexTestImpl {
     if (this.test_options["isValidateCoverage"]) {
       console.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
 
-      let projectConfig: string;
-      if (!isNullOrUndefined(this.project_directory)) {
-        projectConfig = path.join(
-          this.project_directory,
-          "sfdx-project.json"
-        );
-      } else {
-        projectConfig = "sfdx-project.json";
-      }
-
-      let projectJson = JSON.parse(
-        fs.readFileSync(projectConfig, "utf8")
-      );
-
-      let packageDirectory: string;
-      projectJson["packageDirectories"].forEach( (pkg) => {
-        if (this.test_options["packageToValidate"] == pkg["package"])
-          packageDirectory = pkg["path"];
-      });
-
-      let packageClasses: string[];
-      if (isNullOrUndefined(packageDirectory)) {
-        throw new Error("Package or package directory to validate does not exist");
-      } else {
-        let packageJson = await getPackageManifest(
-          this.project_directory,
-          packageDirectory
-        );
-
-        for (let type of packageJson["Package"]["types"]) {
-          if (type["name"] == "ApexClass") {
-            packageClasses = type["members"];
-            break;
-          }
-        }
-      }
+      let packageClasses: string[] = await this.getClassesFromPackageManifest();
 
       let code_coverage = fs.readFileSync(
         path.join(
@@ -147,6 +112,7 @@ export default class TriggerApexTestImpl {
       let code_coverage_json = JSON.parse(code_coverage);
 
       if (!isNullOrUndefined(packageClasses)) {
+        // only include package classes in code coverage report
         code_coverage_json = code_coverage_json.filter( (classCoverage) => {
           for (let packageClass of packageClasses) {
             if (packageClass == classCoverage["name"])
@@ -156,9 +122,9 @@ export default class TriggerApexTestImpl {
         });
       }
 
-      for (let testClass of code_coverage_json) {
-        if (testClass["coveredPercent"] < this.test_options["coverageThreshold"]) {
-          classesWithInvalidCoverage.push(testClass["name"]);
+      for (let classCoverage of code_coverage_json) {
+        if (classCoverage["coveredPercent"] < this.test_options["coverageThreshold"]) {
+          classesWithInvalidCoverage.push(classCoverage["name"]);
         }
       }
     }
@@ -201,5 +167,53 @@ export default class TriggerApexTestImpl {
 
     console.log(`Generated Command: ${command}`);
     return command;
+  }
+
+
+  private async getClassesFromPackageManifest(): Promise<string[]> {
+    let packageClasses: string[];
+
+    let packageDirectory: string = this.getPackageDirectory();
+
+    let packageManifest = await getPackageManifest(
+      this.project_directory,
+      packageDirectory
+    );
+
+    for (let type of packageManifest["Package"]["types"]) {
+      if (type["name"] == "ApexClass") {
+        packageClasses = type["members"];
+        break;
+      }
+    }
+    return packageClasses;
+  }
+
+  private getPackageDirectory(): string {
+    let packageDirectory: string;
+
+    let projectConfig: string;
+    if (!isNullOrUndefined(this.project_directory)) {
+      projectConfig = path.join(
+        this.project_directory,
+        "sfdx-project.json"
+      );
+    } else {
+      projectConfig = "sfdx-project.json";
+    }
+
+    let projectJson = JSON.parse(
+      fs.readFileSync(projectConfig, "utf8")
+    );
+
+    projectJson["packageDirectories"].forEach( (pkg) => {
+      if (this.test_options["packageToValidate"] == pkg["package"])
+        packageDirectory = pkg["path"];
+    });
+
+    if (isNullOrUndefined(packageDirectory))
+      throw new Error("Package or package directory to validate does not exist");
+    else
+      return packageDirectory;
   }
 }
