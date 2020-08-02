@@ -4,18 +4,23 @@ let path = require("path");
 import { isNullOrUndefined } from "util";
 const xmlParser = require("xml2js").Parser({ explicitArray: false });
 
-export default async function getPackageManifest(projectDirectory, sourceDirectory) {
-    const manifest = {};
+export default async function getMDAPIPackageFromSourceDirectory(
+    projectDirectory,
+    sourceDirectory): Promise<{
+        mdapiDir: string,
+        manifestAsJSON
+    }> {
+    let mdapiPackage;
     let mdapiDir: string = convertSourceToMDAPI(projectDirectory, sourceDirectory);
-    manifest["directory"] = mdapiDir;
+    mdapiPackage["mdapiDir"] = mdapiDir;
 
     let packageXml: string = fs.readFileSync(
         path.join(mdapiDir, "package.xml"),
         "utf8"
     );
 
-    manifest["manifest"] = await xml2json(packageXml);
-    return manifest;
+    mdapiPackage["manifestAsJSON"] = await xml2json(packageXml);
+    return mdapiPackage;
 }
 
 function convertSourceToMDAPI(projectDir, sourceDirectory): string {

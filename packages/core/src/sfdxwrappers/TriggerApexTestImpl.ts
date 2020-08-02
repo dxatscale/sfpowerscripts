@@ -3,7 +3,7 @@ import { onExit } from "../OnExit";
 import { isNullOrUndefined } from "util";
 let fs = require("fs-extra");
 let path = require("path");
-import getPackageManifest from "../getPackageManifest";
+import getMDAPIPackageFromSourceDirectory from "../getMdapiPackage";
 
 export default class TriggerApexTestImpl {
   public constructor(
@@ -175,12 +175,12 @@ export default class TriggerApexTestImpl {
 
     let packageDirectory: string = this.getPackageDirectory();
 
-    let packageManifest = await getPackageManifest(
+    let mdapiPackage = await getMDAPIPackageFromSourceDirectory(
       this.project_directory,
       packageDirectory
     );
 
-    for (let type of packageManifest["manifest"]["Package"]["types"]) {
+    for (let type of mdapiPackage["manifestAsJSON"]["Package"]["types"]) {
       if (type["name"] == "ApexClass") {
         packageClasses = type["members"];
         break;
