@@ -1,50 +1,31 @@
-import { BuildRestClient } from "azure-devops-extension-api/Build";
-import * as SDK from "azure-devops-extension-sdk";
+import { ExtensionManagementRestClient } from "azure-devops-extension-api/ExtensionManagement";
+
+const PUBLISHER_NAME="AzlamSalam"
+const SCOPE_TYPE = "Default";
+const SCOPE_VALUE = "Current";
 
 export default class CodeAnalysisRetriever {
-  client: BuildRestClient;
+  client: ExtensionManagementRestClient;
   projectId: string;
   buildId: number;
+  extensionName:string;
+ 
 
  
 
-  constructor(client: BuildRestClient, projectId: string, buildId: number) {
+  constructor(extensionName:string,client:ExtensionManagementRestClient , projectId: string, buildId: number) {
     this.client = client;
     this.projectId = projectId;
     this.buildId = buildId;
-  }
-
-  public async downloadCodeAnalysisArtifact(): Promise<string[]> {
-    let analysisArtifacts: string[] = [];
-
-    const codeAnalysisAttachement = await this.client.getAttachments(
-      this.projectId,
-      this.buildId,
-      "pmd_analysis_results"
-    );
-
-    let accessToken = await SDK.getAccessToken();
-
-    for (let i = 0; i < codeAnalysisAttachement.length; i++) {
-
-  
-      var headers = new Headers();
-      headers.append(
-        "Authorization",
-        `Bearer ${accessToken}`
-      );
-      let requestOption:RequestInit = {
-        method: "GET",
-        headers: headers,
-        redirect: "follow"
-      };
-      let request = new Request(codeAnalysisAttachement[i]._links['self']['href'],requestOption);
-      let response: Response = await fetch(request);
-      let result = await response.text();
-
+    this.extensionName=extensionName;
     
-      analysisArtifacts.push(result);
-    }
-    return analysisArtifacts;
   }
+
+  public async downloadCodeAnalysisArtifact(): Promise<any> {
+
+    let doc = await this.client.getDocumentByName(PUBLISHER_NAME,this.extensionName,SCOPE_TYPE,SCOPE_VALUE,"sfpowerscripts_pmd",String(this.buildId));
+    return doc.pmd_result.pmd;
+
+  }
+
 }

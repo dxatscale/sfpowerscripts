@@ -4,25 +4,31 @@ import * as React from "react";
 import * as SDK from "azure-devops-extension-sdk";
 import {
   ObservableArray,
-  ObservableValue
+  ObservableValue,
 } from "azure-devops-ui/Core/Observable";
-import 'react-virtualized/styles.css'
+import "react-virtualized/styles.css";
 
-import {Column, Table, AutoSizer, InfiniteLoader, SortDirection, SortIndicator } from 'react-virtualized';
+import {
+  Column,
+  Table,
+  AutoSizer,
+  InfiniteLoader,
+  SortDirection,
+} from "react-virtualized";
 import { showRootComponent } from "../Common";
 import { getClient } from "azure-devops-extension-api";
-import {
-  BuildRestClient,
-  IBuildPageDataService,
-  BuildServiceIds,
-} from "azure-devops-extension-api/Build";
+import { ExtensionManagementRestClient } from "azure-devops-extension-api/ExtensionManagement";
+import { IBuildPageData,IBuildPageDataService, BuildServiceIds } from "azure-devops-extension-api/Build/BuildServices";
+
 import CodeAnalysisRetriever from "./CodeAnalysis/CodeAnalysisRetriever";
 import CodeAnalysisArtifactProcessor, {
   CodeAnalysisResult,
-  CodeAnalyisDetail
+  CodeAnalyisDetail,
 } from "./CodeAnalysis/CodeAnalysisArtifactProcessor";
 
 import MetricsComponent from "../MetricsComponent/MetricsComponent";
+
+
 
 interface IBuildInfoTabState {
   isDataLoaded: boolean;
@@ -33,9 +39,9 @@ interface IBuildInfoTabState {
   loadedRowCount: number;
   loadedRowsMap: any;
   loadingRowCount: number;
-  sortBy: any,
-  sortDirection: any,
-  sortedList: any,
+  sortBy: any;
+  sortDirection: any;
+  sortedList: any;
 }
 
 const STATUS_LOADING = 1;
@@ -51,13 +57,12 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
   result: CodeAnalysisResult | undefined = undefined;
   _timeoutIdMap;
 
-
   constructor(props: {}) {
     super(props);
 
-    const sortBy = 'index';
+    const sortBy = "index";
     const sortDirection = SortDirection.ASC;
-    const sortedList = this._sortList({sortBy, sortDirection});
+    const sortedList = this._sortList({ sortBy, sortDirection });
 
     this.state = {
       isDataLoaded: false,
@@ -82,43 +87,59 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
   }
 
   componentWillUnmount() {
-    Object.keys(this._timeoutIdMap).forEach(timeoutId => {
-      let tId = timeoutId ? timeoutId : 0
-      if (typeof tId === 'string') {
-        tId = parseInt(tId)
-      } 
+    Object.keys(this._timeoutIdMap).forEach((timeoutId) => {
+      let tId = timeoutId ? timeoutId : 0;
+      if (typeof tId === "string") {
+        tId = parseInt(tId);
+      }
       clearTimeout(tId);
     });
   }
 
   public async componentDidMount() {
+    await SDK.init();
+    await SDK.ready();
     this.initializeState();
   }
 
   private async initializeState(): Promise<void> {
-    SDK.init();
-    await SDK.ready();
 
+
+        
     this.setState({ isDataLoaded: false });
+     const extensionContext=SDK.getExtensionContext();
+    const client = getClient(ExtensionManagementRestClient);
 
-    const buildInfo = await SDK.getService<IBuildPageDataService>(
+
+    console.log("extensionContext",JSON.stringify(extensionContext));
+
+    const buildPageService = await SDK.getService<IBuildPageDataService>(
       BuildServiceIds.BuildPageDataService
     );
-    const buildPageData = await buildInfo.getBuildPageData();
-    const client = getClient(BuildRestClient);
+
+    const buildPageData:IBuildPageData = (await buildPageService.getBuildPageData()) as IBuildPageData ;
+
+
+    let buildId = Number(buildPageData?.build?.id);
+
+    console.log("BuildInfo",buildPageData?.build?.id);
+    
+
 
     this.setState({ isDataLoaded: true });
 
-    let codeAnalysisRetriever: CodeAnalysisRetriever = new CodeAnalysisRetriever(
+   
+
+    let codeAnalysisRetriever: CodeAnalysisRetriever = new CodeAnalysisRetriever(extensionContext.extensionId,
       client,
-      buildPageData!.definition!.project.id,
-      buildPageData!.build!.id
+      "NA",
+      buildId
     );
 
-    var codeAnalysisReport: string[] = await codeAnalysisRetriever.downloadCodeAnalysisArtifact();
+    var codeAnalysisReport= await codeAnalysisRetriever.downloadCodeAnalysisArtifact();
 
     let codeAnalysisProcessor: CodeAnalysisArtifactProcessor = new CodeAnalysisArtifactProcessor(
-      codeAnalysisReport[0]
+      codeAnalysisReport
     );
     this.result = await codeAnalysisProcessor.processCodeQualityFromArtifact();
     this.setState({
@@ -145,13 +166,13 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
     return list.get(index % this.state.details.length);
   }
 
-  _isRowLoaded({index}) {
-    const {loadedRowsMap} = this.state;
+  _isRowLoaded({ index }) {
+    const { loadedRowsMap } = this.state;
     return !!loadedRowsMap[index]; // STATUS_LOADING or STATUS_LOADED
   }
 
-  _loadMoreRows({startIndex, stopIndex}) {
-    const {loadedRowsMap, loadingRowCount} = this.state;
+  _loadMoreRows({ startIndex, stopIndex }) {
+    const { loadedRowsMap, loadingRowCount } = this.state;
     const increment = stopIndex - startIndex + 1;
 
     for (var i = startIndex; i <= stopIndex; i++) {
@@ -163,7 +184,7 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
     });
 
     const timeoutId = setTimeout(() => {
-      const {loadedRowCount, loadingRowCount} = this.state;
+      const { loadedRowCount, loadingRowCount } = this.state;
 
       // delete this._timeoutIdMap[timeoutId];
 
@@ -183,40 +204,44 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
 
     let promiseResolver;
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       promiseResolver = resolve;
     });
   }
 
-  _sort({sortBy, sortDirection}) {
-    let sortedList = this._sortList({sortBy, sortDirection});
+  _sort({ sortBy, sortDirection }) {
+    let sortedList = this._sortList({ sortBy, sortDirection });
 
     if (sortDirection === SortDirection.DESC) {
-      sortedList = sortedList.reverse()
+      sortedList = sortedList.reverse();
     }
 
-    this.setState({sortBy, sortDirection, sortedList});
+    this.setState({ sortBy, sortDirection, sortedList });
   }
 
-  _sortList({sortBy, sortDirection}) {
-    return this.state ? this.state.details.sort((a, b) => {
-      const bandA = typeof a[sortBy] === 'string' ? a[sortBy].toUpperCase() : a;
-      const bandB = typeof b[sortBy] === 'string' ? b[sortBy].toUpperCase() : b;
-    
-      let comparison = 0;
-      if (bandA > bandB) {
-        comparison = 1;
-      } else if (bandA < bandB) {
-        comparison = -1;
-      }
-      return comparison;
-    }) : []
-  }
+  _sortList({ sortBy, sortDirection }) {
+    return this.state
+      ? this.state.details.sort((a, b) => {
+          const bandA =
+            typeof a[sortBy] === "string" ? a[sortBy].toUpperCase() : a;
+          const bandB =
+            typeof b[sortBy] === "string" ? b[sortBy].toUpperCase() : b;
 
+          let comparison = 0;
+          if (bandA > bandB) {
+            comparison = 1;
+          } else if (bandA < bandB) {
+            comparison = -1;
+          }
+          return comparison;
+        })
+      : [];
+  }
 
   public render(): JSX.Element {
-    const rowGetter = ({index}) => this.state.sortedList[index] ? this.state.sortedList[index] : {};
-    
+    const rowGetter = ({ index }) =>
+      this.state.sortedList[index] ? this.state.sortedList[index] : {};
+
     return (
       <div className="container">
         {!this.state.isDataLoaded && (
@@ -227,54 +252,73 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
         )}
         {this.state.isDataLoaded && (
           <>
-          <div className="flex-row pmd-tiles">
-            <MetricsComponent
-              title={"Total Issues"}
-              value={this.state.violationCount}
-            />
-            <MetricsComponent
-              title={"Critical Defects"}
-              value={this.state.criticaldefects}
-            />
-            <MetricsComponent
-              title={"Affected"}
-              value={this.state.affectedFileCount}
-            />
-          </div>
-          <InfiniteLoader
-            isRowLoaded={this._isRowLoaded}
-            loadMoreRows={this._loadMoreRows}
-            rowCount={this.state.details.length}>
-            {({onRowsRendered, registerChild}) => (
-            <AutoSizer>
-                {({width, height}) => (
-              <Table
-                  ref={registerChild}
-                  width={width}
-                  height={500}
-                  autoHeight={ false }
-                  headerHeight={20}
-                  rowHeight={30}
-                  rowCount={this.state.details.length}
-                  onRowsRendered={onRowsRendered}
-                  sort={this._sort}
-                  sortBy={this.state.sortBy}
-                  sortDirection={this.state.sortDirection}
-                  rowGetter={ rowGetter } >  
-                  <Column label="File Name" dataKey="filename" width={600} />
-                  <Column label="Line Number" dataKey="beginLine" width={150 } />
-                  <Column label="Priority" dataKey="priority"  width={150 } />
-                  <Column label="Problem" dataKey="problem" />
-              </Table>
-                )}
-            </AutoSizer>
-          )}
-          </InfiniteLoader>
+            <div className="flex-row pmd-tiles">
+              <MetricsComponent
+                title={"Total Issues"}
+                value={this.state.violationCount}
+              />
+              <MetricsComponent
+                title={"Critical Defects"}
+                value={this.state.criticaldefects}
+              />
+              <MetricsComponent
+                title={"Affected"}
+                value={this.state.affectedFileCount}
+              />
+            </div>
+            <InfiniteLoader
+              isRowLoaded={this._isRowLoaded}
+              loadMoreRows={this._loadMoreRows}
+              rowCount={this.state.details.length}
+            >
+              {({ onRowsRendered, registerChild }) => (
+                <AutoSizer>
+                  {({ width, height }) => (
+                    <Table
+                      ref={registerChild}
+                      width={width}
+                      height={500}
+                      autoHeight={false}
+                      headerHeight={20}
+                      rowHeight={30}
+                      rowCount={this.state.details.length}
+                      onRowsRendered={onRowsRendered}
+                      sort={this._sort}
+                      sortBy={this.state.sortBy}
+                      sortDirection={this.state.sortDirection}
+                      rowGetter={rowGetter}
+                    >
+                      <Column
+                        label="File Name"
+                        dataKey="filename"
+                        width= { (width/3) }
+                      />
+                      <Column
+                        label="Line Number"
+                        dataKey="beginLine"
+                        width={150}
+                      />
+                      <Column label="Priority" dataKey="priority" width={150} />
+                      <Column label="Problem"
+                       dataKey="problem" 
+                       width= { (width/3) } 
+                       />
+                    </Table>
+                  )}
+                </AutoSizer>
+              )}
+            </InfiniteLoader>
           </>
         )}
       </div>
     );
   }
+
+
+
+
+
+
 }
 
 showRootComponent(<PMDAnalysisTab />);

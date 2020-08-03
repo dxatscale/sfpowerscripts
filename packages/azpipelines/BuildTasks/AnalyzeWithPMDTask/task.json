@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 6,
+        "Major": 7,
         "Minor": 0,
-        "Patch": 7
+        "Patch": 0
     },
     "instanceNameFormat": "Analyze $(directory) using PMD",
     "inputs": [

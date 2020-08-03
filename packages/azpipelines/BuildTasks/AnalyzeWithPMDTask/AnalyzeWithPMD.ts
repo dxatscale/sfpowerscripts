@@ -1,15 +1,25 @@
 import tl = require("azure-pipelines-task-lib/task");
 import FileSystemInteractions from "../Common/FileSystemInteractions";
 import  AnalyzeWithPMDImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/AnalyzeWithPMDImpl"
+import { getWebAPIWithoutToken } from "../Common/WebAPIHelper"
+import * as nodeApi from 'azure-devops-node-api';
+import xml2js = require("xml2js");
+import * as ExtensionManagementApi from 'azure-devops-node-api/ExtensionManagementApi'
+import { xml2json } from  "../Common/XMLToJson"
+
 const os = require("os");
 const path = require("path");
-import xml2js = require("xml2js");
 const fs = require("fs");
+
+
+const PUBLISHER_NAME = "AzlamSalam";
+
+const SCOPE_TYPE = "Default";
+const SCOPE_VALUE = "Current";
 
 async function run() {
   try {
-    console.log("Test.. PMD");
-
+    
     let taskType = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
     let stagingDir: string = "";
 
@@ -30,23 +40,24 @@ async function run() {
     const project_directory = tl.getInput("project_directory", false);
     const directory: string = tl.getInput("directory", false);
     const ruleset: string = tl.getInput("ruleset", false);
-
-
-
     let rulesetpath=""
     if (ruleset == "Custom") {
       let rulesetpath = tl.getInput("rulesetpath", false);
       console.log(rulesetpath);
     }
-
-   
-
     const format: string = tl.getInput("format", false);
     const outputPath: string = tl.getInput("outputPath", false);
     const version: string = tl.getInput("version", false);
-
     const isToBreakBuild = tl.getBoolInput("isToBreakBuild", false);
 
+
+       //Fetch WebAPI
+   const webApi: nodeApi.WebApi = await getWebAPIWithoutToken();
+   const extensionManagementApi: ExtensionManagementApi.IExtensionManagementApi = await webApi.getExtensionManagementApi();
+   let  extensionName = await getExtensionName(extensionManagementApi);
+
+
+   
     let result: [number, number, number] = [0, 0, 0];
 
     let pmdImpl: AnalyzeWithPMDImpl = new AnalyzeWithPMDImpl(
@@ -109,6 +120,9 @@ async function run() {
           artifactFilePath
         );
 
+
+        await writePMDResultToExtensionStorage(artifactFilePath, extensionManagementApi, extensionName);
+
         if (isToBreakBuild && result[2] > 0)
           tl.setResult(
             tl.TaskResult.Failed,
@@ -119,6 +133,20 @@ async function run() {
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
+}
+
+
+async function writePMDResultToExtensionStorage(artifactFilePath: string, extensionManagementApi: ExtensionManagementApi.IExtensionManagementApi, extensionName: string) {
+  let pmdResultAsJSON = await xml2json(artifactFilePath);
+  let builId = tl.getVariable("build.buildId");
+  let pmdDoc = {};
+  pmdDoc["id"] = builId;
+  pmdDoc["pmd_result"] = pmdResultAsJSON;
+
+  let response = await extensionManagementApi.setDocumentByName(pmdDoc,
+    PUBLISHER_NAME,
+    extensionName, SCOPE_TYPE, SCOPE_VALUE, `sfpowerscripts_pmd`);
+  console.log("Successfully written to Extension Storage", response.id);
 }
 
 function parseXmlReport(xmlReport: string): [number, number, number] {
@@ -194,6 +222,36 @@ function createSummaryLine(analysisreport: [number, number, number]): string {
       affectedFileCount +
       " files"
   );
+}
+
+async function getExtensionName(extensionManagementApi:ExtensionManagementApi.IExtensionManagementApi):Promise<string>
+{
+
+  console.log("Checking for the version of sfpowerscripts");
+  let extensionName;
+  if (await extensionManagementApi.getInstalledExtensionByName(PUBLISHER_NAME, "sfpowerscripts-dev")) {
+    extensionName = "sfpowerscripts-dev";
+  }
+  else if(await extensionManagementApi.getInstalledExtensionByName(PUBLISHER_NAME, "sfpowerscripts-review"))
+  {
+    extensionName = "sfpowerscripts-review";
+  }
+  else if(await extensionManagementApi.getInstalledExtensionByName(PUBLISHER_NAME, "sfpowerscripts-alpha"))
+  {
+    extensionName = "sfpowerscripts-alpha";
+  }
+  else if(await extensionManagementApi.getInstalledExtensionByName(PUBLISHER_NAME, "sfpowerscripts-beta"))
+  {
+    extensionName = "sfpowerscripts-beta";
+  }
+  else if(await extensionManagementApi.getInstalledExtensionByName(PUBLISHER_NAME, "sfpowerscripts"))
+  {
+    extensionName = "sfpowerscripts";
+  }
+  
+  console.log(`Found Sfpowerscripts version ${extensionName}`);
+  return extensionName;
+
 }
 
 run();
