@@ -7,13 +7,13 @@ const SCOPE_VALUE = "Current";
 export default class CodeAnalysisRetriever {
   client: ExtensionManagementRestClient;
   projectId: string;
-  buildId: string;
+  buildId: number;
   extensionName:string;
  
 
  
 
-  constructor(extensionName:string,client:ExtensionManagementRestClient , projectId: string, buildId: string) {
+  constructor(extensionName:string,client:ExtensionManagementRestClient , projectId: string, buildId: number) {
     this.client = client;
     this.projectId = projectId;
     this.buildId = buildId;
@@ -23,7 +23,7 @@ export default class CodeAnalysisRetriever {
 
   public async downloadCodeAnalysisArtifact(): Promise<any> {
 
-    let doc = await this.client.getDocumentByName(PUBLISHER_NAME,this.extensionName,SCOPE_TYPE,SCOPE_VALUE,"sfpowerscripts_pmd",this.buildId);
+    let doc = await this.client.getDocumentByName(PUBLISHER_NAME,this.extensionName,SCOPE_TYPE,SCOPE_VALUE,"sfpowerscripts_pmd",String(this.buildId));
     return doc.pmd_result.pmd;
 
   }

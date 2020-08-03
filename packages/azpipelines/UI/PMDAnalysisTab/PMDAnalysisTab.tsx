@@ -18,6 +18,8 @@ import {
 import { showRootComponent } from "../Common";
 import { getClient } from "azure-devops-extension-api";
 import { ExtensionManagementRestClient } from "azure-devops-extension-api/ExtensionManagement";
+import { IBuildPageData,IBuildPageDataService, BuildServiceIds } from "azure-devops-extension-api/Build/BuildServices";
+
 import CodeAnalysisRetriever from "./CodeAnalysis/CodeAnalysisRetriever";
 import CodeAnalysisArtifactProcessor, {
   CodeAnalysisResult,
@@ -108,12 +110,30 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
      const extensionContext=SDK.getExtensionContext();
     const client = getClient(ExtensionManagementRestClient);
 
+
+    console.log("extensionContext",JSON.stringify(extensionContext));
+
+    const buildPageService = await SDK.getService<IBuildPageDataService>(
+      BuildServiceIds.BuildPageDataService
+    );
+
+    const buildPageData =  await buildPageService.getBuildPageData();
+
+
+    let buildId = Number(buildPageData?.build?.id);
+
+    console.log("BuildInfo",buildPageData?.build?.id);
+    
+
+
     this.setState({ isDataLoaded: true });
+
+   
 
     let codeAnalysisRetriever: CodeAnalysisRetriever = new CodeAnalysisRetriever(extensionContext.extensionId,
       client,
       "NA",
-      this.getBuildId(extensionContext.extensionId)
+      buildId
     );
 
     var codeAnalysisReport= await codeAnalysisRetriever.downloadCodeAnalysisArtifact();
@@ -292,16 +312,7 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
   }
 
 
-  private  getBuildId(extensionId:string):string
-  {
-    let buildId="405"; //Hardcode for testing
-    if(extensionId != "sfpowerscripts-dev")
-    {
-    let currentURL = new URL(window.location.href);
-    buildId=currentURL.searchParams.get('buildId') as string;
-    }
-    return buildId as string;
-  }
+
 
 
 
