@@ -291,7 +291,7 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
                       <Column
                         label="File Name"
                         dataKey="filename"
-                        width={600}
+                        width= { (width/3) }
                       />
                       <Column
                         label="Line Number"
@@ -299,7 +299,10 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
                         width={150}
                       />
                       <Column label="Priority" dataKey="priority" width={150} />
-                      <Column label="Problem" dataKey="problem" />
+                      <Column label="Problem"
+                       dataKey="problem" 
+                       width= { (width/3) } 
+                       />
                     </Table>
                   )}
                 </AutoSizer>
