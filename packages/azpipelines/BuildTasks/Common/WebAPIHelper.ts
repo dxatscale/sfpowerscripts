@@ -3,7 +3,7 @@ import * as lim from 'azure-devops-node-api/interfaces/LocationsInterfaces';
 import * as ReleaseInterfaces from 'azure-devops-node-api/interfaces/ReleaseInterfaces';
 import * as ReleaseApi from 'azure-devops-node-api/ReleaseApi';
 import * as tl from 'azure-pipelines-task-lib/task';
-import { getPersonalAccessTokenHandler, WebApi } from 'azure-devops-node-api';
+import { getPersonalAccessTokenHandler } from 'azure-devops-node-api';
 import { IRequestOptions } from 'azure-devops-node-api/interfaces/common/VsoBaseInterfaces'
 
 function getEnv(name: string): string {

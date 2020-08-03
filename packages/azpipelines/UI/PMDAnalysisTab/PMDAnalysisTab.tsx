@@ -14,15 +14,9 @@ import {
   AutoSizer,
   InfiniteLoader,
   SortDirection,
-  SortIndicator,
 } from "react-virtualized";
 import { showRootComponent } from "../Common";
 import { getClient } from "azure-devops-extension-api";
-import {
-  BuildRestClient,
-  IBuildPageDataService,
-  BuildServiceIds,
-} from "azure-devops-extension-api/Build";
 import { ExtensionManagementRestClient } from "azure-devops-extension-api/ExtensionManagement";
 import CodeAnalysisRetriever from "./CodeAnalysis/CodeAnalysisRetriever";
 import CodeAnalysisArtifactProcessor, {
@@ -32,7 +26,7 @@ import CodeAnalysisArtifactProcessor, {
 
 import MetricsComponent from "../MetricsComponent/MetricsComponent";
 
-const PUBLISHER_NAME = "AzlamSalam";
+
 
 interface IBuildInfoTabState {
   isDataLoaded: boolean;

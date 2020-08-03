@@ -9,11 +9,10 @@
   "dependencies": {
     "azure-devops-extension-api": "~1.157.0",
     "azure-devops-extension-sdk": "~2.0.11",
-    "azure-devops-ui": "^1.160.4",
+    "azure-devops-ui": "^2.166.93",
     "react": "~16.8.1",
     "react-dom": "~16.8.1",
-    "react-virtualized": "^9.21.2",
-    "xml2js": "^0.4.22"
+    "react-virtualized": "^9.21.2"
   },
   "devDependencies": {
     "@types/node": "^12.7.2",

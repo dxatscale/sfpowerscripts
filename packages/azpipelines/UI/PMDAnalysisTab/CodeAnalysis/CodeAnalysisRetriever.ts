@@ -1,5 +1,3 @@
-import { BuildRestClient } from "azure-devops-extension-api/Build";
-import * as SDK from "azure-devops-extension-sdk";
 import { ExtensionManagementRestClient } from "azure-devops-extension-api/ExtensionManagement";
 
 const PUBLISHER_NAME="AzlamSalam"

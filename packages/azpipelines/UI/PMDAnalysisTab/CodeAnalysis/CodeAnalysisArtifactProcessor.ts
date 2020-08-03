@@ -1,18 +1,3 @@
-import xml2js = require("xml2js");
-
-export interface CodeAnalyisDetail {
-  filename: string;
-  beginLine: number;
-  priority: number;
-  problem: string;
-}
-export interface CodeAnalysisResult {
-  name: string;
-  violationCount: number;
-  affectedFileCount: number;
-  criticaldefects: number;
-  details: CodeAnalyisDetail[];
-}
 
 export default class CodeAnalysisArtifactProcessor {
   pmdResult: any;
@@ -79,4 +64,17 @@ export default class CodeAnalysisArtifactProcessor {
       details
     };
   }
+}
+export interface CodeAnalyisDetail {
+  filename: string;
+  beginLine: number;
+  priority: number;
+  problem: string;
+}
+export interface CodeAnalysisResult {
+  name: string;
+  violationCount: number;
+  affectedFileCount: number;
+  criticaldefects: number;
+  details: CodeAnalyisDetail[];
 }

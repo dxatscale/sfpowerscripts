@@ -1,7 +1,7 @@
 import tl = require("azure-pipelines-task-lib/task");
 import FileSystemInteractions from "../Common/FileSystemInteractions";
 import  AnalyzeWithPMDImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/AnalyzeWithPMDImpl"
-import { getWebApi, getWebAPIWithoutToken } from "../Common/WebAPIHelper"
+import { getWebAPIWithoutToken } from "../Common/WebAPIHelper"
 import * as nodeApi from 'azure-devops-node-api';
 import xml2js = require("xml2js");
 import * as ExtensionManagementApi from 'azure-devops-node-api/ExtensionManagementApi'
