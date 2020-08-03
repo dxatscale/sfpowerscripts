@@ -1,6 +1,6 @@
 {
     "manifestVersion": 1,
-    "id": "sfpowerscripts-beta",
+    "id": "sfpowerscripts",
     "publisher": "AzlamSalam",
     "name": "sfpowerscripts",
     "version": "16.0.0",
@@ -468,6 +468,5 @@
                 "name": "BuildTasks/CreateDeltaPackageTask"
             }
         }
-    ],
-    "baseUri": "https://localhost:3000/build/"
+    ]
 }
