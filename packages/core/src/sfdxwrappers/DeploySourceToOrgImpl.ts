@@ -14,6 +14,8 @@ import { isNullOrUndefined } from "util";
 import { onExit } from "../OnExit";
 let path = require("path");
 import ignore from "ignore";
+import getMDAPIPackageFromSourceDirectory from "../getMdapiPackage";
+const Table = require("cli-table");
 
 export interface DeploySourceResult {
   deploy_id: string;
@@ -22,7 +24,7 @@ export interface DeploySourceResult {
 }
 
 export default class DeploySourceToOrgImpl {
-  temp_folder: string;
+  private mdapiDir: string;
 
   public constructor(
     private target_org: string,
@@ -30,16 +32,11 @@ export default class DeploySourceToOrgImpl {
     private source_directory: string,
     private deployment_options: any,
     private isToBreakBuildIfEmpty: boolean
-  ) {
-    this.temp_folder = `${this.makefolderid(5)}_mdapi`;
-  }
+  ) {}
 
   public async exec(): Promise<DeploySourceResult> {
     let commandExecStatus: boolean = false;
     let deploySourceResult = {} as DeploySourceResult;
-
-    //Clean mdapi directory
-    rimraf.sync(this.temp_folder);
 
     //Check empty conditions
     let status = this.isToBreakBuildForEmptyDirectory();
@@ -54,7 +51,21 @@ export default class DeploySourceToOrgImpl {
     }
 
     console.log("Converting source to mdapi");
-    await this.convertSourceToMDAPI();
+    let mdapiPackage = await getMDAPIPackageFromSourceDirectory(this.project_directory, this.source_directory);
+    this.mdapiDir = mdapiPackage["mdapiDir"];
+
+    let table = new Table({
+      head: ["Metadata Type", "API Name"],
+    });
+
+    for (let type of mdapiPackage["manifestAsJSON"]["Package"]["types"]) {
+      for (let member of type["members"]) {
+        let item = [type.name, member];
+        table.push(item);
+      }
+    }
+    console.log("The following metadata will be deployed:");
+    console.log(table.toString());
 
     try {
       if (this.deployment_options["checkonly"])
@@ -227,7 +238,7 @@ export default class DeploySourceToOrgImpl {
     if (this.deployment_options["checkonly"]) command += ` -c`;
 
     //directory
-    command += ` -d ${this.temp_folder}`;
+    command += ` -d ${this.mdapiDir}`;
 
     //add json
     command += ` --json`;
@@ -279,27 +290,6 @@ export default class DeploySourceToOrgImpl {
     }
   }
 
-  private async convertSourceToMDAPI(): Promise<void> {
-    try {
-      if (!isNullOrUndefined(this.project_directory))
-        console.log(
-          `Converting to Source Format ${this.source_directory} in project directory  ${this.project_directory}`
-        );
-      else
-        console.log(
-          `Converting to Source Format ${this.source_directory} in project directory`
-        );
-      child_process.execSync(
-        `npx sfdx force:source:convert -r ${this.source_directory}  -d ${this.temp_folder}`,
-        { cwd: this.project_directory, encoding: "utf8" }
-      );
-      console.log("Converting to Source Format Completed");
-    } catch (error) {
-      console.log("Unable to convert source, exiting" + error.code);
-      throw error;
-    }
-  }
-
   private isEmptyFolder(source_directory): boolean {
     let files: string[] = readdirSync(source_directory);
 
@@ -323,16 +313,5 @@ export default class DeploySourceToOrgImpl {
 
     if (files == null || files.length === 0) return true;
     else return false;
-  }
-
-  private makefolderid(length): string {
-    var result = "";
-    var characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    var charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
   }
 }
