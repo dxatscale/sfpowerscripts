@@ -93,34 +93,13 @@ export default class TriggerApexTestImpl {
       return test_result;
     }
 
-
-
-    const classesWithInvalidCoverage: string[] = [];
+    let classesWithInvalidCoverage: string[];
 
     if (this.test_options["isValidateCoverage"]) {
-      console.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
-
-      let packageClasses: string[] = await this.getClassesFromPackageManifest();
-
-      let code_coverage = fs.readFileSync(
-        path.join(
-          this.test_options["outputdir"],
-          `test-result-codecoverage.json`
-        ),
-        "utf8"
-      );
-      let code_coverage_json = JSON.parse(code_coverage);
-
-      code_coverage_json = this.filterCodeCoverageToPackageClasses(code_coverage_json, packageClasses);
-
-      for (let classCoverage of code_coverage_json) {
-        if (classCoverage["coveredPercent"] < this.test_options["coverageThreshold"]) {
-          classesWithInvalidCoverage.push(classCoverage["name"]);
-        }
-      }
+      classesWithInvalidCoverage = await this.validateClassCodeCoverage();
     }
 
-    if (classesWithInvalidCoverage.length == 0) {
+    if (isNullOrUndefined(classesWithInvalidCoverage) || classesWithInvalidCoverage.length == 0) {
       test_result.message = `${test_report_json.summary.passing} Tests passed with overall Test Run Coverage of ${test_report_json.summary.testRunCoverage} percent`;
       test_result.result = true;
     } else {
@@ -158,6 +137,31 @@ export default class TriggerApexTestImpl {
 
     console.log(`Generated Command: ${command}`);
     return command;
+  }
+
+  private async validateClassCodeCoverage(): Promise<string[]>  {
+    console.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
+    let classesWithInvalidCoverage: string[] = [];
+
+    let packageClasses: string[] = await this.getClassesFromPackageManifest();
+
+    let code_coverage = fs.readFileSync(
+      path.join(
+        this.test_options["outputdir"],
+        `test-result-codecoverage.json`
+      ),
+      "utf8"
+    );
+    let code_coverage_json = JSON.parse(code_coverage);
+
+    code_coverage_json = this.filterCodeCoverageToPackageClasses(code_coverage_json, packageClasses);
+
+    for (let classCoverage of code_coverage_json) {
+      if (classCoverage["coveredPercent"] < this.test_options["coverageThreshold"]) {
+        classesWithInvalidCoverage.push(classCoverage["name"]);
+      }
+    }
+    return classesWithInvalidCoverage;
   }
 
   private filterCodeCoverageToPackageClasses(codeCoverage, packageClasses: string[]) {
