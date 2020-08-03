@@ -10,7 +10,11 @@ export default async function getMDAPIPackageFromSourceDirectory(
         mdapiDir: string,
         manifestAsJSON
     }> {
-    let mdapiPackage;
+    const mdapiPackage: {mdapiDir: string, manifestAsJSON} = {
+        mdapiDir: "",
+        manifestAsJSON: {}
+    };
+
     let mdapiDir: string = convertSourceToMDAPI(projectDirectory, sourceDirectory);
     mdapiPackage["mdapiDir"] = mdapiDir;
 

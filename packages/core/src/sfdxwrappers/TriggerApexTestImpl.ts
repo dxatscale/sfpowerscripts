@@ -111,16 +111,7 @@ export default class TriggerApexTestImpl {
       );
       let code_coverage_json = JSON.parse(code_coverage);
 
-      if (!isNullOrUndefined(packageClasses)) {
-        // only include package classes in code coverage report
-        code_coverage_json = code_coverage_json.filter( (classCoverage) => {
-          for (let packageClass of packageClasses) {
-            if (packageClass == classCoverage["name"])
-              return true;
-          }
-          return false;
-        });
-      }
+      code_coverage_json = this.filterCodeCoverageToPackageClasses(code_coverage_json, packageClasses);
 
       for (let classCoverage of code_coverage_json) {
         if (classCoverage["coveredPercent"] < this.test_options["coverageThreshold"]) {
@@ -169,6 +160,20 @@ export default class TriggerApexTestImpl {
     return command;
   }
 
+  private filterCodeCoverageToPackageClasses(codeCoverage, packageClasses: string[]) {
+    let filteredCodeCoverage = codeCoverage;
+    if (!isNullOrUndefined(packageClasses)) {
+      // only include package classes in code coverage report
+      filteredCodeCoverage = codeCoverage.filter( (classCoverage) => {
+        for (let packageClass of packageClasses) {
+          if (packageClass == classCoverage["name"])
+            return true;
+        }
+        return false;
+      });
+    }
+    return filteredCodeCoverage;
+  }
 
   private async getClassesFromPackageManifest(): Promise<string[]> {
     let packageClasses: string[];
