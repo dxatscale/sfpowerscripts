@@ -9,7 +9,7 @@
   "bugs": "https://github.com/Accenture/sfpowerscripts/issues",
   "dependencies": {
     "@dxatscale/sfpowerscripts.core": "^1.1.0",
-    "@oclif/command": "^1",
+    "@oclif/command": "^1.7.0",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",
     "@salesforce/command": "^2",
