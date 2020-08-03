@@ -67,10 +67,11 @@
         {
             "name": "isValidateCoverage",
             "type": "boolean",
-            "label": "Validate code coverage of individual test classes",
+            "label": "Validate code coverage of individual classes",
             "defaultValue": false,
-            "helpMarkDown": "When enabled, verifies whether indvidual test classes meet minimum code coverage requirement",
-            "required": false
+            "helpMarkDown": "When enabled, verifies whether indvidual classes meet the minimum code coverage requirement",
+            "required": false,
+            "visibleRule": "testlevel = RunApexTestSuite"
         },
         {
             "name": "coverageThreshold",
@@ -79,6 +80,23 @@
             "defaultValue": "75",
             "helpMarkDown": "Minimum coverage required per test class, in order for the task to succeed",
             "required": false,
+            "visibleRule": "isValidateCoverage = true"
+        },
+        {
+            "name": "packageToValidate",
+            "type": "string",
+            "label": "Package to validate",
+            "helpMarkDown": "Specify the package to check for code coverage. Required when validating individual class coverage",
+            "required": false,
+            "visibleRule": "isValidateCoverage = true"
+        },
+        {
+            "name": "project_directory",
+            "type": "string",
+            "label": "Project Directory",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The project directory should contain a sfdx-project.json",
             "visibleRule": "isValidateCoverage = true"
         },
         {
