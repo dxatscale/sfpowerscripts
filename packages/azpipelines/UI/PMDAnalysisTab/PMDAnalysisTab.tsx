@@ -117,7 +117,7 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
       BuildServiceIds.BuildPageDataService
     );
 
-    const buildPageData =  await buildPageService.getBuildPageData();
+    const buildPageData:IBuildPageData =  await buildPageService.getBuildPageData();
 
 
     let buildId = Number(buildPageData?.build?.id);

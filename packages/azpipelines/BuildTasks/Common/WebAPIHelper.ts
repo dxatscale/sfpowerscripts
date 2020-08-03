@@ -48,7 +48,7 @@ export async function getWebAPIWithoutToken():Promise<vm.WebApi> {
         };
 
         let serverConnection:vm.WebApi = new vm.WebApi(serverUrl, authHandler, options);
-        const connData: lim.ConnectionData = await serverConnection.connect();
+        await serverConnection.connect();
         resolve(serverConnection);
       } catch (err) {
         reject(err);
