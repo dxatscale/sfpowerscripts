@@ -59,8 +59,13 @@ export default class DeploySourceToOrgImpl {
     });
 
     for (let type of mdapiPackage["manifestAsJSON"]["Package"]["types"]) {
-      for (let member of type["members"]) {
-        let item = [type.name, member];
+      if (type["members"] instanceof Array) {
+        for (let member of type["members"]) {
+          let item = [type.name, member];
+          table.push(item);
+        }
+      } else {
+        let item = [type.name, type.members];
         table.push(item);
       }
     }
