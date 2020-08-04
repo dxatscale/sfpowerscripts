@@ -54,23 +54,7 @@ export default class DeploySourceToOrgImpl {
     let mdapiPackage = await getMDAPIPackageFromSourceDirectory(this.project_directory, this.source_directory);
     this.mdapiDir = mdapiPackage["mdapiDir"];
 
-    let table = new Table({
-      head: ["Metadata Type", "API Name"],
-    });
-
-    for (let type of mdapiPackage["manifestAsJSON"]["Package"]["types"]) {
-      if (type["members"] instanceof Array) {
-        for (let member of type["members"]) {
-          let item = [type.name, member];
-          table.push(item);
-        }
-      } else {
-        let item = [type.name, type.members];
-        table.push(item);
-      }
-    }
-    console.log("The following metadata will be deployed:");
-    console.log(table.toString());
+    this.printMetadataToDeploy(mdapiPackage["manifestAsJSON"]);
 
     try {
       if (this.deployment_options["checkonly"])
@@ -318,5 +302,25 @@ export default class DeploySourceToOrgImpl {
 
     if (files == null || files.length === 0) return true;
     else return false;
+  }
+
+  private printMetadataToDeploy(mdapiPackageManifest) {
+    let table = new Table({
+      head: ["Metadata Type", "API Name"],
+    });
+
+    for (let type of mdapiPackageManifest["Package"]["types"]) {
+      if (type["members"] instanceof Array) {
+        for (let member of type["members"]) {
+          let item = [type.name, member];
+          table.push(item);
+        }
+      } else {
+        let item = [type.name, type.members];
+        table.push(item);
+      }
+    }
+    console.log("The following metadata will be deployed:");
+    console.log(table.toString());
   }
 }
