@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-createdeltapackage-task",
   "description": "sfpowerscripts-createdeltapackage-task",
-  "version": "5.0.8",
+  "version": "5.0.9",
   "private": true,
   "repository": {
     "type": "git",

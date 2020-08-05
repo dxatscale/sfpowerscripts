@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-exportsourcefromorg-task",
   "description": "sfpowerscripts-exportsourcefromorg-task",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "private": true,
   "repository": {
     "type": "git",

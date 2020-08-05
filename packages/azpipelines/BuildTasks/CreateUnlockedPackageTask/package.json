@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-createunlockedpackage-task",
   "description": "sfpowerscripts-createunlockedpackage-task",
-  "version": "11.0.5",
+  "version": "11.0.6",
   "private": true,
   "repository": {
     "type": "git",
