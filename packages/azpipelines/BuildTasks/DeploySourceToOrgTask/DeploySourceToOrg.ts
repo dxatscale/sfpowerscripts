@@ -11,9 +11,9 @@ async function run() {
     const target_org: string = tl.getInput("target_org", true);
     const project_directory: string = tl.getInput("project_directory", false);
     const source_directory: string = tl.getInput("source_directory", true);
-    const ignore_warnings:boolean = tl.getBoolInput("ignorewarning",false);
-    const ignore_error:boolean = tl.getBoolInput("ignorerror",false);
-    
+    const ignore_warnings:boolean = tl.getBoolInput("ignorewarnings",false);
+    const ignore_error:boolean = tl.getBoolInput("ignoreerror",false);
+
 
 
     let deploySourceToOrgImpl: DeploySourceToOrgImpl;
@@ -38,7 +38,7 @@ async function run() {
       mdapi_options["apextestsuite"] = tl.getInput("apextestsuite", true);
 
 
-    
+
     mdapi_options["ignore_warnings"]=ignore_warnings;
     mdapi_options["ignore_errors"]=ignore_error;
 
