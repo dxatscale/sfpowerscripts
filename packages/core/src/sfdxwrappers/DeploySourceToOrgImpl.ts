@@ -309,15 +309,28 @@ export default class DeploySourceToOrgImpl {
       head: ["Metadata Type", "API Name"],
     });
 
-    for (let type of mdapiPackageManifest["Package"]["types"]) {
-      if (type["members"] instanceof Array) {
-        for (let member of type["members"]) {
-          let item = [type.name, member];
+    if (mdapiPackageManifest["Package"]["types"] instanceof Array) {
+      for (let type of mdapiPackageManifest["Package"]["types"]) {
+        if (type["members"] instanceof Array) {
+          for (let member of type["members"]) {
+            let item = [type.name, member];
+            table.push(item);
+          }
+        } else {
+          let item = [type.name, type.members];
           table.push(item);
         }
+      }
+    } else {
+      let type = mdapiPackageManifest["Package"]["types"];
+      if (type["members"] instanceof Array) {
+        for (let member of type["members"]) {
+            let item = [type.name, member];
+            table.push(item);
+          }
       } else {
-        let item = [type.name, type.members];
-        table.push(item);
+          let item = [type.name, type.members];
+          table.push(item);
       }
     }
     console.log("The following metadata will be deployed:");
