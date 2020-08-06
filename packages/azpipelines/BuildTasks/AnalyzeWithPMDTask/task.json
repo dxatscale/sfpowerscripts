@@ -75,7 +75,7 @@
             "name": "version",
             "type": "string",
             "label": "Version of the pmd to be used",
-            "defaultValue": "6.18.0",
+            "defaultValue": "6.26.0",
             "required": false,
             "helpMarkDown": "The version of PMD to be used for static analysis"
         },
