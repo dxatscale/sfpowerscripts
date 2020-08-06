@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^1.2.0",
+    "@dxatscale/sfpowerscripts.core": "^1.2.1",
     "azure-devops-node-api": "^10.1.1",
     "azure-pipelines-task-lib": "^2.9.5",
     "xml2js": "^0.4.23"
