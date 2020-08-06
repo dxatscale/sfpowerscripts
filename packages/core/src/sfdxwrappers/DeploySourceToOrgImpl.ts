@@ -329,8 +329,8 @@ export default class DeploySourceToOrgImpl {
             table.push(item);
           }
       } else {
-          let item = [type.name, type.members];
-          table.push(item);
+        let item = [type.name, type.members];
+        table.push(item);
       }
     }
     console.log("The following metadata will be deployed:");
