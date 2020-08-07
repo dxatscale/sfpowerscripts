@@ -103,7 +103,7 @@ export default class TriggerApexTestImpl {
       test_result.message = `${test_report_json.summary.passing} Tests passed with overall Test Run Coverage of ${test_report_json.summary.testRunCoverage} percent`;
       test_result.result = true;
     } else {
-      test_result.message=`The test classes ${classesWithInvalidCoverage.toString()} do not meet the required code coverage of ${this.test_options["coverageThreshold"]}`;
+      test_result.message=`The classes ${classesWithInvalidCoverage.toString()} do not meet the required code coverage of ${this.test_options["coverageThreshold"]}`;
       test_result.result = false;
     }
     return test_result;
@@ -152,8 +152,9 @@ export default class TriggerApexTestImpl {
       ),
       "utf8"
     );
-    let code_coverage_json = JSON.parse(code_coverage);
 
+    let code_coverage_json = JSON.parse(code_coverage);
+    code_coverage_json = this.filterEmptyClassesFromCodeCoverage(code_coverage_json);
     code_coverage_json = this.filterCodeCoverageToPackageClasses(code_coverage_json, packageClasses);
 
     for (let classCoverage of code_coverage_json) {
@@ -162,6 +163,12 @@ export default class TriggerApexTestImpl {
       }
     }
     return classesWithInvalidCoverage;
+  }
+
+  private filterEmptyClassesFromCodeCoverage(codeCoverage): string[] {
+    return codeCoverage.filter( (classCoverage) => {
+      return classCoverage["totalLines"] != 0;
+    });
   }
 
   private filterCodeCoverageToPackageClasses(codeCoverage, packageClasses: string[]) {
