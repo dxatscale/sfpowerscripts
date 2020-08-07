@@ -82,14 +82,13 @@ export default class TriggerApexTest extends SfdxCommand {
       let result = await triggerApexTestImpl.exec();
 
       if (!result.result) {
-        throw new Error(`${result.message}`);
+        throw new Error(`Error: ${result.message}`);
       } else {
         console.log(`${result.message}`);
       }
     } catch(err) {
-      // AppInsights.trackExcepiton("sfpwowerscript-triggerapextest-task",err);
+      console.log("\n");
       console.error(err.message);
-      // Fail the task when an error occurs
       process.exit(1);
     }
   }
