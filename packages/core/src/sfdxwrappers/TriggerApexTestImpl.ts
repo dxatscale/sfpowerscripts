@@ -154,21 +154,17 @@ export default class TriggerApexTestImpl {
     );
 
     let code_coverage_json = JSON.parse(code_coverage);
-    code_coverage_json = this.filterEmptyClassesFromCodeCoverage(code_coverage_json);
     code_coverage_json = this.filterCodeCoverageToPackageClasses(code_coverage_json, packageClasses);
 
     for (let classCoverage of code_coverage_json) {
-      if (classCoverage["coveredPercent"] < this.test_options["coverageThreshold"]) {
+      if (
+        classCoverage["coveredPercent"] !== null &&
+        classCoverage["coveredPercent"] < this.test_options["coverageThreshold"]
+      ) {
         classesWithInvalidCoverage.push(classCoverage["name"]);
       }
     }
     return classesWithInvalidCoverage;
-  }
-
-  private filterEmptyClassesFromCodeCoverage(codeCoverage): string[] {
-    return codeCoverage.filter( (classCoverage) => {
-      return classCoverage["totalLines"] != 0;
-    });
   }
 
   private filterCodeCoverageToPackageClasses(codeCoverage, packageClasses: string[]) {
