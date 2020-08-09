@@ -6,7 +6,7 @@ description: Deployment Helper Task / Release Pipelines
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-checkoutprojectfromartifact-task | 13.2.0 |
+| sfpwowerscript-checkoutprojectfromartifact-task | 13.3.4 |
 
 This task is used to checkout the code to a particular commit id from a 'git' repo as specified in the artifact produced by any  sfpowerscripts packaging tasks. This task is used in a release pipeline to have access to the code  for utilizing [deploying a package \(source format\) to an org](deploy-a-source-repo-to-org.md) task or any other source manipulations. The repo URL and commit id are already specified in the artifact produced by Packaging Tasks. This task at the moment only authenticating a few git  providers with HTTPS access. There is also an option for authenticating the agent with a preferred method before using this function \(.. already authenticate at the agent level\)
 
@@ -86,6 +86,7 @@ When using the option Git which is already authenticate at the agent level, the 
 
 **Changelog**
 
+* 13.3.4 Update Core dependency
 * 13.2.0   -  Added support for git authentication where the agent is already authenticated earlier -   Removed telemetry collection  -  Add support of the task to skipped if there is no artifact for 
 * 11.0.5 Refactored to use revamped folder structure
 * 10.0.7 Add support for artifacts generated from a mono repo

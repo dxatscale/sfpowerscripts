@@ -2,7 +2,7 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-validateapextestcoverage-task | 4.0.4 |
+| sfpwowerscript-validateapextestcoverage-task | 4.0.8 |
 
 This task is used to validate the apex test coverage of an org
 
@@ -42,6 +42,7 @@ None
 
 **Changelog**
 
+* 4.0.8 Update Core dependency
 * 4.0.5  Remove Telemetry Collection
 * 3.0.9 Refactored to use revamped folder structure
 * 2.0.1 Updated with telemetry

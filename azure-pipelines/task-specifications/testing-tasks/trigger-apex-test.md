@@ -2,7 +2,7 @@
 
 | **Task Id** | Version |
 | :--- | :--- |
-| sfpwowerscript-triggerapextest-task | 7.0.4 |
+| sfpwowerscript-triggerapextest-task | 8.0.0 |
 
 This task is used to trigger apex unit tests in an org and also captures the results as an artifact and publishes the result in the tests tab.
 
@@ -32,7 +32,27 @@ This field is only visible/valid  if the Test Level is "RunSpecifiedTests"
 This field is only visible/valid  if the Test Level is "RunApexTestSuite"
 {% endhint %}
 
+* **Run tests from a single class synchronously /** _synchronous_
 
+  _Run tests synchronously_ 
+
+  \_\_
+
+* **Validate code coverage of individual classes** / _isValidateCoverage_
+
+  Verifies whether individual classes meet the minimum code coverage requirement
+
+* **Minimum percentage coverage required per class** / _coverageThreshold_
+
+  Minimum coverage required per class, in order for the task to succeed
+
+* **Package to validate /** _packageToValidate_
+
+  Package to check for code coverage, required when _isValidateCoverage_ is true
+
+* **Project directory /** _project\_directory_
+
+  The project directory should contain a sfdx-project.json
 
 * **Wait Time** / _wait\_time_ The time this task should wait for the result to be generated. 
 {% endtab %}
@@ -56,6 +76,7 @@ None
 
 **Changelog**
 
+* 8.0.0 Validate code coverage of individual classes for Apex test suite
 * 6.0.4 Refactored to use revamped folder structure
 * 4.0.6 Integration of Error Logs with Github
 * 3.2.0 Fixes for Post Trigger Test Task

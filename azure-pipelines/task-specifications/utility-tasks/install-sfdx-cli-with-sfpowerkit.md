@@ -2,7 +2,7 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-installsfdx-task | 7.0.4 |
+| sfpwowerscript-installsfdx-task | 7.0.8 |
 
 This task is usually the first task of any pipeline you build using sfpowerscripts. It installs the SFDX CLI along with the open source extension ‘sfpowerkit’.
 
@@ -50,6 +50,7 @@ None
 
 **Changelog**
 
+* 7.0.8 Update Core dependency
 * 7.0.4 Updated major versions to remove telemetry collection
 * 6.0.5 Refactored to use revamped folder structure
 * 5.0.3 Minor formatting fixes

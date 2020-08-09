@@ -2,7 +2,7 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-managescratchorg-task | 8.0.5 |
+| sfpwowerscript-managescratchorg-task | 8.0.9 |
 
 This task is used to create and delete a scratch org and mostly used in a Pull Request validation pipeline. The task is an exact wrapper over the sfdx force:org:create/ sfdx force:org:delete command. The task also features a post execution script which provides maintenance options such as delete the scratch org after all subsequent tasks are completed, maintain the scratch org for the provided number of days and also a ‘do nothing’ option, where the management is left to the end user.
 
@@ -81,6 +81,7 @@ If for some reason, you are using this task in a release pipeline,  Project Dire
 
 **Changelog**
 
+* 8.0.9 Bugfix [\#93](https://github.com/Accenture/sfpowerscripts/issues/93) scratch org username output variable
 * 8.0.5
   * Removed Telemetry collection 
   * Fix [\#63](https://github.com/Accenture/sfpowerscripts/issues/63) Manage ScratchOrg Task fails when it is used for delete action

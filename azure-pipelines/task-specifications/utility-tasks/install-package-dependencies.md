@@ -4,7 +4,7 @@ This task is a wrapper over sfpowerkit:package:dependencies:install command. It 
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpowerscript-installpackagedependencies-task | 4.0.4 |
+| sfpowerscript-installpackagedependencies-task | 4.0.9 |
 
 **Prerequisites**
 
@@ -50,6 +50,7 @@ None
 
 **Changelog**
 
+* 4.0.9 Update Core dependency
 * 4.0.4 Remove Telemetry collection
 * 3.0.9 Refactored to use revamped folder structure
 * 2.0.1 Updated with Telemetry

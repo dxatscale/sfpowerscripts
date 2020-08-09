@@ -2,7 +2,7 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-validatetestcoveragepackage-task | 4.0.5 |
+| sfpwowerscript-validatetestcoveragepackage-task | 4.0.9 |
 
 This task is used to validate the code coverage of a second generation package.
 
@@ -41,6 +41,7 @@ If you are using this task after 'Create Unlocked Package', utilize the output v
   
 **Changelog**
 
+* 4.0.9 Update Core dependency
 * 4.0.5
   * Remove Telemetry Collection
   * Updated with to match latest version of sfpowerscripts

@@ -2,7 +2,7 @@
 
 | Task ID | Latest version |
 | :--- | :--- |
-| sfpwowerscripts-createsourcepackage-task | 10.0.1 |
+| sfpwowerscripts-createsourcepackage-task | 10.0.6 |
 
 This task is used to create a build artifact for a package directory  in your project typically to be used for  org based deployment / pre/post metadata installation of an unlocked package or using a hybrid \(org+unlocked development model\), which can then be associated with a release pipeline. You can read about [`checkout artifact task` ](../deployment-tasks/checkout-a-build-artifact.md)to understand further how both are interrelated.
 
@@ -60,6 +60,7 @@ steps:
 
 **Changelog**
 
+* 10.0.6 Update Core dependency
 * 10.0.1 
   * Removed Telemetry Collection
   * Added Options to tag a package
