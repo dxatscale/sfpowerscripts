@@ -2,7 +2,7 @@
 
 | **Task Id** | Version |
 | :--- | :--- |
-| sfpwowerscript-triggerapextest-task | 8.0.0 |
+| sfpwowerscript-triggerapextest-task | 8.0.2 |
 
 This task is used to trigger apex unit tests in an org and also captures the results as an artifact and publishes the result in the tests tab.
 
@@ -76,7 +76,7 @@ None
 
 **Changelog**
 
-* 8.0.0 Validate code coverage of individual classes for Apex test suite
+* 8.0.2 Validate code coverage of individual classes for Apex test suite
 * 6.0.4 Refactored to use revamped folder structure
 * 4.0.6 Integration of Error Logs with Github
 * 3.2.0 Fixes for Post Trigger Test Task
