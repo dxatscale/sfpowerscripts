@@ -1,6 +1,5 @@
 import child_process = require("child_process");
-let fs = require("fs-extra");
-let path = require("path");
+
 
 export default function getOrgDetails(username: string): any {
  

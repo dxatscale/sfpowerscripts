@@ -78,7 +78,7 @@ export default class DeploySourceToOrgImpl {
     //Get Deploy ID
     let deploy_id = "";
     try {
-      let command = await this.buildExecCommand();
+      let command = this.buildExecCommand();
       console.log(command);
       let result = child_process.execSync(command, {
         cwd: this.project_directory,
