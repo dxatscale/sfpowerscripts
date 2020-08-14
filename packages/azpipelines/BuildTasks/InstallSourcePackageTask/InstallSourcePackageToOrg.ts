@@ -53,6 +53,11 @@ async function run() {
         sfdx_package,
         artifact
       );
+    else if(package_installedfrom=="PipelineArtifact")
+    artifactFilePaths = fetchArtifactFilePathFromPipelineArtifacts(
+      sfdx_package,
+      artifact
+    );
 
     missingArtifactDecider(
       artifactFilePaths.metadataFilePath,
@@ -248,6 +253,30 @@ function fetchArtifactFilePathFromAzureArtifact(
   let sourceFilePath: string = path.join(
     artifact_directory,
     artifact,
+    `${sfdx_package}_sfpowerscripts_source_package`
+  );
+
+  console.log(
+    `Checking for ${sfdx_package} Azure Artifact at path ${metadataFilePath}`
+  );
+
+  return { metadataFilePath: metadataFilePath, sourceFilePath: sourceFilePath };
+}
+
+function fetchArtifactFilePathFromPipelineArtifacts(
+  sfdx_package: string,
+  artifact: string
+): { metadataFilePath: string; sourceFilePath: string } {
+  let artifact_directory = tl.getVariable("pipeline.workspace");
+
+  let metadataFilePath = path.join(
+    artifact_directory,
+    "sfpowerkit_artifact",
+    `${sfdx_package}_artifact_metadata`
+  );
+
+  let sourceFilePath: string = path.join(
+    artifact_directory,
     `${sfdx_package}_sfpowerscripts_source_package`
   );
 
