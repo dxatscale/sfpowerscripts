@@ -115,7 +115,7 @@ async function run() {
       );
       tl.setVariable(
         "sfpowerscripts_source_package_path",
-        sourcePackage.mdapiDir
+        artifactFilePath
       );
 
 

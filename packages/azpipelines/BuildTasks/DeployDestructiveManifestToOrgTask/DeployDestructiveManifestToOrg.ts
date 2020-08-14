@@ -43,9 +43,7 @@ async function run() {
     console.log(destructiveManifest.toString());
 
     let  deploySourceToOrgImpl:DeployDestructiveManifestToOrgImpl = new DeployDestructiveManifestToOrgImpl(targetOrg,destructiveManifestPath);
-
-    let command:string = await deploySourceToOrgImpl.buildExecCommand();
-    await deploySourceToOrgImpl.exec(command);
+    await deploySourceToOrgImpl.exec();
 
 
     console.log("Destuctive Changes succesfully deployed");

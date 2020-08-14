@@ -7,7 +7,9 @@ export default class DeployDestructiveManifestToOrgImpl {
     private destructiveManifestPath: string
   ) {}
 
-  public async exec(command: string) {
+  public async exec() {
+ 
+    let command = this.buildExecCommand();
     let child = child_process.exec(
       command,
       { encoding: "utf8" },
@@ -26,7 +28,7 @@ export default class DeployDestructiveManifestToOrgImpl {
     await onExit(child);
   }
 
-  public async buildExecCommand(): Promise<string> {
+  private  buildExecCommand(): string {
     let command = `npx sfdx sfpowerkit:org:destruct -u ${this.target_org} -m ${this.destructiveManifestPath}`;
 
 

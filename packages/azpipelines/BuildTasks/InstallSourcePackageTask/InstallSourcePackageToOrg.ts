@@ -1,6 +1,7 @@
 import tl = require("azure-pipelines-task-lib/task");
 import { isNullOrUndefined } from "util";
 import DeploySourceToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceToOrgImpl";
+import DeployDestructiveManifestToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeployDestructiveManifestToOrgImpl";
 import DeploySourceResult from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceResult";
 import getOrgDetails from "@dxatscale/sfpowerscripts.core/lib/getOrgDetails";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
@@ -88,11 +89,33 @@ async function run() {
       return;
     }
 
-    
-
     let sourceDirectory = sfdx_package;
     if (!isNullOrUndefined(subdirectory)) {
       sourceDirectory = path.join(sfdx_package, subdirectory);
+    }
+
+    // Apply Destructive Manifest
+    if (packageMetadataFromStorage.isDestructiveChangesFound) {
+      try {
+        console.log(
+          "Attempt to delete components mentioned in destructive manifest"
+        );
+        let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
+          target_org,
+          path.join(
+            artifactFilePaths.sourceFilePath,
+            "destructive",
+            "destructiveChanges.xml"
+          )
+        );
+
+        deployDestructiveManifestToOrg.exec();
+      } catch (error) {
+        tl.logIssue(
+          tl.IssueType.Warning,
+          "We attempted a deletion of components, However were are not succesfull. Either the components are already deleted or there are components which have dependency to components in the manifest, Please check whether this manifest works!"
+        );
+      }
     }
 
     //Construct Deploy Command
@@ -115,7 +138,6 @@ async function run() {
     }
 
     if (result.result) {
-
       //No environment info available, create and push
       if (isNullOrUndefined(packageMetadataFromStorage.deployments)) {
         packageMetadataFromStorage.deployments = new Array();
@@ -267,15 +289,15 @@ function checkPackageIsInstalled(
   target_org: string,
   subdirectory: string
 ) {
-  
-  if(packageMetadata.deployments!=null)
-  {
-   for (const deployment of packageMetadata.deployments) {
-     if(target_org == deployment.target_org  && subdirectory == deployment.sub_directory)
-     {
-       return true;
-     }
-   }
+  if (packageMetadata.deployments != null) {
+    for (const deployment of packageMetadata.deployments) {
+      if (
+        target_org == deployment.target_org &&
+        subdirectory == deployment.sub_directory
+      ) {
+        return true;
+      }
+    }
   }
   return false;
 }

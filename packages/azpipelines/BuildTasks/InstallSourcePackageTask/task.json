@@ -29,7 +29,8 @@
       "defaultValue": "BuildArtifact",
       "options": {
         "BuildArtifact": "Build Artifact",
-        "AzureArtifact": "Azure Artifact"
+        "AzureArtifact": "Azure Artifact",
+        "PipelineArtifact": "Pipeline Artifact"
       },
       "required": true,
       "helpMarkDown": "Select the option from where the package version is to be picked up for install"
@@ -70,7 +71,8 @@
       "label": "Upgrade type for the installed package",
       "defaultValue": "Ignore",
       "options": {
-        "Ignore": "Ignore"
+        "Ignore": "Ignore",
+        "ApplyDestructiveChanges":"Apply Destructive Changes"
       },
       "required": true,
       "helpMarkDown": "the upgrade type for the package installation"
