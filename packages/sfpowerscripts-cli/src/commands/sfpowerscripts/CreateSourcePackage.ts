@@ -29,8 +29,8 @@ export default class CreateSourcePackage extends SfdxCommand {
     package: flags.string({required: true, char: 'n', description: messages.getMessage('packageFlagDescription')}),
     versionnumber: flags.string({required: true, char: 'v', description: messages.getMessage('versionNumberFlagDescription')}),
     projectdir: flags.directory({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
-    apextestsuite: flags.directory({description: messages.getMessage('apextestsuiteFlagDescription')}),
-    destructivemanifestfilepath:flags.directory({description: messages.getMessage('destructiveManiFestFilePathFlagDescription')}),
+    apextestsuite: flags.filepath({description: messages.getMessage('apextestsuiteFlagDescription')}),
+    destructivemanifestfilepath: flags.filepath({description: messages.getMessage('destructiveManiFestFilePathFlagDescription')}),
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription')}),
     diffcheck: flags.boolean({description: messages.getMessage('diffCheckFlagDescription')}),
     gittag: flags.boolean({description: messages.getMessage('gitTagFlagDescription')}),
@@ -46,8 +46,8 @@ export default class CreateSourcePackage extends SfdxCommand {
       const project_directory: string = this.flags.projectdir;
       const artifact_directory: string = this.flags.artifactdir;
       const refname: string = this.flags.refname;
-      const destructiveManifestFilePath:string = this.flags.destructivemanifestfilePath;
-      const apextestsuite:string=this.flags.destructivemanifestfilePath;
+      const destructiveManifestFilePath: string = this.flags.destructivemanifestfilepath;
+      const apextestsuite: string=this.flags.apextestsuite;
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
@@ -72,8 +72,8 @@ export default class CreateSourcePackage extends SfdxCommand {
           repository_url = repository_url.slice(0,repository_url.length - 1);
         } else repository_url = this.flags.repourl;
 
-        
-    
+
+
         let packageMetadata:PackageMetadata = {
           package_name: sfdx_package,
           package_version_number: version_number,
@@ -82,7 +82,7 @@ export default class CreateSourcePackage extends SfdxCommand {
           package_type:"source",
           apextestsuite: apextestsuite,
         };
-        
+
          //Convert to MDAPI
       let createSourcePackageImpl = new CreateSourcePackageImpl(
         project_directory,
