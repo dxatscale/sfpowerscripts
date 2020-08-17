@@ -42,37 +42,34 @@ async function run() {
     if (isRunBuild) {
  
 
+      //Upload Metadata Artifact
+      let packageMetadata:PackageMetadata = {
+        package_name: sfdx_package,
+        package_version_number: version_number,
+        sourceVersion: commit_id,
+        repository_url: repository_url,
+        package_type: "source",
+        apextestsuite:apextestsuite
+      };
+
       //Convert to MDAPI
       let createSourcePackageImpl = new CreateSourcePackageImpl(
         project_directory,
         sfdx_package,
-        destructiveManifestFilePath
+        destructiveManifestFilePath,
+        packageMetadata
       );
-      let sourcePackage = await createSourcePackageImpl.exec();
+      packageMetadata = await createSourcePackageImpl.exec();
 
-      if (sourcePackage.isApexFound && isNullOrUndefined(apextestsuite)) {
+      if (packageMetadata.isApexFound && isNullOrUndefined(apextestsuite)) {
         tl.logIssue(
           tl.IssueType.Warning,
           "This package has apex classes/triggers and an apex test suite is not specified, You would not be able to deply to production if each class do not have coverage of 75% and above"
         );
       }
 
-
-      //Upload Metadata Artifact
-      let metadata:PackageMetadata = {
-        package_name: sfdx_package,
-        package_version_number: version_number,
-        sourceVersion: commit_id,
-        repository_url: repository_url,
-        package_type: "source",
-        apextestsuite: apextestsuite,
-        isApexFound: sourcePackage.isApexFound,
-        isDestructiveChangesFound:sourcePackage.isDestructiveChangesFound,
-        payload:sourcePackage.manifestAsJSON
-      };
-
       let artifactFileName: string = `/${sfdx_package}_artifact_metadata`;
-      fs.writeFileSync(__dirname + artifactFileName, JSON.stringify(metadata));
+      fs.writeFileSync(__dirname + artifactFileName, JSON.stringify(packageMetadata));
       let data = {
         artifacttype: "container",
         artifactname: "sfpowerkit_artifact",
@@ -92,12 +89,12 @@ async function run() {
       if (taskType == "Build") {
         artifactFilePath = path.join(
           tl.getVariable("build.repository.localpath"),
-          sourcePackage.mdapiDir
+          packageMetadata.sourceDir
         );
       } else {
         artifactFilePath = path.join(
           project_directory,
-          sourcePackage.mdapiDir
+          packageMetadata.sourceDir
         );
         tl.debug("Artifact written to"+artifactFilePath);
       }

@@ -100,7 +100,7 @@ async function run() {
     }
 
     // Apply Destructive Manifest
-    if (packageMetadataFromStorage.isDestructiveChangesFound) {
+    if (upgrade_type=="ApplyDestructiveChanges" && packageMetadataFromStorage.isDestructiveChangesFound) {
       try {
         console.log(
           "Attempt to delete components mentioned in destructive manifest"

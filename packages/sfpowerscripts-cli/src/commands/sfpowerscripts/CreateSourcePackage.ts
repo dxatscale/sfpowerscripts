@@ -73,36 +73,32 @@ export default class CreateSourcePackage extends SfdxCommand {
         } else repository_url = this.flags.repourl;
 
         
-         //Convert to MDAPI
-      let createSourcePackageImpl = new CreateSourcePackageImpl(
-        project_directory,
-        sfdx_package,
-        destructiveManifestFilePath
-      );
-      let sourcePackage = await createSourcePackageImpl.exec();
-
-      console.log(JSON.stringify(sourcePackage));
-
-      if (sourcePackage.isApexFound && isNullOrUndefined(apextestsuite)) {
-        console.warn(
-          "This package has apex classes/triggers and an apex test suite is not specified, You would not be able to deply to production if each class do not have coverage of 75% and above"
-        );
-      }
-
-
-
-        let metadata:PackageMetadata = {
+    
+        let packageMetadata:PackageMetadata = {
           package_name: sfdx_package,
           package_version_number: version_number,
           sourceVersion: commit_id,
           repository_url:repository_url,
           package_type:"source",
           apextestsuite: apextestsuite,
-          isApexFound: sourcePackage.isApexFound,
-          isDestructiveChangesFound:sourcePackage.isDestructiveChangesFound,
-          payload:sourcePackage.manifestAsJSON
         };
+        
+         //Convert to MDAPI
+      let createSourcePackageImpl = new CreateSourcePackageImpl(
+        project_directory,
+        sfdx_package,
+        destructiveManifestFilePath,
+        packageMetadata
+      );
+      packageMetadata = await createSourcePackageImpl.exec();
 
+      console.log(JSON.stringify(packageMetadata));
+
+      if (packageMetadata.isApexFound && isNullOrUndefined(apextestsuite)) {
+        console.warn(
+          "This package has apex classes/triggers and an apex test suite is not specified, You would not be able to deply to production if each class do not have coverage of 75% and above"
+        );
+      }
 
 
 
@@ -127,7 +123,7 @@ export default class CreateSourcePackage extends SfdxCommand {
 
         fs.mkdirpSync(path.join(abs_artifact_directory,`${sfdx_package}_artifact`));
         fs.mkdirpSync(path.join(abs_artifact_directory,`${sfdx_package}_artifact`,`${sfdx_package}_sfpowerscripts_source_package`));
-        fs.copySync(sourcePackage.mdapiDir, path.join(abs_artifact_directory,`${sfdx_package}_artifact`,`${sfdx_package}_sfpowerscripts_source_package`))
+        fs.copySync(packageMetadata.sourceDir, path.join(abs_artifact_directory,`${sfdx_package}_artifact`,`${sfdx_package}_sfpowerscripts_source_package`))
 
 
         let artifactFilePath: string = path.join(
@@ -138,7 +134,7 @@ export default class CreateSourcePackage extends SfdxCommand {
 
         fs.writeFileSync(
           artifactFilePath,
-          JSON.stringify(metadata)
+          JSON.stringify(packageMetadata)
         );
         console.log(`Created source package ${sfdx_package}_artifact_metadata`);
 
