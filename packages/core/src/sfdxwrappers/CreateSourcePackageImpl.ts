@@ -69,14 +69,15 @@ export default class CreateSourcePackageImpl {
     //First check if the task has a argument passed for destructive changes, as this takes precedence
     if(!isNullOrUndefined(this.destructiveManifestFilePath))
     {
+    fs.mkdirsSync(path.join(artifactDirectory,"destructive"));
     fs.copySync(path.join(individualFilePath,this.destructiveManifestFilePath),path.join(artifactDirectory,"destructive","destructiveChanges.xml"));
-
     }
     else // Try reading the manifest for any
     {
       let destructiveManifestFromManifest=this.getDestructiveChanges(this.projectDirectory,packageDirectory);
       if(destructiveManifestFromManifest.isDestructiveChangesFound)
       {
+      fs.mkdirsSync(path.join(artifactDirectory,"destructive"));
       this.packageArtifactMetadata.isDestructiveChangesFound=destructiveManifestFromManifest.destructiveChanges;
       this.packageArtifactMetadata.destructiveChanges=destructiveManifestFromManifest.destructiveChanges;
       fs.copySync(path.join(individualFilePath,destructiveManifestFromManifest.destructiveChangesPath),path.join(artifactDirectory,"destructive","destructiveChanges.xml"));

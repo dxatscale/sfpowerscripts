@@ -95,7 +95,7 @@ export default class CreateSourcePackage extends SfdxCommand {
       console.log(JSON.stringify(packageMetadata));
 
       if (packageMetadata.isApexFound && isNullOrUndefined(apextestsuite)) {
-        console.warn(
+        this.ux.warn(
           "This package has apex classes/triggers and an apex test suite is not specified, You would not be able to deply to production if each class do not have coverage of 75% and above"
         );
       }
