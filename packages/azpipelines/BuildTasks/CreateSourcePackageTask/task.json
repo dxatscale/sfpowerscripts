@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 10,
+        "Major": 12,
         "Minor": 0,
-        "Patch": 6
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -25,11 +25,26 @@
             "helpMarkDown": "The name of the package"
         },
         {
+            "name": "apextestsuite",
+            "type": "string",
+            "label": "Apex Test Suite that needs to be associated with the source package",
+            "required":false,
+            "defaultValue": "",
+            "helpMarkDown": "Name of the Apex Test hat need to be associated with the package"
+        },
+        {
+            "name": "destructiveManifestFilepath",
+            "type": "string",
+            "label": "Path to a destructiveChanges.xml, mentioning any metadata that need to be deleted before the contents in the source package need to be installed in the org",
+            "defaultValue": "",
+            "helpMarkDown": "The location to the xml file which contains the destructive changes, file should be named destructiveChanges.xml and should be reachable by this task"
+        },
+        {
             "name": "version_number",
             "type": "string",
-            "label": "the version number of the package to be crated",
+            "label": "The version number of the package to be crated",
             "defaultValue": "",
-            "required": true,
+            "required": false,
             "helpMarkDown": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task"
         },
         {
@@ -60,7 +75,15 @@
     "OutputVariables": [
         {
             "name": "sfpowerscripts_package_version_number",
-            "description": "The version number of the package that was created"
+            "description": "The version number of the package that was created",
+        },
+        {
+            "name": "sfpowerscripts_source_package_metadata_path",
+            "description": "The path to the metadata artifact  created by this task"
+        },
+        {
+            "name": "sfpowerscripts_source_package_path",
+            "description": "The path to source artifact built by this task"
         }
     ],
     "execution": {

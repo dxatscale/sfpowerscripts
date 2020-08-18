@@ -38,23 +38,30 @@ export default class DeploySourceToOrgImpl {
     let commandExecStatus: boolean = false;
     let deploySourceResult = {} as DeploySourceResult;
 
-    //Check empty conditions
-    let status = this.isToBreakBuildForEmptyDirectory();
-    if (status.result == "break") {
-      deploySourceResult.result = false;
-      deploySourceResult.message = status.message;
-      return deploySourceResult;
-    } else if (status.result == "skip") {
-      deploySourceResult.result = true;
-      deploySourceResult.message = status.message;
-      return deploySourceResult;
+    if (isNullOrUndefined(this.deployment_options["skip_convert"])) {
+      console.log("Converting source to mdapi");
+      let mdapiPackage = await getMDAPIPackageFromSourceDirectory(
+        this.project_directory,
+        this.source_directory
+      );
+      this.mdapiDir = mdapiPackage["mdapiDir"];
+      this.printMetadataToDeploy(mdapiPackage["manifestAsJSON"]);
+
+      //Check empty conditions
+      let status = this.isToBreakBuildForEmptyDirectory();
+      if (status.result == "break") {
+        deploySourceResult.result = false;
+        deploySourceResult.message = status.message;
+        return deploySourceResult;
+      } else if (status.result == "skip") {
+        deploySourceResult.result = true;
+        deploySourceResult.message = status.message;
+        return deploySourceResult;
+      }
+    } else {
+      this.mdapiDir = this.source_directory;
+      //TODO: Print Deployment Contents
     }
-
-    console.log("Converting source to mdapi");
-    let mdapiPackage = await getMDAPIPackageFromSourceDirectory(this.project_directory, this.source_directory);
-    this.mdapiDir = mdapiPackage["mdapiDir"];
-
-    this.printMetadataToDeploy(mdapiPackage["manifestAsJSON"]);
 
     try {
       if (this.deployment_options["checkonly"])
@@ -71,7 +78,7 @@ export default class DeploySourceToOrgImpl {
     //Get Deploy ID
     let deploy_id = "";
     try {
-      let command = await this.buildExecCommand();
+      let command = this.buildExecCommand();
       console.log(command);
       let result = child_process.execSync(command, {
         cwd: this.project_directory,
@@ -185,8 +192,7 @@ export default class DeploySourceToOrgImpl {
     } catch (err) {
       if (err.code === "ENOENT") {
         throw new Error(`No such file or directory ${err.path}`); // Re-throw error if .forceignore does not exist
-      }
-      else if (!this.isToBreakBuildIfEmpty) {
+      } else if (!this.isToBreakBuildIfEmpty) {
         status.message = `Something wrong with the path provided  ${directoryToCheck},,but skipping `;
         status.result = "skip";
         return status;
@@ -219,7 +225,7 @@ export default class DeploySourceToOrgImpl {
     }
   }
 
-  private async buildExecCommand(): Promise<string> {
+  private buildExecCommand(): string {
     let apexclasses;
 
     let command = `npx sfdx force:mdapi:deploy -u ${this.target_org}`;
@@ -235,7 +241,7 @@ export default class DeploySourceToOrgImpl {
     if (this.deployment_options["testlevel"] == "RunApexTestSuite") {
       //testlevel
       command += ` -l RunSpecifiedTests`;
-      apexclasses = await this.convertApexTestSuiteToListOfApexClasses(
+      apexclasses =  this.convertApexTestSuiteToListOfApexClasses(
         this.deployment_options["apextestsuite"]
       );
       command += ` -r ${apexclasses}`;
@@ -247,17 +253,17 @@ export default class DeploySourceToOrgImpl {
       command += ` -l ${this.deployment_options["testlevel"]}`;
     }
 
-    if(this.deployment_options["ignore_warnings"]) {
+    if (this.deployment_options["ignore_warnings"]) {
       command += ` --ignorewarnings`;
     }
-    if(this.deployment_options["ignore_errors"]) {
+    if (this.deployment_options["ignore_errors"]) {
       command += ` --ignoreerrors`;
     }
 
     return command;
   }
 
-  private async convertApexTestSuiteToListOfApexClasses(
+  private convertApexTestSuiteToListOfApexClasses(
     apextestsuite: string
   ): Promise<string> {
     console.log(
@@ -283,7 +289,7 @@ export default class DeploySourceToOrgImpl {
     let files: string[] = readdirSync(source_directory);
 
     // Construct file paths that are relative to the project directory.
-    files.forEach( (file, index, files) => {
+    files.forEach((file, index, files) => {
       let filepath = path.join(source_directory, file);
       files[index] = path.relative(process.cwd(), filepath);
     });
@@ -291,14 +297,12 @@ export default class DeploySourceToOrgImpl {
     let forceignorePath;
     if (!isNullOrUndefined(this.project_directory))
       forceignorePath = path.join(this.project_directory, ".forceignore");
-    else
-      forceignorePath = path.join(process.cwd(), ".forceignore");
+    else forceignorePath = path.join(process.cwd(), ".forceignore");
 
     // Ignore files that are listed in .forceignore
     files = ignore()
       .add(readFileSync(forceignorePath).toString()) // Add ignore patterns from '.forceignore'.
       .filter(files);
-
 
     if (files == null || files.length === 0) return true;
     else return false;
@@ -312,14 +316,14 @@ export default class DeploySourceToOrgImpl {
     let pushTypeMembersIntoTable = (type) => {
       if (type["members"] instanceof Array) {
         for (let member of type["members"]) {
-            let item = [type.name, member];
-            table.push(item);
-          }
+          let item = [type.name, member];
+          table.push(item);
+        }
       } else {
         let item = [type.name, type.members];
         table.push(item);
       }
-    }
+    };
 
     if (mdapiPackageManifest["Package"]["types"] instanceof Array) {
       for (let type of mdapiPackageManifest["Package"]["types"]) {
@@ -332,4 +336,6 @@ export default class DeploySourceToOrgImpl {
     console.log("The following metadata will be deployed:");
     console.log(table.toString());
   }
+
+  
 }

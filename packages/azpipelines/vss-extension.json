@@ -3,7 +3,7 @@
     "id": "sfpowerscripts",
     "publisher": "AzlamSalam",
     "name": "sfpowerscripts",
-    "version": "16.0.4",
+    "version": "17.0.0",
     "description": "Azure Pipelines tasks for working with Salesforce",
     "tags": [
         "Extension",
@@ -121,6 +121,9 @@
         },
         {
             "path": "BuildTasks/InstallUnlockedPackageTask"
+        },
+        {
+            "path": "BuildTasks/InstallSourcePackageTask"
         },
         {
             "path": "BuildTasks/CreateSourcePackageTask"
@@ -386,6 +389,16 @@
             ],
             "properties": {
                 "name": "BuildTasks/InstallUnlockedPackageTask"
+            }
+        },
+        {
+            "id": "sfpowerscript-installsourcepackage-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "BuildTasks/InstallSourcePackageTask"
             }
         },
         {
