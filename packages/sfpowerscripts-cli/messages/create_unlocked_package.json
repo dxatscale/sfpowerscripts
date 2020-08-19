@@ -1,7 +1,7 @@
 {
-    "commandDescription": "Creates a new package version , Utilize this task in a package build for DX Unlocked Package",
+    "commandDescription": "Creates a new package version, and generates an artifact that consists of the metadata (e.g. version Id). The artifact can then be consumed by release pipelines, to install the unlocked package. Utilize this task in a package build for DX Unlocked Package",
     "packageFlagDescription": "ID (starts with 0Ho) or alias of the package to create a version of",
-    "buildArtifactEnabledFlagDescription": "Create a build artifact, so that this pipeline can be consumed by a release pipeline",
+    "buildArtifactEnabledFlagDescription": "[DEPRECATED - always generate artifact] Create a build artifact, so that this pipeline can be consumed by a release pipeline",
     "installationKeyFlagDescription": "Installation key for this package",
     "installationKeyBypassFlagDescription": "Bypass the requirement for having an installation key for this version of the package",
     "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task",

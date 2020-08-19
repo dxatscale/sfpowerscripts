@@ -3,7 +3,7 @@
     "packageNameFlagDescription": "The name of the package",
     "revisionFromFlagDescription": "Provide the full SHA Commit ID, from where the diff should start generating",
     "revisionToFlagDescription": "If not set, the head commit ID of the current branch is used",
-    "buildArtifactEnabledFlagDescription": "Create a build artifact, so that this pipeline can be consumed by a release pipeline",
+    "buildArtifactEnabledFlagDescription": "[DEPRECATED - always generate artifact] Create a build artifact, so that this pipeline can be consumed by a release pipeline",
     "repoUrlFlagDescription": "Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config",
     "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
     "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
