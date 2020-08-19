@@ -75,7 +75,7 @@
     "OutputVariables": [
         {
             "name": "sfpowerscripts_package_version_number",
-            "description": "The version number of the package that was created",
+            "description": "The version number of the package that was created"
         },
         {
             "name": "sfpowerscripts_source_package_metadata_path",
