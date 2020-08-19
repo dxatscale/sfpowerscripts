@@ -151,7 +151,8 @@ USAGE
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -b, --buildartifactenabled                                                        Create a build artifact, so that
+  -b, --buildartifactenabled                                                        [DEPRECATED - always generate artifact]
+                                                                                    Create a build artifact, so that
                                                                                     this pipeline can be consumed by a
                                                                                     release pipeline
 
@@ -176,6 +177,9 @@ OPTIONS
   -x, --generatedestructivemanifest                                                 Check this option to generate a
                                                                                     destructive manifest to be deployed
 
+  --artifactdir=artifactdir                                                         [default: artifacts] The directory
+                                                                                    where the artifact is to be written
+
   --bypassdirectories=bypassdirectories                                             Ignore a comma seperated list of
                                                                                     directories that need to be ignored
                                                                                     while a diff is generated
@@ -194,20 +198,27 @@ OPTIONS
   --refname=refname                                                                 Reference name to be prefixed to
                                                                                     output variables
 
-EXAMPLE
-  $ sfdx sfpowerscripts:CreateDeltaPackage -n packagename -r 61635fb -t 3cf01b9 -v 1.2.10 -b
+  --repourl=repourl                                                                 Custom source repository URL to use in
+                                                                                    artifact metadata, overrides origin URL
+                                                                                    defined in git config
+
+EXAMPLES
+  $ sfdx sfpowerscripts:CreateDeltaPackage -n <packagename> -r <61635fb> -t <3cf01b9> -v <version> -b
+
   Output variable:
   sfpowerscripts_delta_package_path
   <refname>_sfpowerscripts_delta_package_path
   sfpowerscripts_artifact_metadata_directory
   <refname>_sfpowerscripts_artifact_metadata_directory
+  sfpowerscripts_artifact_directory
+  <refname>_sfpowerscripts_artifact_directory
 ```
 
 _See code: [lib/commands/sfpowerscripts/CreateDeltaPackage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/CreateDeltaPackage.js)_
 
 ## `sfpowerscripts:CreateSourcePackage`
 
-This task simulates a packaging experience similar to unlocked packaging, just by writing the commit id to an artifact. It is basically to help with the release pipelines.
+This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata (e.g. commit Id), source code & an optional destructive manifest. The artifact can then be consumed by release pipelines, to deploy the package.
 
 ```
 USAGE
@@ -215,12 +226,37 @@ USAGE
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
+  -d, --projectdir=projectdir
+      The project directory should contain a sfdx-project.json for this command to succeed
+
   -n, --package=package
       (required) The name of the package
+
+  -r, --repourl=repourl
+      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
 
   -v, --versionnumber=versionnumber
       (required) The format is major.minor.patch.buildnumber . This will override the build number mentioned in the
       sfdx-project.json, Try considering the use of Increment Version Number task before this task
+
+  --apextestsuite=apextestsuite
+      Apex Test Suite that needs to be associated with the source package, Source packages when deployed to
+      production require each individual classes in the package to have more than 75% coverage, Hence this
+      apex test task should cover all the classes
+
+  --artifactdir=artifactdir
+      [default: artifacts] The directory where the artifact is to be written
+
+  --destructivemanifestfilepath=destructivemanifestfilepath
+      Path to a destructiveChanges.xml, mentioning any metadata that need to be deleted before the contents
+      in the source package need to be installed in the org
+
+  --diffcheck
+      Only build when the package has changed
+
+  --gittag
+      Tag the current commit ID with an annotated tag containing the package name and version - does not
+      push tag
 
   --json
       format output as json
@@ -231,18 +267,25 @@ OPTIONS
   --refname=refname
       Reference name to be prefixed to output variables
 
-EXAMPLE
-  $ sfdx sfpowerscripts:CreateSourcePackage -n packagename -v 1.5.10
+EXAMPLES
+  $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --refname <name>
+  $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --diffcheck --gittag
+  $ sfdx sfpowerscripts:CreateSourcePackage -n mypackage -v <version> --destructivemanifestfilepath=destructiveChanges.xml --apextestsuite=<package> testSuite-meta.xml
+
   Output variable:
   sfpowerscripts_artifact_metadata_directory
   <refname>_sfpowerscripts_artifact_metadata_directory
+  sfpowerscripts_artifact_directory
+  <refname>_sfpowerscripts_artifact_directory
+  sfpowerscripts_package_version_number
+  <refname>_sfpowerscripts_package_version_number
 ```
 
 _See code: [lib/commands/sfpowerscripts/CreateSourcePackage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/CreateSourcePackage.js)_
 
 ## `sfpowerscripts:CreateUnlockedPackage`
 
-Creates a new package version. Utilize this task in a package build for DX Unlocked Package.
+Creates a new package version, and generates an artifact that consists of the metadata (e.g. version Id). The artifact can then be consumed by release pipelines, to install the unlocked package. Utilize this task in a package build for DX Unlocked Package.
 
 ```
 USAGE
@@ -252,7 +295,7 @@ USAGE
 
 OPTIONS
   -b, --buildartifactenabled
-      Create a build artifact, so that this pipeline can be consumed by a release pipeline
+      [DEPRECATED - always generate artifact] Create a build artifact, so that this pipeline can be consumed by a release pipeline
 
   -d, --projectdir=projectdir
       The project directory should contain a sfdx-project.json for this command to succeed
@@ -267,6 +310,9 @@ OPTIONS
   -n, --package=package
       (required) ID (starts with 0Ho) or alias of the package to create a version of
 
+  -r --repourl=repourl
+      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
+
   -s, --isvalidationtobeskipped
       Skips validation of dependencies, package ancestors, and metadata during package version creation. Skipping
       validation reduces the time it takes to create a new package version, but package versions created without
@@ -279,9 +325,18 @@ OPTIONS
   -x, --installationkeybypass
       Bypass the requirement for having an installation key for this version of the package
 
+  --artifactdir=artifactdir
+      [default: artifacts] The directory where the artifact is to be written
+
+  --diffcheck
+      Only build when the package has changed
+
   --enablecoverage
       Please note this command takes a longer time to compute, activating this on every packaging build might not
       necessary
+
+  --gittag
+      Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
 
   --json
       format output as json
@@ -302,13 +357,19 @@ OPTIONS
   --waittime=waittime
       [default: 120] wait time for command to finish in minutes
 
-EXAMPLE
-  $ sfdx sfpowerscripts:CreateUnlockedPackage -n packagealias -b -x -v HubOrg --tag tagname
+EXAMPLES
+  $ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --refname <name>
+  $ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag
+
   Output variable:
   sfpowerscripts_package_version_id
   <refname>_sfpowerscripts_package_version_id
   sfpowerscripts_artifact_metadata_directory
   <refname>_sfpowerscripts_artifact_metadata_directory
+  sfpowerscripts_artifact_directory
+  <refname>_sfpowerscripts_artifact_directory
+  sfpowerscripts_package_version_number
+  <refname>_sfpowerscripts_package_version_number
 ```
 
 _See code: [lib/commands/sfpowerscripts/CreateUnlockedPackage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/CreateUnlockedPackage.js)_
@@ -538,6 +599,9 @@ OPTIONS
 
   -v, --packageversionid=packageversionid                                           manually input package version Id of
                                                                                     the package to be installed
+
+  --artifactdir                                                                     [default: artifacts] The directory
+                                                                                    where the artifact is located
 
   --json                                                                            format output as json
 
