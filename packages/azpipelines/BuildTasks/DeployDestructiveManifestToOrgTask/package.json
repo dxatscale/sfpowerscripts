@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-deploydestructivemanifesttoorg-task",
   "description": "sfpowerscripts-deploydestructivemanifesttoorg-task",
-  "version": "5.0.4",
+  "version": "5.0.5",
   "private": true,
   "repository": {
     "type": "git",
