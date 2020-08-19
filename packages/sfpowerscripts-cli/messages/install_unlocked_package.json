@@ -6,6 +6,7 @@
   "packageVersionIdFlagDescription": "manually input package version Id of the package to be installed",
   "installationKeyFlagDescription": "installation key for key-protected package",
   "apexCompileOnlyPackageFlagDescription": "Each package installation triggers a compilation of apex, flag to trigger compilation of package only",
+  "artifactDirectoryFlagDescription": "The directory where the artifact is located",
   "securityTypeFlagDescription": "Select the security access for the package installation",
   "skipOnMissingArtifactFlagDescription": "Skip package installation if the build artifact is missing. Enable this if artifacts are only being created for modified packages",
   "upgradeTypeFlagDescription": "the upgrade type for the package installation",

@@ -28,6 +28,7 @@ export default class InstallUnlockedPackage extends SfdxCommand {
     packageversionid: flags.string({char: 'v', description: messages.getMessage('packageVersionIdFlagDescription'), exclusive: ['packageinstalledfrom']}),
     installationkey : flags.string({char: 'k', description: messages.getMessage('installationKeyFlagDescription')}),
     apexcompileonlypackage : flags.boolean({char: 'a', description: messages.getMessage('apexCompileOnlyPackageFlagDescription')}),
+    artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
     securitytype : flags.string({description: messages.getMessage('securityTypeFlagDescription'), options: ['AllUsers', 'AdminsOnly'], default: 'AllUsers'}),
     skipifalreadyinstalled: flags.boolean({char: "f",description: messages.getMessage("skipIfAlreadyInstalled")}),
     skiponmissingartifact: flags.boolean({char: 's', description: messages.getMessage('skipOnMissingArtifactFlagDescription'), dependsOn: ['packageinstalledfrom']}),
@@ -49,6 +50,7 @@ export default class InstallUnlockedPackage extends SfdxCommand {
 
       const installationkey = this.flags.installationkey;
       const apexcompileonlypackage = this.flags.apexcompileonlypackage;
+      const artifact_directory: string = this.flags.artifactdir;
       const security_type = this.flags.securitytype;
       const upgrade_type = this.flags.upgradetype;
       const wait_time = this.flags.waittime;
@@ -58,38 +60,27 @@ export default class InstallUnlockedPackage extends SfdxCommand {
       let package_version_id;
 
       if (package_installedfrom) {
-        // Figure out the id from the artifact
+        // Figure out the package version id from the artifact
 
-        let artifact_directory = process.env.PWD;
-
-        //Newer metadata filename
         let package_version_id_file_path;
 
         package_version_id_file_path = path.join(
           artifact_directory,
+          `${sfdx_package}_artifact`,
           `${sfdx_package}_artifact_metadata`
         );
 
         console.log(`Checking for ${sfdx_package} Build Artifact at path ${package_version_id_file_path}`);
-        if (!fs.existsSync(package_version_id_file_path)) {
-          console.log(
-            `New Artifact format not found at the location ${package_version_id_file_path} `
-          );
-          console.log("Falling back to older artifact format");
-          package_version_id_file_path = path.join(
-            artifact_directory,
-            'artifact_metadata'
-          );
 
-          if (!fs.existsSync(package_version_id_file_path) && !skip_on_missing_artifact) {
-            throw new Error(
-              `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
-            );
-          } else if(!fs.existsSync(package_version_id_file_path) && skip_on_missing_artifact) {
-            console.log(`Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${skip_on_missing_artifact}`);
-            process.exit(0);
-          }
+        if (!fs.existsSync(package_version_id_file_path) && !skip_on_missing_artifact) {
+          throw new Error(
+            `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
+          );
+        } else if(!fs.existsSync(package_version_id_file_path) && skip_on_missing_artifact) {
+          console.log(`Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${skip_on_missing_artifact}`);
+          process.exit(0);
         }
+
 
         let package_metadata_json = fs
           .readFileSync(package_version_id_file_path)
@@ -125,9 +116,7 @@ export default class InstallUnlockedPackage extends SfdxCommand {
       await installUnlockedPackageImpl.exec();
 
     } catch(err) {
-      // AppInsights.trackTaskEvent("sfpwowerscript-installunlockedpackage-task",err);
       console.log(err);
-      // Fail the task when an error occurs
       process.exit(1);
     }
   }
