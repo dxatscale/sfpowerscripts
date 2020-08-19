@@ -16,10 +16,17 @@ export default class CreateSourcePackage extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:CreateSourcePackage -n packagename -v 1.5.10\n` +
-  `Output variable:\n` +
-  `sfpowerscripts_artifact_metadata_directory\n` +
-  `<refname>_sfpowerscripts_artifact_metadata_directory`
+    `$ sfdx sfpowerscripts:CreateSourcePackage -n mypackage -v <version>`,
+    `$ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --diffcheck --gittag`,
+    `$ sfdx sfpowerscripts:CreateSourcePackage -n mypackage -v <version> --destructivemanifestfilepath=destructiveChanges.xml` +
+    `--apextestsuite=<package>.testSuite-meta.xml\n`,
+    `Output variable:`,
+    `sfpowerscripts_artifact_metadata_directory`,
+    `<refname>_sfpowerscripts_artifact_metadata_directory`,
+    `sfpowerscripts_artifact_directory`,
+    `<refname>_sfpowerscripts_artifact_directory`,
+    `sfpowerscripts_package_version_number`,
+    `<refname>_sfpowerscripts_package_version_number`
   ];
 
   protected static requiresUsername = false;
@@ -31,7 +38,7 @@ export default class CreateSourcePackage extends SfdxCommand {
     projectdir: flags.directory({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
     apextestsuite: flags.filepath({description: messages.getMessage('apextestsuiteFlagDescription')}),
     destructivemanifestfilepath: flags.filepath({description: messages.getMessage('destructiveManiFestFilePathFlagDescription')}),
-    artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription')}),
+    artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
     diffcheck: flags.boolean({description: messages.getMessage('diffCheckFlagDescription')}),
     gittag: flags.boolean({description: messages.getMessage('gitTagFlagDescription')}),
     repourl: flags.string({char: 'r', description: messages.getMessage('repoUrlFlagDescription')}),
@@ -83,60 +90,59 @@ export default class CreateSourcePackage extends SfdxCommand {
           apextestsuite: apextestsuite,
         };
 
-         //Convert to MDAPI
-      let createSourcePackageImpl = new CreateSourcePackageImpl(
-        project_directory,
-        sfdx_package,
-        destructiveManifestFilePath,
-        packageMetadata
-      );
-      packageMetadata = await createSourcePackageImpl.exec();
-
-      console.log(JSON.stringify(packageMetadata));
-
-      if (packageMetadata.isApexFound && isNullOrUndefined(apextestsuite)) {
-        this.ux.warn(
-          "This package has apex classes/triggers and an apex test suite is not specified, You would not be able to deply to production if each class do not have coverage of 75% and above"
+        //Convert to MDAPI
+        let createSourcePackageImpl = new CreateSourcePackageImpl(
+          project_directory,
+          sfdx_package,
+          destructiveManifestFilePath,
+          packageMetadata
         );
-      }
+        packageMetadata = await createSourcePackageImpl.exec();
 
+        console.log(JSON.stringify(packageMetadata));
+
+        if (packageMetadata.isApexFound && isNullOrUndefined(apextestsuite)) {
+          this.ux.warn(
+            "This package has apex classes/triggers and an apex test suite is not specified, You would not be able to deply to production if each class do not have coverage of 75% and above"
+          );
+        }
 
 
         let abs_artifact_directory: string;
         if (!isNullOrUndefined(project_directory)) {
-          // Base artifact directory on the project directory
-          if (!isNullOrUndefined(artifact_directory)) {
-            abs_artifact_directory = path.resolve(project_directory, artifact_directory);
-            fs.mkdirpSync(abs_artifact_directory);
-          } else {
-            abs_artifact_directory = path.resolve(project_directory);
-          }
+            abs_artifact_directory = path.resolve(
+              project_directory,
+              artifact_directory
+            );
         } else {
-          // Base artifact directory on the CWD
-          if (!isNullOrUndefined(artifact_directory)) {
             abs_artifact_directory = path.resolve(artifact_directory);
-            fs.mkdirpSync(abs_artifact_directory);
-          } else {
-            abs_artifact_directory = path.join(process.cwd(),"artifacts");
-          }
         }
 
-        fs.mkdirpSync(path.join(abs_artifact_directory,`${sfdx_package}_artifact`));
-        fs.mkdirpSync(path.join(abs_artifact_directory,`${sfdx_package}_artifact`,`${sfdx_package}_sfpowerscripts_source_package`));
-        fs.copySync(packageMetadata.sourceDir, path.join(abs_artifact_directory,`${sfdx_package}_artifact`,`${sfdx_package}_sfpowerscripts_source_package`))
 
-
-        let artifactFilePath: string = path.join(
+        let sfdx_package_artifact: string = path.join(
           abs_artifact_directory,
-          `${sfdx_package}_artifact`,
+          `${sfdx_package}_artifact`
+        );
+        fs.mkdirpSync(sfdx_package_artifact);
+
+        let sourcePackage: string = path.join(
+          sfdx_package_artifact,
+          `${sfdx_package}_sfpowerscripts_source_package`
+        );
+        fs.mkdirpSync(sourcePackage);
+        fs.copySync(packageMetadata.sourceDir, sourcePackage);
+
+        let artifactMetadataFilePath: string = path.join(
+          sfdx_package_artifact,
           `${sfdx_package}_artifact_metadata`
         );
 
         fs.writeFileSync(
-          artifactFilePath,
+          artifactMetadataFilePath,
           JSON.stringify(packageMetadata)
         );
-        console.log(`Created source package ${sfdx_package}_artifact_metadata`);
+
+        console.log(`Created source package ${sfdx_package}_artifact`);
 
         if (this.flags.gittag) {
           exec(`git config --global user.email "sfpowerscripts@dxscale"`);
@@ -149,13 +155,17 @@ export default class CreateSourcePackage extends SfdxCommand {
 
         console.log("\nOutput variables:");
         if (!isNullOrUndefined(refname)) {
-          fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_metadata_directory=${artifactFilePath}\n`, {flag:'a'});
-          console.log(`${refname}_sfpowerscripts_artifact_metadata_directory=${artifactFilePath}`);
+          fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_metadata_directory=${artifactMetadataFilePath}\n`, {flag:'a'});
+          console.log(`${refname}_sfpowerscripts_artifact_metadata_directory=${artifactMetadataFilePath}`);
+          fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_directory=${sfdx_package_artifact}\n`, {flag:'a'});
+          console.log(`${refname}_sfpowerscripts_artifact_directory=${sfdx_package_artifact}`);
           fs.writeFileSync('.env', `${refname}_sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});
           console.log(`${refname}_sfpowerscripts_package_version_number=${version_number}`);
         } else {
-          fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${artifactFilePath}\n`, {flag:'a'});
-          console.log(`sfpowerscripts_artifact_metadata_directory=${artifactFilePath}`);
+          fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${artifactMetadataFilePath}\n`, {flag:'a'});
+          console.log(`sfpowerscripts_artifact_metadata_directory=${artifactMetadataFilePath}`);
+          fs.writeFileSync('.env', `sfpowerscripts_artifact_directory=${sfdx_package_artifact}\n`, {flag:'a'});
+          console.log(`sfpowerscripts_artifact_directory=${sfdx_package_artifact}`);
           fs.writeFileSync('.env', `sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});
           console.log(`sfpowerscripts_package_version_number=${version_number}`);
         }

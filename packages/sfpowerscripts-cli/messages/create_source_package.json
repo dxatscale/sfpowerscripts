@@ -1,11 +1,11 @@
 {
-    "commandDescription": "This task simulates a packaging experience similar to unlocking packaging, just by writing the commit id to an artifact. It is basically to help with the release pipelines",
+    "commandDescription": "This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata (e.g. commit Id), source code & an optional destructive manifest. The artifact can then be consumed by release pipelines, to deploy the package",
     "packageFlagDescription": "The name of the package",
     "versionNumberFlagDescription": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task",
     "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
     "apextestsuiteFlagDescription":"Apex Test Suite that needs to be associated with the source package, Source packages when deployed to production require each individual classes in the package to have more than 75% coverage, Hence this apex test task should cover all the classes",
     "destructiveManiFestFilePathFlagDescription":"Path to a destructiveChanges.xml, mentioning any metadata that need to be deleted before the contents in the source package need to be installed in the org",
-    "artifactDirectoryFlagDescription": "The directory where the artifact is to be written, If no directory is provided, a folder called artifact will be created in the current working directory with all the artifacts",
+    "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
     "diffCheckFlagDescription": "Only build when the package has changed",
     "gitTagFlagDescription": "Tag the current commit ID with an annotated tag containing the package name and version - does not push tag",
     "repoUrlFlagDescription": "Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config",

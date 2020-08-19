@@ -18,12 +18,14 @@ export default class CreateDeltaPackage extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:CreateDeltaPackage -n packagename -r 61635fb -t 3cf01b9 -v 1.2.10 -b\n` +
-  `Output variable:\n` +
-  `sfpowerscripts_delta_package_path\n` +
-  `<refname>_sfpowerscripts_delta_package_path\n` +
-  `sfpowerscripts_artifact_metadata_directory\n` +
-  `<refname>_sfpowerscripts_artifact_metadata_directory`
+    `$ sfdx sfpowerscripts:CreateDeltaPackage -n <packagename> -r <61635fb> -t <3cf01b9> -v <version> -b\n`,
+    `Output variable:`,
+    `sfpowerscripts_delta_package_path`,
+    `<refname>_sfpowerscripts_delta_package_path`,
+    `sfpowerscripts_artifact_metadata_directory`,
+    `<refname>_sfpowerscripts_artifact_metadata_directory`,
+    `sfpowerscripts_artifact_directory`,
+    `<refname>_sfpowerscripts_artifact_directory`
   ];
 
   protected static requiresUsername = false;
@@ -34,10 +36,10 @@ export default class CreateDeltaPackage extends SfdxCommand {
     revisionfrom: flags.string({required: true, char: 'r', description: messages.getMessage('revisionFromFlagDescription')}),
     revisionto : flags.string({char: 't', description: messages.getMessage('revisionToFlagDescription'), default: 'HEAD'}),
     versionname: flags.string({required: true, char: 'v', description: messages.getMessage('versionNameFlagDescription')}),
-    buildartifactenabled : flags.boolean({char: 'b', description: messages.getMessage('buildArtifactEnabledFlagDescription')}),
+    buildartifactenabled : flags.boolean({char: 'b', description: messages.getMessage('buildArtifactEnabledFlagDescription'), default: true}),
     repourl: flags.string({description: messages.getMessage('repoUrlFlagDescription')}),
     projectdir: flags.directory({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
-    artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription')}),
+    artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
     generatedestructivemanifest: flags.boolean({char: 'x', description: messages.getMessage('generateDestructiveManifestFlagDescription')}),
     bypassdirectories: flags.string({description: messages.getMessage('bypassDirectoriesFlagDescription')}),
     onlydifffor: flags.string({description: messages.getMessage('onlyDiffForFlagDescription')}),
@@ -62,8 +64,6 @@ export default class CreateDeltaPackage extends SfdxCommand {
 
       const generate_destructivemanifest = this.flags.generatedestructivemanifest;
       const build_artifact_enabled = this.flags.buildartifactenabled;
-
-      // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
 
       let createDeltaPackageImp = new CreateDeltaPackageImpl(
         projectDirectory,
@@ -112,40 +112,48 @@ export default class CreateDeltaPackage extends SfdxCommand {
 
         let absArtifactDirectory: string;
         if (!isNullOrUndefined(projectDirectory)) {
-          // Base artifact directory on the project directory
-          if (!isNullOrUndefined(artifactDirectory)) {
-            absArtifactDirectory = path.resolve(projectDirectory, artifactDirectory);
-            fs.mkdirpSync(absArtifactDirectory);
-          } else {
-            absArtifactDirectory = path.resolve(projectDirectory);
-          }
+          absArtifactDirectory = path.resolve(
+            projectDirectory,
+            artifactDirectory
+          );
         } else {
-          // Base artifact directory on the CWD
-          if (!isNullOrUndefined(artifactDirectory)) {
-            absArtifactDirectory = path.resolve(artifactDirectory);
-            fs.mkdirpSync(absArtifactDirectory);
-          } else {
-            absArtifactDirectory = process.cwd();
-          }
+          absArtifactDirectory = path.resolve(artifactDirectory);
         }
 
-        let artifactFilePath: string = path.join(
+        let sfdx_package_artifact: string = path.join(
           absArtifactDirectory,
+          `${sfdx_package}_artifact`
+        );
+        fs.mkdirpSync(sfdx_package_artifact);
+
+        let sourcePackage: string = path.join(
+          sfdx_package_artifact,
+          `${sfdx_package}_sfpowerscripts_source_package`
+        );
+        fs.mkdirpSync(sourcePackage);
+        fs.copySync(deltaPackageFilePath, sourcePackage);
+
+        let artifactMetadataFilePath: string = path.join(
+          sfdx_package_artifact,
           `${sfdx_package}_artifact_metadata`
         );
 
         fs.writeFileSync(
-          artifactFilePath,
+          artifactMetadataFilePath,
           JSON.stringify(metadata)
         );
 
         console.log("\nOutput variables:");
         if (!isNullOrUndefined(refname)) {
-          fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_metadata_directory=${artifactFilePath}\n`, {flag:'a'});
-          console.log(`${refname}_sfpowerscripts_artifact_metadata_directory=${artifactFilePath}`);
+          fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_metadata_directory=${artifactMetadataFilePath}\n`, {flag:'a'});
+          console.log(`${refname}_sfpowerscripts_artifact_metadata_directory=${artifactMetadataFilePath}`);
+          fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_directory=${sfdx_package_artifact}\n`, {flag:'a'});
+          console.log(`${refname}_sfpowerscripts_artifact_directory=${sfdx_package_artifact}`);
         } else {
-          fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${artifactFilePath}\n`, {flag:'a'});
-          console.log(`sfpowerscripts_artifact_metadata_directory=${artifactFilePath}`);
+          fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${artifactMetadataFilePath}\n`, {flag:'a'});
+          console.log(`sfpowerscripts_artifact_metadata_directory=${artifactMetadataFilePath}`);
+          fs.writeFileSync('.env', `sfpowerscripts_artifact_directory=${sfdx_package_artifact}\n`, {flag:'a'});
+          console.log(`sfpowerscripts_artifact_directory=${sfdx_package_artifact}`);
         }
       }
     } catch (err) {
