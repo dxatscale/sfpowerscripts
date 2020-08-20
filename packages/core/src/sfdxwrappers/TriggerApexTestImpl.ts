@@ -3,7 +3,7 @@ import { onExit } from "../OnExit";
 import { isNullOrUndefined } from "util";
 let fs = require("fs-extra");
 let path = require("path");
-import getMDAPIPackageFromSourceDirectory from "../getMdapiPackage";
+import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
 
 export default class TriggerApexTestImpl {
   public constructor(
@@ -187,7 +187,7 @@ export default class TriggerApexTestImpl {
 
     let packageDirectory: string = this.getPackageDirectory();
 
-    let mdapiPackage = await getMDAPIPackageFromSourceDirectory(
+    let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
       this.project_directory,
       packageDirectory
     );

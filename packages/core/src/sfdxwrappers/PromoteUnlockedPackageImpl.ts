@@ -2,14 +2,13 @@ import child_process = require("child_process");
 import { onExit } from "../OnExit";
 
 export default class PromoteUnlockedPackageImpl {
-  public constructor(private  working_directory:string,private package_version_id: string, private devhub_alias: string) {}
+  public constructor(private  project_directory:string,private package_version_id: string, private devhub_alias: string) {}
 
   public async exec(): Promise<void> {
-    let command = await this.buildExecCommand();
-
-    console.log(`Triggering Command: ${command}`)
-
-    let child = child_process.exec(command, { cwd: this.working_directory, encoding: "utf8" },(error, stdout, stderr) => {
+    
+    let command = this.buildExecCommand();
+    console.log("Executing command",command);
+    let child = child_process.exec(command, { cwd: this.project_directory, encoding: "utf8" },(error, stdout, stderr) => {
       if (error) throw error;
     });
 
@@ -20,13 +19,12 @@ export default class PromoteUnlockedPackageImpl {
     await onExit(child);
   }
 
-  public async buildExecCommand(): Promise<string> {
+  private  buildExecCommand(): string {
     let command = `npx sfdx force:package:version:promote -v ${this.devhub_alias}`;
     //package
     command += ` -p ${this.package_version_id}`;
     //noprompt
-    command += ` -n`;
-
+    command += ` -n`;   
     return command;
   }
 }

@@ -1,6 +1,16 @@
 import child_process = require("child_process");
 import { onExit } from "../OnExit";
 import { isNullOrUndefined } from "util";
+import PackageMetadata from "../sfdxwrappers/PackageMetadata";
+const path = require("path");
+const fs = require("fs-extra");
+
+export type DeltaPackage = {
+  deltaDirectory:string;
+  isDestructiveChangesFound?: boolean;
+  destructiveChangesPath?:string
+  destructiveChanges?: any;
+};
 
 export default class CreateDeltaPackageImpl {
   public constructor(
@@ -9,32 +19,64 @@ export default class CreateDeltaPackageImpl {
     private revisionFrom: string,
     private revisionTo: string,
     private generateDestructiveManifest: boolean,
-    private options:any
+    private options: any
   ) {}
 
-  public async exec(command: string): Promise<void> {
+  public async exec(): Promise<DeltaPackage> {
+
+  
+    //Command
+    let command = this.buildExecCommand();
+    console.log("Executing command", command);
+
     let child = child_process.exec(
       command,
-      {  maxBuffer: 1024 * 1024 * 5,
-        encoding: "utf8", cwd: this.projectDirectory },
+      {
+        maxBuffer: 1024 * 1024 * 5,
+        encoding: "utf8",
+        cwd: this.projectDirectory,
+      },
       (error, stdout, stderr) => {
         if (error) throw error;
       }
     );
 
-    child.stdout.on("data", data => {
+    child.stdout.on("data", (data) => {
       console.log(data.toString());
     });
-    child.stderr.on("data", data => {
+    child.stderr.on("data", (data) => {
       console.log(data.toString());
     });
 
     await onExit(child);
+
+    //Generate artifact
+    let deltaDirectory:string;
+
+    if(isNullOrUndefined(this.projectDirectory))
+    {
+      deltaDirectory=`${this.sfdx_package}_src_delta`;
+    }
+    else
+    {
+      deltaDirectory = path.join(this.projectDirectory,`${this.sfdx_package}_src_delta`);
+    }
+
+    let destructiveChanges:any;
+    let isDestructiveChangesFound=false;
+    let destructiveChangesPath = path.join(deltaDirectory,"destructiveChanges.xml");
+    if(fs.existsSync(destructiveChangesPath))
+    {
+            destructiveChanges = JSON.parse(fs.readFileSync(destructiveChangesPath, "utf8"));
+            isDestructiveChangesFound=true;
+    }
+    
+
+    return {deltaDirectory,isDestructiveChangesFound,destructiveChangesPath,destructiveChanges};
   }
 
-  public async buildExecCommand(): Promise<string> {
-    let command;
-    command = `npx sfdx sfpowerkit:project:diff`;
+  private buildExecCommand(): string {
+    let command = `sfdx sfpowerkit:project:diff`;
 
     if (!isNullOrUndefined(this.revisionTo))
       command += ` -t  ${this.revisionTo}`;
@@ -46,18 +88,14 @@ export default class CreateDeltaPackageImpl {
 
     command += ` -d  ${this.sfdx_package}_src_delta`;
 
+    if (!isNullOrUndefined(this.options["bypass_directories"]))
+      command += ` -b  ${this.options["bypass_directories"]}`;
 
-    if(!isNullOrUndefined(this.options['bypass_directories']))
-    command += ` -b  ${this.options['bypass_directories']}`;
+    if (!isNullOrUndefined(this.options["only_diff_for"]))
+      command += ` -p   ${this.options["only_diff_for"]}`;
 
-    if(!isNullOrUndefined(this.options['only_diff_for']))
-    command += ` -p   ${this.options['only_diff_for']}`;
-
-    if(!isNullOrUndefined(this.options['apiversion']))
-    command += ` --apiversion  ${this.options['apiversion']}`;
-
-
-
+    if (!isNullOrUndefined(this.options["apiversion"]))
+      command += ` --apiversion  ${this.options["apiversion"]}`;
 
     return command;
   }

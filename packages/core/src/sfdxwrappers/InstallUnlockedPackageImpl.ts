@@ -90,7 +90,7 @@ export enum PackageInstallationResult {
   Succeeded
 }
 
-interface PackageInfo {
+type PackageInfo= {
   packageName: string;
   subcriberPackageId: string;
   packageNamespacePrefix: string;

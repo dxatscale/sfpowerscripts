@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 5,
+        "Major": 6,
         "Minor": 0,
-        "Patch": 9
+        "Patch": 0
     },
     "instanceNameFormat": "Create Delta Package based on two commits",
     "inputs": [
@@ -18,8 +18,8 @@
             "type": "string",
             "label": "Name of the package",
             "defaultValue": "",
-            "required": true,
-            "helpMarkDown": "The name of the package, If the project doesnt have packages, provide a name for the project without spaces"
+            "required": false,
+            "helpMarkDown": "The name of the package, If the package directory doesnt have a package name, the default package will be used"
         },
         {
             "name": "version_name",

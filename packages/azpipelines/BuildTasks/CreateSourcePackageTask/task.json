@@ -1,9 +1,9 @@
 {
     "id": "50de2eba-73bc-4cd6-82bc-89853925830c",
     "name": "sfpwowerscripts-createsourcepackage-task",
-    "friendlyName": "Creates a new  version of  Source Based Package",
-    "description": "Creates a new  version of  Source Based Package ,This task is part of DX@Scale/SFPowerscripts",
-    "helpMarkDown": "This task simulates a packaging experience similar to unlocking packaging, just by writing the commit id to an artifact. It is basically to help with the release pipelines",
+    "friendlyName": "Creates a new  version of  Source Package",
+    "description": "Creates a new  version of  Source Package ,This task is part of DX@Scale/SFPowerscripts",
+    "helpMarkDown": "https://dxatscale.gitbook.io/sfpowerscripts/azure-pipelines/task-specifications/packaging-tasks/create-source-based-package",
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {

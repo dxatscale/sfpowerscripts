@@ -1,6 +1,6 @@
 import child_process = require("child_process");
 import { delay } from "../Delay";
-import rimraf = require("rimraf");
+import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
 import {
   copyFile,
   copyFileSync,
@@ -14,7 +14,7 @@ import { isNullOrUndefined } from "util";
 import { onExit } from "../OnExit";
 let path = require("path");
 import ignore from "ignore";
-import getMDAPIPackageFromSourceDirectory from "../getMdapiPackage";
+
 const Table = require("cli-table");
 
 export interface DeploySourceResult {
@@ -38,17 +38,25 @@ export default class DeploySourceToOrgImpl {
     let commandExecStatus: boolean = false;
     let deploySourceResult = {} as DeploySourceResult;
 
-    //Check empty conditions
-    let status = this.isToBreakBuildForEmptyDirectory();
-    if (status.result == "break") {
-      deploySourceResult.result = false;
-      deploySourceResult.message = status.message;
-      return deploySourceResult;
-    } else if (status.result == "skip") {
-      deploySourceResult.result = true;
-      deploySourceResult.message = status.message;
-      return deploySourceResult;
-    }
+      //Check empty conditions
+      let status = this.isToBreakBuildForEmptyDirectory();
+      if (status.result == "break") {
+        deploySourceResult.result = false;
+        deploySourceResult.message = status.message;
+        return deploySourceResult;
+      } else if (status.result == "skip") {
+        deploySourceResult.result = true;
+        deploySourceResult.message = status.message;
+        return deploySourceResult;
+      }
+   
+      console.log("Converting source to mdapi");
+      let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
+        this.project_directory,
+        this.source_directory
+      );
+      this.mdapiDir = mdapiPackage["mdapiDir"];
+      this.printMetadataToDeploy(mdapiPackage["manifestAsJSON"]);
 
     console.log("Converting source to mdapi");
     let mdapiPackage = await getMDAPIPackageFromSourceDirectory(

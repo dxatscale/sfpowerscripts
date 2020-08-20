@@ -3,17 +3,17 @@ import { isNullOrUndefined } from "util";
 import DeploySourceToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceToOrgImpl";
 import DeployDestructiveManifestToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeployDestructiveManifestToOrgImpl";
 import DeploySourceResult from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceResult";
-import getOrgDetails from "@dxatscale/sfpowerscripts.core/lib/getOrgDetails";
+import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/OrgDetails";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
 import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManagementApi";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
+import ArtifactFilePathFetcher  from "../Common/ArtifactFilePathFetcher";
+import ArtifactFilePaths from "../Common/ArtifactFilePathFetcher"
+import { getExtensionName,fetchPackageArtifactFromStorage,updatePackageDeploymentDetails } from "../Common/PackageExtensionStorageHelper";
 
 const fs = require("fs");
 const path = require("path");
 
-const PUBLISHER_NAME = "AzlamSalam";
-const SCOPE_TYPE = "Default";
-const SCOPE_VALUE = "Current";
 
 async function run() {
   try {
@@ -41,37 +41,19 @@ async function run() {
     let extensionName = await getExtensionName(extensionManagementApi);
 
     //Fetch Artifact
-    let artifactFilePaths: { metadataFilePath: string; sourceFilePath: string };
-
-    if (package_installedfrom == "BuildArtifact")
-      artifactFilePaths = fetchArtifactFilePathFromBuildArtifact(
-        sfdx_package,
-        artifact
-      );
-    else if (package_installedfrom == "AzureArtifact")
-      artifactFilePaths = fetchArtifactFilePathFromAzureArtifact(
-        sfdx_package,
-        artifact
-      );
-    else if(package_installedfrom=="PipelineArtifact")
-    artifactFilePaths = fetchArtifactFilePathFromPipelineArtifacts(
-      sfdx_package,
-      artifact
-    );
-
-    missingArtifactDecider(
-      artifactFilePaths.metadataFilePath,
-      skip_on_missing_artifact
-    );
+    let artifactFilePathFetcher = new ArtifactFilePathFetcher(sfdx_package,artifact,package_installedfrom);
+    let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
+    artifactFilePathFetcher.missingArtifactDecider(artifactFilePaths.packageMetadataFilePath,skip_on_missing_artifact);
 
     let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
-      fs.readFileSync(artifactFilePaths.metadataFilePath).toString()
+      fs.readFileSync(artifactFilePaths.packageMetadataFilePath).toString()
     );
-    console.log(
-      "Package Metadata:",
-      JSON.stringify(packageMetadataFromArtifact)
-    );
-    console.log("Package Artifact Location", artifactFilePaths.sourceFilePath);
+    
+    console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
+      if(key=="payload")
+        return undefined;
+   }));
+    console.log("Package Artifact Location", artifactFilePaths.sourceDirectoryPath);
 
     let packageMetadataFromStorage = await fetchPackageArtifactFromStorage(
       packageMetadataFromArtifact,
@@ -108,7 +90,7 @@ async function run() {
         let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
           target_org,
           path.join(
-            artifactFilePaths.sourceFilePath,
+            artifactFilePaths.sourceDirectoryPath,
             "destructive",
             "destructiveChanges.xml"
           )
@@ -126,7 +108,7 @@ async function run() {
     //Construct Deploy Command
     let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
       target_org,
-      artifactFilePaths.sourceFilePath,
+      artifactFilePaths.sourceDirectoryPath,
       sourceDirectory,
       generateDeploymentOptions(
         wait_time,
@@ -191,7 +173,7 @@ function generateDeploymentOptions(
   } else {
     //Determine test option
     try {
-      let result = getOrgDetails(target_org);
+      let result = OrgDetails.getOrgDetails(target_org);
       if (result["IsSandbox"]) {
         //Its a sandbox org, and no apex test suite skip tests
         mdapi_options["testlevel"] = "NoTestRun"; //Just ignore tests
@@ -211,107 +193,7 @@ function generateDeploymentOptions(
   return mdapi_options;
 }
 
-function fetchArtifactFilePathFromBuildArtifact(
-  sfdx_package: string,
-  artifact: string
-): { metadataFilePath: string; sourceFilePath: string } {
-  let artifact_directory = tl.getVariable("system.artifactsDirectory");
 
-  //Metadata FilePath
-  let metadataFilePath: string = path.join(
-    artifact_directory,
-    artifact,
-    "sfpowerkit_artifact",
-    `${sfdx_package}_artifact_metadata`
-  );
-
-  let sourceFilePath: string = path.join(
-    artifact_directory,
-    artifact,
-    `${sfdx_package}_sfpowerscripts_source_package`
-  );
-
-  console.log(
-    `Checking for ${sfdx_package} Build Artifact at path ${metadataFilePath}`
-  );
-
-  return { metadataFilePath: metadataFilePath, sourceFilePath: sourceFilePath };
-}
-
-function fetchArtifactFilePathFromAzureArtifact(
-  sfdx_package: string,
-  artifact: string
-): { metadataFilePath: string; sourceFilePath: string } {
-  let artifact_directory = tl.getVariable("system.artifactsDirectory");
-
-  let metadataFilePath = path.join(
-    artifact_directory,
-    artifact,
-    `${sfdx_package}_artifact_metadata`
-  );
-
-  let sourceFilePath: string = path.join(
-    artifact_directory,
-    artifact,
-    `${sfdx_package}_sfpowerscripts_source_package`
-  );
-
-  console.log(
-    `Checking for ${sfdx_package} Azure Artifact at path ${metadataFilePath}`
-  );
-
-  return { metadataFilePath: metadataFilePath, sourceFilePath: sourceFilePath };
-}
-
-function fetchArtifactFilePathFromPipelineArtifacts(
-  sfdx_package: string,
-  artifact: string
-): { metadataFilePath: string; sourceFilePath: string } {
-  let artifact_directory = tl.getVariable("pipeline.workspace");
-
-  let metadataFilePath = path.join(
-    artifact_directory,
-    "sfpowerkit_artifact",
-    `${sfdx_package}_artifact_metadata`
-  );
-
-  let sourceFilePath: string = path.join(
-    artifact_directory,
-    `${sfdx_package}_sfpowerscripts_source_package`
-  );
-
-  console.log(
-    `Checking for ${sfdx_package} Azure Artifact at path ${metadataFilePath}`
-  );
-
-  return { metadataFilePath: metadataFilePath, sourceFilePath: sourceFilePath };
-}
-
-function missingArtifactDecider(
-  package_version_id_file_path: string,
-  skip_on_missing_artifact: boolean
-): void {
-  if (
-    !fs.existsSync(package_version_id_file_path) &&
-    !skip_on_missing_artifact
-  ) {
-    throw new Error(
-      `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
-    );
-  } else if (
-    !fs.existsSync(package_version_id_file_path) &&
-    skip_on_missing_artifact
-  ) {
-    console.log(
-      `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`
-    );
-    tl.setResult(
-      tl.TaskResult.Skipped,
-      `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`
-    );
-    process.exit(0);
-  }
-}
 
 function checkPackageIsInstalled(
   packageMetadata: PackageMetadata,
@@ -331,111 +213,5 @@ function checkPackageIsInstalled(
   return false;
 }
 
-async function fetchPackageArtifactFromStorage(
-  packageMetadata: PackageMetadata,
-  extensionManagementApi: ExtensionManagementApi.IExtensionManagementApi,
-  extensionName: string
-): Promise<PackageMetadata> {
-  try {
-    let documentId: string =
-      packageMetadata.package_name +
-      packageMetadata.package_version_number.replace(".", "_");
-
-    let response: PackageMetadata = await extensionManagementApi.getDocumentByName(
-      PUBLISHER_NAME,
-      extensionName,
-      SCOPE_TYPE,
-      SCOPE_VALUE,
-      "sfpowerscripts_source_packages",
-      documentId
-    );
-    if (response != null) {
-      tl.debug(
-        "Successfully retrived package details:" + JSON.stringify(response)
-      );
-      return response;
-    } else return packageMetadata;
-  } catch (error) {
-    tl.debug(error);
-    return packageMetadata;
-  }
-}
-
-async function updatePackageDeploymentDetails(
-  packageMetadata: PackageMetadata,
-  extensionManagementApi: ExtensionManagementApi.IExtensionManagementApi,
-  extensionName: string
-) {
-  let documentId: string =
-    packageMetadata.package_name +
-    packageMetadata.package_version_number.replace(".", "_");
-  packageMetadata.id = documentId;
-
-  for (let i = 0; i < 5; i++) {
-    try {
-      let response = await extensionManagementApi.setDocumentByName(
-        packageMetadata,
-        PUBLISHER_NAME,
-        extensionName,
-        SCOPE_TYPE,
-        SCOPE_VALUE,
-        "sfpowerscripts_source_packages"
-      );
-      tl.debug(
-        "Updated package details to extension storage" +
-          JSON.stringify(response)
-      );
-      break;
-    } catch (error) {
-      tl.debug("Unable to update,Retrying" + error);
-    }
-  }
-}
-
-async function getExtensionName(
-  extensionManagementApi: ExtensionManagementApi.IExtensionManagementApi
-): Promise<string> {
-  console.log("Checking for the version of sfpowerscripts");
-  let extensionName;
-  if (
-    await extensionManagementApi.getInstalledExtensionByName(
-      PUBLISHER_NAME,
-      "sfpowerscripts-dev"
-    )
-  ) {
-    extensionName = "sfpowerscripts-dev";
-  } else if (
-    await extensionManagementApi.getInstalledExtensionByName(
-      PUBLISHER_NAME,
-      "sfpowerscripts-review"
-    )
-  ) {
-    extensionName = "sfpowerscripts-review";
-  } else if (
-    await extensionManagementApi.getInstalledExtensionByName(
-      PUBLISHER_NAME,
-      "sfpowerscripts-alpha"
-    )
-  ) {
-    extensionName = "sfpowerscripts-alpha";
-  } else if (
-    await extensionManagementApi.getInstalledExtensionByName(
-      PUBLISHER_NAME,
-      "sfpowerscripts-beta"
-    )
-  ) {
-    extensionName = "sfpowerscripts-beta";
-  } else if (
-    await extensionManagementApi.getInstalledExtensionByName(
-      PUBLISHER_NAME,
-      "sfpowerscripts"
-    )
-  ) {
-    extensionName = "sfpowerscripts";
-  }
-
-  console.log(`Found Sfpowerscripts version ${extensionName}`);
-  return extensionName;
-}
 
 run();
