@@ -1,6 +1,6 @@
 import child_process = require("child_process");
 import { delay } from "../Delay";
-import rimraf = require("rimraf");
+import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
 import {
   copyFile,
   copyFileSync,
@@ -14,7 +14,7 @@ import { isNullOrUndefined } from "util";
 import { onExit } from "../OnExit";
 let path = require("path");
 import ignore from "ignore";
-import getMDAPIPackageFromSourceDirectory from "../getMdapiPackage";
+
 const Table = require("cli-table");
 
 export interface DeploySourceResult {
@@ -40,7 +40,7 @@ export default class DeploySourceToOrgImpl {
 
     if (isNullOrUndefined(this.deployment_options["skip_convert"])) {
       console.log("Converting source to mdapi");
-      let mdapiPackage = await getMDAPIPackageFromSourceDirectory(
+      let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
         this.project_directory,
         this.source_directory
       );

@@ -1,15 +1,21 @@
 export default interface PackageMetadata {
     id?: string;
     package_name: string;
-    package_version_number: string;
+    package_version_number?: string;
     package_version_id?:string;
+    package_type?: string;
     test_coverage?:number;
     has_passed_coverage_check?:boolean;
-    sourceVersion: string;
     repository_url: string;
-    package_type: string;
+    sourceVersion?: string;
+    sourceVersionFrom?:string;
+    sourceVersionTo?:string;
+    branch?:string;
+   
     apextestsuite?: string;
     isApexFound?:boolean;
+    tag?:string;
+    isDependencyValidated?:boolean;
     isDestructiveChangesFound?:boolean;
     destructiveChanges?:any;
     payload?:any;

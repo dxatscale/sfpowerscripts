@@ -3,13 +3,13 @@
     "name": "sfpwowerscript-promoteunlockedpackage-task",
     "friendlyName": "Promote an Unlocked Package",
     "description": "This taks is used to promote an unlocked package before installing into production, This task is part of DX@Scale/SFPowerscripts",
-    "helpMarkDown": "Read more info about the task at https://sfpowerscripts.com/tasks/packaging-tasks/promote%20an%20unlocked%20package/, Ensure the required prerequisite tasks are run before this taks is executed",
+    "helpMarkDown": "Read more at https://dxatscale.gitbook.io/sfpowerscripts/azure-pipelines/task-specifications/packaging-tasks/promote-an-unlocked-package ",
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 7,
+        "Major": 8,
         "Minor": 0,
-        "Patch": 4
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -21,7 +21,7 @@
             "type": "string",
             "label": "Name of the package to be promoted",
             "required": true,
-            "helpMarkDown": "Name of the package to be promoted,for informational purpose"
+            "helpMarkDown": "Name of the package to be promoted"
         },
         {
             "name": "packagepromotedfrom",
@@ -29,8 +29,9 @@
             "label": "Package to be promoted From",
             "defaultValue": "BuildArtifact",
             "options": {
-                "BuildArtifact": "Utilize the version id from the attached build artifact",
-                "AzureArtifact": "Utilize universal artifacts published to Azure Artifacts",
+                "BuildArtifact": "Build artifact",
+                "AzureArtifact": "Azure Artifacts",
+                "PipelineArtifact":"Pipeline Artifact",
                 "Custom": "Pass the package version id as an argument "
             },
             "required": true,
@@ -50,15 +51,15 @@
             "label": "Name of the artifact that is attached to this release pipeline",
             "required": false,
             "helpMarkDown": "Provide the name of the artifact which is the input to this pipeline. Please note only sfpowerkit based build artifact will work with this command",
-            "visibleRule": "packagepromotedfrom = BuildArtifact || packagepromotedfrom = AzureArtifact"
+            "visibleRule": "packagepromotedfrom = BuildArtifact || packagepromotedfrom = AzureArtifact ||  packagepromotedfrom = PipelineArtifact"
         },
         {
             "name": "project_directory",
             "type": "string",
             "label": "Project Directory",
             "defaultValue": "",
-            "required": true,
-            "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed"
+            "required": false,
+            "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed, when used with Custom or older version of this task"
         },
         {
             "name": "devhub_alias",
@@ -79,7 +80,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/PromoteUnlockedPackage.js"
+            "target": "lib/PromoteUnlockedPackageTask/PromoteUnlockedPackage.js"
         }
     }
 }

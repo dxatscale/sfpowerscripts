@@ -2,14 +2,14 @@
     "id": "7915fcdb-f02a-43ae-92bd-494993a31e5d",
     "name": "sfpwowerscript-checkoutprojectfromartifact-task",
     "friendlyName": "Checkout the project from repository for the associated artifact",
-    "description": "Use this utility task to checkout the mentioned commit from a sfpowerscripts build artifact/azure artifact for checking out project from associated artifact in a Release Pipelines, This task is part of SFPowerscripts. Read more at https://bit.ly/2LuJjLJ",
-    "helpMarkDown": "",
+    "description": "Use this utility task to checkout the mentioned commit from a sfpowerscripts build artifact/azure artifact for checking out project from associated artifact in a Release Pipelines, This task is part of sfpowerscripts",
+    "helpMarkDown": "https://dxatscale.gitbook.io/sfpowerscripts/azure-pipelines/task-specifications/deployment-tasks/checkout-a-build-artifact",
     "category": "Utility",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 13,
-        "Minor": 3,
-        "Patch": 4
+        "Major": 14,
+        "Minor": 0,
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -17,25 +17,12 @@
     "instanceNameFormat": "Checkout $(artifact) from associated build pipeline",
     "inputs": [
         {
-            "name": "typeOfArtifact",
-            "type": "pickList",
-            "label": "Select the packaging type of the associated artifact",
-            "defaultValue": "source",
-            "options": {
-                "source": "Source Package",
-                "delta": "Delta Package",
-                "unlocked": "Unlocked Package"
-            },
-            "required": false,
-            "helpMarkDown": "Select a version control provider from the dropdown"
-        },
-        {
             "name": "artifact",
             "type": "string",
             "label": "Name of the  artifact (alias) attached to this pipeline that needs to be checked out",
             "defaultValue": "_source",
             "required": true,
-            "helpMarkDown": "Name of the artifact that is generated from the build pipeline  for checking out source,  Please note this is not a generic utility and will only work for artifacts created by SFPowerscripts"
+            "helpMarkDown": "Name of the artifact that is generated from the build pipeline  for checking out source,  Please note this is not a generic utility and will only work for artifacts created by sfpowerscripts"
         },
         {
             "name": "package",
@@ -52,7 +39,8 @@
             "defaultValue": "BuildArtifact",
             "options": {
                 "BuildArtifact": "Build Artifact",
-                "AzureArtifact": "Azure Artifact"
+                "AzureArtifact": "Azure Artifact",
+                "PipelineArtifact":"Pipeline Artifact"
             },
             "required": true,
             "helpMarkDown": "Select the artifact provider for the artifact that is attached to the pipeline"
@@ -71,8 +59,7 @@
                 "hostedAgentGit": "Git which is already authenticated at the agent level"
             },
             "required": false,
-            "helpMarkDown": "Select a version control provider from the dropdown",
-            "visibleRule": "typeOfArtifact = source || typeOfArtifact = unlocked"
+            "helpMarkDown": "Select a version control provider from the dropdown"
         },
         {
             "name": "github_connection",
@@ -136,7 +123,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/CheckoutProjectFromArtifact.js"
+            "target": "lib/CheckoutProjectFromArtifactTask/CheckoutProjectFromArtifact.js"
         }
     }
 }
