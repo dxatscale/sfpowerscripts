@@ -65,8 +65,10 @@ async function run() {
 
 
     console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata,(key:string,value:any)=>{
-      if(key=="payload")
+      if(key=="payload" || key == "destructiveChanges")
         return undefined;
+      else 
+         return value;
    }));
 
    

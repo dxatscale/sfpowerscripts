@@ -51,6 +51,8 @@ async function run() {
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
         if(key=="payload")
           return undefined;
+        else
+           return value;
      }));
 
 
