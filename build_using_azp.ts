@@ -1,4 +1,5 @@
 import child_process = require("child_process");
+import { exit } from "process";
 let sleep = require('util').promisify(setTimeout)
 let resultAsJSON = child_process.execSync(`az pipelines build queue --branch ${process.argv[2]}  --project sfpowerscripts --definition-id 46 --org https://dev.azure.com/dxatscale`,{
     encoding: "utf8"
@@ -22,7 +23,7 @@ while (true) {
     result = JSON.parse(resultAsJSON);
     if(result.status=="completed")
     {
-        break;
+      exit(0);
       
     }
     else
