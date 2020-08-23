@@ -117,7 +117,7 @@ export default class CreateSourcePackage extends SfdxCommand {
        //Generate Artifact
         let artifact=ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,artifactDirectory,packageMetadata);
 
-        console.log(`Created source package ${sfdx_package}_artifact`);
+        console.log(`Created source package ${sfdx_package}_sfpowerscripts_artifact`);
 
         if (this.flags.gittag) {
           exec(`git config --global user.email "sfpowerscripts@dxscale"`);

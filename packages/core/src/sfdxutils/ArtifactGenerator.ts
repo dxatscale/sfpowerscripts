@@ -45,7 +45,7 @@ export default class ArtifactGenerator {
 
       let sfdx_package_artifact: string = path.join(
         abs_artifact_directory,
-        `${sfdx_package}_artifact`
+        `${sfdx_package}_sfpowerscripts_artifact`
       );
 
       
@@ -54,14 +54,14 @@ export default class ArtifactGenerator {
 
       let sourcePackage: string = path.join(
         sfdx_package_artifact,
-        `${sfdx_package}_sfpowerscripts_source_package`
+        `source `
       );
       fs.mkdirpSync(sourcePackage);
       fs.copySync(packageArtifactMetadata.sourceDir, sourcePackage);
 
       let artifactMetadataFilePath: string = path.join(
         sfdx_package_artifact,
-        `${sfdx_package}_artifact_metadata`
+        `artifact_metadata.json`
       );
 
       fs.writeFileSync(
@@ -71,7 +71,7 @@ export default class ArtifactGenerator {
 
       console.log("Artifact Copy Completed");
 
-      return {artifactDirectory: path.resolve(abs_artifact_directory, `${sfdx_package}_artifact`),artifactMetadataFilePath:artifactMetadataFilePath,artifactSourceDirectory:sourcePackage};
+      return {artifactDirectory: path.resolve(abs_artifact_directory, `${sfdx_package}_sfpowerscripts_artifact`),artifactMetadataFilePath:artifactMetadataFilePath,artifactSourceDirectory:sourcePackage};
     } catch (error) {
       throw new Error("Unable to create artifact" + error);
     }

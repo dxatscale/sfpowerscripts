@@ -40,11 +40,11 @@ export default class ArtifactFilePathFetcher {
     let packageMetadataFilePath = path.join(
       artifactDirectory,
       artifactAlias,
-      `${sfdx_package}_artifact`,
-      `${sfdx_package}_artifact_metadata`
+      `${sfdx_package}_sfpowerscripts_artifact`,
+      `artifact_metadata.json`
     );
 
-    //Check Newest Artifact Format Exists..
+    //Check v3 Artifact Format Exists..
     if (fs.existsSync(packageMetadataFilePath)) {
       console.log(
         `Artifact format  found at the location ${packageMetadataFilePath} `
@@ -52,8 +52,8 @@ export default class ArtifactFilePathFetcher {
       let sourceDirectoryPath: string = path.join(
         artifactDirectory,
         artifactAlias,
-        `${sfdx_package}_artifact`,
-        `${sfdx_package}_sfpowerscripts_source_package`
+        `${sfdx_package}_sfpowerscripts_artifact`,
+        `source`
       );
       return {
         packageMetadataFilePath: packageMetadataFilePath,
@@ -61,7 +61,7 @@ export default class ArtifactFilePathFetcher {
       };
     }
 
-    //Newer metadata filename .. v2
+    //Check v1 metadata artifact
     packageMetadataFilePath = path.join(
       artifactDirectory,
       artifactAlias,
@@ -74,7 +74,7 @@ export default class ArtifactFilePathFetcher {
         `New Artifact format not found at the location ${packageMetadataFilePath} `
       );
 
-      console.log("Falling back to older artifact format"); //v1 Historic
+      console.log("Falling back to older artifact format"); //v0 Historic
       packageMetadataFilePath = path.join(
         artifactDirectory,
         artifactAlias,
@@ -116,14 +116,14 @@ export default class ArtifactFilePathFetcher {
 
     let metadataFilePath = path.join(
       artifactDirectory,
-      `${sfdx_package}_artifact`,
-      `${sfdx_package}_artifact_metadata`
+      `${sfdx_package}_sfpowerscripts_artifact`,
+      `artifact_metadata.json`
     );
 
     let sourceDirectoryPath: string = path.join(
       artifactDirectory,
-      `${sfdx_package}_artifact`,
-      `${sfdx_package}_sfpowerscripts_source_package`
+      `${sfdx_package}_sfpowerscripts_artifact`,
+      `source`
     );
     return {
       packageMetadataFilePath: metadataFilePath,
