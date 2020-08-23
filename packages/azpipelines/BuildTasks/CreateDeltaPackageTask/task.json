@@ -62,14 +62,6 @@
             "helpMarkDown": "Check this option to generate a destructive manifest to be deployed"
         },
         {
-            "name": "project_directory",
-            "type": "string",
-            "label": "Revision To",
-            "defaultValue": "",
-            "required": false,
-            "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed"
-        },
-        {
             "name": "set_build_name",
             "type": "boolean",
             "label": "Set the pipeline's build number to the the version name mentioned in the task",

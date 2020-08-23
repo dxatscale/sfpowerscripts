@@ -54,11 +54,12 @@ async function run() {
     let deltaPackage=await createDeltaPackageImpl.exec();
 
 
-  
+    console.log(deltaPackage);
+
     let createSourcePackageImpl= new CreateSourcePackageImpl(
         deltaPackage.deltaDirectory,
         sfdx_package,
-        deltaPackage.destructiveChangesPath,
+        deltaPackage.destructiveChanges?deltaPackage.destructiveChangesPath:null,
         packageMetadata
     );
     packageMetadata = await createSourcePackageImpl.exec();

@@ -5,32 +5,30 @@ let fs = require("fs-extra");
 let path = require("path");
 
 export type SourcePackageArtifact = {
-    isDestructiveChangesFound?: boolean;
-    destructiveChanges?: any;
-    sourceDir: string;
-    sfdxPackageDescriptor?:any;
-  };
- 
+  isDestructiveChangesFound?: boolean;
+  destructiveChanges?: any;
+  sourceDir: string;
+  sfdxPackageDescriptor?: any;
+};
+
 type DestructiveChanges = {
-    isDestructiveChangesFound: boolean;
-    destructiveChangesPath: string;
-    destructiveChanges: any;
-}
+  isDestructiveChangesFound: boolean;
+  destructiveChangesPath: string;
+  destructiveChanges: any;
+};
 
 export default class SourcePackageGenerator {
-
-
-  public static  generateSourcePackageArtifact(
+  public static generateSourcePackageArtifact(
     projectDirectory: string,
     sfdxPackage: string,
     destructiveManifestFilePath?: string
   ): SourcePackageArtifact {
-
- 
     let result = <SourcePackageArtifact>{};
-    let sfdxPackageDescriptor=ManifestHelpers.getSFDXPackageDescriptor(projectDirectory,sfdxPackage);
-    let packageDirectory=sfdxPackageDescriptor["path"];
-
+    let sfdxPackageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      projectDirectory,
+      sfdxPackage
+    );
+    let packageDirectory = sfdxPackageDescriptor["path"];
 
     let artifactDirectory, individualFilePath;
     if (!isNullOrUndefined(projectDirectory)) {
@@ -56,11 +54,14 @@ export default class SourcePackageGenerator {
 
     //First check if the task has a argument passed for destructive changes, as this takes precedence
     if (!isNullOrUndefined(destructiveManifestFilePath)) {
-      fs.mkdirsSync(path.join(artifactDirectory, "destructive"));
-      fs.copySync(
-        path.join(individualFilePath, destructiveManifestFilePath),
-        path.join(artifactDirectory, "destructive", "destructiveChanges.xml")
-      );
+      //Check whether the pased parameter is valid
+      if (fs.existsSync(destructiveManifestFilePath)) {
+        fs.mkdirsSync(path.join(artifactDirectory, "destructive"));
+        fs.copySync(
+          path.join(individualFilePath, destructiveManifestFilePath),
+          path.join(artifactDirectory, "destructive", "destructiveChanges.xml")
+        );
+      }
     } // Try reading the manifest for any
     else {
       let destructiveManifestFromManifest = this.getDestructiveChanges(
@@ -68,18 +69,23 @@ export default class SourcePackageGenerator {
         packageDirectory
       );
       if (destructiveManifestFromManifest.isDestructiveChangesFound) {
-        fs.mkdirsSync(path.join(artifactDirectory, "destructive"));
-        result.isDestructiveChangesFound =
-          destructiveManifestFromManifest.destructiveChanges;
-        result.destructiveChanges =
-          destructiveManifestFromManifest.destructiveChanges;
-        fs.copySync(
-          path.join(
-            individualFilePath,
-            destructiveManifestFromManifest.destructiveChangesPath
-          ),
-          path.join(artifactDirectory, "destructive", "destructiveChanges.xml")
-        );
+        //Check whether the pased parameter is valid
+          fs.mkdirsSync(path.join(artifactDirectory, "destructive"));
+          result.isDestructiveChangesFound =
+            destructiveManifestFromManifest.destructiveChanges;
+          result.destructiveChanges =
+            destructiveManifestFromManifest.destructiveChanges;
+          fs.copySync(
+            path.join(
+              individualFilePath,
+              destructiveManifestFromManifest.destructiveChangesPath
+            ),
+            path.join(
+              artifactDirectory,
+              "destructive",
+              "destructiveChanges.xml"
+            )
+          );
       }
     }
 
@@ -88,13 +94,11 @@ export default class SourcePackageGenerator {
       path.join(artifactDirectory, packageDirectory)
     );
 
-    result.sfdxPackageDescriptor=sfdxPackageDescriptor;
+    result.sfdxPackageDescriptor = sfdxPackageDescriptor;
     result.sourceDir = artifactDirectory;
     return result;
   }
 
-
- 
   private static getDestructiveChanges(
     projectDirectory: string,
     sfdxPackage: string
