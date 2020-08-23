@@ -48,6 +48,8 @@ async function run() {
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
         if(key=="payload")
           return undefined;
+        else
+          return value;
      }));
 
       package_version_id = packageMetadataFromArtifact.package_version_id;
