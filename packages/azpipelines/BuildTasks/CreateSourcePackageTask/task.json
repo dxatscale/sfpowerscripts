@@ -19,10 +19,10 @@
         {
             "name": "package",
             "type": "string",
-            "label": "Name of the package",
+            "label": "Name of the package, as mentioned in sfdx-project.json",
             "defaultValue": "",
             "required": true,
-            "helpMarkDown": "The name of the package"
+            "helpMarkDown": "The name of the package, that is mentioned in sfdx-project.json"
         },
         {
             "name": "apextestsuite",

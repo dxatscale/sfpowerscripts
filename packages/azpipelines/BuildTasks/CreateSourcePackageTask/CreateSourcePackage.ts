@@ -3,9 +3,8 @@ import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/Pac
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ArtifactGenerator"
-const fs = require("fs");
 import { isNullOrUndefined } from "util";
-const path = require("path");
+
 
 async function run() {
   try {

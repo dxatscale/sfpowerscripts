@@ -2,6 +2,7 @@ import PackageMetadata from "../sfdxwrappers/PackageMetadata";
 import SourcePackageGenerator from "../sfdxutils/SourcePackageGenerator";
 import ManifestHelpers from "../sfdxutils/ManifestHelpers";
 import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator"
+import { isNullOrUndefined } from "util";
 
 
 export default class CreateSourcePackageImpl {
@@ -34,10 +35,14 @@ export default class CreateSourcePackageImpl {
 
    
     //Convert to MDAPI to get PayLoad
-    let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
+    let mdapiPackage
+    if(!isNullOrUndefined(packageDirectory))
+    {
+     mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
       this.projectDirectory,
       packageDirectory
     );
+    
     this.packageArtifactMetadata.payload=mdapiPackage.manifestAsJSON;
     
     let isApexFound=false;
@@ -55,7 +60,11 @@ export default class CreateSourcePackageImpl {
       isApexFound=true;
     }
     this.packageArtifactMetadata.isApexFound=isApexFound;
-
+    }
+    else
+    {
+      console.log("Proceeding with all packages.. as a particular package was not provided")
+    }
 
     //Get Artifact Details
     let sourcePackageArtifact=SourcePackageGenerator.generateSourcePackageArtifact(this.projectDirectory,this.sfdx_package,this.destructiveManifestFilePath);

@@ -10,9 +10,11 @@ export type MDAPIPackageArtifact = {
 export default class MDAPIPackageGenerator {
 
 
+
+
   public static async getMDAPIPackageFromSourceDirectory(
-    projectDirectory,
-    sourceDirectory
+    projectDirectory:string,
+    sourceDirectory?:string
   ): Promise<{
     mdapiDir: string;
     manifestAsJSON;
@@ -63,7 +65,7 @@ export default class MDAPIPackageGenerator {
       return mdapiDirPath;
 
     } catch (error) {
-      console.log("Unable to convert source, exiting " + error.code);
+      console.log(`Unable to convert source for directory ${sourceDirectory}`);
       throw error;
     }
   }
