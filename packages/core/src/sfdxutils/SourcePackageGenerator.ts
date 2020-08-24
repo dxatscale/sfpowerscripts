@@ -23,20 +23,20 @@ export default class SourcePackageGenerator {
     sfdxPackage: string,
     destructiveManifestFilePath?: string
   ): SourcePackageArtifact {
-    let result = <SourcePackageArtifact>{};
+    let sourcePackageArtifact = <SourcePackageArtifact>{};
     let sfdxPackageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
       projectDirectory,
       sfdxPackage
     );
     let packageDirectory = sfdxPackageDescriptor["path"];
 
-    let artifactDirectory, individualFilePath;
+    let artifactDirectory, rootDirectory;
     if (!isNullOrUndefined(projectDirectory)) {
       artifactDirectory = path.join(projectDirectory, "source_package");
-      individualFilePath = projectDirectory;
+      rootDirectory = projectDirectory;
     } else {
       artifactDirectory = "source_package";
-      individualFilePath = "";
+      rootDirectory = "";
     }
 
     //Create a new directory
@@ -48,44 +48,22 @@ export default class SourcePackageGenerator {
       )
     );
     fs.copySync(
-      path.join(individualFilePath, ".forceignore"),
+      path.join(rootDirectory, ".forceignore"),
       path.join(artifactDirectory, ".forceignore")
     );
 
     //First check if the task has a argument passed for destructive changes, as this takes precedence
     if (!isNullOrUndefined(destructiveManifestFilePath)) {
       //Check whether the pased parameter is valid
-      if (fs.existsSync(destructiveManifestFilePath)) {
-        fs.mkdirsSync(path.join(artifactDirectory, "destructive"));
-        fs.copySync(
-          path.join(individualFilePath, destructiveManifestFilePath),
-          path.join(artifactDirectory, "destructive", "destructiveChanges.xml")
-        );
-      }
-    } // Try reading the manifest for any
+      SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory, sourcePackageArtifact);
+    } 
     else {
       let destructiveManifestFromManifest = this.getDestructiveChanges(
         projectDirectory,
         packageDirectory
       );
       if (destructiveManifestFromManifest.isDestructiveChangesFound) {
-        //Check whether the pased parameter is valid
-          fs.mkdirsSync(path.join(artifactDirectory, "destructive"));
-          result.isDestructiveChangesFound =
-            destructiveManifestFromManifest.destructiveChanges;
-          result.destructiveChanges =
-            destructiveManifestFromManifest.destructiveChanges;
-          fs.copySync(
-            path.join(
-              individualFilePath,
-              destructiveManifestFromManifest.destructiveChangesPath
-            ),
-            path.join(
-              artifactDirectory,
-              "destructive",
-              "destructiveChanges.xml"
-            )
-          );
+        SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFromManifest.destructiveChangesPath, artifactDirectory, rootDirectory, sourcePackageArtifact);
       }
     }
 
@@ -94,9 +72,30 @@ export default class SourcePackageGenerator {
       path.join(artifactDirectory, packageDirectory)
     );
 
-    result.sfdxPackageDescriptor = sfdxPackageDescriptor;
-    result.sourceDir = artifactDirectory;
-    return result;
+    sourcePackageArtifact.sfdxPackageDescriptor = sfdxPackageDescriptor;
+    sourcePackageArtifact.sourceDir = artifactDirectory;
+    return sourcePackageArtifact;
+  }
+
+  private static copyDestructiveManifests(destructiveManifestFilePath: string, artifactDirectory: string, projectDirectory: any, sourcePackageArtifact: SourcePackageArtifact) {
+    if (fs.existsSync(destructiveManifestFilePath)) {
+      try {
+        fs.mkdirsSync(path.join(artifactDirectory, "destructive"));
+        fs.copySync(
+          path.join(projectDirectory, destructiveManifestFilePath),
+          path.join(artifactDirectory, "destructive", "destructiveChanges.xml")
+        );
+
+        sourcePackageArtifact.destructiveChanges = JSON.parse(
+          fs.readFileSync(destructiveManifestFilePath, "utf8")
+        );
+        sourcePackageArtifact.isDestructiveChangesFound = true;
+      }
+      catch (error) {
+        console.log("Unable to read/parse destructive manifest, Please check your artifacts, Will result in an error while deploying");
+      }
+
+    }
   }
 
   private static getDestructiveChanges(
@@ -119,17 +118,12 @@ export default class SourcePackageGenerator {
     sfdxManifest["packageDirectories"].forEach((pkg) => {
       if (sfdxPackage == pkg["package"]) {
         if (pkg["destructiveChangePath"]) {
-          try {
+        
             destructiveChangesPath = pkg["destructiveChangePath"];
             destructiveChanges = JSON.parse(
               fs.readFileSync((pkg["destructiveChangePath"], "utf8"))
             );
             isDestructiveChangesFound = true;
-          } catch (error) {
-            console.warn(
-              "Unable to read destructive Changes from the path specified in sfdx-project.json, This field will be ignored!"
-            );
-          }
         }
       }
     });

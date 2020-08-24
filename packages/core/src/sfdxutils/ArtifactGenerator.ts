@@ -59,6 +59,11 @@ export default class ArtifactGenerator {
       fs.mkdirpSync(sourcePackage);
       fs.copySync(packageArtifactMetadata.sourceDir, sourcePackage);
 
+
+
+      //Modify Source Directory to the new source directory inside the artifact
+      packageArtifactMetadata.sourceDir=`source`;
+
       let artifactMetadataFilePath: string = path.join(
         sfdx_package_artifact,
         `artifact_metadata.json`
