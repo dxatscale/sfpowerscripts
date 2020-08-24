@@ -32,10 +32,10 @@ export default class SourcePackageGenerator {
 
     let artifactDirectory, rootDirectory;
     if (!isNullOrUndefined(projectDirectory)) {
-      artifactDirectory = path.join(projectDirectory, "source_package");
+      artifactDirectory = path.join(projectDirectory, "source");
       rootDirectory = projectDirectory;
     } else {
-      artifactDirectory = "source_package";
+      artifactDirectory = "source";
       rootDirectory = "";
     }
 

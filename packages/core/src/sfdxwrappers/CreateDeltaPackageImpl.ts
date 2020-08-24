@@ -70,6 +70,10 @@ export default class CreateDeltaPackageImpl {
             destructiveChanges = JSON.parse(fs.readFileSync(destructiveChangesPath, "utf8"));
             isDestructiveChangesFound=true;
     }
+    else
+    {
+      destructiveChangesPath=null;
+    }
     
 
     return {deltaDirectory,isDestructiveChangesFound,destructiveChangesPath,destructiveChanges};
