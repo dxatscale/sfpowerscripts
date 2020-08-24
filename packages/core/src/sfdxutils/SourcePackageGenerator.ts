@@ -1,6 +1,6 @@
 import { isNullOrUndefined } from "util";
 import ManifestHelpers from "./ManifestHelpers";
-
+import * as rimraf from "rimraf";
 let fs = require("fs-extra");
 let path = require("path");
 
@@ -24,11 +24,17 @@ export default class SourcePackageGenerator {
     destructiveManifestFilePath?: string
   ): SourcePackageArtifact {
     let sourcePackageArtifact = <SourcePackageArtifact>{};
+
+
     let sfdxPackageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
       projectDirectory,
       sfdx_package
     );
     let packageDirectory = sfdxPackageDescriptor["path"];
+    if(isNullOrUndefined(packageDirectory))
+     {
+       packageDirectory="";
+      }
 
     let artifactDirectory, rootDirectory;
     if (!isNullOrUndefined(projectDirectory)) {
@@ -38,6 +44,11 @@ export default class SourcePackageGenerator {
       artifactDirectory = "source";
       rootDirectory = "";
     }
+
+     
+
+    //Ensure the directory is clean
+    rimraf.sync(path.join(artifactDirectory, packageDirectory))
 
     //Create a new directory
     fs.mkdirsSync(path.join(artifactDirectory, packageDirectory));
