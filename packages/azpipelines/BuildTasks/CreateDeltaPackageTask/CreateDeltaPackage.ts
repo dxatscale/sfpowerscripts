@@ -54,7 +54,7 @@ async function run() {
     let deltaPackage=await createDeltaPackageImpl.exec();
 
 
-    console.log(deltaPackage);
+    console.log("DeltaPackage Details",deltaPackage);
 
     let createSourcePackageImpl= new CreateSourcePackageImpl(
         deltaPackage.deltaDirectory,

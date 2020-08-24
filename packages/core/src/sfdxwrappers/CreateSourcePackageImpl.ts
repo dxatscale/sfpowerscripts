@@ -9,7 +9,7 @@ export default class CreateSourcePackageImpl {
 
   public constructor(
     private projectDirectory: string,
-    private sfdxPackage: string,
+    private sfdx_package: string,
     private destructiveManifestFilePath:string,
     private packageArtifactMetadata:PackageMetadata
   ) {}
@@ -17,13 +17,22 @@ export default class CreateSourcePackageImpl {
   public async exec(): Promise<PackageMetadata> {
 
 
+    console.log("--------------Create Source Package---------------------------")
+    console.log("Project Directory",this.projectDirectory);
+    console.log("sfdx_package",this.sfdx_package);
+    console.log("destructiveManifestFilePath",this.destructiveManifestFilePath);
+    console.log("packageArtifactMetadata",this.packageArtifactMetadata);
+   
+
+
     this.packageArtifactMetadata.package_type= "source";
 
 
     let startTime = Date.now();
-    let packageDirectory: string = ManifestHelpers.getSFDXPackageDescriptor(this.projectDirectory,this.sfdxPackage)["path"];
+    let packageDirectory: string = ManifestHelpers.getSFDXPackageDescriptor(this.projectDirectory,this.sfdx_package)["path"];
     console.log("Package Directory",packageDirectory);
 
+   
     //Convert to MDAPI to get PayLoad
     let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
       this.projectDirectory,
@@ -49,7 +58,7 @@ export default class CreateSourcePackageImpl {
 
 
     //Get Artifact Details
-    let sourcePackageArtifact=SourcePackageGenerator.generateSourcePackageArtifact(this.projectDirectory,this.sfdxPackage,this.destructiveManifestFilePath);
+    let sourcePackageArtifact=SourcePackageGenerator.generateSourcePackageArtifact(this.projectDirectory,this.sfdx_package,this.destructiveManifestFilePath);
 
     this.packageArtifactMetadata.sourceDir=sourcePackageArtifact.sourceDir;
     this.packageArtifactMetadata.isDestructiveChangesFound=sourcePackageArtifact.isDestructiveChangesFound;

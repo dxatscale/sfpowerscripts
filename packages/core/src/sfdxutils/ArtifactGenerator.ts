@@ -54,7 +54,7 @@ export default class ArtifactGenerator {
 
       let sourcePackage: string = path.join(
         sfdx_package_artifact,
-        `source `
+        `source`
       );
       fs.mkdirpSync(sourcePackage);
       fs.copySync(packageArtifactMetadata.sourceDir, sourcePackage);
