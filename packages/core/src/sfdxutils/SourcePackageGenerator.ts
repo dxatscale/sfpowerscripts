@@ -20,13 +20,13 @@ type DestructiveChanges = {
 export default class SourcePackageGenerator {
   public static generateSourcePackageArtifact(
     projectDirectory: string,
-    sfdxPackage: string,
+    sfdx_package: string,
     destructiveManifestFilePath?: string
   ): SourcePackageArtifact {
     let sourcePackageArtifact = <SourcePackageArtifact>{};
     let sfdxPackageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
       projectDirectory,
-      sfdxPackage
+      sfdx_package
     );
     let packageDirectory = sfdxPackageDescriptor["path"];
 
@@ -44,7 +44,7 @@ export default class SourcePackageGenerator {
     fs.writeFileSync(
       path.join(artifactDirectory, "sfdx-project.json"),
       JSON.stringify(
-        ManifestHelpers.cleanupMPDFromManifest(projectDirectory, sfdxPackage)
+        ManifestHelpers.cleanupMPDFromManifest(projectDirectory, sfdx_package)
       )
     );
     fs.copySync(
@@ -67,8 +67,9 @@ export default class SourcePackageGenerator {
       }
     }
 
+   
     fs.copySync(
-      packageDirectory,
+      path.join(rootDirectory,packageDirectory),
       path.join(artifactDirectory, packageDirectory)
     );
 
