@@ -74,7 +74,7 @@ async function run() {
 
    
    let artifact= ArtifactGenerator.generateArtifact(sfdx_package,deltaPackage.deltaDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata); 
-    tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);
+   tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);
 
 
     tl.setVariable("sfpowerscripts_delta_package_path", deltaPackage.deltaDirectory);
