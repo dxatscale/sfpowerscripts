@@ -1,15 +1,16 @@
 import PackageMetadata from "../sfdxwrappers/PackageMetadata";
 import SourcePackageGenerator from "../sfdxutils/SourcePackageGenerator";
 import ManifestHelpers from "../sfdxutils/ManifestHelpers";
-import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
+import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator"
 import { isNullOrUndefined } from "util";
+
 
 export default class CreateSourcePackageImpl {
   public constructor(
     private projectDirectory: string,
     private sfdx_package: string,
-    private destructiveManifestFilePath: string,
-    private packageArtifactMetadata: PackageMetadata
+    private destructiveManifestFilePath:string,
+    private packageArtifactMetadata:PackageMetadata
   ) {}
 
   public async exec(): Promise<PackageMetadata> {
@@ -25,6 +26,18 @@ export default class CreateSourcePackageImpl {
     console.log("packageArtifactMetadata", this.packageArtifactMetadata);
 
     this.packageArtifactMetadata.package_type = "source";
+
+
+    console.log("--------------Create Source Package---------------------------")
+    console.log("Project Directory",this.projectDirectory);
+    console.log("sfdx_package",this.sfdx_package);
+    console.log("destructiveManifestFilePath",this.destructiveManifestFilePath);
+    console.log("packageArtifactMetadata",this.packageArtifactMetadata);
+   
+
+
+    this.packageArtifactMetadata.package_type= "source";
+
 
     let startTime = Date.now();
     let packageDirectory: string = ManifestHelpers.getSFDXPackageDescriptor(

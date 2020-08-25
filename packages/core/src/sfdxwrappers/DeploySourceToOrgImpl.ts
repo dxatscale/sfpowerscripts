@@ -1,9 +1,19 @@
 import child_process = require("child_process");
 import { delay } from "../Delay";
 import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
+import {
+  copyFile,
+  copyFileSync,
+  readdirSync,
+  readFileSync,
+  fstat,
+  existsSync,
+  stat,
+} from "fs";
 import { isNullOrUndefined } from "util";
 import { onExit } from "../OnExit";
 let path = require("path");
+import ignore from "ignore";
 
 const Table = require("cli-table");
 
@@ -29,7 +39,7 @@ export default class DeploySourceToOrgImpl {
     let deploySourceResult = {} as DeploySourceResult;
 
       //Check empty conditions
-      let status = this.isToBreakBuildForEmptyDirectory();
+      let status = MDAPIPackageGenerator.isToBreakBuildForEmptyDirectory(this.project_directory,this.source_directory,this.isToBreakBuildIfEmpty);
       if (status.result == "break") {
         deploySourceResult.result = false;
         deploySourceResult.message = status.message;
