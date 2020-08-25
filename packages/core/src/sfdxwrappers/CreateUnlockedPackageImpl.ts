@@ -22,11 +22,10 @@ export default class CreateUnlockedPackageImpl {
   ) {}
 
   public async exec(): Promise<PackageMetadata> {
-
-    this.packageArtifactMetadata.package_type= "unlocked";
+    this.packageArtifactMetadata.package_type = "unlocked";
     let startTime = Date.now();
 
-    let packageDescriptor= ManifestHelpers.getSFDXPackageDescriptor(
+    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
       this.project_directory,
       this.sfdx_package
     );
@@ -86,8 +85,7 @@ export default class CreateUnlockedPackageImpl {
     //Generate Source Artifact
     let mdapiPackageArtifact = SourcePackageGenerator.generateSourcePackageArtifact(
       this.project_directory,
-      this.sfdx_package,
-      mdapiPackage.mdapiDir
+      this.sfdx_package
     );
 
     this.packageArtifactMetadata.dependencies =
