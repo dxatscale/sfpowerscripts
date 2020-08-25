@@ -7,7 +7,7 @@ import { exec } from "shelljs";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ArtifactGenerator";
 const fs = require("fs-extra");
-const path = require("path");
+
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);

@@ -11,11 +11,8 @@ import {
   updatePackageDeploymentDetails,
 } from "../Common/PackageExtensionStorageHelper";
 import { isNullOrUndefined } from "util";
-
 const fs = require("fs");
-const PUBLISHER_NAME = "AzlamSalam";
-const SCOPE_TYPE = "Default";
-const SCOPE_VALUE = "Current";
+
 
 async function run() {
   try {

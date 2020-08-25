@@ -7,7 +7,6 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/Arti
 import { exec } from "shelljs";
 const fs = require("fs-extra");
 import {isNullOrUndefined} from "util"
-const path = require("path");
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_source_package');

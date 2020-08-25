@@ -2,19 +2,10 @@ import child_process = require("child_process");
 import { delay } from "../Delay";
 import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
 import {
-  copyFile,
   copyFileSync,
-  readdirSync,
-  readFileSync,
-  fstat,
-  existsSync,
-  stat,
 } from "fs";
-import { isNullOrUndefined } from "util";
 import { onExit } from "../OnExit";
-let path = require("path");
-import ignore from "ignore";
-
+const path = require("path");
 const Table = require("cli-table");
 
 export interface DeploySourceResult {

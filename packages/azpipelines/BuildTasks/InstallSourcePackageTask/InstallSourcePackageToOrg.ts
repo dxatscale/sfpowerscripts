@@ -8,7 +8,6 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/Pac
 import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManagementApi";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import ArtifactFilePathFetcher  from "../Common/ArtifactFilePathFetcher";
-import ArtifactFilePaths from "../Common/ArtifactFilePathFetcher"
 import { getExtensionName,fetchPackageArtifactFromStorage,updatePackageDeploymentDetails } from "../Common/PackageExtensionStorageHelper";
 
 const fs = require("fs");

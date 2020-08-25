@@ -27,7 +27,8 @@ async function run() {
 
       let connection: string;
       let vcsAuthDetails = getVCSAuthDetails(version_control_provider, connection);
-    
+      token=vcsAuthDetails.token;
+      username=vcsAuthDetails.username;
 
      //Fetch Artifact
      let artifactFilePathFetcher = new ArtifactFilePathFetcher(

@@ -111,16 +111,12 @@ export default class CreateDeltaPackage extends SfdxCommand {
         repository_url = repository_url.slice(0, repository_url.length - 1);
       } else repository_url = this.flags.repourl;
 
-      let commit_id = exec("git log --pretty=format:'%H' -n 1", {
-        silent: true,
-      });
-
       options["bypass_directories"] = this.flags.bypassdirectories;
       options["only_diff_for"] = this.flags.onlydifffor;
 
       const generate_destructivemanifest = this.flags
         .generatedestructivemanifest;
-      const build_artifact_enabled = this.flags.buildartifactenabled;
+    
 
       let createDeltaPackageImp = new CreateDeltaPackageImpl(
         projectDirectory,

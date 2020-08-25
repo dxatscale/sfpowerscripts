@@ -1,7 +1,6 @@
 import child_process = require("child_process");
 import { onExit } from "../OnExit";
 import { isNullOrUndefined } from "util";
-import PackageMetadata from "../sfdxwrappers/PackageMetadata";
 const path = require("path");
 const fs = require("fs-extra");
 

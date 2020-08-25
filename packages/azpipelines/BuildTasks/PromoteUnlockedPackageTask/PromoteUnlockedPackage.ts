@@ -2,6 +2,7 @@ import tl = require("azure-pipelines-task-lib/task");
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
 import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
+import { isNullOrUndefined } from "util";
 var fs = require("fs");
 
 
@@ -62,7 +63,7 @@ async function run() {
       { //Compatiblity Reasons
 
        //Check whether projectDirectory is provided..
-       if(projectDirectory==null || projectDirectory == undefined)
+       if(isNullOrUndefined(projectDirectory))
         {
           tl.setResult(tl.TaskResult.Failed,"Path to the project directory with sfdx-project.json is required, Either provide the parameter, or update your package creation task to make use of new updates in package artifact");
           return;

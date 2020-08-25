@@ -92,7 +92,7 @@ export default class CreateSourcePackageImpl {
       );
     }
 
-    //Get Artifact Details
+    //Get Artifact Detailsd
     let sourcePackageArtifact = SourcePackageGenerator.generateSourcePackageArtifact(
       this.projectDirectory,
       this.sfdx_package,

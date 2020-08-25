@@ -7,13 +7,9 @@ export type MDAPIPackageArtifact = {
   mdapiDir: string;
 };
 import {
-  copyFile,
-  copyFileSync,
   readdirSync,
   readFileSync,
-  fstat,
-  existsSync,
-  stat,
+  existsSync
 } from "fs";
 import ignore from "ignore";
 
@@ -94,29 +90,6 @@ export default class MDAPIPackageGenerator {
     });
   }
 
-  public static generateMDAPIPackageArtifact(
-    projectDirectory: string,
-    sfdxPackage: string,
-    mdapiDir: string
-  ): MDAPIPackageArtifact {
-    let result = <MDAPIPackageArtifact>{};
-
-    let artifactDirectory, individualFilePath;
-    if (!isNullOrUndefined(projectDirectory)) {
-      artifactDirectory = path.join(projectDirectory, "source_package");
-      individualFilePath = projectDirectory;
-    } else {
-      artifactDirectory = "source_package";
-      individualFilePath = "";
-    }
-
-    //Create a new directory
-    fs.mkdirsSync(artifactDirectory);
-    fs.copySync(mdapiDir, artifactDirectory);
-
-    result.mdapiDir = artifactDirectory;
-    return result;
-  }
 
   public static isToBreakBuildForEmptyDirectory(
     projectDir: string,
@@ -186,11 +159,11 @@ export default class MDAPIPackageGenerator {
       dirToCheck = sourceDirectory;
     }
 
-    let files: string[] = readdirSync(sourceDirectory);
+    let files: string[] = readdirSync(dirToCheck);
 
     // Construct file paths that are relative to the project directory.
     files.forEach((file, index, files) => {
-      let filepath = path.join(sourceDirectory, file);
+      let filepath = path.join(dirToCheck, file);
       files[index] = path.relative(process.cwd(), filepath);
     });
 

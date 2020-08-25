@@ -2,7 +2,6 @@ import path = require("path");
 import fs = require("fs-extra");
 import PackageMetadata from "../sfdxwrappers/PackageMetadata";
 import { isNullOrUndefined } from "util";
-import { constants } from "os";
 
 export default class ArtifactGenerator {
 
