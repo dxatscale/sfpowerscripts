@@ -4,12 +4,11 @@ import CreateDeltaPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrapp
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata"
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ArtifactGenerator"
-const path = require("path");
-const fs = require("fs");
+
 
 async function run() {
   try {
-    const sfdx_package = tl.getInput("package", true);
+    const sfdx_package = tl.getInput("package", false);
     const projectDirectory = tl.getInput("project_directory", false);
     const versionName: string = tl.getInput("version_name", false);
     const setBuildName: boolean = tl.getBoolInput("set_build_name",true);
