@@ -1,19 +1,9 @@
 import child_process = require("child_process");
 import { delay } from "../Delay";
 import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
-import {
-  copyFile,
-  copyFileSync,
-  readdirSync,
-  readFileSync,
-  fstat,
-  existsSync,
-  stat,
-} from "fs";
 import { isNullOrUndefined } from "util";
 import { onExit } from "../OnExit";
 let path = require("path");
-import ignore from "ignore";
 
 const Table = require("cli-table");
 
@@ -57,16 +47,6 @@ export default class DeploySourceToOrgImpl {
       );
       this.mdapiDir = mdapiPackage["mdapiDir"];
       this.printMetadataToDeploy(mdapiPackage["manifestAsJSON"]);
-
-    console.log("Converting source to mdapi");
-    let mdapiPackage = await getMDAPIPackageFromSourceDirectory(
-      this.project_directory,
-      this.source_directory
-    );
-    this.mdapiDir = mdapiPackage["mdapiDir"];
-    this.printMetadataToDeploy(mdapiPackage["manifestAsJSON"]);
-
-
 
     try {
       if (this.deployment_options["checkonly"])
@@ -153,57 +133,7 @@ export default class DeploySourceToOrgImpl {
     return deploySourceResult;
   }
 
-  private isToBreakBuildForEmptyDirectory(): {
-    message: string;
-    result: string;
-  } {
-    let directoryToCheck;
-    let status: { message: string; result: string } = {
-      message: "",
-      result: "",
-    };
 
-    if (!isNullOrUndefined(this.project_directory)) {
-      directoryToCheck = path.join(
-        this.project_directory,
-        this.source_directory
-      );
-    } else directoryToCheck = this.source_directory;
-
-    try {
-      if (!existsSync(directoryToCheck)) {
-        //Folder do not exists, break build
-        if (this.isToBreakBuildIfEmpty) {
-          status.message = `Folder not Found , Stopping build as isToBreakBuildIfEmpty is ${this.isToBreakBuildIfEmpty}`;
-          status.result = "break";
-        } else {
-          status.message = `Folder not Found , Skipping task as isToBreakBuildIfEmpty is ${this.isToBreakBuildIfEmpty}`;
-          status.result = "skip";
-        }
-        return status;
-      } else if (this.isEmptyFolder(directoryToCheck)) {
-        if (this.isToBreakBuildIfEmpty) {
-          status.message = `Folder is Empty , Stopping build as isToBreakBuildIfEmpty is ${this.isToBreakBuildIfEmpty}`;
-          status.result = "break";
-        } else {
-          status.message = `Folder is Empty, Skipping task as isToBreakBuildIfEmpty is ${this.isToBreakBuildIfEmpty}`;
-          status.result = "skip";
-        }
-        return status;
-      } else {
-        status.result = "continue";
-        return status;
-      }
-    } catch (err) {
-      if (err.code === "ENOENT") {
-        throw new Error(`No such file or directory ${err.path}`); // Re-throw error if .forceignore does not exist
-      } else if (!this.isToBreakBuildIfEmpty) {
-        status.message = `Something wrong with the path provided  ${directoryToCheck},,but skipping `;
-        status.result = "skip";
-        return status;
-      } else throw err;
-    }
-  }
 
   private async getFinalDeploymentStatus(deploy_id: string): Promise<string> {
     let messageString = "";
@@ -290,28 +220,7 @@ export default class DeploySourceToOrgImpl {
     }
   }
 
-  private isEmptyFolder(source_directory): boolean {
-    let files: string[] = readdirSync(source_directory);
-
-    // Construct file paths that are relative to the project directory.
-    files.forEach((file, index, files) => {
-      let filepath = path.join(source_directory, file);
-      files[index] = path.relative(process.cwd(), filepath);
-    });
-
-    let forceignorePath;
-    if (!isNullOrUndefined(this.project_directory))
-      forceignorePath = path.join(this.project_directory, ".forceignore");
-    else forceignorePath = path.join(process.cwd(), ".forceignore");
-
-    // Ignore files that are listed in .forceignore
-    files = ignore()
-      .add(readFileSync(forceignorePath).toString()) // Add ignore patterns from '.forceignore'.
-      .filter(files);
-
-    if (files == null || files.length === 0) return true;
-    else return false;
-  }
+  
 
   private printMetadataToDeploy(mdapiPackageManifest) {
     let table = new Table({

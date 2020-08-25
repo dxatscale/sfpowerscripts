@@ -42,7 +42,7 @@
         {
             "name": "version_number",
             "type": "string",
-            "label": "The version number of the package to be crated",
+            "label": "The version number of the package to be created",
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task"
