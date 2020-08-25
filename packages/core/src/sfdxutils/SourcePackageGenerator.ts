@@ -132,9 +132,7 @@ export default class SourcePackageGenerator {
         if (pkg["destructiveChangePath"]) {
         
             destructiveChangesPath = pkg["destructiveChangePath"];
-            destructiveChanges = JSON.parse(
-              fs.readFileSync((pkg["destructiveChangePath"], "utf8"))
-            );
+            destructiveChanges = JSON.parse(fs.readFileSync(destructiveChangesPath, "utf8"));
             isDestructiveChangesFound = true;
         }
       }
