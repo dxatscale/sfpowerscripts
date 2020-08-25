@@ -38,30 +38,27 @@ export default class DeploySourceToOrgImpl {
     let commandExecStatus: boolean = false;
     let deploySourceResult = {} as DeploySourceResult;
 
-    if (isNullOrUndefined(this.deployment_options["skip_convert"])) {
-      console.log("Converting source to mdapi");
-      let mdapiPackage = await getMDAPIPackageFromSourceDirectory(
-        this.project_directory,
-        this.source_directory
-      );
-      this.mdapiDir = mdapiPackage["mdapiDir"];
-      this.printMetadataToDeploy(mdapiPackage["manifestAsJSON"]);
-
-      //Check empty conditions
-      let status = this.isToBreakBuildForEmptyDirectory();
-      if (status.result == "break") {
-        deploySourceResult.result = false;
-        deploySourceResult.message = status.message;
-        return deploySourceResult;
-      } else if (status.result == "skip") {
-        deploySourceResult.result = true;
-        deploySourceResult.message = status.message;
-        return deploySourceResult;
-      }
-    } else {
-      this.mdapiDir = this.source_directory;
-      //TODO: Print Deployment Contents
+    //Check empty conditions
+    let status = this.isToBreakBuildForEmptyDirectory();
+    if (status.result == "break") {
+      deploySourceResult.result = false;
+      deploySourceResult.message = status.message;
+      return deploySourceResult;
+    } else if (status.result == "skip") {
+      deploySourceResult.result = true;
+      deploySourceResult.message = status.message;
+      return deploySourceResult;
     }
+
+    console.log("Converting source to mdapi");
+    let mdapiPackage = await getMDAPIPackageFromSourceDirectory(
+      this.project_directory,
+      this.source_directory
+    );
+    this.mdapiDir = mdapiPackage["mdapiDir"];
+    this.printMetadataToDeploy(mdapiPackage["manifestAsJSON"]);
+
+
 
     try {
       if (this.deployment_options["checkonly"])
@@ -337,5 +334,5 @@ export default class DeploySourceToOrgImpl {
     console.log(table.toString());
   }
 
-  
+
 }
