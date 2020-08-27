@@ -48,7 +48,7 @@ function convertSourceToMDAPI(projectDir, sourceDirectory): string {
 
         let outputDir: string;
         if (!isNullOrUndefined(projectDir)) {
-            outputDir = path.join(
+            outputDir = path.resolve(
                 projectDir,
                 mdapiDir
             );
