@@ -192,7 +192,7 @@ export default class TriggerApexTestImpl {
       packageDirectory
     );
 
-    for (let type of mdapiPackage["manifestAsJSON"]["Package"]["types"]) {
+    for (let type of mdapiPackage.manifest["Package"]["types"]) {
       if (type["name"] == "ApexClass") {
         packageClasses = type["members"];
         break;

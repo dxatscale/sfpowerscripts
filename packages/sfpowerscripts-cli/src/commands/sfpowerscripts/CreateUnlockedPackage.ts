@@ -50,7 +50,6 @@ export default class CreateUnlockedPackage extends SfdxCommand {
     repourl: flags.string({char: 'r', description: messages.getMessage('repoUrlFlagDescription')}),
     versionnumber: flags.string({description: messages.getMessage('versionNumberFlagDescription')}),
     configfilepath: flags.filepath({char: 'f', description: messages.getMessage('configFilePathFlagDescription'), default: 'config/project-scratch-def.json'}),
-    projectdir: flags.directory({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
     enablecoverage: flags.boolean({description: messages.getMessage('enableCoverageFlagDescription')}),
     isvalidationtobeskipped: flags.boolean({char: 's', description: messages.getMessage('isValidationToBeSkippedFlagDescription')}),
@@ -63,7 +62,6 @@ export default class CreateUnlockedPackage extends SfdxCommand {
     try {
       const sfdx_package: string = this.flags.package;
       const version_number: string = this.flags.versionnumber;
-      const projectDirectory: string = this.flags.projectdir;
       const artifactDirectory: string = this.flags.artifactdir;
       const refname: string = this.flags.refname;
 
@@ -81,7 +79,7 @@ export default class CreateUnlockedPackage extends SfdxCommand {
       if (this.flags.diffcheck) {
         let packageDiffImpl = new PackageDiffImpl(
           sfdx_package,
-          projectDirectory,
+          null,
           config_file_path
         );
 
@@ -126,7 +124,7 @@ export default class CreateUnlockedPackage extends SfdxCommand {
           config_file_path,
           installationkeybypass,
           installationkey,
-          projectDirectory,
+          null,
           devhub_alias,
           wait_time,
           isCoverageEnabled,
@@ -155,7 +153,7 @@ export default class CreateUnlockedPackage extends SfdxCommand {
          }));
          
         //Generate Artifact
-        let artifact=ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,artifactDirectory,packageMetadata);
+        let artifact=ArtifactGenerator.generateArtifact(sfdx_package,null,artifactDirectory,packageMetadata);
 
           console.log("\nOutput variables:");
           if (!isNullOrUndefined(refname)) {

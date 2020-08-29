@@ -104,16 +104,23 @@ async function run() {
       }
     }
 
+
+    //Apply Reconcile if Profiles are found
+
+    
+
+
     //Construct Deploy Command
+    let deploymentOptions = await  generateDeploymentOptions(
+      wait_time,
+      packageMetadataFromStorage.apextestsuite,
+      target_org
+    );
     let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
       target_org,
       artifactFilePaths.sourceDirectoryPath,
       sourceDirectory,
-      generateDeploymentOptions(
-        wait_time,
-        packageMetadataFromStorage.apextestsuite,
-        target_org
-      ),
+      deploymentOptions,
       false
     );
 
@@ -157,11 +164,11 @@ async function run() {
   }
 }
 
-function generateDeploymentOptions(
+async function generateDeploymentOptions(
   wait_time: string,
   apextextsuite: string,
   target_org: string
-): any {
+): Promise<any> {
   let mdapi_options = {};
   mdapi_options["ignore_warnings"] = true;
   mdapi_options["wait_time"] = wait_time;
@@ -172,7 +179,7 @@ function generateDeploymentOptions(
   } else {
     //Determine test option
     try {
-      let result = OrgDetails.getOrgDetails(target_org);
+      let result = await OrgDetails.getOrgDetails(target_org);
       if (result["IsSandbox"]) {
         //Its a sandbox org, and no apex test suite skip tests
         mdapi_options["testlevel"] = "NoTestRun"; //Just ignore tests

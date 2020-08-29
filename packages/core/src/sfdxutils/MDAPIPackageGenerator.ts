@@ -19,11 +19,11 @@ export default class MDAPIPackageGenerator {
     sourceDirectory?: string
   ): Promise<{
     mdapiDir: string;
-    manifestAsJSON;
+    manifest;
   }> {
-    const mdapiPackage: { mdapiDir: string; manifestAsJSON } = {
+    const mdapiPackage: { mdapiDir: string; manifest } = {
       mdapiDir: "",
-      manifestAsJSON: {},
+      manifest: {},
     };
 
     let mdapiDir: string = this.convertSourceToMDAPI(
@@ -37,7 +37,7 @@ export default class MDAPIPackageGenerator {
       "utf8"
     );
 
-    mdapiPackage["manifestAsJSON"] = await this.xml2json(packageXml);
+    mdapiPackage.manifest = await this.xml2json(packageXml);
     return mdapiPackage;
   }
 

@@ -58,6 +58,54 @@ export default class ManifestHelpers {
         }
       }
     }
+   
+    sfdxManifest["packageDirectories"][0]["default"]=true; //add default = true
     return sfdxManifest;
   }
+
+  public static checkApexInPayload(manifest:any)
+  {
+    
+    let isApexFound = false;
+    if (Array.isArray(manifest["Package"]["types"])) {
+      for (let type of manifest["Package"]["types"]) {
+        if (type["name"] == "ApexClass" || type["name"] == "ApexTrigger") {
+          isApexFound = true;
+          break;
+        }
+      }
+    } else if (
+      manifest.manifestAsJSON["Package"]["types"]["name"] ==
+        "ApexClass" ||
+        manifest.manifestAsJSON["Package"]["types"]["name"] ==
+        "ApexTrigger"
+    ) {
+      isApexFound = true;
+    }
+    return isApexFound;
+  }
+
+
+  public static checkProfilesinPayload(manifest:any)
+  {
+    
+    let isProfilesFound = false;
+    if (Array.isArray(manifest["Package"]["types"])) {
+      for (let type of manifest["Package"]["types"]) {
+        if (type["name"] == "Profiles") {
+          isProfilesFound = true;
+          break;
+        }
+      }
+    } else if (
+      manifest.manifestAsJSON["Package"]["types"]["name"] ==
+        "ApexClass" ||
+        manifest.manifestAsJSON["Package"]["types"]["name"] ==
+        "ApexTrigger"
+    ) {
+      isProfilesFound = true;
+    }
+    return isProfilesFound;
+  }
+
 }

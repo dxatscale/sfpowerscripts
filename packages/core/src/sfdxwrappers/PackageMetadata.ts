@@ -11,9 +11,9 @@ export default interface PackageMetadata {
     sourceVersionFrom?:string;
     sourceVersionTo?:string;
     branch?:string;
-   
     apextestsuite?: string;
     isApexFound?:boolean;
+    isProfilesFound?:boolean;
     tag?:string;
     isDependencyValidated?:boolean;
     isDestructiveChangesFound?:boolean;
@@ -24,3 +24,4 @@ export default interface PackageMetadata {
     creation_details?:{creation_time?:number,timestamp?:number}
     deployments?:{target_org:string,sub_directory?:string,installation_time?:number,timestamp?:number}[];
   }
+  

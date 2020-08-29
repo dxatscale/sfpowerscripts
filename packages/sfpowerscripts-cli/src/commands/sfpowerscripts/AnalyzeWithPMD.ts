@@ -37,7 +37,6 @@ export default class AnalyzeWithPMD extends SfdxCommand {
     outputpath: flags.string({char: 'o', description: messages.getMessage('outputPathFlagDescription')}),
     version: flags.string({description: messages.getMessage('versionFlagDescription'), default: '6.26.0'}),
     istobreakbuild: flags.boolean({char: 'b', description: messages.getMessage('isToBreakBuildFlagDescription')}),
-    projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
     refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
   };
 
@@ -46,7 +45,6 @@ export default class AnalyzeWithPMD extends SfdxCommand {
     try {
       console.log("Test.. PMD");
 
-      const project_directory = this.flags.projectdir;
       const source_directory: string = this.flags.sourcedir;
       const ruleset: string = this.flags.ruleset;
 
@@ -68,7 +66,7 @@ export default class AnalyzeWithPMD extends SfdxCommand {
       let result: [number, number, number] = [0, 0, 0];
 
       let pmdImpl: AnalyzeWithPMDImpl = new AnalyzeWithPMDImpl(
-        project_directory,
+        null,
         source_directory,
         rulesetpath,
         format,

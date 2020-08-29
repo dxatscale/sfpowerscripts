@@ -35,7 +35,6 @@ export default class CreateSourcePackage extends SfdxCommand {
   protected static flagsConfig = {
     package: flags.string({required: true, char: 'n', description: messages.getMessage('packageFlagDescription')}),
     versionnumber: flags.string({required: true, char: 'v', description: messages.getMessage('versionNumberFlagDescription')}),
-    projectdir: flags.directory({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
     apextestsuite: flags.filepath({description: messages.getMessage('apextestsuiteFlagDescription')}),
     destructivemanifestfilepath: flags.filepath({description: messages.getMessage('destructiveManiFestFilePathFlagDescription')}),
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
@@ -50,7 +49,6 @@ export default class CreateSourcePackage extends SfdxCommand {
     try {
       const sfdx_package: string = this.flags.package;
       const version_number: string = this.flags.versionnumber;
-      const projectDirectory: string = this.flags.projectdir;
       const artifactDirectory: string = this.flags.artifactdir;
       const refname: string = this.flags.refname;
       const destructiveManifestFilePath: string = this.flags.destructivemanifestfilepath;
@@ -58,7 +56,7 @@ export default class CreateSourcePackage extends SfdxCommand {
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
-        let packageDiffImpl = new PackageDiffImpl(sfdx_package, projectDirectory);
+        let packageDiffImpl = new PackageDiffImpl(sfdx_package, null);
 
         runBuild = await packageDiffImpl.exec();
 
@@ -70,7 +68,7 @@ export default class CreateSourcePackage extends SfdxCommand {
       } else runBuild = true;
 
       if (runBuild) {
-        let commit_id = exec('git log --pretty=format:\'%H\' -n 1', {silent:true});
+        let commit_id = exec('git log --pretty=format:%H -n 1', {silent:true});
 
         let repository_url: string;
         if (isNullOrUndefined(this.flags.repourl)) {
@@ -92,7 +90,7 @@ export default class CreateSourcePackage extends SfdxCommand {
 
         //Convert to MDAPI
         let createSourcePackageImpl = new CreateSourcePackageImpl(
-          projectDirectory,
+          null,
           sfdx_package,
           destructiveManifestFilePath,
           packageMetadata
@@ -114,7 +112,7 @@ export default class CreateSourcePackage extends SfdxCommand {
         
 
        //Generate Artifact
-        let artifact=ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,artifactDirectory,packageMetadata);
+        let artifact=ArtifactGenerator.generateArtifact(sfdx_package,null,artifactDirectory,packageMetadata);
 
         console.log(`Created source package ${sfdx_package}_sfpowerscripts_artifact`);
 

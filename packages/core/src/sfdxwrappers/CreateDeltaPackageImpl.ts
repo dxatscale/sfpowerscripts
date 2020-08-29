@@ -1,17 +1,20 @@
 import child_process = require("child_process");
 import { onExit } from "../OnExit";
 import { isNullOrUndefined } from "util";
+import ManifestHelpers from "../sfdxutils/ManifestHelpers";
 const path = require("path");
 const fs = require("fs-extra");
 
 export type DeltaPackage = {
-  deltaDirectory:string;
+  deltaDirectory: string;
   isDestructiveChangesFound?: boolean;
-  destructiveChangesPath?:string
+  destructiveChangesPath?: string;
   destructiveChanges?: any;
 };
 
 export default class CreateDeltaPackageImpl {
+  deltaDirectory: string;
+
   public constructor(
     private projectDirectory: string,
     private sfdx_package: string,
@@ -22,8 +25,30 @@ export default class CreateDeltaPackageImpl {
   ) {}
 
   public async exec(): Promise<DeltaPackage> {
+    if (isNullOrUndefined(this.projectDirectory)) {
+      this.deltaDirectory = isNullOrUndefined(this.sfdx_package)
+        ? "src_delta"
+        : `${this.sfdx_package}_src_delta`;
+    } else {
+      this.deltaDirectory = path.join(
+        this.projectDirectory,
+        isNullOrUndefined(this.sfdx_package)
+          ? "src_delta"
+          : `${this.sfdx_package}_src_delta`
+      );
+    }
 
-  
+    //If package is provided, do delta only for that package
+    if (!isNullOrUndefined(this.sfdx_package)) {
+      //Get Package Descriptor
+      let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+        this.projectDirectory,
+        this.sfdx_package
+      );
+      let packageDirectory: string = packageDescriptor["path"];
+      this.options["only_diff_for"] = packageDirectory;
+    }
+
     //Command
     let command = this.buildExecCommand();
     console.log("Executing command", command);
@@ -49,33 +74,41 @@ export default class CreateDeltaPackageImpl {
 
     await onExit(child);
 
-    //Generate artifact
-    let deltaDirectory:string;
 
-    if(isNullOrUndefined(this.projectDirectory))
+    if(!isNullOrUndefined(this.sfdx_package)) // Temporary fix when a package is provide, make it default and 
+                                              //provide package name, so it can be converted to a source artifect
     {
-      deltaDirectory=`${this.sfdx_package}_src_delta`;
-    }
-    else
-    {
-      deltaDirectory = path.join(this.projectDirectory,`${this.sfdx_package}_src_delta`);
+      let sfdxManifest = JSON.parse(fs.readFileSync(path.join(this.deltaDirectory,'sfdx-project.json'), "utf8"));
+      sfdxManifest["packageDirectories"][0]["default"]=true; //add default = true
+      sfdxManifest["packageDirectories"][0]["package"]=this.sfdx_package; //add package.back
+      fs.writeFileSync(
+        path.join(this.deltaDirectory, "sfdx-project.json"),
+        JSON.stringify(sfdxManifest)
+      );
+
     }
 
-    let destructiveChanges:any;
-    let isDestructiveChangesFound=false;
-    let destructiveChangesPath = path.join(deltaDirectory,"destructiveChanges.xml");
-    if(fs.existsSync(destructiveChangesPath))
-    {
-            destructiveChanges = JSON.parse(fs.readFileSync(destructiveChangesPath, "utf8"));
-            isDestructiveChangesFound=true;
+    let destructiveChanges: any;
+    let isDestructiveChangesFound = false;
+    let destructiveChangesPath = path.join(
+      this.deltaDirectory,
+      "destructiveChanges.xml"
+    );
+    if (fs.existsSync(destructiveChangesPath)) {
+      destructiveChanges = JSON.parse(
+        fs.readFileSync(destructiveChangesPath, "utf8")
+      );
+      isDestructiveChangesFound = true;
+    } else {
+      destructiveChangesPath = null;
     }
-    else
-    {
-      destructiveChangesPath=null;
-    }
-    
 
-    return {deltaDirectory,isDestructiveChangesFound,destructiveChangesPath,destructiveChanges};
+    return {
+      deltaDirectory: this.deltaDirectory,
+      isDestructiveChangesFound,
+      destructiveChangesPath,
+      destructiveChanges,
+    };
   }
 
   private buildExecCommand(): string {
@@ -89,7 +122,7 @@ export default class CreateDeltaPackageImpl {
 
     if (this.generateDestructiveManifest) command += ` -x`;
 
-    command += ` -d  ${this.sfdx_package}_src_delta`;
+    command += ` -d  ${this.deltaDirectory}`;
 
     if (!isNullOrUndefined(this.options["bypass_directories"]))
       command += ` -b  ${this.options["bypass_directories"]}`;

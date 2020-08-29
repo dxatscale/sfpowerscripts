@@ -27,7 +27,6 @@ export default class DeploySource extends SfdxCommand {
 
   protected static flagsConfig = {
     targetorg: flags.string({char: 'u', description: messages.getMessage('targetOrgFlagDescription'), default: 'scratchorg'}),
-    projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
     sourcedir: flags.string({description: messages.getMessage('sourceDirectoryFlagDescription'), default: 'force-app'}),
     waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '20'}),
     checkonly: flags.boolean({char: 'c', description: messages.getMessage('checkOnlyFlagDescription')}),
@@ -51,7 +50,6 @@ export default class DeploySource extends SfdxCommand {
 
         const target_org: string = this.flags.targetorg;
         const source_directory: string = this.flags.sourcedir;
-        let project_directory: string = this.flags.projectdir;
 
         // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
 
@@ -85,7 +83,7 @@ export default class DeploySource extends SfdxCommand {
 
           deploySourceToOrgImpl = new DeploySourceToOrgImpl(
           target_org,
-          project_directory,
+          null,
           source_directory,
           mdapi_options,
           isToBreakBuildIfEmpty

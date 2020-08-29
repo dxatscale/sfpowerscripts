@@ -20,7 +20,7 @@ async function run() {
 
     let isRunBuild: boolean;
     if (isDiffCheck) {
-      console.log("Heading to package Diff Impl");
+
 
       let packageDiffImpl = new PackageDiffImpl(
         sfdx_package,
@@ -42,7 +42,7 @@ async function run() {
     if (isRunBuild) {
  
 
-      //Upload Metadata Artifact
+      //Create Metadata Artifact
       let packageMetadata:PackageMetadata = {
         package_name: sfdx_package,
         package_version_number: version_number,

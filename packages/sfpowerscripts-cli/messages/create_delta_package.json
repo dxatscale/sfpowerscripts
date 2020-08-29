@@ -9,7 +9,5 @@
     "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
     "versionNameFlagDescription": "Provide a meaningful name such as the default value, so this artifact can be identified in the release",
     "generateDestructiveManifestFlagDescription": "Check this option to generate a destructive manifest to be deployed",
-    "bypassDirectoriesFlagDescription": "Ignore a comma seperated list of directories that need to be ignored while a diff is generated",
-    "onlyDiffForFlagDescription": "Generate a comma seperated list of directories that the diff should be generated, Create a sfdx-project.json to support deployment",
     "refNameFlagDescription": "Reference name to be prefixed to output variables"
 }

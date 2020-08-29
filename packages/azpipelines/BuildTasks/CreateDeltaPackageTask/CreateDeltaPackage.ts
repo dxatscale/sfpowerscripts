@@ -8,7 +8,7 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/Arti
 
 async function run() {
   try {
-    const sfdx_package = tl.getInput("package", false);
+    let sfdx_package = tl.getInput("package", false);
     const projectDirectory = tl.getInput("project_directory", false);
     const versionName: string = tl.getInput("version_name", false);
     const setBuildName: boolean = tl.getBoolInput("set_build_name",true);
@@ -31,6 +31,7 @@ async function run() {
 
 
       let repository_url = tl.getVariable("build.repository.uri");
+
 
   
       let packageMetadata:PackageMetadata = {
@@ -72,8 +73,11 @@ async function run() {
    }));
 
    
-   let artifact= ArtifactGenerator.generateArtifact(sfdx_package,deltaPackage.deltaDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata); 
-   tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);
+   let artifact= ArtifactGenerator.generateArtifact(sfdx_package,packageMetadata.sourceDir,tl.getVariable("agent.tempDirectory"),packageMetadata); 
+   if(!isNullOrUndefined(sfdx_package))
+    tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);
+   else
+    tl.uploadArtifact(`sfpowerscripts_artifact`, artifact.artifactDirectory,`sfpowerscripts_artifact`);
 
 
     tl.setVariable("sfpowerscripts_delta_package_path", deltaPackage.deltaDirectory);

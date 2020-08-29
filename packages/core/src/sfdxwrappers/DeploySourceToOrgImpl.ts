@@ -46,8 +46,8 @@ export default class DeploySourceToOrgImpl {
         this.project_directory,
         this.source_directory
       );
-      this.mdapiDir = mdapiPackage["mdapiDir"];
-      this.printMetadataToDeploy(mdapiPackage["manifestAsJSON"]);
+      this.mdapiDir = mdapiPackage.mdapiDir;
+      this.printMetadataToDeploy(mdapiPackage.manifest);
 
     try {
       if (this.deployment_options["checkonly"])

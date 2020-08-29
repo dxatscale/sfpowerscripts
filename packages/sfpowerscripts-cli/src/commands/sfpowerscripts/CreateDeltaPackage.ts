@@ -37,7 +37,7 @@ export default class CreateDeltaPackage extends SfdxCommand {
 
   protected static flagsConfig = {
     package: flags.string({
-      required: true,
+      required: false,
       char: "n",
       description: messages.getMessage("packageNameFlagDescription"),
     }),
@@ -56,17 +56,8 @@ export default class CreateDeltaPackage extends SfdxCommand {
       char: "v",
       description: messages.getMessage("versionNameFlagDescription"),
     }),
-    buildartifactenabled: flags.boolean({
-      char: "b",
-      description: messages.getMessage("buildArtifactEnabledFlagDescription"),
-      default: true,
-    }),
     repourl: flags.string({
       description: messages.getMessage("repoUrlFlagDescription"),
-    }),
-    projectdir: flags.directory({
-      char: "d",
-      description: messages.getMessage("projectDirectoryFlagDescription"),
     }),
     artifactdir: flags.directory({
       description: messages.getMessage("artifactDirectoryFlagDescription"),
@@ -78,12 +69,6 @@ export default class CreateDeltaPackage extends SfdxCommand {
         "generateDestructiveManifestFlagDescription"
       ),
     }),
-    bypassdirectories: flags.string({
-      description: messages.getMessage("bypassDirectoriesFlagDescription"),
-    }),
-    onlydifffor: flags.string({
-      description: messages.getMessage("onlyDiffForFlagDescription"),
-    }),
     refname: flags.string({
       description: messages.getMessage("refNameFlagDescription"),
     }),
@@ -91,8 +76,7 @@ export default class CreateDeltaPackage extends SfdxCommand {
 
   public async run() {
     try {
-      const sfdx_package = this.flags.package;
-      const projectDirectory = this.flags.projectdir;
+      const sfdx_package:string = this.flags.package;
       const artifactDirectory: string = this.flags.artifactdir;
       const versionName: string = this.flags.versionname;
       const refname: string = this.flags.refname;
@@ -110,15 +94,14 @@ export default class CreateDeltaPackage extends SfdxCommand {
         repository_url = repository_url.slice(0, repository_url.length - 1);
       } else repository_url = this.flags.repourl;
 
-      options["bypass_directories"] = this.flags.bypassdirectories;
-      options["only_diff_for"] = this.flags.onlydifffor;
+
 
       const generate_destructivemanifest = this.flags
         .generatedestructivemanifest;
     
 
       let createDeltaPackageImp = new CreateDeltaPackageImpl(
-        projectDirectory,
+        null,
         sfdx_package,
         revisionFrom,
         revision_to,
@@ -151,6 +134,9 @@ export default class CreateDeltaPackage extends SfdxCommand {
         repository_url: repository_url,
       };
 
+    
+
+
       let createSourcePackageImpl = new CreateSourcePackageImpl(
         deltaPackage.deltaDirectory,
         sfdx_package,
@@ -166,8 +152,10 @@ export default class CreateDeltaPackage extends SfdxCommand {
       );
 
 
+      console.log(packageMetadata.sourceDir);
+
       //Generate Artifact
-      let artifact= ArtifactGenerator.generateArtifact(sfdx_package,deltaPackage.deltaDirectory,artifactDirectory,packageMetadata); 
+      let artifact= ArtifactGenerator.generateArtifact(sfdx_package,packageMetadata.sourceDir,artifactDirectory,packageMetadata); 
   
 
       console.log("\nOutput variables:");

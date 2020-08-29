@@ -83,14 +83,18 @@ export default class CreateUnlockedPackageImpl {
       pkgInfoResult.result[0].HasPassedCodeCoverageCheck;
 
     //Generate Source Artifact
-    let mdapiPackageArtifact = SourcePackageGenerator.generateSourcePackageArtifact(
+    let mdapiPackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
       this.project_directory,
-      this.sfdx_package
+      this.sfdx_package,
+      ManifestHelpers.getSFDXPackageDescriptor(
+        this.project_directory,
+        this.sfdx_package
+      )["path"],null
     );
 
     this.packageArtifactMetadata.dependencies =
       packageDescriptor["dependencies"];
-    this.packageArtifactMetadata.sourceDir = mdapiPackageArtifact.sourceDir;
+    this.packageArtifactMetadata.sourceDir = mdapiPackageArtifactDir;
 
     //Add Timestamps
     let endTime = Date.now();
