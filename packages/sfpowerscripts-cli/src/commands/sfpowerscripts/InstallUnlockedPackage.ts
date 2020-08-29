@@ -3,6 +3,8 @@ import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 const fs = require("fs");
 const path = require("path");
+import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
+const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -16,8 +18,7 @@ export default class InstallUnlockedPackage extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:InstallUnlockedPackage -n packagename -u sandboxalias -i
-  `
+    `$ sfdx sfpowerscripts:InstallUnlockedPackage -n packagename -u sandboxalias -i`
   ];
 
 
@@ -43,6 +44,8 @@ export default class InstallUnlockedPackage extends SfdxCommand {
 
   public async run(){
    try {
+      loadSfpowerscriptsVariables(this.flags);
+
       const envname: string = this.flags.envname;
       const sfdx_package: string = this.flags.package;
       let skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;

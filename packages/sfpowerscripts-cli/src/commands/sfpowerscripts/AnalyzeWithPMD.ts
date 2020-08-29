@@ -6,6 +6,8 @@ import {isNullOrUndefined, isNull} from 'util';
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
+const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -19,10 +21,10 @@ export default class AnalyzeWithPMD extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:AnalyzeWithPMD -b\n` +
-  `Output variable:\n` +
-  `sfpowerscripts_pmd_output_path\n` +
-  `<refname>_sfpowerscripts_pmd_output_path`
+    `$ sfdx sfpowerscripts:AnalyzeWithPMD -b\n`,
+    `Output variable:`,
+    `sfpowerscripts_pmd_output_path`,
+    `<refname>_sfpowerscripts_pmd_output_path`
   ];
 
   protected static requiresProject = true;
@@ -44,6 +46,8 @@ export default class AnalyzeWithPMD extends SfdxCommand {
 
   public async run(){
     try {
+      loadSfpowerscriptsVariables(this.flags);
+
       console.log("Test.. PMD");
 
       const project_directory = this.flags.projectdir;

@@ -1,6 +1,8 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages, SfdxError } from '@salesforce/core';
 import ValidateApexCoverageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/ValidateApexCoverageImpl';
+import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
+const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -14,8 +16,7 @@ export default class ValidateApexCoverage extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:ValidateApexCoverage -u scratchorg -t 80
-  `
+    `$ sfdx sfpowerscripts:ValidateApexCoverage -u scratchorg -t 80`
   ];
 
   protected static requiresProject = true;
@@ -30,23 +31,22 @@ export default class ValidateApexCoverage extends SfdxCommand {
 
   public async run(){
     try {
+      loadSfpowerscriptsVariables(this.flags);
 
-        const target_org: string = this.flags.targetorg;
-        const test_coverage: string = this.flags.testcoverage;
-        
-        
-        let validateApexCoverageImpl:ValidateApexCoverageImpl = new ValidateApexCoverageImpl(target_org,Number(test_coverage));
-        console.log("Generating command");
-        let command = await validateApexCoverageImpl.buildExecCommand();
-        await validateApexCoverageImpl.exec(command);
-    
-        
-    
-      } catch (err) {
-            console.log(err);
-            process.exit(1);
-      }
-    
-    
+      const target_org: string = this.flags.targetorg;
+      const test_coverage: string = this.flags.testcoverage;
+
+
+      let validateApexCoverageImpl:ValidateApexCoverageImpl = new ValidateApexCoverageImpl(target_org,Number(test_coverage));
+      console.log("Generating command");
+      let command = await validateApexCoverageImpl.buildExecCommand();
+      await validateApexCoverageImpl.exec(command);
+
+
+
+    } catch (err) {
+      console.log(err);
+      process.exit(1);
+    }
   }
 }

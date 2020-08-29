@@ -7,6 +7,8 @@ import { exec } from "shelljs";
 const fs = require("fs-extra");
 import {isNullOrUndefined} from "util"
 const path = require("path");
+import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
+const dotenv = require('dotenv').config();
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_source_package');
@@ -48,6 +50,8 @@ export default class CreateSourcePackage extends SfdxCommand {
 
   public async run(){
     try {
+      loadSfpowerscriptsVariables(this.flags);
+
       const sfdx_package: string = this.flags.package;
       const version_number: string = this.flags.versionnumber;
       const project_directory: string = this.flags.projectdir;

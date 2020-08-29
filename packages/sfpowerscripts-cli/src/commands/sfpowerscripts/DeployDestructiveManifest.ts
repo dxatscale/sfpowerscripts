@@ -3,6 +3,8 @@ import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages, SfdxError } from '@salesforce/core';
 const fs = require("fs");
 const path = require("path");
+import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
+const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -16,7 +18,7 @@ export default class DeployDestructiveManifest extends SfdxCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `sfdx sfpowerscripts:DeployDestructiveManifest -u scratchorg -m Text -t "<?xml version=\"1.0\" encoding=\"UTF-8\"?>`,
+        `$ sfdx sfpowerscripts:DeployDestructiveManifest -u scratchorg -m Text -t "<?xml version=\"1.0\" encoding=\"UTF-8\"?>`,
         `<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\"><types><members>myobject__c</members><name>CustomObject</name></types></Package>"`
     ];
 
@@ -51,6 +53,8 @@ export default class DeployDestructiveManifest extends SfdxCommand {
 
     public async run() {
         try {
+            loadSfpowerscriptsVariables(this.flags);
+
             console.log("SFPowerScript.. Deploy Destructive Manifest to Org");
 
             const targetOrg: string = this.flags.targetorg;

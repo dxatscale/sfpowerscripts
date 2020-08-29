@@ -3,6 +3,8 @@ import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 const path = require("path");
 import { isNullOrUndefined } from "util";
+import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
+const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -16,9 +18,9 @@ export default class TriggerApexTest extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunLocalTests -s`,
-  `sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunApexTestSuite --apextestsuite <test_suite>`,
-  `sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunApexTestSuite --apextestsuite <test_suite> -c -t <package>`
+    `$ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunLocalTests -s`,
+    `$ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunApexTestSuite --apextestsuite <test_suite>`,
+    `$ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunApexTestSuite --apextestsuite <test_suite> -c -t <package>`
   ];
 
 
@@ -41,6 +43,8 @@ export default class TriggerApexTest extends SfdxCommand {
 
   public async run(){
     try {
+      loadSfpowerscriptsVariables(this.flags);
+
       let test_options = {};
       test_options["wait_time"] = this.flags.waittime;
       test_options["testlevel"] = this.flags.testlevel;

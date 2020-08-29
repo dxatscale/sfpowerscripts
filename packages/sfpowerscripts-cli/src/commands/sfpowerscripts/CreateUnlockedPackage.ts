@@ -6,6 +6,8 @@ import {isNullOrUndefined} from "util";
 import {exec} from "shelljs";
 const fs = require("fs-extra");
 const path = require("path");
+import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
+const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -58,6 +60,8 @@ export default class CreateUnlockedPackage extends SfdxCommand {
 
   public async run(){
     try {
+      loadSfpowerscriptsVariables(this.flags);
+
       const sfdx_package: string = this.flags.package;
       const version_number: string = this.flags.versionnumber;
       const project_directory: string = this.flags.projectdir;

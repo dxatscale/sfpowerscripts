@@ -4,7 +4,8 @@ import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages, SfdxError } from '@salesforce/core';
 import { isNullOrUndefined } from 'util';
 const fs = require('fs');
-
+import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
+const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -18,10 +19,10 @@ export default class DeploySource extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:DeploySource -u scratchorg --sourcedir force-app -c\n` +
-  `Output variable:\n` +
-  `sfpowerkit_deploysource_id\n` +
-  `<refname_sfpowerkit_deploysource_id`
+    `$ sfdx sfpowerscripts:DeploySource -u scratchorg --sourcedir force-app -c\n`,
+    `Output variable:`,
+    `sfpowerkit_deploysource_id`,
+    `<refname_sfpowerkit_deploysource_id`
   ];
 
 
@@ -47,75 +48,69 @@ export default class DeploySource extends SfdxCommand {
 
   public async run(){
     try {
+      loadSfpowerscriptsVariables(this.flags);
+
       console.log("SFPowerScript.. Deploy Source to Org");
 
-        const target_org: string = this.flags.targetorg;
-        const source_directory: string = this.flags.sourcedir;
-        let project_directory: string = this.flags.projectdir;
-
-        // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
-
-
-        let deploySourceToOrgImpl: DeploySourceToOrgImpl;
-        let mdapi_options = {};
-
-        mdapi_options["wait_time"] = this.flags.waititme;
-        mdapi_options["checkonly"] = this.flags.checkonly;
-
-
-        // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled",true));
-
-        if(mdapi_options["checkonly"])
-          mdapi_options["validation_ignore"]= this.flags.validationignore;
-
-        mdapi_options["testlevel"] = this.flags.testlevel;
-
-        if (mdapi_options["testlevel"] == "RunSpecifiedTests")
-          mdapi_options["specified_tests"] = this.flags.specifiedtests;
-        if (mdapi_options["testlevel"] == "RunApexTestSuite")
-          mdapi_options["apextestsuite"] = this.flags.apextestsuite;
-
-        mdapi_options["ignore_warnings"]=this.flags.ignorewarnings;
-        mdapi_options["ignore_errors"]=this.flags.ignoreerrors;
-
-
-        let isToBreakBuildIfEmpty= this.flags.istobreakbuildifempty;
+      const target_org: string = this.flags.targetorg;
+      const source_directory: string = this.flags.sourcedir;
+      let project_directory: string = this.flags.projectdir;
 
 
 
-          deploySourceToOrgImpl = new DeploySourceToOrgImpl(
-          target_org,
-          project_directory,
-          source_directory,
-          mdapi_options,
-          isToBreakBuildIfEmpty
-        );
+      let deploySourceToOrgImpl: DeploySourceToOrgImpl;
+      let mdapi_options = {};
 
-        let result: DeploySourceResult= await deploySourceToOrgImpl.exec();
+      mdapi_options["wait_time"] = this.flags.waititme;
+      mdapi_options["checkonly"] = this.flags.checkonly;
 
-        if (!isNullOrUndefined(result.deploy_id)) {
-          if (!isNullOrUndefined(this.flags.refname)) {
-            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerkit_deploysource_id=${result.deploy_id}\n`, {flag:'a'});
-          } else {
-            fs.writeFileSync('.env', `sfpowerkit_deploysource_id=${result.deploy_id}\n`, {flag:'a'});
-          }
-        }
 
-        if (!result.result) {
-          console.error(result.message);
-          throw new SfdxError(`Validation/Deployment with Job ID ${result.deploy_id} failed`);
+
+      if(mdapi_options["checkonly"])
+        mdapi_options["validation_ignore"]= this.flags.validationignore;
+
+      mdapi_options["testlevel"] = this.flags.testlevel;
+
+      if (mdapi_options["testlevel"] == "RunSpecifiedTests")
+        mdapi_options["specified_tests"] = this.flags.specifiedtests;
+      if (mdapi_options["testlevel"] == "RunApexTestSuite")
+        mdapi_options["apextestsuite"] = this.flags.apextestsuite;
+
+      mdapi_options["ignore_warnings"]=this.flags.ignorewarnings;
+      mdapi_options["ignore_errors"]=this.flags.ignoreerrors;
+
+
+      let isToBreakBuildIfEmpty= this.flags.istobreakbuildifempty;
+
+
+
+      deploySourceToOrgImpl = new DeploySourceToOrgImpl(
+        target_org,
+        project_directory,
+        source_directory,
+        mdapi_options,
+        isToBreakBuildIfEmpty
+      );
+
+      let result: DeploySourceResult= await deploySourceToOrgImpl.exec();
+
+      if (!isNullOrUndefined(result.deploy_id)) {
+        if (!isNullOrUndefined(this.flags.refname)) {
+          fs.writeFileSync('.env', `${this.flags.refname}_sfpowerkit_deploysource_id=${result.deploy_id}\n`, {flag:'a'});
         } else {
-          console.log(result.message);
+          fs.writeFileSync('.env', `sfpowerkit_deploysource_id=${result.deploy_id}\n`, {flag:'a'});
         }
+      }
 
-        // AppInsights.trackTask("sfpowerscript-deploysourcetoorg-task");
-        // AppInsights.trackTaskEvent("sfpowerscript-deploysourcetoorg-task","source_deployed");
+      if (!result.result) {
+        console.error(result.message);
+        throw new SfdxError(`Validation/Deployment with Job ID ${result.deploy_id} failed`);
+      } else {
+        console.log(result.message);
+      }
+
     } catch(err) {
-      // AppInsights.trackExcepiton("sfpowerscript-deploysourcetoorg-task",err);
-
       console.log(err);
-
-      // Fail the task when an error occurs
       process.exit(1);
     }
   }
