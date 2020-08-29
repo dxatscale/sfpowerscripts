@@ -14,6 +14,7 @@ export default function loadSfpowerscriptsVariables(flags): void {
             ) {
                 console.log(`Substituting ${flags[flag]} with ${process.env[sfpowerscripts_variable]}`);
                 flags[flag] = process.env[sfpowerscripts_variable];
+                break;
             }
         }
     }
