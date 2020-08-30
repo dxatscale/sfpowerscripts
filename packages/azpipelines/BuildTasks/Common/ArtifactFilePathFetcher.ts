@@ -40,7 +40,7 @@ export default class ArtifactFilePathFetcher {
     //Newest Artifact Format..v3
     let packageMetadataFilePath;
 
-    if (!isNullOrUndefined(sfdx_package)) {
+    if (isNullOrUndefined(sfdx_package)) {
       packageMetadataFilePath = path.join(
         artifactDirectory,
         artifactAlias,
