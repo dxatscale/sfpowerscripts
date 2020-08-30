@@ -77,8 +77,8 @@ export default class ManifestHelpers {
         }
       }
     } else if (
-      manifest.manifestAsJSON["Package"]["types"]["name"] == "ApexClass" ||
-      manifest.manifestAsJSON["Package"]["types"]["name"] == "ApexTrigger"
+      manifest["Package"]["types"]["name"] == "ApexClass" ||
+      manifest["Package"]["types"]["name"] == "ApexTrigger"
     ) {
       isApexFound = true;
     }
@@ -95,8 +95,8 @@ export default class ManifestHelpers {
         }
       }
     } else if (
-      manifest.manifestAsJSON["Package"]["types"]["name"] == "ApexClass" ||
-      manifest.manifestAsJSON["Package"]["types"]["name"] == "ApexTrigger"
+      manifest["Package"]["types"]["name"] == "ApexClass" ||
+      manifest["Package"]["types"]["name"] == "ApexTrigger"
     ) {
       isProfilesFound = true;
     }

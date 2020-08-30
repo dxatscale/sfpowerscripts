@@ -48,8 +48,6 @@ async function run() {
     artifactFilePathFetcher.missingArtifactDecider(artifactFilePaths.packageMetadataFilePath,skip_on_missing_artifact);
 
 
-
-
     let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
       fs.readFileSync(artifactFilePaths.packageMetadataFilePath).toString()
     );
