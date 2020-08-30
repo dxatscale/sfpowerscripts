@@ -29,11 +29,15 @@ export default class CreateSourcePackageImpl {
     let startTime = Date.now();
 
     //Get Package Descriptor
-    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+    let packageDescriptor,packageDirectory:string;
+    if(!isNullOrUndefined(this.sfdx_package))
+    {
+     packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
       this.projectDirectory,
       this.sfdx_package
     );
-    let packageDirectory: string = packageDescriptor["path"];
+    packageDirectory = packageDescriptor["path"];
+    }
 
 
     //Generate Destructive Manifest
@@ -91,7 +95,7 @@ export default class CreateSourcePackageImpl {
       this.projectDirectory,
       this.sfdx_package,
       packageDirectory,
-      destructiveChanges.destructiveChangesPath
+      isNullOrUndefined(destructiveChanges)?undefined:destructiveChanges.destructiveChangesPath
     );
 
     this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;

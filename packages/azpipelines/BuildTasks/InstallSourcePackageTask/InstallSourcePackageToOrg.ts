@@ -78,10 +78,20 @@ async function run() {
       return;
     }
 
-    let sourceDirectory =   ManifestHelpers.getSFDXPackageDescriptor(
+    let sourceDirectory;
+    if(!isNullOrUndefined(sfdx_package))
+    {
+     sourceDirectory =   ManifestHelpers.getSFDXPackageDescriptor(
       artifactFilePaths.sourceDirectoryPath,
       sfdx_package
     )["path"];
+    }
+    else
+    {
+      sourceDirectory =   ManifestHelpers.getDefaultSFDXPackageDescriptor(
+        artifactFilePaths.sourceDirectoryPath
+      )["path"];
+    }
 
     console.log("Path for the project",sourceDirectory)
     if (!isNullOrUndefined(subdirectory)) {

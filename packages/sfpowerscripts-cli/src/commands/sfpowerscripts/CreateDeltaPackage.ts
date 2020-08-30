@@ -152,7 +152,7 @@ export default class CreateDeltaPackage extends SfdxCommand {
       );
 
 
-      console.log(packageMetadata.sourceDir);
+    
 
       //Generate Artifact
       let artifact= ArtifactGenerator.generateArtifact(sfdx_package,packageMetadata.sourceDir,artifactDirectory,packageMetadata); 

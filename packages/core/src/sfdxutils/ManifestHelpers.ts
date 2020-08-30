@@ -26,7 +26,29 @@ export default class ManifestHelpers {
           sfdxPackageDescriptor = pkg;
         }
       });
+    } 
+
+    if (isNullOrUndefined(packageDirectory))
+      throw new Error("Package or package directory not exist");
+    else return sfdxPackageDescriptor;
+  }
+
+
+  public static getDefaultSFDXPackageDescriptor(
+    projectDirectory: string
+  ): { any } {
+    let packageDirectory: string;
+    let sfdxPackageDescriptor: any;
+
+    let projectConfig: string;
+    if (!isNullOrUndefined(projectDirectory)) {
+      projectConfig = path.join(projectDirectory, "sfdx-project.json");
     } else {
+      projectConfig = "sfdx-project.json";
+    }
+
+    let projectJson = JSON.parse(fs.readFileSync(projectConfig, "utf8"));
+
       //Return the default package directory
       projectJson["packageDirectories"].forEach((pkg) => {
         if (pkg["default"] == true) {
@@ -35,11 +57,7 @@ export default class ManifestHelpers {
         }
       });
       return sfdxPackageDescriptor;
-    }
-
-    if (isNullOrUndefined(packageDirectory))
-      throw new Error("Package or package directory not exist");
-    else return sfdxPackageDescriptor;
+    
   }
 
   public static cleanupMPDFromManifest(
@@ -64,6 +82,7 @@ export default class ManifestHelpers {
     }
     else
     {
+      console.log("here...")
       let i = sfdxManifest["packageDirectories"].length;
       while (i--) {
         if (!fs. existsSync(sfdxManifest["packageDirectories"][i]["path"])) {
@@ -72,6 +91,7 @@ export default class ManifestHelpers {
       }
     }
 
+    console.log("here...",sfdxManifest);
     sfdxManifest["packageDirectories"][0]["default"] = true; //add default = true
     return sfdxManifest;
   }
