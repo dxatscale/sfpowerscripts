@@ -82,7 +82,6 @@ export default class ManifestHelpers {
     }
     else
     {
-      console.log("here...")
       let i = sfdxManifest["packageDirectories"].length;
       while (i--) {
         if (!fs. existsSync(sfdxManifest["packageDirectories"][i]["path"])) {
@@ -90,8 +89,6 @@ export default class ManifestHelpers {
         }
       }
     }
-
-    console.log("here...",sfdxManifest);
     sfdxManifest["packageDirectories"][0]["default"] = true; //add default = true
     return sfdxManifest;
   }

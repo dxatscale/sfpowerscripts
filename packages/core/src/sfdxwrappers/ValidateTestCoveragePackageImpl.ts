@@ -6,19 +6,14 @@ export default class ValidateTestCoveragePackageImpl {
   public constructor(private target_org: string, private required_coverage: number, private package_version_id:string) {}
 
   public async exec(command: string): Promise<void> {
-    let result = child_process.execSync(command, {
+    let output = child_process.execSync(command, {
       encoding: "utf8"
-
     });
+    let result = JSON.parse(output);
+    if( Number(result.result.coverage) < this.required_coverage)
+     throw new Error(`Package Code Coverage is currently at ${result.result.coverage}, which is less than the required coverage ${ this.required_coverage} `);
 
-    let resultAsJSON = JSON.parse(result);
-
-    console.log(resultAsJSON);
-
-    if( Number(resultAsJSON.result.coverage) < this.required_coverage)
-     throw new Error(`Package Code Coverage is currently at ${resultAsJSON.result.coverage}, which is less than the required coverage ${ this.required_coverage} `);
-
-    console.log(`Package Code Coverage is currently at ${resultAsJSON.result.coverage}`);
+    console.log(`Package Code Coverage is currently at ${result.result.coverage}`);
   }
 
   public async buildExecCommand(): Promise<string> {

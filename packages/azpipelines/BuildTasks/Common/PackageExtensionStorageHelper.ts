@@ -108,6 +108,6 @@ export async function getExtensionName(
     extensionName = "sfpowerscripts";
   }
 
-  console.log(`Found Sfpowerscripts version ${extensionName}`);
+  console.log(`Found sfpowerscripts version ${extensionName}`);
   return extensionName;
 }

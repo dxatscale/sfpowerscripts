@@ -7,13 +7,16 @@ import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/OrgDetails"
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
 import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManagementApi";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
-import ArtifactFilePathFetcher  from "../Common/ArtifactFilePathFetcher";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ManifestHelpers"
-import { getExtensionName,fetchPackageArtifactFromStorage,updatePackageDeploymentDetails } from "../Common/PackageExtensionStorageHelper";
+import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ManifestHelpers";
+import {
+  getExtensionName,
+  fetchPackageArtifactFromStorage,
+  updatePackageDeploymentDetails,
+} from "../Common/PackageExtensionStorageHelper";
 
 const fs = require("fs");
 const path = require("path");
-
 
 async function run() {
   try {
@@ -41,22 +44,33 @@ async function run() {
     let extensionName = await getExtensionName(extensionManagementApi);
 
     //Fetch Artifact
-    let artifactFilePathFetcher = new ArtifactFilePathFetcher(sfdx_package,artifact,package_installedfrom);
-   
+    let artifactFilePathFetcher = new ArtifactFilePathFetcher(
+      sfdx_package,
+      artifact,
+      package_installedfrom
+    );
+
     let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
-    console.log("##[command]Artifact Paths",JSON.stringify(artifactFilePaths))
-    artifactFilePathFetcher.missingArtifactDecider(artifactFilePaths.packageMetadataFilePath,skip_on_missing_artifact);
+    console.log("##[debug]Artifact Paths", JSON.stringify(artifactFilePaths));
+    artifactFilePathFetcher.missingArtifactDecider(
+      artifactFilePaths.packageMetadataFilePath,
+      skip_on_missing_artifact
+    );
 
+    let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
+      fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8")
+    );
 
-    let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8"));
-    
-    console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
-      if(key=="payload")
-        return undefined;
-      else
-        return value;
-   }));
-    console.log("Package Artifact Location", artifactFilePaths.sourceDirectoryPath);
+    console.log(
+      "##[command]Package Metadata:" +
+        JSON.stringify(
+          packageMetadataFromArtifact,
+          (key: string, value: any) => {
+            if (key == "payload") return undefined;
+            else return value;
+          }
+        )
+    );
 
     let packageMetadataFromStorage = await fetchPackageArtifactFromStorage(
       packageMetadataFromArtifact,
@@ -64,7 +78,8 @@ async function run() {
       extensionName
     );
 
-    if ( skip_if_package_installed &&
+    if (
+      skip_if_package_installed &&
       checkPackageIsInstalled(
         packageMetadataFromStorage,
         target_org,
@@ -79,27 +94,30 @@ async function run() {
     }
 
     let sourceDirectory;
-    if(!isNullOrUndefined(sfdx_package))
-    {
-     sourceDirectory =   ManifestHelpers.getSFDXPackageDescriptor(
-      artifactFilePaths.sourceDirectoryPath,
-      sfdx_package
-    )["path"];
-    }
-    else
-    {
-      sourceDirectory =   ManifestHelpers.getDefaultSFDXPackageDescriptor(
+    if (!isNullOrUndefined(sfdx_package)) {
+      sourceDirectory = ManifestHelpers.getSFDXPackageDescriptor(
+        artifactFilePaths.sourceDirectoryPath,
+        sfdx_package
+      )["path"];
+    } else {
+      console.log(
+        "##[warning] No Package name passed in the input parameter, Utilizing the default package in the manifest"
+      );
+      sourceDirectory = ManifestHelpers.getDefaultSFDXPackageDescriptor(
         artifactFilePaths.sourceDirectoryPath
       )["path"];
     }
 
-    console.log("Path for the project",sourceDirectory)
+    console.log("Path for the project", sourceDirectory);
     if (!isNullOrUndefined(subdirectory)) {
       sourceDirectory = path.join(sourceDirectory, subdirectory);
     }
 
     // Apply Destructive Manifest
-    if (upgrade_type=="ApplyDestructiveChanges" && packageMetadataFromStorage.isDestructiveChangesFound) {
+    if (
+      upgrade_type == "ApplyDestructiveChanges" &&
+      packageMetadataFromStorage.isDestructiveChangesFound
+    ) {
       try {
         console.log(
           "Attempt to delete components mentioned in destructive manifest"
@@ -122,14 +140,10 @@ async function run() {
       }
     }
 
-
     //Apply Reconcile if Profiles are found
 
-    
-
-
     //Construct Deploy Command
-    let deploymentOptions = await  generateDeploymentOptions(
+    let deploymentOptions = await generateDeploymentOptions(
       wait_time,
       packageMetadataFromStorage.apextestsuite,
       target_org
@@ -217,8 +231,6 @@ async function generateDeploymentOptions(
   return mdapi_options;
 }
 
-
-
 function checkPackageIsInstalled(
   packageMetadata: PackageMetadata,
   target_org: string,
@@ -236,6 +248,5 @@ function checkPackageIsInstalled(
   }
   return false;
 }
-
 
 run();

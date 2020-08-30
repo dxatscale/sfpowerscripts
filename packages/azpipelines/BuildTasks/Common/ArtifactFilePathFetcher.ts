@@ -10,6 +10,7 @@ export default class ArtifactFilePathFetcher {
     private artiFactType: string
   ) {}
 
+
   public fetchArtifactFilePaths(): ArtifactFilePaths {
     let artiFactFilePaths: ArtifactFilePaths;
 
@@ -39,6 +40,7 @@ export default class ArtifactFilePathFetcher {
 
     //Newest Artifact Format..v3
     let packageMetadataFilePath;
+    let sourceDirectoryPath: string;
 
     if (isNullOrUndefined(sfdx_package)) {
       packageMetadataFilePath = path.join(
@@ -58,57 +60,28 @@ export default class ArtifactFilePathFetcher {
 
     //Check v3 Artifact Format Exists..
     if (fs.existsSync(packageMetadataFilePath)) {
-      console.log(
-        `Artifact format  found at the location ${packageMetadataFilePath} `
-      );
+      console.log(`Artifact found at the location ${packageMetadataFilePath} `);
 
-      let sourceDirectoryPath: string;
       if (isNullOrUndefined(sfdx_package)) {
-         sourceDirectoryPath = path.join(
+        sourceDirectoryPath = path.join(
           artifactDirectory,
           artifactAlias,
           `sfpowerscripts_artifact`,
           `source`
         );
+      } else {
+        sourceDirectoryPath = path.join(
+          artifactDirectory,
+          artifactAlias,
+          `${sfdx_package}_sfpowerscripts_artifact`,
+          `source`
+        );
       }
-      else
-      {
-       sourceDirectoryPath = path.join(
-        artifactDirectory,
-        artifactAlias,
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        `source`
-      );
-      }
-      return {
-        packageMetadataFilePath: packageMetadataFilePath,
-        sourceDirectoryPath: sourceDirectoryPath,
-      };
     }
-
-    //Check v1 metadata artifact
-    packageMetadataFilePath = path.join(
-      artifactDirectory,
-      artifactAlias,
-      "sfpowerkit_artifact",
-      `${sfdx_package}_artifact_metadata`
-    );
-
-    if (!fs.existsSync(packageMetadataFilePath)) {
-      console.log(
-        `New Artifact format not found at the location ${packageMetadataFilePath} `
-      );
-
-      console.log("Falling back to older artifact format"); //v0 Historic
-      packageMetadataFilePath = path.join(
-        artifactDirectory,
-        artifactAlias,
-        "sfpowerkit_artifact",
-        `artifact_metadata`
-      );
-    }
-
-    return { packageMetadataFilePath: packageMetadataFilePath };
+    return {
+      packageMetadataFilePath: packageMetadataFilePath,
+      sourceDirectoryPath: sourceDirectoryPath,
+    };
   }
 
   private fetchArtifactFilePathFromAzureArtifact(
@@ -117,7 +90,6 @@ export default class ArtifactFilePathFetcher {
   ): ArtifactFilePaths {
     let artifactDirectory = tl.getVariable("system.artifactsDirectory");
 
-    
     let metadataFilePath = path.join(
       artifactDirectory,
       artifactAlias,
@@ -140,33 +112,29 @@ export default class ArtifactFilePathFetcher {
   ): ArtifactFilePaths {
     let artifactDirectory = tl.getVariable("pipeline.workspace");
 
+    if (isNullOrUndefined(this.sfdx_package)) {
+      let metadataFilePath = path.join(
+        artifactDirectory,
+        `${sfdx_package}_sfpowerscripts_artifact`,
+        `artifact_metadata.json`
+      );
 
-    if(isNullOrUndefined(this.sfdx_package))
-    {
-    let metadataFilePath = path.join(
-      artifactDirectory,
-      `${sfdx_package}_sfpowerscripts_artifact`,
-      `artifact_metadata.json`
-    );
-
-    let sourceDirectoryPath: string = path.join(
-      artifactDirectory,
-      `${sfdx_package}_sfpowerscripts_artifact`,
-      `source`
-    );
-    return {
-      packageMetadataFilePath: metadataFilePath,
-      sourceDirectoryPath: sourceDirectoryPath,
-    };
-    }
-    else
-    {
+      let sourceDirectoryPath: string = path.join(
+        artifactDirectory,
+        `${sfdx_package}_sfpowerscripts_artifact`,
+        `source`
+      );
+      return {
+        packageMetadataFilePath: metadataFilePath,
+        sourceDirectoryPath: sourceDirectoryPath,
+      };
+    } else {
       let metadataFilePath = path.join(
         artifactDirectory,
         `sfpowerscripts_artifact`,
         `artifact_metadata.json`
       );
-  
+
       let sourceDirectoryPath: string = path.join(
         artifactDirectory,
         `sfpowerscripts_artifact`,
