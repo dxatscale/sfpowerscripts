@@ -56,7 +56,10 @@ export default class ManifestHelpers {
           sfdxPackageDescriptor = pkg;
         }
       });
-      return sfdxPackageDescriptor;
+      
+      if (isNullOrUndefined(packageDirectory))
+      throw new Error("Package or package directory not exist");
+    else return sfdxPackageDescriptor;
     
   }
 

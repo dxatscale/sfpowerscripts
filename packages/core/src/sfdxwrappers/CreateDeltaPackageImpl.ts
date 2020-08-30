@@ -86,10 +86,6 @@ export default class CreateDeltaPackageImpl {
         JSON.stringify(sfdxManifest)
       );
     }
-    else
-    {
-      
-    }
 
     let destructiveChanges: any;
     let isDestructiveChangesFound = false;
