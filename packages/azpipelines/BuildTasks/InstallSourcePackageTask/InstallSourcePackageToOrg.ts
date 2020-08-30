@@ -77,13 +77,8 @@ async function run() {
       return;
     }
 
-    
-    
-
-
-
     let sourceDirectory =   ManifestHelpers.getSFDXPackageDescriptor(
-      this.project_directory,
+      artifactFilePaths.sourceDirectoryPath,
       this.sfdx_package
     )["path"];
 
