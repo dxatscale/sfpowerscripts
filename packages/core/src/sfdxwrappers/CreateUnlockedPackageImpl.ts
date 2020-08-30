@@ -38,7 +38,7 @@ export default class CreateUnlockedPackageImpl {
       this.project_directory,
       packageDirectory
     );
-    this.packageArtifactMetadata.payload = mdapiPackage.manifestAsJSON;
+    this.packageArtifactMetadata.payload = mdapiPackage.manifest;
 
     let command = this.buildExecCommand();
     console.log("Package Creation Command", command);
