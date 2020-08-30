@@ -6,7 +6,6 @@ import {isNullOrUndefined} from "util";
 import {exec} from "shelljs";
 const path = require("path");
 const fs = require("fs-extra");
-const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -49,9 +48,8 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
   };
 
 
-  public async run(){
+  public async sfpowerscripts_run(){
     try {
-      this.loadSfpowerscriptsVariables(this.flags);
 
       const sfdx_package = this.flags.package;
       const projectDirectory = this.flags.projectdir;

@@ -4,7 +4,6 @@ import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 const path = require("path");
 import { isNullOrUndefined } from "util";
-const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -41,9 +40,8 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async run(){
+  public async sfpowerscripts_run(){
     try {
-      this.loadSfpowerscriptsVariables(this.flags);
 
       let test_options = {};
       test_options["wait_time"] = this.flags.waittime;

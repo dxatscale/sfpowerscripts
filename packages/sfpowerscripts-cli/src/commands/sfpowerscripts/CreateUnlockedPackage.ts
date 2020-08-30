@@ -7,7 +7,6 @@ import {isNullOrUndefined} from "util";
 import {exec} from "shelljs";
 const fs = require("fs-extra");
 const path = require("path");
-const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -58,9 +57,8 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
   };
 
 
-  public async run(){
+  public async sfpowerscripts_run(){
     try {
-      this.loadSfpowerscriptsVariables(this.flags);
 
       const sfdx_package: string = this.flags.package;
       const version_number: string = this.flags.versionnumber;

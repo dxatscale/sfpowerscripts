@@ -4,7 +4,6 @@ import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import { isNullOrUndefined } from 'util';
 const fs = require("fs");
-const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -38,9 +37,8 @@ export default class ExportSource extends SfpowerscriptsCommand {
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async run(){
+  public async sfpowerscripts_run(){
     try {
-      this.loadSfpowerscriptsVariables(this.flags);
 
       console.log("SFPowerScript.. Export Source from an  Org");
 

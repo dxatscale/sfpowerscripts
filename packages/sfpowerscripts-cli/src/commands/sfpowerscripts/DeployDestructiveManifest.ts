@@ -4,7 +4,6 @@ import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages, SfdxError } from '@salesforce/core';
 const fs = require("fs");
 const path = require("path");
-const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -51,9 +50,8 @@ export default class DeployDestructiveManifest extends SfpowerscriptsCommand {
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;
 
-    public async run() {
+    public async sfpowerscripts_run() {
         try {
-            this.loadSfpowerscriptsVariables(this.flags);
 
             console.log("SFPowerScript.. Deploy Destructive Manifest to Org");
 

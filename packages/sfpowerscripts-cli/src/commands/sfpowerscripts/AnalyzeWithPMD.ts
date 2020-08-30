@@ -7,7 +7,6 @@ import {isNullOrUndefined, isNull} from 'util';
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -44,9 +43,8 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
   };
 
 
-  public async run(){
+  public async sfpowerscripts_run(){
     try {
-      this.loadSfpowerscriptsVariables(this.flags);
 
       console.log("Test.. PMD");
 

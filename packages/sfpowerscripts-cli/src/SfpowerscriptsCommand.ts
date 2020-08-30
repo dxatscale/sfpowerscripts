@@ -1,4 +1,5 @@
 import { SfdxCommand } from "@salesforce/command";
+import { OutputFlags } from "@oclif/parser";
 
 export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
@@ -15,11 +16,28 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     ];
 
     /**
+     * @description command run code goes here
+     */
+    abstract sfpowerscripts_run(): Promise<any>;
+
+    /**
+     * @description entry point of all commands
+     */
+    async run(): Promise<any> {
+        this.loadSfpowerscriptsVariables(this.flags);
+
+        // Execute command run code
+        await this.sfpowerscripts_run();
+    }
+
+    /**
      * @description substitutes CLI inputs, that match the variable dictionary, with
      * the corresponding environment variable
      * @param flags
      */
-    protected loadSfpowerscriptsVariables(flags): void {
+    private loadSfpowerscriptsVariables(flags: OutputFlags<any>): void {
+        const dotenv = require("dotenv").config();
+
         for (let flag in flags ) {
             for ( let sfpowerscripts_variable of this.sfpowerscripts_variable_dictionary ) {
                 if (

@@ -4,7 +4,6 @@ import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 const fs = require("fs");
 const path = require("path");
-const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -42,9 +41,8 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async run(){
+  public async sfpowerscripts_run(){
    try {
-      this.loadSfpowerscriptsVariables(this.flags);
 
       const envname: string = this.flags.envname;
       const sfdx_package: string = this.flags.package;
