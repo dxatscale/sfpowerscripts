@@ -61,12 +61,25 @@ export default class ArtifactFilePathFetcher {
       console.log(
         `Artifact format  found at the location ${packageMetadataFilePath} `
       );
-      let sourceDirectoryPath: string = path.join(
+
+      let sourceDirectoryPath: string;
+      if (isNullOrUndefined(sfdx_package)) {
+         sourceDirectoryPath = path.join(
+          artifactDirectory,
+          artifactAlias,
+          `sfpowerscripts_artifact`,
+          `source`
+        );
+      }
+      else
+      {
+       sourceDirectoryPath = path.join(
         artifactDirectory,
         artifactAlias,
         `${sfdx_package}_sfpowerscripts_artifact`,
         `source`
       );
+      }
       return {
         packageMetadataFilePath: packageMetadataFilePath,
         sourceDirectoryPath: sourceDirectoryPath,

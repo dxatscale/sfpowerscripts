@@ -42,8 +42,13 @@ async function run() {
 
     //Fetch Artifact
     let artifactFilePathFetcher = new ArtifactFilePathFetcher(sfdx_package,artifact,package_installedfrom);
+   
     let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
+    console.log("##[command]Artifact Paths",JSON.stringify(artifactFilePaths))
     artifactFilePathFetcher.missingArtifactDecider(artifactFilePaths.packageMetadataFilePath,skip_on_missing_artifact);
+
+
+
 
     let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
       fs.readFileSync(artifactFilePaths.packageMetadataFilePath).toString()
