@@ -14,10 +14,13 @@ The script is then invocable as `source readVars` from the command-line, which w
 
 If you're using a Docker image as part of your build process, you could also `COPY` the script into the image and link it to `$PATH`.
 
-### Usage example 
+### Usage example
 
 ```
 $ sfdx sfpowerscripts:CreateDeltaPackage -n mypackage -r 61635fb -t 3cf01b9 -v 1.2.10 -b
 $ source readVars
+
+Do something with ${sfpowerscripts_delta_package_path}...
+
 $ sfdx sfpowerscripts:DeploySource -u scratchorg --sourcedir ${sfpowerscripts_delta_package_path} -c
 ```

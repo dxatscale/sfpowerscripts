@@ -33,11 +33,12 @@ EXAMPLE
 ## Output variables
 Many of the commands listed below will output variables which may be consumed as flag inputs in subsequent commands. Simply pass the **variable name** to the command, and it will be substituted with the corresponding value, at runtime.  
 
+Eg.
 ```
   $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> --versionnumber <refname>_sfpowerscripts_incremented_project_version
 ```
 
-The following output variables are supported:
+The following output variables are currently supported:
 * sfpowerscripts_incremented_project_version
 * sfpowerscripts_artifact_directory
 * sfpowerscripts_artifact_metadata_directory
