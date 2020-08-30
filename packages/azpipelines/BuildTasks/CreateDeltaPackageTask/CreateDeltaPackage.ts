@@ -73,6 +73,8 @@ async function run() {
    }));
 
    
+   //Switch to delta
+   packageMetadata.package_type="delta";
    let artifact= ArtifactGenerator.generateArtifact(sfdx_package,packageMetadata.sourceDir,tl.getVariable("agent.tempDirectory"),packageMetadata); 
    if(!isNullOrUndefined(sfdx_package))
     tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);

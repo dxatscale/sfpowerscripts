@@ -54,7 +54,7 @@ async function run() {
            return value;
      }));
 
-
+    
 
     //Create Location
 
@@ -114,22 +114,6 @@ async function run() {
       if(!isNullOrUndefined(artifactFilePaths.sourceDirectoryPath))
       {
         delta_artifact_location=artifactFilePaths.sourceDirectoryPath;
-      }
-      else {
-      //For Backward Compatibility, packageName could be null when upgraded
-       delta_artifact_location = isNullOrUndefined(sfdx_package)
-        ? path.join(
-            artifact_directory,
-            artifact,
-            "sfpowerscripts_delta_package"
-          )
-        : path.join(
-            artifact_directory,
-            artifact,
-            `${sfdx_package}_sfpowerscripts_delta_package`
-          );
-
-      tl.debug(`Delta Directory is at ${delta_artifact_location}`);
       }
 
       tl.debug("Copying Files to a source directory");
