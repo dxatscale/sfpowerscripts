@@ -1,9 +1,9 @@
 import TriggerApexTestImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TriggerApexTestImpl';
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 const path = require("path");
 import { isNullOrUndefined } from "util";
-import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
 const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
@@ -13,7 +13,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'trigger_apex_test');
 
-export default class TriggerApexTest extends SfdxCommand {
+export default class TriggerApexTest extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -43,7 +43,7 @@ export default class TriggerApexTest extends SfdxCommand {
 
   public async run(){
     try {
-      loadSfpowerscriptsVariables(this.flags);
+      this.loadSfpowerscriptsVariables(this.flags);
 
       let test_options = {};
       test_options["wait_time"] = this.flags.waittime;

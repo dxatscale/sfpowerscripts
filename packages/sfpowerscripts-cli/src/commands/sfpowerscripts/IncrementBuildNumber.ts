@@ -1,10 +1,10 @@
 import IncrementProjectBuildNumberImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl';
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import { isNullOrUndefined } from 'util';
 const fs = require("fs");
 import child_process = require("child_process");
-import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
 const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
@@ -14,7 +14,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'increment_build_number');
 
-export default class IncrementBuildNumber extends SfdxCommand {
+export default class IncrementBuildNumber extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -42,7 +42,7 @@ export default class IncrementBuildNumber extends SfdxCommand {
 
   public async run(){
     try {
-      loadSfpowerscriptsVariables(this.flags);
+      this.loadSfpowerscriptsVariables(this.flags);
 
       const segment: string = this.flags.segment;
       const sfdx_package: string = this.flags.package;

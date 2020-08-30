@@ -1,9 +1,9 @@
 import DeployDestructiveManifestToOrgImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeployDestructiveManifestToOrgImpl';
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages, SfdxError } from '@salesforce/core';
 const fs = require("fs");
 const path = require("path");
-import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
 const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
@@ -13,7 +13,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'deploy_destructive_manifest');
 
-export default class DeployDestructiveManifest extends SfdxCommand {
+export default class DeployDestructiveManifest extends SfpowerscriptsCommand {
 
     public static description = messages.getMessage('commandDescription');
 
@@ -53,7 +53,7 @@ export default class DeployDestructiveManifest extends SfdxCommand {
 
     public async run() {
         try {
-            loadSfpowerscriptsVariables(this.flags);
+            this.loadSfpowerscriptsVariables(this.flags);
 
             console.log("SFPowerScript.. Deploy Destructive Manifest to Org");
 

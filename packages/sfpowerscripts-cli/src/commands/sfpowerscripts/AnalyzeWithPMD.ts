@@ -1,4 +1,5 @@
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages, SfdxError } from '@salesforce/core';
 import AnalyzeWithPMDImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/AnalyzeWithPMDImpl';
 import xml2js = require('xml2js');
@@ -6,7 +7,6 @@ import {isNullOrUndefined, isNull} from 'util';
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
 const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
@@ -16,7 +16,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'analyze_with_PMD');
 
-export default class AnalyzeWithPMD extends SfdxCommand {
+export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -46,7 +46,7 @@ export default class AnalyzeWithPMD extends SfdxCommand {
 
   public async run(){
     try {
-      loadSfpowerscriptsVariables(this.flags);
+      this.loadSfpowerscriptsVariables(this.flags);
 
       console.log("Test.. PMD");
 

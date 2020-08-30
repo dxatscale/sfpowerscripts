@@ -1,7 +1,7 @@
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages, SfdxError } from '@salesforce/core';
 import ValidateApexCoverageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/ValidateApexCoverageImpl';
-import loadSfpowerscriptsVariables from "../../loadSfpowerscriptsVariables";
 const dotenv = require('dotenv').config();
 
 // Initialize Messages with the current plugin directory
@@ -11,7 +11,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate_apex_coverage');
 
-export default class ValidateApexCoverage extends SfdxCommand {
+export default class ValidateApexCoverage extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -31,7 +31,7 @@ export default class ValidateApexCoverage extends SfdxCommand {
 
   public async run(){
     try {
-      loadSfpowerscriptsVariables(this.flags);
+      this.loadSfpowerscriptsVariables(this.flags);
 
       const target_org: string = this.flags.targetorg;
       const test_coverage: string = this.flags.testcoverage;
