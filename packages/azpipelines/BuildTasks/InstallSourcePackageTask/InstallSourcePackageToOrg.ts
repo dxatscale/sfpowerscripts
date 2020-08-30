@@ -53,6 +53,8 @@ async function run() {
     console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
       if(key=="payload")
         return undefined;
+      else
+        return value;
    }));
     console.log("Package Artifact Location", artifactFilePaths.sourceDirectoryPath);
 
@@ -62,8 +64,7 @@ async function run() {
       extensionName
     );
 
-    if (
-      skip_if_package_installed &&
+    if ( skip_if_package_installed &&
       checkPackageIsInstalled(
         packageMetadataFromStorage,
         target_org,
@@ -79,7 +80,7 @@ async function run() {
 
     let sourceDirectory =   ManifestHelpers.getSFDXPackageDescriptor(
       artifactFilePaths.sourceDirectoryPath,
-      this.sfdx_package
+      sfdx_package
     )["path"];
 
     console.log("Path for the project",sourceDirectory)
