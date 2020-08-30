@@ -155,6 +155,8 @@ export default class CreateDeltaPackage extends SfdxCommand {
     
 
       //Generate Artifact
+        //Switch to delta
+      packageMetadata.package_type="delta";
       let artifact= ArtifactGenerator.generateArtifact(sfdx_package,packageMetadata.sourceDir,artifactDirectory,packageMetadata); 
   
 
