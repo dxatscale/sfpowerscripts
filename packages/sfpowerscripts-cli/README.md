@@ -31,35 +31,39 @@ EXAMPLE
 ```
 
 ## Output variables
-Many of the commands listed below will output variables which may be consumed as inputs to other tasks. The output variables are written to an environment file `.env` in a `key=value` format. A `readVars.sh` helper script is included as part of this package that can be used to read the values stored in the `.env` file and export them as environment variables.
+Many of the commands listed below will output variables which may be consumed as flag inputs in subsequent commands. Simply pass the **variable name** to the command, and it will be substituted with the corresponding value, at runtime.  
 
-One method of making the helper script globally invocable, is to install the NPM module as follows:
 ```
-  $ npm install -g @dxatscale/sfpowerscripts
+  $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> --versionnumber <refname>_sfpowerscripts_incremented_project_version
 ```
-The script is then invocable as `source readVars` from the command-line.
 
-If you're using a Docker image as part of your build process, you could also `COPY` the script into the image and link it to `$PATH`.
+The following output variables are supported:
+* sfpowerscripts_incremented_project_version
+* sfpowerscripts_artifact_directory
+* sfpowerscripts_artifact_metadata_directory
+* sfpowerscripts_delta_package_path
+* sfpowerscripts_package_version_id
+* sfpowerscripts_package_version_number
+* sfpowerscripts_pmd_output_path
+* sfpowerscripts_exportedsource_zip_path
+* sfpowerkit_deploysource_id
 
-The following code snippet is an example of how output variables may be used.
-```
-$ sfdx sfpowerscripts:CreateDeltaPackage -n mypackage -r 61635fb -t 3cf01b9 -v 1.2.10 -b
-$ source readVars
-$ sfdx sfpowerscripts:DeploySource -u scratchorg --sourcedir ${sfpowerscripts_delta_package_path} -c
-```
+If you require access to the variables at the shell layer, you may do so using the [readVars](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/scripts) helper script, which is included as part of this package.
+
+
 ### Reference name
 Commands that output variables optionally accept a `--refname` flag that prefixes output variables with a user-specified string. The prefix is intended as a variable namespace that allows the same command to be invoked multiple times without overwriting the output variables.
 
 ```
 $ sfdx sfpowerscripts:CreateUnlockedPackage --refname core -n core_package -b -x -v DevHub
+
+Output variables:
+core_sfpowerscripts_package_version_id=04t2v000007X2YRAA0
+
 $ sfdx sfpowerscripts:CreateUnlockedPackage --refname utility -n utility_package -b -x -v Devhub
 
-$ source readVars
-$ echo $core_sfpowerscripts_package_version_id
-  04t2v000007X2YRAA0
-$ echo $utility_sfpowerscripts_package_version_id
-  04t2v000007X2YWAA0
-
+Output variables:
+utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 ```
 
 
