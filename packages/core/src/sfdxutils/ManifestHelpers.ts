@@ -27,9 +27,13 @@ export default class ManifestHelpers {
         }
       });
     } else {
-      //Return full descriptor
-      packageDirectory = null;
-      sfdxPackageDescriptor = projectJson;
+      //Return the default package directory
+      projectJson["packageDirectories"].forEach((pkg) => {
+        if (pkg["default"] == true) {
+          packageDirectory = pkg["path"];
+          sfdxPackageDescriptor = pkg;
+        }
+      });
       return sfdxPackageDescriptor;
     }
 
@@ -58,14 +62,12 @@ export default class ManifestHelpers {
         }
       }
     }
-   
-    sfdxManifest["packageDirectories"][0]["default"]=true; //add default = true
+
+    sfdxManifest["packageDirectories"][0]["default"] = true; //add default = true
     return sfdxManifest;
   }
 
-  public static checkApexInPayload(manifest:any)
-  {
-    
+  public static checkApexInPayload(manifest: any) {
     let isApexFound = false;
     if (Array.isArray(manifest["Package"]["types"])) {
       for (let type of manifest["Package"]["types"]) {
@@ -75,20 +77,15 @@ export default class ManifestHelpers {
         }
       }
     } else if (
-      manifest.manifestAsJSON["Package"]["types"]["name"] ==
-        "ApexClass" ||
-        manifest.manifestAsJSON["Package"]["types"]["name"] ==
-        "ApexTrigger"
+      manifest.manifestAsJSON["Package"]["types"]["name"] == "ApexClass" ||
+      manifest.manifestAsJSON["Package"]["types"]["name"] == "ApexTrigger"
     ) {
       isApexFound = true;
     }
     return isApexFound;
   }
 
-
-  public static checkProfilesinPayload(manifest:any)
-  {
-    
+  public static checkProfilesinPayload(manifest: any) {
     let isProfilesFound = false;
     if (Array.isArray(manifest["Package"]["types"])) {
       for (let type of manifest["Package"]["types"]) {
@@ -98,14 +95,11 @@ export default class ManifestHelpers {
         }
       }
     } else if (
-      manifest.manifestAsJSON["Package"]["types"]["name"] ==
-        "ApexClass" ||
-        manifest.manifestAsJSON["Package"]["types"]["name"] ==
-        "ApexTrigger"
+      manifest.manifestAsJSON["Package"]["types"]["name"] == "ApexClass" ||
+      manifest.manifestAsJSON["Package"]["types"]["name"] == "ApexTrigger"
     ) {
       isProfilesFound = true;
     }
     return isProfilesFound;
   }
-
 }

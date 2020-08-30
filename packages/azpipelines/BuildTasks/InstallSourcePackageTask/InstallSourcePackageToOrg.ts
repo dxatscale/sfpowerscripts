@@ -8,6 +8,7 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/Pac
 import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManagementApi";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import ArtifactFilePathFetcher  from "../Common/ArtifactFilePathFetcher";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ManifestHelpers"
 import { getExtensionName,fetchPackageArtifactFromStorage,updatePackageDeploymentDetails } from "../Common/PackageExtensionStorageHelper";
 
 const fs = require("fs");
@@ -19,7 +20,7 @@ async function run() {
     console.log("sfpowerscrits..Install Source Package To Org");
 
     const target_org: string = tl.getInput("target_org", true);
-    const sfdx_package: string = tl.getInput("package", true);
+    const sfdx_package: string = tl.getInput("package", false);
     const package_installedfrom = tl.getInput("packageinstalledfrom", true);
     const artifact = tl.getInput("artifact", false);
     const skip_on_missing_artifact = tl.getBoolInput(
@@ -75,9 +76,19 @@ async function run() {
       return;
     }
 
-    let sourceDirectory = sfdx_package;
+    
+    
+
+
+
+    let sourceDirectory =   ManifestHelpers.getSFDXPackageDescriptor(
+      this.project_directory,
+      this.sfdx_package
+    )["path"];
+
+    console.log("Path for the project",sourceDirectory)
     if (!isNullOrUndefined(subdirectory)) {
-      sourceDirectory = path.join(sfdx_package, subdirectory);
+      sourceDirectory = path.join(sourceDirectory, subdirectory);
     }
 
     // Apply Destructive Manifest

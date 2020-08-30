@@ -1,6 +1,7 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import path = require("path");
 import fs = require("fs");
+import { isNullOrUndefined } from "util";
 
 export default class ArtifactFilePathFetcher {
   public constructor(
@@ -37,12 +38,23 @@ export default class ArtifactFilePathFetcher {
     let artifactDirectory = tl.getVariable("system.artifactsDirectory");
 
     //Newest Artifact Format..v3
-    let packageMetadataFilePath = path.join(
-      artifactDirectory,
-      artifactAlias,
-      `${sfdx_package}_sfpowerscripts_artifact`,
-      `artifact_metadata.json`
-    );
+    let packageMetadataFilePath;
+
+    if (!isNullOrUndefined(sfdx_package)) {
+      packageMetadataFilePath = path.join(
+        artifactDirectory,
+        artifactAlias,
+        `sfpowerscripts_artifact`,
+        `artifact_metadata.json`
+      );
+    } else {
+      packageMetadataFilePath = path.join(
+        artifactDirectory,
+        artifactAlias,
+        `${sfdx_package}_sfpowerscripts_artifact`,
+        `artifact_metadata.json`
+      );
+    }
 
     //Check v3 Artifact Format Exists..
     if (fs.existsSync(packageMetadataFilePath)) {
@@ -92,16 +104,17 @@ export default class ArtifactFilePathFetcher {
   ): ArtifactFilePaths {
     let artifactDirectory = tl.getVariable("system.artifactsDirectory");
 
+    
     let metadataFilePath = path.join(
       artifactDirectory,
       artifactAlias,
-      `${sfdx_package}_artifact_metadata`
+      `artifact_metadata.json`
     );
 
     let sourceDirectoryPath: string = path.join(
       artifactDirectory,
       artifactAlias,
-      `${sfdx_package}_sfpowerscripts_source_package`
+      `source`
     );
     return {
       packageMetadataFilePath: metadataFilePath,
@@ -114,6 +127,9 @@ export default class ArtifactFilePathFetcher {
   ): ArtifactFilePaths {
     let artifactDirectory = tl.getVariable("pipeline.workspace");
 
+
+    if(isNullOrUndefined(this.sfdx_package))
+    {
     let metadataFilePath = path.join(
       artifactDirectory,
       `${sfdx_package}_sfpowerscripts_artifact`,
@@ -129,6 +145,25 @@ export default class ArtifactFilePathFetcher {
       packageMetadataFilePath: metadataFilePath,
       sourceDirectoryPath: sourceDirectoryPath,
     };
+    }
+    else
+    {
+      let metadataFilePath = path.join(
+        artifactDirectory,
+        `sfpowerscripts_artifact`,
+        `artifact_metadata.json`
+      );
+  
+      let sourceDirectoryPath: string = path.join(
+        artifactDirectory,
+        `sfpowerscripts_artifact`,
+        `source`
+      );
+      return {
+        packageMetadataFilePath: metadataFilePath,
+        sourceDirectoryPath: sourceDirectoryPath,
+      };
+    }
   }
 
   public missingArtifactDecider(
