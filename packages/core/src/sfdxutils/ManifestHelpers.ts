@@ -95,8 +95,7 @@ export default class ManifestHelpers {
         }
       }
     } else if (
-      manifest["Package"]["types"]["name"] == "ApexClass" ||
-      manifest["Package"]["types"]["name"] == "ApexTrigger"
+      manifest["Package"]["types"]["name"] == "Profiles"
     ) {
       isProfilesFound = true;
     }

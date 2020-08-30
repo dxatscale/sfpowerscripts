@@ -64,9 +64,7 @@ async function run() {
         skip_on_missing_artifact
       );
 
-      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
-        fs.readFileSync(artifactFilePaths.packageMetadataFilePath).toString()
-      );
+      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8"));
 
       
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{

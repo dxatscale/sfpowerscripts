@@ -44,9 +44,7 @@ async function run() {
 
     
       //Read package metadata
-      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
-        fs.readFileSync(artifactFilePaths.packageMetadataFilePath).toString()
-      );
+      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8"));
 
       
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
