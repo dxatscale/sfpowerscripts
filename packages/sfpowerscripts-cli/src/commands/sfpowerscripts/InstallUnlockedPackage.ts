@@ -41,7 +41,7 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async sfpowerscripts_run(){
+  public async execute(){
    try {
 
       const envname: string = this.flags.envname;

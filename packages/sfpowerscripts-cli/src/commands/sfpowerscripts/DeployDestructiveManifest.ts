@@ -50,7 +50,7 @@ export default class DeployDestructiveManifest extends SfpowerscriptsCommand {
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;
 
-    public async sfpowerscripts_run() {
+    public async execute() {
         try {
 
             console.log("SFPowerScript.. Deploy Destructive Manifest to Org");

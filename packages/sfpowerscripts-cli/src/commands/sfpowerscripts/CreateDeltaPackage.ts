@@ -48,7 +48,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
   };
 
 
-  public async sfpowerscripts_run(){
+  public async execute(){
     try {
 
       const sfdx_package = this.flags.package;

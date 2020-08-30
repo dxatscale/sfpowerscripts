@@ -1,8 +1,17 @@
 import { SfdxCommand } from "@salesforce/command";
 import { OutputFlags } from "@oclif/parser";
 
+/**
+ * A base class that provides common funtionality for sfpowerscripts commands
+ *
+ * @extends SfdxCommand
+ */
 export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
+    /**
+     * List of recognised CLI inputs that are substituted with their
+     * corresponding environment variable at runtime
+     */
     private readonly sfpowerscripts_variable_dictionary: string[] = [
         'sfpowerscripts_incremented_project_version',
         'sfpowerscripts_artifact_directory',
@@ -16,23 +25,24 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     ];
 
     /**
-     * @description command run code goes here
+     * Command run code goes here
      */
-    abstract sfpowerscripts_run(): Promise<any>;
+    abstract execute(): Promise<any>;
 
     /**
-     * @description entry point of all commands
+     * Entry point of all commands
      */
     async run(): Promise<any> {
-        this.loadSfpowerscriptsVariables(this.flags);
+        await this.loadSfpowerscriptsVariables(this.flags);
 
         // Execute command run code
-        await this.sfpowerscripts_run();
+        await this.execute();
     }
 
     /**
-     * @description substitutes CLI inputs, that match the variable dictionary, with
+     * Substitutes CLI inputs, that match the variable dictionary, with
      * the corresponding environment variable
+     *
      * @param flags
      */
     private loadSfpowerscriptsVariables(flags: OutputFlags<any>): void {

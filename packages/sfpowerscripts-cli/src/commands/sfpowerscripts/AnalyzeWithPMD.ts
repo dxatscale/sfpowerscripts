@@ -43,7 +43,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
   };
 
 
-  public async sfpowerscripts_run(){
+  public async execute(){
     try {
 
       console.log("Test.. PMD");

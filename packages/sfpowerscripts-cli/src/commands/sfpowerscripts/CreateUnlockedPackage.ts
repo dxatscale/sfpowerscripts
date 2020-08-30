@@ -57,7 +57,7 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
   };
 
 
-  public async sfpowerscripts_run(){
+  public async execute(){
     try {
 
       const sfdx_package: string = this.flags.package;

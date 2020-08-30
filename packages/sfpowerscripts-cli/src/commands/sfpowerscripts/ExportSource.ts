@@ -37,7 +37,7 @@ export default class ExportSource extends SfpowerscriptsCommand {
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async sfpowerscripts_run(){
+  public async execute(){
     try {
 
       console.log("SFPowerScript.. Export Source from an  Org");

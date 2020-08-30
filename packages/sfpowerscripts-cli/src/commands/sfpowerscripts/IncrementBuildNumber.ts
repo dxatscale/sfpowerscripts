@@ -39,7 +39,7 @@ export default class IncrementBuildNumber extends SfpowerscriptsCommand {
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async sfpowerscripts_run(){
+  public async execute(){
     try {
 
       const segment: string = this.flags.segment;

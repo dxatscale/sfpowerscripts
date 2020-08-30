@@ -28,7 +28,7 @@ export default class ValidateApexCoverage extends SfpowerscriptsCommand {
   };
 
 
-  public async sfpowerscripts_run(){
+  public async execute(){
     try {
 
       const target_org: string = this.flags.targetorg;

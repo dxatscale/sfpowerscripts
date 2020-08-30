@@ -40,7 +40,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async sfpowerscripts_run(){
+  public async execute(){
     try {
 
       let test_options = {};
