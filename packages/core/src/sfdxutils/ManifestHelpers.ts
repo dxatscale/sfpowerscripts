@@ -62,6 +62,15 @@ export default class ManifestHelpers {
         }
       }
     }
+    else
+    {
+      let i = sfdxManifest["packageDirectories"].length;
+      while (i--) {
+        if (!fs. existsSync(sfdxManifest["packageDirectories"][i]["path"])) {
+            sfdxManifest["packageDirectories"].splice(i, 1);
+        }
+      }
+    }
 
     sfdxManifest["packageDirectories"][0]["default"] = true; //add default = true
     return sfdxManifest;

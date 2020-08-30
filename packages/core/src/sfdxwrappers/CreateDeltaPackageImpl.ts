@@ -76,7 +76,7 @@ export default class CreateDeltaPackageImpl {
 
 
     if(!isNullOrUndefined(this.sfdx_package)) // Temporary fix when a package is provide, make it default and 
-                                              //provide package name, so it can be converted to a source artifect
+                                        //provide package name, so it can be converted to a source artifect
     {
       let sfdxManifest = JSON.parse(fs.readFileSync(path.join(this.deltaDirectory,'sfdx-project.json'), "utf8"));
       sfdxManifest["packageDirectories"][0]["default"]=true; //add default = true
@@ -85,7 +85,10 @@ export default class CreateDeltaPackageImpl {
         path.join(this.deltaDirectory, "sfdx-project.json"),
         JSON.stringify(sfdxManifest)
       );
-
+    }
+    else
+    {
+      
     }
 
     let destructiveChanges: any;
