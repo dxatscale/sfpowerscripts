@@ -126,15 +126,11 @@ export default class CreateSourcePackage extends SfdxCommand {
 
         console.log("\nOutput variables:");
         if (!isNullOrUndefined(refname)) {
-          fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_metadata_directory=${artifact.artifactSourceDirectory}\n`, {flag:'a'});
-          console.log(`${refname}_sfpowerscripts_artifact_metadata_directory=${artifact.artifactSourceDirectory}`);
           fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_directory=${artifact.artifactDirectory}\n`, {flag:'a'});
           console.log(`${refname}_sfpowerscripts_artifact_directory=${artifact.artifactDirectory}`);
           fs.writeFileSync('.env', `${refname}_sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});
           console.log(`${refname}_sfpowerscripts_package_version_number=${version_number}`);
         } else {
-          fs.writeFileSync('.env', `sfpowerscripts_artifact_metadata_directory=${artifact.artifactSourceDirectory}\n`, {flag:'a'});
-          console.log(`sfpowerscripts_artifact_metadata_directory=${artifact.artifactSourceDirectory}`);
           fs.writeFileSync('.env', `sfpowerscripts_artifact_directory=${artifact.artifactSourceDirectory}\n`, {flag:'a'});
           console.log(`sfpowerscripts_artifact_directory=${artifact.artifactSourceDirectory}`);
           fs.writeFileSync('.env', `sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});

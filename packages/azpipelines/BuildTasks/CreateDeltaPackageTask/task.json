@@ -76,22 +76,6 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "Ignore a comma seperated list of directories that need to be ignored while a diff is generated"
-        },
-        {
-            "name": "only_diff_for",
-            "type": "string",
-            "label": "[Experimental] Generate diff only for the directories mentioned",
-            "defaultValue": "",
-            "required": false,
-            "helpMarkDown": "Generate a  comma seperated list of directories that the diff should be generated, Create a sfdx-project.json to support deployment"
-        },
-        {
-            "name": "apiversion",
-            "type": "string",
-            "label": "[Experimental] Api Version to be used if sfdx-project.json is generated",
-            "defaultValue": "",
-            "required": false,
-            "helpMarkDown": "Api version  to generated the sfdx-project.json when 'Generate Diff only for the directories mentied is used"
         }
     ],
     "OutputVariables": [
