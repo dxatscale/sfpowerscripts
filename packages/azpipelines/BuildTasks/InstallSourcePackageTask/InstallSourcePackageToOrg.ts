@@ -20,7 +20,7 @@ const path = require("path");
 
 async function run() {
   try {
-    console.log("sfpowerscrits..Install Source Package To Org");
+    console.log("sfpowerscripts.Install Source Package To Org");
 
     const target_org: string = tl.getInput("target_org", true);
     const sfdx_package: string = tl.getInput("package", false);
