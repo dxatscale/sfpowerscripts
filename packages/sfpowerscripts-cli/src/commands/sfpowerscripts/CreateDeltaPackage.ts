@@ -1,4 +1,4 @@
-import { flags, SfdxCommand } from "@salesforce/command";
+import { flags } from "@salesforce/command";
 import { Messages } from "@salesforce/core";
 import CreateDeltaPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDeltaPackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
@@ -6,6 +6,8 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/Arti
 import { isNullOrUndefined } from "util";
 import { exec } from "shelljs";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+const path = require("path");
 const fs = require("fs-extra");
 
 // Initialize Messages with the current plugin directory
@@ -18,8 +20,9 @@ const messages = Messages.loadMessages(
   "create_delta_package"
 );
 
-export default class CreateDeltaPackage extends SfdxCommand {
-  public static description = messages.getMessage("commandDescription");
+export default class CreateDeltaPackage extends SfpowerscriptsCommand {
+
+  public static description = messages.getMessage('commandDescription');
 
   public static examples = [
     `$ sfdx sfpowerscripts:CreateDeltaPackage -n <packagename> -r <61635fb> -t <3cf01b9> -v <version> -b\n`,
@@ -74,10 +77,12 @@ export default class CreateDeltaPackage extends SfdxCommand {
     }),
   };
 
-  public async run() {
+
+  public async execute(){
     try {
-      const sfdx_package:string = this.flags.package;
-      const artifactDirectory: string = this.flags.artifactdir;
+
+      const sfdx_package = this.flags.package;
+      const artifactDirectory = this.flags.artifactdir;
       const versionName: string = this.flags.versionname;
       const refname: string = this.flags.refname;
 

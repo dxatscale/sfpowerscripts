@@ -1,11 +1,12 @@
-import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl";
-import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl";
-import { flags, SfdxCommand } from "@salesforce/command";
-import { Messages } from "@salesforce/core";
-import { isNullOrUndefined } from "util";
-import { exec } from "shelljs";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ArtifactGenerator";
+import CreateUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl';
+import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import { Messages } from '@salesforce/core';
+import {isNullOrUndefined} from "util";
+import {exec} from "shelljs";
 const fs = require("fs-extra");
 
 
@@ -19,8 +20,9 @@ const messages = Messages.loadMessages(
   "create_unlocked_package"
 );
 
-export default class CreateUnlockedPackage extends SfdxCommand {
-  public static description = messages.getMessage("commandDescription");
+export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
+
+  public static description = messages.getMessage('commandDescription');
 
   public static examples = [
     `$ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
@@ -58,8 +60,10 @@ export default class CreateUnlockedPackage extends SfdxCommand {
     refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
   };
 
-  public async run() {
+
+  public async execute(){
     try {
+
       const sfdx_package: string = this.flags.package;
       const version_number: string = this.flags.versionnumber;
       const artifactDirectory: string = this.flags.artifactdir;

@@ -1,5 +1,6 @@
 import DeployDestructiveManifestToOrgImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeployDestructiveManifestToOrgImpl';
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages, SfdxError } from '@salesforce/core';
 const fs = require("fs");
 const path = require("path");
@@ -11,12 +12,12 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'deploy_destructive_manifest');
 
-export default class DeployDestructiveManifest extends SfdxCommand {
+export default class DeployDestructiveManifest extends SfpowerscriptsCommand {
 
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `sfdx sfpowerscripts:DeployDestructiveManifest -u scratchorg -m Text -t "<?xml version=\"1.0\" encoding=\"UTF-8\"?>`,
+        `$ sfdx sfpowerscripts:DeployDestructiveManifest -u scratchorg -m Text -t "<?xml version=\"1.0\" encoding=\"UTF-8\"?>`,
         `<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\"><types><members>myobject__c</members><name>CustomObject</name></types></Package>"`
     ];
 
@@ -49,8 +50,9 @@ export default class DeployDestructiveManifest extends SfdxCommand {
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;
 
-    public async run() {
+    public async execute() {
         try {
+
             console.log("SFPowerScript.. Deploy Destructive Manifest to Org");
 
             const targetOrg: string = this.flags.targetorg;
