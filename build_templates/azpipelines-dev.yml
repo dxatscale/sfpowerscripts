@@ -5,7 +5,7 @@ name: Milestone17$(Rev:.r)
 variables:
  - group: Tokens
  - name: major
-   value: 16
+   value: 17
 
  - name: minor
    value: $[counter(variables['major'], 200)]
