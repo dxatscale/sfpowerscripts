@@ -19,7 +19,7 @@
             "label": "Name of the package",
             "defaultValue": "",
             "required": false,
-            "helpMarkDown": "The name of the package, If the package directory doesnt have a package name, the default package will be used"
+            "helpMarkDown": "The name of the package in case of multiple packages,Skip if only if package is available"
         },
         {
             "name": "version_name",

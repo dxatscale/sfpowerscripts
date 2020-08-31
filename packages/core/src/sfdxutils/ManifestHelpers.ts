@@ -3,6 +3,26 @@ let fs = require("fs-extra");
 let path = require("path");
 
 export default class ManifestHelpers {
+
+  public static getSFDXPackageManifest(
+    projectDirectory: string
+  ): { any } {
+    let projectConfigJSON: string;
+    if (!isNullOrUndefined(projectDirectory)) {
+      projectConfigJSON = path.join(projectDirectory, "sfdx-project.json");
+    } else {
+      projectConfigJSON = "sfdx-project.json";
+    }
+
+    let projectConfig = JSON.parse(fs.readFileSync(projectConfigJSON, "utf8"));
+
+    if (isNullOrUndefined(projectConfig))
+      throw new Error(`sfdx-project.json doesn't exist or not reable at ${projectConfigJSON}`);
+    else return projectConfig;
+  }
+
+
+
   public static getSFDXPackageDescriptor(
     projectDirectory: string,
     sfdxPackage: string
@@ -10,17 +30,17 @@ export default class ManifestHelpers {
     let packageDirectory: string;
     let sfdxPackageDescriptor: any;
 
-    let projectConfig: string;
+    let projectConfigJSON: string;
     if (!isNullOrUndefined(projectDirectory)) {
-      projectConfig = path.join(projectDirectory, "sfdx-project.json");
+      projectConfigJSON = path.join(projectDirectory, "sfdx-project.json");
     } else {
-      projectConfig = "sfdx-project.json";
+      projectConfigJSON = "sfdx-project.json";
     }
 
-    let projectJson = JSON.parse(fs.readFileSync(projectConfig, "utf8"));
+    let projectConfig = JSON.parse(fs.readFileSync(projectConfigJSON, "utf8"));
 
     if (!isNullOrUndefined(sfdxPackage)) {
-      projectJson["packageDirectories"].forEach((pkg) => {
+      projectConfig["packageDirectories"].forEach((pkg) => {
         if (sfdxPackage == pkg["package"]) {
           packageDirectory = pkg["path"];
           sfdxPackageDescriptor = pkg;
@@ -40,17 +60,17 @@ export default class ManifestHelpers {
     let packageDirectory: string;
     let sfdxPackageDescriptor: any;
 
-    let projectConfig: string;
+    let projectConfigJSON: string;
     if (!isNullOrUndefined(projectDirectory)) {
-      projectConfig = path.join(projectDirectory, "sfdx-project.json");
+      projectConfigJSON = path.join(projectDirectory, "sfdx-project.json");
     } else {
-      projectConfig = "sfdx-project.json";
+      projectConfigJSON = "sfdx-project.json";
     }
 
-    let projectJson = JSON.parse(fs.readFileSync(projectConfig, "utf8"));
+    let projectConfig = JSON.parse(fs.readFileSync(projectConfigJSON, "utf8"));
 
       //Return the default package directory
-      projectJson["packageDirectories"].forEach((pkg) => {
+      projectConfig["packageDirectories"].forEach((pkg) => {
         if (pkg["default"] == true) {
           packageDirectory = pkg["path"];
           sfdxPackageDescriptor = pkg;

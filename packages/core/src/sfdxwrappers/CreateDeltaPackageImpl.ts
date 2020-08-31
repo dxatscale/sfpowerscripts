@@ -47,6 +47,16 @@ export default class CreateDeltaPackageImpl {
       );
       let packageDirectory: string = packageDescriptor["path"];
       this.options["only_diff_for"] = packageDirectory;
+    } else {
+      let sfdxManifest = ManifestHelpers.getSFDXPackageManifest(
+        this.projectDirectory
+      );
+      if (sfdxManifest["packageDirectories"].length > 1) {
+        throw new Error(
+          "Multiple Package Directories encountered, Please ensure each of these entries have a package "+
+          "name and the name of the package is passed on to this command"
+        );
+      }
     }
 
     //Command
@@ -74,13 +84,17 @@ export default class CreateDeltaPackageImpl {
 
     await onExit(child);
 
-
-    if(!isNullOrUndefined(this.sfdx_package)) // Temporary fix when a package is provide, make it default and 
-                                        //provide package name, so it can be converted to a source artifect
-    {
-      let sfdxManifest = JSON.parse(fs.readFileSync(path.join(this.deltaDirectory,'sfdx-project.json'), "utf8"));
-      sfdxManifest["packageDirectories"][0]["default"]=true; //add default = true
-      sfdxManifest["packageDirectories"][0]["package"]=this.sfdx_package; //add package.back
+    if (!isNullOrUndefined(this.sfdx_package)) {
+      // Temporary fix when a package is provide, make it default and
+      //provide package name, so it can be converted to a source artifect
+      let sfdxManifest = JSON.parse(
+        fs.readFileSync(
+          path.join(this.deltaDirectory, "sfdx-project.json"),
+          "utf8"
+        )
+      );
+      sfdxManifest["packageDirectories"][0]["default"] = true; //add default = true
+      sfdxManifest["packageDirectories"][0]["package"] = this.sfdx_package; //add package.back
       fs.writeFileSync(
         path.join(this.deltaDirectory, "sfdx-project.json"),
         JSON.stringify(sfdxManifest)
