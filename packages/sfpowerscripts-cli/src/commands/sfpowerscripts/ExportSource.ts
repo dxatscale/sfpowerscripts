@@ -1,5 +1,6 @@
 import ExportSourceFromAnOrgImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/ExportSourceFromAnOrgImpl';
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import { isNullOrUndefined } from 'util';
 const fs = require("fs");
@@ -11,14 +12,14 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'export_source');
 
-export default class ExportSource extends SfdxCommand {
+export default class ExportSource extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:ExportSource -u scratchorg -d metadata -x -e\n` +
-  `Output variable:\n` +
-  `sfpowerscripts_exportedsource_zip_path\n` +
+  `$ sfdx sfpowerscripts:ExportSource -u scratchorg -d metadata -x -e\n`,
+  `Output variable:`,
+  `sfpowerscripts_exportedsource_zip_path`,
   `<refname>_sfpowerscripts_exportedsource_zip_path`
   ];
 
@@ -36,20 +37,20 @@ export default class ExportSource extends SfdxCommand {
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async run(){
+  public async execute(){
     try {
+
       console.log("SFPowerScript.. Export Source from an  Org");
-  
-      // AppInsights.setupAppInsights(tl.getBoolInput("isTelemetryEnabled", true));
-  
+
+
       const target_org: string = this.flags.targetorg;
       const source_directory: string = this.flags.sourcedir;
       const filter: string = this.flags.quickfilter;
       const isManagedPackagesToBeExcluded = this.flags.ismanagedpackagestobeexcluded;
       const isUnzipEnabled = this.flags.isunzipenabled;
-  
+
       let exportSourceFromAnOrgImpl: ExportSourceFromAnOrgImpl;
-  
+
       exportSourceFromAnOrgImpl = new ExportSourceFromAnOrgImpl(
         target_org,
         source_directory,
@@ -57,9 +58,9 @@ export default class ExportSource extends SfdxCommand {
         isManagedPackagesToBeExcluded,
         isUnzipEnabled
       );
-  
+
       let zipPath = await exportSourceFromAnOrgImpl.exec();
-  
+
       if(!isUnzipEnabled) {
         if (!isNullOrUndefined(this.flags.refname)) {
           fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_exportedsource_zip_path=${zipPath}\n`, {flag:'a'});
@@ -67,15 +68,9 @@ export default class ExportSource extends SfdxCommand {
           fs.writeFileSync('.env', `sfpowerscripts_exportedsource_zip_path=${zipPath}\n`, {flag:'a'});
         }
       }
-      // AppInsights.trackTask("sfpowerscript-exportsourcefromorg-task");
-      // AppInsights.trackTaskEvent(
-      //   "sfpowerscript-exportsourcefromorg-task",
-      //   "source_exported"
-      // );
+
     } catch (err) {
-      // AppInsights.trackExcepiton("sfpowerscript-exportsourcefromorg-task", err);
       console.log(err);
-  
       process.exit(1);
     }
   }

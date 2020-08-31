@@ -1,6 +1,7 @@
 import CreateUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl';
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import {isNullOrUndefined} from "util";
 import {exec} from "shelljs";
@@ -14,7 +15,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_unlocked_package');
 
-export default class CreateUnlockedPackage extends SfdxCommand {
+export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -56,8 +57,9 @@ export default class CreateUnlockedPackage extends SfdxCommand {
   };
 
 
-  public async run(){
+  public async execute(){
     try {
+
       const sfdx_package: string = this.flags.package;
       const version_number: string = this.flags.versionnumber;
       const project_directory: string = this.flags.projectdir;

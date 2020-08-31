@@ -1,5 +1,6 @@
 import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl';
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 const fs = require("fs");
 const path = require("path");
@@ -11,13 +12,12 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_unlocked_package');
 
-export default class InstallUnlockedPackage extends SfdxCommand {
+export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:InstallUnlockedPackage -n packagename -u sandboxalias -i
-  `
+    `$ sfdx sfpowerscripts:InstallUnlockedPackage -n packagename -u sandboxalias -i`
   ];
 
 
@@ -41,8 +41,9 @@ export default class InstallUnlockedPackage extends SfdxCommand {
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async run(){
+  public async execute(){
    try {
+
       const envname: string = this.flags.envname;
       const sfdx_package: string = this.flags.package;
       let skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;

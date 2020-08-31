@@ -1,4 +1,5 @@
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages, SfdxError } from '@salesforce/core';
 import ValidateApexCoverageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/ValidateApexCoverageImpl';
 
@@ -9,13 +10,12 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate_apex_coverage');
 
-export default class ValidateApexCoverage extends SfdxCommand {
+export default class ValidateApexCoverage extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:ValidateApexCoverage -u scratchorg -t 80
-  `
+    `$ sfdx sfpowerscripts:ValidateApexCoverage -u scratchorg -t 80`
   ];
 
   protected static requiresProject = true;
@@ -28,25 +28,23 @@ export default class ValidateApexCoverage extends SfdxCommand {
   };
 
 
-  public async run(){
+  public async execute(){
     try {
 
-        const target_org: string = this.flags.targetorg;
-        const test_coverage: string = this.flags.testcoverage;
-        
-        
-        let validateApexCoverageImpl:ValidateApexCoverageImpl = new ValidateApexCoverageImpl(target_org,Number(test_coverage));
-        console.log("Generating command");
-        let command = await validateApexCoverageImpl.buildExecCommand();
-        await validateApexCoverageImpl.exec(command);
-    
-        
-    
-      } catch (err) {
-            console.log(err);
-            process.exit(1);
-      }
-    
-    
+      const target_org: string = this.flags.targetorg;
+      const test_coverage: string = this.flags.testcoverage;
+
+
+      let validateApexCoverageImpl:ValidateApexCoverageImpl = new ValidateApexCoverageImpl(target_org,Number(test_coverage));
+      console.log("Generating command");
+      let command = await validateApexCoverageImpl.buildExecCommand();
+      await validateApexCoverageImpl.exec(command);
+
+
+
+    } catch (err) {
+      console.log(err);
+      process.exit(1);
+    }
   }
 }

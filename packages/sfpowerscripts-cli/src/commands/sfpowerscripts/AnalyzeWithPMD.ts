@@ -1,4 +1,5 @@
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages, SfdxError } from '@salesforce/core';
 import AnalyzeWithPMDImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/AnalyzeWithPMDImpl';
 import xml2js = require('xml2js');
@@ -14,15 +15,15 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'analyze_with_PMD');
 
-export default class AnalyzeWithPMD extends SfdxCommand {
+export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `sfdx sfpowerscripts:AnalyzeWithPMD -b\n` +
-  `Output variable:\n` +
-  `sfpowerscripts_pmd_output_path\n` +
-  `<refname>_sfpowerscripts_pmd_output_path`
+    `$ sfdx sfpowerscripts:AnalyzeWithPMD -b\n`,
+    `Output variable:`,
+    `sfpowerscripts_pmd_output_path`,
+    `<refname>_sfpowerscripts_pmd_output_path`
   ];
 
   protected static requiresProject = true;
@@ -42,8 +43,9 @@ export default class AnalyzeWithPMD extends SfdxCommand {
   };
 
 
-  public async run(){
+  public async execute(){
     try {
+
       console.log("Test.. PMD");
 
       const project_directory = this.flags.projectdir;

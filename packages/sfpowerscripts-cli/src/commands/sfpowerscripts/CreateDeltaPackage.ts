@@ -1,4 +1,5 @@
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import CreateDeltaPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDeltaPackageImpl';
 import {isNullOrUndefined} from "util";
@@ -13,7 +14,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_delta_package');
 
-export default class CreateDeltaPackage extends SfdxCommand {
+export default class CreateDeltaPackage extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -47,8 +48,9 @@ export default class CreateDeltaPackage extends SfdxCommand {
   };
 
 
-  public async run(){
+  public async execute(){
     try {
+
       const sfdx_package = this.flags.package;
       const projectDirectory = this.flags.projectdir;
       const artifactDirectory = this.flags.artifactdir;

@@ -1,4 +1,5 @@
-import { flags, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl';
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
@@ -11,7 +12,7 @@ const path = require("path");
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_source_package');
 
-export default class CreateSourcePackage extends SfdxCommand {
+export default class CreateSourcePackage extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -46,8 +47,9 @@ export default class CreateSourcePackage extends SfdxCommand {
   };
 
 
-  public async run(){
+  public async execute(){
     try {
+
       const sfdx_package: string = this.flags.package;
       const version_number: string = this.flags.versionnumber;
       const project_directory: string = this.flags.projectdir;
