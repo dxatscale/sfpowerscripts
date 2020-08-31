@@ -27,7 +27,6 @@ export default class DeploySource extends SfpowerscriptsCommand {
 
   protected static flagsConfig = {
     targetorg: flags.string({char: 'u', description: messages.getMessage('targetOrgFlagDescription'), default: 'scratchorg'}),
-    projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
     sourcedir: flags.string({description: messages.getMessage('sourceDirectoryFlagDescription'), default: 'force-app'}),
     waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '20'}),
     checkonly: flags.boolean({char: 'c', description: messages.getMessage('checkOnlyFlagDescription')}),

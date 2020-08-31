@@ -1,169 +1,163 @@
-import { isNullOrUndefined } from "util";
-import getMDAPIPackageFromSourceDirectory from "../getMdapiPackage";
 import PackageMetadata from "../sfdxwrappers/PackageMetadata";
-import { performance } from "perf_hooks";
-let fs = require("fs-extra");
-let path = require("path");
+import SourcePackageGenerator from "../sfdxutils/SourcePackageGenerator";
+import ManifestHelpers from "../sfdxutils/ManifestHelpers";
+import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
+import { isNullOrUndefined } from "util";
+const fs = require("fs-extra");
 
 export default class CreateSourcePackageImpl {
-
-
   public constructor(
     private projectDirectory: string,
-    private sfdxPackage: string,
-    private destructiveManifestFilePath:string,
-    private packageArtifactMetadata:PackageMetadata
+    private sfdx_package: string,
+    private destructiveManifestFilePath: string,
+    private packageArtifactMetadata: PackageMetadata
   ) {}
 
   public async exec(): Promise<PackageMetadata> {
+    this.packageArtifactMetadata.package_type = "source";
+    console.log(
+      "--------------Create Source Package---------------------------"
+    );
+    console.log("Project Directory", this.projectDirectory);
+    console.log("sfdx_package", this.sfdx_package);
+    console.log(
+      "destructiveManifestFilePath",
+      this.destructiveManifestFilePath
+    );
+    console.log("packageArtifactMetadata", this.packageArtifactMetadata);
 
     let startTime = Date.now();
-    let packageDirectory: string = this.getPackageDirectory(this.projectDirectory,this.sfdxPackage);
-    console.log("Package Directory",packageDirectory);
-    let mdapiPackage = await getMDAPIPackageFromSourceDirectory(
+
+    //Get Package Descriptor
+    let packageDescriptor,packageDirectory:string;
+    if(!isNullOrUndefined(this.sfdx_package))
+    {
+     packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
       this.projectDirectory,
-      packageDirectory
+      this.sfdx_package
+    );
+    packageDirectory = packageDescriptor["path"];
+    }
+
+
+    //Generate Destructive Manifest
+    let destructiveChanges: DestructiveChanges = this.getDestructiveChanges(
+      packageDescriptor,
+      this.destructiveManifestFilePath
+    );
+    if(!isNullOrUndefined(destructiveChanges))
+    {
+    this.packageArtifactMetadata.isDestructiveChangesFound =
+      destructiveChanges.isDestructiveChangesFound;
+    this.packageArtifactMetadata.destructiveChanges =
+      destructiveChanges.destructiveChanges;
+    }
+
+    //Convert to MDAPI to get PayLoad
+    let mdapiPackage;
+    if (!isNullOrUndefined(packageDirectory)) {
+      //Check whether forceignores will result in empty directory
+      let isEmpty: boolean = MDAPIPackageGenerator.isEmptyFolder(
+        this.projectDirectory,
+        packageDirectory
+      );
+
+      if (!isEmpty) {
+        mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
+          this.projectDirectory,
+          packageDirectory
+        );
+
+        this.packageArtifactMetadata.payload = mdapiPackage.manifest;
+        this.packageArtifactMetadata.isApexFound = ManifestHelpers.checkApexInPayload(mdapiPackage.manifest);
+        this.packageArtifactMetadata.isProfilesFound = ManifestHelpers.checkProfilesinPayload(mdapiPackage.manifest);
+
+      } else {
+        console.log(
+          "---------------------WARNING! Empty aritfact encountered-------------------------------"
+        );
+        console.log(
+          "Either this folder is empty or the application of .forceignore results in an empty folder"
+        );
+        console.log("Proceeding to create an empty artifact");
+        console.log(
+          "---------------------------------------------------------------------------------------"
+        );
+      }
+    } else {
+      console.log(
+        "Proceeding with all packages.. as a particular package was not provided"
+      );
+    }
+
+    //Get Artifact Detailes
+    let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
+      this.projectDirectory,
+      this.sfdx_package,
+      packageDirectory,
+      isNullOrUndefined(destructiveChanges)?undefined:destructiveChanges.destructiveChangesPath
     );
 
-    this.packageArtifactMetadata.payload=mdapiPackage.manifestAsJSON;
-    let isApexFound=false;
-    for (let type of mdapiPackage["manifestAsJSON"]["Package"]["types"]) {
-      if (type["name"] == "ApexClass" || type["name"]=="ApexTrigger") {
-        isApexFound=true;
-        break;
-      }
-    }
-    this.packageArtifactMetadata.isApexFound=isApexFound;
-
-
-    //Get Artifact Details
-    this.generateSourcePackageArtifact(this.projectDirectory,packageDirectory);
+    this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;
 
     //Add Timestamps
     let endTime = Date.now();
-    let elapsedTime = endTime-startTime;
+    let elapsedTime = endTime - startTime;
     this.packageArtifactMetadata.creation_details = {
       creation_time: elapsedTime,
-      timestamp:Date.now()
-    }
+      timestamp: Date.now(),
+    };
     return this.packageArtifactMetadata;
   }
 
-  private generateSourcePackageArtifact(projectDirectory:string, packageDirectory: string)
-  {
-    let artifactDirectory, individualFilePath;
-    if (!isNullOrUndefined(projectDirectory)) {
-      artifactDirectory = path.join(projectDirectory, "source_package");
-      individualFilePath = projectDirectory;
-    } else {
-      artifactDirectory = "source_package";
-      individualFilePath="";
-    }
-    
-    //Create a new directory
-    fs.mkdirsSync(path.join(artifactDirectory,packageDirectory));
-    fs.writeFileSync(path.join(artifactDirectory,"sfdx-project.json"), JSON.stringify(this.cleanupMPDFromManifest(projectDirectory,this.sfdxPackage)))
-    fs.copySync(path.join(individualFilePath,".forceignore"),path.join(artifactDirectory,".forceignore"));
-
-
-    //First check if the task has a argument passed for destructive changes, as this takes precedence
-    if(!isNullOrUndefined(this.destructiveManifestFilePath))
-    {
-    fs.mkdirsSync(path.join(artifactDirectory,"destructive"));
-    fs.copySync(path.join(individualFilePath,this.destructiveManifestFilePath),path.join(artifactDirectory,"destructive","destructiveChanges.xml"));
-    }
-    else // Try reading the manifest for any
-    {
-      let destructiveManifestFromManifest=this.getDestructiveChanges(this.projectDirectory,packageDirectory);
-      if(destructiveManifestFromManifest.isDestructiveChangesFound)
-      {
-      fs.mkdirsSync(path.join(artifactDirectory,"destructive"));
-      this.packageArtifactMetadata.isDestructiveChangesFound=destructiveManifestFromManifest.destructiveChanges;
-      this.packageArtifactMetadata.destructiveChanges=destructiveManifestFromManifest.destructiveChanges;
-      fs.copySync(path.join(individualFilePath,destructiveManifestFromManifest.destructiveChangesPath),path.join(artifactDirectory,"destructive","destructiveChanges.xml"));
-      }
-    }
-    
-    fs.copySync(packageDirectory,path.join(artifactDirectory,packageDirectory));
-    
-    this.packageArtifactMetadata.sourceDir=artifactDirectory;
-  }
-
-  private getPackageDirectory(projectDirectory:string,sfdxPackage:string): any {
-    let packageDirectory: string;
-
-    let projectConfig: string;
-    if (!isNullOrUndefined(projectDirectory)) {
-      projectConfig = path.join(projectDirectory, "sfdx-project.json");
-    } else {
-      projectConfig = "sfdx-project.json";
-    }
-
-    let projectJson = JSON.parse(fs.readFileSync(projectConfig, "utf8"));
-
-    projectJson["packageDirectories"].forEach((pkg) => {
-      if (sfdxPackage == pkg["package"]) packageDirectory = pkg["path"];
-    });
-
-    if (isNullOrUndefined(packageDirectory))
-      throw new Error("Package or package directory not exist");
-    else return packageDirectory;
-  }
-
-  private getDestructiveChanges(projectDirectory:string,sfdxPackage:string): {isDestructiveChangesFound:boolean;destructiveChangesPath:string;destructiveChanges:any} {
+  private getDestructiveChanges(
+    packageDescriptor: any,
+    destructiveManifestFilePath: string
+  ): DestructiveChanges {
     let destructiveChanges: any;
-    let isDestructiveChangesFound:boolean=false;
-    let destructiveChangesPath:string;
+    let isDestructiveChangesFound: boolean = false;
+    let destructiveChangesPath: string;
 
-    let projectConfig: string;
-    if (!isNullOrUndefined(projectDirectory)) {
-      projectConfig = path.join(projectDirectory, "sfdx-project.json");
-    } else {
-      projectConfig = "sfdx-project.json";
+    if (packageDescriptor === null || packageDescriptor === undefined) {
+      return undefined;
     }
 
-    let projectJson = JSON.parse(fs.readFileSync(projectConfig, "utf8"));
-
-    projectJson["packageDirectories"].forEach((pkg) => {
-      if (sfdxPackage == pkg["package"]) 
-      {
-        if(pkg["destructiveChangePath"])
-        {
-          try
-          {
-          destructiveChangesPath=pkg["destructiveChangePath"];
-          destructiveChanges = JSON.parse(fs.readFileSync((pkg["destructiveChangePath"], "utf8")));
-          isDestructiveChangesFound=true;
-          }
-          catch(error)
-          {
-            console.warn("Unable to read destructive Changes from the path specified in sfdx-project.json, This field will be ignored!");
-          }
-        }
+    //Precedence to Value Passed in Flags
+    if (!isNullOrUndefined(destructiveManifestFilePath)) {
+      destructiveChangesPath = destructiveManifestFilePath;
+    } else {
+      if (packageDescriptor["destructiveChangePath"]) {
+        destructiveChangesPath = packageDescriptor["destructiveChangePath"];
       }
-    });
-   return {isDestructiveChangesFound:isDestructiveChangesFound,destructiveChangesPath:destructiveChangesPath,destructiveChanges:destructiveChanges};
-  }
-
-  private cleanupMPDFromManifest(projectDirectory:string,sfdxPackage:string): any {
- 
-    let projectConfig: string;
-    if (!isNullOrUndefined(projectDirectory)) {
-      projectConfig = path.join(projectDirectory, "sfdx-project.json");
-    } else {
-      projectConfig = "sfdx-project.json";
     }
 
-    let sfdxManifest = JSON.parse(fs.readFileSync(projectConfig, "utf8"));
-    let i = sfdxManifest["packageDirectories"].length
-    while (i--) {
-    if (sfdxPackage !=  sfdxManifest["packageDirectories"][i]["package"]) { 
-      sfdxManifest["packageDirectories"].splice(i, 1);
-    } 
-   }
-      return sfdxManifest;
+    try {
+      if (!isNullOrUndefined(destructiveChangesPath)) {
+        destructiveChanges = JSON.parse(
+          fs.readFileSync(destructiveChangesPath, "utf8")
+        );
+        isDestructiveChangesFound = true;
+      }
+    } catch (error) {
+      console.log(
+        "Unable to process destructive Manifest specified in the path or in the project manifest"
+      );
+      destructiveChangesPath = null;
+    }
+
+    return {
+      isDestructiveChangesFound: isDestructiveChangesFound,
+      destructiveChangesPath: destructiveChangesPath,
+      destructiveChanges: destructiveChanges,
+    };
   }
+
+
+ 
 
 }
-
-
+type DestructiveChanges = {
+  isDestructiveChangesFound: boolean;
+  destructiveChangesPath: string;
+  destructiveChanges: any;
+};

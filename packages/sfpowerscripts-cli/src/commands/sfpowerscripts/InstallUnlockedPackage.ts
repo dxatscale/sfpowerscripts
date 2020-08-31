@@ -67,8 +67,8 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
 
         package_version_id_file_path = path.join(
           artifact_directory,
-          `${sfdx_package}_artifact`,
-          `${sfdx_package}_artifact_metadata`
+          `${sfdx_package}_sfpowerscripts_artifact`,
+          `artifact_metadata.json`
         );
 
         console.log(`Checking for ${sfdx_package} Build Artifact at path ${package_version_id_file_path}`);

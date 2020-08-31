@@ -32,7 +32,6 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
    validateindividualclasscoverage: flags.boolean({char: 'c', description: messages.getMessage('validateIndividualClassCoverageFlagDescription'), default: false}),
    coveragepercent: flags.integer({char: 'p', description: messages.getMessage('coveragePercentFlagDescription'), default: 75}),
    packagetovalidate: flags.string({char: 't', description: messages.getMessage('packageToValidateFlagDescription')}),
-   projectdir: flags.directory({char: 'd', description: messages.getMessage('projectDirFlagDescription')}),
    waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '60'})
   };
 

@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 5,
+        "Major": 6,
         "Minor": 0,
-        "Patch": 9
+        "Patch": 0
     },
     "instanceNameFormat": "Create Delta Package based on two commits",
     "inputs": [
@@ -18,8 +18,8 @@
             "type": "string",
             "label": "Name of the package",
             "defaultValue": "",
-            "required": true,
-            "helpMarkDown": "The name of the package, If the project doesnt have packages, provide a name for the project without spaces"
+            "required": false,
+            "helpMarkDown": "The name of the package in case of multiple packages,Skip if only if package is available"
         },
         {
             "name": "version_name",
@@ -62,14 +62,6 @@
             "helpMarkDown": "Check this option to generate a destructive manifest to be deployed"
         },
         {
-            "name": "project_directory",
-            "type": "string",
-            "label": "Revision To",
-            "defaultValue": "",
-            "required": false,
-            "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed"
-        },
-        {
             "name": "set_build_name",
             "type": "boolean",
             "label": "Set the pipeline's build number to the the version name mentioned in the task",
@@ -84,22 +76,6 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "Ignore a comma seperated list of directories that need to be ignored while a diff is generated"
-        },
-        {
-            "name": "only_diff_for",
-            "type": "string",
-            "label": "[Experimental] Generate diff only for the directories mentioned",
-            "defaultValue": "",
-            "required": false,
-            "helpMarkDown": "Generate a  comma seperated list of directories that the diff should be generated, Create a sfdx-project.json to support deployment"
-        },
-        {
-            "name": "apiversion",
-            "type": "string",
-            "label": "[Experimental] Api Version to be used if sfdx-project.json is generated",
-            "defaultValue": "",
-            "required": false,
-            "helpMarkDown": "Api version  to generated the sfdx-project.json when 'Generate Diff only for the directories mentied is used"
         }
     ],
     "OutputVariables": [

@@ -48,7 +48,7 @@
             "name": "package",
             "type": "string",
             "label": "Name of the package to be installed",
-            "required": true,
+            "required": false,
             "helpMarkDown": "Name of the package to be installed"
         },
         {

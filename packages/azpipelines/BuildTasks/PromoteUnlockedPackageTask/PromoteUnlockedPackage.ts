@@ -1,7 +1,10 @@
 import tl = require("azure-pipelines-task-lib/task");
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
+import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
+import { isNullOrUndefined } from "util";
 var fs = require("fs");
-const path = require("path");
+
 
 async function run() {
   try {
@@ -11,51 +14,69 @@ async function run() {
     const sfdx_package: string = tl.getInput("package", true);
     const devhub_alias = tl.getInput("devhub_alias", true);
     const projectDirectory = tl.getInput("project_directory", false);
-    const artifact = tl.getInput("artifact", true);
+    const artifact = tl.getInput("artifact", false);
     const skip_on_missing_artifact = tl.getBoolInput(
       "skip_on_missing_artifact",
       false
     );
 
-    let package_version_id;
+    let package_version_id,sourceDirectory;
 
     if (package_installedfrom == "Custom") {
       package_version_id = tl.getInput("package_version_id", false);
+      sourceDirectory = projectDirectory;
     } else {
-      let package_version_id_file_path;
-
-      if (package_installedfrom == "BuildArtifact")
-        package_version_id_file_path = fetchArtifactFilePathFromBuildArtifact(
-          sfdx_package,
-          artifact
-        );
-      else if (package_installedfrom == "AzureArtifact")
-        package_version_id_file_path = fetchArtifactFilePathFromAzureArtifact(
-          sfdx_package,
-          artifact
-        );
-
-      missingArtifactDecider(
-        package_version_id_file_path,
+     
+       //Fetch Artifact
+       let artifactFilePathFetcher = new ArtifactFilePathFetcher(
+        sfdx_package,
+        artifact,
+        package_installedfrom
+      );
+      let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
+      artifactFilePathFetcher.missingArtifactDecider(
+        artifactFilePaths.packageMetadataFilePath,
         skip_on_missing_artifact
       );
 
-   //Read Package_Version_id
-     let package_metadata_json = fs
-    .readFileSync(package_version_id_file_path)
-    .toString();
 
-     let package_metadata = JSON.parse(package_metadata_json);
+      //Read package metadata
+      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8"));
 
-     package_version_id = package_metadata.package_version_id;
-    console.log(`Found Package Version Id in artifact ${package_version_id}`);
+      
+      console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
+        if(key=="payload")
+          return undefined;
+        else
+          return value;
+     }));
 
+      package_version_id = packageMetadataFromArtifact.package_version_id;
+      console.log(`Using Package Version Id ${package_version_id}`);
+
+     // Get Source Directory
+      sourceDirectory = artifactFilePaths.sourceDirectoryPath;
+
+      if(sourceDirectory==null)
+      { //Compatiblity Reasons
+
+       //Check whether projectDirectory is provided..
+       if(isNullOrUndefined(projectDirectory))
+        {
+          tl.setResult(tl.TaskResult.Failed,"Path to the project directory with sfdx-project.json is required, Either provide the parameter, or update your package creation task to make use of new updates in package artifact");
+          return;
+        }
+        else
+        {
+          sourceDirectory = projectDirectory
+        }
+      }
+
+     
     }
 
-   
-
     let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
-      projectDirectory,
+      sourceDirectory,
       package_version_id,
       devhub_alias
     );
@@ -66,84 +87,6 @@ async function run() {
   }
 }
 
-function fetchArtifactFilePathFromBuildArtifact(
-  sfdx_package: string,
-  artifact: string
-): string {
-  let artifact_directory = tl.getVariable("system.artifactsDirectory");
 
-  //Newer metadata filename
-  let package_version_id_file_path = path.join(
-    artifact_directory,
-    artifact,
-    "sfpowerkit_artifact",
-    `${sfdx_package}_artifact_metadata`
-  );
-
-  console.log(
-    `Checking for ${sfdx_package} Build Artifact at path ${package_version_id_file_path}`
-  );
-  if (!fs.existsSync(package_version_id_file_path)) {
-    console.log(
-      `New Artifact format not found at the location ${package_version_id_file_path} `
-    );
-
-    console.log("Falling back to older artifact format");
-    package_version_id_file_path = path.join(
-      artifact_directory,
-      artifact,
-      "sfpowerkit_artifact",
-      `artifact_metadata`
-    );
-  }
-
-  return package_version_id_file_path;
-}
-
-function fetchArtifactFilePathFromAzureArtifact(
-  sfdx_package: string,
-  artifact: string
-): string {
-  let artifact_directory = tl.getVariable("system.artifactsDirectory");
-
-  //Newer metadata filename
-  let package_version_id_file_path = path.join(
-    artifact_directory,
-    artifact,
-    `${sfdx_package}_artifact_metadata`
-  );
-
-  console.log(
-    `Checking for ${sfdx_package} Azure Artifact at path ${package_version_id_file_path}`
-  );
-
-  return package_version_id_file_path;
-}
-
-function missingArtifactDecider(
-  package_version_id_file_path: string,
-  skip_on_missing_artifact: boolean
-): void {
-  if (
-    !fs.existsSync(package_version_id_file_path) &&
-    !skip_on_missing_artifact
-  ) {
-    throw new Error(
-      `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
-    );
-  } else if (
-    !fs.existsSync(package_version_id_file_path) &&
-    skip_on_missing_artifact
-  ) {
-    console.log(
-      `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`
-    );
-    tl.setResult(
-      tl.TaskResult.Skipped,
-      `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`
-    );
-    process.exit(0);
-  }
-}
 
 run();

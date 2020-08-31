@@ -4,108 +4,78 @@ const path = require("path");
 import simplegit from "simple-git/promise";
 import { isNullOrUndefined } from "util";
 var shell = require("shelljs");
+import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
 
 async function run() {
   try {
+    
+
     let artifact_directory = tl.getVariable("system.artifactsDirectory");
     const artifact = tl.getInput("artifact", true);
-    const artifact_type = tl.getInput("typeOfArtifact", true);
     const artifactProvider = tl.getInput("artifactProvider", true);
-    let packageName = tl.getInput("package", false);
+    let sfdx_package = tl.getInput("package", false);
     let skip_on_missing_artifact: boolean = tl.getBoolInput("skip_on_missing_artifact",false);
 
-    let package_version_id_file_path: string;
+
     let version_control_provider: string;
     let token: string;
     let username: string;
 
     //Read Git User Endpoint
-    if (artifact_type != "delta") {
       version_control_provider = tl.getInput("versionControlProvider", true);
 
       let connection: string;
-      switch (version_control_provider) {
-        case "github":
-          connection = tl.getInput("github_connection", true);
-          break;
-        case "githubEnterprise":
-          connection = tl.getInput("github_enterprise_connection", true);
-          break;
-        case "bitbucket":
-          connection = tl.getInput("bitbucket_connection", true);
-          break;
-      }
+      let vcsAuthDetails = getVCSAuthDetails(version_control_provider, connection);
+      token=vcsAuthDetails.token;
+      username=vcsAuthDetails.username;
 
-      if (version_control_provider == "azureRepo") {
-        token = tl.getVariable("system.accessToken");
-      } else if (
-        version_control_provider == "github" ||
-        version_control_provider == "githubEnterprise"
-      ) {
-        token = tl.getEndpointAuthorizationParameter(
-          connection,
-          "AccessToken",
-          true
-        );
-      } else if (version_control_provider == "bitbucket") {
-        token = tl.getEndpointAuthorizationParameter(
-          connection,
-          "AccessToken",
-          true
-        );
-      } else if (version_control_provider == "otherGit") {
-        username = tl.getInput("username", true);
-        token = tl.getInput("password", true);
-      }
-    }
+     //Fetch Artifact
+     let artifactFilePathFetcher = new ArtifactFilePathFetcher(
+      sfdx_package,
+      artifact,
+      artifactProvider
+    );
+    let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
+    artifactFilePathFetcher.missingArtifactDecider(
+      artifactFilePaths.packageMetadataFilePath,
+      skip_on_missing_artifact
+    );
 
-    //For Backward Compatibility, packageName could be null when upgraded
-    let artifactFileNameSelector = isNullOrUndefined(packageName)
-      ? "artifact_metadata"
-      : packageName + "_artifact_metadata";
+    
+      //Read package metadata
+      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8"));
 
-    if (artifactProvider == "AzureArtifact") {
-      package_version_id_file_path = fetchArtifactFilePathFromAzureArtifact(
-        artifact_directory,
-        artifact,
-        artifactFileNameSelector
-      );
-    } else if (artifactProvider == "BuildArtifact") {
-      package_version_id_file_path = fetchArtifactFilePathFromBuildArtifact(
-        artifact_directory,
-        artifact,
-        artifactFileNameSelector
-      );
-    }
+      
+      console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
+        if(key=="payload")
+          return undefined;
+        else
+           return value;
+     }));
 
-    missingArtifactDecider(package_version_id_file_path, skip_on_missing_artifact);
-
-    let package_metadata_json = fs
-      .readFileSync(package_version_id_file_path)
-      .toString();
-
-    let package_metadata = JSON.parse(package_metadata_json);
+    
 
     //Create Location
 
     //For Backward Compatibility, packageName could be null when upgraded
-    let local_source_directory = isNullOrUndefined(packageName)
+    let local_source_directory = isNullOrUndefined(sfdx_package)
       ? path.join(artifact_directory, artifact, "source")
-      : path.join(artifact_directory, artifact, packageName, "source");
+      : path.join(artifact_directory, artifact, sfdx_package, "source");
 
     shell.mkdir("-p", local_source_directory);
 
     console.log(`Source Directory created at ${local_source_directory}`);
-    console.log(`The Package Type : ${package_metadata.package_type}`);
+
 
     if (
-      package_metadata.package_type === "source" ||
-      package_metadata.package_type === "unlocked"
+      packageMetadataFromArtifact.package_type === "source" ||
+      packageMetadataFromArtifact.package_type === "unlocked"
     ) {
       //Strinp https
       const removeHttps = (input) => input.replace(/^https?:\/\//, "");
 
-      let repository_url = removeHttps(package_metadata.repository_url);
+      let repository_url = removeHttps(packageMetadataFromArtifact.repository_url);
 
       const git = simplegit(local_source_directory);
 
@@ -131,33 +101,20 @@ async function run() {
       if (version_control_provider == "hostedAgentGit")
         await git
           .silent(false)
-          .clone(package_metadata.repository_url, local_source_directory);
+          .clone(packageMetadataFromArtifact.repository_url, local_source_directory);
       else await git.silent(false).clone(remote, local_source_directory);
 
       //Checkout the particular commit
-      await git.checkout(package_metadata.sourceVersion);
+      await git.checkout(packageMetadataFromArtifact.sourceVersion);
 
-      console.log(`Checked Out ${package_metadata.sourceVersion} sucessfully`);
-    } else if (package_metadata.package_type === "delta") {
-      //For Backward Compatibility, packageName could be null when upgraded
-      let delta_artifact_location = isNullOrUndefined(packageName)
-        ? path.join(
-            artifact_directory,
-            artifact,
-            "sfpowerscripts_delta_package"
-          )
-        : path.join(
-            artifact_directory,
-            artifact,
-            `${packageName}_sfpowerscripts_delta_package`
-          );
+      console.log(`Checked Out ${packageMetadataFromArtifact.sourceVersion} sucessfully`);
+    } else if (packageMetadataFromArtifact.package_type === "delta") {
 
-      tl.debug(`Delta Directory is at ${delta_artifact_location}`);
-
-      tl.debug("Files in Delta Location");
-      fs.readdirSync(delta_artifact_location).forEach((file) => {
-        tl.debug(file);
-      });
+      let delta_artifact_location;
+      if(!isNullOrUndefined(artifactFilePaths.sourceDirectoryPath))
+      {
+        delta_artifact_location=artifactFilePaths.sourceDirectoryPath;
+      }
 
       tl.debug("Copying Files to a source directory");
       fs.copySync(delta_artifact_location, local_source_directory, {
@@ -174,67 +131,48 @@ async function run() {
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
+
 }
 
-function fetchArtifactFilePathFromBuildArtifact(
-  artifact_directory: string,
-  artifact: string,
-  artifactFileNameSelector: string
-): string {
+function getVCSAuthDetails(version_control_provider: string, connection: string) {
 
-  let package_version_id_file_path = path.join(
-    artifact_directory,
-    artifact,
-    "sfpowerkit_artifact",
-    artifactFileNameSelector
-  );
-
-  console.log(
-    `Checking for ${artifactFileNameSelector} Build Artifact at path ${package_version_id_file_path}`
-  );
-  return package_version_id_file_path;
-}
-
-function fetchArtifactFilePathFromAzureArtifact(
-  artifact_directory: string,
-  artifact: string,
-  artifactFileNameSelector: string
-): string {
-
-  let package_version_id_file_path = path.join(
-    artifact_directory,
-    artifact,
-    artifactFileNameSelector
-  );
-
-  console.log(
-    `Checking for ${artifactFileNameSelector} Azure Artifact at path ${package_version_id_file_path}`
-  );
-  return package_version_id_file_path;
-}
-
-function missingArtifactDecider(
-  package_version_id_file_path: string,
-  skip_on_missing_artifact: boolean
-): void {
-  if (
-    !fs.existsSync(package_version_id_file_path) &&
-    !skip_on_missing_artifact
-  ) {
-    throw new Error(
-      `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
-    );
-  } else if (
-    !fs.existsSync(package_version_id_file_path) &&
-    skip_on_missing_artifact
-  ) {
-    console.log(`Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`);
-    tl.setResult(
-      tl.TaskResult.Skipped,
-      `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${skip_on_missing_artifact}`
-    );
-    process.exit(0);
+  let token,username;
+  switch (version_control_provider) {
+    case "github":
+      connection = tl.getInput("github_connection", true);
+      break;
+    case "githubEnterprise":
+      connection = tl.getInput("github_enterprise_connection", true);
+      break;
+    case "bitbucket":
+      connection = tl.getInput("bitbucket_connection", true);
+      break;
   }
+
+  if (version_control_provider == "azureRepo") {
+    token = tl.getVariable("system.accessToken");
+  }
+  else if (version_control_provider == "github" ||
+    version_control_provider == "githubEnterprise") {
+    token = tl.getEndpointAuthorizationParameter(
+      connection,
+      "AccessToken",
+      true
+    );
+  }
+  else if (version_control_provider == "bitbucket") {
+    token = tl.getEndpointAuthorizationParameter(
+      connection,
+      "AccessToken",
+      true
+    );
+  }
+  else if (version_control_provider == "otherGit") {
+    username = tl.getInput("username", true);
+    token = tl.getInput("password", true);
+  }
+  return {token, username };
 }
+
 
 run();

@@ -7,9 +7,9 @@
     "category": "Deploy",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 10,
+        "Major": 11,
         "Minor": 0,
-        "Patch": 3
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -39,6 +39,7 @@
             "options": {
                 "BuildArtifact": "Build Artifact",
                 "AzureArtifact": "Azure Artifact",
+                "PipelineArtifact":"Pipeline Artifact",
                 "Custom": "Custom"
             },
             "required": true,
@@ -58,7 +59,7 @@
             "label": "Name of the artifact (source alias ) that is attached to this release pipeline",
             "required": false,
             "helpMarkDown": "Provide the name of the artifact which is the input to this pipeline. Please note only sfpowerkit based build artifact will work with this command",
-            "visibleRule": "packageinstalledfrom = BuildArtifact || packageinstalledfrom = AzureArtifact"
+            "visibleRule": "packageinstalledfrom = BuildArtifact || packageinstalledfrom = AzureArtifact || packageinstalledfrom = PipelineArtifact"
         },
         {
             "name": "installationkey",
@@ -135,7 +136,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/InstallUnlockedPackage.js"
+            "target": "lib/InstallUnlockedPackageTask/InstallUnlockedPackage.js"
         }
     }
 }

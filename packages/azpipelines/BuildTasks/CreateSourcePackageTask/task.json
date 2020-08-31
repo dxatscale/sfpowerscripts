@@ -1,9 +1,9 @@
 {
     "id": "50de2eba-73bc-4cd6-82bc-89853925830c",
     "name": "sfpwowerscripts-createsourcepackage-task",
-    "friendlyName": "Creates a new  version of  Source Based Package",
-    "description": "Creates a new  version of  Source Based Package ,This task is part of DX@Scale/SFPowerscripts",
-    "helpMarkDown": "This task simulates a packaging experience similar to unlocking packaging, just by writing the commit id to an artifact. It is basically to help with the release pipelines",
+    "friendlyName": "Creates a new  version of  Source Package",
+    "description": "Creates a new  version of  Source Package ,This task is part of DX@Scale/SFPowerscripts",
+    "helpMarkDown": "https://dxatscale.gitbook.io/sfpowerscripts/azure-pipelines/task-specifications/packaging-tasks/create-source-based-package",
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
@@ -19,10 +19,10 @@
         {
             "name": "package",
             "type": "string",
-            "label": "Name of the package",
+            "label": "Name of the package, as mentioned in sfdx-project.json",
             "defaultValue": "",
             "required": true,
-            "helpMarkDown": "The name of the package"
+            "helpMarkDown": "The name of the package, that is mentioned in sfdx-project.json"
         },
         {
             "name": "apextestsuite",
@@ -42,7 +42,7 @@
         {
             "name": "version_number",
             "type": "string",
-            "label": "The version number of the package to be crated",
+            "label": "The version number of the package to be created",
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task"

@@ -1,12 +1,15 @@
 import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
 import { onExit } from "../OnExit";
+import PackageMetadata from "../sfdxwrappers/PackageMetadata";
+import SourcePackageGenerator from "../sfdxutils/SourcePackageGenerator";
+import ManifestHelpers from "../sfdxutils/ManifestHelpers";
+import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
 
 export default class CreateUnlockedPackageImpl {
   public constructor(
     private sfdx_package: string,
     private version_number: string,
-    private tag: string,
     private config_file_path: string,
     private installationkeybypass: boolean,
     private installationkey: string,
@@ -14,45 +17,97 @@ export default class CreateUnlockedPackageImpl {
     private devhub_alias: string,
     private wait_time: string,
     private isCoverageEnabled: boolean,
-    private isSkipValidation: boolean
+    private isSkipValidation: boolean,
+    private packageArtifactMetadata: PackageMetadata
   ) {}
 
+  public async exec(): Promise<PackageMetadata> {
+    this.packageArtifactMetadata.package_type = "unlocked";
+    let startTime = Date.now();
 
-  
-  public async exec(command: string): Promise<{packageVersionId:string,versionNumber:string, testCoverage:number,hasPassedCoverageCheck:boolean}> {
-    
-    let child=child_process.exec(command,  {cwd:this.project_directory, encoding: "utf8" },(error,stdout,stderr)=>{
-      if(error)
-         throw error;
-    });
-   
-    let output="";
-    child.stdout.on("data",data=>{console.log(  data.toString()); 
-      output+=data.toString();
+    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      this.project_directory,
+      this.sfdx_package
+    );
+
+    let packageDirectory: string = packageDescriptor["path"];
+    console.log("Package Directory", packageDirectory);
+
+    //Convert to MDAPI to get PayLoad
+    let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
+      this.project_directory,
+      packageDirectory
+    );
+    this.packageArtifactMetadata.payload = mdapiPackage.manifest;
+
+    let command = this.buildExecCommand();
+    console.log("Package Creation Command", command);
+    let child = child_process.exec(
+      command,
+      { cwd: this.project_directory, encoding: "utf8" },
+      (error, stdout, stderr) => {
+        if (error) throw error;
+      }
+    );
+
+    let output = "";
+    child.stdout.on("data", (data) => {
+      console.log(data.toString());
+      output += data.toString();
     });
 
     await onExit(child);
-    let subscriberPackageVersionId = JSON.parse(output).result.SubscriberPackageVersionId;
+    this.packageArtifactMetadata.package_version_id = JSON.parse(
+      output
+    ).result.SubscriberPackageVersionId;
 
     //Get the full details on the package
-    console.log("Fetching Version Number and Coverage details")
-    let result = child_process.execSync(this.buildInfoCommand(subscriberPackageVersionId), {
-      cwd: this.project_directory,
-      encoding: "utf8",
-    });
+    console.log("Fetching Version Number and Coverage details");
+    let pkgInfoResultAsJSON = child_process.execSync(
+      this.buildInfoCommand(this.packageArtifactMetadata.package_version_id),
+      {
+        cwd: this.project_directory,
+        encoding: "utf8",
+      }
+    );
 
-  console.log(result);
+    console.log("Package Info Fetched", pkgInfoResultAsJSON);
 
-   let resultAsJSON = JSON.parse(result);
-   let versionNumber = resultAsJSON.result[0].packageVersionNumber;
-   let testCoverage = resultAsJSON.result[0].coverage;
-   let hasPassedCoverageCheck =  resultAsJSON.result[0].HasPassedCodeCoverageCheck;
+    let pkgInfoResult = JSON.parse(pkgInfoResultAsJSON);
+    this.packageArtifactMetadata.isDependencyValidated = this.isSkipValidation;
+    this.packageArtifactMetadata.package_version_number =
+      pkgInfoResult.result[0].packageVersionNumber;
+    this.packageArtifactMetadata.test_coverage =
+      pkgInfoResult.result[0].coverage;
+    this.packageArtifactMetadata.has_passed_coverage_check =
+      pkgInfoResult.result[0].HasPassedCodeCoverageCheck;
 
-   return {packageVersionId:subscriberPackageVersionId,versionNumber:versionNumber,testCoverage:testCoverage,hasPassedCoverageCheck:hasPassedCoverageCheck}
+    //Generate Source Artifact
+    let mdapiPackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
+      this.project_directory,
+      this.sfdx_package,
+      ManifestHelpers.getSFDXPackageDescriptor(
+        this.project_directory,
+        this.sfdx_package
+      )["path"],null
+    );
 
+    this.packageArtifactMetadata.dependencies =
+      packageDescriptor["dependencies"];
+    this.packageArtifactMetadata.sourceDir = mdapiPackageArtifactDir;
+
+    //Add Timestamps
+    let endTime = Date.now();
+    let elapsedTime = endTime - startTime;
+    this.packageArtifactMetadata.creation_details = {
+      creation_time: elapsedTime,
+      timestamp: Date.now(),
+    };
+
+    return this.packageArtifactMetadata;
   }
 
-  public async buildExecCommand(): Promise<string> {
+  private buildExecCommand(): string {
     let command = `npx sfdx force:package:version:create -p ${this.sfdx_package}  -w ${this.wait_time} --definitionfile ${this.config_file_path} --json`;
 
     if (!isNullOrUndefined(this.version_number))
@@ -61,7 +116,8 @@ export default class CreateUnlockedPackageImpl {
     if (this.installationkeybypass) command += ` -x`;
     else command += ` -k ${this.installationkey}`;
 
-    if (!isNullOrUndefined(this.tag)) command += ` -t ${this.tag}`;
+    if (!isNullOrUndefined(this.packageArtifactMetadata.tag))
+      command += ` -t ${this.packageArtifactMetadata.tag}`;
 
     if (this.isCoverageEnabled) command += ` -c`;
 
@@ -72,14 +128,11 @@ export default class CreateUnlockedPackageImpl {
     return command;
   }
 
-  private buildInfoCommand(subscriberPackageVersion:string):string
-  {
+  private buildInfoCommand(subscriberPackageVersion: string): string {
     let command = `npx sfdx sfpowerkit:package:version:codecoverage -i ${subscriberPackageVersion}  --json`;
 
     command += ` -v ${this.devhub_alias}`;
 
     return command;
-
   }
-  
 }

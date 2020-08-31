@@ -1,15 +1,15 @@
 {
     "id": "a81064ca-c1cc-4ebf-892f-6299fa36b151",
     "name": "sfpwowerscripts-createunlockedpackage-task",
-    "friendlyName": "Creates a new package version of  Unlocked Package",
-    "description": "Creates a new package version ,This task is part of DXatScale/SFPowerscripts",
-    "helpMarkDown": "Creates a new package version , Utilize this task in a package build for DX Unlocked Package",
+    "friendlyName": "Creates a new package version of Unlocked Package",
+    "description": "Creates a new version of an unlocked package,This task is part of DXatScale/SFPowerscripts",
+    "helpMarkDown": "https://dxatscale.gitbook.io/sfpowerscripts/azure-pipelines/task-specifications/packaging-tasks/create-a-new-version-of-unlocked-package",
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 11,
+        "Major": 12,
         "Minor": 0,
-        "Patch": 6
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -27,7 +27,7 @@
         {
             "name": "version_number",
             "type": "string",
-            "label": "the version number of the package to be created",
+            "label": "Overide the version number of the package",
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task"

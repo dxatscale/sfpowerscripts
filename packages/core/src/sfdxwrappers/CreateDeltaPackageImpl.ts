@@ -1,40 +1,131 @@
 import child_process = require("child_process");
 import { onExit } from "../OnExit";
 import { isNullOrUndefined } from "util";
+import ManifestHelpers from "../sfdxutils/ManifestHelpers";
+const path = require("path");
+const fs = require("fs-extra");
+
+export type DeltaPackage = {
+  deltaDirectory: string;
+  isDestructiveChangesFound?: boolean;
+  destructiveChangesPath?: string;
+  destructiveChanges?: any;
+};
 
 export default class CreateDeltaPackageImpl {
+  deltaDirectory: string;
+
   public constructor(
     private projectDirectory: string,
     private sfdx_package: string,
     private revisionFrom: string,
     private revisionTo: string,
     private generateDestructiveManifest: boolean,
-    private options:any
+    private options: any
   ) {}
 
-  public async exec(command: string): Promise<void> {
+  public async exec(): Promise<DeltaPackage> {
+    if (isNullOrUndefined(this.projectDirectory)) {
+      this.deltaDirectory = isNullOrUndefined(this.sfdx_package)
+        ? "src_delta"
+        : `${this.sfdx_package}_src_delta`;
+    } else {
+      this.deltaDirectory = path.join(
+        this.projectDirectory,
+        isNullOrUndefined(this.sfdx_package)
+          ? "src_delta"
+          : `${this.sfdx_package}_src_delta`
+      );
+    }
+
+    //If package is provided, do delta only for that package
+    if (!isNullOrUndefined(this.sfdx_package)) {
+      //Get Package Descriptor
+      let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+        this.projectDirectory,
+        this.sfdx_package
+      );
+      let packageDirectory: string = packageDescriptor["path"];
+      this.options["only_diff_for"] = packageDirectory;
+    } else {
+      let sfdxManifest = ManifestHelpers.getSFDXPackageManifest(
+        this.projectDirectory
+      );
+      if (sfdxManifest["packageDirectories"].length > 1) {
+        throw new Error(
+          "Multiple Package Directories encountered, Please ensure each of these entries have a package "+
+          "name and the name of the package is passed on to this command"
+        );
+      }
+    }
+
+    //Command
+    let command = this.buildExecCommand();
+    console.log("Executing command", command);
+
     let child = child_process.exec(
       command,
-      {  maxBuffer: 1024 * 1024 * 5,
-        encoding: "utf8", cwd: this.projectDirectory },
+      {
+        maxBuffer: 1024 * 1024 * 5,
+        encoding: "utf8",
+        cwd: this.projectDirectory,
+      },
       (error, stdout, stderr) => {
         if (error) throw error;
       }
     );
 
-    child.stdout.on("data", data => {
+    child.stdout.on("data", (data) => {
       console.log(data.toString());
     });
-    child.stderr.on("data", data => {
+    child.stderr.on("data", (data) => {
       console.log(data.toString());
     });
 
     await onExit(child);
+
+    if (!isNullOrUndefined(this.sfdx_package)) {
+      // Temporary fix when a package is provide, make it default and
+      //provide package name, so it can be converted to a source artifect
+      let sfdxManifest = JSON.parse(
+        fs.readFileSync(
+          path.join(this.deltaDirectory, "sfdx-project.json"),
+          "utf8"
+        )
+      );
+      sfdxManifest["packageDirectories"][0]["default"] = true; //add default = true
+      sfdxManifest["packageDirectories"][0]["package"] = this.sfdx_package; //add package.back
+      fs.writeFileSync(
+        path.join(this.deltaDirectory, "sfdx-project.json"),
+        JSON.stringify(sfdxManifest)
+      );
+    }
+
+    let destructiveChanges: any;
+    let isDestructiveChangesFound = false;
+    let destructiveChangesPath = path.join(
+      this.deltaDirectory,
+      "destructiveChanges.xml"
+    );
+    if (fs.existsSync(destructiveChangesPath)) {
+      destructiveChanges = JSON.parse(
+        fs.readFileSync(destructiveChangesPath, "utf8")
+      );
+      isDestructiveChangesFound = true;
+    } else {
+      destructiveChangesPath = null;
+    }
+
+    return {
+      deltaDirectory: this.deltaDirectory,
+      isDestructiveChangesFound,
+      destructiveChangesPath,
+      destructiveChanges,
+    };
   }
 
-  public async buildExecCommand(): Promise<string> {
-    let command;
-    command = `npx sfdx sfpowerkit:project:diff`;
+  private buildExecCommand(): string {
+    let command = `sfdx sfpowerkit:project:diff`;
 
     if (!isNullOrUndefined(this.revisionTo))
       command += ` -t  ${this.revisionTo}`;
@@ -44,20 +135,16 @@ export default class CreateDeltaPackageImpl {
 
     if (this.generateDestructiveManifest) command += ` -x`;
 
-    command += ` -d  ${this.sfdx_package}_src_delta`;
+    command += ` -d  ${this.deltaDirectory}`;
 
+    if (!isNullOrUndefined(this.options["bypass_directories"]))
+      command += ` -b  ${this.options["bypass_directories"]}`;
 
-    if(!isNullOrUndefined(this.options['bypass_directories']))
-    command += ` -b  ${this.options['bypass_directories']}`;
+    if (!isNullOrUndefined(this.options["only_diff_for"]))
+      command += ` -p   ${this.options["only_diff_for"]}`;
 
-    if(!isNullOrUndefined(this.options['only_diff_for']))
-    command += ` -p   ${this.options['only_diff_for']}`;
-
-    if(!isNullOrUndefined(this.options['apiversion']))
-    command += ` --apiversion  ${this.options['apiversion']}`;
-
-
-
+    if (!isNullOrUndefined(this.options["apiversion"]))
+      command += ` --apiversion  ${this.options["apiversion"]}`;
 
     return command;
   }
