@@ -34,7 +34,7 @@
     "nanoid": "^2.1.11",
     "react": "~16.8.1",
     "react-dom": "~16.8.1",
-    "react-virtualized": "^9.21.2",
+    "react-virtualized": "^9.22.2",
     "sfpowerscript-installsourcepackage-task": "file:BuildTasks\\InstallSourcePackageTask",
     "sfpowerscripts-analyzewithpmd-task": "file:BuildTasks\\AnalyzeWithPMDTask",
     "sfpowerscripts-authenticateorg-task": "file:BuildTasks\\AuthenticateOrgTaskCurrent",
