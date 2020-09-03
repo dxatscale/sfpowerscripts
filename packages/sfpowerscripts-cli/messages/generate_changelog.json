@@ -1,8 +1,0 @@
-{
-    "commandDescription": "generates a changelog between two commit ID's",
-    "packageFlagDescription": "the package to generate a changelog for",
-    "manifestFlagDescription": "file path of manifest json of packages to generate changelog for",
-    "revisionFromFlagDescription": "the revision from which to base changelog",
-    "revisionToFlagDescription": "the target revision of the changelog",
-    "symbolFlagDescription": "the symbol used to limit the commits in the changelog"
-}
