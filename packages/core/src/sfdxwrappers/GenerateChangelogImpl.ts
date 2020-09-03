@@ -1,6 +1,5 @@
 import ManifestHelpers from "../sfdxutils/ManifestHelpers";
 import simplegit, { SimpleGit } from "simple-git/promise";
-import { stringify } from "querystring";
 
 /**
  * A class for generating a changelog between two commits
@@ -22,8 +21,10 @@ export default class GenerateChangelogImpl {
             this.sfdx_package
         );
 
+
+
         let options = {
-            from: `${this.revFrom}`,
+            from: this.revFrom,
             to: this.revTo,
             file: `${packageDescriptor["path"]}*`
         };
@@ -38,14 +39,16 @@ export default class GenerateChangelogImpl {
                 commits: []
             }
         };
+
+        changelog["package"].name = this.sfdx_package;
+        changelog["package"].from = this.revFrom;
+        changelog["package"].to = this.revTo;
+
         for (let commit of gitLogResult.all) {
-            changelog["package"].name = this.sfdx_package;
-            changelog["package"].from = this.revFrom;
-            changelog["package"].to = this.revTo;
             changelog["package"].commits.push(
                 {
                     date: commit.date,
-                    commitId: commit.hash,
+                    commitId: commit.hash.slice(0,8),
                     elapsedDays: "",
                     message: commit.message,
                     body: commit.body
@@ -61,9 +64,9 @@ export default class GenerateChangelogImpl {
                 for (let item of workItems) {
                     if (changelog["workItems"][item] == null) {
                         changelog["workItems"][item] = new Set<string>();
-                        changelog["workItems"][item].add(commit["commitId"]);
+                        changelog["workItems"][item].add(commit["commitId"].slice(0,8));
                     } else {
-                        changelog["workItems"][item].add(commit["commitId"]);
+                        changelog["workItems"][item].add(commit["commitId"].slice(0,8));
                     }
                 }
             }
