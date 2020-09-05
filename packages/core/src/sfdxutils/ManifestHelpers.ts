@@ -153,6 +153,11 @@ export default class ManifestHelpers {
   }
 
   public static printMetadataToDeploy(mdapiPackageManifest) {
+
+    //If Manifest is null, just return
+    if(mdapiPackageManifest===null || mdapiPackageManifest===undefined)
+        return;
+     
     let table = new Table({
       head: ["Metadata Type", "API Name"],
     });
