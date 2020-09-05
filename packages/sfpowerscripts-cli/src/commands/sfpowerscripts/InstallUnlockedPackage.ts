@@ -83,11 +83,11 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
         }
 
 
-        let package_metadata_json = fs
+        let packageMetadata = fs
           .readFileSync(package_version_id_file_path)
           .toString();
 
-        let package_metadata = JSON.parse(package_metadata_json);
+        let package_metadata = JSON.parse(packageMetadata);
         console.log("Package Metadata:");
         console.log(package_metadata);
 
@@ -111,7 +111,8 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
         options,
         wait_time,
         publish_wait_time,
-        skipIfAlreadyInstalled
+        skipIfAlreadyInstalled,
+        packageMetadata
       );
 
       await installUnlockedPackageImpl.exec();

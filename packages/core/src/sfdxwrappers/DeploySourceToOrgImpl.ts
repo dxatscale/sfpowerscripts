@@ -5,8 +5,9 @@ import {
   copyFileSync,
 } from "fs";
 import { onExit } from "../OnExit";
+import ManifestHelpers from "../sfdxutils/ManifestHelpers";
 const path = require("path");
-const Table = require("cli-table");
+
 
 export interface DeploySourceResult {
   deploy_id: string;
@@ -47,7 +48,7 @@ export default class DeploySourceToOrgImpl {
         this.source_directory
       );
       this.mdapiDir = mdapiPackage.mdapiDir;
-      this.printMetadataToDeploy(mdapiPackage.manifest);
+      ManifestHelpers.printMetadataToDeploy(mdapiPackage.manifest);
 
     try {
       if (this.deployment_options["checkonly"])
@@ -223,34 +224,7 @@ export default class DeploySourceToOrgImpl {
 
   
 
-  private printMetadataToDeploy(mdapiPackageManifest) {
-    let table = new Table({
-      head: ["Metadata Type", "API Name"],
-    });
-
-    let pushTypeMembersIntoTable = (type) => {
-      if (type["members"] instanceof Array) {
-        for (let member of type["members"]) {
-          let item = [type.name, member];
-          table.push(item);
-        }
-      } else {
-        let item = [type.name, type.members];
-        table.push(item);
-      }
-    };
-
-    if (mdapiPackageManifest["Package"]["types"] instanceof Array) {
-      for (let type of mdapiPackageManifest["Package"]["types"]) {
-        pushTypeMembersIntoTable(type);
-      }
-    } else {
-      let type = mdapiPackageManifest["Package"]["types"];
-      pushTypeMembersIntoTable(type);
-    }
-    console.log("The following metadata will be deployed:");
-    console.log(table.toString());
-  }
+  
 
 
 }
