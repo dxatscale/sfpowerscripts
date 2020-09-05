@@ -57,6 +57,7 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
       const wait_time = this.flags.waittime;
       const publish_wait_time = this.flags.publishwaittime;
       const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
+      let packageMetadata;
 
       let package_version_id;
 
@@ -83,15 +84,14 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
         }
 
 
-        let packageMetadata = fs
+
+         packageMetadata = JSON.parse(fs
           .readFileSync(package_version_id_file_path)
-          .toString();
-
-        let package_metadata = JSON.parse(packageMetadata);
+          .toString());
         console.log("Package Metadata:");
-        console.log(package_metadata);
+        console.log(packageMetadata);
 
-        package_version_id = package_metadata.package_version_id;
+        package_version_id = packageMetadata.package_version_id;
         console.log(`Using Package Version Id ${package_version_id}`);
 
       } else {
