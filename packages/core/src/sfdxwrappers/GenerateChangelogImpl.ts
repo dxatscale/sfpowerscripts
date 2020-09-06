@@ -1,5 +1,6 @@
 import ManifestHelpers from "../sfdxutils/ManifestHelpers";
-import simplegit, { SimpleGit } from "simple-git/promise";
+import simplegit, { SimpleGit, LogOptions } from "simple-git/promise";
+import { ListLogSummary } from "simple-git/typings/response";
 
 /**
  * A class for generating a changelog between two commits
@@ -21,12 +22,12 @@ export default class GenerateChangelogImpl {
             this.sfdx_package
         );
 
-        let options = {
+        let options: LogOptions = {
             from: this.revFrom,
             to: this.revTo,
             file: `${packageDescriptor["path"]}*`
         };
-        const gitLogResult = await git.log(options);
+        const gitLogResult: ListLogSummary = await git.log(options);
 
         let changelog: Changelog = {
             workItems: {},
@@ -56,9 +57,9 @@ export default class GenerateChangelogImpl {
         }
 
         // Loop over changelog commits and find work items
-        let workItemFilter = RegExp(this.workItemFilter, 'gi');
+        let workItemFilter: RegExp = RegExp(this.workItemFilter, 'gi');
         for (let commit of changelog["package"].commits) {
-            let workItems = commit["body"].match(workItemFilter) || commit["message"].match(workItemFilter);
+            let workItems: RegExpMatchArray = commit["body"].match(workItemFilter) || commit["message"].match(workItemFilter);
             if (workItems) {
                 for (let item of workItems) {
                     if (changelog["workItems"][item] == null) {
