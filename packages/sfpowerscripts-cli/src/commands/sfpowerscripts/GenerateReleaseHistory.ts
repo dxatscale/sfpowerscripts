@@ -47,7 +47,7 @@ export default class GenerateReleaseHistory extends SfdxCommand {
 
         const workItemFilter: string = manifest["workItemFilter"];
         const workItemURL: string = manifest["workItemURL"];
-        const tagCommitIdMap = {};
+        const releaseTags: string[][] = []; // Store the tag names in each release, for markdown generation
 
         this.ux.startSpinner(`Generating release history, as per manifest ${this.flags.manifest}`);
         // Generate changelog between releases defined in manifest
@@ -59,6 +59,8 @@ export default class GenerateReleaseHistory extends SfdxCommand {
                 "workItems": {},
                 "artifacts": []
             }
+
+            let tags: string[] = [];
 
             for (let artifact of manifest["releases"][releaseNum]["artifacts"]) {
 
@@ -73,12 +75,12 @@ export default class GenerateReleaseHistory extends SfdxCommand {
                     }
                 }
 
-
+                // Dereference the tag to get the commit that it points at
                 let revFrom: string;
                 if (artifactFromVersion != null) {
                     revFrom = await git.revparse([
                         "--short",
-                        artifactFromVersion
+                        `${artifactFromVersion}^{}`
                     ]);
                 }
 
@@ -86,16 +88,14 @@ export default class GenerateReleaseHistory extends SfdxCommand {
                 try {
                     revTo = await git.revparse([
                         "--short",
-                        artifact["version"]
+                        `${artifact["version"]}^{}`
                     ]);
-
-                    tagCommitIdMap[artifact["version"]] = revTo;
-
                 } catch(revisionError) {
                     console.log(`Unable to find revision ${artifact["version"]}`);
                     throw(revisionError);
                 }
 
+                tags.push(artifact["version"]);
 
                 // Generate changelog for single artifact between two release versions
                 let generateChangelogImpl: GenerateChangelogImpl = new GenerateChangelogImpl(
@@ -122,6 +122,8 @@ export default class GenerateReleaseHistory extends SfdxCommand {
                 nextRelease["artifacts"].push(result["package"]);
             }
 
+            releaseTags.push(tags);
+
             // Convert each work item Set to Array
             // Enables JSON stringification of work item
             for (let key in nextRelease["workItems"]) {
@@ -133,7 +135,7 @@ export default class GenerateReleaseHistory extends SfdxCommand {
 
         fs.writeFileSync(`releasechangelog.json`, JSON.stringify(releaseHistory, null, 4));
 
-        generateMarkdown(releaseHistory, workItemURL, tagCommitIdMap, limit);
+        generateMarkdown(releaseHistory, workItemURL, limit, releaseTags);
 
         this.ux.stopSpinner();
         console.log(`Successfully generated release history ${process.cwd()}/releasechangelog.md`);
@@ -144,25 +146,24 @@ export default class GenerateReleaseHistory extends SfdxCommand {
   }
 }
 
-function generateMarkdown(releaseHistory: ReleaseHistory, workItemURL: string, tagCommitIdMap, limit: number): void {
+function generateMarkdown(releaseHistory: ReleaseHistory, workItemURL: string, limit: number, releaseTags: string[][]): void {
      let payload: string = "";
 
-     let releaseNum: number;
+     let limitReleases: number;
      if (limit != null)
-        releaseNum = releaseHistory["releases"].length - limit;
+        limitReleases = releaseHistory["releases"].length - limit;
      else
-        releaseNum = 0;
+        limitReleases = 0;
 
      // Start from latest Release
-     for (let i = releaseHistory["releases"].length - 1 ; i >= releaseNum ; i-- ) {
-         let release = releaseHistory["releases"][i];
+     for (let releaseNum = releaseHistory["releases"].length - 1 ; releaseNum >= limitReleases ; releaseNum-- ) {
+         let release = releaseHistory["releases"][releaseNum];
 
          payload += `\n# ${release["name"]}\n`;
 
          payload += "## Artifacts\n";
-         for (let artifact of release["artifacts"]) {
-            //  Object.keys(tagCommitIdMap).find
-             payload += `**${artifact["name"]}**     ${tagCommitIdMap[artifact["to"]]} (${artifact["to"]})\n\n`;
+         for (let artifactNum = 0 ; artifactNum < release["artifacts"].length ; artifactNum++) {
+             payload += `**${release["artifacts"][artifactNum]["name"]}**     ${releaseTags[releaseNum][artifactNum]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
          }
 
          payload += "## Work Items\n";
