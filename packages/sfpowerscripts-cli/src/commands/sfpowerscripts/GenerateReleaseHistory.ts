@@ -1,11 +1,10 @@
 import { flags, SfdxCommand } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import GenerateChangelogImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/GenerateChangelogImpl";
-import { exec } from "shelljs";
 const fs = require("fs-extra");
 import {isNullOrUndefined} from "util"
 import simplegit, { SimpleGit } from "simple-git/promise";
+const url = require('url');
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'generate_release_history');
@@ -15,34 +14,47 @@ export default class GenerateReleaseHistory extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-
+    `$ sfdx sfpowerscripts:GenerateReleaseHistory -x path/to/manifest.json`
   ];
 
+  protected static requiresProject = true;
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
   protected static flagsConfig = {
-    manifest: flags.directory({required: true, char: 'x', description: messages.getMessage('manifestFlagDescription')}),
+    manifest: flags.directory({
+        required: true,
+        char: 'x',
+        description: messages.getMessage('manifestFlagDescription')
+    }),
+    limit: flags.integer({
+        description: messages.getMessage('limitFlagDescription')
+    })
   };
 
 
   public async run(){
     try {
+        const limit: number = this.flags.limit;
+
         let git: SimpleGit = simplegit();
 
         const manifest = JSON.parse(fs.readFileSync(this.flags.manifest, "utf8"));
 
-        const masterChangelog = {
-            "releases": []
+        const releaseHistory: ReleaseHistory = {
+            releases: []
         };
 
-        // Invoke Impl for each release
         const workItemFilter: string = manifest["workItemFilter"];
+        const workItemURL: string = manifest["workItemURL"];
         const tagCommitIdMap = {};
 
+        this.ux.startSpinner(`Generating release history, as per manifest ${this.flags.manifest}`);
+        // Generate changelog between releases defined in manifest
         for (let releaseNum = 0 ; releaseNum < manifest["releases"].length ; releaseNum++ ) {
 
-            let nextRelease = {
+            // Initalise release object
+            let nextRelease: release = {
                 "name": manifest["releases"][releaseNum]["name"],
                 "workItems": {},
                 "artifacts": []
@@ -50,10 +62,9 @@ export default class GenerateReleaseHistory extends SfdxCommand {
 
             for (let artifact of manifest["releases"][releaseNum]["artifacts"]) {
 
-
                 let artifactFromVersion: string;
-
                 if (releaseNum > 0) {
+                    // Get artifact version from previous release
                     for (let prevReleaseArtifact of manifest["releases"][releaseNum-1]["artifacts"]) {
                         if (prevReleaseArtifact["name"] === artifact["name"]) {
                             artifactFromVersion = prevReleaseArtifact["version"];
@@ -61,21 +72,32 @@ export default class GenerateReleaseHistory extends SfdxCommand {
                         }
                     }
                 }
+
+
                 let revFrom: string;
                 if (artifactFromVersion != null) {
                     revFrom = await git.revparse([
                         "--short",
                         artifactFromVersion
                     ]);
-                    tagCommitIdMap[revFrom] = artifactFromVersion;
                 }
 
-                let revTo: string = await git.revparse([
-                    "--short",
-                    artifact["version"]
-                ]);
-                tagCommitIdMap[revTo] = artifact["version"];
+                let revTo: string;
+                try {
+                    revTo = await git.revparse([
+                        "--short",
+                        artifact["version"]
+                    ]);
 
+                    tagCommitIdMap[artifact["version"]] = revTo;
+
+                } catch(revisionError) {
+                    console.log(`Unable to find revision ${artifact["version"]}`);
+                    throw(revisionError);
+                }
+
+
+                // Generate changelog for single artifact between two release versions
                 let generateChangelogImpl: GenerateChangelogImpl = new GenerateChangelogImpl(
                     artifact["name"],
                     revFrom,
@@ -85,6 +107,8 @@ export default class GenerateReleaseHistory extends SfdxCommand {
 
                 let result = await generateChangelogImpl.exec();
 
+                // Add work items to the release
+                // Work items and their commits are deduped
                 for (let item in result["workItems"]) {
                     if (nextRelease["workItems"][item] == null) {
                         nextRelease["workItems"][item] = result["workItems"][item];
@@ -96,52 +120,57 @@ export default class GenerateReleaseHistory extends SfdxCommand {
                 }
 
                 nextRelease["artifacts"].push(result["package"]);
-
-
-
             }
 
-            // Convert back to array for JSON stringify
+            // Convert each work item Set to Array
+            // Enables JSON stringification of work item
             for (let key in nextRelease["workItems"]) {
                 nextRelease["workItems"][key] = Array.from(nextRelease["workItems"][key]);
             }
 
-            masterChangelog["releases"].push(nextRelease);
-
+            releaseHistory["releases"].push(nextRelease);
         }
 
-        fs.writeFileSync(`releasechangelog.json`, JSON.stringify(masterChangelog, null, 4));
+        fs.writeFileSync(`releasechangelog.json`, JSON.stringify(releaseHistory, null, 4));
 
-        generateMarkdown(masterChangelog, manifest, tagCommitIdMap);
+        generateMarkdown(releaseHistory, workItemURL, tagCommitIdMap, limit);
 
+        this.ux.stopSpinner();
+        console.log(`Successfully generated release history ${process.cwd()}/releasechangelog.md`);
     } catch (err) {
-      console.log(err);
-      // Fail the task when an error occurs
+      console.log(err.message);
       process.exit(1);
     }
   }
 }
 
-function generateMarkdown(masterChangelog, manifest, tagCommitIdMap): void {
-     // Generate Markdown
+function generateMarkdown(releaseHistory: ReleaseHistory, workItemURL: string, tagCommitIdMap, limit: number): void {
      let payload: string = "";
-     for (let i = masterChangelog["releases"].length - 1 ; i >= 0 ; i-- ) {
-         let release = masterChangelog["releases"][i];
+
+     let releaseNum: number;
+     if (limit != null)
+        releaseNum = releaseHistory["releases"].length - limit;
+     else
+        releaseNum = 0;
+
+     // Start from latest Release
+     for (let i = releaseHistory["releases"].length - 1 ; i >= releaseNum ; i-- ) {
+         let release = releaseHistory["releases"][i];
+
          payload += `\n# ${release["name"]}\n`;
 
          payload += "## Artifacts\n";
          for (let artifact of release["artifacts"]) {
+            //  Object.keys(tagCommitIdMap).find
              payload += `**${artifact["name"]}**     ${tagCommitIdMap[artifact["to"]]} (${artifact["to"]})\n\n`;
          }
 
          payload += "## Work Items\n";
-         for (let key in release["workItems"]) {
-             // TODO: Fix URL creation
-             let workItemURL: string;
-             if (manifest["workItemURL"] != null) {
-                 workItemURL = manifest["workItemURL"] + key
+         for (let workItem in release["workItems"]) {
+             if (workItemURL != null) {
+                 workItemURL = url.resolve(workItemURL, `/${workItem}`);
              }
-             payload += `  - [${key}](${workItemURL})\n`
+             payload += `  - [${workItem}](${workItemURL})\n`
          }
 
          payload += "\n## Commits\n";
@@ -162,4 +191,29 @@ function generateMarkdown(masterChangelog, manifest, tagCommitIdMap): void {
          }
      }
      fs.writeFileSync(`releasechangelog.md`, payload);
+}
+
+interface ReleaseHistory {
+    releases: release[]
+}
+
+type release = {
+    name: string,
+    workItems: any
+    artifacts: artifact[]
+}
+
+type artifact = {
+    name: string,
+    from: string,
+    to: string,
+    commits: commit[]
+}
+
+type commit = {
+    date: string,
+    commitId: string,
+    elapsedDays: string,
+    message: string,
+    body: string
 }
