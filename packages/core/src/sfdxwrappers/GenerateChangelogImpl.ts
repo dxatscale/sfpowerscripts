@@ -21,8 +21,6 @@ export default class GenerateChangelogImpl {
             this.sfdx_package
         );
 
-
-
         let options = {
             from: this.revFrom,
             to: this.revTo,
@@ -47,9 +45,10 @@ export default class GenerateChangelogImpl {
         for (let commit of gitLogResult.all) {
             changelog["package"].commits.push(
                 {
-                    date: commit.date,
                     commitId: commit.hash.slice(0,8),
+                    date: commit.date,
                     elapsedDays: "",
+                    author: commit.author_name,
                     message: commit.message,
                     body: commit.body
                 }
@@ -72,10 +71,6 @@ export default class GenerateChangelogImpl {
             }
         }
 
-        // Convert back to array for JSON stringify
-        // for (let key in changelog["workItems"]) {
-        //     changelog["workItems"][key] = Array.from(changelog["workItems"][key]);
-        // }
         return changelog;
     }
 
@@ -83,17 +78,17 @@ export default class GenerateChangelogImpl {
 }
 
 
-
-interface Changelog {
+export interface Changelog {
     workItems: any,
     package: {
             name: string,
             from: string,
             to: string,
             commits: {
-                    date: string,
                     commitId: string,
+                    date: string,
                     elapsedDays: string,
+                    author: string,
                     message: string,
                     body: string
             }[]

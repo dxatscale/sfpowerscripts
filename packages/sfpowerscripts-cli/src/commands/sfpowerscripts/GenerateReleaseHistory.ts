@@ -1,6 +1,6 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
-import GenerateChangelogImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/GenerateChangelogImpl";
+import GenerateChangelogImpl, { Changelog } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/GenerateChangelogImpl";
 const fs = require("fs-extra");
 import {isNullOrUndefined} from "util"
 import simplegit, { SimpleGit } from "simple-git/promise";
@@ -107,7 +107,7 @@ export default class GenerateReleaseHistory extends SfdxCommand {
                     workItemFilter
                 );
 
-                let result = await generateChangelogImpl.exec();
+                let result: Changelog = await generateChangelogImpl.exec();
 
                 // Add work items to the release
                 // Work items and their commits are deduped
@@ -181,7 +181,8 @@ function generateMarkdown(releaseHistory: ReleaseHistory, workItemURL: string, l
              payload += `\n### ${artifact["name"]}\n`;
              if (artifact["commits"].length > 0) {
                  for (let commit of artifact["commits"]) {
-                     payload += `  - ${commit.date}      ${commit.commitId}      ${commit.message}\n`;
+                     let commitDate: Date = new Date(commit.date);
+                     payload += `  - ${getDate(commitDate)}, ${getTime(commitDate)}      ${commit.commitId}      ${commit.message}\n`;
                  }
              } else if (artifact["from"] === artifact["to"]) {
                  payload += `  - Artifact version has not changed\n`
@@ -277,6 +278,23 @@ function validateManifest(manifest): void {
     }
 }
 
+function getDate(date: Date): string {
+    let day: number = date.getDate();
+    let month: number = date.getMonth();
+    let year: number = date.getFullYear();
+    let pad = (n) => n<10 ? '0'+n : n;
+
+    return pad(day) + "/" + pad(month+1) + "/" + year;
+  }
+
+function getTime(date: Date): string {
+    let hours: number = date.getHours();
+    let minutes: number = date.getMinutes();
+    let seconds: number = date.getSeconds();
+    let pad = (n) => n<10 ? '0'+n : n;
+
+    return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+}
 
 interface ReleaseHistory {
     releases: release[]
@@ -296,9 +314,10 @@ type artifact = {
 }
 
 type commit = {
-    date: string,
     commitId: string,
+    date: string,
     elapsedDays: string,
+    author: string,
     message: string,
     body: string
 }
