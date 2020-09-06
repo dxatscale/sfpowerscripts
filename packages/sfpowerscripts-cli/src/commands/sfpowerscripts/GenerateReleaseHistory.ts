@@ -4,6 +4,7 @@ import GenerateChangelogImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappe
 const fs = require("fs-extra");
 import {isNullOrUndefined} from "util"
 import simplegit, { SimpleGit } from "simple-git/promise";
+const Validator = require('jsonschema').Validator;
 const url = require('url');
 
 Messages.importMessagesDirectory(__dirname);
@@ -40,6 +41,7 @@ export default class GenerateReleaseHistory extends SfdxCommand {
         let git: SimpleGit = simplegit();
 
         const manifest = JSON.parse(fs.readFileSync(this.flags.manifest, "utf8"));
+        validateManifest(manifest);
 
         const releaseHistory: ReleaseHistory = {
             releases: []
@@ -193,6 +195,88 @@ function generateMarkdown(releaseHistory: ReleaseHistory, workItemURL: string, l
      }
      fs.writeFileSync(`releasechangelog.md`, payload);
 }
+
+function validateManifest(manifest): void {
+    let v = new Validator();
+
+    const releaseSchema = {
+        "id": "/release",
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "artifacts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "version": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "version"
+                    ]
+                },
+                "uniqueItems": true,
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "artifacts"
+        ]
+    };
+
+    const manifestSchema = {
+        "type": "object",
+        "properties": {
+            "releases": {
+                "type": "array",
+                "items": {
+                    "$ref": "/release"
+                },
+                "minItems": 1
+            },
+            "workItemFilter": {
+                "type": "string"
+            },
+            "workItemURL": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "releases",
+            "workItemFilter"
+        ]
+    };
+
+    v.addSchema(releaseSchema, '/release');
+    let validationResult = v.validate(manifest, manifestSchema);
+
+    if (validationResult.errors.length > 0) {
+        let errorMsg: string =
+            `Manifest does not meet schema requirements, ` +
+            `found ${validationResult.errors.length} validation errors:\n`;
+
+        validationResult.errors.forEach( (error, errorNum) => {
+            errorMsg += `\n${errorNum+1}. ${error.stack}`;
+            if (!isNullOrUndefined(error.instance))
+                errorMsg += `\nReceived: ${JSON.stringify(error.instance)}\n`;
+        });
+        console.log(validationResult.errors);
+        throw new Error(errorMsg);
+    }
+}
+
 
 interface ReleaseHistory {
     releases: release[]
