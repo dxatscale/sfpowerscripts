@@ -16,7 +16,7 @@ export * from "./DeploySourceResult"
 export * from "./ExportSourceFromAnOrgImpl"
 export * from "./CreateSourcePackageImpl"
 export * from "./PackageMetadata"
-export * from "./ReconcileProfileAgainstOrg"
+export * from "./ReconcileProfileAgainstOrgImpl"
 
 
 

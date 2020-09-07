@@ -2,7 +2,7 @@
     "id": "50de2eba-73bc-4cd6-82bc-89853925830c",
     "name": "sfpwowerscripts-createsourcepackage-task",
     "friendlyName": "Creates a new  version of  Source Package",
-    "description": "Creates a new  version of  Source Package ,This task is part of DX@Scale/SFPowerscripts",
+    "description": "Creates a new  version of  Source Package ,This task is part of DX@Scale/sfpowerscripts",
     "helpMarkDown": "https://dxatscale.gitbook.io/sfpowerscripts/azure-pipelines/task-specifications/packaging-tasks/create-source-based-package",
     "category": "Build",
     "author": "dxatscale@accenture.com",
@@ -35,9 +35,9 @@
         {
             "name": "destructiveManifestFilepath",
             "type": "string",
-            "label": "Path to a destructiveChanges.xml, mentioning any metadata that need to be deleted before the contents in the source package need to be installed in the org",
+            "label": "Path to a destructiveChanges.xml",
             "defaultValue": "",
-            "helpMarkDown": "The location to the xml file which contains the destructive changes, file should be named destructiveChanges.xml and should be reachable by this task"
+            "helpMarkDown": "The location to the xml file which contains the destructive changes, file should be named destructiveChanges.xml and should be accessible by this task"
         },
         {
             "name": "version_number",

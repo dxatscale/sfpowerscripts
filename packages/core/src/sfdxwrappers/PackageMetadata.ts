@@ -21,6 +21,8 @@ export default interface PackageMetadata {
     payload?:any;
     sourceDir?:string;
     dependencies?:any;
+    preDeploymentSteps?:string[];
+    postDeploymentSteps?:string[];
     creation_details?:{creation_time?:number,timestamp?:number}
     deployments?:{target_org:string,sub_directory?:string,installation_time?:number,timestamp?:number}[];
   }

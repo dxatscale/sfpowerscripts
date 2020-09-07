@@ -37,7 +37,11 @@ export default class CreateSourcePackageImpl {
       this.sfdx_package
     );
     packageDirectory = packageDescriptor["path"];
+    this.packageArtifactMetadata.preDeploymentSteps=packageDescriptor["preDeploymentSteps"]?.split(",");
+    this.packageArtifactMetadata.postDeploymentSteps=packageDescriptor["postDeploymentSteps"]?.split(",");
     }
+
+
 
 
     //Generate Destructive Manifest

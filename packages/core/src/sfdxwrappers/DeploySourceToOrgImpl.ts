@@ -57,9 +57,12 @@ export default class DeploySourceToOrgImpl {
         );
     } catch (err) {
       //Do something here
-
       console.log("Validation Ignore not found, using .forceignore");
     }
+
+    
+
+    
 
     //Get Deploy ID
     let deploy_id = "";

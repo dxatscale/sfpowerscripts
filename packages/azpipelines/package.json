@@ -35,6 +35,7 @@
     "react": "~16.8.1",
     "react-dom": "~16.8.1",
     "react-virtualized": "^9.21.2",
+    "glob": "^7.1.6",
     "sfpowerscript-installsourcepackage-task": "file:BuildTasks\\InstallSourcePackageTask",
     "sfpowerscripts-analyzewithpmd-task": "file:BuildTasks\\AnalyzeWithPMDTask",
     "sfpowerscripts-authenticateorg-task": "file:BuildTasks\\AuthenticateOrgTaskCurrent",
@@ -83,7 +84,6 @@
     "ts-loader": "~5.2.2",
     "ts-node": "^8.3.0",
     "tslint": "^5.19.0",
-    "typescript": "^3.5.0",
     "typestrict": "^1.0.2",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.1.2"
