@@ -112,7 +112,7 @@ export default class ArtifactFilePathFetcher {
   ): ArtifactFilePaths {
     let artifactDirectory = tl.getVariable("pipeline.workspace");
 
-    if (isNullOrUndefined(this.sfdx_package)) {
+    if (!isNullOrUndefined(sfdx_package)) {
       let metadataFilePath = path.join(
         artifactDirectory,
         `${sfdx_package}_sfpowerscripts_artifact`,
