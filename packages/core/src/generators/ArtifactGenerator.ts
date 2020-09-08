@@ -1,6 +1,6 @@
 import path = require("path");
 import fs = require("fs-extra");
-import PackageMetadata from "../sfdxwrappers/PackageMetadata";
+import PackageMetadata from "../PackageMetadata";
 import { isNullOrUndefined } from "util";
 import * as rimraf from "rimraf";
 

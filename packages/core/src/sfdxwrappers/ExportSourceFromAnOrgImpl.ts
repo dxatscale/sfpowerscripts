@@ -1,7 +1,7 @@
 import child_process = require("child_process");
 
-import { onExit } from "../OnExit";
-import { extract } from "../Extract";
+import { onExit } from "../utils/OnExit";
+import { extract } from "../utils/Extract";
 
 import path = require("path");
 import fs = require("fs-extra");

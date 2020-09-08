@@ -1,0 +1,19 @@
+{
+  "name": "sfpowerscripts-generatechangelog-task",
+  "description": "sfpowerscripts-generatechangelog-task",
+  "version": "1.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/accenture/sfpowerscripts.git"
+  },
+  "scripts": {
+    "version": "node ../../versionupdate.js && git add task.json",
+    "build": "rimraf lib && tsc -b"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@dxatscale/sfpowerscripts.core": "^2.0.0",
+    "azure-pipelines-task-lib": "^2.8.0"
+  }
+}

@@ -1,4 +1,4 @@
-import ManifestHelpers from "../sfdxutils/ManifestHelpers";
+import ManifestHelpers from "../manifest/ManifestHelpers";
 import simplegit, { SimpleGit, LogOptions } from "simple-git/promise";
 import { ListLogSummary } from "simple-git/typings/response";
 

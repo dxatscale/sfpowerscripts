@@ -1,7 +1,7 @@
 import tl = require("azure-pipelines-task-lib/task");
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
 import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { isNullOrUndefined } from "util";
 var fs = require("fs");
 

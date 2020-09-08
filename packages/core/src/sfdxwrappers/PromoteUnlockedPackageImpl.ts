@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import { onExit } from "../OnExit";
+import { onExit } from "../utils/OnExit";
 
 export default class PromoteUnlockedPackageImpl {
   public constructor(private  project_directory:string,private package_version_id: string, private devhub_alias: string) {}

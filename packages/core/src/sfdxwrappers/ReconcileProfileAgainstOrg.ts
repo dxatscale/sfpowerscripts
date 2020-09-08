@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import { onExit } from "../OnExit";
+import { onExit } from "../utils/OnExit";
 
 export default class ReconcileProfileAgainstOrg {
   public constructor(

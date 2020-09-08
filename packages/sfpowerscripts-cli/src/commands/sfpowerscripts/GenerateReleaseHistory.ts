@@ -1,6 +1,6 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
-import GenerateChangelogImpl, { Changelog } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/GenerateChangelogImpl";
+import GenerateChangelogImpl, { Changelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogImpl";
 const fs = require("fs-extra");
 import {isNullOrUndefined} from "util"
 import simplegit, { SimpleGit } from "simple-git/promise";

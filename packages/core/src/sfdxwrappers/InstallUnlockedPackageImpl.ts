@@ -1,6 +1,6 @@
 import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
-import { onExit } from "../OnExit";
+import { onExit } from "../utils/OnExit";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(

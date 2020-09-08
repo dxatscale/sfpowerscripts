@@ -3,12 +3,12 @@ import { isNullOrUndefined } from "util";
 import DeploySourceToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceToOrgImpl";
 import DeployDestructiveManifestToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeployDestructiveManifestToOrgImpl";
 import DeploySourceResult from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceResult";
-import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/OrgDetails";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
+import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManagementApi";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ManifestHelpers";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import {
   getExtensionName,
   fetchPackageArtifactFromStorage,

@@ -3,7 +3,7 @@ import InstallUnlockedPackageImpl, {
   PackageInstallationResult,
 } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
 import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import {
   getExtensionName,

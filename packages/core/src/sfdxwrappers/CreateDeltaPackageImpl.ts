@@ -1,7 +1,7 @@
 import child_process = require("child_process");
-import { onExit } from "../OnExit";
+import { onExit } from "../utils/OnExit";
 import { isNullOrUndefined } from "util";
-import ManifestHelpers from "../sfdxutils/ManifestHelpers";
+import ManifestHelpers from "../manifest/ManifestHelpers";
 const path = require("path");
 const fs = require("fs-extra");
 

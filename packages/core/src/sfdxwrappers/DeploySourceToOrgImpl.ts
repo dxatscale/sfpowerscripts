@@ -1,10 +1,10 @@
 import child_process = require("child_process");
-import { delay } from "../Delay";
-import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
+import { delay } from "../utils/Delay";
+import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import {
   copyFileSync,
 } from "fs";
-import { onExit } from "../OnExit";
+import { onExit } from "../utils/OnExit";
 const path = require("path");
 const Table = require("cli-table");
 

@@ -6,7 +6,7 @@ import { onExit } from "@dxatscale/sfpowerscripts.core/lib/utils/OnExit";
 
 async function run() {
   try {
-    console.log("SFPowerScript.. Install Package Dependencies");
+    console.log("sfpowerscripts... Generate Changelog.......");
 
     const devhub_alias: string = tl.getInput("devhub_alias", true);
     const target_org: string = tl.getInput("target_org", true);
