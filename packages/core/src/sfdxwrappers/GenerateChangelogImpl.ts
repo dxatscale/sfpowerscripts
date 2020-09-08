@@ -11,14 +11,20 @@ export default class GenerateChangelogImpl {
         private readonly sfdx_package: string,
         private readonly revFrom: string,
         private readonly revTo: string,
-        private readonly workItemFilter: string
+        private readonly workItemFilter: string,
+        private readonly project_directory: string
     ){}
 
     public async exec(): Promise<Changelog> {
-        const git: SimpleGit = simplegit();
+        let git: SimpleGit;
+        if (this.project_directory != null) {
+            git = simplegit(this.project_directory);
+        } else {
+            git = simplegit();
+        }
 
         const packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
-            null,
+            this.project_directory,
             this.sfdx_package
         );
 
@@ -80,7 +86,9 @@ export default class GenerateChangelogImpl {
 
 
 export interface Changelog {
-    workItems: any,
+    workItems: {
+        [P: string]: Set<string>
+    },
     package: {
             name: string,
             from: string,

@@ -5,7 +5,9 @@ const fs = require("fs-extra");
 import {isNullOrUndefined} from "util"
 import simplegit, { SimpleGit } from "simple-git/promise";
 const Validator = require('jsonschema').Validator;
+const tmp = require('tmp');
 const url = require('url');
+const path = require('path');
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'generate_release_history');
@@ -18,7 +20,6 @@ export default class GenerateReleaseHistory extends SfdxCommand {
     `$ sfdx sfpowerscripts:GenerateReleaseHistory -x path/to/manifest.json`
   ];
 
-  protected static requiresProject = true;
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
@@ -35,6 +36,7 @@ export default class GenerateReleaseHistory extends SfdxCommand {
 
 
   public async run(){
+    const tempDirectories = [];
     try {
         const limit: number = this.flags.limit;
 
@@ -43,13 +45,39 @@ export default class GenerateReleaseHistory extends SfdxCommand {
         const manifest = JSON.parse(fs.readFileSync(this.flags.manifest, "utf8"));
         validateManifest(manifest);
 
+        // Clone git repositories
+        const pkgTempDirMap: {[P: string]: string} = {};
+
+        let tempDir: any = tmp.dirSync({unsafeCleanup: true});
+        this.ux.startSpinner("Cloning repositories to tmp directory...");
+        await git.clone(manifest["defaultRepository"], tempDir.name);
+        const defaultRepoTempDir = tempDir.name;
+
+        tempDirectories.push(tempDir); // Store temp directories for deletion when process exits
+
+
+        if (manifest["repositories"] != null) {
+            for (let repository of manifest["repositories"]) {
+                tempDir = tmp.dirSync({unsafeCleanup: true});
+                await git.clone(repository["url"], tempDir.name);
+
+                // Map packages to temp directory
+                for (let pkg of repository["packages"]) {
+                    pkgTempDirMap[pkg] = tempDir.name;
+                }
+
+                tempDirectories.push(tempDir);
+            }
+        }
+        this.ux.stopSpinner();
+
         const releaseHistory: ReleaseHistory = {
             releases: []
         };
 
         const workItemFilter: string = manifest["workItemFilter"];
         const workItemURL: string = manifest["workItemURL"];
-        const releaseTags: string[][] = []; // Store the tag names in each release, for markdown generation
+        const releaseTags: string[][] = [];
 
         this.ux.startSpinner(`Generating release history, as per manifest ${this.flags.manifest}`);
         // Generate changelog between releases defined in manifest
@@ -65,6 +93,16 @@ export default class GenerateReleaseHistory extends SfdxCommand {
             let tags: string[] = [];
 
             for (let artifact of manifest["releases"][releaseNum]["artifacts"]) {
+
+                // Set project directory to artifact's repo
+                let project_directory: string;
+                if (pkgTempDirMap[artifact["name"]] != null) {
+                    project_directory = pkgTempDirMap[artifact["name"]];
+                } else {
+                    project_directory = defaultRepoTempDir;
+                }
+
+                git = simplegit(project_directory);
 
                 let artifactFromVersion: string;
                 if (releaseNum > 0) {
@@ -99,12 +137,14 @@ export default class GenerateReleaseHistory extends SfdxCommand {
 
                 tags.push(artifact["version"]);
 
+
                 // Generate changelog for single artifact between two release versions
                 let generateChangelogImpl: GenerateChangelogImpl = new GenerateChangelogImpl(
                     artifact["name"],
                     revFrom,
                     revTo,
-                    workItemFilter
+                    workItemFilter,
+                    project_directory
                 );
 
                 let result: Changelog = await generateChangelogImpl.exec();
@@ -124,7 +164,7 @@ export default class GenerateReleaseHistory extends SfdxCommand {
                 nextRelease["artifacts"].push(result["package"]);
             }
 
-            releaseTags.push(tags);
+            releaseTags.push(tags); // Store the tag names in each release, for markdown generation
 
             // Convert each work item Set to Array
             // Enables JSON stringification of work item
@@ -139,11 +179,21 @@ export default class GenerateReleaseHistory extends SfdxCommand {
 
         generateMarkdown(releaseHistory, workItemURL, limit, releaseTags);
 
+    } catch (err) {
+        console.log(err.message);
+        for (let tempdir of tempDirectories) {
+            tempdir.removeCallback();
+        }
+        this.ux.stopSpinner("Failed");
+        process.exit(1);
+    } finally {
         this.ux.stopSpinner();
         console.log(`Successfully generated release history ${process.cwd()}/releasechangelog.md`);
-    } catch (err) {
-      console.log(err.message);
-      process.exit(1);
+
+        // Cleanup temp directory
+        for (let tempdir of tempDirectories) {
+            tempdir.removeCallback();
+        }
     }
   }
 }
@@ -251,12 +301,45 @@ function validateManifest(manifest): void {
             },
             "workItemURL": {
                 "type": "string"
+            },
+            "repositories": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "url": {
+                            "type": "string"
+                        },
+                        "packages": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "uniqueItems": true,
+                            "minItems": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "url",
+                        "packages"
+                    ]
+                },
+                "uniqueItems": true,
+                "minItems": 1
+            },
+            "defaultRepository": {
+                "type": "string"
             }
         },
         "additionalProperties": false,
         "required": [
             "releases",
-            "workItemFilter"
+            "workItemFilter",
+            "defaultRepository"
         ]
     };
 
@@ -273,7 +356,6 @@ function validateManifest(manifest): void {
             if (!isNullOrUndefined(error.instance))
                 errorMsg += `\nReceived: ${JSON.stringify(error.instance)}\n`;
         });
-        console.log(validationResult.errors);
         throw new Error(errorMsg);
     }
 }
