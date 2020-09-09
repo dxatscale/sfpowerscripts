@@ -5,7 +5,7 @@ import simplegit from "simple-git/promise";
 import { isNullOrUndefined } from "util";
 var shell = require("shelljs");
 import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 
 async function run() {
   try {
