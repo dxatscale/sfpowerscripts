@@ -6,8 +6,6 @@ import {isNullOrUndefined} from "util"
 import simplegit, { SimpleGit } from "simple-git/promise";
 const Validator = require('jsonschema').Validator;
 const tmp = require('tmp');
-const url = require('url');
-const path = require('path');
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'generate_release_history');
@@ -220,10 +218,16 @@ function generateMarkdown(releaseHistory: ReleaseHistory, workItemURL: string, l
 
          payload += "## Work Items\n";
          for (let workItem in release["workItems"]) {
+             let specificWorkItemURL: string;
              if (workItemURL != null) {
-                 workItemURL = url.resolve(workItemURL, `/${workItem}`);
+                 if (workItemURL.endsWith('/')) {
+                    specificWorkItemURL = workItemURL.concat(workItem);
+                 }
+                 else {
+                    specificWorkItemURL = workItemURL.concat(`/${workItem}`);
+                 }
              }
-             payload += `  - [${workItem}](${workItemURL})\n`
+             payload += `  - [${workItem}](${specificWorkItemURL})\n`
          }
 
          payload += "\n## Commits\n";
