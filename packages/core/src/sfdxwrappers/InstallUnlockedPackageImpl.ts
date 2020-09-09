@@ -1,6 +1,8 @@
 import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
 import { onExit } from "../OnExit";
+import PackageMetadata from "../sfdxwrappers/PackageMetadata";
+import ManifestHelpers from "../sfdxutils/ManifestHelpers";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -9,7 +11,8 @@ export default class InstallUnlockedPackageImpl {
     private options: any,
     private wait_time: string,
     private publish_wait_time: string,
-    private skip_if_package_installed: boolean
+    private skip_if_package_installed: boolean,
+    private packageMetadata:PackageMetadata
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -22,6 +25,10 @@ export default class InstallUnlockedPackageImpl {
     }
 
     if (!isPackageInstalled) {
+
+     //Print Metadata carried in the package
+     ManifestHelpers.printMetadataToDeploy(this.packageMetadata.payload);
+
       let command = this.buildPackageInstallCommand();
       let child = child_process.exec(command, (error, stdout, stderr) => {
         if (error) {

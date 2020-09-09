@@ -1,6 +1,7 @@
 import { isNullOrUndefined } from "util";
 let fs = require("fs-extra");
 let path = require("path");
+const Table = require("cli-table");
 
 export default class ManifestHelpers {
 
@@ -149,5 +150,39 @@ export default class ManifestHelpers {
       isProfilesFound = true;
     }
     return isProfilesFound;
+  }
+
+  public static printMetadataToDeploy(mdapiPackageManifest) {
+
+    //If Manifest is null, just return
+    if(mdapiPackageManifest===null || mdapiPackageManifest===undefined)
+        return;
+     
+    let table = new Table({
+      head: ["Metadata Type", "API Name"],
+    });
+
+    let pushTypeMembersIntoTable = (type) => {
+      if (type["members"] instanceof Array) {
+        for (let member of type["members"]) {
+          let item = [type.name, member];
+          table.push(item);
+        }
+      } else {
+        let item = [type.name, type.members];
+        table.push(item);
+      }
+    };
+
+    if (mdapiPackageManifest["Package"]["types"] instanceof Array) {
+      for (let type of mdapiPackageManifest["Package"]["types"]) {
+        pushTypeMembersIntoTable(type);
+      }
+    } else {
+      let type = mdapiPackageManifest["Package"]["types"];
+      pushTypeMembersIntoTable(type);
+    }
+    console.log("The following metadata will be deployed:");
+    console.log(table.toString());
   }
 }

@@ -125,7 +125,7 @@
     ],
     "OutputVariables": [
         {
-            "name": "sfpowerkit_deploysource_id",
+            "name": "sfpowerscripts_deploysource_id",
             "description": "The ID of the deployment"
         }
     ],
