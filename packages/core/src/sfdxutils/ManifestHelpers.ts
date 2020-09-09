@@ -139,13 +139,13 @@ export default class ManifestHelpers {
     let isProfilesFound = false;
     if (Array.isArray(manifest["Package"]["types"])) {
       for (let type of manifest["Package"]["types"]) {
-        if (type["name"] == "Profiles") {
+        if (type["name"] == "Profile") {
           isProfilesFound = true;
           break;
         }
       }
     } else if (
-      manifest["Package"]["types"]["name"] == "Profiles"
+      manifest["Package"]["types"]["name"] == "Profile"
     ) {
       isProfilesFound = true;
     }

@@ -14,7 +14,6 @@ while (true) {
   resultAsJSON = child_process.execSync(
     `az pipelines build show --org https://dev.azure.com/dxatscale  --project sfpowerscripts --id ${buildId}`,
     {
-      cwd: this.project_directory,
       encoding: "utf8",
       stdio: ["pipe", "pipe", "ignore"],
     }
@@ -22,12 +21,14 @@ while (true) {
 
   result = JSON.parse(resultAsJSON);
   if (result.status == "completed") {
+    
+    console.log(
+      `Build completed, View results at https://dev.azure.com/dxatscale/sfpowerscripts/_build/results?buildId=${buildId}&view=results`
+    );
     exit(0);
   } else {
     sleep(450000);
     console.log("Build in Progress");
   }
 }
-console.log(
-  `Build completed, View results at https://dev.azure.com/dxatscale/sfpowerscripts/_build/results?buildId=${buildId}&view=results`
-);
+
