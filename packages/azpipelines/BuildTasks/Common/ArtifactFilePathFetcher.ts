@@ -5,88 +5,132 @@ import { isNullOrUndefined } from "util";
 
 export default class ArtifactFilePathFetcher {
   public constructor(
-    private sfdx_package: string,
     private artifactAlias: string,
-    private artiFactType: string
+    private artiFactType: string,
+    private sfdx_package?: string,
   ) {}
 
 
-  public fetchArtifactFilePaths(): ArtifactFilePaths {
-    let artiFactFilePaths: ArtifactFilePaths;
+  public fetchArtifactFilePaths(): ArtifactFilePaths[] {
+    let artifacts_filepaths: ArtifactFilePaths[];
 
-    if (this.artiFactType === "BuildArtifact")
-      artiFactFilePaths = this.fetchArtifactFilePathFromBuildArtifact(
-        this.sfdx_package,
-        this.artifactAlias
-      );
-    else if (this.artiFactType === "AzureArtifact")
-      artiFactFilePaths = this.fetchArtifactFilePathFromAzureArtifact(
-        this.sfdx_package,
-        this.artifactAlias
-      );
-    else if (this.artiFactType === "PipelineArtifact")
-      artiFactFilePaths = this.fetchArtifactFilePathFromPipelineArtifacts(
+    if (this.artiFactType === "Build")
+      artifacts_filepaths = this.fetchArtifactFilePathFromBuildArtifact(
+        this.artifactAlias,
         this.sfdx_package
       );
+    // else if (this.artiFactType === "AzureArtifact")
+    //   artiFactFilePaths = this.fetchArtifactFilePathFromAzureArtifact(
+    //     this.sfdx_package,
+    //     this.artifactAlias
+    //   );
+    // else if (this.artiFactType === "PipelineArtifact")
+    //   artiFactFilePaths = this.fetchArtifactFilePathFromPipelineArtifacts(
+    //     this.sfdx_package
+    //   );
 
-    return artiFactFilePaths;
+    return artifacts_filepaths;
   }
 
   private fetchArtifactFilePathFromBuildArtifact(
-    sfdx_package: string,
-    artifactAlias: string
-  ): ArtifactFilePaths {
-    let artifactDirectory = tl.getVariable("system.artifactsDirectory");
+    artifactAlias: string,
+    sfdx_package?: string,
+  ): ArtifactFilePaths[] {
+    const artifacts_filepaths: ArtifactFilePaths[] = [];
 
-    //Newest Artifact Format..v3
-    let packageMetadataFilePath;
-    let sourceDirectoryPath: string;
+    let systemArtifactsDirectory = tl.getVariable("system.artifactsDirectory");
 
-    if (isNullOrUndefined(sfdx_package)) {
-      packageMetadataFilePath = path.join(
-        artifactDirectory,
-        artifactAlias,
-        `sfpowerscripts_artifact`,
-        `artifact_metadata.json`
-      );
+    // find sfpowerscripts artifacts using artifact alias
+    let dirs: string[] = fs.readdirSync(
+      path.join(systemArtifactsDirectory, artifactAlias),
+      "utf8"
+    );
+    console.log('pre-filter', dirs);
+    let artifactName: string;
+    if (sfdx_package) {
+      artifactName = `${sfdx_package}_sfpowerscripts_artifact`;
     } else {
-      packageMetadataFilePath = path.join(
-        artifactDirectory,
-        artifactAlias,
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        `artifact_metadata.json`
-      );
+      artifactName = `sfpowerscripts_artifact`
     }
 
-    //Check v3 Artifact Format Exists..
-    if (fs.existsSync(packageMetadataFilePath)) {
-      console.log(`Artifact found at the location ${packageMetadataFilePath} `);
+    let artifactDirs: string[] = dirs.filter(
+      (dir) => dir.endsWith(artifactName)
+    );
+    console.log('post-filter', artifactDirs);
+    for (let artifactDir of artifactDirs) {
+      let packageMetadataFilePath: string;
+      let sourceDirectoryPath: string;
 
-      if (isNullOrUndefined(sfdx_package)) {
+      packageMetadataFilePath = path.join(
+        systemArtifactsDirectory,
+        artifactAlias,
+        artifactDir,
+        `artifact_metadata.json`
+      );
+
+      if (fs.existsSync(packageMetadataFilePath)) {
         sourceDirectoryPath = path.join(
-          artifactDirectory,
+          systemArtifactsDirectory,
           artifactAlias,
-          `sfpowerscripts_artifact`,
-          `source`
-        );
-      } else {
-        sourceDirectoryPath = path.join(
-          artifactDirectory,
-          artifactAlias,
-          `${sfdx_package}_sfpowerscripts_artifact`,
+          artifactDir,
           `source`
         );
       }
+
+      artifacts_filepaths.push({
+        packageMetadataFilePath: packageMetadataFilePath,
+        sourceDirectoryPath: sourceDirectoryPath
+      });
     }
-    return {
-      packageMetadataFilePath: packageMetadataFilePath,
-      sourceDirectoryPath: sourceDirectoryPath,
-    };
+
+    //Newest Artifact Format..v3
+    // let packageMetadataFilePath;
+    // let sourceDirectoryPath: string;
+
+    // if (isNullOrUndefined(sfdx_package)) {
+    //   packageMetadataFilePath = path.join(
+    //     artifactDirectory,
+    //     artifactAlias,
+    //     `sfpowerscripts_artifact`,
+    //     `artifact_metadata.json`
+    //   );
+    // } else {
+    //   packageMetadataFilePath = path.join(
+    //     artifactDirectory,
+    //     artifactAlias,
+    //     `${sfdx_package}_sfpowerscripts_artifact`,
+    //     `artifact_metadata.json`
+    //   );
+    // }
+
+    // //Check v3 Artifact Format Exists..
+    // if (fs.existsSync(packageMetadataFilePath)) {
+    //   console.log(`Artifact found at the location ${packageMetadataFilePath} `);
+
+    //   if (isNullOrUndefined(sfdx_package)) {
+    //     sourceDirectoryPath = path.join(
+    //       artifactDirectory,
+    //       artifactAlias,
+    //       `sfpowerscripts_artifact`,
+    //       `source`
+    //     );
+    //   } else {
+    //     sourceDirectoryPath = path.join(
+    //       artifactDirectory,
+    //       artifactAlias,
+    //       `${sfdx_package}_sfpowerscripts_artifact`,
+    //       `source`
+    //     );
+    //   }
+    // }
+
+    // Filter with sfdx-package if given
+    return artifacts_filepaths;
   }
 
   private fetchArtifactFilePathFromAzureArtifact(
-    sfdx_package: string,
-    artifactAlias: string
+    artifactAlias: string,
+    sfdx_package?: string,
   ): ArtifactFilePaths {
     let artifactDirectory = tl.getVariable("system.artifactsDirectory");
 

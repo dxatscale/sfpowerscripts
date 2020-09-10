@@ -4,7 +4,8 @@ import { onExit } from "@dxatscale/sfpowerscripts.core/lib/utils/OnExit";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import { IReleaseApi } from "azure-devops-node-api/ReleaseApi";
 import { Release, Artifact } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
-
+import ArtifactFilePathFetcher, { ArtifactFilePaths } from "../Common/ArtifactFilePathFetcher";
+import fs = require("fs");
 
 async function run() {
   try {
@@ -21,7 +22,19 @@ async function run() {
     let release: Release = await releaseApi.getRelease(project, releaseId);
     console.log(release.artifacts);
 
+    for (let artifact of release.artifacts) {
+      let artifactFilePathFetcher = new ArtifactFilePathFetcher(artifact.alias, artifact.type);
+      let artifacts_filepaths: ArtifactFilePaths[] = artifactFilePathFetcher.fetchArtifactFilePaths();
+      console.log('artifact filepaths', artifacts_filepaths[0]);
+      // Parse artifact metadata json to retrieve version number & commit Id
+      let artifactMetadata: any = JSON.parse(
+        fs.readFileSync(artifacts_filepaths[0].packageMetadataFilePath, 'utf8')
+      );
 
+      console.log(artifactMetadata.package_name);
+      console.log(artifactMetadata.package_version_number);
+      console.log(artifactMetadata.sourceVersion);
+    }
     // let child=child_process.exec(command,  { cwd: working_directory,encoding: "utf8" },(error,stdout,stderr)=>{
 
     //   if(error)
