@@ -1,9 +1,9 @@
 {
     "id": "87d5162d-07ee-40ea-8bf4-ac8dfdb907f1",
     "name": "sfpowerscripts-generatechangelog-task",
-    "friendlyName": "Generate Changelog",
-    "description": "Generates changelog for all the artifacts that is in a release, This task is part of  sfowerscripts",
-    "helpMarkDown": "",
+    "friendlyName": "Generate Changelog [ALPHA]",
+    "description": "Generates changelog for all the artifacts that is in a release. This task is part of sfpowerscripts, and requires SFDX plugin @dxatscale/sfpowerscripts@alpha to work",
+    "helpMarkDown": "SFDX plugin @dxatscale/sfpowerscripts@alpha needs to be installed in order for this task to function",
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
@@ -80,7 +80,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/InstallPackageDependencies.js"
+            "target": "lib/GenerateChangelog/GenerateChangelog.js"
         }
     }
 }

@@ -1,7 +1,9 @@
 import tl = require("azure-pipelines-task-lib/task");
 import child_process = require("child_process");
 import { onExit } from "@dxatscale/sfpowerscripts.core/lib/utils/OnExit";
-
+import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
+import { IReleaseApi } from "azure-devops-node-api/ReleaseApi";
+import { Release, Artifact } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
 
 
 async function run() {
@@ -16,30 +18,28 @@ async function run() {
     const working_directory: string = tl.getInput("working_directory", false);
     const wait_time: string = tl.getInput("wait_time", true);
 
+    //WebAPI Initialization
+    const webApi = await getWebAPIWithoutToken();
+    const releaseApi: IReleaseApi = await webApi.getReleaseApi();
 
-    let command = `npx sfdx sfpowerkit:package:dependencies:install -u ${target_org} -v ${devhub_alias} -r -w ${wait_time}`;
-
-    if (apexcompileonlypackage)
-      command += ` -a`;
-    if (keys!=null && keys.length>0)
-      command += ` -k ${keys}`;
-    if (forceinstall)
-      command += ` -o`;
-
-    tl.debug(command);
-
+    let project: string = tl.getVariable('System.TeamProject');
+    let releaseId: number = parseInt(tl.getVariable('Release.ReleaseId'), 10);
+    console.log(project);
+    console.log(releaseId);
+    let release: Release = await releaseApi.getRelease(project, releaseId);
+    console.log(release.artifacts);
 
 
-    let child=child_process.exec(command,  { cwd: working_directory,encoding: "utf8" },(error,stdout,stderr)=>{
+    // let child=child_process.exec(command,  { cwd: working_directory,encoding: "utf8" },(error,stdout,stderr)=>{
 
-      if(error)
-         throw error;
-    });
+    //   if(error)
+    //      throw error;
+    // });
 
-    child.stdout.on("data",data=>{console.log(data.toString()); });
+    // child.stdout.on("data",data=>{console.log(data.toString()); });
 
-    await onExit(child);
-
+    // await onExit(child);
+    tl.setResult(tl.TaskResult.Succeeded, 'Finished');
 
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
