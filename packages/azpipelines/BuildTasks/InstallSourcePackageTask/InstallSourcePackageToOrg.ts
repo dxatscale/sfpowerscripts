@@ -53,12 +53,12 @@ async function run() {
     let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
     console.log("##[debug]Artifact Paths", JSON.stringify(artifactFilePaths));
     artifactFilePathFetcher.missingArtifactDecider(
-      artifactFilePaths.packageMetadataFilePath,
+      artifactFilePaths[0].packageMetadataFilePath,
       skip_on_missing_artifact
     );
 
     let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
-      fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8")
+      fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8")
     );
 
     console.log(
@@ -96,7 +96,7 @@ async function run() {
     let sourceDirectory;
     if (!isNullOrUndefined(sfdx_package)) {
       sourceDirectory = ManifestHelpers.getSFDXPackageDescriptor(
-        artifactFilePaths.sourceDirectoryPath,
+        artifactFilePaths[0].sourceDirectoryPath,
         sfdx_package
       )["path"];
     } else {
@@ -104,7 +104,7 @@ async function run() {
         "##[warning] No Package name passed in the input parameter, Utilizing the default package in the manifest"
       );
       sourceDirectory = ManifestHelpers.getDefaultSFDXPackageDescriptor(
-        artifactFilePaths.sourceDirectoryPath
+        artifactFilePaths[0].sourceDirectoryPath
       )["path"];
     }
 
@@ -125,7 +125,7 @@ async function run() {
         let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
           target_org,
           path.join(
-            artifactFilePaths.sourceDirectoryPath,
+            artifactFilePaths[0].sourceDirectoryPath,
             "destructive",
             "destructiveChanges.xml"
           )
@@ -150,7 +150,7 @@ async function run() {
     );
     let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
       target_org,
-      artifactFilePaths.sourceDirectoryPath,
+      artifactFilePaths[0].sourceDirectoryPath,
       sourceDirectory,
       deploymentOptions,
       false

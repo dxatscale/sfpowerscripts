@@ -26,7 +26,7 @@ async function run() {
       package_version_id = tl.getInput("package_version_id", false);
       sourceDirectory = projectDirectory;
     } else {
-     
+
        //Fetch Artifact
        let artifactFilePathFetcher = new ArtifactFilePathFetcher(
         sfdx_package,
@@ -35,15 +35,15 @@ async function run() {
       );
       let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
       artifactFilePathFetcher.missingArtifactDecider(
-        artifactFilePaths.packageMetadataFilePath,
+        artifactFilePaths[0].packageMetadataFilePath,
         skip_on_missing_artifact
       );
 
 
       //Read package metadata
-      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8"));
+      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8"));
 
-      
+
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
         if(key=="payload")
           return undefined;
@@ -55,7 +55,7 @@ async function run() {
       console.log(`Using Package Version Id ${package_version_id}`);
 
      // Get Source Directory
-      sourceDirectory = artifactFilePaths.sourceDirectoryPath;
+      sourceDirectory = artifactFilePaths[0].sourceDirectoryPath;
 
       if(sourceDirectory==null)
       { //Compatiblity Reasons
@@ -72,7 +72,7 @@ async function run() {
         }
       }
 
-     
+
     }
 
     let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(

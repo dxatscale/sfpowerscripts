@@ -40,7 +40,7 @@ async function run() {
 
      let package_version_id: string;
      let packageMetadataFromStorage:PackageMetadata;
- 
+
      //WebAPI Initialization
      const webApi = await getWebAPIWithoutToken();
      const extensionManagementApi = await webApi.getExtensionManagementApi();
@@ -51,7 +51,7 @@ async function run() {
     if (package_installedfrom == "Custom") {
       package_version_id = tl.getInput("package_version_id", false);
     } else {
-     
+
       //Fetch Artifact
       let artifactFilePathFetcher = new ArtifactFilePathFetcher(
         sfdx_package,
@@ -60,13 +60,13 @@ async function run() {
       );
       let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
       artifactFilePathFetcher.missingArtifactDecider(
-        artifactFilePaths.packageMetadataFilePath,
+        artifactFilePaths[0].packageMetadataFilePath,
         skip_on_missing_artifact
       );
 
-      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8"));
+      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8"));
 
-      
+
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
         if(key=="payload")
           return undefined;
