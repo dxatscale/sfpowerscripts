@@ -2,6 +2,7 @@ import * as tl from "azure-pipelines-task-lib/task";
 import path = require("path");
 import fs = require("fs");
 import { isNullOrUndefined } from "util";
+import glob = require("glob");
 
 export default class ArtifactFilePathFetcher {
   public constructor(
@@ -41,47 +42,31 @@ export default class ArtifactFilePathFetcher {
     let systemArtifactsDirectory = tl.getVariable("system.artifactsDirectory");
 
     // find sfpowerscripts artifacts using artifact alias
-    let dirs: string[] = fs.readdirSync(
-      path.join(systemArtifactsDirectory, artifactAlias),
-      "utf8"
-    );
-    console.log('pre-filter', dirs);
-    let artifactName: string;
+
+    let packageMetadataFilepaths: string[] = glob.sync(`artifact_metadata.json`, {
+      cwd: path.join(systemArtifactsDirectory, artifactAlias),
+      absolute: true
+    });
+
     if (sfdx_package) {
-      artifactName = `${sfdx_package}_sfpowerscripts_artifact`;
-    } else {
-      artifactName = `sfpowerscripts_artifact`
-    }
-
-    let artifactDirs: string[] = dirs.filter(
-      (dir) => dir.endsWith(artifactName)
-    );
-    console.log('post-filter', artifactDirs);
-    for (let artifactDir of artifactDirs) {
-      let packageMetadataFilePath: string;
-      let sourceDirectoryPath: string;
-
-      packageMetadataFilePath = path.join(
-        systemArtifactsDirectory,
-        artifactAlias,
-        artifactDir,
-        `artifact_metadata.json`
-      );
-
-      if (fs.existsSync(packageMetadataFilePath)) {
-        sourceDirectoryPath = path.join(
-          systemArtifactsDirectory,
-          artifactAlias,
-          artifactDir,
-          `source`
-        );
-      }
-
-      artifacts_filepaths.push({
-        packageMetadataFilePath: packageMetadataFilePath,
-        sourceDirectoryPath: sourceDirectoryPath
+      packageMetadataFilepaths = packageMetadataFilepaths.filter( (filepath) => {
+        let artifactMetadata = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+        return artifactMetadata["package_name"] === sfdx_package;
       });
     }
+
+    for (let packageMetadataFilepath of packageMetadataFilepaths) {
+      let sourceDirectory = path.join(
+        path.dirname(packageMetadataFilepath),
+        `source`
+      );
+
+      artifacts_filepaths.push({
+        packageMetadataFilePath: packageMetadataFilepath,
+        sourceDirectoryPath: sourceDirectory
+      });
+    }
+
 
     //Newest Artifact Format..v3
     // let packageMetadataFilePath;

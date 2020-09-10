@@ -27,13 +27,16 @@ async function run() {
       let artifacts_filepaths: ArtifactFilePaths[] = artifactFilePathFetcher.fetchArtifactFilePaths();
       console.log('artifact filepaths', artifacts_filepaths[0]);
       // Parse artifact metadata json to retrieve version number & commit Id
-      let artifactMetadata: any = JSON.parse(
-        fs.readFileSync(artifacts_filepaths[0].packageMetadataFilePath, 'utf8')
-      );
 
-      console.log(artifactMetadata.package_name);
-      console.log(artifactMetadata.package_version_number);
-      console.log(artifactMetadata.sourceVersion);
+      for (let artifactFilepaths of artifacts_filepaths) {
+        let artifactMetadata = JSON.parse(
+          fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
+        );
+
+        console.log(artifactMetadata.package_name);
+        console.log(artifactMetadata.package_version_number);
+        console.log(artifactMetadata.sourceVersion);
+      }
     }
     // let child=child_process.exec(command,  { cwd: working_directory,encoding: "utf8" },(error,stdout,stderr)=>{
 
