@@ -10,14 +10,6 @@ async function run() {
   try {
     console.log("sfpowerscripts... Generate Changelog.......");
 
-    const devhub_alias: string = tl.getInput("devhub_alias", true);
-    const target_org: string = tl.getInput("target_org", true);
-    const keys:string=tl.getInput("keys",false);
-    const apexcompileonlypackage:boolean=tl.getBoolInput("apexcompileonlypackage",false);
-    const forceinstall:boolean=tl.getBoolInput("forceinstall",false);
-    const working_directory: string = tl.getInput("working_directory", false);
-    const wait_time: string = tl.getInput("wait_time", true);
-
     //WebAPI Initialization
     const webApi = await getWebAPIWithoutToken();
     const releaseApi: IReleaseApi = await webApi.getReleaseApi();
