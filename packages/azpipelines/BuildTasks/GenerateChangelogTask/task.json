@@ -80,7 +80,7 @@
     ],
     "execution": {
         "Node": {
-            "target": "lib/GenerateChangelog/GenerateChangelog.js"
+            "target": "lib/GenerateChangelogTask/GenerateChangelog.js"
         }
     }
 }

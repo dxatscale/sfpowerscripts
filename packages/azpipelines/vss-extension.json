@@ -147,6 +147,9 @@
             "path": "BuildTasks/ExportSourceFromAnOrgTask"
         },
         {
+            "path": "BuildTasks/GenerateChangelogTask"
+        },
+        {
             "path": "BuildTasks/CreateDeltaPackageTask"
         },
         {
@@ -469,6 +472,16 @@
             ],
             "properties": {
                 "name": "BuildTasks/ExportSourceFromAnOrgTask"
+            }
+        },
+        {
+            "id": "sfpowerscripts-generatechangelog-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "BuildTasks/GenerateChangelogTask"
             }
         },
         {
