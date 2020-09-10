@@ -2,7 +2,7 @@ import * as tl from "azure-pipelines-task-lib/task";
 import path = require("path");
 import fs = require("fs");
 import { isNullOrUndefined } from "util";
-import glob = require("glob");
+const glob = require("glob");
 
 export default class ArtifactFilePathFetcher {
   public constructor(
@@ -47,7 +47,7 @@ export default class ArtifactFilePathFetcher {
       cwd: path.join(systemArtifactsDirectory, artifactAlias),
       absolute: true
     });
-
+    console.log(`globResult`, packageMetadataFilepaths);
     if (sfdx_package) {
       packageMetadataFilepaths = packageMetadataFilepaths.filter( (filepath) => {
         let artifactMetadata = JSON.parse(fs.readFileSync(filepath, 'utf8'));
