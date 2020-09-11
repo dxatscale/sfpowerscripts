@@ -43,7 +43,7 @@ export default class ArtifactFilePathFetcher {
 
     // find sfpowerscripts artifacts using artifact alias
 
-    let packageMetadataFilepaths: string[] = glob.sync(`artifact_metadata.json`, {
+    let packageMetadataFilepaths: string[] = glob.sync(`**/artifact_metadata.json`, {
       cwd: path.join(systemArtifactsDirectory, artifactAlias),
       absolute: true
     });
