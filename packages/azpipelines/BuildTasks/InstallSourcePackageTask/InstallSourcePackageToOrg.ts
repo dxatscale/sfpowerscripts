@@ -44,15 +44,13 @@ async function run() {
     let extensionName = await getExtensionName(extensionManagementApi);
 
     //Fetch Artifact
-    let artifactFilePathFetcher = new ArtifactFilePathFetcher(
-      sfdx_package,
+    let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
       artifact,
-      package_installedfrom
+      package_installedfrom,
+      sfdx_package
     );
-
-    let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
     console.log("##[debug]Artifact Paths", JSON.stringify(artifactFilePaths));
-    artifactFilePathFetcher.missingArtifactDecider(
+    ArtifactFilePathFetcher.missingArtifactDecider(
       artifactFilePaths[0].packageMetadataFilePath,
       skip_on_missing_artifact
     );

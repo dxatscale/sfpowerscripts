@@ -31,13 +31,13 @@ async function run() {
       username=vcsAuthDetails.username;
 
      //Fetch Artifact
-     let artifactFilePathFetcher = new ArtifactFilePathFetcher(
-      sfdx_package,
+    let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
       artifact,
-      artifactProvider
+      artifactProvider,
+      sfdx_package
     );
-    let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
-    artifactFilePathFetcher.missingArtifactDecider(
+
+    ArtifactFilePathFetcher.missingArtifactDecider(
       artifactFilePaths[0].packageMetadataFilePath,
       skip_on_missing_artifact
     );

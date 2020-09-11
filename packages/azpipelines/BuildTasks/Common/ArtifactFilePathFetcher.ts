@@ -5,45 +5,40 @@ import { isNullOrUndefined } from "util";
 const glob = require("glob");
 
 export default class ArtifactFilePathFetcher {
-  public constructor(
-    private artifactAlias: string,
-    private artifactType: string,
-    private sfdx_package?: string,
-  ) {}
 
-
-  public fetchArtifactFilePaths(): ArtifactFilePaths[] {
+  public static fetchArtifactFilePaths(
+    artifactAlias: string,
+    artifactType: string,
+    sfdx_package?: string
+  ): ArtifactFilePaths[] {
     let artifacts_filepaths: ArtifactFilePaths[];
 
-    if (this.artifactType === "Build")
-      artifacts_filepaths = this.fetchArtifactFilePathFromBuildArtifact(
-        this.artifactAlias,
-        this.sfdx_package
+    if (artifactType === "Build" || artifactType === "PackageManagement") {
+      artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePathFromBuildArtifact(
+        artifactAlias,
+        sfdx_package
       );
-    else if (this.artifactType === "AzureArtifact")
-      artifacts_filepaths = this.fetchArtifactFilePathFromBuildArtifact(
-        this.sfdx_package,
-        this.artifactAlias
-      );
+    }
     // else if (this.artifactType === "PipelineArtifact")
     //   artiFactFilePaths = this.fetchArtifactFilePathFromPipelineArtifacts(
     //     this.sfdx_package
     //   );
     else {
-      console.log(`Unsupported artifact type ${this.artifactType}`);
+      console.log(`Unsupported artifact type ${artifactType}`);
       console.log(`Defaulting to Build artifact...`);
+
       artifacts_filepaths = this.fetchArtifactFilePathFromBuildArtifact(
-        this.artifactAlias,
-        this.sfdx_package
+        artifactAlias,
+        sfdx_package
       );
     }
 
     return artifacts_filepaths;
   }
 
-  private fetchArtifactFilePathFromBuildArtifact(
+  private static fetchArtifactFilePathFromBuildArtifact(
     artifactAlias: string,
-    sfdx_package?: string,
+    sfdx_package?: string
   ): ArtifactFilePaths[] {
     const artifacts_filepaths: ArtifactFilePaths[] = [];
 
@@ -51,14 +46,17 @@ export default class ArtifactFilePathFetcher {
 
     // find sfpowerscripts artifacts using artifact alias
 
-    let packageMetadataFilepaths: string[] = glob.sync(`**/artifact_metadata.json`, {
-      cwd: path.join(systemArtifactsDirectory, artifactAlias),
-      absolute: true
-    });
+    let packageMetadataFilepaths: string[] = glob.sync(
+      `**/artifact_metadata.json`,
+      {
+        cwd: path.join(systemArtifactsDirectory, artifactAlias),
+        absolute: true,
+      }
+    );
     console.log(`globResult`, packageMetadataFilepaths);
     if (sfdx_package) {
-      packageMetadataFilepaths = packageMetadataFilepaths.filter( (filepath) => {
-        let artifactMetadata = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+      packageMetadataFilepaths = packageMetadataFilepaths.filter((filepath) => {
+        let artifactMetadata = JSON.parse(fs.readFileSync(filepath, "utf8"));
         return artifactMetadata["package_name"] === sfdx_package;
       });
     }
@@ -71,77 +69,54 @@ export default class ArtifactFilePathFetcher {
 
       artifacts_filepaths.push({
         packageMetadataFilePath: packageMetadataFilepath,
-        sourceDirectoryPath: sourceDirectory
+        sourceDirectoryPath: sourceDirectory,
       });
     }
 
     return artifacts_filepaths;
   }
 
-  private fetchArtifactFilePathFromAzureArtifact(
-    artifactAlias: string,
-    sfdx_package?: string,
-  ): ArtifactFilePaths {
-    let artifactDirectory = tl.getVariable("system.artifactsDirectory");
+  // private fetchArtifactFilePathFromPipelineArtifacts(
+  //   sfdx_package: string
+  // ): ArtifactFilePaths {
+  //   let artifactDirectory = tl.getVariable("pipeline.workspace");
 
-    let metadataFilePath = path.join(
-      artifactDirectory,
-      artifactAlias,
-      `artifact_metadata.json`
-    );
+  //   if (isNullOrUndefined(this.sfdx_package)) {
+  //     let metadataFilePath = path.join(
+  //       artifactDirectory,
+  //       `${sfdx_package}_sfpowerscripts_artifact`,
+  //       `artifact_metadata.json`
+  //     );
 
-    let sourceDirectoryPath: string = path.join(
-      artifactDirectory,
-      artifactAlias,
-      `source`
-    );
-    return {
-      packageMetadataFilePath: metadataFilePath,
-      sourceDirectoryPath: sourceDirectoryPath,
-    };
-  }
+  //     let sourceDirectoryPath: string = path.join(
+  //       artifactDirectory,
+  //       `${sfdx_package}_sfpowerscripts_artifact`,
+  //       `source`
+  //     );
+  //     return {
+  //       packageMetadataFilePath: metadataFilePath,
+  //       sourceDirectoryPath: sourceDirectoryPath,
+  //     };
+  //   } else {
+  //     let metadataFilePath = path.join(
+  //       artifactDirectory,
+  //       `sfpowerscripts_artifact`,
+  //       `artifact_metadata.json`
+  //     );
 
-  private fetchArtifactFilePathFromPipelineArtifacts(
-    sfdx_package: string
-  ): ArtifactFilePaths {
-    let artifactDirectory = tl.getVariable("pipeline.workspace");
+  //     let sourceDirectoryPath: string = path.join(
+  //       artifactDirectory,
+  //       `sfpowerscripts_artifact`,
+  //       `source`
+  //     );
+  //     return {
+  //       packageMetadataFilePath: metadataFilePath,
+  //       sourceDirectoryPath: sourceDirectoryPath,
+  //     };
+  //   }
+  // }
 
-    if (isNullOrUndefined(this.sfdx_package)) {
-      let metadataFilePath = path.join(
-        artifactDirectory,
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        `artifact_metadata.json`
-      );
-
-      let sourceDirectoryPath: string = path.join(
-        artifactDirectory,
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        `source`
-      );
-      return {
-        packageMetadataFilePath: metadataFilePath,
-        sourceDirectoryPath: sourceDirectoryPath,
-      };
-    } else {
-      let metadataFilePath = path.join(
-        artifactDirectory,
-        `sfpowerscripts_artifact`,
-        `artifact_metadata.json`
-      );
-
-      let sourceDirectoryPath: string = path.join(
-        artifactDirectory,
-        `sfpowerscripts_artifact`,
-        `source`
-      );
-      return {
-        packageMetadataFilePath: metadataFilePath,
-        sourceDirectoryPath: sourceDirectoryPath,
-      };
-    }
-  }
-
-  public missingArtifactDecider(
+  public static missingArtifactDecider(
     packageMetadataFilePath: string,
     isToSkipOnMissingArtifact: boolean
   ): void {
