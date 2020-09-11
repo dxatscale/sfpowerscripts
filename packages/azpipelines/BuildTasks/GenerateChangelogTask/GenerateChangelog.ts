@@ -23,7 +23,11 @@ async function run() {
     console.log(release.artifacts);
 
     for (let artifact of release.artifacts) {
-      let artifactFilePathFetcher = new ArtifactFilePathFetcher(artifact.alias, artifact.type);
+      let sfdx_package: string;
+      if (artifact.type === "Build") {
+        sfdx_package = `ebikes`;
+      }
+      let artifactFilePathFetcher = new ArtifactFilePathFetcher(artifact.alias, artifact.type, sfdx_package);
       let artifacts_filepaths: ArtifactFilePaths[] = artifactFilePathFetcher.fetchArtifactFilePaths();
       console.log('artifact filepaths', artifacts_filepaths);
       // Parse artifact metadata json to retrieve version number & commit Id

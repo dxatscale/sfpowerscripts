@@ -7,7 +7,7 @@ const glob = require("glob");
 export default class ArtifactFilePathFetcher {
   public constructor(
     private artifactAlias: string,
-    private artiFactType: string,
+    private artifactType: string,
     private sfdx_package?: string,
   ) {}
 
@@ -15,20 +15,28 @@ export default class ArtifactFilePathFetcher {
   public fetchArtifactFilePaths(): ArtifactFilePaths[] {
     let artifacts_filepaths: ArtifactFilePaths[];
 
-    if (this.artiFactType === "Build")
+    if (this.artifactType === "Build")
       artifacts_filepaths = this.fetchArtifactFilePathFromBuildArtifact(
         this.artifactAlias,
         this.sfdx_package
       );
-    // else if (this.artiFactType === "AzureArtifact")
-    //   artiFactFilePaths = this.fetchArtifactFilePathFromAzureArtifact(
-    //     this.sfdx_package,
-    //     this.artifactAlias
-    //   );
-    // else if (this.artiFactType === "PipelineArtifact")
+    else if (this.artifactType === "AzureArtifact")
+      artifacts_filepaths = this.fetchArtifactFilePathFromBuildArtifact(
+        this.sfdx_package,
+        this.artifactAlias
+      );
+    // else if (this.artifactType === "PipelineArtifact")
     //   artiFactFilePaths = this.fetchArtifactFilePathFromPipelineArtifacts(
     //     this.sfdx_package
     //   );
+    else {
+      console.log(`Unsupported artifact type ${this.artifactType}`);
+      console.log(`Defaulting to Build artifact...`);
+      artifacts_filepaths = this.fetchArtifactFilePathFromBuildArtifact(
+        this.artifactAlias,
+        this.sfdx_package
+      );
+    }
 
     return artifacts_filepaths;
   }
@@ -67,49 +75,6 @@ export default class ArtifactFilePathFetcher {
       });
     }
 
-
-    //Newest Artifact Format..v3
-    // let packageMetadataFilePath;
-    // let sourceDirectoryPath: string;
-
-    // if (isNullOrUndefined(sfdx_package)) {
-    //   packageMetadataFilePath = path.join(
-    //     artifactDirectory,
-    //     artifactAlias,
-    //     `sfpowerscripts_artifact`,
-    //     `artifact_metadata.json`
-    //   );
-    // } else {
-    //   packageMetadataFilePath = path.join(
-    //     artifactDirectory,
-    //     artifactAlias,
-    //     `${sfdx_package}_sfpowerscripts_artifact`,
-    //     `artifact_metadata.json`
-    //   );
-    // }
-
-    // //Check v3 Artifact Format Exists..
-    // if (fs.existsSync(packageMetadataFilePath)) {
-    //   console.log(`Artifact found at the location ${packageMetadataFilePath} `);
-
-    //   if (isNullOrUndefined(sfdx_package)) {
-    //     sourceDirectoryPath = path.join(
-    //       artifactDirectory,
-    //       artifactAlias,
-    //       `sfpowerscripts_artifact`,
-    //       `source`
-    //     );
-    //   } else {
-    //     sourceDirectoryPath = path.join(
-    //       artifactDirectory,
-    //       artifactAlias,
-    //       `${sfdx_package}_sfpowerscripts_artifact`,
-    //       `source`
-    //     );
-    //   }
-    // }
-
-    // Filter with sfdx-package if given
     return artifacts_filepaths;
   }
 
