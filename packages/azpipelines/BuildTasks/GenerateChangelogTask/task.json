@@ -17,6 +17,38 @@
     "instanceNameFormat": "Generate a changelog for the current release",
     "inputs": [
         {
+            "name": "manifestFilepath",
+            "type": "string",
+            "label": "Manifest Filepath",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Filepath of the manifest json containing release definitions"
+        },
+        {
+            "name": "defaultRepository",
+            "type": "string",
+            "label": "Default Repository",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Default repository for packages and manifest file"
+        },
+        {
+            "name": "branch",
+            "type": "string",
+            "label": "branch",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Branch containing manifest and json output"
+        },
+        {
+            "name": "forcePush",
+            "type": "boolean",
+            "label": "Force Push",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Overrwrite branch"
+        },
+        {
             "name": "versionControlProvider",
             "type": "pickList",
             "label": "Select the version control provider",

@@ -6,6 +6,13 @@ const glob = require("glob");
 
 export default class ArtifactFilePathFetcher {
 
+  /**
+   * Decider for which artifact retrieval method to use
+   *
+   * @param artifactAlias
+   * @param artifactType
+   * @param sfdx_package
+   */
   public static fetchArtifactFilePaths(
     artifactAlias: string,
     artifactType: string,
@@ -19,10 +26,11 @@ export default class ArtifactFilePathFetcher {
         sfdx_package
       );
     }
-    // else if (this.artifactType === "PipelineArtifact")
-    //   artiFactFilePaths = this.fetchArtifactFilePathFromPipelineArtifacts(
-    //     this.sfdx_package
-    //   );
+    else if (artifactType === "PipelineArtifact") {
+      artifacts_filepaths = this.fetchArtifactFilePathFromPipelineArtifacts(
+        sfdx_package
+      );
+    }
     else {
       console.log(`Unsupported artifact type ${artifactType}`);
       console.log(`Defaulting to Build artifact...`);
@@ -36,16 +44,22 @@ export default class ArtifactFilePathFetcher {
     return artifacts_filepaths;
   }
 
+  /**
+   * Helper method for retrieving the ArtifactFilePaths of packages
+   * contained in an artifact alias directory
+   *
+   * @param artifactAlias
+   * @param sfdx_package
+   */
   private static fetchArtifactFilePathFromBuildArtifact(
     artifactAlias: string,
-    sfdx_package?: string
+    sfdx_package: string
   ): ArtifactFilePaths[] {
     const artifacts_filepaths: ArtifactFilePaths[] = [];
 
     let systemArtifactsDirectory = tl.getVariable("system.artifactsDirectory");
 
-    // find sfpowerscripts artifacts using artifact alias
-
+    // Search artifact alias directory for files matching artifact_metadata.json
     let packageMetadataFilepaths: string[] = glob.sync(
       `**/artifact_metadata.json`,
       {
@@ -54,7 +68,9 @@ export default class ArtifactFilePathFetcher {
       }
     );
     console.log(`globResult`, packageMetadataFilepaths);
+
     if (sfdx_package) {
+      // Filter and only return ArtifactFilePaths for sfdx_package
       packageMetadataFilepaths = packageMetadataFilepaths.filter((filepath) => {
         let artifactMetadata = JSON.parse(fs.readFileSync(filepath, "utf8"));
         return artifactMetadata["package_name"] === sfdx_package;
@@ -76,46 +92,56 @@ export default class ArtifactFilePathFetcher {
     return artifacts_filepaths;
   }
 
-  // private fetchArtifactFilePathFromPipelineArtifacts(
-  //   sfdx_package: string
-  // ): ArtifactFilePaths {
-  //   let artifactDirectory = tl.getVariable("pipeline.workspace");
+  /**
+   * Helper method for retrieving the ArtifactFilePaths of a pipeline artifact
+   * @param sfdx_package
+   */
+  private static fetchArtifactFilePathFromPipelineArtifacts(
+    sfdx_package: string
+  ): ArtifactFilePaths[] {
+    const artifacts_filepaths: ArtifactFilePaths[] = [];
 
-  //   if (isNullOrUndefined(this.sfdx_package)) {
-  //     let metadataFilePath = path.join(
-  //       artifactDirectory,
-  //       `${sfdx_package}_sfpowerscripts_artifact`,
-  //       `artifact_metadata.json`
-  //     );
+    let artifactDirectory = tl.getVariable("pipeline.workspace");
 
-  //     let sourceDirectoryPath: string = path.join(
-  //       artifactDirectory,
-  //       `${sfdx_package}_sfpowerscripts_artifact`,
-  //       `source`
-  //     );
-  //     return {
-  //       packageMetadataFilePath: metadataFilePath,
-  //       sourceDirectoryPath: sourceDirectoryPath,
-  //     };
-  //   } else {
-  //     let metadataFilePath = path.join(
-  //       artifactDirectory,
-  //       `sfpowerscripts_artifact`,
-  //       `artifact_metadata.json`
-  //     );
+    // Search entire pipeline workspace for files matching artifact_metadata.json
+    let packageMetadataFilepaths: string[] = glob.sync(
+      `**/artifact_metadata.json`,
+      {
+        cwd: artifactDirectory,
+        absolute: true
+      }
+    );
 
-  //     let sourceDirectoryPath: string = path.join(
-  //       artifactDirectory,
-  //       `sfpowerscripts_artifact`,
-  //       `source`
-  //     );
-  //     return {
-  //       packageMetadataFilePath: metadataFilePath,
-  //       sourceDirectoryPath: sourceDirectoryPath,
-  //     };
-  //   }
-  // }
+    console.log(`globResult`, packageMetadataFilepaths);
 
+    if (sfdx_package) {
+      // Filter and only return ArtifactFilePaths for sfdx_package
+      packageMetadataFilepaths = packageMetadataFilepaths.filter((filepath) => {
+        let artifactMetadata = JSON.parse(fs.readFileSync(filepath, "utf8"));
+        return artifactMetadata["package_name"] === sfdx_package;
+      });
+    }
+
+    for (let packageMetadataFilepath of packageMetadataFilepaths) {
+      let sourceDirectory = path.join(
+        path.dirname(packageMetadataFilepath),
+        `source`
+      );
+
+      artifacts_filepaths.push({
+        packageMetadataFilePath: packageMetadataFilepath,
+        sourceDirectoryPath: sourceDirectory,
+      });
+    }
+
+    return artifacts_filepaths;
+  }
+
+  /**
+   * Decider for task outcome if the artifact cannot be found
+   * @param packageMetadataFilePath
+   * @param isToSkipOnMissingArtifact
+   */
   public static missingArtifactDecider(
     packageMetadataFilePath: string,
     isToSkipOnMissingArtifact: boolean
