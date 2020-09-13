@@ -41,6 +41,7 @@
         }
     ],
     "scopes": [
+        "vso.code_write",
         "vso.build_execute",
         "vso.release_manage",
         "vso.serviceendpoint_manage"
