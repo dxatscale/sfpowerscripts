@@ -156,7 +156,7 @@ async function run() {
     const workItemURL: string = manifest["workItemURL"];
     const releaseTags: string[][] = [];
 
-    console.log(`Generating release history, as per manifest ${this.flags.manifest}`);
+    console.log(`Generating release history, as per manifest`);
     // Generate changelog between releases defined in manifest
     for (let releaseNum = 0 ; releaseNum < manifest["releases"].length ; releaseNum++ ) {
 
