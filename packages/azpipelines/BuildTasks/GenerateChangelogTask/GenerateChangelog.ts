@@ -60,7 +60,9 @@ async function run() {
     // Get manifest
     const branch: string = tl.getInput("branch", true);
     git = simplegit(defaultRepoTempDir);
-    await git.checkoutLocalBranch(branch);
+    await git.checkout(branch);
+
+    console.log(fs.readdirSync(defaultRepoTempDir));
 
     const manifestFilepath: string = path.join(
       defaultRepoTempDir,
@@ -144,6 +146,7 @@ async function run() {
         });
       }
     }
+    console.log('new manifest', JSON.stringify(manifest,null,4));
 
     const releaseHistory: ReleaseHistory = {
       releases: []
