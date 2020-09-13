@@ -325,15 +325,15 @@ function getVCSAuthDetails(version_control_provider: string): {token, username} 
 }
 
 function parseRepoUrl(repoUrl: string): string{
-  let versionControlProvider: string = tl.getInput("versionControlProvider", true);
-  if (versionControlProvider == "azureRepo") {
-    //Fix Issue https://developercommunity.visualstudio.com/content/problem/411770/devops-git-url.html
-    repoUrl = repoUrl.substring(
-      repoUrl.indexOf("@") + 1
-    );
-  } else {
+  // let versionControlProvider: string = tl.getInput("versionControlProvider", true);
+  // if (versionControlProvider == "azureRepo") {
+  //   //Fix Issue https://developercommunity.visualstudio.com/content/problem/411770/devops-git-url.html
+  //   repoUrl = repoUrl.substring(
+  //     repoUrl.indexOf("@") + 1
+  //   );
+  // } else {
     repoUrl = repoUrl.replace(/^https?:\/\//, "");
-  }
+  // }
   return repoUrl;
 }
 
