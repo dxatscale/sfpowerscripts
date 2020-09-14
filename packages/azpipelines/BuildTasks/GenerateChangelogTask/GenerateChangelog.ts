@@ -1,6 +1,5 @@
 import tl = require("azure-pipelines-task-lib/task");
 import child_process = require("child_process");
-import { onExit } from "@dxatscale/sfpowerscripts.core/lib/utils/OnExit";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import { IReleaseApi } from "azure-devops-node-api/ReleaseApi";
 import { Release, Artifact } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
@@ -9,55 +8,38 @@ import GenerateChangelogImpl, { Changelog } from "@dxatscale/sfpowerscripts.core
 import simplegit, { SimpleGit } from "simple-git/promise";
 const tmp = require('tmp');
 import fs = require("fs");
-import { version } from "process";
 const path = require("path");
 
 async function run() {
   const tempDirectories = [];
   try {
-    let git: SimpleGit = simplegit();
+    console.log("Cloning repositories...");
 
     const versionControlProvider: string = tl.getInput("versionControlProvider", true);
     let vcsAuthDetails = getVCSAuthDetails(versionControlProvider);
     let token: string = vcsAuthDetails.token;
     let username: string = vcsAuthDetails.username;
 
-    let remoteCreds: string;
-
-    if (versionControlProvider == "azureRepo") {
-        remoteCreds = `https://x-token-auth:${token}@`;
-    } else if (versionControlProvider == "bitbucket") {
-        remoteCreds = `https://x-token-auth:${token}@`;
-    } else if (
-        versionControlProvider == "github" ||
-        versionControlProvider == "githubEnterprise"
-    ) {
-        remoteCreds = `https://${token}:x-oauth-basic@`;
-    } else if (versionControlProvider == "otherGit") {
-        remoteCreds = `https://${username}:${token}@`;
-    }
-
-
-    // Clone git repositories
-    const pkgTempDirMap: {[P: string]: string} = {};
 
     let tempDir: any = tmp.dirSync({unsafeCleanup: true});
-    let defaultRemote: string;
-    if (versionControlProvider === "hostedAgentGit") {
-      defaultRemote = tl.getInput("defaultRepository", true);
-    } else {
-      defaultRemote = `${remoteCreds}${parseRepoUrl(tl.getInput("defaultRepository", true))}`;
-    }
+
+    let defaultRemote: string = buildAuthRemoteUrl(
+      versionControlProvider,
+      username,
+      token,
+      tl.getInput("defaultRepository", true)
+    );
+
+    let git: SimpleGit = simplegit();
 
     await git.clone(
       defaultRemote,
       tempDir.name
     );
     const defaultRepoTempDir = tempDir.name;
-
     tempDirectories.push(tempDir); // Store temp directories for deletion when process exits
 
-    // Get manifest
+    // Get manifest from branch in default repository
     const branch: string = tl.getInput("branch", true);
     git = simplegit(defaultRepoTempDir);
     await git.checkout(branch);
@@ -72,16 +54,19 @@ async function run() {
     const manifest = JSON.parse(fs.readFileSync(manifestFilepath, 'utf8'));
     // TODO: Validate manifest
 
+    const pkgTempDirMap: {[P: string]: string} = {};
+
     if (manifest["repositories"] != null) {
       for (let repository of manifest["repositories"]) {
           tempDir = tmp.dirSync({unsafeCleanup: true});
 
-          let remote: string;
-          if (versionControlProvider === "hostedAgentGit") {
-            remote = repository["url"];
-          } else {
-            remote = `${remoteCreds}${parseRepoUrl(repository["url"])}`;
-          }
+          let remote: string = buildAuthRemoteUrl(
+            versionControlProvider,
+            username,
+            token,
+            repository["url"]
+          );
+
           await git.clone(
             remote,
             tempDir.name
@@ -97,7 +82,8 @@ async function run() {
     }
 
 
-    //WebAPI Initialization
+    console.log("Building manifest using latest release definition...");
+
     const webApi = await getWebAPIWithoutToken();
     const releaseApi: IReleaseApi = await webApi.getReleaseApi();
 
@@ -129,7 +115,6 @@ async function run() {
       );
 
       console.log('artifact filepaths', artifacts_filepaths);
-      // Parse artifact metadata json to retrieve version number & commit Id
 
       for (let artifactFilepaths of artifacts_filepaths) {
         let artifactMetadata = JSON.parse(
@@ -139,14 +124,17 @@ async function run() {
         console.log(artifactMetadata.package_name);
         console.log(artifactMetadata.package_version_number);
         console.log(artifactMetadata.sourceVersion);
-
+        // TODO store the version number
         manifest["releases"][releaseNum]["artifacts"].push({
           name: artifactMetadata.package_name,
-          version: artifactMetadata.sourceVersion
+          version: artifactMetadata.sourceVersion,
+          version_name: artifactMetadata.package_version_number
         });
       }
     }
     console.log('new manifest', JSON.stringify(manifest,null,4));
+
+    console.log("Generating changelog...");
 
     const releaseHistory: ReleaseHistory = {
       releases: []
@@ -156,7 +144,6 @@ async function run() {
     const workItemURL: string = manifest["workItemURL"];
     const releaseTags: string[][] = [];
 
-    console.log(`Generating release history, as per manifest`);
     // Generate changelog between releases defined in manifest
     for (let releaseNum = 0 ; releaseNum < manifest["releases"].length ; releaseNum++ ) {
 
@@ -238,6 +225,7 @@ async function run() {
                 }
             }
 
+            result["package"]["version"] = artifact["version_name"];
             nextRelease["artifacts"].push(result["package"]);
         }
 
@@ -252,6 +240,7 @@ async function run() {
         releaseHistory["releases"].push(nextRelease);
     }
 
+    // TODO handle output directories properly
     fs.writeFileSync(
       path.join(defaultRepoTempDir, `releasechangelog.json`),
       JSON.stringify(releaseHistory, null, 4)
@@ -327,17 +316,27 @@ function getVCSAuthDetails(version_control_provider: string): {token, username} 
   return {token, username};
 }
 
-function parseRepoUrl(repoUrl: string): string{
-  // let versionControlProvider: string = tl.getInput("versionControlProvider", true);
-  // if (versionControlProvider == "azureRepo") {
-  //   //Fix Issue https://developercommunity.visualstudio.com/content/problem/411770/devops-git-url.html
-  //   repoUrl = repoUrl.substring(
-  //     repoUrl.indexOf("@") + 1
-  //   );
-  // } else {
-    repoUrl = repoUrl.replace(/^https?:\/\//, "");
-  // }
-  return repoUrl;
+function buildAuthRemoteUrl(versionControlProvider: string, username: string, token: string, repositoryUrl: string) {
+  let authRemoteUrl: string;
+
+  const removeHttps = (url) => url.replace(/^https?:\/\//, "");
+
+  if (versionControlProvider === "azureRepo") {
+    authRemoteUrl = `https://x-token-auth:${token}@${removeHttps(repositoryUrl)}`;
+  } else if (versionControlProvider == "bitbucket") {
+    authRemoteUrl = `https://x-token-auth:${token}@${removeHttps(repositoryUrl)}`;
+  } else if (
+    versionControlProvider === "github" ||
+    versionControlProvider === "githubEnterprise"
+  ) {
+    authRemoteUrl = `https://${token}:x-oauth-basic@${removeHttps(repositoryUrl)}`;
+  } else if (versionControlProvider === "otherGit") {
+    authRemoteUrl = `https://${username}:${token}@${removeHttps(repositoryUrl)}`;
+  } else if (versionControlProvider === "hostedAgentGit") {
+    authRemoteUrl = repositoryUrl;
+  }
+
+  return authRemoteUrl;
 }
 
 function generateMarkdown(releaseHistory: ReleaseHistory, workItemURL: string, limit: number, releaseTags: string[][], defaultRepoDir: string): void {
@@ -357,7 +356,7 @@ function generateMarkdown(releaseHistory: ReleaseHistory, workItemURL: string, l
 
       payload += "## Artifacts\n";
       for (let artifactNum = 0 ; artifactNum < release["artifacts"].length ; artifactNum++) {
-          payload += `**${release["artifacts"][artifactNum]["name"]}**     ${releaseTags[releaseNum][artifactNum]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
+          payload += `**${release["artifacts"][artifactNum]["name"]}**     ${release["artifacts"][artifactNum]["version"]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
       }
 
       payload += "## Work Items\n";
@@ -430,6 +429,7 @@ type artifact = {
   name: string,
   from: string,
   to: string,
+  version: string,
   commits: commit[]
 }
 

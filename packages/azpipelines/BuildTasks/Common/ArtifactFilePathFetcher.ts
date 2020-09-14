@@ -27,7 +27,7 @@ export default class ArtifactFilePathFetcher {
       );
     }
     else if (artifactType === "PipelineArtifact") {
-      artifacts_filepaths = this.fetchArtifactFilePathFromPipelineArtifacts(
+      artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePathFromPipelineArtifacts(
         sfdx_package
       );
     }
@@ -35,7 +35,7 @@ export default class ArtifactFilePathFetcher {
       console.log(`Unsupported artifact type ${artifactType}`);
       console.log(`Defaulting to Build artifact...`);
 
-      artifacts_filepaths = this.fetchArtifactFilePathFromBuildArtifact(
+      artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePathFromBuildArtifact(
         artifactAlias,
         sfdx_package
       );
