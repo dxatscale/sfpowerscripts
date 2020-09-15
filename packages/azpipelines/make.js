@@ -1,4 +1,4 @@
-// parse command line options 
+// parse command line options
 var minimist = require("minimist");
 var mopts = {
   string: ["version", "stage", "taskId", "organization", "buildNumber"],
@@ -160,18 +160,18 @@ updateExtensionManifest = function(dir, options) {
     manifest.name = "sfpowerscripts" + " (" + "alpha" + ")";
     manifest.public = false;
     version = options.version;
-  } 
+  }
    else if (options.stage == "beta") {
     manifest.version = options.version;
     manifest.id = "sfpowerscripts" + "-" + "beta";
     manifest.name = "sfpowerscripts" + " (" + "beta" + ")";
     manifest.public = false;
     version = options.version;
-  } 
-  else if (options.stage == "uat") {
+  }
+  else if (options.stage == "hotfix") {
     manifest.version = options.version;
-    manifest.id = "sfpowerscripts" + "-" + "uat";
-    manifest.name = "sfpowerscripts" + " (" + "uat" + ")";
+    manifest.id = "sfpowerscripts" + "-" + "hotfix";
+    manifest.name = "sfpowerscripts" + " (" + "hotfix" + ")";
     manifest.public = false;
     version = options.version;
   }
