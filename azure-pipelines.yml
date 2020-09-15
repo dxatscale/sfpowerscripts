@@ -106,42 +106,42 @@ stages:
                 buildNumber: $(minor)
 
 # Hotfix stage
-  - stage: Hotfix
-    displayName: Hotfix
-    dependsOn: []
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/hotfix/')
+- stage: Hotfix
+  displayName: Hotfix
+  dependsOn: []
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/hotfix/')
 
-    jobs:
-    - job: BuildCLI
-      displayName: sfdx-plugin
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-               - template: build_templates/buildcli.yml
-                 parameters:
-                  commitToGit: false
-                  version: 'hotfix'
-                  publish: true
+  jobs:
+  - job: BuildCLI
+    displayName: sfdx-plugin
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+             - template: build_templates/buildcli.yml
+               parameters:
+                commitToGit: false
+                version: 'hotfix'
+                publish: true
 
 
-    - deployment: BuildAzPipelines
-      displayName: azpipelines
-      timeoutInMinutes: 20
-      pool:
-        vmImage: 'ubuntu-latest'
-      environment: hotfix
-      strategy:
-         runOnce:
-           deploy:
-             steps:
+  - deployment: BuildAzPipelines
+    displayName: azpipelines
+    timeoutInMinutes: 20
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: hotfix
+    strategy:
+       runOnce:
+         deploy:
+           steps:
 
-               - template: build_templates/buildazpipelines.yml
-                 parameters:
-                  commitToGit: false
-                  stageToDeploy: 'hotfix'
-                  version: 'hotfix'
-                  organization: safebot
-                  buildNumber: $(minor)
+             - template: build_templates/buildazpipelines.yml
+               parameters:
+                commitToGit: false
+                stageToDeploy: 'hotfix'
+                version: 'hotfix'
+                organization: safebot
+                buildNumber: $(minor)
 
 #Prod Stage
 - stage: Prod
