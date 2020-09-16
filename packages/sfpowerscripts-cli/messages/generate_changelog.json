@@ -1,6 +1,5 @@
 {
     "commandDescription": "generates release changelog, providing a summary of packages versions, work items and commits introduced in a release",
-    "manifestFlagDescription": "file path of manifest json containing release definitions",
     "limitFlagDescription": "limit the number of releases to display",
     "artifactDirectoryFlagDescription": "Directory containing sfpowerscripts artifacts",
     "releaseNameFlagDescription": "Name of the release for which to generate changelog",

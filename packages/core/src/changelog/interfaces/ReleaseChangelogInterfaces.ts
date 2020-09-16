@@ -15,5 +15,6 @@ export interface Artifact extends Changelog {
     from: string,
     to: string,
     version: string,
+    latestCommitId: string,
     commits: Commit[]
 }

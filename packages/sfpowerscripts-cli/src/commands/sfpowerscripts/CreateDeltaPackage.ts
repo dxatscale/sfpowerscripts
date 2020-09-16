@@ -7,6 +7,7 @@ import { isNullOrUndefined } from "util";
 import { exec } from "shelljs";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import simplegit, { SimpleGit } from "simple-git/promise";
 const fs = require("fs-extra");
 
 // Initialize Messages with the current plugin directory
@@ -85,8 +86,18 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       const versionName: string = this.flags.versionname;
       const refname: string = this.flags.refname;
 
-      let revisionFrom: string = this.flags.revisionfrom;
-      let revision_to: string = this.flags.revisionto;
+      let git: SimpleGit = simplegit();
+
+      let revisionFrom: string = await git.revparse([
+        "--short",
+        `${this.flags.revisionfrom}^{}`
+      ]);
+      let revision_to: string = await git.revparse([
+        "--short",
+        `${this.flags.revisionto}^{}`
+      ]);
+
+      console.log(exec(`git rev-parse --short ${this.flags.revisionto}^{}`,{silent:true}));
       let options: any = {};
 
       let repository_url: string;

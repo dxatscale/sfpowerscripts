@@ -1,8 +1,8 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import { ReleaseChangelog, Release, Artifact } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces"
-import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces"
+import { ReleaseChangelog, Release, Artifact} from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
 import fs = require("fs-extra");
 import path = require('path');
 const glob = require("glob");
@@ -23,11 +23,6 @@ export default class GenerateChangelog extends SfdxCommand {
   protected static requiresDevhubUsername = false;
 
   protected static flagsConfig = {
-    manifest: flags.directory({
-        required: true,
-        char: 'x',
-        description: messages.getMessage('manifestFlagDescription')
-    }),
     limit: flags.integer({
         description: messages.getMessage('limitFlagDescription')
     }),
@@ -56,7 +51,6 @@ export default class GenerateChangelog extends SfdxCommand {
 
 
   public async run(){
-    const tempDirectories = [];
     try {
       let packageMetadataFilepaths: string[] = glob.sync(
         `**/artifact_metadata.json`,
@@ -72,6 +66,7 @@ export default class GenerateChangelog extends SfdxCommand {
         workItems: {},
         artifacts: []
       };
+
       // Read artifacts for latest release definition
       for (let packageMetadataFilepath of packageMetadataFilepaths ) {
         let packageMetadata: PackageMetadata = JSON.parse(fs.readFileSync(packageMetadataFilepath, 'utf8'));
@@ -79,8 +74,9 @@ export default class GenerateChangelog extends SfdxCommand {
         latestReleaseDefinition["artifacts"].push({
           name: packageMetadata["package_name"],
           from: undefined,
-          to: packageMetadata["sourceVersion"],
+          to: packageMetadata["sourceVersion"]?.slice(0,8) || packageMetadata["sourceVersionTo"]?.slice(0,8),
           version: packageMetadata["package_version_number"],
+          latestCommitId: undefined,
           commits: undefined
         });
 
@@ -107,35 +103,50 @@ export default class GenerateChangelog extends SfdxCommand {
         }
       }
 
+      let prevReleaseLatestCommitId: {[P: string]: string} = {}
       if (prevReleaseDefinition) {
         for (let artifact of latestReleaseDefinition["artifacts"]) {
           for (let prevReleaseArtifact of prevReleaseDefinition["artifacts"]) {
             if (artifact["name"] === prevReleaseArtifact["name"]) {
               // Verify that this modifies latestReleaseDefinition
               artifact["from"] = prevReleaseArtifact["to"];
+              prevReleaseLatestCommitId[artifact["name"]] = prevReleaseArtifact["latestCommitId"];
               break;
             }
           }
         }
       }
-
+      console.log(prevReleaseLatestCommitId);
       // Get commits for the latest release
       for (let artifact of latestReleaseDefinition["artifacts"]) {
         let packageChangelog: PackageChangelog = JSON.parse(fs.readFileSync(packageChangelogMap[artifact["name"]], 'utf8'));
-        let toIdx = packageChangelog["commits"].findIndex( (commit) => {
-          // TODO startswith
-          commit["commitId"] === artifact["to"];
-        });
+
+        artifact["latestCommitId"] = packageChangelog["commits"][0]["commitId"];
 
         let fromIdx;
         if (artifact["from"]) {
-          fromIdx = packageChangelog["commits"].findIndex( (commit) => {
-            commit["commitId"] === artifact["from"];
-          });
+          fromIdx = packageChangelog["commits"].findIndex( (commit) =>
+            commit["commitId"] === prevReleaseLatestCommitId[artifact["name"]]
+          );
+          if (fromIdx === -1)
+            throw Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
         }
+        console.log(artifact["name"],'fromidx', fromIdx);
 
         // Verify that latestReleaseDefinition changes
-        artifact["commits"] = packageChangelog["commits"].slice(toIdx, fromIdx ? fromIdx+1 : fromIdx);
+        // Always grab the latest commit
+        if (fromIdx > 0) {
+          artifact["commits"] = packageChangelog["commits"].slice(0, fromIdx+1);
+        } else if (fromIdx === 0) {
+          // Artifact verison has not changed
+          artifact["commits"] = [];
+          // Skip to next artifact
+          continue;
+        } else if (fromIdx === undefined ) {
+          // Artifact was not in previous release
+          artifact["commits"] = packageChangelog["commits"];
+        }
+
 
         // Figure out work items for latest release
         let workItemFilter: RegExp = RegExp(this.flags.workitemfilter, 'gi');
@@ -154,6 +165,12 @@ export default class GenerateChangelog extends SfdxCommand {
         }
       }
 
+      // Convert each work item Set to Array
+      // Enables JSON stringification of work item
+      for (let key in latestReleaseDefinition["workItems"]) {
+        latestReleaseDefinition["workItems"][key] = Array.from(latestReleaseDefinition["workItems"][key]);
+      }
+
       // Append results to release changelog
       if (releaseChangelog) {
         releaseChangelog["releases"].push(latestReleaseDefinition);
@@ -163,17 +180,19 @@ export default class GenerateChangelog extends SfdxCommand {
         }
       }
 
-        const limit: number = this.flags.limit;
-
-        // Convert each work item Set to Array
-        // Enables JSON stringification of work item
-        // for (let key in nextRelease["workItems"]) {
-        //     nextRelease["workItems"][key] = Array.from(nextRelease["workItems"][key]);
-        // }
+      fs.writeFileSync(
+        `releasechangelog.json`,
+        JSON.stringify(releaseChangelog, null, 4)
+      );
 
 
-        // generateMarkdown(releaseHistory, workItemURL, limit, releaseTags);
-        // console.log(`Successfully generated release history ${process.cwd()}/releasechangelog.md`);
+
+
+
+
+
+        generateMarkdown(releaseChangelog, this.flags.workitemurl, this.flags.limit);
+        console.log(`Successfully generated release history ${process.cwd()}/releasechangelog.md`);
 
     } catch (err) {
         console.log(err.message);
@@ -182,24 +201,24 @@ export default class GenerateChangelog extends SfdxCommand {
   }
 }
 
-function generateMarkdown(releaseHistory: ReleaseChangelog, workItemURL: string, limit: number, releaseTags: string[][]): void {
+function generateMarkdown(releaseChangelog: ReleaseChangelog, workItemURL: string, limit: number): void {
      let payload: string = "";
 
      let limitReleases: number;
-     if (limit != null)
-        limitReleases = releaseHistory["releases"].length - limit;
+     if (limit <= releaseChangelog["releases"].length)
+        limitReleases = releaseChangelog["releases"].length - limit;
      else
         limitReleases = 0;
 
      // Start from latest Release
-     for (let releaseNum = releaseHistory["releases"].length - 1 ; releaseNum >= limitReleases ; releaseNum-- ) {
-         let release = releaseHistory["releases"][releaseNum];
+     for (let releaseNum = releaseChangelog["releases"].length - 1 ; releaseNum >= limitReleases ; releaseNum-- ) {
+         let release: Release = releaseChangelog["releases"][releaseNum];
 
          payload += `\n# ${release["name"]}\n`;
 
          payload += "## Artifacts\n";
          for (let artifactNum = 0 ; artifactNum < release["artifacts"].length ; artifactNum++) {
-             payload += `**${release["artifacts"][artifactNum]["name"]}**     ${releaseTags[releaseNum][artifactNum]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
+             payload += `**${release["artifacts"][artifactNum]["name"]}**     v${release["artifacts"][artifactNum]["version"]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
          }
 
          payload += "## Work Items\n";
