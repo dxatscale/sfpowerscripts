@@ -108,20 +108,20 @@ async function run() {
         tl.updateBuildNumber(packageMetadata.package_version_number);
       }
 
-      
-      
-      
-      
+
+
+
+
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata,(key:string,value:any)=>{
         if(key=="payload")
           return undefined;
-        else 
+        else
           return value;
      }));
 
 
-      let artifact= ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
-      
+      let artifact= await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
+
       tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);
     }
   } catch (err) {

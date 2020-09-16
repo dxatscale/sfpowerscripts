@@ -1,5 +1,0 @@
-{
-    "commandDescription": "generates history of releases, providing a summary of packages versions, work items and commits introduced in a release",
-    "manifestFlagDescription": "file path of manifest json containing release definitions",
-    "limitFlagDescription": "limit the number of releases to display"
-}

@@ -102,7 +102,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
 
       const generate_destructivemanifest = this.flags
         .generatedestructivemanifest;
-    
+
 
       let createDeltaPackageImp = new CreateDeltaPackageImpl(
         null,
@@ -138,7 +138,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
         repository_url: repository_url,
       };
 
-    
+
 
 
       let createSourcePackageImpl = new CreateSourcePackageImpl(
@@ -156,13 +156,13 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       );
 
 
-    
+
 
       //Generate Artifact
         //Switch to delta
       packageMetadata.package_type="delta";
-      let artifact= ArtifactGenerator.generateArtifact(sfdx_package,packageMetadata.sourceDir,artifactDirectory,packageMetadata); 
-  
+      let artifact= await ArtifactGenerator.generateArtifact(sfdx_package,process.cwd(),artifactDirectory,packageMetadata);
+
 
       console.log("\nOutput variables:");
       if (!isNullOrUndefined(refname)) {
@@ -172,7 +172,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
         fs.writeFileSync('.env', `sfpowerscripts_artifact_directory=${artifact.artifactSourceDirectory}\n`, {flag:'a'});
         console.log(`sfpowerscripts_artifact_directory=${artifact.artifactSourceDirectory}`);
       }
-    
+
 
 
 

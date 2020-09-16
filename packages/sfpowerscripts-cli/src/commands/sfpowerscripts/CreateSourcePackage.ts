@@ -111,10 +111,10 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
         }
 
 
-        
+
 
        //Generate Artifact
-        let artifact=ArtifactGenerator.generateArtifact(sfdx_package,null,artifactDirectory,packageMetadata);
+        let artifact = await ArtifactGenerator.generateArtifact(sfdx_package,process.cwd(),artifactDirectory,packageMetadata);
 
         console.log(`Created source package ${sfdx_package}_sfpowerscripts_artifact`);
 

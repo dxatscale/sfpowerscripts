@@ -415,31 +415,4 @@ function getTime(date: Date): string {
   return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
 }
 
-interface ReleaseHistory {
-  releases: release[]
-}
-
-type release = {
-  name: string,
-  workItems: any
-  artifacts: artifact[]
-}
-
-type artifact = {
-  name: string,
-  from: string,
-  to: string,
-  version: string,
-  commits: commit[]
-}
-
-type commit = {
-  commitId: string,
-  date: string,
-  elapsedDays: string,
-  author: string,
-  message: string,
-  body: string
-}
-
 run();

@@ -150,14 +150,14 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           );
         }
 
-        
+
         console.log(JSON.stringify(packageMetadata, function(key, val) {
           if (key !== "payload")
               return val;
          }));
-         
+
         //Generate Artifact
-        let artifact=ArtifactGenerator.generateArtifact(sfdx_package,null,artifactDirectory,packageMetadata);
+        let artifact = await ArtifactGenerator.generateArtifact(sfdx_package,process.cwd(),artifactDirectory,packageMetadata);
 
           console.log("\nOutput variables:");
           if (!isNullOrUndefined(refname)) {
@@ -175,7 +175,7 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
             fs.writeFileSync('.env', `sfpowerscripts_package_version_number=${packageMetadata.package_version_number}\n`, {flag:'a'});
             console.log(`sfpowerscripts_package_version_number=${packageMetadata.package_version_number}`);
           }
-        
+
       }
     } catch (err) {
       console.log(err);
