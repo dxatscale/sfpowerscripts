@@ -78,7 +78,6 @@ async function run() {
       );
 
 
-      console.log('artifact filepaths', artifacts_filepaths);
 
       for (let artifactFilepaths of artifacts_filepaths) {
         let packageMetadata: PackageMetadata = JSON.parse(
