@@ -49,7 +49,7 @@ async function run() {
     tempDirectories.push(tempDir); // Store temp directories for deletion when process exits
 
     // Get manifest from branch in default repository
-    const branch: string = tl.getInput("branch", true);
+    const branch: string = tl.getInput("branchName", true);
     git = simplegit(defaultRepoTempDir);
     await git.checkout(branch);
 
