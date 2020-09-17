@@ -102,10 +102,7 @@ async function run() {
           commits: undefined
         });
 
-        packageChangelogMap[packageMetadata["package_name"]] = path.join(
-          path.dirname(artifactFilepaths.packageMetadataFilePath),
-          `changelog.json`
-        );
+        packageChangelogMap[packageMetadata["package_name"]] = artifactFilepaths.changelogFilePath;
       }
     }
 

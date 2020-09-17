@@ -87,9 +87,15 @@ export default class ArtifactFilePathFetcher {
         `source`
       );
 
+      let changelogFilepath = path.join(
+        path.dirname(packageMetadataFilepath),
+        `changelog.json`
+      );
+
       artifacts_filepaths.push({
         packageMetadataFilePath: packageMetadataFilepath,
         sourceDirectoryPath: sourceDirectory,
+        changelogFilePath: changelogFilepath
       });
     }
 
@@ -132,9 +138,15 @@ export default class ArtifactFilePathFetcher {
         `source`
       );
 
+      let changelogFilepath = path.join(
+        path.dirname(packageMetadataFilepath),
+        `changelog.json`
+      );
+
       artifacts_filepaths.push({
         packageMetadataFilePath: packageMetadataFilepath,
         sourceDirectoryPath: sourceDirectory,
+        changelogFilePath: changelogFilepath
       });
     }
 
@@ -173,4 +185,5 @@ export default class ArtifactFilePathFetcher {
 export interface ArtifactFilePaths {
   packageMetadataFilePath: string;
   sourceDirectoryPath?: string;
+  changelogFilePath?: string;
 }
