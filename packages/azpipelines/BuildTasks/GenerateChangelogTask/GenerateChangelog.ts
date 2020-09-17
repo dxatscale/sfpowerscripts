@@ -327,7 +327,7 @@ function generateMarkdown(releaseChangelog: ReleaseChangelog, workItemURL: strin
 
   // Start from latest Release
   for (let releaseNum = releaseChangelog["releases"].length - 1 ; releaseNum >= limitReleases ; releaseNum-- ) {
-      let release: Release = releaseChangelog["releases"][releaseNum];
+      let release: ChangelogRelease = releaseChangelog["releases"][releaseNum];
 
       payload += `\n# ${release["name"]}\n`;
 
