@@ -92,7 +92,7 @@ async function run() {
         console.log(packageMetadata.package_name);
         console.log(packageMetadata.package_version_number);
         console.log(packageMetadata.sourceVersion);
-        // TODO store the version number
+
         latestReleaseDefinition["artifacts"].push({
           name: packageMetadata["package_name"],
           from: undefined,
@@ -219,13 +219,18 @@ async function run() {
       payload
     );
 
-
+    console.log(`Pushing changelog files`, repositoryUrl, branch);
     git = simplegit(repoTempDir);
     await git.addConfig("user.name", "sfpowerscripts");
     await git.addConfig("user.email", "sfpowerscripts@dxscale");
     await git.add([`releasechangelog.json`, `releasechangelog.md`]);
     await git.commit(`[skip ci] Updated Changelog ${tl.getInput("releaseName", true)}`);
-    await git.push();
+
+    if (tl.getInput("forcePush", false)) {
+      await git.push(`--force`);
+    } else {
+      await git.push();
+    }
 
   } catch (err) {
     // Cleanup temp directories

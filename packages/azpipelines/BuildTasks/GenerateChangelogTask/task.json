@@ -63,12 +63,21 @@
             "helpMarkDown": "Name of the repository branch in which changelog files will be located"
         },
         {
+          "name": "sudo",
+          "type": "boolean",
+          "label": "I know what I am doing",
+          "defaultValue": false,
+          "required": false,
+          "helpMarkDown": "Enables access to dangerous settings"
+        },
+        {
             "name": "forcePush",
             "type": "boolean",
             "label": "Force Push",
             "defaultValue": false,
             "required": false,
-            "helpMarkDown": "Overrwrite branch"
+            "helpMarkDown": "Ignore conflicts and overrwrite branch",
+            "visibleRule": "sudo = true"
         },
         {
             "name": "versionControlProvider",

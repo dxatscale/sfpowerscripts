@@ -20,7 +20,11 @@ export default class ArtifactFilePathFetcher {
   ): ArtifactFilePaths[] {
     let artifacts_filepaths: ArtifactFilePaths[];
 
-    if (artifactType === "Build" || artifactType === "PackageManagement") {
+    if (artifactType === "Build" ||
+        artifactType === "PackageManagement" ||
+        artifactType === "AzureArtifact" ||
+        artifactType === "BuildArtifact"
+    ) {
       artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePathFromBuildArtifact(
         artifactAlias,
         sfdx_package

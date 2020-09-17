@@ -6,6 +6,8 @@ import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/li
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import fs = require("fs-extra");
 import path = require('path');
+import simplegit, { SimpleGit } from "simple-git/promise";
+const tmp = require('tmp');
 const glob = require("glob");
 
 
@@ -17,7 +19,7 @@ export default class GenerateChangelog extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:GenerateChangelog`
+    `$ sfdx sfpowerscripts:GenerateChangelog -n <releaseName> -d path/to/artifact/directory -w <regexp> -r <repoURL> -b <branchName> `
   ];
 
   protected static requiresUsername = false;
@@ -45,14 +47,43 @@ export default class GenerateChangelog extends SfdxCommand {
     }),
     workitemurl: flags.string({
       required: false,
-      char: "r",
       description: messages.getMessage('workItemUrlFlagDescription')
+    }),
+    repourl: flags.string({
+      required: true,
+      char: "r",
+      description: messages.getMessage('repoUrlFlagDescription')
+    }),
+    branchname: flags.string({
+      required: true,
+      char: "b",
+      description: messages.getMessage('branchNameFlagDescription')
+    }),
+    forcepush: flags.boolean({
+      description: messages.getMessage('forcePushFlagDescription'),
+      hidden: true,
+      default: false
     })
   };
 
 
   public async run(){
+    let tempDir = tmp.dirSync({unsafeCleanup: true});
     try {
+      let git: SimpleGit = simplegit();
+
+      console.log(`Cloning repository ${this.flags.repourl}`);
+      await git.clone(
+        this.flags.repourl,
+        tempDir.name
+      );
+      const repoTempDir = tempDir.name;
+
+      console.log(`Checking out branch ${this.flags.branchname}`);
+      git = simplegit(repoTempDir);
+      await git.checkout(this.flags.branchname);
+
+
       let packageMetadataFilepaths: string[] = glob.sync(
         `**/artifact_metadata.json`,
         {
@@ -86,6 +117,8 @@ export default class GenerateChangelog extends SfdxCommand {
         );
       }
 
+      console.log("Generating changelog...");
+
       // Check if any packages are missing changelog
       Object.values(packageChangelogMap).forEach( (changelogPath) => {
         if (!fs.existsSync(changelogPath)) {
@@ -96,8 +129,8 @@ export default class GenerateChangelog extends SfdxCommand {
       // Get artifact versions from previous release definition
       let prevReleaseDefinition: Release;
       let releaseChangelog: ReleaseChangelog;
-      if (fs.existsSync(`releasechangelog.json`)) {
-        releaseChangelog = JSON.parse(fs.readFileSync(`releasechangelog.json`, 'utf8'));
+      if (fs.existsSync(path.join(repoTempDir,`releasechangelog.json`))) {
+        releaseChangelog = JSON.parse(fs.readFileSync(path.join(repoTempDir,`releasechangelog.json`), 'utf8'));
         if (releaseChangelog["releases"].length > 0) {
           prevReleaseDefinition = releaseChangelog["releases"][releaseChangelog["releases"].length - 1];
         }
@@ -181,22 +214,36 @@ export default class GenerateChangelog extends SfdxCommand {
       }
 
       fs.writeFileSync(
-        `releasechangelog.json`,
+        path.join(repoTempDir,`releasechangelog.json`),
         JSON.stringify(releaseChangelog, null, 4)
       );
 
-
       let payload: string = generateMarkdown(releaseChangelog, this.flags.workitemurl, this.flags.limit);
       fs.writeFileSync(
-        `releasechangelog.md`,
+        path.join(repoTempDir,`releasechangelog.md`),
         payload
       );
 
-      console.log(`Successfully generated release history ${process.cwd()}/releasechangelog.md`);
+      console.log("Pushing changelog files to", this.flags.repourl, this.flags.branchname);
+      git = simplegit(repoTempDir);
+      await git.addConfig("user.name", "sfpowerscripts");
+      await git.addConfig("user.email", "sfpowerscripts@dxscale");
+      await git.add([`releasechangelog.json`, `releasechangelog.md`]);
+      await git.commit(`[skip ci] Updated Changelog ${this.flags.releasename}`);
+
+      if (this.flags.forcepush) {
+        await git.push(`--force`);
+      } else {
+        await git.push();
+      }
 
     } catch (err) {
         console.log(err.message);
+        tempDir.removeCallback();
         process.exit(1);
+    } finally {
+      tempDir.removeCallback();
+      console.log(`Successfully generated changelog`);
     }
   }
 }
