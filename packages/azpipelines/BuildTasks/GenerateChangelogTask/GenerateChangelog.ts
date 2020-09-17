@@ -4,6 +4,7 @@ import { IReleaseApi } from "azure-devops-node-api/ReleaseApi";
 import { Release } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
 import ArtifactFilePathFetcher, { ArtifactFilePaths } from "../Common/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
+import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import { ReleaseChangelog, Release as ChangelogRelease} from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
 import simplegit, { SimpleGit } from "simple-git/promise";
@@ -121,7 +122,7 @@ async function run() {
     let releaseChangelog: ReleaseChangelog;
     let prevReleaseDefinition: ChangelogRelease;
     if ( fs.existsSync(path.join(repoTempDir,`releasechangelog.json`)) ) {
-      releaseChangelog = JSON.parse(fs.readFileSync(`releasechangelog.json`, 'utf8'));
+      releaseChangelog = JSON.parse(fs.readFileSync(path.join(repoTempDir,`releasechangelog.json`), 'utf8'));
       if (releaseChangelog["releases"].length > 0) {
         prevReleaseDefinition = releaseChangelog["releases"][releaseChangelog["releases"].length - 1];
       }
@@ -223,7 +224,7 @@ async function run() {
     await git.addConfig("user.name", "sfpowerscripts");
     await git.addConfig("user.email", "sfpowerscripts@dxscale");
     await git.add([`releasechangelog.json`, `releasechangelog.md`]);
-    await git.commit(`[skip ci] updated changelog ${tl.getInput("releaseName", true)}`);
+    await git.commit(`[skip ci] Updated Changelog ${tl.getInput("releaseName", true)}`);
     await git.push();
 
   } catch (err) {
@@ -305,79 +306,6 @@ function buildAuthRemoteUrl(versionControlProvider: string, username: string, to
   }
 
   return authRemoteUrl;
-}
-
-function generateMarkdown(releaseChangelog: ReleaseChangelog, workItemURL: string, limit: number): string {
-  let payload: string = "";
-
-  let limitReleases: number;
-  if (limit <= releaseChangelog["releases"].length)
-     limitReleases = releaseChangelog["releases"].length - limit;
-  else
-     limitReleases = 0;
-
-  // Start from latest Release
-  for (let releaseNum = releaseChangelog["releases"].length - 1 ; releaseNum >= limitReleases ; releaseNum-- ) {
-      let release: ChangelogRelease = releaseChangelog["releases"][releaseNum];
-
-      payload += `\n# ${release["name"]}\n`;
-
-      payload += "## Artifacts\n";
-      for (let artifactNum = 0 ; artifactNum < release["artifacts"].length ; artifactNum++) {
-          payload += `**${release["artifacts"][artifactNum]["name"]}**     v${release["artifacts"][artifactNum]["version"]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
-      }
-
-      payload += "## Work Items\n";
-      for (let workItem in release["workItems"]) {
-          let specificWorkItemURL: string;
-          if (workItemURL != null) {
-              if (workItemURL.endsWith('/')) {
-                 specificWorkItemURL = workItemURL.concat(workItem);
-              }
-              else {
-                 specificWorkItemURL = workItemURL.concat(`/${workItem}`);
-              }
-          }
-          payload += `  - [${workItem}](${specificWorkItemURL})\n`
-      }
-
-      payload += "\n## Commits\n";
-      for (let artifact of release["artifacts"]) {
-          payload += `\n### ${artifact["name"]}\n`;
-          if (artifact["commits"].length > 0) {
-              for (let commit of artifact["commits"]) {
-                  let commitDate: Date = new Date(commit.date);
-                  payload += `  - ${getDate(commitDate)}, ${getTime(commitDate)}      ${commit.commitId}      ${commit.message}\n`;
-              }
-          } else if (artifact["from"] === artifact["to"]) {
-              payload += `  - Artifact version has not changed\n`
-          } else {
-              payload += ` - No changes to ${artifact["name"]} package directory detected. Artifact version may have been updated due to:\n`;
-              payload += `    - Modified scratch org definition file\n`;
-              payload += `    - Incremented package version in sfdx-project.json\n`;
-              payload += `    - Build all packages\n`
-          }
-      }
-  }
-  return payload;
-}
-
-function getDate(date: Date): string {
-  let day: number = date.getDate();
-  let month: number = date.getMonth();
-  let year: number = date.getFullYear();
-  let pad = (n) => n<10 ? '0'+n : n;
-
-  return pad(day) + "/" + pad(month+1) + "/" + year;
-}
-
-function getTime(date: Date): string {
-  let hours: number = date.getHours();
-  let minutes: number = date.getMinutes();
-  let seconds: number = date.getSeconds();
-  let pad = (n) => n<10 ? '0'+n : n;
-
-  return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
 }
 
 run();
