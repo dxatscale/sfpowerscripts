@@ -17,28 +17,50 @@
     "instanceNameFormat": "Generate a changelog for the current release",
     "inputs": [
         {
-            "name": "manifestFilepath",
-            "type": "string",
-            "label": "Manifest Filepath",
-            "defaultValue": "",
-            "required": true,
-            "helpMarkDown": "Filepath of the manifest json containing release definitions"
+          "name": "releaseName",
+          "type": "string",
+          "label": "Release Name",
+          "defaultValue": "",
+          "required": true,
+          "helpMarkDown": "Name of the release to be displayed in the changelog"
         },
         {
-            "name": "defaultRepository",
-            "type": "string",
-            "label": "Default Repository",
-            "defaultValue": "",
-            "required": true,
-            "helpMarkDown": "Default repository for packages and manifest file"
+          "name": "limit",
+          "type": "string",
+          "label": "Display Limit",
+          "required": false,
+          "helpMarkDown": "Limit the number of releases to display in the changelog"
         },
         {
-            "name": "branch",
+          "name": "workItemFilter",
+          "type": "string",
+          "label": "Work Item Pattern",
+          "defaultValue": "",
+          "required": true,
+          "helpMarkDown": "Pattern used to match work item or user story IDs. Accepts regular expressions e.g. APR-[0-9]{3,4}"
+        },
+        {
+          "name": "workItemUrl",
+          "type": "string",
+          "label": "Work Item URL",
+          "required": false,
+          "helpMarkDown": "Generic URL that points to work items. Each work item ID will be appended to the URL, providing quick access to work items"
+        },
+        {
+            "name": "repositoryUrl",
             "type": "string",
-            "label": "branch",
+            "label": "Repository URL",
             "defaultValue": "",
             "required": true,
-            "helpMarkDown": "Branch containing manifest and json output"
+            "helpMarkDown": "Repository in which changelog files will be located"
+        },
+        {
+            "name": "branchName",
+            "type": "string",
+            "label": "Branch Name",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Name of the repository branch in which changelog files will be located"
         },
         {
             "name": "forcePush",

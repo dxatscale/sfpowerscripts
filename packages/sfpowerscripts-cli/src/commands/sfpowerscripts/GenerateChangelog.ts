@@ -62,7 +62,7 @@ export default class GenerateChangelog extends SfdxCommand {
 
       let packageChangelogMap: {[P:string]: string} = {};
       let latestReleaseDefinition: Release = {
-        name: "",
+        name: this.flags.releasename,
         workItems: {},
         artifacts: []
       };
@@ -70,7 +70,6 @@ export default class GenerateChangelog extends SfdxCommand {
       // Read artifacts for latest release definition
       for (let packageMetadataFilepath of packageMetadataFilepaths ) {
         let packageMetadata: PackageMetadata = JSON.parse(fs.readFileSync(packageMetadataFilepath, 'utf8'));
-        latestReleaseDefinition["name"] = this.flags.releasename;
         latestReleaseDefinition["artifacts"].push({
           name: packageMetadata["package_name"],
           from: undefined,

@@ -4,7 +4,10 @@ import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import { IReleaseApi } from "azure-devops-node-api/ReleaseApi";
 import { Release, Artifact } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
 import ArtifactFilePathFetcher, { ArtifactFilePaths } from "../Common/ArtifactFilePathFetcher";
-import GenerateChangelogImpl, { Changelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogImpl";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
+import { ReleaseChangelog, Release as ChangelogRelease} from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
+
 import simplegit, { SimpleGit } from "simple-git/promise";
 const tmp = require('tmp');
 import fs = require("fs");
@@ -13,6 +16,12 @@ const path = require("path");
 async function run() {
   const tempDirectories = [];
   try {
+    let taskType: string = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
+
+    if (taskType === "Build") {
+      throw Error("Generate Changelog task can only be used on a release pipeline");
+    }
+
     console.log("Cloning repositories...");
 
     const versionControlProvider: string = tl.getInput("versionControlProvider", true);
@@ -27,7 +36,7 @@ async function run() {
       versionControlProvider,
       username,
       token,
-      tl.getInput("defaultRepository", true)
+      tl.getInput("repositoryUrl", true)
     );
 
     let git: SimpleGit = simplegit();
@@ -46,41 +55,6 @@ async function run() {
 
     console.log(fs.readdirSync(defaultRepoTempDir));
 
-    const manifestFilepath: string = path.join(
-      defaultRepoTempDir,
-      tl.getInput("manifestFilepath", true)
-    );
-
-    const manifest = JSON.parse(fs.readFileSync(manifestFilepath, 'utf8'));
-    // TODO: Validate manifest
-
-    const pkgTempDirMap: {[P: string]: string} = {};
-
-    if (manifest["repositories"] != null) {
-      for (let repository of manifest["repositories"]) {
-          tempDir = tmp.dirSync({unsafeCleanup: true});
-
-          let remote: string = buildAuthRemoteUrl(
-            versionControlProvider,
-            username,
-            token,
-            repository["url"]
-          );
-
-          await git.clone(
-            remote,
-            tempDir.name
-          );
-
-          // Map packages to temp directory
-          for (let pkg of repository["packages"]) {
-              pkgTempDirMap[pkg] = tempDir.name;
-          }
-
-          tempDirectories.push(tempDir);
-      }
-    }
-
 
     console.log("Building manifest using latest release definition...");
 
@@ -94,19 +68,24 @@ async function run() {
     let release: Release = await releaseApi.getRelease(project, releaseId);
     console.log(release.artifacts);
 
-    let releaseName: string = tl.getVariable('Release.ReleaseName');
-    if (manifest["releases"] == null) {
-      manifest["releases"] = [{
-        name: releaseName,
-        artifacts: []
-      }];
-    } else {
-      manifest["releases"].push({
-        name: releaseName,
-        artifacts: []
-      })
-    }
-    const releaseNum: number = manifest["releases"].length - 1;
+
+
+
+    // Read artifacts for latest release definition
+
+
+
+
+
+
+
+    let packageChangelogMap: {[P:string]: string} = {};
+    let latestReleaseDefinition: ChangelogRelease = {
+      name: tl.getInput("releaseName", true),
+      workItems: {},
+      artifacts: []
+    };
+
 
     for (let artifact of release.artifacts) {
       let artifacts_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
@@ -114,148 +93,146 @@ async function run() {
         artifact.type
       );
 
+
       console.log('artifact filepaths', artifacts_filepaths);
 
       for (let artifactFilepaths of artifacts_filepaths) {
-        let artifactMetadata = JSON.parse(
+        let packageMetadata: PackageMetadata = JSON.parse(
           fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
         );
 
-        console.log(artifactMetadata.package_name);
-        console.log(artifactMetadata.package_version_number);
-        console.log(artifactMetadata.sourceVersion);
+        console.log(packageMetadata.package_name);
+        console.log(packageMetadata.package_version_number);
+        console.log(packageMetadata.sourceVersion);
         // TODO store the version number
-        manifest["releases"][releaseNum]["artifacts"].push({
-          name: artifactMetadata.package_name,
-          version: artifactMetadata.sourceVersion,
-          version_name: artifactMetadata.package_version_number
+        latestReleaseDefinition["artifacts"].push({
+          name: packageMetadata["package_name"],
+          from: undefined,
+          to: packageMetadata["sourceVersion"]?.slice(0,8) || packageMetadata["sourceVersionTo"]?.slice(0,8),
+          version: packageMetadata["package_version_number"],
+          latestCommitId: undefined,
+          commits: undefined
         });
+
+        packageChangelogMap[packageMetadata["package_name"]] = path.join(
+          path.dirname(artifactFilepaths.packageMetadataFilePath),
+          `changelog.json`
+        );
       }
     }
-    console.log('new manifest', JSON.stringify(manifest,null,4));
 
     console.log("Generating changelog...");
 
-    const releaseHistory: ReleaseHistory = {
-      releases: []
-    };
+    // Check if any packages are missing changelog
+    Object.values(packageChangelogMap).forEach( (changelogPath) => {
+      if (!fs.existsSync(changelogPath)) {
+        throw Error("Artifact is missing changelog. Check build task version compatability");
+      }
+    });
 
-    const workItemFilter: string = manifest["workItemFilter"];
-    const workItemURL: string = manifest["workItemURL"];
-    const releaseTags: string[][] = [];
-
-    // Generate changelog between releases defined in manifest
-    for (let releaseNum = 0 ; releaseNum < manifest["releases"].length ; releaseNum++ ) {
-
-        // Initalise release object
-        let nextRelease: release = {
-            "name": manifest["releases"][releaseNum]["name"],
-            "workItems": {},
-            "artifacts": []
-        }
-
-        let tags: string[] = [];
-
-        for (let artifact of manifest["releases"][releaseNum]["artifacts"]) {
-
-            // Set project directory to artifact's repo
-            let project_directory: string;
-            if (pkgTempDirMap[artifact["name"]] != null) {
-                project_directory = pkgTempDirMap[artifact["name"]];
-            } else {
-                project_directory = defaultRepoTempDir;
-            }
-
-            git = simplegit(project_directory);
-
-            let artifactFromVersion: string;
-            if (releaseNum > 0) {
-                // Get artifact version from previous release
-                for (let prevReleaseArtifact of manifest["releases"][releaseNum-1]["artifacts"]) {
-                    if (prevReleaseArtifact["name"] === artifact["name"]) {
-                        artifactFromVersion = prevReleaseArtifact["version"];
-                        break;
-                    }
-                }
-            }
-
-            // Dereference the tag to get the commit that it points at
-            let revFrom: string;
-            if (artifactFromVersion != null) {
-                revFrom = await git.revparse([
-                    "--short",
-                    `${artifactFromVersion}^{}`
-                ]);
-            }
-
-            let revTo: string;
-            try {
-                revTo = await git.revparse([
-                    "--short",
-                    `${artifact["version"]}^{}`
-                ]);
-            } catch(revisionError) {
-                console.log(`Unable to find revision ${artifact["version"]}`);
-                throw(revisionError);
-            }
-
-            tags.push(artifact["version"]);
-
-
-            // Generate changelog for single artifact between two release versions
-            let generateChangelogImpl: GenerateChangelogImpl = new GenerateChangelogImpl(
-                artifact["name"],
-                revFrom,
-                revTo,
-                workItemFilter,
-                project_directory
-            );
-
-            let result: Changelog = await generateChangelogImpl.exec();
-
-            // Add work items to the release
-            // Work items and their commits are deduped
-            for (let item in result["workItems"]) {
-                if (nextRelease["workItems"][item] == null) {
-                    nextRelease["workItems"][item] = result["workItems"][item];
-                } else {
-                    for (let commit of result["workItems"][item]) {
-                        nextRelease["workItems"][item].add(commit);
-                    }
-                }
-            }
-
-            result["package"]["version"] = artifact["version_name"];
-            nextRelease["artifacts"].push(result["package"]);
-        }
-
-        releaseTags.push(tags); // Store the tag names in each release, for markdown generation
-
-        // Convert each work item Set to Array
-        // Enables JSON stringification of work item
-        for (let key in nextRelease["workItems"]) {
-            nextRelease["workItems"][key] = Array.from(nextRelease["workItems"][key]);
-        }
-
-        releaseHistory["releases"].push(nextRelease);
+    // Get artifact versions from previous release definition
+    let prevReleaseDefinition: ChangelogRelease;
+    let releaseChangelog: ReleaseChangelog;
+    if ( fs.existsSync(path.join(defaultRepoTempDir,`releasechangelog.json`)) ) {
+      releaseChangelog = JSON.parse(fs.readFileSync(`releasechangelog.json`, 'utf8'));
+      if (releaseChangelog["releases"].length > 0) {
+        prevReleaseDefinition = releaseChangelog["releases"][releaseChangelog["releases"].length - 1];
+      }
     }
 
-    // TODO handle output directories properly
+    let prevReleaseLatestCommitId: {[P: string]: string} = {}
+    if (prevReleaseDefinition) {
+      for (let artifact of latestReleaseDefinition["artifacts"]) {
+        for (let prevReleaseArtifact of prevReleaseDefinition["artifacts"]) {
+          if (artifact["name"] === prevReleaseArtifact["name"]) {
+            artifact["from"] = prevReleaseArtifact["to"];
+            prevReleaseLatestCommitId[artifact["name"]] = prevReleaseArtifact["latestCommitId"];
+            break;
+          }
+        }
+      }
+    }
+
+    // Get commits for the latest release
+    for (let artifact of latestReleaseDefinition["artifacts"]) {
+      let packageChangelog: PackageChangelog = JSON.parse(fs.readFileSync(packageChangelogMap[artifact["name"]], 'utf8'));
+
+      artifact["latestCommitId"] = packageChangelog["commits"][0]["commitId"];
+
+      let fromIdx;
+      if (artifact["from"]) {
+        fromIdx = packageChangelog["commits"].findIndex( (commit) =>
+          commit["commitId"] === prevReleaseLatestCommitId[artifact["name"]]
+        );
+        if (fromIdx === -1)
+          throw Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
+      }
+
+      // Verify that latestReleaseDefinition changes
+      // Always grab the latest commit
+      if (fromIdx > 0) {
+        artifact["commits"] = packageChangelog["commits"].slice(0, fromIdx+1);
+      } else if (fromIdx === 0) {
+        // Artifact verison has not changed
+        artifact["commits"] = [];
+        // Skip to next artifact
+        continue;
+      } else if (fromIdx === undefined ) {
+        // Artifact was not in previous release
+        artifact["commits"] = packageChangelog["commits"];
+      }
+
+
+      // Figure out work items for latest release
+      let workItemFilter: RegExp = RegExp(tl.getInput("workItemFilter", true), 'gi');
+      for (let commit of artifact["commits"]) {
+        let workItems: RegExpMatchArray = commit["body"].match(workItemFilter) || commit["message"].match(workItemFilter);
+        if (workItems) {
+            for (let item of workItems) {
+                if (latestReleaseDefinition["workItems"][item] == null) {
+                    latestReleaseDefinition["workItems"][item] = new Set<string>();
+                    latestReleaseDefinition["workItems"][item].add(commit["commitId"].slice(0,8));
+                } else {
+                    latestReleaseDefinition["workItems"][item].add(commit["commitId"].slice(0,8));
+                }
+            }
+        }
+      }
+    }
+
+    // Convert each work item Set to Array
+    // Enables JSON stringification of work item
+    for (let key in latestReleaseDefinition["workItems"]) {
+      latestReleaseDefinition["workItems"][key] = Array.from(latestReleaseDefinition["workItems"][key]);
+    }
+
+    // Append results to release changelog
+    if (releaseChangelog) {
+      releaseChangelog["releases"].push(latestReleaseDefinition);
+    } else {
+      releaseChangelog = {
+        releases: [latestReleaseDefinition]
+      }
+    }
+
     fs.writeFileSync(
-      path.join(defaultRepoTempDir, `releasechangelog.json`),
-      JSON.stringify(releaseHistory, null, 4)
+      path.join(defaultRepoTempDir,`releasechangelog.json`),
+      JSON.stringify(releaseChangelog, null, 4)
     );
 
-    generateMarkdown(releaseHistory, workItemURL, null, releaseTags, defaultRepoTempDir);
+    let payload: string = generateMarkdown(releaseChangelog, tl.getInput("workItemUrl", false), parseInt(tl.getInput("limit", false), 10));
 
-    let updatedManifest: string = JSON.stringify(manifest, null, 4);
-    fs.writeFileSync(manifestFilepath, updatedManifest);
+    fs.writeFileSync(
+      path.join(defaultRepoTempDir,`releasechangelog.md`),
+      payload
+    );
+
 
     git = simplegit(defaultRepoTempDir);
     await git.addConfig("user.name", "sfpowerscripts");
     await git.addConfig("user.email", "sfpowerscripts@dxscale");
-    await git.add([`releasechangelog.json`, `releasechangelog.md`, tl.getInput("manifestFilepath", true)]);
-    await git.commit(`[skip ci] updated changelog`);
+    await git.add([`releasechangelog.json`, `releasechangelog.md`]);
+    await git.commit(`[skip ci] updated changelog ${tl.getInput("releaseName", true)}`);
     await git.push();
 
   } catch (err) {
@@ -339,24 +316,24 @@ function buildAuthRemoteUrl(versionControlProvider: string, username: string, to
   return authRemoteUrl;
 }
 
-function generateMarkdown(releaseHistory: ReleaseHistory, workItemURL: string, limit: number, releaseTags: string[][], defaultRepoDir: string): void {
+function generateMarkdown(releaseChangelog: ReleaseChangelog, workItemURL: string, limit: number): string {
   let payload: string = "";
 
   let limitReleases: number;
-  if (limit != null)
-     limitReleases = releaseHistory["releases"].length - limit;
+  if (limit <= releaseChangelog["releases"].length)
+     limitReleases = releaseChangelog["releases"].length - limit;
   else
      limitReleases = 0;
 
   // Start from latest Release
-  for (let releaseNum = releaseHistory["releases"].length - 1 ; releaseNum >= limitReleases ; releaseNum-- ) {
-      let release = releaseHistory["releases"][releaseNum];
+  for (let releaseNum = releaseChangelog["releases"].length - 1 ; releaseNum >= limitReleases ; releaseNum-- ) {
+      let release: Release = releaseChangelog["releases"][releaseNum];
 
       payload += `\n# ${release["name"]}\n`;
 
       payload += "## Artifacts\n";
       for (let artifactNum = 0 ; artifactNum < release["artifacts"].length ; artifactNum++) {
-          payload += `**${release["artifacts"][artifactNum]["name"]}**     ${release["artifacts"][artifactNum]["version"]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
+          payload += `**${release["artifacts"][artifactNum]["name"]}**     v${release["artifacts"][artifactNum]["version"]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
       }
 
       payload += "## Work Items\n";
@@ -391,10 +368,7 @@ function generateMarkdown(releaseHistory: ReleaseHistory, workItemURL: string, l
           }
       }
   }
-  fs.writeFileSync(
-    path.join(defaultRepoDir, `releasechangelog.md`),
-    payload
-  );
+  return payload;
 }
 
 function getDate(date: Date): string {
