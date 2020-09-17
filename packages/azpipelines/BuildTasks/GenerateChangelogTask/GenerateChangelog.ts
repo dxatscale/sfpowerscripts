@@ -1,20 +1,18 @@
 import tl = require("azure-pipelines-task-lib/task");
-import child_process = require("child_process");
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import { IReleaseApi } from "azure-devops-node-api/ReleaseApi";
-import { Release, Artifact } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
+import { Release } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
 import ArtifactFilePathFetcher, { ArtifactFilePaths } from "../Common/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { ReleaseChangelog, Release as ChangelogRelease} from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
-
 import simplegit, { SimpleGit } from "simple-git/promise";
-const tmp = require('tmp');
 import fs = require("fs");
+const tmp = require('tmp');
 const path = require("path");
 
 async function run() {
-  const tempDirectories = [];
+  let tempDir = tmp.dirSync({unsafeCleanup: true});
   try {
     let taskType: string = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
 
@@ -22,42 +20,40 @@ async function run() {
       throw Error("Generate Changelog task can only be used on a release pipeline");
     }
 
-    console.log("Cloning repositories...");
-
     const versionControlProvider: string = tl.getInput("versionControlProvider", true);
+    const repositoryUrl: string = tl.getInput("repositoryUrl", true);
+    const branch: string = tl.getInput("branchName", true);
+
+    console.log(`Cloning repository ${repositoryUrl}`);
+
     let vcsAuthDetails = getVCSAuthDetails(versionControlProvider);
     let token: string = vcsAuthDetails.token;
     let username: string = vcsAuthDetails.username;
 
-
-    let tempDir: any = tmp.dirSync({unsafeCleanup: true});
-
-    let defaultRemote: string = buildAuthRemoteUrl(
+    let remote: string = buildAuthRemoteUrl(
       versionControlProvider,
       username,
       token,
-      tl.getInput("repositoryUrl", true)
+      repositoryUrl
     );
 
     let git: SimpleGit = simplegit();
 
     await git.clone(
-      defaultRemote,
+      remote,
       tempDir.name
     );
-    const defaultRepoTempDir = tempDir.name;
-    tempDirectories.push(tempDir); // Store temp directories for deletion when process exits
+    const repoTempDir = tempDir.name;
 
-    // Get manifest from branch in default repository
-    const branch: string = tl.getInput("branchName", true);
-    git = simplegit(defaultRepoTempDir);
+    console.log(`Checking out branch ${branch}`);
+    git = simplegit(repoTempDir);
     await git.checkout(branch);
 
-    console.log(fs.readdirSync(defaultRepoTempDir));
+    console.log(fs.readdirSync(repoTempDir));
 
 
-    console.log("Building manifest using latest release definition...");
 
+    // Get latest release definition using Azure Release API
     const webApi = await getWebAPIWithoutToken();
     const releaseApi: IReleaseApi = await webApi.getReleaseApi();
 
@@ -67,15 +63,6 @@ async function run() {
     console.log(releaseId);
     let release: Release = await releaseApi.getRelease(project, releaseId);
     console.log(release.artifacts);
-
-
-
-
-    // Read artifacts for latest release definition
-
-
-
-
 
 
 
@@ -124,16 +111,16 @@ async function run() {
     console.log("Generating changelog...");
 
     // Check if any packages are missing changelog
-    Object.values(packageChangelogMap).forEach( (changelogPath) => {
-      if (!fs.existsSync(changelogPath)) {
+    Object.keys(packageChangelogMap).forEach( (pkg) => {
+      if (!fs.existsSync(packageChangelogMap[pkg])) {
         throw Error("Artifact is missing changelog. Check build task version compatability");
       }
     });
 
     // Get artifact versions from previous release definition
-    let prevReleaseDefinition: ChangelogRelease;
     let releaseChangelog: ReleaseChangelog;
-    if ( fs.existsSync(path.join(defaultRepoTempDir,`releasechangelog.json`)) ) {
+    let prevReleaseDefinition: ChangelogRelease;
+    if ( fs.existsSync(path.join(repoTempDir,`releasechangelog.json`)) ) {
       releaseChangelog = JSON.parse(fs.readFileSync(`releasechangelog.json`, 'utf8'));
       if (releaseChangelog["releases"].length > 0) {
         prevReleaseDefinition = releaseChangelog["releases"][releaseChangelog["releases"].length - 1];
@@ -155,7 +142,9 @@ async function run() {
 
     // Get commits for the latest release
     for (let artifact of latestReleaseDefinition["artifacts"]) {
-      let packageChangelog: PackageChangelog = JSON.parse(fs.readFileSync(packageChangelogMap[artifact["name"]], 'utf8'));
+      let packageChangelog: PackageChangelog = JSON.parse(
+        fs.readFileSync(packageChangelogMap[artifact["name"]], 'utf8')
+      );
 
       artifact["latestCommitId"] = packageChangelog["commits"][0]["commitId"];
 
@@ -168,8 +157,6 @@ async function run() {
           throw Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
       }
 
-      // Verify that latestReleaseDefinition changes
-      // Always grab the latest commit
       if (fromIdx > 0) {
         artifact["commits"] = packageChangelog["commits"].slice(0, fromIdx+1);
       } else if (fromIdx === 0) {
@@ -183,7 +170,7 @@ async function run() {
       }
 
 
-      // Figure out work items for latest release
+      // Compute work items for latest release
       let workItemFilter: RegExp = RegExp(tl.getInput("workItemFilter", true), 'gi');
       for (let commit of artifact["commits"]) {
         let workItems: RegExpMatchArray = commit["body"].match(workItemFilter) || commit["message"].match(workItemFilter);
@@ -216,19 +203,23 @@ async function run() {
     }
 
     fs.writeFileSync(
-      path.join(defaultRepoTempDir,`releasechangelog.json`),
+      path.join(repoTempDir,`releasechangelog.json`),
       JSON.stringify(releaseChangelog, null, 4)
     );
 
-    let payload: string = generateMarkdown(releaseChangelog, tl.getInput("workItemUrl", false), parseInt(tl.getInput("limit", false), 10));
+    let payload: string = generateMarkdown(
+      releaseChangelog,
+      tl.getInput("workItemUrl", false),
+      parseInt(tl.getInput("limit", false), 10)
+    );
 
     fs.writeFileSync(
-      path.join(defaultRepoTempDir,`releasechangelog.md`),
+      path.join(repoTempDir,`releasechangelog.md`),
       payload
     );
 
 
-    git = simplegit(defaultRepoTempDir);
+    git = simplegit(repoTempDir);
     await git.addConfig("user.name", "sfpowerscripts");
     await git.addConfig("user.email", "sfpowerscripts@dxscale");
     await git.add([`releasechangelog.json`, `releasechangelog.md`]);
@@ -236,16 +227,16 @@ async function run() {
     await git.push();
 
   } catch (err) {
+    // Cleanup temp directories
+
+    tempDir.removeCallback();
+
     tl.setResult(tl.TaskResult.Failed, err.message);
 
-    // Cleanup temp directories
-    for (let tempdir of tempDirectories) {
-      tempdir.removeCallback();
-    }
+
+
   } finally {
-    for (let tempdir of tempDirectories) {
-      tempdir.removeCallback();
-    }
+    tempDir.removeCallback();
 
     tl.setResult(tl.TaskResult.Succeeded, 'Finished');
   }
