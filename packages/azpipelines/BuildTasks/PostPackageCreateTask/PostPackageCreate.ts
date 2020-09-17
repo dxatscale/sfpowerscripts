@@ -1,5 +1,5 @@
 import tl = require("azure-pipelines-task-lib/task");
-import authGit from "../Common/VersionControlAuth";
+import authVCS from "../Common/VersionControlAuth";
 import simplegit from "simple-git/promise";
 
 async function run() {
@@ -39,7 +39,8 @@ async function createandPushGitTag(
     git = simplegit(tl.getVariable("Build.Repository.LocalPath"));
   else git = simplegit(project_directory);
 
-  let remote = await authGit();
+  let repository_url:string = tl.getVariable("Build.Repository.Uri");
+  let remote = await authVCS(repository_url);
 
   await git.addConfig("user.name", "sfpowerscripts");
 

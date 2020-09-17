@@ -7,6 +7,7 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata"
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import { ReleaseChangelog, Release as ChangelogRelease} from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
+import authVCS from "../Common/VersionControlAuth";
 import simplegit, { SimpleGit } from "simple-git/promise";
 import fs = require("fs");
 const tmp = require('tmp');
@@ -21,23 +22,12 @@ async function run() {
       throw Error("Generate Changelog task can only be used on a release pipeline");
     }
 
-    const versionControlProvider: string = tl.getInput("versionControlProvider", true);
     const repositoryUrl: string = tl.getInput("repositoryUrl", true);
     const branch: string = tl.getInput("branchName", true);
 
     console.log(`Cloning repository ${repositoryUrl}`);
 
-    let vcsAuthDetails = getVCSAuthDetails(versionControlProvider);
-    let token: string = vcsAuthDetails.token;
-    let username: string = vcsAuthDetails.username;
-
-    let remote: string = buildAuthRemoteUrl(
-      versionControlProvider,
-      username,
-      token,
-      repositoryUrl
-    );
-
+    let remote: string = authVCS(repositoryUrl);
     let git: SimpleGit = simplegit();
 
     await git.clone(
@@ -52,7 +42,6 @@ async function run() {
 
 
 
-
     // Get latest release definition using Azure Release API
     const webApi = await getWebAPIWithoutToken();
     const releaseApi: IReleaseApi = await webApi.getReleaseApi();
@@ -62,7 +51,6 @@ async function run() {
     let release: Release = await releaseApi.getRelease(project, releaseId);
 
 
-
     let packageChangelogMap: {[P:string]: string} = {};
     let latestReleaseDefinition: ChangelogRelease = {
       name: tl.getInput("releaseName", true),
@@ -70,13 +58,11 @@ async function run() {
       artifacts: []
     };
 
-
     for (let artifact of release.artifacts) {
       let artifacts_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         artifact.alias,
         artifact.type
       );
-
 
 
       for (let artifactFilepaths of artifacts_filepaths) {
@@ -222,83 +208,12 @@ async function run() {
 
   } catch (err) {
     // Cleanup temp directories
-
     tempDir.removeCallback();
-
     tl.setResult(tl.TaskResult.Failed, err.message);
-
-
-
   } finally {
     tempDir.removeCallback();
-
     tl.setResult(tl.TaskResult.Succeeded, 'Finished');
   }
-}
-
-function getVCSAuthDetails(version_control_provider: string): {token, username} {
-
-  let token: string, username: string;
-
-  let connection: string;
-  switch (version_control_provider) {
-    case "github":
-      connection = tl.getInput("github_connection", true);
-      break;
-    case "githubEnterprise":
-      connection = tl.getInput("github_enterprise_connection", true);
-      break;
-    case "bitbucket":
-      connection = tl.getInput("bitbucket_connection", true);
-      break;
-  }
-
-  if (version_control_provider == "azureRepo") {
-    token = tl.getVariable("system.accessToken");
-  }
-  else if (version_control_provider == "github" ||
-    version_control_provider == "githubEnterprise") {
-    token = tl.getEndpointAuthorizationParameter(
-      connection,
-      "AccessToken",
-      true
-    );
-  }
-  else if (version_control_provider == "bitbucket") {
-    token = tl.getEndpointAuthorizationParameter(
-      connection,
-      "AccessToken",
-      true
-    );
-  }
-  else if (version_control_provider == "otherGit") {
-    username = tl.getInput("username", true);
-    token = tl.getInput("password", true);
-  }
-  return {token, username};
-}
-
-function buildAuthRemoteUrl(versionControlProvider: string, username: string, token: string, repositoryUrl: string) {
-  let authRemoteUrl: string;
-
-  const removeHttps = (url) => url.replace(/^https?:\/\//, "");
-
-  if (versionControlProvider === "azureRepo") {
-    authRemoteUrl = `https://x-token-auth:${token}@${removeHttps(repositoryUrl)}`;
-  } else if (versionControlProvider == "bitbucket") {
-    authRemoteUrl = `https://x-token-auth:${token}@${removeHttps(repositoryUrl)}`;
-  } else if (
-    versionControlProvider === "github" ||
-    versionControlProvider === "githubEnterprise"
-  ) {
-    authRemoteUrl = `https://${token}:x-oauth-basic@${removeHttps(repositoryUrl)}`;
-  } else if (versionControlProvider === "otherGit") {
-    authRemoteUrl = `https://${username}:${token}@${removeHttps(repositoryUrl)}`;
-  } else if (versionControlProvider === "hostedAgentGit") {
-    authRemoteUrl = repositoryUrl;
-  }
-
-  return authRemoteUrl;
 }
 
 run();
