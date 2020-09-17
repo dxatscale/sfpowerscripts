@@ -71,7 +71,6 @@ export default class ArtifactFilePathFetcher {
         absolute: true,
       }
     );
-    console.log(`globResult`, packageMetadataFilepaths);
 
     if (sfdx_package) {
       // Filter and only return ArtifactFilePaths for sfdx_package
@@ -122,7 +121,6 @@ export default class ArtifactFilePathFetcher {
       }
     );
 
-    console.log(`globResult`, packageMetadataFilepaths);
 
     if (sfdx_package) {
       // Filter and only return ArtifactFilePaths for sfdx_package

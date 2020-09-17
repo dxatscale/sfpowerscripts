@@ -50,7 +50,6 @@ async function run() {
     git = simplegit(repoTempDir);
     await git.checkout(branch);
 
-    console.log(fs.readdirSync(repoTempDir));
 
 
 
@@ -60,10 +59,7 @@ async function run() {
 
     let project: string = tl.getVariable('System.TeamProject');
     let releaseId: number = parseInt(tl.getVariable('Release.ReleaseId'), 10);
-    console.log(project);
-    console.log(releaseId);
     let release: Release = await releaseApi.getRelease(project, releaseId);
-    console.log(release.artifacts);
 
 
 
@@ -88,10 +84,6 @@ async function run() {
         let packageMetadata: PackageMetadata = JSON.parse(
           fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
         );
-
-        console.log(packageMetadata.package_name);
-        console.log(packageMetadata.package_version_number);
-        console.log(packageMetadata.sourceVersion);
 
         latestReleaseDefinition["artifacts"].push({
           name: packageMetadata["package_name"],

@@ -149,7 +149,7 @@ export default class GenerateChangelog extends SfdxCommand {
           }
         }
       }
-      console.log(prevReleaseLatestCommitId);
+
       // Get commits for the latest release
       for (let artifact of latestReleaseDefinition["artifacts"]) {
         let packageChangelog: PackageChangelog = JSON.parse(fs.readFileSync(packageChangelogMap[artifact["name"]], 'utf8'));
@@ -164,7 +164,6 @@ export default class GenerateChangelog extends SfdxCommand {
           if (fromIdx === -1)
             throw Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
         }
-        console.log(artifact["name"],'fromidx', fromIdx);
 
         // Verify that latestReleaseDefinition changes
         // Always grab the latest commit
