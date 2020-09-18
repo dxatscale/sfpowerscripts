@@ -149,21 +149,21 @@ async function run() {
       packageMetadataFromStorage.isProfilesFound &&
       packageMetadataFromStorage.preDeploymentSteps?.includes("reconcile")
     ) {
-      try {   
+      try {
         console.log("Attempting reconcile to profiles");
         //copy the original profiles to temporary location
         profileFolders = glob.sync("**/profiles", {
-          cwd: path.join(artifactFilePaths.sourceDirectoryPath),
+          cwd: path.join(artifactFilePaths[0].sourceDirectoryPath),
         });
         if (profileFolders.length > 0) {
           profileFolders.forEach((folder) => {
-            fs.copySync(path.join(artifactFilePaths.sourceDirectoryPath,folder), path.join(tl.getVariable("agent.tempDirectory"), folder));
+            fs.copySync(path.join(artifactFilePaths[0].sourceDirectoryPath,folder), path.join(tl.getVariable("agent.tempDirectory"), folder));
           });
         }
         //Now Reconcile
         let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
           target_org,
-          path.join(artifactFilePaths.sourceDirectoryPath)
+          path.join(artifactFilePaths[0].sourceDirectoryPath)
         );
         await reconcileProfileAgainstOrg.exec();
         isReconcileActivated = true;
@@ -172,7 +172,7 @@ async function run() {
         isReconcileErrored=true;
       }
     }
-    
+
     //Reconcile Failed, Bring back the original profiles
     console.log("Restoring original profiles as preprocessing failed");
     if(isReconcileErrored && profileFolders.length>0)
@@ -180,7 +180,7 @@ async function run() {
       profileFolders.forEach((folder) => {
         fs.copySync(
           path.join(tl.getVariable("agent.tempDirectory"), folder),
-          path.join(artifactFilePaths.sourceDirectoryPath, folder)
+          path.join(artifactFilePaths[0].sourceDirectoryPath, folder)
         );
       });
     }
@@ -217,7 +217,7 @@ async function run() {
             profileFolders.forEach((folder) => {
               fs.copySync(
                 path.join(tl.getVariable("agent.tempDirectory"), folder),
-                path.join(artifactFilePaths.sourceDirectoryPath, folder)
+                path.join(artifactFilePaths[0].sourceDirectoryPath, folder)
               );
             });
 
@@ -225,24 +225,24 @@ async function run() {
             //Now Reconcile
             let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
               target_org,
-              path.join(artifactFilePaths.sourceDirectoryPath)
+              path.join(artifactFilePaths[0].sourceDirectoryPath)
             );
             await reconcileProfileAgainstOrg.exec();
             isReconcileActivated = true;
 
             //Now deploy the profies alone
             fs.appendFileSync(
-              path.join(artifactFilePaths.sourceDirectoryPath, ".forceignore"),
+              path.join(artifactFilePaths[0].sourceDirectoryPath, ".forceignore"),
               "**.**" + os.EOL
             );
             fs.appendFileSync(
-              path.join(artifactFilePaths.sourceDirectoryPath, ".forceignore"),
+              path.join(artifactFilePaths[0].sourceDirectoryPath, ".forceignore"),
               "!**.profile-meta.xml"
             );
 
             let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
               target_org,
-              artifactFilePaths.sourceDirectoryPath,
+              artifactFilePaths[0].sourceDirectoryPath,
               sourceDirectory,
               deploymentOptions,
               false
