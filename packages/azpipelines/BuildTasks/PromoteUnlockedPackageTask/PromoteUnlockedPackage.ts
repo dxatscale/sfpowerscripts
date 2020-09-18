@@ -34,7 +34,7 @@ async function run() {
         sfdx_package
       );
       ArtifactFilePathFetcher.missingArtifactDecider(
-        artifactFilePaths[0].packageMetadataFilePath,
+        artifactFilePaths,
         skip_on_missing_artifact
       );
 

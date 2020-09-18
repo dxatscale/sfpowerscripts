@@ -156,15 +156,15 @@ export default class ArtifactFilePathFetcher {
    * @param isToSkipOnMissingArtifact
    */
   public static missingArtifactDecider(
-    packageMetadataFilePath: string,
+    artifacts_filepaths: ArtifactFilePaths[],
     isToSkipOnMissingArtifact: boolean
   ): void {
-    if (!fs.existsSync(packageMetadataFilePath) && !isToSkipOnMissingArtifact) {
+    if (artifacts_filepaths.length === 0 && !isToSkipOnMissingArtifact) {
       throw new Error(
-        `Artifact not found at ${packageMetadataFilePath}.. Please check the inputs`
+        `Artifact not found, Please check the inputs`
       );
     } else if (
-      !fs.existsSync(packageMetadataFilePath) &&
+      artifacts_filepaths.length === 0 &&
       isToSkipOnMissingArtifact
     ) {
       console.log(

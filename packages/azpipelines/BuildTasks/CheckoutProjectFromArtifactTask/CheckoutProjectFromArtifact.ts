@@ -38,7 +38,7 @@ async function run() {
     );
 
     ArtifactFilePathFetcher.missingArtifactDecider(
-      artifactFilePaths[0].packageMetadataFilePath,
+      artifactFilePaths,
       skip_on_missing_artifact
     );
 
