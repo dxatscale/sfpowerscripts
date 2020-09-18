@@ -1,6 +1,7 @@
 import tl = require("azure-pipelines-task-lib/task");
 import { isNullOrUndefined } from "util";
 import DeploySourceToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceToOrgImpl";
+import ReconcileProfileAgainstOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/ReconcileProfileAgainstOrgImpl";
 import DeployDestructiveManifestToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeployDestructiveManifestToOrgImpl";
 import DeploySourceResult from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceResult";
 import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
@@ -15,8 +16,10 @@ import {
   updatePackageDeploymentDetails,
 } from "../Common/PackageExtensionStorageHelper";
 
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
+const glob = require("glob");
+const os = require("os");
 
 async function run() {
   try {
@@ -59,6 +62,12 @@ async function run() {
       fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8")
     );
 
+    let packageMetadataFromStorage: PackageMetadata = await fetchPackageArtifactFromStorage(
+      packageMetadataFromArtifact,
+      extensionManagementApi,
+      extensionName
+    );
+
     console.log(
       "##[command]Package Metadata:" +
         JSON.stringify(
@@ -68,12 +77,6 @@ async function run() {
             else return value;
           }
         )
-    );
-
-    let packageMetadataFromStorage = await fetchPackageArtifactFromStorage(
-      packageMetadataFromArtifact,
-      extensionManagementApi,
-      extensionName
     );
 
     if (
@@ -139,6 +142,49 @@ async function run() {
     }
 
     //Apply Reconcile if Profiles are found
+    //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata
+    let isReconcileActivated = false,isReconcileErrored=false;
+    let profileFolders;
+    if (
+      packageMetadataFromStorage.isProfilesFound &&
+      packageMetadataFromStorage.preDeploymentSteps?.includes("reconcile")
+    ) {
+      try {   
+        console.log("Attempting reconcile to profiles");
+        //copy the original profiles to temporary location
+        profileFolders = glob.sync("**/profiles", {
+          cwd: path.join(artifactFilePaths.sourceDirectoryPath),
+        });
+        if (profileFolders.length > 0) {
+          profileFolders.forEach((folder) => {
+            fs.copySync(path.join(artifactFilePaths.sourceDirectoryPath,folder), path.join(tl.getVariable("agent.tempDirectory"), folder));
+          });
+        }
+        //Now Reconcile
+        let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
+          target_org,
+          path.join(artifactFilePaths.sourceDirectoryPath)
+        );
+        await reconcileProfileAgainstOrg.exec();
+        isReconcileActivated = true;
+      } catch (err) {
+        console.log("Failed to reconcile profiles:"+err);
+        isReconcileErrored=true;
+      }
+    }
+    
+    //Reconcile Failed, Bring back the original profiles
+    console.log("Restoring original profiles as preprocessing failed");
+    if(isReconcileErrored && profileFolders.length>0)
+    {
+      profileFolders.forEach((folder) => {
+        fs.copySync(
+          path.join(tl.getVariable("agent.tempDirectory"), folder),
+          path.join(artifactFilePaths.sourceDirectoryPath, folder)
+        );
+      });
+    }
+
 
     //Construct Deploy Command
     let deploymentOptions = await generateDeploymentOptions(
@@ -157,10 +203,65 @@ async function run() {
     let result: DeploySourceResult = await deploySourceToOrgImpl.exec();
 
     if (!isNullOrUndefined(result.deploy_id)) {
-      tl.setVariable("sfpowerkit_deploysource_id", result.deploy_id);
+      tl.setVariable("sfpowerscripts_deploysource_id", result.deploy_id);
     }
 
     if (result.result) {
+
+      console.log("Applying Post Deployment Activites")
+      //Apply PostDeployment Activities
+      try {
+        if (isReconcileActivated) {
+          //Bring back the original profiles
+          if (profileFolders.length > 0) {
+            profileFolders.forEach((folder) => {
+              fs.copySync(
+                path.join(tl.getVariable("agent.tempDirectory"), folder),
+                path.join(artifactFilePaths.sourceDirectoryPath, folder)
+              );
+            });
+
+
+            //Now Reconcile
+            let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
+              target_org,
+              path.join(artifactFilePaths.sourceDirectoryPath)
+            );
+            await reconcileProfileAgainstOrg.exec();
+            isReconcileActivated = true;
+
+            //Now deploy the profies alone
+            fs.appendFileSync(
+              path.join(artifactFilePaths.sourceDirectoryPath, ".forceignore"),
+              "**.**" + os.EOL
+            );
+            fs.appendFileSync(
+              path.join(artifactFilePaths.sourceDirectoryPath, ".forceignore"),
+              "!**.profile-meta.xml"
+            );
+
+            let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
+              target_org,
+              artifactFilePaths.sourceDirectoryPath,
+              sourceDirectory,
+              deploymentOptions,
+              false
+            );
+            let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
+
+            if (!profileReconcile.result) {
+              tl.warning("Unable to deploy profiles");
+            }
+          }
+        }
+      } catch (error) {
+        tl.warning(
+          "Failed to apply reconcile the second time, Partial Metadata applied"
+        );
+      }
+
+
+
       //No environment info available, create and push
       if (isNullOrUndefined(packageMetadataFromStorage.deployments)) {
         packageMetadataFromStorage.deployments = new Array();

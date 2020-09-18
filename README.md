@@ -2,10 +2,9 @@
   <img alt="sfpowerscripts" src="https://repository-images.githubusercontent.com/248449736/5d08c600-728e-11ea-8267-ae1aceebea60" width="480" height="400">
 </p>
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/b9ffe05d-af14-461e-bfc5-909ea0d7451f/deploy-status)](https://app.netlify.com/sites/sfpowerscripts/deploys) [![Build Status](https://dev.azure.com/dxatscale/sfpowerscripts/_apis/build/status/Release?branchName=develop)](https://dev.azure.com/dxatscale/sfpowerscripts/_build/latest?definitionId=40&branchName=develop) ![NPM Version](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts)
-### sfpowerscripts
 
-sfpowerscripts is a wrapper around sfdx-cli and open source sfdx plugin [sfpowerkit]( 
+
+sfpowerscripts is a lightweight orchestrator built on top of sfdx-cli and open source sfdx plugin [sfpowerkit]( 
 https://github.com/Accenture/sfpowerkit) aimed at elimiinating wasted efforts in writing boiler plate code (often written using bash scripts) while setting up a  Continous Build system for Salesforce.
 
 The project supports the following targets at the moment
@@ -18,11 +17,11 @@ The project intends to add native extension to other CI/CD platforms (which supp
 
 #### Motivation
 
-- Using sfdx-cli commands are relatively simple, however there is bit of  of code that would be required to parse the JSON output and set it to environment variables etc. for use within the next task.
+- Using sfdx-cli commands are relatively simple, however additional scripts are required to parse the JSON output, set it to environment variables etc
 
-- Additonal scripts are needed to integrate with a Continous Build system's native dashboards. For eg: In the case of Azure Pipelines, integrating with Test Reports etc
+- Additonal scripts are needed to integrate with a Continous Build system's native dashboards or features. For eg: In the case of Azure Pipelines, integrating with Test Reports etc
 
-- Providing additional functionality that is either not supported by the sfdx-cli
+- Providing additional functionality that is either not supported by the sfdx-cli, such as building a package only if its changed or skip installation if its.already installed in th org
 
 - Ease of use, one should not be spending too much time building a pipeline.
 

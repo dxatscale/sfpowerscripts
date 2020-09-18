@@ -1,11 +1,10 @@
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 
-export default class ReconcileProfileAgainstOrg {
+export default class ReconcileProfileAgainstOrgImpl {
   public constructor(
     private target_org: string,
-    private project_directory: string,
-    private source_directory: string
+    private project_directory: string
   ) {}
 
   public async exec() {
@@ -30,7 +29,7 @@ export default class ReconcileProfileAgainstOrg {
   }
 
   private  buildExecCommand(): string {
-    let command = `npx sfdx sfpowerkit:source:profile:reconcile -f  ${this.source_directory} -u ${this.target_org}`;
+    let command = `npx sfdx sfpowerkit:source:profile:reconcile  -u ${this.target_org}`;
     return command;
   }
 }

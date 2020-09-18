@@ -9,7 +9,7 @@ import { isNullOrUndefined } from "util";
 async function run() {
   try {
     let sfdx_package: string = tl.getInput("package", true);
-    let version_number: string = tl.getInput("version_number", true);
+    let version_number: string = tl.getInput("version_number", false);
     let isDiffCheck: boolean = tl.getBoolInput("isDiffCheck", false);
     let isGitTag: boolean = tl.getBoolInput("isGitTag", false);
     let projectDirectory: string = tl.getInput("project_directory", false);

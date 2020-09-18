@@ -98,7 +98,8 @@ async function run() {
       options,
       wait_time,
       publish_wait_time,
-      skip_if_package_installed
+      skip_if_package_installed,
+      packageMetadataFromStorage
     );
     let endTime=Date.now()-startTime;
 

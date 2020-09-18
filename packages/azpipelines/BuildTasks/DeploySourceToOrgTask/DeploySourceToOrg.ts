@@ -6,7 +6,7 @@ import { isNullOrUndefined } from "util";
 
 async function run() {
   try {
-    console.log("SFPowerScript.. Deploy Source to Org");
+    console.log("sfpowerscripts... Deploy Source to Org");
 
     const target_org: string = tl.getInput("target_org", true);
     const project_directory: string = tl.getInput("project_directory", false);
@@ -56,7 +56,7 @@ async function run() {
     let result: DeploySourceResult = await deploySourceToOrgImpl.exec();
 
     if (!isNullOrUndefined(result.deploy_id)) {
-      tl.setVariable("sfpowerkit_deploysource_id", result.deploy_id);
+      tl.setVariable("sfpowerscripts_deploysource_id", result.deploy_id);
     }
 
     if (!result.result) {

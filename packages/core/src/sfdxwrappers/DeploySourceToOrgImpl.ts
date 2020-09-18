@@ -5,8 +5,9 @@ import {
   copyFileSync,
 } from "fs";
 import { onExit } from "../utils/OnExit";
+import ManifestHelpers from "../manifest/ManifestHelpers";
 const path = require("path");
-const Table = require("cli-table");
+
 
 export interface DeploySourceResult {
   deploy_id: string;
@@ -40,14 +41,14 @@ export default class DeploySourceToOrgImpl {
         deploySourceResult.message = status.message;
         return deploySourceResult;
       }
-   
+
       console.log("Converting source to mdapi");
       let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
         this.project_directory,
         this.source_directory
       );
       this.mdapiDir = mdapiPackage.mdapiDir;
-      this.printMetadataToDeploy(mdapiPackage.manifest);
+      ManifestHelpers.printMetadataToDeploy(mdapiPackage.manifest);
 
     try {
       if (this.deployment_options["checkonly"])
@@ -57,9 +58,12 @@ export default class DeploySourceToOrgImpl {
         );
     } catch (err) {
       //Do something here
-
       console.log("Validation Ignore not found, using .forceignore");
     }
+
+
+
+
 
     //Get Deploy ID
     let deploy_id = "";
@@ -221,36 +225,9 @@ export default class DeploySourceToOrgImpl {
     }
   }
 
-  
 
-  private printMetadataToDeploy(mdapiPackageManifest) {
-    let table = new Table({
-      head: ["Metadata Type", "API Name"],
-    });
 
-    let pushTypeMembersIntoTable = (type) => {
-      if (type["members"] instanceof Array) {
-        for (let member of type["members"]) {
-          let item = [type.name, member];
-          table.push(item);
-        }
-      } else {
-        let item = [type.name, type.members];
-        table.push(item);
-      }
-    };
 
-    if (mdapiPackageManifest["Package"]["types"] instanceof Array) {
-      for (let type of mdapiPackageManifest["Package"]["types"]) {
-        pushTypeMembersIntoTable(type);
-      }
-    } else {
-      let type = mdapiPackageManifest["Package"]["types"];
-      pushTypeMembersIntoTable(type);
-    }
-    console.log("The following metadata will be deployed:");
-    console.log(table.toString());
-  }
 
 
 }

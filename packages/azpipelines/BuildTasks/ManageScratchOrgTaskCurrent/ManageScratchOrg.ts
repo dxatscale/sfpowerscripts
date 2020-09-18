@@ -13,7 +13,7 @@ async function run() {
 
    
     if (action == "Create") {
-      console.log("SFPowerScript.. Create a scratch org");
+      console.log("sfpowerScript.. Create a scratch org");
       const alias: string = tl.getInput("alias", true);
       const config_file_path: string = tl.getInput("config_file_path", true);
       const working_directory: string = tl.getInput("working_directory", false);
