@@ -1,11 +1,11 @@
 import tl = require("azure-pipelines-task-lib/task");
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import { IReleaseApi } from "azure-devops-node-api/ReleaseApi";
-import { Release } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
+import { Release as AzpRelease } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
 import ArtifactFilePathFetcher, { ArtifactFilePaths } from "../Common/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
-import { ReleaseChangelog, Release as ChangelogRelease} from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { ReleaseChangelog, Release } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
 import authVCS from "../Common/VersionControlAuth";
 import simplegit, { SimpleGit } from "simple-git/promise";
@@ -44,11 +44,11 @@ async function run() {
 
     let project: string = tl.getVariable('System.TeamProject');
     let releaseId: number = parseInt(tl.getVariable('Release.ReleaseId'), 10);
-    let release: Release = await releaseApi.getRelease(project, releaseId);
+    let release: AzpRelease = await releaseApi.getRelease(project, releaseId);
 
 
     let packageChangelogMap: {[P:string]: string} = {};
-    let latestReleaseDefinition: ChangelogRelease = {
+    let latestReleaseDefinition: Release = {
       name: tl.getInput("releaseName", true),
       workItems: {},
       artifacts: []
@@ -105,7 +105,7 @@ async function run() {
 
     // Get artifact versions from previous release definition
     let releaseChangelog: ReleaseChangelog;
-    let prevReleaseDefinition: ChangelogRelease;
+    let prevReleaseDefinition: Release;
     if ( fs.existsSync(path.join(repoTempDir,`releasechangelog.json`)) ) {
       releaseChangelog = JSON.parse(fs.readFileSync(path.join(repoTempDir,`releasechangelog.json`), 'utf8'));
       if (releaseChangelog["releases"].length > 0) {

@@ -40,7 +40,7 @@ async function createandPushGitTag(
   else git = simplegit(project_directory);
 
   let repository_url:string = tl.getVariable("Build.Repository.Uri");
-  let remote = await authVCS(repository_url);
+  let remote = authVCS(repository_url);
 
   await git.addConfig("user.name", "sfpowerscripts");
 

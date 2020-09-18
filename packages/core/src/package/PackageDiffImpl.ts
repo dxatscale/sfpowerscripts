@@ -1,6 +1,6 @@
 import ignore from "ignore";
 const fs = require("fs");
-import { isNullOrUndefined, isNull } from "util";
+import { isNullOrUndefined } from "util";
 const path = require("path");
 import simplegit, { SimpleGit } from "simple-git/promise";
 import { exec } from "shelljs";

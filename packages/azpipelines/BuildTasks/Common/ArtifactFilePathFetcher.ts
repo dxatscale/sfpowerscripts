@@ -1,7 +1,6 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import path = require("path");
 import fs = require("fs");
-import { isNullOrUndefined } from "util";
 const glob = require("glob");
 
 export default class ArtifactFilePathFetcher {
