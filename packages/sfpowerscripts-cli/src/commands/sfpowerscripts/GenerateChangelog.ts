@@ -1,7 +1,7 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import { ReleaseChangelog, Release, Artifact} from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { ReleaseChangelog, Release } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import fs = require("fs-extra");
