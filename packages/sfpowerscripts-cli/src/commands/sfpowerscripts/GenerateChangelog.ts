@@ -165,8 +165,7 @@ export default class GenerateChangelog extends SfdxCommand {
             throw Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
         }
 
-        // Verify that latestReleaseDefinition changes
-        // Always grab the latest commit
+
         if (fromIdx > 0) {
           artifact["commits"] = packageChangelog["commits"].slice(0, fromIdx+1);
         } else if (fromIdx === 0) {
@@ -180,7 +179,7 @@ export default class GenerateChangelog extends SfdxCommand {
         }
 
 
-        // Figure out work items for latest release
+        // Compute work items for latest release
         let workItemFilter: RegExp = RegExp(this.flags.workitemfilter, 'gi');
         for (let commit of artifact["commits"]) {
           let workItems: RegExpMatchArray = commit["body"].match(workItemFilter) || commit["message"].match(workItemFilter);

@@ -16,12 +16,7 @@ const path = require("path");
 async function run() {
   let tempDir = tmp.dirSync({unsafeCleanup: true});
   try {
-    let taskType: string = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
-
-    if (taskType === "Build") {
-      throw Error("Generate Changelog task can only be used on a release pipeline");
-    }
-
+    const taskType: string = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
     const repositoryUrl: string = tl.getInput("repositoryUrl", true);
     const branch: string = tl.getInput("branchName", true);
 
@@ -41,6 +36,7 @@ async function run() {
     await git.checkout(branch);
 
 
+    console.log("Getting latest release definition");
 
     // Get latest release definition using Azure Release API
     const webApi = await getWebAPIWithoutToken();
@@ -59,11 +55,26 @@ async function run() {
     };
 
     for (let artifact of release.artifacts) {
+      let artifactType: string;
+      if (taskType === "Release") {
+        // Use artifact type from Release API
+        artifactType = artifact.type;
+        console.log(
+          `Fetching artifacts from artifact directory ${tl.getVariable("system.artifactsDirectory")}`
+        );
+      } else {
+        // Default to Pipeline artifact type for Build task type
+        artifactType = "PipelineArtifact";
+        console.log(
+          `Build pipeline detected.`,
+          `Fetching artifacts from pipeline workspace ${tl.getVariable("pipeline.workspace")}`
+        );
+      }
+
       let artifacts_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         artifact.alias,
-        artifact.type
+        artifactType
       );
-
 
       for (let artifactFilepaths of artifacts_filepaths) {
         let packageMetadata: PackageMetadata = JSON.parse(
