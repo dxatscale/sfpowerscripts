@@ -57,7 +57,7 @@ async function run() {
       artifacts: []
     };
 
-    for (let artifact of release.artifacts) {
+    
 
       if (taskType === "Release") {
         // Use artifact type from Release API
@@ -92,7 +92,7 @@ async function run() {
 
         packageChangelogMap[packageMetadata["package_name"]] = artifactFilepaths.changelogFilePath;
       }
-    }
+    
 
     console.log("Generating changelog...");
 
