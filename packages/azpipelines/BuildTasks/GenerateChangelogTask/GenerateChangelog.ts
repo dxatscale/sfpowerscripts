@@ -2,7 +2,7 @@ import tl = require("azure-pipelines-task-lib/task");
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import { IReleaseApi } from "azure-devops-node-api/ReleaseApi";
 import { Release as AzpRelease } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
-import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/src/artifacts/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import { ReleaseChangelog, Release } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";

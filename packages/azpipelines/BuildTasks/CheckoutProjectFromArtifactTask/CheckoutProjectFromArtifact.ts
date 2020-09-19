@@ -1,7 +1,7 @@
 import tl = require("azure-pipelines-task-lib/task");
 import simplegit from "simple-git/promise";
 import { isNullOrUndefined } from "util";
-import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/src/artifacts/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactHelper from "../Common/ArtifactHelper";
 

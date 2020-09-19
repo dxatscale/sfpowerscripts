@@ -2,7 +2,7 @@ import tl = require("azure-pipelines-task-lib/task");
 import InstallUnlockedPackageImpl, {
   PackageInstallationResult,
 } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
-import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/src/artifacts/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import {
