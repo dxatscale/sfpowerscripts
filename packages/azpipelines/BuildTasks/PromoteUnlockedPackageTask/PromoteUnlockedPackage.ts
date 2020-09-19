@@ -1,7 +1,7 @@
 import tl = require("azure-pipelines-task-lib/task");
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
 import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { isNullOrUndefined } from "util";
 var fs = require("fs");
 
@@ -26,24 +26,23 @@ async function run() {
       package_version_id = tl.getInput("package_version_id", false);
       sourceDirectory = projectDirectory;
     } else {
-     
+
        //Fetch Artifact
-       let artifactFilePathFetcher = new ArtifactFilePathFetcher(
-        sfdx_package,
+      let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         artifact,
-        package_installedfrom
+        package_installedfrom,
+        sfdx_package
       );
-      let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
-      artifactFilePathFetcher.missingArtifactDecider(
-        artifactFilePaths.packageMetadataFilePath,
+      ArtifactFilePathFetcher.missingArtifactDecider(
+        artifactFilePaths[0].packageMetadataFilePath,
         skip_on_missing_artifact
       );
 
 
       //Read package metadata
-      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8"));
+      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8"));
 
-      
+
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
         if(key=="payload")
           return undefined;
@@ -55,7 +54,7 @@ async function run() {
       console.log(`Using Package Version Id ${package_version_id}`);
 
      // Get Source Directory
-      sourceDirectory = artifactFilePaths.sourceDirectoryPath;
+      sourceDirectory = artifactFilePaths[0].sourceDirectoryPath;
 
       if(sourceDirectory==null)
       { //Compatiblity Reasons
@@ -72,7 +71,7 @@ async function run() {
         }
       }
 
-     
+
     }
 
     let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(

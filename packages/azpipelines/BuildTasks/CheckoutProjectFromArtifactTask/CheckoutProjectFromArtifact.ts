@@ -5,11 +5,11 @@ import simplegit from "simple-git/promise";
 import { isNullOrUndefined } from "util";
 var shell = require("shelljs");
 import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 
 async function run() {
   try {
-    
+
 
     let artifact_directory = tl.getVariable("system.artifactsDirectory");
     const artifact = tl.getInput("artifact", true);
@@ -31,22 +31,22 @@ async function run() {
       username=vcsAuthDetails.username;
 
      //Fetch Artifact
-     let artifactFilePathFetcher = new ArtifactFilePathFetcher(
-      sfdx_package,
+    let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
       artifact,
-      artifactProvider
+      artifactProvider,
+      sfdx_package
     );
-    let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
-    artifactFilePathFetcher.missingArtifactDecider(
-      artifactFilePaths.packageMetadataFilePath,
+
+    ArtifactFilePathFetcher.missingArtifactDecider(
+      artifactFilePaths[0].packageMetadataFilePath,
       skip_on_missing_artifact
     );
 
-    
-      //Read package metadata
-      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8"));
 
-      
+      //Read package metadata
+      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8"));
+
+
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
         if(key=="payload")
           return undefined;
@@ -54,7 +54,7 @@ async function run() {
            return value;
      }));
 
-    
+
 
     //Create Location
 
@@ -111,9 +111,9 @@ async function run() {
     } else if (packageMetadataFromArtifact.package_type === "delta") {
 
       let delta_artifact_location;
-      if(!isNullOrUndefined(artifactFilePaths.sourceDirectoryPath))
+      if(!isNullOrUndefined(artifactFilePaths[0].sourceDirectoryPath))
       {
-        delta_artifact_location=artifactFilePaths.sourceDirectoryPath;
+        delta_artifact_location=artifactFilePaths[0].sourceDirectoryPath;
       }
 
       tl.debug("Copying Files to a source directory");

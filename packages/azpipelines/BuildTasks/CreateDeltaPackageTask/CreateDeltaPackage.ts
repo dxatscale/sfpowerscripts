@@ -2,8 +2,8 @@ import tl = require("azure-pipelines-task-lib/task");
 import { isNullOrUndefined } from "util";
 import CreateDeltaPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDeltaPackageImpl";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata"
-import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ArtifactGenerator"
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata"
+import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator"
 
 
 async function run() {
@@ -33,7 +33,7 @@ async function run() {
       let repository_url = tl.getVariable("build.repository.uri");
 
 
-  
+
       let packageMetadata:PackageMetadata = {
         package_name: sfdx_package,
         package_version_number: versionName,
@@ -68,14 +68,14 @@ async function run() {
     console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata,(key:string,value:any)=>{
       if(key=="payload" || key == "destructiveChanges")
         return undefined;
-      else 
+      else
          return value;
    }));
 
-   
+
    //Switch to delta
    packageMetadata.package_type="delta";
-   let artifact= ArtifactGenerator.generateArtifact(sfdx_package,packageMetadata.sourceDir,tl.getVariable("agent.tempDirectory"),packageMetadata); 
+   let artifact= await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
    if(!isNullOrUndefined(sfdx_package))
     tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);
    else

@@ -3,7 +3,7 @@ import InstallUnlockedPackageImpl, {
   PackageInstallationResult,
 } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
 import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import {
   getExtensionName,
@@ -40,7 +40,7 @@ async function run() {
 
      let package_version_id: string;
      let packageMetadataFromStorage:PackageMetadata;
- 
+
      //WebAPI Initialization
      const webApi = await getWebAPIWithoutToken();
      const extensionManagementApi = await webApi.getExtensionManagementApi();
@@ -51,22 +51,21 @@ async function run() {
     if (package_installedfrom == "Custom") {
       package_version_id = tl.getInput("package_version_id", false);
     } else {
-     
+
       //Fetch Artifact
-      let artifactFilePathFetcher = new ArtifactFilePathFetcher(
-        sfdx_package,
+      let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         artifact,
-        package_installedfrom
+        package_installedfrom,
+        sfdx_package
       );
-      let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
-      artifactFilePathFetcher.missingArtifactDecider(
-        artifactFilePaths.packageMetadataFilePath,
+      ArtifactFilePathFetcher.missingArtifactDecider(
+        artifactFilePaths[0].packageMetadataFilePath,
         skip_on_missing_artifact
       );
 
-      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8"));
+      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8"));
 
-      
+
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
         if(key=="payload")
           return undefined;

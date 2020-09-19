@@ -1,9 +1,9 @@
 import child_process = require("child_process");
-import { onExit } from "../OnExit";
+import { onExit } from "../utils/OnExit";
 import { isNullOrUndefined } from "util";
 let fs = require("fs-extra");
 let path = require("path");
-import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
+import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 
 export default class TriggerApexTestImpl {
   public constructor(

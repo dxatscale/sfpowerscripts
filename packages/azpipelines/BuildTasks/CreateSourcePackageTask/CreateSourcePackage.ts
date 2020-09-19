@@ -1,8 +1,8 @@
 import tl = require("azure-pipelines-task-lib/task");
-import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageDiffImpl";
+import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
-import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ArtifactGenerator"
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
+import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator"
 import { isNullOrUndefined } from "util";
 
 
@@ -40,7 +40,7 @@ async function run() {
     } else isRunBuild = true;
 
     if (isRunBuild) {
- 
+
 
       //Create Metadata Artifact
       let packageMetadata:PackageMetadata = {
@@ -68,23 +68,23 @@ async function run() {
       }
 
       console.log(JSON.stringify(packageMetadata));
-     
+
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata,(key:string,value:any)=>{
          if(key=="payload" || key == "destructiveChanges")
            return undefined;
-         else 
+         else
             return value;
       }));
 
 
 
-      let artifact= ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
-      
+      let artifact= await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
+
       tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);
 
-   
- 
-      
+
+
+
       tl.setVariable("sfpowerscripts_package_version_number", version_number);
       tl.setVariable(
         "sfpowerscripts_source_package_metadata_path",

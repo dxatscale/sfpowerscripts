@@ -1,153 +1,161 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import path = require("path");
 import fs = require("fs");
-import { isNullOrUndefined } from "util";
+const glob = require("glob");
 
 export default class ArtifactFilePathFetcher {
-  public constructor(
-    private sfdx_package: string,
-    private artifactAlias: string,
-    private artiFactType: string
-  ) {}
 
+  /**
+   * Decider for which artifact retrieval method to use
+   *
+   * @param artifactAlias
+   * @param artifactType
+   * @param sfdx_package
+   */
+  public static fetchArtifactFilePaths(
+    artifactAlias: string,
+    artifactType: string,
+    sfdx_package?: string
+  ): ArtifactFilePaths[] {
+    let artifacts_filepaths: ArtifactFilePaths[];
 
-  public fetchArtifactFilePaths(): ArtifactFilePaths {
-    let artiFactFilePaths: ArtifactFilePaths;
-
-    if (this.artiFactType === "BuildArtifact")
-      artiFactFilePaths = this.fetchArtifactFilePathFromBuildArtifact(
-        this.sfdx_package,
-        this.artifactAlias
-      );
-    else if (this.artiFactType === "AzureArtifact")
-      artiFactFilePaths = this.fetchArtifactFilePathFromAzureArtifact(
-        this.sfdx_package,
-        this.artifactAlias
-      );
-    else if (this.artiFactType === "PipelineArtifact")
-      artiFactFilePaths = this.fetchArtifactFilePathFromPipelineArtifacts(
-        this.sfdx_package
-      );
-
-    return artiFactFilePaths;
-  }
-
-  private fetchArtifactFilePathFromBuildArtifact(
-    sfdx_package: string,
-    artifactAlias: string
-  ): ArtifactFilePaths {
-    let artifactDirectory = tl.getVariable("system.artifactsDirectory");
-
-    //Newest Artifact Format..v3
-    let packageMetadataFilePath;
-    let sourceDirectoryPath: string;
-
-    if (isNullOrUndefined(sfdx_package)) {
-      packageMetadataFilePath = path.join(
-        artifactDirectory,
+    if (artifactType === "Build" ||
+        artifactType === "PackageManagement" ||
+        artifactType === "AzureArtifact" ||
+        artifactType === "BuildArtifact"
+    ) {
+      artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePathFromBuildArtifact(
         artifactAlias,
-        `sfpowerscripts_artifact`,
-        `artifact_metadata.json`
+        sfdx_package
       );
-    } else {
-      packageMetadataFilePath = path.join(
-        artifactDirectory,
+    }
+    else if (artifactType === "PipelineArtifact") {
+      artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePathFromPipelineArtifacts(
+        sfdx_package
+      );
+    }
+    else {
+      console.log(`Unsupported artifact type ${artifactType}`);
+      console.log(`Defaulting to Build artifact...`);
+
+      artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePathFromBuildArtifact(
         artifactAlias,
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        `artifact_metadata.json`
+        sfdx_package
       );
     }
 
-    //Check v3 Artifact Format Exists..
-    if (fs.existsSync(packageMetadataFilePath)) {
-      console.log(`Artifact found at the location ${packageMetadataFilePath} `);
-
-      if (isNullOrUndefined(sfdx_package)) {
-        sourceDirectoryPath = path.join(
-          artifactDirectory,
-          artifactAlias,
-          `sfpowerscripts_artifact`,
-          `source`
-        );
-      } else {
-        sourceDirectoryPath = path.join(
-          artifactDirectory,
-          artifactAlias,
-          `${sfdx_package}_sfpowerscripts_artifact`,
-          `source`
-        );
-      }
-    }
-    return {
-      packageMetadataFilePath: packageMetadataFilePath,
-      sourceDirectoryPath: sourceDirectoryPath,
-    };
+    return artifacts_filepaths;
   }
 
-  private fetchArtifactFilePathFromAzureArtifact(
-    sfdx_package: string,
-    artifactAlias: string
-  ): ArtifactFilePaths {
-    let artifactDirectory = tl.getVariable("system.artifactsDirectory");
-
-    let metadataFilePath = path.join(
-      artifactDirectory,
-      artifactAlias,
-      `artifact_metadata.json`
-    );
-
-    let sourceDirectoryPath: string = path.join(
-      artifactDirectory,
-      artifactAlias,
-      `source`
-    );
-    return {
-      packageMetadataFilePath: metadataFilePath,
-      sourceDirectoryPath: sourceDirectoryPath,
-    };
-  }
-
-  private fetchArtifactFilePathFromPipelineArtifacts(
+  /**
+   * Helper method for retrieving the ArtifactFilePaths of packages
+   * contained in an artifact alias directory
+   *
+   * @param artifactAlias
+   * @param sfdx_package
+   */
+  private static fetchArtifactFilePathFromBuildArtifact(
+    artifactAlias: string,
     sfdx_package: string
-  ): ArtifactFilePaths {
+  ): ArtifactFilePaths[] {
+    const artifacts_filepaths: ArtifactFilePaths[] = [];
+
+    let systemArtifactsDirectory = tl.getVariable("system.artifactsDirectory");
+
+    // Search artifact alias directory for files matching artifact_metadata.json
+    let packageMetadataFilepaths: string[] = glob.sync(
+      `**/artifact_metadata.json`,
+      {
+        cwd: path.join(systemArtifactsDirectory, artifactAlias),
+        absolute: true,
+      }
+    );
+
+    if (sfdx_package) {
+      // Filter and only return ArtifactFilePaths for sfdx_package
+      packageMetadataFilepaths = packageMetadataFilepaths.filter((filepath) => {
+        let artifactMetadata = JSON.parse(fs.readFileSync(filepath, "utf8"));
+        return artifactMetadata["package_name"] === sfdx_package;
+      });
+    }
+
+    for (let packageMetadataFilepath of packageMetadataFilepaths) {
+      let sourceDirectory = path.join(
+        path.dirname(packageMetadataFilepath),
+        `source`
+      );
+
+      let changelogFilepath = path.join(
+        path.dirname(packageMetadataFilepath),
+        `changelog.json`
+      );
+
+      artifacts_filepaths.push({
+        packageMetadataFilePath: packageMetadataFilepath,
+        sourceDirectoryPath: sourceDirectory,
+        changelogFilePath: changelogFilepath
+      });
+    }
+
+    return artifacts_filepaths;
+  }
+
+  /**
+   * Helper method for retrieving the ArtifactFilePaths of a pipeline artifact
+   * @param sfdx_package
+   */
+  private static fetchArtifactFilePathFromPipelineArtifacts(
+    sfdx_package: string
+  ): ArtifactFilePaths[] {
+    const artifacts_filepaths: ArtifactFilePaths[] = [];
+
     let artifactDirectory = tl.getVariable("pipeline.workspace");
 
-    if (!isNullOrUndefined(sfdx_package)) {
-      let metadataFilePath = path.join(
-        artifactDirectory,
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        `artifact_metadata.json`
-      );
+    // Search entire pipeline workspace for files matching artifact_metadata.json
+    let packageMetadataFilepaths: string[] = glob.sync(
+      `**/artifact_metadata.json`,
+      {
+        cwd: artifactDirectory,
+        absolute: true
+      }
+    );
 
-      let sourceDirectoryPath: string = path.join(
-        artifactDirectory,
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        `source`
-      );
-      return {
-        packageMetadataFilePath: metadataFilePath,
-        sourceDirectoryPath: sourceDirectoryPath,
-      };
-    } else {
-      let metadataFilePath = path.join(
-        artifactDirectory,
-        `sfpowerscripts_artifact`,
-        `artifact_metadata.json`
-      );
 
-      let sourceDirectoryPath: string = path.join(
-        artifactDirectory,
-        `sfpowerscripts_artifact`,
-        `source`
-      );
-      return {
-        packageMetadataFilePath: metadataFilePath,
-        sourceDirectoryPath: sourceDirectoryPath,
-      };
+    if (sfdx_package) {
+      // Filter and only return ArtifactFilePaths for sfdx_package
+      packageMetadataFilepaths = packageMetadataFilepaths.filter((filepath) => {
+        let artifactMetadata = JSON.parse(fs.readFileSync(filepath, "utf8"));
+        return artifactMetadata["package_name"] === sfdx_package;
+      });
     }
+
+    for (let packageMetadataFilepath of packageMetadataFilepaths) {
+      let sourceDirectory = path.join(
+        path.dirname(packageMetadataFilepath),
+        `source`
+      );
+
+      let changelogFilepath = path.join(
+        path.dirname(packageMetadataFilepath),
+        `changelog.json`
+      );
+
+      artifacts_filepaths.push({
+        packageMetadataFilePath: packageMetadataFilepath,
+        sourceDirectoryPath: sourceDirectory,
+        changelogFilePath: changelogFilepath
+      });
+    }
+
+    return artifacts_filepaths;
   }
 
-  public missingArtifactDecider(
+  /**
+   * Decider for task outcome if the artifact cannot be found
+   * @param packageMetadataFilePath
+   * @param isToSkipOnMissingArtifact
+   */
+  public static missingArtifactDecider(
     packageMetadataFilePath: string,
     isToSkipOnMissingArtifact: boolean
   ): void {
@@ -174,4 +182,5 @@ export default class ArtifactFilePathFetcher {
 export interface ArtifactFilePaths {
   packageMetadataFilePath: string;
   sourceDirectoryPath?: string;
+  changelogFilePath?: string;
 }

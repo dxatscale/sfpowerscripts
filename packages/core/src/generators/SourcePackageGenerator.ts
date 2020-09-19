@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from "util";
-import ManifestHelpers from "./ManifestHelpers";
+import ManifestHelpers from "../manifest/ManifestHelpers";
 import * as rimraf from "rimraf";
 let fs = require("fs-extra");
 let path = require("path");

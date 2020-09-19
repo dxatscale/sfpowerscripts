@@ -4,12 +4,12 @@ import DeploySourceToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappe
 import ReconcileProfileAgainstOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/ReconcileProfileAgainstOrgImpl";
 import DeployDestructiveManifestToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeployDestructiveManifestToOrgImpl";
 import DeploySourceResult from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceResult";
-import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/OrgDetails";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
+import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManagementApi";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ManifestHelpers";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import {
   getExtensionName,
   fetchPackageArtifactFromStorage,
@@ -47,21 +47,19 @@ async function run() {
     let extensionName = await getExtensionName(extensionManagementApi);
 
     //Fetch Artifact
-    let artifactFilePathFetcher = new ArtifactFilePathFetcher(
-      sfdx_package,
+    let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
       artifact,
-      package_installedfrom
+      package_installedfrom,
+      sfdx_package
     );
-
-    let artifactFilePaths = artifactFilePathFetcher.fetchArtifactFilePaths();
     console.log("##[debug]Artifact Paths", JSON.stringify(artifactFilePaths));
-    artifactFilePathFetcher.missingArtifactDecider(
-      artifactFilePaths.packageMetadataFilePath,
+    ArtifactFilePathFetcher.missingArtifactDecider(
+      artifactFilePaths[0].packageMetadataFilePath,
       skip_on_missing_artifact
     );
 
     let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
-      fs.readFileSync(artifactFilePaths.packageMetadataFilePath, "utf8")
+      fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8")
     );
 
     let packageMetadataFromStorage: PackageMetadata = await fetchPackageArtifactFromStorage(
@@ -99,7 +97,7 @@ async function run() {
     let sourceDirectory;
     if (!isNullOrUndefined(sfdx_package)) {
       sourceDirectory = ManifestHelpers.getSFDXPackageDescriptor(
-        artifactFilePaths.sourceDirectoryPath,
+        artifactFilePaths[0].sourceDirectoryPath,
         sfdx_package
       )["path"];
     } else {
@@ -107,7 +105,7 @@ async function run() {
         "##[warning] No Package name passed in the input parameter, Utilizing the default package in the manifest"
       );
       sourceDirectory = ManifestHelpers.getDefaultSFDXPackageDescriptor(
-        artifactFilePaths.sourceDirectoryPath
+        artifactFilePaths[0].sourceDirectoryPath
       )["path"];
     }
 
@@ -128,7 +126,7 @@ async function run() {
         let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
           target_org,
           path.join(
-            artifactFilePaths.sourceDirectoryPath,
+            artifactFilePaths[0].sourceDirectoryPath,
             "destructive",
             "destructiveChanges.xml"
           )
@@ -151,21 +149,21 @@ async function run() {
       packageMetadataFromStorage.isProfilesFound &&
       packageMetadataFromStorage.preDeploymentSteps?.includes("reconcile")
     ) {
-      try {   
+      try {
         console.log("Attempting reconcile to profiles");
         //copy the original profiles to temporary location
         profileFolders = glob.sync("**/profiles", {
-          cwd: path.join(artifactFilePaths.sourceDirectoryPath),
+          cwd: path.join(artifactFilePaths[0].sourceDirectoryPath),
         });
         if (profileFolders.length > 0) {
           profileFolders.forEach((folder) => {
-            fs.copySync(path.join(artifactFilePaths.sourceDirectoryPath,folder), path.join(tl.getVariable("agent.tempDirectory"), folder));
+            fs.copySync(path.join(artifactFilePaths[0].sourceDirectoryPath,folder), path.join(tl.getVariable("agent.tempDirectory"), folder));
           });
         }
         //Now Reconcile
         let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
           target_org,
-          path.join(artifactFilePaths.sourceDirectoryPath)
+          path.join(artifactFilePaths[0].sourceDirectoryPath)
         );
         await reconcileProfileAgainstOrg.exec();
         isReconcileActivated = true;
@@ -174,7 +172,7 @@ async function run() {
         isReconcileErrored=true;
       }
     }
-    
+
     //Reconcile Failed, Bring back the original profiles
     console.log("Restoring original profiles as preprocessing failed");
     if(isReconcileErrored && profileFolders.length>0)
@@ -182,7 +180,7 @@ async function run() {
       profileFolders.forEach((folder) => {
         fs.copySync(
           path.join(tl.getVariable("agent.tempDirectory"), folder),
-          path.join(artifactFilePaths.sourceDirectoryPath, folder)
+          path.join(artifactFilePaths[0].sourceDirectoryPath, folder)
         );
       });
     }
@@ -196,7 +194,7 @@ async function run() {
     );
     let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
       target_org,
-      artifactFilePaths.sourceDirectoryPath,
+      artifactFilePaths[0].sourceDirectoryPath,
       sourceDirectory,
       deploymentOptions,
       false
@@ -219,7 +217,7 @@ async function run() {
             profileFolders.forEach((folder) => {
               fs.copySync(
                 path.join(tl.getVariable("agent.tempDirectory"), folder),
-                path.join(artifactFilePaths.sourceDirectoryPath, folder)
+                path.join(artifactFilePaths[0].sourceDirectoryPath, folder)
               );
             });
 
@@ -227,24 +225,24 @@ async function run() {
             //Now Reconcile
             let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
               target_org,
-              path.join(artifactFilePaths.sourceDirectoryPath)
+              path.join(artifactFilePaths[0].sourceDirectoryPath)
             );
             await reconcileProfileAgainstOrg.exec();
             isReconcileActivated = true;
 
             //Now deploy the profies alone
             fs.appendFileSync(
-              path.join(artifactFilePaths.sourceDirectoryPath, ".forceignore"),
+              path.join(artifactFilePaths[0].sourceDirectoryPath, ".forceignore"),
               "**.**" + os.EOL
             );
             fs.appendFileSync(
-              path.join(artifactFilePaths.sourceDirectoryPath, ".forceignore"),
+              path.join(artifactFilePaths[0].sourceDirectoryPath, ".forceignore"),
               "!**.profile-meta.xml"
             );
 
             let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
               target_org,
-              artifactFilePaths.sourceDirectoryPath,
+              artifactFilePaths[0].sourceDirectoryPath,
               sourceDirectory,
               deploymentOptions,
               false

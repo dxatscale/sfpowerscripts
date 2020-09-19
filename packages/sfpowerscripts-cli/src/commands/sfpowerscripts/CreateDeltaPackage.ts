@@ -1,12 +1,13 @@
 import { flags } from "@salesforce/command";
 import { Messages } from "@salesforce/core";
 import CreateDeltaPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDeltaPackageImpl";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PackageMetadata";
-import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/sfdxutils/ArtifactGenerator";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
+import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import { isNullOrUndefined } from "util";
 import { exec } from "shelljs";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import simplegit, { SimpleGit } from "simple-git/promise";
 const fs = require("fs-extra");
 
 // Initialize Messages with the current plugin directory
@@ -85,8 +86,18 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       const versionName: string = this.flags.versionname;
       const refname: string = this.flags.refname;
 
-      let revisionFrom: string = this.flags.revisionfrom;
-      let revision_to: string = this.flags.revisionto;
+      let git: SimpleGit = simplegit();
+
+      let revisionFrom: string = await git.revparse([
+        "--short",
+        `${this.flags.revisionfrom}^{}`
+      ]);
+      let revision_to: string = await git.revparse([
+        "--short",
+        `${this.flags.revisionto}^{}`
+      ]);
+
+      console.log(exec(`git rev-parse --short ${this.flags.revisionto}^{}`,{silent:true}));
       let options: any = {};
 
       let repository_url: string;
@@ -102,7 +113,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
 
       const generate_destructivemanifest = this.flags
         .generatedestructivemanifest;
-    
+
 
       let createDeltaPackageImp = new CreateDeltaPackageImpl(
         null,
@@ -138,7 +149,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
         repository_url: repository_url,
       };
 
-    
+
 
 
       let createSourcePackageImpl = new CreateSourcePackageImpl(
@@ -156,13 +167,13 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       );
 
 
-    
+
 
       //Generate Artifact
         //Switch to delta
       packageMetadata.package_type="delta";
-      let artifact= ArtifactGenerator.generateArtifact(sfdx_package,packageMetadata.sourceDir,artifactDirectory,packageMetadata); 
-  
+      let artifact= await ArtifactGenerator.generateArtifact(sfdx_package,process.cwd(),artifactDirectory,packageMetadata);
+
 
       console.log("\nOutput variables:");
       if (!isNullOrUndefined(refname)) {
@@ -172,7 +183,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
         fs.writeFileSync('.env', `sfpowerscripts_artifact_directory=${artifact.artifactSourceDirectory}\n`, {flag:'a'});
         console.log(`sfpowerscripts_artifact_directory=${artifact.artifactSourceDirectory}`);
       }
-    
+
 
 
 

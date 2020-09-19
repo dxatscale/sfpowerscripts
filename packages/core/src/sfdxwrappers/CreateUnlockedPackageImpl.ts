@@ -1,10 +1,10 @@
 import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
-import { onExit } from "../OnExit";
-import PackageMetadata from "../sfdxwrappers/PackageMetadata";
-import SourcePackageGenerator from "../sfdxutils/SourcePackageGenerator";
-import ManifestHelpers from "../sfdxutils/ManifestHelpers";
-import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
+import { onExit } from "../utils/OnExit";
+import PackageMetadata from "../PackageMetadata";
+import SourcePackageGenerator from "../generators/SourcePackageGenerator";
+import ManifestHelpers from "../manifest/ManifestHelpers";
+import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 
 export default class CreateUnlockedPackageImpl {
   public constructor(

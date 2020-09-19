@@ -1,6 +1,6 @@
 import tl = require("azure-pipelines-task-lib/task");
 import child_process = require("child_process");
-import { onExit } from "@dxatscale/sfpowerscripts.core/lib/OnExit";
+import { onExit } from "@dxatscale/sfpowerscripts.core/lib/utils/OnExit";
 
 
 

@@ -1,11 +1,11 @@
 import child_process = require("child_process");
-import { delay } from "../Delay";
-import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
+import { delay } from "../utils/Delay";
+import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import {
   copyFileSync,
 } from "fs";
-import { onExit } from "../OnExit";
-import ManifestHelpers from "../sfdxutils/ManifestHelpers";
+import { onExit } from "../utils/OnExit";
+import ManifestHelpers from "../manifest/ManifestHelpers";
 const path = require("path");
 
 
@@ -41,7 +41,7 @@ export default class DeploySourceToOrgImpl {
         deploySourceResult.message = status.message;
         return deploySourceResult;
       }
-   
+
       console.log("Converting source to mdapi");
       let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
         this.project_directory,
@@ -61,9 +61,9 @@ export default class DeploySourceToOrgImpl {
       console.log("Validation Ignore not found, using .forceignore");
     }
 
-    
 
-    
+
+
 
     //Get Deploy ID
     let deploy_id = "";
@@ -225,9 +225,9 @@ export default class DeploySourceToOrgImpl {
     }
   }
 
-  
 
-  
+
+
 
 
 }

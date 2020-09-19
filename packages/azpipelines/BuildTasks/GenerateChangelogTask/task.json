@@ -1,0 +1,140 @@
+{
+    "id": "87d5162d-07ee-40ea-8bf4-ac8dfdb907f1",
+    "name": "sfpowerscripts-generatechangelog-task",
+    "friendlyName": "Generate Changelog [ALPHA]",
+    "description": "Generates a release changelog that summarises artifact versions, work items (user stories) and commits that are introduced in a release",
+    "helpMarkDown": "https://dxatscale.gitbook.io/sfpowerscripts/azure-pipelines/task-specifications/utility-tasks/sfpowerscripts-generatechangelog-task",
+    "category": "Build",
+    "author": "dxatscale@accenture.com",
+    "version": {
+        "Major": 1,
+        "Minor": 0,
+        "Patch": 0
+    },
+    "runsOn": [
+        "Agent"
+    ],
+    "instanceNameFormat": "Generate a changelog for the current release",
+    "inputs": [
+        {
+          "name": "releaseName",
+          "type": "string",
+          "label": "Release Name",
+          "defaultValue": "",
+          "required": true,
+          "helpMarkDown": "Name of the release to be displayed in the changelog"
+        },
+        {
+          "name": "limit",
+          "type": "string",
+          "label": "Limit number of releases to display",
+          "required": false,
+          "helpMarkDown": "Limit the number of releases to display in the changelog markdown"
+        },
+        {
+          "name": "workItemFilter",
+          "type": "string",
+          "label": "Work Item Pattern",
+          "defaultValue": "",
+          "required": true,
+          "helpMarkDown": "Pattern used to match work item or user story IDs. Accepts regular expressions e.g. APR-[0-9]{3,4}"
+        },
+        {
+          "name": "workItemUrl",
+          "type": "string",
+          "label": "Work Item URL",
+          "required": false,
+          "helpMarkDown": "Generic URL that points to work items. Each work item ID will be appended to the URL, providing quick access to work items"
+        },
+        {
+            "name": "repositoryUrl",
+            "type": "string",
+            "label": "Repository URL",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Repository in which changelog files will be located"
+        },
+        {
+            "name": "branchName",
+            "type": "string",
+            "label": "Branch Name",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Name of the repository branch in which changelog files will be located"
+        },
+        {
+            "name": "forcePush",
+            "type": "boolean",
+            "label": "Force Push",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Warning: ignores conflicts and overrwrites branch"
+        },
+        {
+            "name": "versionControlProvider",
+            "type": "pickList",
+            "label": "Select the version control provider",
+            "defaultValue": "github",
+            "options": {
+                "github": "GitHub",
+                "githubEnterprise": "GitHub Enterprise",
+                "bitbucket": "BitBucket Cloud",
+                "azureRepo": "Azure Repo",
+                "otherGit": "Other Git",
+                "hostedAgentGit": "Git which is already authenticated at the agent level"
+            },
+            "required": false,
+            "helpMarkDown": "Select a version control provider from the dropdown"
+        },
+        {
+            "name": "github_connection",
+            "type": "connectedService:github:OAuth,PersonalAccessToken,OAuth2",
+            "label": "GitHub Connection",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Specify the service connection name for your GitHub connection. Please note this service connection have permissions to read to the correspinding repostiory. Learn more about service connections [here](https://aka.ms/AA3am5s).",
+            "visibleRule": "versionControlProvider = github"
+        },
+        {
+            "name": "bitbucket_connection",
+            "type": "connectedService:bitbucket:OAuth,PersonalAccessToken,OAuth2",
+            "label": "BitBucket Connection",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Specify the service connection name for your BitBucket connection. Please note this service connection have permissions to read to the correspinding repostiory. Learn more about service connections [here](https://aka.ms/AA3am5s).",
+            "visibleRule": "versionControlProvider = bitbucket"
+        },
+        {
+            "name": "github_enterprise_connection",
+            "type": "connectedService:githubenterprise:OAuth,PersonalAccessToken,OAuth2",
+            "label": "GitHub Enterprise Connection",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Specify the service connection name for your Git Hub Enterprise connection. Please note this service connection have permissions to read from the correspinding repostiory. Learn more about service connections [here](https://aka.ms/AA3am5s).",
+            "visibleRule": "versionControlProvider = githubEnterprise"
+        },
+        {
+            "name": "username",
+            "type": "string",
+            "label": "Username",
+            "defaultValue": "",
+            "helpMarkDown": "Username for the Version Control Provider",
+            "required": true,
+            "visibleRule": "versionControlProvider = otherGit"
+        },
+        {
+            "name": "password",
+            "type": "string",
+            "label": "Password",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "App Password/PAT for the Version Control Provider",
+            "visibleRule": "versionControlProvider = otherGit"
+        }
+    ],
+    "execution": {
+        "Node": {
+            "target": "lib/GenerateChangelogTask/GenerateChangelog.js"
+        }
+    }
+}

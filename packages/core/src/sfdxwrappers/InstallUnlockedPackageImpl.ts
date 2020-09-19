@@ -1,8 +1,8 @@
 import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
-import { onExit } from "../OnExit";
-import PackageMetadata from "../sfdxwrappers/PackageMetadata";
-import ManifestHelpers from "../sfdxutils/ManifestHelpers";
+import { onExit } from "../utils/OnExit";
+import PackageMetadata from "../PackageMetadata";
+import ManifestHelpers from "../manifest/ManifestHelpers";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -18,7 +18,7 @@ export default class InstallUnlockedPackageImpl {
   public async exec(): Promise<PackageInstallationResult> {
 
 
-    
+
     let isPackageInstalled = false;
     if (this.skip_if_package_installed) {
       isPackageInstalled = this.checkWhetherPackageIsIntalledInOrg();

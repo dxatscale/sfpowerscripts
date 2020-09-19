@@ -1,7 +1,7 @@
-import PackageMetadata from "../sfdxwrappers/PackageMetadata";
-import SourcePackageGenerator from "../sfdxutils/SourcePackageGenerator";
-import ManifestHelpers from "../sfdxutils/ManifestHelpers";
-import MDAPIPackageGenerator from "../sfdxutils/MDAPIPackageGenerator";
+import PackageMetadata from "../PackageMetadata";
+import SourcePackageGenerator from "../generators/SourcePackageGenerator";
+import ManifestHelpers from "../manifest/ManifestHelpers";
+import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import { isNullOrUndefined } from "util";
 const fs = require("fs-extra");
 

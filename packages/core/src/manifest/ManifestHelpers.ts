@@ -27,7 +27,7 @@ export default class ManifestHelpers {
   public static getSFDXPackageDescriptor(
     projectDirectory: string,
     sfdxPackage: string
-  ): { any } {
+  ): any  {
     let packageDirectory: string;
     let sfdxPackageDescriptor: any;
 
@@ -47,7 +47,7 @@ export default class ManifestHelpers {
           sfdxPackageDescriptor = pkg;
         }
       });
-    } 
+    }
 
     if (isNullOrUndefined(packageDirectory))
       throw new Error("Package or package directory not exist");
@@ -57,7 +57,7 @@ export default class ManifestHelpers {
 
   public static getDefaultSFDXPackageDescriptor(
     projectDirectory: string
-  ): { any } {
+  ): any  {
     let packageDirectory: string;
     let sfdxPackageDescriptor: any;
 
@@ -77,11 +77,11 @@ export default class ManifestHelpers {
           sfdxPackageDescriptor = pkg;
         }
       });
-      
+
       if (isNullOrUndefined(packageDirectory))
       throw new Error("Package or package directory not exist");
     else return sfdxPackageDescriptor;
-    
+
   }
 
   public static cleanupMPDFromManifest(

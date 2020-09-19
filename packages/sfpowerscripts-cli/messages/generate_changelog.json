@@ -1,0 +1,11 @@
+{
+    "commandDescription": "[ALPHA] Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository",
+    "limitFlagDescription": "limit the number of releases to display in changelog markdown",
+    "artifactDirectoryFlagDescription": "Directory containing sfpowerscripts artifacts",
+    "releaseNameFlagDescription": "Name of the release for which to generate changelog",
+    "workItemFilterFlagDescription": "Regular expression used to search for work items (user stories) introduced in release",
+    "workItemUrlFlagDescription": "Generic URL for work items. Each work item ID will be appended to the URL, providing quick access to work items",
+    "repoUrlFlagDescription": "Repository in which the changelog files are located. Assumes user is already authenticated.",
+    "branchNameFlagDescription": "Repository branch in which the changelog files are located",
+    "forcePushFlagDescription": "Force push changes to the repository branch"
+}
