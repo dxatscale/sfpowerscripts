@@ -58,16 +58,14 @@ async function run() {
     };
 
     for (let artifact of release.artifacts) {
-      let artifactType: string;
+
       if (taskType === "Release") {
         // Use artifact type from Release API
-        artifactType = artifact.type;
         console.log(
           `Fetching artifacts from artifact directory ${tl.getVariable("system.artifactsDirectory")}`
         );
       } else {
         // Default to Pipeline artifact type for Build task type
-        artifactType = "PipelineArtifact";
         console.log(
           `Build pipeline detected.`,
           `Fetching artifacts from pipeline workspace ${tl.getVariable("pipeline.workspace")}`

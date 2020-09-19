@@ -28,7 +28,6 @@ async function run() {
 
     const target_org: string = tl.getInput("target_org", true);
     const sfdx_package: string = tl.getInput("package", false);
-    const package_installedfrom = tl.getInput("packageinstalledfrom", true);
     const artifactDir = tl.getInput("artifactDir", false);
     const skip_on_missing_artifact = tl.getBoolInput(
       "skip_on_missing_artifact",
