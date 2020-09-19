@@ -176,7 +176,7 @@ async function run() {
         console.log("Failed to reconcile profiles:"+err);
         isReconcileErrored=true;
       }
-    }
+    
 
     //Reconcile Failed, Bring back the original profiles
     console.log("Restoring original profiles as preprocessing failed");
@@ -189,7 +189,7 @@ async function run() {
         );
       });
     }
-
+  }
 
     //Construct Deploy Command
     let deploymentOptions = await generateDeploymentOptions(
