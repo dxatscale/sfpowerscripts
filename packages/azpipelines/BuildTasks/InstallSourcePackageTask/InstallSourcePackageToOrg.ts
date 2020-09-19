@@ -52,15 +52,11 @@ async function run() {
       sfdx_package
     );
     console.log("##[debug]Artifact Paths", JSON.stringify(artifactFilePaths));
-    ArtifactFilePathFetcher.missingArtifactDecider(
+
+    ArtifactHelper.skipTaskWhenArtifactIsMissing(ArtifactFilePathFetcher.missingArtifactDecider(
       artifactFilePaths[0].packageMetadataFilePath,
       skip_on_missing_artifact
-    );
-    let isToBeSkipped=ArtifactFilePathFetcher.missingArtifactDecider(
-      artifactFilePaths[0].packageMetadataFilePath,
-      skip_on_missing_artifact
-    );
-    ArtifactHelper.skipTaskWhenArtifactIsMissing(isToBeSkipped);
+    ));
 
     let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
       fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8")

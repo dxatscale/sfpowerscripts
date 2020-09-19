@@ -58,11 +58,13 @@ async function run() {
         ArtifactHelper.getArtifactDirectory(artifactDir),
         sfdx_package
       );
-      let isToBeSkipped=ArtifactFilePathFetcher.missingArtifactDecider(
-        artifactFilePaths[0].packageMetadataFilePath,
-        skip_on_missing_artifact
+
+      ArtifactHelper.skipTaskWhenArtifactIsMissing(
+        ArtifactFilePathFetcher.missingArtifactDecider(
+          artifactFilePaths[0].packageMetadataFilePath,
+          skip_on_missing_artifact
+        )
       );
-      ArtifactHelper.skipTaskWhenArtifactIsMissing(isToBeSkipped);
 
       let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8"));
 
