@@ -32,6 +32,14 @@
             "helpMarkDown": "Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used"
         },
         {
+            "name": "projectDirectory",
+            "type": "string",
+            "label": "Project Directory, if not using artifact directory",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed"
+        },
+        {
             "name": "devhub_alias",
             "type": "string",
             "label": "Alias/Username of the devhub",

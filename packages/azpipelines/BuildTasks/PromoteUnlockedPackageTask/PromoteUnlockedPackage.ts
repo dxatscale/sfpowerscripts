@@ -2,8 +2,8 @@ import tl = require("azure-pipelines-task-lib/task");
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
 import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/src/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import { isNullOrUndefined } from "util";
 import ArtifactHelper from "../Common/ArtifactHelper";
+import { isNullOrUndefined } from "util";
 const fs = require("fs");
 
 
@@ -19,11 +19,13 @@ async function run() {
       "skip_on_missing_artifact",
       false
     );
+    const projectDir=tl.getInput("projectDirectory",false);
 
     let package_version_id,sourceDirectory;
 
  
-
+    if(!isNullOrUndefined(projectDir))
+      {
        //Fetch Artifact
       let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         ArtifactHelper.getArtifactDirectory(artifactDir),
@@ -52,24 +54,13 @@ async function run() {
 
      // Get Source Directory
       sourceDirectory = artifactFilePaths[0].sourceDirectoryPath;
+    }
+    else
+    {
+      console.log("Using project directory for prmoting package")
+      sourceDirectory = projectDir;
+    }
 
-      if(sourceDirectory==null)
-      { //Compatiblity Reasons
-
-       //Check whether projectDirectory is provided..
-       if(isNullOrUndefined(projectDirectory))
-        {
-          tl.setResult(tl.TaskResult.Failed,"Path to the project directory with sfdx-project.json is required, Either provide the parameter, or update your package creation task to make use of new updates in package artifact");
-          return;
-        }
-        else
-        {
-          sourceDirectory = projectDirectory
-        }
-      }
-
-
-    
 
     let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
       sourceDirectory,
