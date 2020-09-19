@@ -1,14 +1,13 @@
 import tl = require("azure-pipelines-task-lib/task");
-import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
-import { IReleaseApi } from "azure-devops-node-api/ReleaseApi";
-import { Release as AzpRelease } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
-import ArtifactFilePathFetcher, { ArtifactFilePaths } from "../Common/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import { ReleaseChangelog, Release } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
 import authVCS from "../Common/VersionControlAuth";
 import simplegit, { SimpleGit } from "simple-git/promise";
+import ArtifactHelper from "../Common/ArtifactHelper";
+
 import fs = require("fs");
 const tmp = require('tmp');
 const path = require("path");
@@ -17,6 +16,7 @@ async function run() {
   let tempDir = tmp.dirSync({unsafeCleanup: true});
   try {
     const taskType: string = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
+    const artifactDir = tl.getInput("aritfactDir",false);
     const repositoryUrl: string = tl.getInput("repositoryUrl", true);
     const branch: string = tl.getInput("branchName", true);
 
@@ -36,17 +36,6 @@ async function run() {
     await git.checkout(branch);
 
 
-    console.log("Getting latest release definition");
-
-    // Get latest release definition using Azure Release API
-    const webApi = await getWebAPIWithoutToken();
-    const releaseApi: IReleaseApi = await webApi.getReleaseApi();
-
-    let project: string = tl.getVariable('System.TeamProject');
-    let releaseId: number = parseInt(tl.getVariable('Release.ReleaseId'), 10);
-    let release: AzpRelease = await releaseApi.getRelease(project, releaseId);
-
-
     let packageChangelogMap: {[P:string]: string} = {};
     let latestReleaseDefinition: Release = {
       name: tl.getInput("releaseName", true),
@@ -54,17 +43,15 @@ async function run() {
       artifacts: []
     };
 
-    for (let artifact of release.artifacts) {
-      let artifactType: string;
+    
+
       if (taskType === "Release") {
         // Use artifact type from Release API
-        artifactType = artifact.type;
         console.log(
           `Fetching artifacts from artifact directory ${tl.getVariable("system.artifactsDirectory")}`
         );
       } else {
         // Default to Pipeline artifact type for Build task type
-        artifactType = "PipelineArtifact";
         console.log(
           `Build pipeline detected.`,
           `Fetching artifacts from pipeline workspace ${tl.getVariable("pipeline.workspace")}`
@@ -72,8 +59,7 @@ async function run() {
       }
 
       let artifacts_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-        artifact.alias,
-        artifactType
+        ArtifactHelper.getArtifactDirectory(ArtifactHelper.getArtifactDirectory(artifactDir))
       );
 
       for (let artifactFilepaths of artifacts_filepaths) {
@@ -92,7 +78,7 @@ async function run() {
 
         packageChangelogMap[packageMetadata["package_name"]] = artifactFilepaths.changelogFilePath;
       }
-    }
+    
 
     console.log("Generating changelog...");
 

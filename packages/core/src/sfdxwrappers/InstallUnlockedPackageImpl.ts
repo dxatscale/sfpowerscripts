@@ -27,7 +27,7 @@ export default class InstallUnlockedPackageImpl {
     if (!isPackageInstalled) {
 
      //Print Metadata carried in the package
-     ManifestHelpers.printMetadataToDeploy(this.packageMetadata.payload);
+     ManifestHelpers.printMetadataToDeploy(this.packageMetadata?.payload);
 
       let command = this.buildPackageInstallCommand();
       let child = child_process.exec(command, (error, stdout, stderr) => {

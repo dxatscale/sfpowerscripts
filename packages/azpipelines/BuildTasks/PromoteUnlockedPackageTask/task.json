@@ -24,42 +24,20 @@
             "helpMarkDown": "Name of the package to be promoted"
         },
         {
-            "name": "packagepromotedfrom",
-            "type": "pickList",
-            "label": "Package to be promoted From",
-            "defaultValue": "BuildArtifact",
-            "options": {
-                "BuildArtifact": "Build artifact",
-                "AzureArtifact": "Azure Artifacts",
-                "PipelineArtifact":"Pipeline Artifact",
-                "Custom": "Pass the package version id as an argument "
-            },
-            "required": true,
-            "helpMarkDown": "Select the option from where the package version is to be picked up for promotion"
-        },
-        {
-            "name": "package_version_id",
+            "name": "aritfactDir",
             "type": "string",
-            "label": "Package Version ID",
-            "required": false,
-            "helpMarkDown": "Set the pipeline's build number to the the project's incremented version number",
-            "visibleRule": "packagepromotedfrom = Custom"
-        },
-        {
-            "name": "artifact",
-            "type": "string",
-            "label": "Name of the artifact that is attached to this release pipeline",
-            "required": false,
-            "helpMarkDown": "Provide the name of the artifact which is the input to this pipeline. Please note only sfpowerkit based build artifact will work with this command",
-            "visibleRule": "packagepromotedfrom = BuildArtifact || packagepromotedfrom = AzureArtifact ||  packagepromotedfrom = PipelineArtifact"
-        },
-        {
-            "name": "project_directory",
-            "type": "string",
-            "label": "Project Directory",
+            "label": "Path to the directory where artifacts are downloaded",
             "defaultValue": "",
             "required": false,
-            "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed, when used with Custom or older version of this task"
+            "helpMarkDown": "Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used"
+        },
+        {
+            "name": "projectDirectory",
+            "type": "string",
+            "label": "Project Directory, if not using artifact directory",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The project directory should contain a sfdx-project.json for this command to succeed"
         },
         {
             "name": "devhub_alias",

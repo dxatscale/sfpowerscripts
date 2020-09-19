@@ -2,7 +2,7 @@ import tl = require("azure-pipelines-task-lib/task");
 import InstallUnlockedPackageImpl, {
   PackageInstallationResult,
 } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
-import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import {
@@ -11,15 +11,16 @@ import {
   updatePackageDeploymentDetails,
 } from "../Common/PackageExtensionStorageHelper";
 import { isNullOrUndefined } from "util";
+import ArtifactHelper from "../Common/ArtifactHelper";
 const fs = require("fs");
 
 
 async function run() {
   try {
-    const target_org: string = tl.getInput("envname", true);
+    const target_org: string = tl.getInput("target_org", true);
     const sfdx_package: string = tl.getInput("package", true);
     const package_installedfrom = tl.getInput("packageinstalledfrom", true);
-    const artifact = tl.getInput("artifact", false);
+    const artifactDir = tl.getInput("artifactDir", false);
     const skip_on_missing_artifact = tl.getBoolInput(
       "skip_on_missing_artifact",
       false
@@ -54,13 +55,15 @@ async function run() {
 
       //Fetch Artifact
       let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-        artifact,
-        package_installedfrom,
+        ArtifactHelper.getArtifactDirectory(artifactDir),
         sfdx_package
       );
-      ArtifactFilePathFetcher.missingArtifactDecider(
-        artifactFilePaths[0].packageMetadataFilePath,
-        skip_on_missing_artifact
+
+      ArtifactHelper.skipTaskWhenArtifactIsMissing(
+        ArtifactFilePathFetcher.missingArtifactDecider(
+          artifactFilePaths[0].packageMetadataFilePath,
+          skip_on_missing_artifact
+        )
       );
 
       let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8"));

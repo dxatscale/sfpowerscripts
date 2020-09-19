@@ -1,43 +1,42 @@
 import tl = require("azure-pipelines-task-lib/task");
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
-import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
+import ArtifactHelper from "../Common/ArtifactHelper";
 import { isNullOrUndefined } from "util";
-var fs = require("fs");
+const fs = require("fs");
 
 
 async function run() {
   try {
-    console.log(`SFPowerScript.. Promote Unlocked Package`);
+    console.log(`sfpowerscripts.. Promote Unlocked Package`);
 
-    const package_installedfrom = tl.getInput("packagepromotedfrom", true);
+
     const sfdx_package: string = tl.getInput("package", true);
+    const artifactDir = tl.getInput("aritfactDir",false);
     const devhub_alias = tl.getInput("devhub_alias", true);
-    const projectDirectory = tl.getInput("project_directory", false);
-    const artifact = tl.getInput("artifact", false);
     const skip_on_missing_artifact = tl.getBoolInput(
       "skip_on_missing_artifact",
       false
     );
+    const projectDir=tl.getInput("projectDirectory",false);
 
     let package_version_id,sourceDirectory;
 
-    if (package_installedfrom == "Custom") {
-      package_version_id = tl.getInput("package_version_id", false);
-      sourceDirectory = projectDirectory;
-    } else {
-
+ 
+    if(!isNullOrUndefined(projectDir))
+      {
        //Fetch Artifact
       let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-        artifact,
-        package_installedfrom,
+        ArtifactHelper.getArtifactDirectory(artifactDir),
         sfdx_package
       );
-      ArtifactFilePathFetcher.missingArtifactDecider(
+     
+      ArtifactHelper.skipTaskWhenArtifactIsMissing(ArtifactFilePathFetcher.missingArtifactDecider(
         artifactFilePaths[0].packageMetadataFilePath,
         skip_on_missing_artifact
-      );
-
+      ));
+      
 
       //Read package metadata
       let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8"));
@@ -55,24 +54,13 @@ async function run() {
 
      // Get Source Directory
       sourceDirectory = artifactFilePaths[0].sourceDirectoryPath;
-
-      if(sourceDirectory==null)
-      { //Compatiblity Reasons
-
-       //Check whether projectDirectory is provided..
-       if(isNullOrUndefined(projectDirectory))
-        {
-          tl.setResult(tl.TaskResult.Failed,"Path to the project directory with sfdx-project.json is required, Either provide the parameter, or update your package creation task to make use of new updates in package artifact");
-          return;
-        }
-        else
-        {
-          sourceDirectory = projectDirectory
-        }
-      }
-
-
     }
+    else
+    {
+      console.log("Using project directory for prmoting package")
+      sourceDirectory = projectDir;
+    }
+
 
     let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
       sourceDirectory,

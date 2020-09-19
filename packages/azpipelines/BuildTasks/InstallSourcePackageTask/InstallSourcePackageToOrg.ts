@@ -8,13 +8,14 @@ import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManagementApi";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
-import ArtifactFilePathFetcher from "../Common/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import {
   getExtensionName,
   fetchPackageArtifactFromStorage,
   updatePackageDeploymentDetails,
 } from "../Common/PackageExtensionStorageHelper";
+import ArtifactHelper from "../Common/ArtifactHelper";
 
 const fs = require("fs-extra");
 const path = require("path");
@@ -27,8 +28,7 @@ async function run() {
 
     const target_org: string = tl.getInput("target_org", true);
     const sfdx_package: string = tl.getInput("package", false);
-    const package_installedfrom = tl.getInput("packageinstalledfrom", true);
-    const artifact = tl.getInput("artifact", false);
+    const artifactDir = tl.getInput("artifactDir", false);
     const skip_on_missing_artifact = tl.getBoolInput(
       "skip_on_missing_artifact",
       false
@@ -48,15 +48,15 @@ async function run() {
 
     //Fetch Artifact
     let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-      artifact,
-      package_installedfrom,
+      ArtifactHelper.getArtifactDirectory(artifactDir),
       sfdx_package
     );
     console.log("##[debug]Artifact Paths", JSON.stringify(artifactFilePaths));
-    ArtifactFilePathFetcher.missingArtifactDecider(
+
+    ArtifactHelper.skipTaskWhenArtifactIsMissing(ArtifactFilePathFetcher.missingArtifactDecider(
       artifactFilePaths[0].packageMetadataFilePath,
       skip_on_missing_artifact
-    );
+    ));
 
     let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
       fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8")
@@ -171,7 +171,7 @@ async function run() {
         console.log("Failed to reconcile profiles:"+err);
         isReconcileErrored=true;
       }
-    }
+    
 
     //Reconcile Failed, Bring back the original profiles
     console.log("Restoring original profiles as preprocessing failed");
@@ -184,7 +184,7 @@ async function run() {
         );
       });
     }
-
+  }
 
     //Construct Deploy Command
     let deploymentOptions = await generateDeploymentOptions(

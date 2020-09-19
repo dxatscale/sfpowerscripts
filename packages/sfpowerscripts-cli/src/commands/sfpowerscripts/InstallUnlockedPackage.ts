@@ -23,7 +23,7 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
 
   protected static flagsConfig = {
     package: flags.string({char: 'n', description: messages.getMessage('packageFlagDescription')}),
-    envname: flags.string({char: 'u', description: messages.getMessage('envNameFlagDescription')}),
+    targetorg: flags.string({char: 'u', description: messages.getMessage('envNameFlagDescription')}),
     packageinstalledfrom: flags.boolean({char: 'i', description: messages.getMessage('packageInstalledFromFlagDescription')}),
     packageversionid: flags.string({char: 'v', description: messages.getMessage('packageVersionIdFlagDescription'), exclusive: ['packageinstalledfrom']}),
     installationkey : flags.string({char: 'k', description: messages.getMessage('installationKeyFlagDescription')}),
