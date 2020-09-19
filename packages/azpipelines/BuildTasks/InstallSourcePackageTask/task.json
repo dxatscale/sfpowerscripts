@@ -25,31 +25,19 @@
             "helpMarkDown": "Alias or username of the target org where the code should be deployed"
         },
         {
-            "name": "packageinstalledfrom",
-            "type": "pickList",
-            "label": "Package to be installed From",
-            "defaultValue": "BuildArtifact",
-            "options": {
-                "BuildArtifact": "Build Artifact",
-                "AzureArtifact": "Azure Artifact",
-                "PipelineArtifact": "Pipeline Artifact"
-            },
-            "required": true,
-            "helpMarkDown": "Select the option from where the package version is to be picked up for install"
-        },
-        {
-            "name": "artifact",
-            "type": "string",
-            "label": "Name of the artifact (source alias ) that is attached to this release pipeline",
-            "required": false,
-            "helpMarkDown": "Provide the name of the artifact which is the input to this pipeline. Please note only sfpowerkit based build artifact will work with this command"
-        },
-        {
             "name": "package",
             "type": "string",
             "label": "Name of the package to be installed",
             "required": false,
             "helpMarkDown": "Name of the package to be installed"
+        },
+        {
+            "name": "aritfactDir",
+            "type": "string",
+            "label": "Path to the directory where artifacts are downloaded",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used"
         },
         {
             "name": "subdirectory",

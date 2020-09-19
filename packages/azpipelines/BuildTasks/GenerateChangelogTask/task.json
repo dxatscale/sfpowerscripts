@@ -17,6 +17,14 @@
     "instanceNameFormat": "Generate a changelog for the current release",
     "inputs": [
         {
+            "name": "aritfactDir",
+            "type": "string",
+            "label": "Path to the directory where artifacts are downloaded",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used"
+        },
+        {
           "name": "releaseName",
           "type": "string",
           "label": "Release Name",

@@ -2,13 +2,15 @@ import tl = require("azure-pipelines-task-lib/task");
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import { IReleaseApi } from "azure-devops-node-api/ReleaseApi";
 import { Release as AzpRelease } from "azure-devops-node-api/interfaces/ReleaseInterfaces";
-import ArtifactFilePathFetcher, { ArtifactFilePaths } from "../Common/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/src/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import { ReleaseChangelog, Release } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
 import authVCS from "../Common/VersionControlAuth";
 import simplegit, { SimpleGit } from "simple-git/promise";
+import ArtifactHelper from "../Common/ArtifactHelper";
+
 import fs = require("fs");
 const tmp = require('tmp');
 const path = require("path");
@@ -17,6 +19,7 @@ async function run() {
   let tempDir = tmp.dirSync({unsafeCleanup: true});
   try {
     const taskType: string = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
+    const artifactDir = tl.getInput("aritfactDir",false);
     const repositoryUrl: string = tl.getInput("repositoryUrl", true);
     const branch: string = tl.getInput("branchName", true);
 
@@ -72,8 +75,7 @@ async function run() {
       }
 
       let artifacts_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-        artifact.alias,
-        artifactType
+        ArtifactHelper.getArtifactDirectory(ArtifactHelper.getArtifactDirectory(artifactDir))
       );
 
       for (let artifactFilepaths of artifacts_filepaths) {

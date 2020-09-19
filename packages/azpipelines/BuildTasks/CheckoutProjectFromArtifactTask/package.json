@@ -16,8 +16,6 @@
     "@dxatscale/sfpowerscripts.core": "^2.0.0",
     "azure-pipelines-task-lib": "^2.8.0",
     "fs-extra": "^8.1.0",
-    "glob": "^7.1.6",
-    "shelljs": "^0.8.3",
     "simple-git": "2.0.0"
   }
 }
