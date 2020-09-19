@@ -39,17 +39,6 @@ async function run() {
     await git.checkout(branch);
 
 
-    console.log("Getting latest release definition");
-
-    // Get latest release definition using Azure Release API
-    const webApi = await getWebAPIWithoutToken();
-    const releaseApi: IReleaseApi = await webApi.getReleaseApi();
-
-    let project: string = tl.getVariable('System.TeamProject');
-    let releaseId: number = parseInt(tl.getVariable('Release.ReleaseId'), 10);
-    let release: AzpRelease = await releaseApi.getRelease(project, releaseId);
-
-
     let packageChangelogMap: {[P:string]: string} = {};
     let latestReleaseDefinition: Release = {
       name: tl.getInput("releaseName", true),
