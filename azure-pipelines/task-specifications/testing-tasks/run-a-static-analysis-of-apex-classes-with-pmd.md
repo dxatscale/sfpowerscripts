@@ -6,7 +6,7 @@
 
 This task is used to run a static analysis of the apex classes in a project directory using PMD. This is a task execution wrapper around the command sfpowerkit:source:pmd which you can read [here](https://github.com/Accenture/sfpowerkit)
 
-This task attaches the code analysis result into the build artifacts and also provides a timeline update in the build summary page. Please note this enhancement only works with ‘Classic’ pipelines only
+This task attaches the code analysis result into the build artifacts and also provides a timeline update in the build summary page.
 
 This task when used in a build pipeline features a report window that gets displayed along with the logs. 
 
