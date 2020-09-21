@@ -16,7 +16,6 @@
     ],
     "instanceNameFormat": "Checkout $(artifact) from associated build pipeline",
     "inputs": [
-        
         {
             "name": "package",
             "type": "string",
@@ -32,7 +31,6 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used"
-
         },
         {
             "name": "versionControlProvider",
