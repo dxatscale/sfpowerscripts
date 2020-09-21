@@ -54,19 +54,19 @@ async function run() {
     } else {
 
       //Fetch Artifact
-      let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+      let artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         ArtifactHelper.getArtifactDirectory(artifactDir),
         sfdx_package
       );
 
       ArtifactHelper.skipTaskWhenArtifactIsMissing(
         ArtifactFilePathFetcher.missingArtifactDecider(
-          artifactFilePaths[0].packageMetadataFilePath,
+          artifacts_filepaths,
           skip_on_missing_artifact
         )
       );
 
-      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8"));
+      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifacts_filepaths[0].packageMetadataFilePath, "utf8"));
 
 
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{

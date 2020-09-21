@@ -23,23 +23,23 @@ async function run() {
 
     let package_version_id,sourceDirectory;
 
- 
+
     if(!isNullOrUndefined(projectDir))
       {
        //Fetch Artifact
-      let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+      let artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         ArtifactHelper.getArtifactDirectory(artifactDir),
         sfdx_package
       );
-     
+
       ArtifactHelper.skipTaskWhenArtifactIsMissing(ArtifactFilePathFetcher.missingArtifactDecider(
-        artifactFilePaths[0].packageMetadataFilePath,
+        artifacts_filepaths,
         skip_on_missing_artifact
       ));
-      
+
 
       //Read package metadata
-      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8"));
+      let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifacts_filepaths[0].packageMetadataFilePath, "utf8"));
 
 
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
@@ -53,7 +53,7 @@ async function run() {
       console.log(`Using Package Version Id ${package_version_id}`);
 
      // Get Source Directory
-      sourceDirectory = artifactFilePaths[0].sourceDirectoryPath;
+      sourceDirectory = artifacts_filepaths[0].sourceDirectoryPath;
     }
     else
     {

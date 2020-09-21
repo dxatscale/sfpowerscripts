@@ -7,8 +7,6 @@ export default class ArtifactFilePathFetcher {
    * Decider for which artifact retrieval method to use
    *
    * @param artifactDirectory
-   * @param artifactAlias
-   * @param artifactType
    * @param sfdx_package
    */
   public static fetchArtifactFilePaths(
@@ -73,19 +71,19 @@ export default class ArtifactFilePathFetcher {
 
   /**
    * Decider for task outcome if the artifact cannot be found
-   * @param packageMetadataFilePath
+   * @param artifacts_filepaths
    * @param isToSkipOnMissingArtifact
    */
   public static missingArtifactDecider(
-    packageMetadataFilePath: string,
+    artifacts_filepaths: ArtifactFilePaths[],
     isToSkipOnMissingArtifact: boolean
   ): boolean {
-    if (!fs.existsSync(packageMetadataFilePath) && !isToSkipOnMissingArtifact) {
+    if (artifacts_filepaths.length === 0 && !isToSkipOnMissingArtifact) {
       throw new Error(
-        `Artifact not found at ${packageMetadataFilePath}.. Please check the inputs`
+        `Artifact not found, Please check the inputs`
       );
     } else if (
-      !fs.existsSync(packageMetadataFilePath) &&
+      artifacts_filepaths.length === 0 &&
       isToSkipOnMissingArtifact
     ) {
       console.log(
