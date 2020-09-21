@@ -11,7 +11,7 @@ const path = require("path");
 async function run() {
   try {
     let sfdx_package = tl.getInput("package", false);
-    let artifactDir = tl.getInput("aritfactDir",false);
+    let artifactDir = tl.getInput("artifactDir",false);
     let skip_on_missing_artifact: boolean = tl.getBoolInput(
       "skip_on_missing_artifact",
       false
