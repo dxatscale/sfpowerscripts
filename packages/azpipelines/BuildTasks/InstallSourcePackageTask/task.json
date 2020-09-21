@@ -18,6 +18,9 @@
     "inputs": [
         {
             "name": "target_org",
+            "aliases": [
+                "envname"
+             ],
             "type": "string",
             "label": "Alias or username of the target org",
             "defaultValue": "scratchorg",

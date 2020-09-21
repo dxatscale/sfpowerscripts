@@ -18,6 +18,9 @@
     "inputs": [
         {
             "name": "target_org",
+            "aliases": [
+                "envname"
+             ],
             "type": "string",
             "label": "Alias or username of the target environment",
             "defaultValue": "",
@@ -52,7 +55,7 @@
             "visibleRule": "packageinstalledfrom = Custom"
         },
         {
-            "name": "aritfactDir",
+            "name": "artifactDir",
             "type": "string",
             "label": "Path to the directory where artifacts are downloaded",
             "defaultValue": "",
