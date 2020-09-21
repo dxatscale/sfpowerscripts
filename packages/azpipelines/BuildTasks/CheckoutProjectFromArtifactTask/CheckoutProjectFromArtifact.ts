@@ -33,21 +33,21 @@ async function run() {
     username = vcsAuthDetails.username;
 
     //Fetch Artifact
-    let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+    let artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
       ArtifactHelper.getArtifactDirectory(artifactDir),
       sfdx_package
     );
 
     ArtifactHelper.skipTaskWhenArtifactIsMissing(
       ArtifactFilePathFetcher.missingArtifactDecider(
-        artifactFilePaths[0].packageMetadataFilePath,
+        artifacts_filepaths,
         skip_on_missing_artifact
       )
     );
 
     //Read package metadata
     let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
-      fs.readFileSync(artifactFilePaths[0].packageMetadataFilePath, "utf8")
+      fs.readFileSync(artifacts_filepaths[0].packageMetadataFilePath, "utf8")
     );
 
     console.log(
@@ -67,7 +67,7 @@ async function run() {
 
     fs.ensureDirSync(local_source_directory);
 
-  
+
 
     console.log(`Source Directory created at ${local_source_directory}`);
 
@@ -120,8 +120,8 @@ async function run() {
       );
     } else if (packageMetadataFromArtifact.package_type === "delta") {
       let delta_artifact_location;
-      if (!isNullOrUndefined(artifactFilePaths[0].sourceDirectoryPath)) {
-        delta_artifact_location = artifactFilePaths[0].sourceDirectoryPath;
+      if (!isNullOrUndefined(artifacts_filepaths[0].sourceDirectoryPath)) {
+        delta_artifact_location = artifacts_filepaths[0].sourceDirectoryPath;
       }
 
       tl.debug("Copying Files to a source directory");
