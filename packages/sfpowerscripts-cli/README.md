@@ -31,7 +31,7 @@ EXAMPLE
 ```
 
 ## Output variables
-Many of the commands listed below will output variables which may be consumed as flag inputs in subsequent commands. Simply pass the **variable name** to the command, and it will be substituted with the corresponding value, at runtime.  
+Many of the commands listed below will output variables which may be consumed as flag inputs in subsequent commands. Simply pass the **variable name** to the command, and it will be substituted with the corresponding value, at runtime.
 
 Eg.
 ```
@@ -599,7 +599,7 @@ OPTIONS
 
   -n, --package=package                                                             Name of the package to be installed
 
-  -u, --envname=envname                                                             Alias/User Name of the target
+  -u, --targetorg=targetorg                                                         Alias/User Name of the target
                                                                                     environment
 
   -v, --packageversionid=packageversionid                                           manually input package version Id of

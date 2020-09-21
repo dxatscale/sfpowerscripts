@@ -1,7 +1,7 @@
 {
   "commandDescription": "Installs an unlocked package using sfpowerscripts metadata",
   "packageFlagDescription": "Name of the package to be installed",
-  "envNameFlagDescription": "Alias/User Name of the target environment",
+  "targetOrgFlagDescription": "Alias/User Name of the target environment",
   "packageInstalledFromFlagDescription": "automatically retrieve the version ID of the package to be installed, from the build artifact",
   "packageVersionIdFlagDescription": "manually input package version Id of the package to be installed",
   "installationKeyFlagDescription": "installation key for key-protected package",

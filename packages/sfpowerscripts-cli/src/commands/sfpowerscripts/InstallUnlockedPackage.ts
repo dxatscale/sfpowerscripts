@@ -23,7 +23,7 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
 
   protected static flagsConfig = {
     package: flags.string({char: 'n', description: messages.getMessage('packageFlagDescription')}),
-    targetorg: flags.string({char: 'u', description: messages.getMessage('envNameFlagDescription')}),
+    targetorg: flags.string({char: 'u', description: messages.getMessage('targetOrgFlagDescription')}),
     packageinstalledfrom: flags.boolean({char: 'i', description: messages.getMessage('packageInstalledFromFlagDescription')}),
     packageversionid: flags.string({char: 'v', description: messages.getMessage('packageVersionIdFlagDescription'), exclusive: ['packageinstalledfrom']}),
     installationkey : flags.string({char: 'k', description: messages.getMessage('installationKeyFlagDescription')}),
@@ -44,7 +44,7 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
   public async execute(){
    try {
 
-      const envname: string = this.flags.envname;
+      const targetOrg: string = this.flags.targetorg;
       const sfdx_package: string = this.flags.package;
       let skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;
       const package_installedfrom = this.flags.packageinstalledfrom;
@@ -107,7 +107,7 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
 
       let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
         package_version_id,
-        envname,
+        targetOrg,
         options,
         wait_time,
         publish_wait_time,
