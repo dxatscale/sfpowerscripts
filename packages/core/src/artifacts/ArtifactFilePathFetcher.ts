@@ -48,6 +48,8 @@ export default class ArtifactFilePathFetcher {
       });
     }
 
+    console.log("Package Metadata File Paths",JSON.stringify(packageMetadataFilepaths));
+
     for (let packageMetadataFilepath of packageMetadataFilepaths) {
       let sourceDirectory = path.join(
         path.dirname(packageMetadataFilepath),
@@ -66,6 +68,8 @@ export default class ArtifactFilePathFetcher {
       });
     }
 
+    console.log("Artifact File Paths",JSON.stringify(artifacts_filepaths));
+    
     return artifacts_filepaths;
   }
 
