@@ -2,7 +2,7 @@ import tl = require("azure-pipelines-task-lib/task");
 import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
-import { ReleaseChangelog, Release } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { ReleaseChangelog, Release, Artifact } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
 import authVCS from "../Common/VersionControlAuth";
 import simplegit, { SimpleGit } from "simple-git/promise";
@@ -43,51 +43,61 @@ async function run() {
       artifacts: []
     };
 
-    
 
-      if (taskType === "Release") {
-        // Use artifact type from Release API
-        console.log(
-          `Fetching artifacts from artifact directory ${tl.getVariable("system.artifactsDirectory")}`
-        );
-      } else {
-        // Default to Pipeline artifact type for Build task type
-        console.log(
-          `Build pipeline detected.`,
-          `Fetching artifacts from pipeline workspace ${tl.getVariable("pipeline.workspace")}`
-        );
-      }
 
-      let artifacts_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-        ArtifactHelper.getArtifactDirectory(ArtifactHelper.getArtifactDirectory(artifactDir))
+    if (taskType === "Release") {
+      // Use artifact type from Release API
+      console.log(
+        `Fetching artifacts from artifact directory ${tl.getVariable("system.artifactsDirectory")}`
+      );
+    } else {
+      // Default to Pipeline artifact type for Build task type
+      console.log(
+        `Build pipeline detected.`,
+        `Fetching artifacts from pipeline workspace ${tl.getVariable("pipeline.workspace")}`
+      );
+    }
+
+
+    let artifacts_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+      ArtifactHelper.getArtifactDirectory(artifactDir)
+    );
+
+    if (artifacts_filepaths.length === 0) {
+      throw new Error(`No artifacts found at ${ArtifactHelper.getArtifactDirectory(artifactDir)}`);
+    }
+
+    let missingChangelogs: Error[] = [];
+    for (let artifactFilepaths of artifacts_filepaths) {
+      let packageMetadata: PackageMetadata = JSON.parse(
+        fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
       );
 
-      for (let artifactFilepaths of artifacts_filepaths) {
-        let packageMetadata: PackageMetadata = JSON.parse(
-          fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
-        );
-
-        latestReleaseDefinition["artifacts"].push({
-          name: packageMetadata["package_name"],
-          from: undefined,
-          to: packageMetadata["sourceVersion"]?.slice(0,8) || packageMetadata["sourceVersionTo"]?.slice(0,8),
-          version: packageMetadata["package_version_number"],
-          latestCommitId: undefined,
-          commits: undefined
-        });
-
-        packageChangelogMap[packageMetadata["package_name"]] = artifactFilepaths.changelogFilePath;
+      let artifact: Artifact = {
+        name: packageMetadata["package_name"],
+        from: undefined,
+        to: packageMetadata["sourceVersion"]?.slice(0,8) || packageMetadata["sourceVersionTo"]?.slice(0,8),
+        version: packageMetadata["package_version_number"],
+        latestCommitId: undefined,
+        commits: undefined
       }
-    
+
+      latestReleaseDefinition["artifacts"].push(artifact);
+
+      if (!fs.existsSync(artifactFilepaths.changelogFilePath)) {
+        missingChangelogs.push(
+          new Error(`No changelog found in artifact ${packageMetadata["package_name"]} ${packageMetadata["package_version_number"]}`)
+        );
+      }
+
+      packageChangelogMap[packageMetadata["package_name"]] = artifactFilepaths.changelogFilePath;
+    }
+
+    if (missingChangelogs.length > 0) {
+      throw missingChangelogs;
+    }
 
     console.log("Generating changelog...");
-
-    // Check if any packages are missing changelog
-    Object.keys(packageChangelogMap).forEach( (pkg) => {
-      if (!fs.existsSync(packageChangelogMap[pkg])) {
-        throw Error("Artifact is missing changelog. Check build task version compatability");
-      }
-    });
 
     // Get artifact versions from previous release definition
     let releaseChangelog: ReleaseChangelog;
@@ -126,11 +136,11 @@ async function run() {
           commit["commitId"] === prevReleaseLatestCommitId[artifact["name"]]
         );
         if (fromIdx === -1)
-          throw Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
+          throw new Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
       }
 
       if (fromIdx > 0) {
-        artifact["commits"] = packageChangelog["commits"].slice(0, fromIdx+1);
+        artifact["commits"] = packageChangelog["commits"].slice(0, fromIdx);
       } else if (fromIdx === 0) {
         // Artifact verison has not changed
         artifact["commits"] = [];
@@ -145,7 +155,8 @@ async function run() {
       // Compute work items for latest release
       let workItemFilter: RegExp = RegExp(tl.getInput("workItemFilter", true), 'gi');
       for (let commit of artifact["commits"]) {
-        let workItems: RegExpMatchArray = commit["body"].match(workItemFilter) || commit["message"].match(workItemFilter);
+        let commitMessage: String = commit["message"] + "\n" + commit["body"];
+        let workItems: RegExpMatchArray = commitMessage.match(workItemFilter);
         if (workItems) {
             for (let item of workItems) {
                 if (latestReleaseDefinition["workItems"][item] == null) {
@@ -186,7 +197,7 @@ async function run() {
     );
 
     fs.writeFileSync(
-      path.join(repoTempDir,`releasechangelog.md`),
+      path.join(repoTempDir,`Release-Changelog.md`),
       payload
     );
 
@@ -206,7 +217,16 @@ async function run() {
   } catch (err) {
     // Cleanup temp directories
     tempDir.removeCallback();
-    tl.setResult(tl.TaskResult.Failed, err.message);
+
+    let errorMessage: string = "";
+    if (err instanceof Array) {
+      for (let e of err) {
+        errorMessage += e.message + `\n`;
+      }
+    } else {
+      errorMessage = err.message;
+    }
+    tl.setResult(tl.TaskResult.Failed, errorMessage);
   } finally {
     tempDir.removeCallback();
     tl.setResult(tl.TaskResult.Succeeded, 'Finished');
