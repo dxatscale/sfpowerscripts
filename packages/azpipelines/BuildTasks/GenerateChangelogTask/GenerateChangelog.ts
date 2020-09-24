@@ -130,7 +130,7 @@ async function run() {
       }
 
       if (fromIdx > 0) {
-        artifact["commits"] = packageChangelog["commits"].slice(0, fromIdx+1);
+        artifact["commits"] = packageChangelog["commits"].slice(0, fromIdx);
       } else if (fromIdx === 0) {
         // Artifact verison has not changed
         artifact["commits"] = [];
