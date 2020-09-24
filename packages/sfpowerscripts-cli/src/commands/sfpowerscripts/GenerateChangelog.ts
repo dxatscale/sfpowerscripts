@@ -1,7 +1,7 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import { ReleaseChangelog, Release } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { ReleaseChangelog, Release, Artifact } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import fs = require("fs-extra");
@@ -93,7 +93,7 @@ export default class GenerateChangelog extends SfdxCommand {
       );
 
       if (packageMetadataFilepaths.length === 0) {
-        throw Error(`No artifacts found at ${path.resolve(process.cwd(), this.flags.artifactdir)}`);
+        throw new Error(`No artifacts found at ${path.resolve(process.cwd(), this.flags.artifactdir)}`);
       }
 
       let packageChangelogMap: {[P:string]: string} = {};
@@ -104,31 +104,41 @@ export default class GenerateChangelog extends SfdxCommand {
       };
 
       // Read artifacts for latest release definition
+      let missingChangelogs: Error[] = [];
       for (let packageMetadataFilepath of packageMetadataFilepaths ) {
+
         let packageMetadata: PackageMetadata = JSON.parse(fs.readFileSync(packageMetadataFilepath, 'utf8'));
-        latestReleaseDefinition["artifacts"].push({
+
+        let artifact: Artifact = {
           name: packageMetadata["package_name"],
           from: undefined,
           to: packageMetadata["sourceVersion"]?.slice(0,8) || packageMetadata["sourceVersionTo"]?.slice(0,8),
           version: packageMetadata["package_version_number"],
           latestCommitId: undefined,
           commits: undefined
-        });
+        }
 
-        packageChangelogMap[packageMetadata["package_name"]] = path.join(
+        latestReleaseDefinition["artifacts"].push(artifact);
+
+        let changelogFilepath: string = path.join(
           path.dirname(packageMetadataFilepath),
           `changelog.json`
         );
+
+        if (!fs.existsSync(changelogFilepath)) {
+          missingChangelogs.push(
+            new Error(`No changelog found in artifact ${packageMetadata["package_name"]} ${packageMetadata["package_version_number"]}`)
+          );
+        }
+
+        packageChangelogMap[packageMetadata["package_name"]] = changelogFilepath;
+      }
+
+      if (missingChangelogs.length > 0) {
+        throw missingChangelogs;
       }
 
       console.log("Generating changelog...");
-
-      // Check if any packages are missing changelog
-      Object.values(packageChangelogMap).forEach( (changelogPath) => {
-        if (!fs.existsSync(changelogPath)) {
-          throw Error("Artifact is missing changelog. Check build task version compatability");
-        }
-      });
 
       // Get artifact versions from previous release definition
       let prevReleaseDefinition: Release;
@@ -166,7 +176,7 @@ export default class GenerateChangelog extends SfdxCommand {
             commit["commitId"] === prevReleaseLatestCommitId[artifact["name"]]
           );
           if (fromIdx === -1)
-            throw Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
+            throw new Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
         }
 
 
@@ -241,9 +251,20 @@ export default class GenerateChangelog extends SfdxCommand {
       }
 
     } catch (err) {
-        console.log(err.message);
-        tempDir.removeCallback();
-        process.exit(1);
+
+      let errorMessage: string = "";
+      if (err instanceof Array) {
+        for (let e of err) {
+          errorMessage += e.message + `\n`;
+        }
+      } else {
+        errorMessage = err.message;
+      }
+      console.log(errorMessage);
+
+      tempDir.removeCallback();
+
+      process.exit(1);
     } finally {
       tempDir.removeCallback();
       console.log(`Successfully generated changelog`);

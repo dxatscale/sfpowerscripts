@@ -2,7 +2,7 @@ import tl = require("azure-pipelines-task-lib/task");
 import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
-import { ReleaseChangelog, Release } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { ReleaseChangelog, Release, Artifact } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
 import authVCS from "../Common/VersionControlAuth";
 import simplegit, { SimpleGit } from "simple-git/promise";
@@ -64,35 +64,40 @@ async function run() {
       );
 
       if (artifacts_filepaths.length === 0) {
-        throw Error(`No artifacts found at ${ArtifactHelper.getArtifactDirectory(artifactDir)}`);
+        throw new Error(`No artifacts found at ${ArtifactHelper.getArtifactDirectory(artifactDir)}`);
       }
 
+      let missingChangelogs: Error[] = [];
       for (let artifactFilepaths of artifacts_filepaths) {
         let packageMetadata: PackageMetadata = JSON.parse(
           fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
         );
 
-        latestReleaseDefinition["artifacts"].push({
+        let artifact: Artifact = {
           name: packageMetadata["package_name"],
           from: undefined,
           to: packageMetadata["sourceVersion"]?.slice(0,8) || packageMetadata["sourceVersionTo"]?.slice(0,8),
           version: packageMetadata["package_version_number"],
           latestCommitId: undefined,
           commits: undefined
-        });
+        }
+
+        latestReleaseDefinition["artifacts"].push(artifact);
+
+        if (!fs.existsSync(artifactFilepaths.changelogFilePath)) {
+          missingChangelogs.push(
+            new Error(`No changelog found in artifact ${packageMetadata["package_name"]} ${packageMetadata["package_version_number"]}`)
+          );
+        }
 
         packageChangelogMap[packageMetadata["package_name"]] = artifactFilepaths.changelogFilePath;
       }
 
+    if (missingChangelogs.length > 0) {
+      throw missingChangelogs;
+    }
 
     console.log("Generating changelog...");
-
-    // Check if any packages are missing changelog
-    Object.keys(packageChangelogMap).forEach( (pkg) => {
-      if (!fs.existsSync(packageChangelogMap[pkg])) {
-        throw Error("Artifact is missing changelog. Check build task version compatability");
-      }
-    });
 
     // Get artifact versions from previous release definition
     let releaseChangelog: ReleaseChangelog;
@@ -131,7 +136,7 @@ async function run() {
           commit["commitId"] === prevReleaseLatestCommitId[artifact["name"]]
         );
         if (fromIdx === -1)
-          throw Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
+          throw new Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
       }
 
       if (fromIdx > 0) {
@@ -212,7 +217,16 @@ async function run() {
   } catch (err) {
     // Cleanup temp directories
     tempDir.removeCallback();
-    tl.setResult(tl.TaskResult.Failed, err.message);
+
+    let errorMessage: string = "";
+    if (err instanceof Array) {
+      for (let e of err) {
+        errorMessage += e.message + `\n`;
+      }
+    } else {
+      errorMessage = err.message;
+    }
+    tl.setResult(tl.TaskResult.Failed, errorMessage);
   } finally {
     tempDir.removeCallback();
     tl.setResult(tl.TaskResult.Succeeded, 'Finished');
