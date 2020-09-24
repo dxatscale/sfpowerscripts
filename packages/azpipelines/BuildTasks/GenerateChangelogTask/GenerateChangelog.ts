@@ -58,9 +58,14 @@ async function run() {
         );
       }
 
+
       let artifacts_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         ArtifactHelper.getArtifactDirectory(artifactDir)
       );
+
+      if (artifacts_filepaths.length === 0) {
+        throw Error(`No artifacts found at ${ArtifactHelper.getArtifactDirectory(artifactDir)}`);
+      }
 
       for (let artifactFilepaths of artifacts_filepaths) {
         let packageMetadata: PackageMetadata = JSON.parse(

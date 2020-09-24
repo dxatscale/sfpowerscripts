@@ -92,6 +92,10 @@ export default class GenerateChangelog extends SfdxCommand {
         }
       );
 
+      if (packageMetadataFilepaths.length === 0) {
+        throw Error(`No artifacts found at ${path.resolve(process.cwd(), this.flags.artifactdir)}`);
+      }
+
       let packageChangelogMap: {[P:string]: string} = {};
       let latestReleaseDefinition: Release = {
         name: this.flags.releasename,
