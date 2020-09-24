@@ -45,53 +45,53 @@ async function run() {
 
 
 
-      if (taskType === "Release") {
-        // Use artifact type from Release API
-        console.log(
-          `Fetching artifacts from artifact directory ${tl.getVariable("system.artifactsDirectory")}`
-        );
-      } else {
-        // Default to Pipeline artifact type for Build task type
-        console.log(
-          `Build pipeline detected.`,
-          `Fetching artifacts from pipeline workspace ${tl.getVariable("pipeline.workspace")}`
-        );
-      }
+    if (taskType === "Release") {
+      // Use artifact type from Release API
+      console.log(
+        `Fetching artifacts from artifact directory ${tl.getVariable("system.artifactsDirectory")}`
+      );
+    } else {
+      // Default to Pipeline artifact type for Build task type
+      console.log(
+        `Build pipeline detected.`,
+        `Fetching artifacts from pipeline workspace ${tl.getVariable("pipeline.workspace")}`
+      );
+    }
 
 
-      let artifacts_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-        ArtifactHelper.getArtifactDirectory(artifactDir)
+    let artifacts_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+      ArtifactHelper.getArtifactDirectory(artifactDir)
+    );
+
+    if (artifacts_filepaths.length === 0) {
+      throw new Error(`No artifacts found at ${ArtifactHelper.getArtifactDirectory(artifactDir)}`);
+    }
+
+    let missingChangelogs: Error[] = [];
+    for (let artifactFilepaths of artifacts_filepaths) {
+      let packageMetadata: PackageMetadata = JSON.parse(
+        fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
       );
 
-      if (artifacts_filepaths.length === 0) {
-        throw new Error(`No artifacts found at ${ArtifactHelper.getArtifactDirectory(artifactDir)}`);
+      let artifact: Artifact = {
+        name: packageMetadata["package_name"],
+        from: undefined,
+        to: packageMetadata["sourceVersion"]?.slice(0,8) || packageMetadata["sourceVersionTo"]?.slice(0,8),
+        version: packageMetadata["package_version_number"],
+        latestCommitId: undefined,
+        commits: undefined
       }
 
-      let missingChangelogs: Error[] = [];
-      for (let artifactFilepaths of artifacts_filepaths) {
-        let packageMetadata: PackageMetadata = JSON.parse(
-          fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
+      latestReleaseDefinition["artifacts"].push(artifact);
+
+      if (!fs.existsSync(artifactFilepaths.changelogFilePath)) {
+        missingChangelogs.push(
+          new Error(`No changelog found in artifact ${packageMetadata["package_name"]} ${packageMetadata["package_version_number"]}`)
         );
-
-        let artifact: Artifact = {
-          name: packageMetadata["package_name"],
-          from: undefined,
-          to: packageMetadata["sourceVersion"]?.slice(0,8) || packageMetadata["sourceVersionTo"]?.slice(0,8),
-          version: packageMetadata["package_version_number"],
-          latestCommitId: undefined,
-          commits: undefined
-        }
-
-        latestReleaseDefinition["artifacts"].push(artifact);
-
-        if (!fs.existsSync(artifactFilepaths.changelogFilePath)) {
-          missingChangelogs.push(
-            new Error(`No changelog found in artifact ${packageMetadata["package_name"]} ${packageMetadata["package_version_number"]}`)
-          );
-        }
-
-        packageChangelogMap[packageMetadata["package_name"]] = artifactFilepaths.changelogFilePath;
       }
+
+      packageChangelogMap[packageMetadata["package_name"]] = artifactFilepaths.changelogFilePath;
+    }
 
     if (missingChangelogs.length > 0) {
       throw missingChangelogs;
