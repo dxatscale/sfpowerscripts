@@ -218,7 +218,7 @@ export default class GenerateChangelog extends SfdxCommand {
 
       let payload: string = generateMarkdown(releaseChangelog, this.flags.workitemurl, this.flags.limit);
       fs.writeFileSync(
-        path.join(repoTempDir,`releasechangelog.md`),
+        path.join(repoTempDir,`Release-Changelog.md`),
         payload
       );
 
