@@ -59,7 +59,7 @@ async function run() {
       }
 
       let artifacts_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-        ArtifactHelper.getArtifactDirectory(ArtifactHelper.getArtifactDirectory(artifactDir))
+        ArtifactHelper.getArtifactDirectory(artifactDir)
       );
 
       for (let artifactFilepaths of artifacts_filepaths) {
