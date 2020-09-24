@@ -182,7 +182,8 @@ export default class GenerateChangelog extends SfdxCommand {
         // Compute work items for latest release
         let workItemFilter: RegExp = RegExp(this.flags.workitemfilter, 'gi');
         for (let commit of artifact["commits"]) {
-          let workItems: RegExpMatchArray = commit["body"].match(workItemFilter) || commit["message"].match(workItemFilter);
+          let commitMessage: String = commit["message"] + "\n" + commit["body"];
+          let workItems: RegExpMatchArray = commitMessage.match(workItemFilter);
           if (workItems) {
               for (let item of workItems) {
                   if (latestReleaseDefinition["workItems"][item] == null) {
