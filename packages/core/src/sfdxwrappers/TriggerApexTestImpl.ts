@@ -156,6 +156,7 @@ export default class TriggerApexTestImpl {
     let code_coverage_json = JSON.parse(code_coverage);
     code_coverage_json = this.filterCodeCoverageToPackageClasses(code_coverage_json, packageClasses);
 
+    // Check code coverage of package classes that have test classes
     for (let classCoverage of code_coverage_json) {
       if (
         classCoverage["coveredPercent"] !== null &&
@@ -164,6 +165,23 @@ export default class TriggerApexTestImpl {
         classesWithInvalidCoverage.push(classCoverage["name"]);
       }
     }
+
+    // Check for package classes with no test class
+    let classesWithoutTest: string[] = packageClasses.filter( (packageClass) => {
+      // Filter out package class if accounted for in coverage json
+      for (let classCoverage of code_coverage_json) {
+        if (classCoverage["name"] === packageClass) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+
+    if (classesWithoutTest.length > 0) {
+      classesWithInvalidCoverage = classesWithInvalidCoverage.concat(classesWithoutTest);
+    }
+
     return classesWithInvalidCoverage;
   }
 
