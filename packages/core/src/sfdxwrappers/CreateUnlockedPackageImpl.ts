@@ -33,23 +33,8 @@ export default class CreateUnlockedPackageImpl {
     let packageDirectory: string = packageDescriptor["path"];
     console.log("Package Directory", packageDirectory);
 
-    try {
-      //Resolve to the exact dependencies
-      console.log("Resolving project dependencies");
-      if (this.isSkipValidation) {
-        child_process.execSync(
-          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -s`,
-          { cwd: this.project_directory, encoding: "utf8" }
-        );
-      } else {
-        child_process.execSync(
-          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -s --usedependencyvalidatedpackages`,
-          { cwd: this.project_directory, encoding: "utf8" }
-        );
-      }
-    } catch (error) {
-      console.log("Skipping execution of dependencies list", error);
-    }
+   //Resolve the package dependencies
+    this.resolvePackageDependencies(packageDescriptor);
 
     //Redo the fetch of the descriptor as the above command would have redone the dependencies
 
@@ -131,6 +116,30 @@ export default class CreateUnlockedPackageImpl {
     };
 
     return this.packageArtifactMetadata;
+  }
+
+  private resolvePackageDependencies(packageDescriptor: any) {
+    try {
+      console.log("Resolving project dependencies");
+      let resolveResult;
+      if (this.isSkipValidation) {
+        let resolveResult;
+        resolveResult = child_process.execSync(
+          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -s`,
+          { cwd: this.project_directory, encoding: "utf8" }
+        );
+      }
+      else {
+        resolveResult = child_process.execSync(
+          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -s --usedependencyvalidatedpackages`,
+          { cwd: this.project_directory, encoding: "utf8" }
+        );
+      }
+      console.log(resolveResult);
+    }
+    catch (error) {
+      console.log("Skipping execution of dependencies list", error);
+    }
   }
 
   private buildExecCommand(): string {
