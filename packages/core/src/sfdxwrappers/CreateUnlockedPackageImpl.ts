@@ -25,12 +25,6 @@ export default class CreateUnlockedPackageImpl {
     this.packageArtifactMetadata.package_type = "unlocked";
     let startTime = Date.now();
 
-
-  
-    
-
-
-
     let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
       this.project_directory,
       this.sfdx_package
@@ -39,23 +33,27 @@ export default class CreateUnlockedPackageImpl {
     let packageDirectory: string = packageDescriptor["path"];
     console.log("Package Directory", packageDirectory);
 
+    try {
+      //Resolve to the exact dependencies
+      console.log("Resolving project dependencies");
+      if (this.isSkipValidation) {
+        child_process.execSync(
+          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -s`,
+          { cwd: this.project_directory, encoding: "utf8" }
+        );
+      } else {
+        child_process.execSync(
+          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -s --usedependencyvalidatedpackages`,
+          { cwd: this.project_directory, encoding: "utf8" }
+        );
+      }
+    } catch (error) {
+      console.log("Skipping execution of dependencies list", error);
+    }
 
-    
-     //Resolve to the exact dependencies
-     console.log("Resolving project dependencies");
-     if(this.isSkipValidation)
-     {
-     child_process.execSync(`sfdx sfpowerkit:package:dependencies:list -p ${ packageDescriptor["path"]} -v ${this.devhub_alias} -s`,{cwd:this.project_directory,encoding:"utf8"});
-     }
-     else
-     {
-      child_process.execSync(`sfdx sfpowerkit:package:dependencies:list -p ${ packageDescriptor["path"]} -v ${this.devhub_alias} -s --usedependencyvalidatedpackages`,{cwd:this.project_directory,encoding:"utf8"});
-     }
+    //Redo the fetch of the descriptor as the above command would have redone the dependencies
 
-
-     //Redo the fetch of the descriptor as the above command would have redone the dependencies
-
-     packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+    packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
       this.project_directory,
       this.sfdx_package
     );
@@ -116,11 +114,9 @@ export default class CreateUnlockedPackageImpl {
       ManifestHelpers.getSFDXPackageDescriptor(
         this.project_directory,
         this.sfdx_package
-      )["path"],null
+      )["path"],
+      null
     );
-
-
-
 
     this.packageArtifactMetadata.dependencies =
       packageDescriptor["dependencies"];
@@ -136,8 +132,6 @@ export default class CreateUnlockedPackageImpl {
 
     return this.packageArtifactMetadata;
   }
-
-  
 
   private buildExecCommand(): string {
     let command = `npx sfdx force:package:version:create -p ${this.sfdx_package}  -w ${this.wait_time} --definitionfile ${this.config_file_path} --json`;
