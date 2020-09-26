@@ -1,7 +1,7 @@
 {
   "name": "@dxatscale/sfpowerscripts.azpipelines",
   "private": true,
-  "version": "17.1.1",
+  "version": "17.1.2",
   "description": "CI/CD extensions for Salesforce",
   "repository": {
     "type": "git",

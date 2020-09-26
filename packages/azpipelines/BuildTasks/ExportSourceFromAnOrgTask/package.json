@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-exportsourcefromorg-task",
   "description": "sfpowerscripts-exportsourcefromorg-task",
-  "version": "3.0.9",
+  "version": "3.0.10",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^2.1.0",
+    "@dxatscale/sfpowerscripts.core": "^2.1.1",
     "applicationinsights": "^1.6.0",
     "azure-pipelines-task-lib": "^2.8.0"
   }
