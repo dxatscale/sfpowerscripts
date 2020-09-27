@@ -125,20 +125,20 @@ export default class CreateUnlockedPackageImpl {
       if (this.isSkipValidation) {
         let resolveResult;
         resolveResult = child_process.execSync(
-          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -s`,
+          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -w`,
           { cwd: this.project_directory, encoding: "utf8" }
         );
       }
       else {
         resolveResult = child_process.execSync(
-          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -s --usedependencyvalidatedpackages`,
+          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -w --usedependencyvalidatedpackages`,
           { cwd: this.project_directory, encoding: "utf8" }
         );
       }
       console.log(resolveResult);
     }
     catch (error) {
-      console.log("Skipping execution of dependencies list", error);
+      console.log("Skipping execution of dependencies list",error);
     }
   }
 
