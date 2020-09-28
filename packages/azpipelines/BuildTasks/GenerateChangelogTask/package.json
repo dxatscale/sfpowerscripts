@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-generatechangelog-task",
   "description": "sfpowerscripts-generatechangelog-task",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^2.1.0",
+    "@dxatscale/sfpowerscripts.core": "^2.1.1",
     "azure-devops-node-api": "^10.1.1",
     "azure-pipelines-task-lib": "^2.8.0",
     "glob": "^7.1.6",
