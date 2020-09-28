@@ -241,7 +241,7 @@ export default class GenerateChangelog extends SfdxCommand {
       git = simplegit(repoTempDir);
       await git.addConfig("user.name", "sfpowerscripts");
       await git.addConfig("user.email", "sfpowerscripts@dxscale");
-      await git.add([`releasechangelog.json`, `releasechangelog.md`]);
+      await git.add([`releasechangelog.json`, `Release-Changelog.md`]);
       await git.commit(`[skip ci] Updated Changelog ${this.flags.releasename}`);
 
       if (this.flags.forcepush) {
