@@ -4,6 +4,7 @@ import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrap
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator"
 import { isNullOrUndefined } from "util";
+const { EOL } = require('os')
 
 
 async function run() {
@@ -13,7 +14,6 @@ async function run() {
     let isDiffCheck: boolean = tl.getBoolInput("isDiffCheck", false);
     let isGitTag: boolean = tl.getBoolInput("isGitTag", false);
     let projectDirectory: string = tl.getInput("project_directory", false);
-    let apextestsuite = tl.getInput("apextestsuite", false);
     let destructiveManifestFilePath=tl.getInput("destructiveManifestFilepath",false);
     let commitId = tl.getVariable("build.sourceVersion");
     let repositoryUrl = tl.getVariable("build.repository.uri");
@@ -48,7 +48,7 @@ async function run() {
         package_version_number: version_number,
         sourceVersion: commitId,
         repository_url: repositoryUrl,
-        apextestsuite:apextestsuite
+        apextestsuite:null
       };
 
       //Convert to MDAPI
@@ -60,10 +60,12 @@ async function run() {
       );
       packageMetadata = await createSourcePackageImpl.exec();
 
-      if (packageMetadata.isApexFound && isNullOrUndefined(apextestsuite)) {
+      if (packageMetadata.isApexFound && packageMetadata.apexTestClassses==null) {
         tl.logIssue(
           tl.IssueType.Warning,
-          "This package has apex classes/triggers and an apex test suite is not specified, You would not be able to deply to production if each class do not have coverage of 75% and above"
+          `This package has apex classes/triggers, however apex test classes were not found, You would not be able to deploy${EOL}`+
+          `to production optimally if each class do not have coverage of 75% and above,You might need to deploy by triggering${EOL}`+
+          `all local tests in the org which could be realy costly in terms of deployment time!${EOL}`
         );
       }
 

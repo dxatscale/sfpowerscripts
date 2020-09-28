@@ -25,14 +25,6 @@
             "helpMarkDown": "The name of the package, that is mentioned in sfdx-project.json"
         },
         {
-            "name": "apextestsuite",
-            "type": "string",
-            "label": "Apex Test Suite that needs to be associated with the source package",
-            "required": false,
-            "defaultValue": "",
-            "helpMarkDown": "Name of the Apex Test hat need to be associated with the package"
-        },
-        {
             "name": "destructiveManifestFilepath",
             "type": "string",
             "label": "Path to a destructiveChanges.xml",
