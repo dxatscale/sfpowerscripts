@@ -15,9 +15,18 @@ import {
 } from "apex-parser";
 
 export default class TestClassFetcher {
-  public static unparsedClasses: string[] = [];
+  public unparsedClasses: string[];
 
-  public static getTestClassNames(searchDir: string): string[] {
+  constructor() {
+    this.unparsedClasses = [];
+  }
+
+  /**
+   * Get name of classes in a search directory.
+   * An empty array is returned if no test classes are found.
+   * @param searchDir
+   */
+  public getTestClassNames(searchDir: string): string[] {
     const testClassNames: string[] = [];
 
     let clsFiles: string[] = glob.sync(`*.cls`, {
@@ -43,7 +52,7 @@ export default class TestClassFetcher {
       } catch (err) {
         console.log(`Failed to parse ${clsFile}`);
         console.log(err);
-        TestClassFetcher.unparsedClasses.push(path.basename(clsFile, ".cls"));
+        this.unparsedClasses.push(path.basename(clsFile, ".cls"));
         continue;
       }
 

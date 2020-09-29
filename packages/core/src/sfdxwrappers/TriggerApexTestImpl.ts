@@ -225,8 +225,8 @@ export default class TriggerApexTestImpl {
 
     // Remove test classes from package classes
     // if (fs.existsSync(path.join(mdapiPackage.mdapiDir, `classes`)))
-
-    let testClasses: string[] = TestClassFetcher.getTestClassNames(path.join(mdapiPackage.mdapiDir, `classes`));
+    let testClassFetcher: TestClassFetcher = new TestClassFetcher();
+    let testClasses: string[] = testClassFetcher.getTestClassNames(path.join(mdapiPackage.mdapiDir, `classes`));
     if (testClasses.length > 0) {
       // Filter out test classes
       packageClasses = packageClasses.filter( (packageClass) => {
@@ -236,9 +236,9 @@ export default class TriggerApexTestImpl {
           }
         }
 
-        if (TestClassFetcher.unparsedClasses.length > 0) {
+        if (testClassFetcher.unparsedClasses.length > 0) {
           // Filter out undetermined classes that failed to parse
-          for (let unparsedClass of TestClassFetcher.unparsedClasses) {
+          for (let unparsedClass of testClassFetcher.unparsedClasses) {
             if (unparsedClass === packageClass) {
               console.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
               return false;
