@@ -147,7 +147,18 @@ export default class TriggerApexTestImpl {
     console.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
     let classesWithInvalidCoverage: string[] = [];
 
-    let packageClasses: string[] = await this.getClassesFromPackageManifest();
+    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      this.project_directory,
+      this.test_options["packageToValidate"]
+    );
+
+    let mdapiPackage: {mdapiDir: string, manifest} = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
+      this.project_directory,
+      packageDescriptor["path"]
+    );
+
+    let packageClasses: string[] = this.getClassesFromPackageManifest(mdapiPackage);
+    let triggers: string[] = this.getTriggersFromPackageManifest(mdapiPackage);
 
     let code_coverage = fs.readFileSync(
       path.join(
@@ -158,7 +169,7 @@ export default class TriggerApexTestImpl {
     );
 
     let code_coverage_json = JSON.parse(code_coverage);
-    code_coverage_json = this.filterCodeCoverageToPackageClasses(code_coverage_json, packageClasses);
+    code_coverage_json = this.filterCodeCoverageToPackageClasses(code_coverage_json, packageClasses, triggers);
 
     // Check code coverage of package classes that have test classes
     for (let classCoverage of code_coverage_json) {
@@ -189,97 +200,132 @@ export default class TriggerApexTestImpl {
     return classesWithInvalidCoverage;
   }
 
-  private filterCodeCoverageToPackageClasses(codeCoverage, packageClasses: string[]) {
+  /**
+   * Filter code coverage to classes and triggers in the package
+   * @param codeCoverage
+   * @param packageClasses
+   * @param triggers
+   */
+  private filterCodeCoverageToPackageClasses(codeCoverage, packageClasses: string[], triggers: string[]) {
     let filteredCodeCoverage = codeCoverage;
-    if (!isNullOrUndefined(packageClasses)) {
-      // only include package classes in code coverage report
-      filteredCodeCoverage = codeCoverage.filter( (classCoverage) => {
+
+    filteredCodeCoverage = codeCoverage.filter( (classCoverage) => {
+      if (packageClasses != null) {
         for (let packageClass of packageClasses) {
-          if (packageClass == classCoverage["name"])
+          if (packageClass === classCoverage["name"])
             return true;
         }
-        return false;
-      });
-    }
+      }
+
+      if (triggers != null) {
+        for (let trigger of triggers) {
+          if (trigger === classCoverage["name"]) {
+            return true
+          }
+        }
+      }
+
+      return false;
+    });
+
     return filteredCodeCoverage;
   }
+  private getTriggersFromPackageManifest(mdapiPackage: {mdapiDir: string, manifest}): string[] {
+    let triggers: string[];
 
-  private async getClassesFromPackageManifest(): Promise<string[]> {
-    let packageClasses: string[];
+    let types;
+    if (mdapiPackage.manifest["Package"]["types"] instanceof Array) {
+      types = mdapiPackage.manifest["Package"]["types"];
+    } else {
+      // Create array with single type
+      types = [mdapiPackage.manifest["Package"]["types"]];
+    }
 
-    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
-      this.project_directory,
-      this.test_options["packageToValidate"]
-    );
-
-    let packageDirectory: string = packageDescriptor["path"];
-
-    let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
-      this.project_directory,
-      packageDirectory
-    );
-
-
-    for (let type of mdapiPackage.manifest["Package"]["types"]) {
-      if (type["name"] == "ApexClass") {
-        packageClasses = type["members"];
+    for (let type of types) {
+      if (type["name"] === "ApexTrigger") {
+        if (type["members"] instanceof Array) {
+          triggers = type["members"];
+        } else {
+          // Create array with single member
+          triggers = [type["members"]];
+        }
         break;
       }
     }
 
-    // Remove test classes from package classes
-    // if (fs.existsSync(path.join(mdapiPackage.mdapiDir, `classes`)))
-    let testClassFetcher: TestClassFetcher = new TestClassFetcher();
-    let testClasses: string[] = testClassFetcher.getTestClassNames(path.join(mdapiPackage.mdapiDir, `classes`));
-    if (testClasses.length > 0) {
-      // Filter out test classes
-      packageClasses = packageClasses.filter( (packageClass) => {
-        for (let testClass of testClasses) {
-          if (testClass === packageClass) {
-            return false;
-          }
-        }
+    return triggers;
+  }
 
-        if (testClassFetcher.unparsedClasses.length > 0) {
-          // Filter out undetermined classes that failed to parse
-          for (let unparsedClass of testClassFetcher.unparsedClasses) {
-            if (unparsedClass === packageClass) {
-              console.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
-              return false;
-            }
-          }
-        }
+  private getClassesFromPackageManifest(mdapiPackage: {mdapiDir: string, manifest}): string[] {
+    let packageClasses: string[];
 
-        return true;
-      });
+    let types;
+    if (mdapiPackage.manifest["Package"]["types"] instanceof Array) {
+      types = mdapiPackage.manifest["Package"]["types"];
+    } else {
+      // Create array with single type
+      types = [mdapiPackage.manifest["Package"]["types"]];
     }
 
-    // Remove interfaces from package classes
-    let interfaceFetcher: InterfaceFetcher = new InterfaceFetcher();
-    let interfaceNames: string[] = interfaceFetcher.getInterfaceNames(path.join(mdapiPackage.mdapiDir, `classes`));
-    if (interfaceNames.length > 0) {
-      // Filter out interfaces
-      packageClasses = packageClasses.filter( (packageClass) => {
-        for (let interfaceName of interfaceNames) {
-          if (interfaceName === packageClass) {
-            return false;
-          }
+    for (let type of types) {
+      if (type["name"] === "ApexClass") {
+        if (type["members"] instanceof Array) {
+          packageClasses = type["members"];
+        } else {
+          // Create array with single member
+          packageClasses = [type["members"]];
         }
+        break;
+      }
+    }
 
-        if (interfaceFetcher.unparsedClasses.length > 0) {
-          // Filter out undetermined classes that failed to parse
-          for (let unparsedClass of interfaceFetcher.unparsedClasses) {
-            if (unparsedClass === packageClass) {
-              console.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
+    if (packageClasses != null) {
+      // Remove test classes from package classes
+      // if (fs.existsSync(path.join(mdapiPackage.mdapiDir, `classes`)))
+      let testClassFetcher: TestClassFetcher = new TestClassFetcher();
+      let testClasses: string[] = testClassFetcher.getTestClassNames(path.join(mdapiPackage.mdapiDir, `classes`));
+      if (testClasses.length > 0) {
+        // Filter out test classes
+        packageClasses = packageClasses.filter( (packageClass) => {
+          for (let testClass of testClasses) {
+            if (testClass === packageClass) {
               return false;
             }
           }
-        }
 
-        return true;
-      });
+          if (testClassFetcher.unparsedClasses.length > 0) {
+            // Filter out undetermined classes that failed to parse
+            for (let unparsedClass of testClassFetcher.unparsedClasses) {
+              if (unparsedClass === packageClass) {
+                console.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
+                return false;
+              }
+            }
+          }
+
+          return true;
+        });
+      }
+
+      // Remove interfaces from package classes
+      let interfaceFetcher: InterfaceFetcher = new InterfaceFetcher();
+      let interfaceNames: string[] = interfaceFetcher.getInterfaceNames(path.join(mdapiPackage.mdapiDir, `classes`));
+      if (interfaceNames.length > 0) {
+        // Filter out interfaces
+        packageClasses = packageClasses.filter( (packageClass) => {
+          for (let interfaceName of interfaceNames) {
+            if (interfaceName === packageClass) {
+              return false;
+            }
+          }
+
+          return true;
+        });
+      }
     }
 
     return packageClasses;
   }
+
+
 }
