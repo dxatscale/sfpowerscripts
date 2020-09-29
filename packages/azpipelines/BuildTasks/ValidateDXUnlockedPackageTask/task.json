@@ -9,7 +9,7 @@
     "version": {
         "Major": 4,
         "Minor": 0,
-        "Patch": 9
+        "Patch": 10
     },
     "instanceNameFormat": "Validates $(package) for MetadataCoverage",
     "inputs": [

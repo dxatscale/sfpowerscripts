@@ -33,6 +33,16 @@ export default class CreateUnlockedPackageImpl {
     let packageDirectory: string = packageDescriptor["path"];
     console.log("Package Directory", packageDirectory);
 
+   //Resolve the package dependencies
+    this.resolvePackageDependencies(packageDescriptor);
+
+    //Redo the fetch of the descriptor as the above command would have redone the dependencies
+
+    packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      this.project_directory,
+      this.sfdx_package
+    );
+
     //Convert to MDAPI to get PayLoad
     let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
       this.project_directory,
@@ -89,7 +99,8 @@ export default class CreateUnlockedPackageImpl {
       ManifestHelpers.getSFDXPackageDescriptor(
         this.project_directory,
         this.sfdx_package
-      )["path"],null
+      )["path"],
+      null
     );
 
     this.packageArtifactMetadata.dependencies =
@@ -105,6 +116,30 @@ export default class CreateUnlockedPackageImpl {
     };
 
     return this.packageArtifactMetadata;
+  }
+
+  private resolvePackageDependencies(packageDescriptor: any) {
+    try {
+      console.log("Resolving project dependencies");
+      let resolveResult;
+      if (this.isSkipValidation) {
+        let resolveResult;
+        resolveResult = child_process.execSync(
+          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -w`,
+          { cwd: this.project_directory, encoding: "utf8" }
+        );
+      }
+      else {
+        resolveResult = child_process.execSync(
+          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -w --usedependencyvalidatedpackages`,
+          { cwd: this.project_directory, encoding: "utf8" }
+        );
+      }
+      console.log(resolveResult);
+    }
+    catch (error) {
+      console.log("Skipping execution of dependencies list",error);
+    }
   }
 
   private buildExecCommand(): string {
