@@ -1,9 +1,14 @@
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 import { isNullOrUndefined } from "util";
-let fs = require("fs-extra");
-let path = require("path");
+import fs = require("fs-extra");
+import path = require("path");
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
+import { ApexLexer, CaseInsensitiveInputStream, ApexParser } from "apex-parser";
+import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
+const glob = require("glob");
+import TestClassFetcher from "../parser/TestClassFetcher";
+
 
 export default class TriggerApexTestImpl {
   public constructor(
@@ -210,12 +215,41 @@ export default class TriggerApexTestImpl {
       packageDirectory
     );
 
+
     for (let type of mdapiPackage.manifest["Package"]["types"]) {
       if (type["name"] == "ApexClass") {
         packageClasses = type["members"];
         break;
       }
     }
+
+    // Remove test classes from package classes
+    // if (fs.existsSync(path.join(mdapiPackage.mdapiDir, `classes`)))
+
+    let testClasses: string[] = TestClassFetcher.getTestClassNames(path.join(mdapiPackage.mdapiDir, `classes`));
+    if (testClasses.length > 0) {
+      // Filter out test classes
+      packageClasses = packageClasses.filter( (packageClass) => {
+        for (let testClass of testClasses) {
+          if (testClass === packageClass) {
+            return false;
+          }
+        }
+
+        if (TestClassFetcher.unparsedClasses.length > 0) {
+          // Filter out undetermined classes that failed to parse
+          for (let unparsedClass of TestClassFetcher.unparsedClasses) {
+            if (unparsedClass === packageClass) {
+              console.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
+              return false;
+            }
+          }
+        }
+
+        return true;
+      });
+    }
+
     return packageClasses;
   }
 
