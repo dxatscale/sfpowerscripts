@@ -4,11 +4,9 @@ import { isNullOrUndefined } from "util";
 import fs = require("fs-extra");
 import path = require("path");
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
-import { ApexLexer, CaseInsensitiveInputStream, ApexParser } from "apex-parser";
-import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
 const glob = require("glob");
 import TestClassFetcher from "../parser/TestClassFetcher";
-
+import InterfaceFetcher from "../parser/InterfaceFetcher";
 
 export default class TriggerApexTestImpl {
   public constructor(
@@ -239,6 +237,32 @@ export default class TriggerApexTestImpl {
         if (testClassFetcher.unparsedClasses.length > 0) {
           // Filter out undetermined classes that failed to parse
           for (let unparsedClass of testClassFetcher.unparsedClasses) {
+            if (unparsedClass === packageClass) {
+              console.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
+              return false;
+            }
+          }
+        }
+
+        return true;
+      });
+    }
+
+    // Remove interfaces from package classes
+    let interfaceFetcher: InterfaceFetcher = new InterfaceFetcher();
+    let interfaceNames: string[] = interfaceFetcher.getInterfaceNames(path.join(mdapiPackage.mdapiDir, `classes`));
+    if (interfaceNames.length > 0) {
+      // Filter out interfaces
+      packageClasses = packageClasses.filter( (packageClass) => {
+        for (let interfaceName of interfaceNames) {
+          if (interfaceName === packageClass) {
+            return false;
+          }
+        }
+
+        if (interfaceFetcher.unparsedClasses.length > 0) {
+          // Filter out undetermined classes that failed to parse
+          for (let unparsedClass of interfaceFetcher.unparsedClasses) {
             if (unparsedClass === packageClass) {
               console.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
               return false;

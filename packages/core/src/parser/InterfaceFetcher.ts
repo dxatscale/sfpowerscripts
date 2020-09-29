@@ -5,7 +5,7 @@ const glob = require("glob");
 import { CommonTokenStream,  ANTLRInputStream } from 'antlr4ts';
 import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 
-import TestAnnotationListener from "./listeners/TestAnnotationListener";
+import InterfaceDeclarationListener from "./listeners/InterfaceDeclarationListener";
 
 import {
   ApexLexer,
@@ -14,7 +14,7 @@ import {
   ThrowingErrorListener
 } from "apex-parser";
 
-export default class TestClassFetcher {
+export default class InterfaceFetcher {
   public unparsedClasses: string[];
 
   constructor() {
@@ -22,12 +22,12 @@ export default class TestClassFetcher {
   }
 
   /**
-   * Get name of test classes in a search directory.
-   * An empty array is returned if no test classes are found.
+   * Get name of interfaces in a search directory.
+   * An empty array is returned if no interfaces are found.
    * @param searchDir
    */
-  public getTestClassNames(searchDir: string): string[] {
-    const testClassNames: string[] = [];
+  public getInterfaceNames(searchDir: string): string[] {
+    const interfaceNames: string[] = [];
 
     let clsFiles: string[] = glob.sync(`*.cls`, {
       cwd: searchDir,
@@ -56,16 +56,16 @@ export default class TestClassFetcher {
         continue;
       }
 
-      let testAnnotationListener: TestAnnotationListener = new TestAnnotationListener();
+      let interfaceDeclarationListener: InterfaceDeclarationListener = new InterfaceDeclarationListener();
 
-      ParseTreeWalker.DEFAULT.walk(testAnnotationListener as ApexParserListener, compilationUnitContext);
+      ParseTreeWalker.DEFAULT.walk(interfaceDeclarationListener as ApexParserListener, compilationUnitContext);
 
-      if (testAnnotationListener.getTestAnnotationCount() > 0) {
+      if (interfaceDeclarationListener.getInterfaceDeclarationCount() > 0) {
         let className: string = path.basename(clsFile, ".cls");
-        testClassNames.push(className);
+        interfaceNames.push(className);
       }
     }
 
-    return testClassNames;
+    return interfaceNames;
   }
 }
