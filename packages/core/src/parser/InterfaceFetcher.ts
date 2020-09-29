@@ -29,10 +29,15 @@ export default class InterfaceFetcher {
   public getInterfaceNames(searchDir: string): string[] {
     const interfaceNames: string[] = [];
 
-    let clsFiles: string[] = glob.sync(`*.cls`, {
-      cwd: searchDir,
-      absolute: true
-    });
+    let clsFiles: string[];
+    if (fs.existsSync(searchDir)) {
+      clsFiles = glob.sync(`*.cls`, {
+        cwd: searchDir,
+        absolute: true
+      });
+    } else {
+      throw new Error(`Search directory ${searchDir} does not exist`);
+    }
 
     for (let clsFile of clsFiles) {
 
