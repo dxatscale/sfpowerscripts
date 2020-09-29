@@ -4,7 +4,6 @@ import { isNullOrUndefined } from "util";
 import fs = require("fs-extra");
 import path = require("path");
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
-const glob = require("glob");
 import TestClassFetcher from "../parser/TestClassFetcher";
 import InterfaceFetcher from "../parser/InterfaceFetcher";
 import ManifestHelpers from "../manifest/ManifestHelpers";
@@ -207,9 +206,7 @@ export default class TriggerApexTestImpl {
    * @param triggers
    */
   private filterCodeCoverageToPackageClasses(codeCoverage, packageClasses: string[], triggers: string[]) {
-    let filteredCodeCoverage = codeCoverage;
-
-    filteredCodeCoverage = codeCoverage.filter( (classCoverage) => {
+    let filteredCodeCoverage = codeCoverage.filter( (classCoverage) => {
       if (packageClasses != null) {
         for (let packageClass of packageClasses) {
           if (packageClass === classCoverage["name"])
