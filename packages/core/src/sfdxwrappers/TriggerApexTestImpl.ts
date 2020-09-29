@@ -7,6 +7,7 @@ import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 const glob = require("glob");
 import TestClassFetcher from "../parser/TestClassFetcher";
 import InterfaceFetcher from "../parser/InterfaceFetcher";
+import ManifestHelpers from "../manifest/ManifestHelpers";
 
 export default class TriggerApexTestImpl {
   public constructor(
@@ -206,7 +207,12 @@ export default class TriggerApexTestImpl {
   private async getClassesFromPackageManifest(): Promise<string[]> {
     let packageClasses: string[];
 
-    let packageDirectory: string = this.getPackageDirectory();
+    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      this.project_directory,
+      this.test_options["packageToValidate"]
+    );
+
+    let packageDirectory: string = packageDescriptor["path"];
 
     let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
       this.project_directory,
@@ -275,33 +281,5 @@ export default class TriggerApexTestImpl {
     }
 
     return packageClasses;
-  }
-
-  private getPackageDirectory(): string {
-    let packageDirectory: string;
-
-    let projectConfig: string;
-    if (!isNullOrUndefined(this.project_directory)) {
-      projectConfig = path.join(
-        this.project_directory,
-        "sfdx-project.json"
-      );
-    } else {
-      projectConfig = "sfdx-project.json";
-    }
-
-    let projectJson = JSON.parse(
-      fs.readFileSync(projectConfig, "utf8")
-    );
-
-    projectJson["packageDirectories"].forEach( (pkg) => {
-      if (this.test_options["packageToValidate"] == pkg["package"])
-        packageDirectory = pkg["path"];
-    });
-
-    if (isNullOrUndefined(packageDirectory))
-      throw new Error("Package or package directory to validate does not exist");
-    else
-      return packageDirectory;
   }
 }
