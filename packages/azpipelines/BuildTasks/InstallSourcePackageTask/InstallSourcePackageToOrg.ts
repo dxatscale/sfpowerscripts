@@ -21,6 +21,7 @@ const fs = require("fs-extra");
 const path = require("path");
 const glob = require("glob");
 const os = require("os");
+const { EOL } = require('os')
 
 async function run() {
   try {
@@ -93,6 +94,33 @@ async function run() {
       );
       return;
     }
+
+
+     
+    if (packageMetadataFromStorage.package_type=='delta') {
+      console.log(
+         `-------------------------------------------------------------------------------------------------------------`+
+         `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}`+
+         `75% test coverage, However being a dynamically generated delta package, we will deploying via triggering all local tests${EOL}`+
+         `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}`+
+         `-------------------------------------------------------------------------------------------------------------`
+       );
+       packageMetadataFromStorage.isTriggerAllTests=true;
+     }
+     else if(packageMetadataFromStorage.package_type!='delta' && packageMetadataFromStorage.apexTestClassses==null)
+     {
+      console.log(
+        `-------------------------------------------------------------------------------------------------------------`+
+        `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}`+
+        `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying ${EOL}`+
+        `via triggering all local tests,This definitely is not optimal approach on large orgs`+ 
+        `Please consider adding test classes for the classes in the package ${EOL}`+
+        `-------------------------------------------------------------------------------------------------------------`
+      );
+      packageMetadataFromStorage.isTriggerAllTests=true;
+     }
+ 
+ 
 
     let sourceDirectory;
     if (!isNullOrUndefined(sfdx_package)) {
@@ -189,7 +217,7 @@ async function run() {
     //Construct Deploy Command
     let deploymentOptions = await generateDeploymentOptions(
       wait_time,
-      packageMetadataFromStorage.apextestsuite,
+      packageMetadataFromStorage.apexTestClassses,
       target_org
     );
     let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
@@ -297,35 +325,18 @@ async function run() {
 
 async function generateDeploymentOptions(
   wait_time: string,
-  apextextsuite: string,
+  apexTestClassses: string[],
   target_org: string
 ): Promise<any> {
   let mdapi_options = {};
   mdapi_options["ignore_warnings"] = true;
   mdapi_options["wait_time"] = wait_time;
 
-  if (!isNullOrUndefined(apextextsuite)) {
-    mdapi_options["testlevel"] = "RunApexTestSuite";
-    mdapi_options["apextestsuite"] = apextextsuite;
+  if (!isNullOrUndefined(apexTestClassses)) {
+    mdapi_options["testlevel"] = "RunSpecifiedTests";
+    mdapi_options["specified_tests"] = apextextsuite;
   } else {
-    //Determine test option
-    try {
-      let result = await OrgDetails.getOrgDetails(target_org);
-      if (result["IsSandbox"]) {
-        //Its a sandbox org, and no apex test suite skip tests
-        mdapi_options["testlevel"] = "NoTestRun"; //Just ignore tests
-        mdapi_options["specified_tests"] = "skip";
-      } else {
-        mdapi_options["testlevel"] = "RunSpecifiedTests"; //Just ignore tests
-        mdapi_options["specified_tests"] = "skip";
-      }
-    } catch (error) {
-      console.log(
-        "Unable to fetch Org Details, Proceeding as if its Production Org"
-      );
-      mdapi_options["testlevel"] = "RunSpecifiedTests";
-      mdapi_options["specified_tests"] = "skip"; //Just ignore tests
-    }
+    mdapi_options["testlevel"] = "RunSpecifiedTests";
   }
   return mdapi_options;
 }

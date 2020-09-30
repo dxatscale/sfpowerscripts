@@ -149,8 +149,10 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
         repository_url: repository_url,
       };
 
+     
 
-
+      //Delta Package.. Trigger All Tests
+      packageMetadata.isTriggerAllTests =true
 
       let createSourcePackageImpl = new CreateSourcePackageImpl(
         deltaPackage.deltaDirectory,
@@ -161,8 +163,11 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       packageMetadata = await createSourcePackageImpl.exec();
 
       console.log(
-        JSON.stringify(packageMetadata, function (key, val) {
-          if (key !== "payload") return val;
+        JSON.stringify(packageMetadata, function (key, value) {
+          if(key=="payload" || key == "destructiveChanges")
+          return undefined;
+        else
+           return value;
         })
       );
 
