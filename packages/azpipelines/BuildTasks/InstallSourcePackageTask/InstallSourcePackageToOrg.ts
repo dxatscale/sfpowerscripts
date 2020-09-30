@@ -4,7 +4,6 @@ import DeploySourceToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappe
 import ReconcileProfileAgainstOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/ReconcileProfileAgainstOrgImpl";
 import DeployDestructiveManifestToOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeployDestructiveManifestToOrgImpl";
 import DeploySourceResult from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceResult";
-import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManagementApi";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
@@ -21,7 +20,7 @@ const fs = require("fs-extra");
 const path = require("path");
 const glob = require("glob");
 const os = require("os");
-const { EOL } = require('os')
+const { EOL } = require("os");
 
 async function run() {
   try {
@@ -34,10 +33,13 @@ async function run() {
       "skip_on_missing_artifact",
       false
     );
-    const subdirectory = tl.getInput("subdirectory", false);
-    const upgrade_type = tl.getInput("upgrade_type", false);
-    const wait_time = tl.getInput("wait_time", false);
-    const skip_if_package_installed = tl.getBoolInput(
+    const subdirectory: string = tl.getInput("subdirectory", false);
+    const optimizeDeployment: boolean = tl.getBoolInput(
+      "optimizeDeployment",
+      false
+    );
+    const wait_time: string = tl.getInput("wait_time", false);
+    const skip_if_package_installed: boolean = tl.getBoolInput(
       "skip_if_package_installed",
       false
     );
@@ -52,12 +54,17 @@ async function run() {
       ArtifactHelper.getArtifactDirectory(artifactDir),
       sfdx_package
     );
-    console.log("##[debug]Artifacts Paths", JSON.stringify(artifacts_filepaths));
+    console.log(
+      "##[debug]Artifacts Paths",
+      JSON.stringify(artifacts_filepaths)
+    );
 
-    ArtifactHelper.skipTaskWhenArtifactIsMissing(ArtifactFilePathFetcher.missingArtifactDecider(
-      artifacts_filepaths,
-      skip_on_missing_artifact
-    ));
+    ArtifactHelper.skipTaskWhenArtifactIsMissing(
+      ArtifactFilePathFetcher.missingArtifactDecider(
+        artifacts_filepaths,
+        skip_on_missing_artifact
+      )
+    );
 
     let packageMetadataFromArtifact: PackageMetadata = JSON.parse(
       fs.readFileSync(artifacts_filepaths[0].packageMetadataFilePath, "utf8")
@@ -95,32 +102,29 @@ async function run() {
       return;
     }
 
-
-     
-    if (packageMetadataFromStorage.package_type=='delta') {
+    if (packageMetadataFromStorage.package_type == "delta") {
       console.log(
-         `-------------------------------------------------------------------------------------------------------------`+
-         `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}`+
-         `75% test coverage, However being a dynamically generated delta package, we will deploying via triggering all local tests${EOL}`+
-         `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}`+
-         `-------------------------------------------------------------------------------------------------------------`
-       );
-       packageMetadataFromStorage.isTriggerAllTests=true;
-     }
-     else if(packageMetadataFromStorage.package_type!='delta' && packageMetadataFromStorage.apexTestClassses==null)
-     {
-      console.log(
-        `-------------------------------------------------------------------------------------------------------------`+
-        `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}`+
-        `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying ${EOL}`+
-        `via triggering all local tests,This definitely is not optimal approach on large orgs`+ 
-        `Please consider adding test classes for the classes in the package ${EOL}`+
-        `-------------------------------------------------------------------------------------------------------------`
+        `-------------------------------------------------------------------------------------------------------------` +
+          `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
+          `75% test coverage, However being a dynamically generated delta package, we will deploying via triggering all local tests${EOL}` +
+          `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}` +
+          `-------------------------------------------------------------------------------------------------------------`
       );
-      packageMetadataFromStorage.isTriggerAllTests=true;
-     }
- 
- 
+      packageMetadataFromStorage.isTriggerAllTests = true;
+    } else if (
+      packageMetadataFromStorage.package_type != "delta" &&
+      packageMetadataFromStorage.apexTestClassses == null
+    ) {
+      console.log(
+        `-------------------------------------------------------------------------------------------------------------` +
+          `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
+          `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying ${EOL}` +
+          `via triggering all local tests,This definitely is not optimal approach on large orgs` +
+          `Please consider adding test classes for the classes in the package ${EOL}` +
+          `-------------------------------------------------------------------------------------------------------------`
+      );
+      packageMetadataFromStorage.isTriggerAllTests = true;
+    }
 
     let sourceDirectory;
     if (!isNullOrUndefined(sfdx_package)) {
@@ -143,10 +147,7 @@ async function run() {
     }
 
     // Apply Destructive Manifest
-    if (
-      upgrade_type == "ApplyDestructiveChanges" &&
-      packageMetadataFromStorage.isDestructiveChangesFound
-    ) {
+    if (packageMetadataFromStorage.isDestructiveChangesFound) {
       try {
         console.log(
           "Attempt to delete components mentioned in destructive manifest"
@@ -171,54 +172,40 @@ async function run() {
 
     //Apply Reconcile if Profiles are found
     //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata
-    let isReconcileActivated = false,isReconcileErrored=false;
+    let isReconcileActivated = false,
+      isReconcileErrored = false;
     let profileFolders;
     if (
       packageMetadataFromStorage.isProfilesFound &&
       packageMetadataFromStorage.preDeploymentSteps?.includes("reconcile")
     ) {
-      try {
-        console.log("Attempting reconcile to profiles");
-        //copy the original profiles to temporary location
-        profileFolders = glob.sync("**/profiles", {
-          cwd: path.join(artifacts_filepaths[0].sourceDirectoryPath),
+      ({
+        profileFolders,
+        isReconcileActivated,
+        isReconcileErrored,
+      } = await reconcileProfilesBeforeDeployment(
+        profileFolders,
+        artifacts_filepaths[0].sourceDirectoryPath,
+        target_org
+      ));
+
+      //Reconcile Failed, Bring back the original profiles
+      console.log("Restoring original profiles as preprocessing failed");
+      if (isReconcileErrored && profileFolders.length > 0) {
+        profileFolders.forEach((folder) => {
+          fs.copySync(
+            path.join(tl.getVariable("agent.tempDirectory"), folder),
+            path.join(artifacts_filepaths[0].sourceDirectoryPath, folder)
+          );
         });
-        if (profileFolders.length > 0) {
-          profileFolders.forEach((folder) => {
-            fs.copySync(path.join(artifacts_filepaths[0].sourceDirectoryPath,folder), path.join(tl.getVariable("agent.tempDirectory"), folder));
-          });
-        }
-        //Now Reconcile
-        let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
-          target_org,
-          path.join(artifacts_filepaths[0].sourceDirectoryPath)
-        );
-        await reconcileProfileAgainstOrg.exec();
-        isReconcileActivated = true;
-      } catch (err) {
-        console.log("Failed to reconcile profiles:"+err);
-        isReconcileErrored=true;
       }
-
-
-    //Reconcile Failed, Bring back the original profiles
-    console.log("Restoring original profiles as preprocessing failed");
-    if(isReconcileErrored && profileFolders.length>0)
-    {
-      profileFolders.forEach((folder) => {
-        fs.copySync(
-          path.join(tl.getVariable("agent.tempDirectory"), folder),
-          path.join(artifacts_filepaths[0].sourceDirectoryPath, folder)
-        );
-      });
     }
-  }
 
-    //Construct Deploy Command
+    //Construct Deploy Command for actual payload
     let deploymentOptions = await generateDeploymentOptions(
+      packageMetadataFromStorage,
       wait_time,
-      packageMetadataFromStorage.apexTestClassses,
-      target_org
+      optimizeDeployment
     );
     let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
       target_org,
@@ -235,60 +222,24 @@ async function run() {
     }
 
     if (result.result) {
-
-      console.log("Applying Post Deployment Activites")
+      console.log("Applying Post Deployment Activites");
       //Apply PostDeployment Activities
       try {
         if (isReconcileActivated) {
-          //Bring back the original profiles
-          if (profileFolders.length > 0) {
-            profileFolders.forEach((folder) => {
-              fs.copySync(
-                path.join(tl.getVariable("agent.tempDirectory"), folder),
-                path.join(artifacts_filepaths[0].sourceDirectoryPath, folder)
-              );
-            });
-
-
-            //Now Reconcile
-            let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
-              target_org,
-              path.join(artifacts_filepaths[0].sourceDirectoryPath)
-            );
-            await reconcileProfileAgainstOrg.exec();
-            isReconcileActivated = true;
-
-            //Now deploy the profies alone
-            fs.appendFileSync(
-              path.join(artifacts_filepaths[0].sourceDirectoryPath, ".forceignore"),
-              "**.**" + os.EOL
-            );
-            fs.appendFileSync(
-              path.join(artifacts_filepaths[0].sourceDirectoryPath, ".forceignore"),
-              "!**.profile-meta.xml"
-            );
-
-            let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
-              target_org,
-              artifacts_filepaths[0].sourceDirectoryPath,
-              sourceDirectory,
-              deploymentOptions,
-              false
-            );
-            let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
-
-            if (!profileReconcile.result) {
-              tl.warning("Unable to deploy profiles");
-            }
-          }
+          //Bring back the original profiles, reconcile and redeploy again
+          await reconcileAndRedeployProfiles(
+            profileFolders,
+            artifacts_filepaths[0].sourceDirectoryPath,
+            target_org,
+            sourceDirectory,
+            wait_time
+          );
         }
       } catch (error) {
         tl.warning(
           "Failed to apply reconcile the second time, Partial Metadata applied"
         );
       }
-
-
 
       //No environment info available, create and push
       if (isNullOrUndefined(packageMetadataFromStorage.deployments)) {
@@ -323,22 +274,119 @@ async function run() {
   }
 }
 
-async function generateDeploymentOptions(
-  wait_time: string,
-  apexTestClassses: string[],
+async function reconcileProfilesBeforeDeployment(
+  profileFolders: any,
+  sourceDirectoryPath: string,
   target_org: string
+) {
+  let isReconcileActivated:boolean=false;
+  let isReconcileErrored:boolean=false;
+  try {
+    console.log("Attempting reconcile to profiles");
+    //copy the original profiles to temporary location
+    profileFolders = glob.sync("**/profiles", {
+      cwd: path.join(sourceDirectoryPath),
+    });
+    if (profileFolders.length > 0) {
+      profileFolders.forEach((folder) => {
+        fs.copySync(
+          path.join(sourceDirectoryPath, folder),
+          path.join(tl.getVariable("agent.tempDirectory"), folder)
+        );
+      });
+    }
+    //Now Reconcile
+    let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
+      target_org,
+      path.join(sourceDirectoryPath)
+    );
+    await reconcileProfileAgainstOrg.exec();
+    isReconcileActivated = true;
+  } catch (err) {
+    console.log("Failed to reconcile profiles:" + err);
+    isReconcileErrored = true;
+  }
+  return { profileFolders, isReconcileActivated, isReconcileErrored };
+}
+
+async function reconcileAndRedeployProfiles(
+  profileFolders: string[],
+  sourceDirectoryPath: string,
+  target_org: string,
+  sourceDirectory: string,
+  wait_time: string
+) {
+  if (profileFolders.length > 0) {
+    profileFolders.forEach((folder) => {
+      fs.copySync(
+        path.join(tl.getVariable("agent.tempDirectory"), folder),
+        path.join(sourceDirectoryPath, folder)
+      );
+    });
+
+    //Now Reconcile
+    let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
+      target_org,
+      path.join(sourceDirectoryPath)
+    );
+    await reconcileProfileAgainstOrg.exec();
+
+    //Now deploy the profies alone
+    fs.appendFileSync(
+      path.join(sourceDirectoryPath, ".forceignore"),
+      "**.**" + os.EOL
+    );
+    fs.appendFileSync(
+      path.join(sourceDirectoryPath, ".forceignore"),
+      "!**.profile-meta.xml"
+    );
+
+    let deploymentOptions = {};
+    deploymentOptions["ignore_warnings"] = true;
+    deploymentOptions["wait_time"] = wait_time;
+    deploymentOptions["testlevel"] = "RunSpecifiedTests";
+    deploymentOptions["specified_tests"] = "skip";
+
+    let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
+      target_org,
+      sourceDirectoryPath,
+      sourceDirectory,
+      deploymentOptions,
+      false
+    );
+    let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
+
+    if (!profileReconcile.result) {
+      tl.warning("Unable to deploy reconciled  profiles");
+    }
+  }
+}
+
+async function generateDeploymentOptions(
+  packageMetadata: PackageMetadata,
+  wait_time: string,
+  optimizeDeployment:boolean
 ): Promise<any> {
   let mdapi_options = {};
   mdapi_options["ignore_warnings"] = true;
   mdapi_options["wait_time"] = wait_time;
 
-  if (!isNullOrUndefined(apexTestClassses)) {
+  if (!packageMetadata.isTriggerAllTests && optimizeDeployment) {
     mdapi_options["testlevel"] = "RunSpecifiedTests";
-    mdapi_options["specified_tests"] = apextextsuite;
+    mdapi_options["specified_tests"] = getAStringOfSpecificTestClasses(
+      packageMetadata.apexTestClassses
+    );
   } else {
-    mdapi_options["testlevel"] = "RunSpecifiedTests";
+    mdapi_options["testlevel"] = "RunLocalTests";
   }
   return mdapi_options;
+}
+
+function getAStringOfSpecificTestClasses(apexTestClassses: string[]) {
+  const doublequote = '"';
+  let specifedTests: string = doublequote;
+  specifedTests = doublequote + apexTestClassses.join(",") + doublequote;
+  return specifedTests;
 }
 
 function checkPackageIsInstalled(

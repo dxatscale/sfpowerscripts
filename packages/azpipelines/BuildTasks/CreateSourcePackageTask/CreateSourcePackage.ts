@@ -14,7 +14,6 @@ async function run() {
     let isDiffCheck: boolean = tl.getBoolInput("isDiffCheck", false);
     let isGitTag: boolean = tl.getBoolInput("isGitTag", false);
     let projectDirectory: string = tl.getInput("project_directory", false);
-    let destructiveManifestFilePath=tl.getInput("destructiveManifestFilepath",false);
     let commitId = tl.getVariable("build.sourceVersion");
     let repositoryUrl = tl.getVariable("build.repository.uri");
 
@@ -55,21 +54,31 @@ async function run() {
       let createSourcePackageImpl = new CreateSourcePackageImpl(
         projectDirectory,
         sfdx_package,
-        destructiveManifestFilePath,
+        null,
         packageMetadata
       );
       packageMetadata = await createSourcePackageImpl.exec();
+
+
 
       if (packageMetadata.isApexFound && packageMetadata.apexTestClassses==null) {
         tl.logIssue(
           tl.IssueType.Warning,
           `This package has apex classes/triggers, however apex test classes were not found, You would not be able to deploy${EOL}`+
-          `to production optimally if each class do not have coverage of 75% and above,You might need to deploy by triggering${EOL}`+
+          `to production org optimally if each class do not have coverage of 75% and above,We will attempt deploying this package by triggering${EOL}`+
           `all local tests in the org which could be realy costly in terms of deployment time!${EOL}`
         );
+        packageMetadata.isTriggerAllTests=true;
+      }
+      else if(packageMetadata.isApexFound && packageMetadata.apexTestClassses)
+      {
+        console.log("Following apex test classes were identified");
+        
+
+
       }
 
-      console.log(JSON.stringify(packageMetadata));
+     
 
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata,(key:string,value:any)=>{
          if(key=="payload" || key == "destructiveChanges")

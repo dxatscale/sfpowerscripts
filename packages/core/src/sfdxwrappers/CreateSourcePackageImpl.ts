@@ -92,50 +92,46 @@ export default class CreateSourcePackageImpl {
         let testClassFetcher: TestClassFetcher = new TestClassFetcher();
         let testClasses: {file:string,name:string}[] = testClassFetcher.getTestClassNames(path.join(mdapiPackage.mdapiDir, `classes`));
 
+        
+         
+
         if (!this.packageArtifactMetadata.isTriggerAllTests) {
           if (
             this.packageArtifactMetadata.isApexFound &&
-            testClasses.length==0
+            testClasses?.length==0
           ) {
-            console.log(`-------WARNING! YOU MIGHT NOT BE ABLE TO DEPLOY OR WILL HAVE A SLOW DEPLOYMENT---------------`);
-            console.log(
-              `This package has apex classes/triggers, however apex test classes were not found, You would not be able to deploy${EOL}` +
-              `to production org optimally if each class do not have coverage of 75% and above,We will attempt deploying${EOL}` +
-              `this package by triggering all local tests in the org which could be realy costly in terms of deployment time!${EOL}`
-            );
-            console.log(`---------------------------------------------------------------------------------------------`);
+            this.printSlowDeploymentWarning();
             this.packageArtifactMetadata.isTriggerAllTests = true;
           } else if (
             this.packageArtifactMetadata.isApexFound &&
             testClasses.length>0
           ) {
-            console.log(`---------------- OPTION FOR DEPLOYMENT OPTIMIZATION AVAILABLE-----------------------------------`);
-            console.log(`Following apex test classes were identified and can  be used for deploying this package,${EOL}`+
-                        `in an optimal manner, provided each individual class meets the test coverage requirement of 75% and above${EOL}`+
-                        `Ensure each apex class/trigger is validated for coverage in the validation stage`);
-            console.log(`-----------------------------------------------------------------------------------------------`);
+            if(testClassFetcher.unparsedClasses?.length>0)
+            {
+            
+              console.log(
+                "---------------------------------------------------------------------------------------"
+              );
+              console.log("Unable to parse these classes, Its not your issue, its ours! Please raise a issue in our repo!"); 
+              this.packageArtifactMetadata.isTriggerAllTests = true;
+            }
+            else
+            {
+            this.printHintForOptimizedDeployment();
             this.printTestClassesIdentified(testClasses);
             this.packageArtifactMetadata.apexTestClassses=[];
             testClasses.forEach(element => {
               this.packageArtifactMetadata.apexTestClassses.push(element.name);
             });
           }
+          } 
         }
 
 
 
         
       } else {
-        console.log(
-          "---------------------WARNING! Empty aritfact encountered-------------------------------"
-        );
-        console.log(
-          "Either this folder is empty or the application of .forceignore results in an empty folder"
-        );
-        console.log("Proceeding to create an empty artifact");
-        console.log(
-          "---------------------------------------------------------------------------------------"
-        );
+        this.printEmptyArtifactWarning();
       }
     } else {
       console.log(
@@ -163,6 +159,37 @@ export default class CreateSourcePackageImpl {
       timestamp: Date.now(),
     };
     return this.packageArtifactMetadata;
+  }
+
+  private printEmptyArtifactWarning() {
+    console.log(
+      "---------------------WARNING! Empty aritfact encountered-------------------------------"
+    );
+    console.log(
+      "Either this folder is empty or the application of .forceignore results in an empty folder"
+    );
+    console.log("Proceeding to create an empty artifact");
+    console.log(
+      "---------------------------------------------------------------------------------------"
+    );
+  }
+
+  private printHintForOptimizedDeployment() {
+    console.log(`---------------- OPTION FOR DEPLOYMENT OPTIMIZATION AVAILABLE-----------------------------------`);
+    console.log(`Following apex test classes were identified and can  be used for deploying this package,${EOL}` +
+      `in an optimal manner, provided each individual class meets the test coverage requirement of 75% and above${EOL}` +
+      `Ensure each apex class/trigger is validated for coverage in the validation stage`);
+    console.log(`-----------------------------------------------------------------------------------------------`);
+  }
+
+  private printSlowDeploymentWarning() {
+    console.log(`-------WARNING! YOU MIGHT NOT BE ABLE TO DEPLOY OR WILL HAVE A SLOW DEPLOYMENT---------------`);
+    console.log(
+      `This package has apex classes/triggers, however apex test classes were not found, You would not be able to deploy${EOL}` +
+      `to production org optimally if each class do not have coverage of 75% and above,We will attempt deploying${EOL}` +
+      `this package by triggering all local tests in the org which could be realy costly in terms of deployment time!${EOL}`
+    );
+    console.log(`---------------------------------------------------------------------------------------------`);
   }
 
   private getDestructiveChanges(
@@ -214,7 +241,7 @@ export default class CreateSourcePackageImpl {
         return;
      
     let table = new Table({
-      head: ["Test Class", "Path"],
+      head: ["Apex Test Class", "Path"],
     });
 
     for (let testclass of testClasses) {

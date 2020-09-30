@@ -9,7 +9,7 @@
     "version": {
         "Major": 1,
         "Minor": 0,
-        "Patch": 3
+        "Patch": 4
     },
     "runsOn": [
         "Agent"
@@ -58,16 +58,12 @@
             "helpMarkDown": "wait time for command to finish in minutes"
         },
         {
-            "name": "upgrade_type",
-            "type": "pickList",
-            "label": "Upgrade type for the installed package",
-            "defaultValue": "Ignore",
-            "options": {
-                "Ignore": "Ignore",
-                "ApplyDestructiveChanges": "Apply Destructive Changes"
-            },
-            "required": true,
-            "helpMarkDown": "the upgrade type for the package installation"
+            "name": "optimizeDeployment",
+            "type": "boolean",
+            "label": "Optimize Deployment of this package by deploying using only the test classes in the package",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Optimize the installation of this source package, by using the apex tests that is part of the package, If disabled, the package will be installed using all the local tests in the org!"
         },
         {
             "name": "skip_if_package_installed",

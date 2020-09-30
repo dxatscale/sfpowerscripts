@@ -9,7 +9,7 @@
     "version": {
         "Major": 12,
         "Minor": 0,
-        "Patch": 1
+        "Patch": 2
     },
     "runsOn": [
         "Agent"
@@ -23,13 +23,6 @@
             "defaultValue": "",
             "required": true,
             "helpMarkDown": "The name of the package, that is mentioned in sfdx-project.json"
-        },
-        {
-            "name": "destructiveManifestFilepath",
-            "type": "string",
-            "label": "Path to a destructiveChanges.xml",
-            "defaultValue": "",
-            "helpMarkDown": "The location to the xml file which contains the destructive changes, file should be named destructiveChanges.xml and should be accessible by this task"
         },
         {
             "name": "version_number",

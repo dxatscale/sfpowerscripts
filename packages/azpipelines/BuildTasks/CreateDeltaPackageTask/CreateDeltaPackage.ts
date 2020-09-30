@@ -51,9 +51,11 @@ async function run() {
 
     console.log("DeltaPackage Details", deltaPackage);
 
-    //Delta Package.. Trigger All Tests
-    packageMetadata.isTriggerAllTests = true;
 
+     //Switch to delta and let source package know all tests has to be triggered
+    packageMetadata.package_type = "delta";
+    packageMetadata.isTriggerAllTests = true;
+    
     let createSourcePackageImpl = new CreateSourcePackageImpl(
       deltaPackage.deltaDirectory,
       sfdx_package,
@@ -76,15 +78,14 @@ async function run() {
     );
     
    
-    //Switch to delta
-    packageMetadata.package_type = "delta";
+   
     let artifact = await ArtifactGenerator.generateArtifact(
       sfdx_package,
       projectDirectory,
       tl.getVariable("agent.tempDirectory"),
       packageMetadata
     );
-    if (!isNullOrUndefined(sfdx_package))
+    if (!(sfdx_package===null || sfdx_package===undefined))
       tl.uploadArtifact(
         `${sfdx_package}_sfpowerscripts_artifact`,
         artifact.artifactDirectory,
