@@ -57,8 +57,16 @@ export default class TestClassFetcher {
       } catch (err) {
         console.log(`Failed to parse ${clsFile}`);
         console.log(err);
-        this.unparsedClasses.push(path.basename(clsFile, ".cls"));
-        continue;
+
+        // Manually parse class if error is caused by System.runAs() or testMethod modifier
+        if (
+          this.parseSystemRunAs(err, clsPayload) ||
+          this.parseTestMethod(err, clsPayload)
+        ) {
+          console.log(`Manually identified test class ${clsFile}`)
+          let className: string = path.basename(clsFile, ".cls");
+          testClassNames.push(className)
+        }
       }
 
       let testAnnotationListener: TestAnnotationListener = new TestAnnotationListener();
@@ -72,5 +80,31 @@ export default class TestClassFetcher {
     }
 
     return testClassNames;
+  }
+
+  /**
+   * Bypass error parsing System.runAs()
+   * @param error
+   * @param clsPayload
+   */
+  private parseSystemRunAs(error, clsPayload: string): boolean {
+    return (
+      error["message"].includes("missing ';' at '{'") &&
+      /System.runAs/i.test(clsPayload) &&
+      /@isTest/i.test(clsPayload)
+    );
+  }
+
+  /**
+   * Bypass error parsing testMethod modifier
+   * @param error
+   * @param clsPayload
+   */
+  private parseTestMethod(error, clsPayload: string): boolean {
+    return (
+      error["message"].includes("no viable alternative at input") &&
+      /testMethod/i.test(error["message"]) &&
+      /testMethod/i.test(clsPayload)
+    );
   }
 }
