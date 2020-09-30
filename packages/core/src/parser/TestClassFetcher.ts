@@ -26,8 +26,8 @@ export default class TestClassFetcher {
    * An empty array is returned if no test classes are found.
    * @param searchDir
    */
-  public getTestClassNames(searchDir: string): string[] {
-    const testClassNames: string[] = [];
+  public getTestClassNames(searchDir: string): {file:string,name:string}[] {
+    const testClassNames: {file:string,name:string}[] = [];
 
     let clsFiles: string[];
     if (fs.existsSync(searchDir)) {
@@ -67,7 +67,7 @@ export default class TestClassFetcher {
 
       if (testAnnotationListener.getTestAnnotationCount() > 0) {
         let className: string = path.basename(clsFile, ".cls");
-        testClassNames.push(className);
+        testClassNames.push({file:clsFile,name:className});
       }
     }
 

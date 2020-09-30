@@ -280,12 +280,12 @@ export default class TriggerApexTestImpl {
       // Remove test classes from package classes
       // if (fs.existsSync(path.join(mdapiPackage.mdapiDir, `classes`)))
       let testClassFetcher: TestClassFetcher = new TestClassFetcher();
-      let testClasses: string[] = testClassFetcher.getTestClassNames(path.join(mdapiPackage.mdapiDir, `classes`));
+      let testClasses: {file:string,name:string}[] = testClassFetcher.getTestClassNames(path.join(mdapiPackage.mdapiDir, `classes`));
       if (testClasses.length > 0) {
         // Filter out test classes
         packageClasses = packageClasses.filter( (packageClass) => {
           for (let testClass of testClasses) {
-            if (testClass === packageClass) {
+            if (testClass.name === packageClass) {
               return false;
             }
           }
