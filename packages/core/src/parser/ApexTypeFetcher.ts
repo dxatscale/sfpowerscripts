@@ -5,7 +5,7 @@ const glob = require("glob");
 import { CommonTokenStream,  ANTLRInputStream } from 'antlr4ts';
 import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 
-import TestAnnotationListener from "./listeners/TestAnnotationListener";
+import ApexTypeListener from "./listeners/ApexTypeListener";
 
 import {
   ApexLexer,
@@ -14,20 +14,21 @@ import {
   ThrowingErrorListener
 } from "apex-parser";
 
-export default class TestClassFetcher {
-  public unparsedClasses: string[];
+export default class ApexTypeFetcher {
 
-  constructor() {
-    this.unparsedClasses = [];
-  }
 
   /**
-   * Get name of test classes in a search directory.
-   * An empty array is returned if no test classes are found.
+   * Get Apex type of cls files in a search directory.
+   * Sorts files into classes, test classes and interfaces.
    * @param searchDir
    */
-  public getTestClassNames(searchDir: string): string[] {
-    const testClassNames: string[] = [];
+  public getApexTypeOfClsFiles(searchDir: string): ApexSortedByType {
+    const apexSortedByType: ApexSortedByType = {
+      class: [],
+      testClass: [],
+      interface: [],
+      parseError: []
+    };
 
     let clsFiles: string[];
     if (fs.existsSync(searchDir)) {
@@ -39,10 +40,13 @@ export default class TestClassFetcher {
       throw new Error(`Search directory ${searchDir} does not exist`);
     }
 
+
     for (let clsFile of clsFiles) {
 
       let clsPayload: string = fs.readFileSync(clsFile, 'utf8');
+      let fileDescriptor: FileDescriptor = {name: path.basename(clsFile, ".cls"), filepath: clsFile};
 
+      // Parse cls file
       let compilationUnitContext;
       try {
         let lexer = new ApexLexer(new ANTLRInputStream(clsPayload));
@@ -64,22 +68,35 @@ export default class TestClassFetcher {
           this.parseTestMethod(err, clsPayload)
         ) {
           console.log(`Manually identified test class ${clsFile}`)
-          let className: string = path.basename(clsFile, ".cls");
-          testClassNames.push(className)
+          apexSortedByType["testClass"].push(fileDescriptor);
+        } else {
+          fileDescriptor["error"] = err;
+          apexSortedByType["parseError"].push(fileDescriptor);
         }
+        continue;
       }
 
-      let testAnnotationListener: TestAnnotationListener = new TestAnnotationListener();
+      let apexTypeListener: ApexTypeListener = new ApexTypeListener();
 
-      ParseTreeWalker.DEFAULT.walk(testAnnotationListener as ApexParserListener, compilationUnitContext);
+      // Walk parse tree to determine Apex type
+      ParseTreeWalker.DEFAULT.walk(apexTypeListener as ApexParserListener, compilationUnitContext);
 
-      if (testAnnotationListener.getTestAnnotationCount() > 0) {
-        let className: string = path.basename(clsFile, ".cls");
-        testClassNames.push(className);
+      let apexType = apexTypeListener.getApexType();
+
+      if (apexType.class) {
+        apexSortedByType["class"].push(fileDescriptor);
+        if (apexType.testClass) {
+          apexSortedByType["testClass"].push(fileDescriptor);
+        }
+      } else if (apexType.interface) {
+        apexSortedByType["interface"].push(fileDescriptor);
+      } else {
+        fileDescriptor["error"] = {message: "Unknown Apex Type"};
+        apexSortedByType["parseError"].push(fileDescriptor);
       }
     }
 
-    return testClassNames;
+    return apexSortedByType;
   }
 
   /**
@@ -107,4 +124,17 @@ export default class TestClassFetcher {
       /testMethod/i.test(clsPayload)
     );
   }
+}
+
+interface ApexSortedByType {
+  class: FileDescriptor[],
+  testClass: FileDescriptor[],
+  interface: FileDescriptor[],
+  parseError: FileDescriptor[]
+}
+
+interface FileDescriptor {
+  name: string
+  filepath: string,
+  error?: any
 }
