@@ -7,7 +7,7 @@
 
 
 sfpowerscripts is a lightweight orchestrator built on top of sfdx-cli and open source sfdx plugin [sfpowerkit]( 
-https://github.com/Accenture/sfpowerkit) aimed at elimiinating wasted efforts in writing boiler plate code (often written using bash scripts) while setting up a  Continous Build system for Salesforce.
+https://github.com/Accenture/sfpowerkit) aimed at eliminating wasted efforts in writing boiler plate code (often written using bash scripts) while setting up a  Continous Build system for Salesforce.
 
 The project supports the following targets at the moment
 - <b>Azure Pipelines</b> through a native extension. More details on the extension is available [here](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/azpipelines)

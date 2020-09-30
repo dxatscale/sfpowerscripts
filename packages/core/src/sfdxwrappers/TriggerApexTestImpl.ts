@@ -1,9 +1,12 @@
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 import { isNullOrUndefined } from "util";
-let fs = require("fs-extra");
-let path = require("path");
+import fs = require("fs-extra");
+import path = require("path");
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
+import TestClassFetcher from "../parser/TestClassFetcher";
+import InterfaceFetcher from "../parser/InterfaceFetcher";
+import ManifestHelpers from "../manifest/ManifestHelpers";
 
 export default class TriggerApexTestImpl {
   public constructor(
@@ -143,7 +146,18 @@ export default class TriggerApexTestImpl {
     console.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
     let classesWithInvalidCoverage: string[] = [];
 
-    let packageClasses: string[] = await this.getClassesFromPackageManifest();
+    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      this.project_directory,
+      this.test_options["packageToValidate"]
+    );
+
+    let mdapiPackage: {mdapiDir: string, manifest} = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
+      this.project_directory,
+      packageDescriptor["path"]
+    );
+
+    let packageClasses: string[] = this.getClassesFromPackageManifest(mdapiPackage);
+    let triggers: string[] = this.getTriggersFromPackageManifest(mdapiPackage);
 
     let code_coverage = fs.readFileSync(
       path.join(
@@ -154,8 +168,9 @@ export default class TriggerApexTestImpl {
     );
 
     let code_coverage_json = JSON.parse(code_coverage);
-    code_coverage_json = this.filterCodeCoverageToPackageClasses(code_coverage_json, packageClasses);
+    code_coverage_json = this.filterCodeCoverageToPackageClasses(code_coverage_json, packageClasses, triggers);
 
+    // Check code coverage of package classes that have test classes
     for (let classCoverage of code_coverage_json) {
       if (
         classCoverage["coveredPercent"] !== null &&
@@ -164,68 +179,150 @@ export default class TriggerApexTestImpl {
         classesWithInvalidCoverage.push(classCoverage["name"]);
       }
     }
+
+    // Check for package classes with no test class
+    let classesWithoutTest: string[] = packageClasses.filter( (packageClass) => {
+      // Filter out package class if accounted for in coverage json
+      for (let classCoverage of code_coverage_json) {
+        if (classCoverage["name"] === packageClass) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+
+    if (classesWithoutTest.length > 0) {
+      classesWithInvalidCoverage = classesWithInvalidCoverage.concat(classesWithoutTest);
+    }
+
     return classesWithInvalidCoverage;
   }
 
-  private filterCodeCoverageToPackageClasses(codeCoverage, packageClasses: string[]) {
-    let filteredCodeCoverage = codeCoverage;
-    if (!isNullOrUndefined(packageClasses)) {
-      // only include package classes in code coverage report
-      filteredCodeCoverage = codeCoverage.filter( (classCoverage) => {
+  /**
+   * Filter code coverage to classes and triggers in the package
+   * @param codeCoverage
+   * @param packageClasses
+   * @param triggers
+   */
+  private filterCodeCoverageToPackageClasses(codeCoverage, packageClasses: string[], triggers: string[]) {
+    let filteredCodeCoverage = codeCoverage.filter( (classCoverage) => {
+      if (packageClasses != null) {
         for (let packageClass of packageClasses) {
-          if (packageClass == classCoverage["name"])
+          if (packageClass === classCoverage["name"])
             return true;
         }
-        return false;
-      });
-    }
+      }
+
+      if (triggers != null) {
+        for (let trigger of triggers) {
+          if (trigger === classCoverage["name"]) {
+            return true
+          }
+        }
+      }
+
+      return false;
+    });
+
     return filteredCodeCoverage;
   }
+  private getTriggersFromPackageManifest(mdapiPackage: {mdapiDir: string, manifest}): string[] {
+    let triggers: string[];
 
-  private async getClassesFromPackageManifest(): Promise<string[]> {
-    let packageClasses: string[];
+    let types;
+    if (mdapiPackage.manifest["Package"]["types"] instanceof Array) {
+      types = mdapiPackage.manifest["Package"]["types"];
+    } else {
+      // Create array with single type
+      types = [mdapiPackage.manifest["Package"]["types"]];
+    }
 
-    let packageDirectory: string = this.getPackageDirectory();
-
-    let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
-      this.project_directory,
-      packageDirectory
-    );
-
-    for (let type of mdapiPackage.manifest["Package"]["types"]) {
-      if (type["name"] == "ApexClass") {
-        packageClasses = type["members"];
+    for (let type of types) {
+      if (type["name"] === "ApexTrigger") {
+        if (type["members"] instanceof Array) {
+          triggers = type["members"];
+        } else {
+          // Create array with single member
+          triggers = [type["members"]];
+        }
         break;
       }
     }
+
+    return triggers;
+  }
+
+  private getClassesFromPackageManifest(mdapiPackage: {mdapiDir: string, manifest}): string[] {
+    let packageClasses: string[];
+
+    let types;
+    if (mdapiPackage.manifest["Package"]["types"] instanceof Array) {
+      types = mdapiPackage.manifest["Package"]["types"];
+    } else {
+      // Create array with single type
+      types = [mdapiPackage.manifest["Package"]["types"]];
+    }
+
+    for (let type of types) {
+      if (type["name"] === "ApexClass") {
+        if (type["members"] instanceof Array) {
+          packageClasses = type["members"];
+        } else {
+          // Create array with single member
+          packageClasses = [type["members"]];
+        }
+        break;
+      }
+    }
+
+    if (packageClasses != null) {
+      // Remove test classes from package classes
+      // if (fs.existsSync(path.join(mdapiPackage.mdapiDir, `classes`)))
+      let testClassFetcher: TestClassFetcher = new TestClassFetcher();
+      let testClasses: string[] = testClassFetcher.getTestClassNames(path.join(mdapiPackage.mdapiDir, `classes`));
+      if (testClasses.length > 0) {
+        // Filter out test classes
+        packageClasses = packageClasses.filter( (packageClass) => {
+          for (let testClass of testClasses) {
+            if (testClass === packageClass) {
+              return false;
+            }
+          }
+
+          if (testClassFetcher.unparsedClasses.length > 0) {
+            // Filter out undetermined classes that failed to parse
+            for (let unparsedClass of testClassFetcher.unparsedClasses) {
+              if (unparsedClass === packageClass) {
+                console.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
+                return false;
+              }
+            }
+          }
+
+          return true;
+        });
+      }
+
+      // Remove interfaces from package classes
+      let interfaceFetcher: InterfaceFetcher = new InterfaceFetcher();
+      let interfaceNames: string[] = interfaceFetcher.getInterfaceNames(path.join(mdapiPackage.mdapiDir, `classes`));
+      if (interfaceNames.length > 0) {
+        // Filter out interfaces
+        packageClasses = packageClasses.filter( (packageClass) => {
+          for (let interfaceName of interfaceNames) {
+            if (interfaceName === packageClass) {
+              return false;
+            }
+          }
+
+          return true;
+        });
+      }
+    }
+
     return packageClasses;
   }
 
-  private getPackageDirectory(): string {
-    let packageDirectory: string;
 
-    let projectConfig: string;
-    if (!isNullOrUndefined(this.project_directory)) {
-      projectConfig = path.join(
-        this.project_directory,
-        "sfdx-project.json"
-      );
-    } else {
-      projectConfig = "sfdx-project.json";
-    }
-
-    let projectJson = JSON.parse(
-      fs.readFileSync(projectConfig, "utf8")
-    );
-
-    projectJson["packageDirectories"].forEach( (pkg) => {
-      if (this.test_options["packageToValidate"] == pkg["package"])
-        packageDirectory = pkg["path"];
-    });
-
-    if (isNullOrUndefined(packageDirectory))
-      throw new Error("Package or package directory to validate does not exist");
-    else
-      return packageDirectory;
-  }
 }
