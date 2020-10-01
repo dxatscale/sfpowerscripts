@@ -192,8 +192,8 @@ async function run() {
       ));
 
       //Reconcile Failed, Bring back the original profiles
-      console.log("Restoring original profiles as preprocessing failed");
-      if (isReconcileErrored && profileFolders.length > 0) {
+       if (isReconcileErrored && profileFolders.length > 0) {
+       console.log("Restoring original profiles as preprocessing failed");
         profileFolders.forEach((folder) => {
           fs.copySync(
             path.join(tl.getVariable("agent.tempDirectory"), folder),
