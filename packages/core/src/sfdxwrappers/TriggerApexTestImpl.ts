@@ -52,7 +52,9 @@ export default class TriggerApexTestImpl {
       await onExit(child);
 
     } catch (err) {
-
+        if (err.message === "Package or package directory does not exist") {
+          console.log(err.message);
+        }
     } finally {
       console.log(output);
     }
