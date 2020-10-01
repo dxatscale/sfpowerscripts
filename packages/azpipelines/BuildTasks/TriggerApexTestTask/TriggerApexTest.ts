@@ -1,7 +1,6 @@
 import tl = require("azure-pipelines-task-lib/task");
 import TriggerApexTestImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TriggerApexTestImpl";
 import path = require("path");
-import { isNullOrUndefined } from "util";
 
 async function run() {
   let test_options = {};
