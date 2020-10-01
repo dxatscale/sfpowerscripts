@@ -38,6 +38,7 @@ async function run() {
       "optimizeDeployment",
       false
     );
+    const skipTesting: boolean = tl.getBoolInput("skipTesting", false);
     const wait_time: string = tl.getInput("wait_time", false);
     const skip_if_package_installed: boolean = tl.getBoolInput(
       "skip_if_package_installed",
@@ -104,7 +105,7 @@ async function run() {
 
     if (packageMetadataFromStorage.package_type == "delta") {
       console.log(
-        `-------------------------------------------------------------------------------------------------------------` +
+        ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT---------------------------------------------${EOL}` +
           `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
           `75% test coverage, However being a dynamically generated delta package, we will deploying via triggering all local tests${EOL}` +
           `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}` +
@@ -112,11 +113,12 @@ async function run() {
       );
       packageMetadataFromStorage.isTriggerAllTests = true;
     } else if (
-      packageMetadataFromStorage.package_type != "delta" &&
+      packageMetadataFromStorage.package_type == "source" &&
+      packageMetadataFromStorage.isApexFound == true &&
       packageMetadataFromStorage.apexTestClassses == null
     ) {
       console.log(
-        `-------------------------------------------------------------------------------------------------------------` +
+        ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT--------------------------------------------${EOL}` +
           `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
           `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying ${EOL}` +
           `via triggering all local tests,This definitely is not optimal approach on large orgs` +
@@ -279,8 +281,8 @@ async function reconcileProfilesBeforeDeployment(
   sourceDirectoryPath: string,
   target_org: string
 ) {
-  let isReconcileActivated:boolean=false;
-  let isReconcileErrored:boolean=false;
+  let isReconcileActivated: boolean = false;
+  let isReconcileErrored: boolean = false;
   try {
     console.log("Attempting reconcile to profiles");
     //copy the original profiles to temporary location
@@ -365,19 +367,32 @@ async function reconcileAndRedeployProfiles(
 async function generateDeploymentOptions(
   packageMetadata: PackageMetadata,
   wait_time: string,
-  optimizeDeployment:boolean
+  optimizeDeployment: boolean,
+  skipTest:boolean
 ): Promise<any> {
   let mdapi_options = {};
   mdapi_options["ignore_warnings"] = true;
   mdapi_options["wait_time"] = wait_time;
 
-  if (!packageMetadata.isTriggerAllTests && optimizeDeployment) {
+  
+  if (packageMetadata.isApexFound) {
+     if(skipTest)
+     {
+      mdapi_options["testlevel"] = "NoTestRun";
+     }
+     else if (packageMetadata.isTriggerAllTests==false && optimizeDeployment) {
+      mdapi_options["testlevel"] = "RunSpecifiedTests";
+      mdapi_options["specified_tests"] = getAStringOfSpecificTestClasses(
+        packageMetadata.apexTestClassses
+      );
+    } else {
+      mdapi_options["testlevel"] = "RunLocalTests";
+    }
+  }
+  else
+  {
     mdapi_options["testlevel"] = "RunSpecifiedTests";
-    mdapi_options["specified_tests"] = getAStringOfSpecificTestClasses(
-      packageMetadata.apexTestClassses
-    );
-  } else {
-    mdapi_options["testlevel"] = "RunLocalTests";
+    mdapi_options["specified_tests"] = "skip"; 
   }
   return mdapi_options;
 }

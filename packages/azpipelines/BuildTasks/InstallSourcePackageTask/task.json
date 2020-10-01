@@ -66,6 +66,14 @@
             "helpMarkDown": "Optimize the installation of this source package, by using the apex tests that is part of the package, If disabled, the package will be installed using all the local tests in the org!"
         },
         {
+            "name": "skipTesting",
+            "type": "boolean",
+            "label": "Skip Testing during deployment",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Only available as an option with sandboxes, for temporary deployments by skipping triggering of tests"
+        },
+        {
             "name": "skip_if_package_installed",
             "type": "boolean",
             "label": "Skip If the package is already installed in the org",
