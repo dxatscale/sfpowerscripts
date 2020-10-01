@@ -3,7 +3,6 @@ import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 const path = require("path");
-import { isNullOrUndefined } from "util";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
