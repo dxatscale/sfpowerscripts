@@ -249,8 +249,7 @@ export default class CreateSourcePackageImpl {
     });
 
     for (let fetchedClass of fetchedClasses) {
-      let item = [fetchedClass.name, fetchedClass.filepath,fetchedClass.error];
-      console.log("Item",item);
+      let item = [fetchedClass.name, fetchedClass.filepath,fetchedClass.error?fetchedClass.error:"N/A"];
       table.push(item);
     }
     console.log("Following apex test classes were identified");
