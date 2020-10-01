@@ -404,8 +404,7 @@ async function generateDeploymentOptions(
 
 function getAStringOfSpecificTestClasses(apexTestClassses: string[]) {
   const doublequote = '"';
-  let specifedTests: string = doublequote;
-  specifedTests = doublequote + apexTestClassses.join(",") + doublequote;
+  let specifedTests = doublequote + apexTestClassses.join(",") + doublequote;
   return specifedTests;
 }
 

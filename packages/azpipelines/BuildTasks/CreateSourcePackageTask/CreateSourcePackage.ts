@@ -4,7 +4,7 @@ import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrap
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator"
 import { isNullOrUndefined } from "util";
-const { EOL } = require('os')
+
 
 
 async function run() {
