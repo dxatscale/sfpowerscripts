@@ -61,6 +61,8 @@ export default class ApexTypeFetcher {
         console.log(`Failed to parse ${clsFile}`);
         console.log(err);
 
+        fileDescriptor["error"] = err;
+
         // Manually parse class if error is caused by System.runAs() or testMethod modifier
         if (
           this.parseSystemRunAs(err, clsPayload) ||
@@ -69,7 +71,6 @@ export default class ApexTypeFetcher {
           console.log(`Manually identified test class ${clsFile}`)
           apexSortedByType["testClass"].push(fileDescriptor);
         } else {
-          fileDescriptor["error"] = err;
           apexSortedByType["parseError"].push(fileDescriptor);
         }
         continue;

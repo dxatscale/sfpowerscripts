@@ -62,7 +62,8 @@
             "type": "string",
             "label": "Package Name",
             "required": "false",
-            "visibleRule": "testlevel = RunAllTestsInPackage"
+            "visibleRule": "testlevel = RunAllTestsInPackage",
+            "helpMarkDown": "Specify name of package to run tests for"
         },
         {
             "name": "synchronous",
@@ -71,6 +72,15 @@
             "defaultValue": false,
             "helpMarkDown": "Select an option if the tests are to be run synchronously",
             "required": false
+        },
+        {
+            "name": "isValidateCoverage",
+            "type": "boolean",
+            "label": "Validate code coverage of individual classes",
+            "defaultValue": false,
+            "helpMarkDown": "When enabled, verifies whether indvidual classes meet the minimum code coverage requirement",
+            "required": false,
+            "visibleRule": "testlevel = RunAllTestsInPackage"
         },
         {
             "name": "coverageThreshold",

@@ -15,6 +15,7 @@ async function run() {
     test_options["synchronous"] = tl.getBoolInput("synchronous", false);
     test_options["coverageThreshold"] = parseInt(tl.getInput("coverageThreshold", false), 10);
     test_options["package"] = tl.getInput("package", false);
+    test_options["isValidateCoverage"] = tl.getBoolInput("isValidateCoverage", false);
 
     if (
       test_options["testlevel"] === "RunAllTestsInPackage" &&

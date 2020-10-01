@@ -100,7 +100,7 @@ export default class TriggerApexTestImpl {
 
     let classesWithInvalidCoverage: string[];
 
-    if (this.test_options["testlevel"] === "RunAllTestsInPackage") {
+    if (this.test_options["isValidateCoverage"]) {
       classesWithInvalidCoverage = await this.validateClassCodeCoverage();
     }
 

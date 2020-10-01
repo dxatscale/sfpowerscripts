@@ -40,6 +40,11 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       description: messages.getMessage('packageFlagDescription'),
       required: false
     }),
+    validateindividualclasscoverage: flags.boolean({
+      char: 'c',
+      description: messages.getMessage('validateIndividualClassCoverageFlagDescription'),
+      default: false
+    }),
     synchronous: flags.boolean({
       char: 's',
       description: messages.getMessage('synchronousFlagDescription')
@@ -73,6 +78,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       test_options["testlevel"] = this.flags.testlevel;
       test_options["package"] = this.flags.package;
       test_options["synchronous"] = this.flags.synchronous;
+      test_options["isValidateCoverage"] = this.flags.validateindividualclasscoverage;
       test_options["coverageThreshold"] = this.flags.coveragepercent;
 
       if (
