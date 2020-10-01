@@ -19,8 +19,6 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
   public static examples = [
     `$ sfdx sfpowerscripts:CreateSourcePackage -n mypackage -v <version>`,
     `$ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --diffcheck --gittag`,
-    `$ sfdx sfpowerscripts:CreateSourcePackage -n mypackage -v <version> --destructivemanifestfilepath=destructiveChanges.xml` +
-    `--apextestsuite=<package>.testSuite-meta.xml\n`,
     `Output variable:`,
     `sfpowerscripts_artifact_metadata_directory`,
     `<refname>_sfpowerscripts_artifact_metadata_directory`,

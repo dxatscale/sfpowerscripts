@@ -1,9 +1,6 @@
 import tl = require("azure-pipelines-task-lib/task");
-import child_process = require("child_process");
 import TriggerApexTestImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TriggerApexTestImpl";
 import path = require("path");
-import os = require("os");
-import { isNullOrUndefined } from "util";
 
 async function run() {
   let test_options = {};
@@ -15,16 +12,24 @@ async function run() {
     test_options["wait_time"] = tl.getInput("wait_time", true);
     test_options["testlevel"] = tl.getInput("testlevel", true);
     test_options["synchronous"] = tl.getBoolInput("synchronous", false);
-    test_options["isValidateCoverage"] = tl.getBoolInput("isValidateCoverage", false);
     test_options["coverageThreshold"] = parseInt(tl.getInput("coverageThreshold", false), 10);
-    test_options["packageToValidate"] = tl.getInput("packageToValidate", false);
+    test_options["package"] = tl.getInput("package", false);
+    test_options["isValidateCoverage"] = tl.getBoolInput("isValidateCoverage", false);
 
+    // Input validation
     if (
-      test_options["isValidateCoverage"] &&
-      isNullOrUndefined(test_options["packageToValidate"])
+      test_options["testlevel"] === "RunAllTestsInPackage" &&
+      test_options["package"] == null
     ) {
-      throw new Error("Package to validate must be specified when validating individual class coverage");
+      throw new Error("Package name must be specified when test level is RunAllTestsInPackage");
+    } else if (
+      test_options["isValidateCoverage"] &&
+      test_options["testlevel"] !== "RunAllTestsInPackage"
+    ) {
+      throw new Error("'Validate code coverage of individual classes' is only available for test level RunAllTestsInPackage");
     }
+
+
 
     if (test_options["testlevel"] == "RunSpecifiedTests")
       test_options["specified_tests"] = tl.getInput("specified_tests", true);

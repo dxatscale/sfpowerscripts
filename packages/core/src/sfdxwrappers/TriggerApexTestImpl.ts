@@ -4,10 +4,13 @@ import { isNullOrUndefined } from "util";
 import fs = require("fs-extra");
 import path = require("path");
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
-import ApexTypeFetcher from "../parser/ApexTypeFetcher";
+import ApexTypeFetcher, { ApexSortedByType } from "../parser/ApexTypeFetcher";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 
 export default class TriggerApexTestImpl {
+  private packageDescriptor;
+  private apexSortedByType: ApexSortedByType;
+
   public constructor(
     private target_org: string,
     private test_options: any,
@@ -126,14 +129,34 @@ export default class TriggerApexTestImpl {
     command += ` -d  ${this.test_options["outputdir"]}`;
 
     //testlevel
-    // allowed options: RunLocalTests, RunAllTestsInOrg, RunSpecifiedTests
+    // allowed options: RunLocalTests, RunAllTestsInOrg, RunSpecifiedTests, RunAllTestsInPackage
     if (this.test_options["testlevel"] !== "RunApexTestSuite") {
-      command += ` -l ${this.test_options["testlevel"]}`;
+      if (this.test_options["testlevel"] === "RunAllTestsInPackage") {
+        command += ` -l RunSpecifiedTests`;
+      } else {
+        command += ` -l ${this.test_options["testlevel"]}`;
+      }
     }
 
     if (this.test_options["testlevel"] == "RunSpecifiedTests") {
       command += ` -t ${this.test_options["specified_tests"]}`;
-    } else if (this.test_options["testlevel"] == "RunApexTestSuite") {
+    } else if (this.test_options["testlevel"] === "RunAllTestsInPackage") {
+      // Get name of test classes in package directory
+      this.packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+        this.project_directory,
+        this.test_options["package"]
+      );
+
+      let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
+      this.apexSortedByType =  apexTypeFetcher.getApexTypeOfClsFiles(this.packageDescriptor["path"]);
+
+      let testClassNames: string[] = this.apexSortedByType["testClass"].map( (fileDescriptor) =>
+        fileDescriptor.name
+      );
+
+      command += ` -t ${testClassNames.toString()}`;
+    }
+    else if (this.test_options["testlevel"] == "RunApexTestSuite") {
       command += ` -s ${this.test_options["apextestsuite"]}`;
     }
 
@@ -145,14 +168,9 @@ export default class TriggerApexTestImpl {
     console.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
     let classesWithInvalidCoverage: string[] = [];
 
-    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
-      this.project_directory,
-      this.test_options["packageToValidate"]
-    );
-
     let mdapiPackage: {mdapiDir: string, manifest} = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
       this.project_directory,
-      packageDescriptor["path"]
+      this.packageDescriptor["path"]
     );
 
     let packageClasses: string[] = this.getClassesFromPackageManifest(mdapiPackage);
@@ -276,21 +294,19 @@ export default class TriggerApexTestImpl {
     }
 
     if (packageClasses != null) {
-      let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
-      let apexSortedByType = apexTypeFetcher.getApexTypeOfClsFiles(path.join(mdapiPackage.mdapiDir, `classes`));
 
-      if (apexSortedByType["testClass"].length > 0) {
+      if (this.apexSortedByType["testClass"].length > 0) {
         // Filter out test classes
         packageClasses = packageClasses.filter( (packageClass) => {
-          for (let testClass of apexSortedByType["testClass"]) {
+          for (let testClass of this.apexSortedByType["testClass"]) {
             if (testClass["name"] === packageClass) {
               return false;
             }
           }
 
-          if (apexSortedByType["parseError"].length > 0) {
+          if (this.apexSortedByType["parseError"].length > 0) {
             // Filter out undetermined classes that failed to parse
-            for (let parseError of apexSortedByType["parseError"]) {
+            for (let parseError of this.apexSortedByType["parseError"]) {
               if (parseError["name"] === packageClass) {
                 console.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
                 return false;
@@ -302,10 +318,10 @@ export default class TriggerApexTestImpl {
         });
       }
 
-      if (apexSortedByType["interface"].length > 0) {
+      if (this.apexSortedByType["interface"].length > 0) {
         // Filter out interfaces
         packageClasses = packageClasses.filter( (packageClass) => {
-          for (let interfaceClass of apexSortedByType["interface"]) {
+          for (let interfaceClass of this.apexSortedByType["interface"]) {
             if (interfaceClass["name"] === packageClass) {
               return false;
             }
@@ -317,6 +333,4 @@ export default class TriggerApexTestImpl {
 
     return packageClasses;
   }
-
-
 }

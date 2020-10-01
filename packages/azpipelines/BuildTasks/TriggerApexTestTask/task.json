@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 8,
+        "Major": 9,
         "Minor": 0,
-        "Patch": 4
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -33,7 +33,8 @@
                 "RunSpecifiedTests": "RunSpecifiedTests",
                 "RunApexTestSuite": "RunApexTestSuite",
                 "RunLocalTests": "RunLocalTests",
-                "RunAllTestsInOrg": "RunAllTestsInOrg"
+                "RunAllTestsInOrg": "RunAllTestsInOrg",
+                "RunAllTestsInPackage": "RunAllTestsInPackage"
             },
             "required": true,
             "helpMarkDown": "The test level of the test that need to be executed when the code is to be deployed"
@@ -57,6 +58,14 @@
             "visibleRule": "testlevel = RunApexTestSuite"
         },
         {
+            "name": "package",
+            "type": "string",
+            "label": "Package Name",
+            "required": "false",
+            "visibleRule": "testlevel = RunAllTestsInPackage",
+            "helpMarkDown": "Specify name of package to run tests for"
+        },
+        {
             "name": "synchronous",
             "type": "boolean",
             "label": "Run tests from a single class synchronously",
@@ -71,7 +80,7 @@
             "defaultValue": false,
             "helpMarkDown": "When enabled, verifies whether indvidual classes meet the minimum code coverage requirement",
             "required": false,
-            "visibleRule": "testlevel = RunApexTestSuite"
+            "visibleRule": "testlevel = RunAllTestsInPackage"
         },
         {
             "name": "coverageThreshold",
@@ -79,14 +88,6 @@
             "label": "Minimum percentage coverage required per test class",
             "defaultValue": "75",
             "helpMarkDown": "Minimum coverage required per test class, in order for the task to succeed",
-            "required": false,
-            "visibleRule": "isValidateCoverage = true"
-        },
-        {
-            "name": "packageToValidate",
-            "type": "string",
-            "label": "Package to validate",
-            "helpMarkDown": "Specify the package to check for code coverage. Required when validating individual class coverage",
             "required": false,
             "visibleRule": "isValidateCoverage = true"
         },
