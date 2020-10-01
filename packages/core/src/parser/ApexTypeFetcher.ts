@@ -32,14 +32,13 @@ export default class ApexTypeFetcher {
 
     let clsFiles: string[];
     if (fs.existsSync(searchDir)) {
-      clsFiles = glob.sync(`*.cls`, {
+      clsFiles = glob.sync(`**/*.cls`, {
         cwd: searchDir,
         absolute: true
       });
     } else {
-      throw new Error(`Search directory ${searchDir} does not exist`);
+      throw new Error(`Search directory does not exist`);
     }
-
 
     for (let clsFile of clsFiles) {
 
@@ -62,6 +61,8 @@ export default class ApexTypeFetcher {
         console.log(`Failed to parse ${clsFile}`);
         console.log(err);
 
+        fileDescriptor["error"] = err;
+
         // Manually parse class if error is caused by System.runAs() or testMethod modifier
         if (
           this.parseSystemRunAs(err, clsPayload) ||
@@ -70,7 +71,6 @@ export default class ApexTypeFetcher {
           console.log(`Manually identified test class ${clsFile}`)
           apexSortedByType["testClass"].push(fileDescriptor);
         } else {
-          fileDescriptor["error"] = err;
           apexSortedByType["parseError"].push(fileDescriptor);
         }
         continue;
@@ -126,7 +126,7 @@ export default class ApexTypeFetcher {
   }
 }
 
-interface ApexSortedByType {
+export interface ApexSortedByType {
   class: FileDescriptor[],
   testClass: FileDescriptor[],
   interface: FileDescriptor[],
