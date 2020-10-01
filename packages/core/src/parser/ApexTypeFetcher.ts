@@ -37,7 +37,7 @@ export default class ApexTypeFetcher {
         absolute: true
       });
     } else {
-      throw new Error(`Search directory ${searchDir} does not exist`);
+      throw new Error(`Search directory does not exist`);
     }
 
     for (let clsFile of clsFiles) {
