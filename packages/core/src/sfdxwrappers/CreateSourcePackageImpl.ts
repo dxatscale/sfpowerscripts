@@ -90,50 +90,8 @@ export default class CreateSourcePackageImpl {
           mdapiPackage.manifest
         );
 
-        let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
-        let classTypes = apexTypeFetcher.getApexTypeOfClsFiles(path.join(mdapiPackage.mdapiDir, `classes`));
-       
-        
+        this.handleApexTestClasses(mdapiPackage);
 
-        
-         
-
-        if (!this.packageArtifactMetadata.isTriggerAllTests) {
-          if (
-            this.packageArtifactMetadata.isApexFound &&
-            classTypes?.testClass?.length==0
-          ) {
-            this.printSlowDeploymentWarning();
-            this.packageArtifactMetadata.isTriggerAllTests = true;
-          } else if (
-            this.packageArtifactMetadata.isApexFound &&
-            classTypes?.testClass?.length>0
-          ) {
-            if(classTypes?.parseError?.length>0)
-            {
-            
-              console.log(
-                "---------------------------------------------------------------------------------------"
-              );
-              console.log("Unable to parse these classes, Its not your issue, its ours! Please raise a issue in our repo!"); 
-              this.printTestClassesIdentified(classTypes?.parseError);
-              this.packageArtifactMetadata.isTriggerAllTests = true;
-            }
-            else
-            {
-            this.printHintForOptimizedDeployment();
-            this.printTestClassesIdentified(classTypes?.testClass);
-            this.packageArtifactMetadata.apexTestClassses=[];
-            classTypes?.testClass.forEach(element => {
-              this.packageArtifactMetadata.apexTestClassses.push(element.name);
-            });
-          }
-          } 
-        }
-
-
-
-        
       } else {
         this.printEmptyArtifactWarning();
       }
@@ -163,6 +121,46 @@ export default class CreateSourcePackageImpl {
       timestamp: Date.now(),
     };
     return this.packageArtifactMetadata;
+  }
+
+  private handleApexTestClasses(mdapiPackage: any) {
+    let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
+    let classTypes;
+    try {
+      classTypes = apexTypeFetcher.getApexTypeOfClsFiles(path.join(mdapiPackage.mdapiDir, `classes`));
+    }
+    catch (erorr) {
+     return;
+    }
+
+
+    if (!this.packageArtifactMetadata.isTriggerAllTests) {
+      if (this.packageArtifactMetadata.isApexFound &&
+        (classTypes?.testClass?.length == 0)) {
+        this.printSlowDeploymentWarning();
+        this.packageArtifactMetadata.isTriggerAllTests = true;
+      } else if (this.packageArtifactMetadata.isApexFound &&
+        classTypes?.testClass?.length > 0) {
+        if (classTypes?.parseError?.length > 0) {
+
+          console.log(
+            "---------------------------------------------------------------------------------------"
+          );
+          console.log("Unable to parse these classes to correctly identify test classes, Its not your issue, its ours! Please raise a issue in our repo!");
+          this.printClassesIdentified(classTypes?.parseError);
+          this.packageArtifactMetadata.isTriggerAllTests = true;
+        }
+
+        else {
+          this.printHintForOptimizedDeployment();
+          this.printClassesIdentified(classTypes?.testClass);
+          this.packageArtifactMetadata.apexTestClassses = [];
+          classTypes?.testClass.forEach(element => {
+            this.packageArtifactMetadata.apexTestClassses.push(element.name);
+          });
+        }
+      }
+    }
   }
 
   private printEmptyArtifactWarning() {
@@ -238,7 +236,7 @@ export default class CreateSourcePackageImpl {
     };
   }
 
-  private  printTestClassesIdentified(fetchedClasses:FileDescriptor[]) {
+  private  printClassesIdentified(fetchedClasses:FileDescriptor[]) {
 
   
     if(fetchedClasses===null || fetchedClasses===undefined)
