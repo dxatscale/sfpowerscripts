@@ -381,7 +381,11 @@ async function generateDeploymentOptions(
      {
       mdapi_options["testlevel"] = "NoTestRun";
      }
-     else if (packageMetadata.isTriggerAllTests==false && optimizeDeployment) {
+     else if(packageMetadata.isTriggerAllTests)
+     {
+      mdapi_options["testlevel"] = "RunLocalTests";
+     }
+     else if (packageMetadata.apexTestClassses?.length>0 && optimizeDeployment) {
       mdapi_options["testlevel"] = "RunSpecifiedTests";
       mdapi_options["specified_tests"] = getAStringOfSpecificTestClasses(
         packageMetadata.apexTestClassses

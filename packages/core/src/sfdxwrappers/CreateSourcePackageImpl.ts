@@ -153,6 +153,7 @@ export default class CreateSourcePackageImpl {
 
         else {
           this.printHintForOptimizedDeployment();
+          this.packageArtifactMetadata.isTriggerAllTests = false;
           this.printClassesIdentified(classTypes?.testClass);
           this.packageArtifactMetadata.apexTestClassses = [];
           classTypes?.testClass.forEach(element => {
