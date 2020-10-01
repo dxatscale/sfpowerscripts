@@ -4,8 +4,7 @@ import { isNullOrUndefined } from "util";
 import fs = require("fs-extra");
 import path = require("path");
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
-import TestClassFetcher from "../parser/TestClassFetcher";
-import InterfaceFetcher from "../parser/InterfaceFetcher";
+import ApexTypeFetcher from "../parser/ApexTypeFetcher";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 
 export default class TriggerApexTestImpl {
@@ -277,23 +276,22 @@ export default class TriggerApexTestImpl {
     }
 
     if (packageClasses != null) {
-      // Remove test classes from package classes
-      // if (fs.existsSync(path.join(mdapiPackage.mdapiDir, `classes`)))
-      let testClassFetcher: TestClassFetcher = new TestClassFetcher();
-      let testClasses: string[] = testClassFetcher.getTestClassNames(path.join(mdapiPackage.mdapiDir, `classes`));
-      if (testClasses.length > 0) {
+      let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
+      let apexSortedByType = apexTypeFetcher.getApexTypeOfClsFiles(path.join(mdapiPackage.mdapiDir, `classes`));
+
+      if (apexSortedByType["testClass"].length > 0) {
         // Filter out test classes
         packageClasses = packageClasses.filter( (packageClass) => {
-          for (let testClass of testClasses) {
-            if (testClass === packageClass) {
+          for (let testClass of apexSortedByType["testClass"]) {
+            if (testClass["name"] === packageClass) {
               return false;
             }
           }
 
-          if (testClassFetcher.unparsedClasses.length > 0) {
+          if (apexSortedByType["parseError"].length > 0) {
             // Filter out undetermined classes that failed to parse
-            for (let unparsedClass of testClassFetcher.unparsedClasses) {
-              if (unparsedClass === packageClass) {
+            for (let parseError of apexSortedByType["parseError"]) {
+              if (parseError["name"] === packageClass) {
                 console.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
                 return false;
               }
@@ -304,18 +302,14 @@ export default class TriggerApexTestImpl {
         });
       }
 
-      // Remove interfaces from package classes
-      let interfaceFetcher: InterfaceFetcher = new InterfaceFetcher();
-      let interfaceNames: string[] = interfaceFetcher.getInterfaceNames(path.join(mdapiPackage.mdapiDir, `classes`));
-      if (interfaceNames.length > 0) {
+      if (apexSortedByType["interface"].length > 0) {
         // Filter out interfaces
         packageClasses = packageClasses.filter( (packageClass) => {
-          for (let interfaceName of interfaceNames) {
-            if (interfaceName === packageClass) {
+          for (let interfaceClass of apexSortedByType["interface"]) {
+            if (interfaceClass["name"] === packageClass) {
               return false;
             }
           }
-
           return true;
         });
       }
