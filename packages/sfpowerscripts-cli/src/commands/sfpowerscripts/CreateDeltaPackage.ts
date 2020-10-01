@@ -115,6 +115,8 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
         .generatedestructivemanifest;
 
 
+      
+
       let createDeltaPackageImp = new CreateDeltaPackageImpl(
         null,
         sfdx_package,
@@ -151,8 +153,9 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
 
      
 
-      //Delta Package.. Trigger All Tests
-      packageMetadata.isTriggerAllTests =true
+    //Switch to delta and let source package know all tests has to be triggered
+    packageMetadata.package_type = "delta";
+    packageMetadata.isTriggerAllTests = true;
 
       let createSourcePackageImpl = new CreateSourcePackageImpl(
         deltaPackage.deltaDirectory,

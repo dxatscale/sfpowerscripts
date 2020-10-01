@@ -4,9 +4,10 @@ import ManifestHelpers from "../manifest/ManifestHelpers";
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import { isNullOrUndefined } from "util";
 import { EOL } from "os";
-import TestClassFetcher from "../parser/TestClassFetcher";
+
 const fs = require("fs-extra");
 import path = require("path");
+import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
 const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl {
@@ -89,8 +90,10 @@ export default class CreateSourcePackageImpl {
           mdapiPackage.manifest
         );
 
-        let testClassFetcher: TestClassFetcher = new TestClassFetcher();
-        let testClasses: {file:string,name:string}[] = testClassFetcher.getTestClassNames(path.join(mdapiPackage.mdapiDir, `classes`));
+        let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
+        let classTypes = apexTypeFetcher.getApexTypeOfClsFiles(path.join(mdapiPackage.mdapiDir, `classes`));
+       
+        
 
         
          
@@ -98,29 +101,30 @@ export default class CreateSourcePackageImpl {
         if (!this.packageArtifactMetadata.isTriggerAllTests) {
           if (
             this.packageArtifactMetadata.isApexFound &&
-            testClasses?.length==0
+            classTypes?.testClass?.length==0
           ) {
             this.printSlowDeploymentWarning();
             this.packageArtifactMetadata.isTriggerAllTests = true;
           } else if (
             this.packageArtifactMetadata.isApexFound &&
-            testClasses.length>0
+            classTypes?.testClass?.length>0
           ) {
-            if(testClassFetcher.unparsedClasses?.length>0)
+            if(classTypes?.parseError?.length>0)
             {
             
               console.log(
                 "---------------------------------------------------------------------------------------"
               );
               console.log("Unable to parse these classes, Its not your issue, its ours! Please raise a issue in our repo!"); 
+              this.printTestClassesIdentified(classTypes?.parseError);
               this.packageArtifactMetadata.isTriggerAllTests = true;
             }
             else
             {
             this.printHintForOptimizedDeployment();
-            this.printTestClassesIdentified(testClasses);
+            this.printTestClassesIdentified(classTypes?.testClass);
             this.packageArtifactMetadata.apexTestClassses=[];
-            testClasses.forEach(element => {
+            classTypes?.testClass.forEach(element => {
               this.packageArtifactMetadata.apexTestClassses.push(element.name);
             });
           }
@@ -234,18 +238,18 @@ export default class CreateSourcePackageImpl {
     };
   }
 
-  private  printTestClassesIdentified(testClasses:{file:string,name:string}[]) {
+  private  printTestClassesIdentified(fetchedClasses:FileDescriptor[]) {
 
-    //If Manifest is null, just return
-    if(testClasses===null || testClasses===undefined)
+  
+    if(fetchedClasses===null || fetchedClasses===undefined)
         return;
      
     let table = new Table({
-      head: ["Apex Test Class", "Path"],
+      head: ["Class","Path", "Error"],
     });
 
-    for (let testclass of testClasses) {
-      let item = [testclass.name, testclass.file];
+    for (let fetchedClass of fetchedClasses) {
+      let item = [fetchedClass.name, fetchedClass.filepath,fetchedClass.error];
       table.push(item);
     }
     console.log("Following apex test classes were identified");

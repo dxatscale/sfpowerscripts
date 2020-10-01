@@ -61,25 +61,6 @@ async function run() {
 
 
 
-      if (packageMetadata.isApexFound && packageMetadata.apexTestClassses==null) {
-        tl.logIssue(
-          tl.IssueType.Warning,
-          `This package has apex classes/triggers, however apex test classes were not found, You would not be able to deploy${EOL}`+
-          `to production org optimally if each class do not have coverage of 75% and above,We will attempt deploying this package by triggering${EOL}`+
-          `all local tests in the org which could be realy costly in terms of deployment time!${EOL}`
-        );
-        packageMetadata.isTriggerAllTests=true;
-      }
-      else if(packageMetadata.isApexFound && packageMetadata.apexTestClassses)
-      {
-        console.log("Following apex test classes were identified");
-        
-
-
-      }
-
-     
-
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata,(key:string,value:any)=>{
          if(key=="payload" || key == "destructiveChanges")
            return undefined;
