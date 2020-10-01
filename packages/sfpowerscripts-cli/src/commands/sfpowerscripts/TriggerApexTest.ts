@@ -80,11 +80,17 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       test_options["isValidateCoverage"] = this.flags.validateindividualclasscoverage;
       test_options["coverageThreshold"] = this.flags.coveragepercent;
 
+      // Input validation
       if (
         test_options["testlevel"] === "RunAllTestsInPackage" &&
         test_options["package"] == null
       ) {
         throw new Error("Package name must be specified when test level is RunAllTestsInPackage")
+      } else if (
+        test_options["isValidateCoverage"] &&
+        test_options["package"] == null
+      ) {
+        throw new Error("'Validate code coverage of individual classes' is only available for test level RunAllTestsInPackage");
       }
 
 

@@ -17,12 +17,20 @@ async function run() {
     test_options["package"] = tl.getInput("package", false);
     test_options["isValidateCoverage"] = tl.getBoolInput("isValidateCoverage", false);
 
+    // Input validation
     if (
       test_options["testlevel"] === "RunAllTestsInPackage" &&
-      isNullOrUndefined(test_options["package"])
+      test_options["package"] == null
     ) {
       throw new Error("Package name must be specified when test level is RunAllTestsInPackage");
+    } else if (
+      test_options["isValidateCoverage"] &&
+      test_options["package"] == null
+    ) {
+      throw new Error("'Validate code coverage of individual classes' is only available for test level RunAllTestsInPackage");
     }
+
+
 
     if (test_options["testlevel"] == "RunSpecifiedTests")
       test_options["specified_tests"] = tl.getInput("specified_tests", true);
