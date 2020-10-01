@@ -32,14 +32,13 @@ export default class ApexTypeFetcher {
 
     let clsFiles: string[];
     if (fs.existsSync(searchDir)) {
-      clsFiles = glob.sync(`*.cls`, {
+      clsFiles = glob.sync(`**/*.cls`, {
         cwd: searchDir,
         absolute: true
       });
     } else {
       throw new Error(`Search directory ${searchDir} does not exist`);
     }
-
 
     for (let clsFile of clsFiles) {
 
@@ -126,7 +125,7 @@ export default class ApexTypeFetcher {
   }
 }
 
-interface ApexSortedByType {
+export interface ApexSortedByType {
   class: FileDescriptor[],
   testClass: FileDescriptor[],
   interface: FileDescriptor[],

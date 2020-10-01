@@ -24,15 +24,41 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
 
 
   protected static flagsConfig = {
-   targetorg: flags.string({char: 'u', description: messages.getMessage('targetOrgFlagDescription'), default: 'scratchorg'}),
-   testlevel: flags.string({char: 'l', description: messages.getMessage('testLevelFlagDescription'), options: ['RunSpecifiedTests', 'RunApexTestSuite', 'RunLocalTests', 'RunAllTestsInOrg'], default: 'RunLocalTests'}),
-   synchronous: flags.boolean({char: 's', description: messages.getMessage('synchronousFlagDescription')}),
-   specifiedtests: flags.string({description: messages.getMessage('specifiedTestsFlagDescription')}),
-   apextestsuite: flags.string({description: messages.getMessage('apexTestSuiteFlagDescription')}),
-   validateindividualclasscoverage: flags.boolean({char: 'c', description: messages.getMessage('validateIndividualClassCoverageFlagDescription'), default: false}),
-   coveragepercent: flags.integer({char: 'p', description: messages.getMessage('coveragePercentFlagDescription'), default: 75}),
-   packagetovalidate: flags.string({char: 't', description: messages.getMessage('packageToValidateFlagDescription')}),
-   waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '60'})
+    targetorg: flags.string({
+      char: 'u',
+      description: messages.getMessage('targetOrgFlagDescription'),
+      default: 'scratchorg'
+    }),
+    testlevel: flags.string({
+      char: 'l',
+      description: messages.getMessage('testLevelFlagDescription'),
+      options: ['RunSpecifiedTests', 'RunApexTestSuite', 'RunLocalTests', 'RunAllTestsInOrg', 'RunAllTestsInPackage'],
+      default: 'RunLocalTests'
+    }),
+    package: flags.string({
+      char: 'n',
+      description: messages.getMessage('packageFlagDescription'),
+      required: false
+    }),
+    synchronous: flags.boolean({
+      char: 's',
+      description: messages.getMessage('synchronousFlagDescription')
+    }),
+    specifiedtests: flags.string({
+      description: messages.getMessage('specifiedTestsFlagDescription')
+    }),
+    apextestsuite: flags.string({
+      description: messages.getMessage('apexTestSuiteFlagDescription')
+    }),
+    coveragepercent: flags.integer({
+      char: 'p',
+      description: messages.getMessage('coveragePercentFlagDescription'),
+      default: 75
+    }),
+    waittime: flags.string({
+      description: messages.getMessage('waitTimeFlagDescription'),
+      default: '60'
+    })
   };
 
 
@@ -45,24 +71,17 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       let test_options = {};
       test_options["wait_time"] = this.flags.waittime;
       test_options["testlevel"] = this.flags.testlevel;
+      test_options["package"] = this.flags.package;
       test_options["synchronous"] = this.flags.synchronous;
-      test_options["isValidateCoverage"] = this.flags.validateindividualclasscoverage;
       test_options["coverageThreshold"] = this.flags.coveragepercent;
-      test_options["packageToValidate"] = this.flags.packagetovalidate;
 
-      if (test_options["isValidateCoverage"]) {
-        if (
-          test_options["testlevel"] == "RunLocalTests" ||
-          test_options["testlevel"] == "RunAllTestsInOrg"
-        ) {
-          throw new Error("Individual class coverage validation is only supported for RunApexTestSuite & RunSpecifiedTests");
-        }
-        else if (
-          isNullOrUndefined(test_options["packageToValidate"])
-        ) {
-          throw new Error("Package to validate must be specified when validating individual class coverage");
-        }
+      if (
+        test_options["testlevel"] === "RunAllTestsInPackage" &&
+        test_options["package"] == null
+      ) {
+        throw new Error("Package name must be specified when test level is RunAllTestsInPackage")
       }
+
 
       if (test_options["testlevel"] == "RunSpecifiedTests")
       test_options["specified_tests"] = this.flags.specifiedtests;
