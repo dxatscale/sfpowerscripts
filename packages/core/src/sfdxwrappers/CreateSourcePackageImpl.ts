@@ -129,7 +129,7 @@ export default class CreateSourcePackageImpl {
     try {
       classTypes = apexTypeFetcher.getApexTypeOfClsFiles(path.join(mdapiPackage.mdapiDir, `classes`));
     }
-    catch (erorr) {
+    catch (error) {
      return;
     }
 
@@ -239,10 +239,10 @@ export default class CreateSourcePackageImpl {
 
   private  printClassesIdentified(fetchedClasses:FileDescriptor[]) {
 
-  
+
     if(fetchedClasses===null || fetchedClasses===undefined)
         return;
-     
+
     let table = new Table({
       head: ["Class","Path", "Error"],
     });
