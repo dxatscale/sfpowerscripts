@@ -50,7 +50,7 @@ export default class ManifestHelpers {
     }
 
     if (isNullOrUndefined(packageDirectory))
-      throw new Error("Package or package directory not exist");
+      throw new Error("Package or package directory does not exist");
     else return sfdxPackageDescriptor;
   }
 
@@ -157,7 +157,7 @@ export default class ManifestHelpers {
     //If Manifest is null, just return
     if(mdapiPackageManifest===null || mdapiPackageManifest===undefined)
         return;
-     
+
     let table = new Table({
       head: ["Metadata Type", "API Name"],
     });

@@ -13,6 +13,8 @@ export default interface PackageMetadata {
     branch?:string;
     apextestsuite?: string;
     isApexFound?:boolean;
+    apexTestClassses?:string[];
+    isTriggerAllTests?:boolean;
     isProfilesFound?:boolean;
     tag?:string;
     isDependencyValidated?:boolean;

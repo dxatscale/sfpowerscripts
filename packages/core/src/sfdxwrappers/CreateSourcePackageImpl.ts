@@ -3,7 +3,12 @@ import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import { isNullOrUndefined } from "util";
+import { EOL } from "os";
+
 const fs = require("fs-extra");
+import path = require("path");
+import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
+const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl {
   public constructor(
@@ -14,7 +19,13 @@ export default class CreateSourcePackageImpl {
   ) {}
 
   public async exec(): Promise<PackageMetadata> {
-    this.packageArtifactMetadata.package_type = "source";
+    //Only set package type to source if its not provided, delta will be setting it up
+    if (
+      this.packageArtifactMetadata.package_type === null ||
+      this.packageArtifactMetadata.package_type === undefined
+    )
+      this.packageArtifactMetadata.package_type = "source";
+
     console.log(
       "--------------Create Source Package---------------------------"
     );
@@ -29,32 +40,31 @@ export default class CreateSourcePackageImpl {
     let startTime = Date.now();
 
     //Get Package Descriptor
-    let packageDescriptor,packageDirectory:string;
-    if(!isNullOrUndefined(this.sfdx_package))
-    {
-     packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
-      this.projectDirectory,
-      this.sfdx_package
-    );
-    packageDirectory = packageDescriptor["path"];
-    this.packageArtifactMetadata.preDeploymentSteps=packageDescriptor["preDeploymentSteps"]?.split(",");
-    this.packageArtifactMetadata.postDeploymentSteps=packageDescriptor["postDeploymentSteps"]?.split(",");
+    let packageDescriptor, packageDirectory: string;
+    if (!isNullOrUndefined(this.sfdx_package)) {
+      packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+        this.projectDirectory,
+        this.sfdx_package
+      );
+      packageDirectory = packageDescriptor["path"];
+      this.packageArtifactMetadata.preDeploymentSteps = packageDescriptor[
+        "preDeploymentSteps"
+      ]?.split(",");
+      this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor[
+        "postDeploymentSteps"
+      ]?.split(",");
     }
-
-
-
 
     //Generate Destructive Manifest
     let destructiveChanges: DestructiveChanges = this.getDestructiveChanges(
       packageDescriptor,
       this.destructiveManifestFilePath
     );
-    if(!isNullOrUndefined(destructiveChanges))
-    {
-    this.packageArtifactMetadata.isDestructiveChangesFound =
-      destructiveChanges.isDestructiveChangesFound;
-    this.packageArtifactMetadata.destructiveChanges =
-      destructiveChanges.destructiveChanges;
+    if (!isNullOrUndefined(destructiveChanges)) {
+      this.packageArtifactMetadata.isDestructiveChangesFound =
+        destructiveChanges.isDestructiveChangesFound;
+      this.packageArtifactMetadata.destructiveChanges =
+        destructiveChanges.destructiveChanges;
     }
 
     //Convert to MDAPI to get PayLoad
@@ -73,20 +83,17 @@ export default class CreateSourcePackageImpl {
         );
 
         this.packageArtifactMetadata.payload = mdapiPackage.manifest;
-        this.packageArtifactMetadata.isApexFound = ManifestHelpers.checkApexInPayload(mdapiPackage.manifest);
-        this.packageArtifactMetadata.isProfilesFound = ManifestHelpers.checkProfilesinPayload(mdapiPackage.manifest);
+        this.packageArtifactMetadata.isApexFound = ManifestHelpers.checkApexInPayload(
+          mdapiPackage.manifest
+        );
+        this.packageArtifactMetadata.isProfilesFound = ManifestHelpers.checkProfilesinPayload(
+          mdapiPackage.manifest
+        );
+
+        this.handleApexTestClasses(mdapiPackage);
 
       } else {
-        console.log(
-          "---------------------WARNING! Empty aritfact encountered-------------------------------"
-        );
-        console.log(
-          "Either this folder is empty or the application of .forceignore results in an empty folder"
-        );
-        console.log("Proceeding to create an empty artifact");
-        console.log(
-          "---------------------------------------------------------------------------------------"
-        );
+        this.printEmptyArtifactWarning();
       }
     } else {
       console.log(
@@ -99,7 +106,9 @@ export default class CreateSourcePackageImpl {
       this.projectDirectory,
       this.sfdx_package,
       packageDirectory,
-      isNullOrUndefined(destructiveChanges)?undefined:destructiveChanges.destructiveChangesPath
+      isNullOrUndefined(destructiveChanges)
+        ? undefined
+        : destructiveChanges.destructiveChangesPath
     );
 
     this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;
@@ -112,6 +121,78 @@ export default class CreateSourcePackageImpl {
       timestamp: Date.now(),
     };
     return this.packageArtifactMetadata;
+  }
+
+  private handleApexTestClasses(mdapiPackage: any) {
+    let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
+    let classTypes;
+    try {
+      classTypes = apexTypeFetcher.getApexTypeOfClsFiles(path.join(mdapiPackage.mdapiDir, `classes`));
+    }
+    catch (error) {
+     return;
+    }
+
+
+    if (!this.packageArtifactMetadata.isTriggerAllTests) {
+      if (this.packageArtifactMetadata.isApexFound &&
+        (classTypes?.testClass?.length == 0)) {
+        this.printSlowDeploymentWarning();
+        this.packageArtifactMetadata.isTriggerAllTests = true;
+      } else if (this.packageArtifactMetadata.isApexFound &&
+        classTypes?.testClass?.length > 0) {
+        if (classTypes?.parseError?.length > 0) {
+
+          console.log(
+            "---------------------------------------------------------------------------------------"
+          );
+          console.log("Unable to parse these classes to correctly identify test classes, Its not your issue, its ours! Please raise a issue in our repo!");
+          this.printClassesIdentified(classTypes?.parseError);
+          this.packageArtifactMetadata.isTriggerAllTests = true;
+        }
+
+        else {
+          this.printHintForOptimizedDeployment();
+          this.packageArtifactMetadata.isTriggerAllTests = false;
+          this.printClassesIdentified(classTypes?.testClass);
+          this.packageArtifactMetadata.apexTestClassses = [];
+          classTypes?.testClass.forEach(element => {
+            this.packageArtifactMetadata.apexTestClassses.push(element.name);
+          });
+        }
+      }
+    }
+  }
+
+  private printEmptyArtifactWarning() {
+    console.log(
+      "---------------------WARNING! Empty aritfact encountered-------------------------------"
+    );
+    console.log(
+      "Either this folder is empty or the application of .forceignore results in an empty folder"
+    );
+    console.log("Proceeding to create an empty artifact");
+    console.log(
+      "---------------------------------------------------------------------------------------"
+    );
+  }
+
+  private printHintForOptimizedDeployment() {
+    console.log(`---------------- OPTION FOR DEPLOYMENT OPTIMIZATION AVAILABLE-----------------------------------`);
+    console.log(`Following apex test classes were identified and can  be used for deploying this package,${EOL}` +
+      `in an optimal manner, provided each individual class meets the test coverage requirement of 75% and above${EOL}` +
+      `Ensure each apex class/trigger is validated for coverage in the validation stage`);
+    console.log(`-----------------------------------------------------------------------------------------------`);
+  }
+
+  private printSlowDeploymentWarning() {
+    console.log(`-------WARNING! YOU MIGHT NOT BE ABLE TO DEPLOY OR WILL HAVE A SLOW DEPLOYMENT---------------`);
+    console.log(
+      `This package has apex classes/triggers, however apex test classes were not found, You would not be able to deploy${EOL}` +
+      `to production org optimally if each class do not have coverage of 75% and above,We will attempt deploying${EOL}` +
+      `this package by triggering all local tests in the org which could be realy costly in terms of deployment time!${EOL}`
+    );
+    console.log(`---------------------------------------------------------------------------------------------`);
   }
 
   private getDestructiveChanges(
@@ -156,9 +237,23 @@ export default class CreateSourcePackageImpl {
     };
   }
 
+  private  printClassesIdentified(fetchedClasses:FileDescriptor[]) {
 
- 
 
+    if(fetchedClasses===null || fetchedClasses===undefined)
+        return;
+
+    let table = new Table({
+      head: ["Class","Path", "Error"],
+    });
+
+    for (let fetchedClass of fetchedClasses) {
+      let item = [fetchedClass.name, fetchedClass.filepath,fetchedClass.error?fetchedClass.error:"N/A"];
+      table.push(item);
+    }
+    console.log("Following apex test classes were identified");
+    console.log(table.toString());
+  }
 }
 type DestructiveChanges = {
   isDestructiveChangesFound: boolean;

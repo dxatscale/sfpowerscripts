@@ -126,14 +126,14 @@ export default class ApexTypeFetcher {
   }
 }
 
-export interface ApexSortedByType {
+export type ApexSortedByType= {
   class: FileDescriptor[],
   testClass: FileDescriptor[],
   interface: FileDescriptor[],
   parseError: FileDescriptor[]
 }
 
-interface FileDescriptor {
+export type FileDescriptor ={
   name: string
   filepath: string,
   error?: any

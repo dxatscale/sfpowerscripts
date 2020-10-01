@@ -115,6 +115,8 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
         .generatedestructivemanifest;
 
 
+      
+
       let createDeltaPackageImp = new CreateDeltaPackageImpl(
         null,
         sfdx_package,
@@ -149,8 +151,11 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
         repository_url: repository_url,
       };
 
+     
 
-
+    //Switch to delta and let source package know all tests has to be triggered
+    packageMetadata.package_type = "delta";
+    packageMetadata.isTriggerAllTests = true;
 
       let createSourcePackageImpl = new CreateSourcePackageImpl(
         deltaPackage.deltaDirectory,
@@ -161,8 +166,11 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       packageMetadata = await createSourcePackageImpl.exec();
 
       console.log(
-        JSON.stringify(packageMetadata, function (key, val) {
-          if (key !== "payload") return val;
+        JSON.stringify(packageMetadata, function (key, value) {
+          if(key=="payload" || key == "destructiveChanges")
+          return undefined;
+        else
+           return value;
         })
       );
 

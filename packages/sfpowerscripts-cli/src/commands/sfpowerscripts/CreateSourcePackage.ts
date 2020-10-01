@@ -19,8 +19,6 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
   public static examples = [
     `$ sfdx sfpowerscripts:CreateSourcePackage -n mypackage -v <version>`,
     `$ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --diffcheck --gittag`,
-    `$ sfdx sfpowerscripts:CreateSourcePackage -n mypackage -v <version> --destructivemanifestfilepath=destructiveChanges.xml` +
-    `--apextestsuite=<package>.testSuite-meta.xml\n`,
     `Output variable:`,
     `sfpowerscripts_artifact_metadata_directory`,
     `<refname>_sfpowerscripts_artifact_metadata_directory`,
@@ -36,8 +34,6 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
   protected static flagsConfig = {
     package: flags.string({required: true, char: 'n', description: messages.getMessage('packageFlagDescription')}),
     versionnumber: flags.string({required: true, char: 'v', description: messages.getMessage('versionNumberFlagDescription')}),
-    apextestsuite: flags.filepath({description: messages.getMessage('apextestsuiteFlagDescription')}),
-    destructivemanifestfilepath: flags.filepath({description: messages.getMessage('destructiveManiFestFilePathFlagDescription')}),
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
     diffcheck: flags.boolean({description: messages.getMessage('diffCheckFlagDescription')}),
     gittag: flags.boolean({description: messages.getMessage('gitTagFlagDescription')}),
@@ -53,8 +49,7 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
       const version_number: string = this.flags.versionnumber;
       const artifactDirectory: string = this.flags.artifactdir;
       const refname: string = this.flags.refname;
-      const destructiveManifestFilePath: string = this.flags.destructivemanifestfilepath;
-      const apextestsuite: string=this.flags.apextestsuite;
+
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
@@ -87,14 +82,14 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
           sourceVersion: commit_id,
           repository_url:repository_url,
           package_type:"source",
-          apextestsuite: apextestsuite,
+          apextestsuite: null
         };
 
         //Convert to MDAPI
         let createSourcePackageImpl = new CreateSourcePackageImpl(
           null,
           sfdx_package,
-          destructiveManifestFilePath,
+          null,
           packageMetadata
         );
         packageMetadata = await createSourcePackageImpl.exec();
@@ -103,14 +98,6 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
           if (key !== "payload")
               return val;
          }));
-
-        if (packageMetadata.isApexFound && isNullOrUndefined(apextestsuite)) {
-          this.ux.warn(
-            "This package has apex classes/triggers and an apex test suite is not specified, You would not be able to deply to production if each class do not have coverage of 75% and above"
-          );
-        }
-
-
 
 
        //Generate Artifact

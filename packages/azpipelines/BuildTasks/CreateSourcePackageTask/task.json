@@ -9,7 +9,7 @@
     "version": {
         "Major": 12,
         "Minor": 0,
-        "Patch": 1
+        "Patch": 3
     },
     "runsOn": [
         "Agent"
@@ -23,21 +23,6 @@
             "defaultValue": "",
             "required": true,
             "helpMarkDown": "The name of the package, that is mentioned in sfdx-project.json"
-        },
-        {
-            "name": "apextestsuite",
-            "type": "string",
-            "label": "Apex Test Suite that needs to be associated with the source package",
-            "required": false,
-            "defaultValue": "",
-            "helpMarkDown": "Name of the Apex Test hat need to be associated with the package"
-        },
-        {
-            "name": "destructiveManifestFilepath",
-            "type": "string",
-            "label": "Path to a destructiveChanges.xml",
-            "defaultValue": "",
-            "helpMarkDown": "The location to the xml file which contains the destructive changes, file should be named destructiveChanges.xml and should be accessible by this task"
         },
         {
             "name": "version_number",

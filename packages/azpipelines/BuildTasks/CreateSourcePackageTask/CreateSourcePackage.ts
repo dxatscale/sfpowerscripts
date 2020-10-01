@@ -6,6 +6,7 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/Art
 import { isNullOrUndefined } from "util";
 
 
+
 async function run() {
   try {
     let sfdx_package: string = tl.getInput("package", true);
@@ -13,8 +14,6 @@ async function run() {
     let isDiffCheck: boolean = tl.getBoolInput("isDiffCheck", false);
     let isGitTag: boolean = tl.getBoolInput("isGitTag", false);
     let projectDirectory: string = tl.getInput("project_directory", false);
-    let apextestsuite = tl.getInput("apextestsuite", false);
-    let destructiveManifestFilePath=tl.getInput("destructiveManifestFilepath",false);
     let commitId = tl.getVariable("build.sourceVersion");
     let repositoryUrl = tl.getVariable("build.repository.uri");
 
@@ -48,26 +47,19 @@ async function run() {
         package_version_number: version_number,
         sourceVersion: commitId,
         repository_url: repositoryUrl,
-        apextestsuite:apextestsuite
+        apextestsuite:null
       };
 
       //Convert to MDAPI
       let createSourcePackageImpl = new CreateSourcePackageImpl(
         projectDirectory,
         sfdx_package,
-        destructiveManifestFilePath,
+        null,
         packageMetadata
       );
       packageMetadata = await createSourcePackageImpl.exec();
 
-      if (packageMetadata.isApexFound && isNullOrUndefined(apextestsuite)) {
-        tl.logIssue(
-          tl.IssueType.Warning,
-          "This package has apex classes/triggers and an apex test suite is not specified, You would not be able to deply to production if each class do not have coverage of 75% and above"
-        );
-      }
 
-      console.log(JSON.stringify(packageMetadata));
 
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata,(key:string,value:any)=>{
          if(key=="payload" || key == "destructiveChanges")
