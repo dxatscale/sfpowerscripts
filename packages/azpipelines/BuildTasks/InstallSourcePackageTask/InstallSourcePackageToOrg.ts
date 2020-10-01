@@ -207,7 +207,8 @@ async function run() {
     let deploymentOptions = await generateDeploymentOptions(
       packageMetadataFromStorage,
       wait_time,
-      optimizeDeployment
+      optimizeDeployment,
+      skipTesting
     );
     let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
       target_org,
