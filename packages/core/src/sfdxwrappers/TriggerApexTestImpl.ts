@@ -6,6 +6,7 @@ import path = require("path");
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import ApexTypeFetcher, { ApexSortedByType } from "../parser/ApexTypeFetcher";
 import ManifestHelpers from "../manifest/ManifestHelpers";
+const Table = require("cli-table");
 
 export default class TriggerApexTestImpl {
   private packageDescriptor;
@@ -52,8 +53,14 @@ export default class TriggerApexTestImpl {
       await onExit(child);
 
     } catch (err) {
-        if (err.message === "Package or package directory does not exist") {
-          console.log(err.message);
+        if (
+          err.message === "Package or package directory does not exist" ||
+          err.message === "No test classes found in package"
+        ) {
+          // Terminate execution without running command
+          test_result.result = false;
+          test_result.message = err.message;
+          return test_result;
         }
     } finally {
       console.log(output);
@@ -100,18 +107,20 @@ export default class TriggerApexTestImpl {
       return test_result;
     }
 
-    let classesWithInvalidCoverage: string[];
+    let classesWithInvalidCoverage: {name: string, coveredPercent: number}[];
 
     if (this.test_options["isValidateCoverage"]) {
       classesWithInvalidCoverage = await this.validateClassCodeCoverage();
     }
 
-    if (isNullOrUndefined(classesWithInvalidCoverage) || classesWithInvalidCoverage.length == 0) {
+    if (isNullOrUndefined(classesWithInvalidCoverage) || classesWithInvalidCoverage.length === 0) {
       test_result.message = `${test_report_json.summary.passing} Tests passed with overall Test Run Coverage of ${test_report_json.summary.testRunCoverage} percent`;
       test_result.result = true;
     } else {
-      test_result.message=`The classes ${classesWithInvalidCoverage.toString()} do not meet the required code coverage of ${this.test_options["coverageThreshold"]}`;
+      test_result.message=`There are classes that do not satisfy the minimum code coverage of ${this.test_options["coverageThreshold"]}%`;
       test_result.result = false;
+
+      this.printClassesWithInvalidCoverage(classesWithInvalidCoverage);
     }
     return test_result;
   }
@@ -156,6 +165,10 @@ export default class TriggerApexTestImpl {
         fileDescriptor.name
       );
 
+      if (testClassNames.length === 0) {
+        throw new Error("No test classes found in package");
+      }
+
       command += ` -t ${testClassNames.toString()}`;
     }
     else if (this.test_options["testlevel"] == "RunApexTestSuite") {
@@ -166,9 +179,9 @@ export default class TriggerApexTestImpl {
     return command;
   }
 
-  private async validateClassCodeCoverage(): Promise<string[]>  {
+  private async validateClassCodeCoverage(): Promise<{name: string, coveredPercent: number}[]>  {
     console.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
-    let classesWithInvalidCoverage: string[] = [];
+    let classesWithInvalidCoverage: {name: string, coveredPercent: number}[] = [];
 
     let mdapiPackage: {mdapiDir: string, manifest} = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
       this.project_directory,
@@ -195,12 +208,12 @@ export default class TriggerApexTestImpl {
         classCoverage["coveredPercent"] !== null &&
         classCoverage["coveredPercent"] < this.test_options["coverageThreshold"]
       ) {
-        classesWithInvalidCoverage.push(classCoverage["name"]);
+        classesWithInvalidCoverage.push({name: classCoverage["name"], coveredPercent: classCoverage["coveredPercent"]});
       }
     }
 
     // Check for package classes with no test class
-    let classesWithoutTest: string[] = packageClasses.filter( (packageClass) => {
+    let namesOfClassesWithoutTest: string[] = packageClasses.filter( (packageClass) => {
       // Filter out package class if accounted for in coverage json
       for (let classCoverage of code_coverage_json) {
         if (classCoverage["name"] === packageClass) {
@@ -211,7 +224,11 @@ export default class TriggerApexTestImpl {
     });
 
 
-    if (classesWithoutTest.length > 0) {
+    if (namesOfClassesWithoutTest.length > 0) {
+      let classesWithoutTest: {name: string, coveredPercent: number}[] = namesOfClassesWithoutTest.map(
+        (className) => {
+        return {name: className, coveredPercent: 0};
+      });
       classesWithInvalidCoverage = classesWithInvalidCoverage.concat(classesWithoutTest);
     }
 
@@ -334,5 +351,17 @@ export default class TriggerApexTestImpl {
     }
 
     return packageClasses;
+  }
+
+  private printClassesWithInvalidCoverage(classesWithInvalidCoverage: {name: string, coveredPercent: number}[]) {
+    let table = new Table({
+      head: ["Class", "Coverage Percent"],
+    });
+
+    classesWithInvalidCoverage.forEach( (classWithInvalidCoverage) => {
+      table.push([classWithInvalidCoverage.name, classWithInvalidCoverage.coveredPercent]);
+    })
+    console.log(`The following classes do not satisfy the ${this.test_options["coverageThreshold"]}% code coverage requirement:`);
+    console.log(table.toString());
   }
 }
