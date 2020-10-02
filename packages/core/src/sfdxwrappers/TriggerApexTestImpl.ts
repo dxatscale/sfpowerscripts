@@ -53,8 +53,14 @@ export default class TriggerApexTestImpl {
       await onExit(child);
 
     } catch (err) {
-        if (err.message === "Package or package directory does not exist") {
-          console.log(err.message);
+        if (
+          err.message === "Package or package directory does not exist" ||
+          err.message === "No test classes found in package"
+        ) {
+          // Terminate execution without running command
+          test_result.result = false;
+          test_result.message = err.message;
+          return test_result;
         }
     } finally {
       console.log(output);
@@ -158,6 +164,10 @@ export default class TriggerApexTestImpl {
       let testClassNames: string[] = this.apexSortedByType["testClass"].map( (fileDescriptor) =>
         fileDescriptor.name
       );
+
+      if (testClassNames.length === 0) {
+        throw new Error("No test classes found in package");
+      }
 
       command += ` -t ${testClassNames.toString()}`;
     }
