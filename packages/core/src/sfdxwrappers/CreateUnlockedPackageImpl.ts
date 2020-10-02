@@ -119,27 +119,22 @@ export default class CreateUnlockedPackageImpl {
   }
 
   private resolvePackageDependencies(packageDescriptor: any) {
-    try {
-      console.log("Resolving project dependencies");
+    console.log("Resolving project dependencies");
+    let resolveResult;
+    if (this.isSkipValidation) {
       let resolveResult;
-      if (this.isSkipValidation) {
-        let resolveResult;
-        resolveResult = child_process.execSync(
-          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -w`,
-          { cwd: this.project_directory, encoding: "utf8" }
-        );
-      }
-      else {
-        resolveResult = child_process.execSync(
-          `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -w --usedependencyvalidatedpackages`,
-          { cwd: this.project_directory, encoding: "utf8" }
-        );
-      }
-      console.log(resolveResult);
+      resolveResult = child_process.execSync(
+        `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -w`,
+        { cwd: this.project_directory, encoding: "utf8" }
+      );
     }
-    catch (error) {
-      console.log("Skipping execution of dependencies list",error);
+    else {
+      resolveResult = child_process.execSync(
+        `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -w --usedependencyvalidatedpackages`,
+        { cwd: this.project_directory, encoding: "utf8" }
+      );
     }
+    console.log(resolveResult);
   }
 
   private buildExecCommand(): string {
