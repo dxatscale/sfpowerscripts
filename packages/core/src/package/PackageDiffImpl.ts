@@ -129,21 +129,23 @@ export default class PackageDiffImpl {
     sfdx_package: string,
     tags: string[]
   ): Promise<string[]> {
-    // Get all the commit ID's on the branch
-    let gitLogResult = await git.log([`--pretty=format:%h`]);
+    // Get all the commit ID's (un-abbreviated) on the current branch
+    let gitLogResult = await git.log([`--pretty=format:%H`]);
     let commits: string[] = gitLogResult["all"][0]["hash"].split("\n");
 
     // Get the tags' associated commit ID
+    // Dereference (-d) tags into object IDs
     let gitShowRefTagsResult = exec(
-      `git show-ref --tags --abbrev -d | grep "${sfdx_package}_v*"`,
+      `git show-ref --tags -d | grep "${sfdx_package}_v*"`,
       { silent: true }
     )["stdout"];
     let refTags: string[] = gitShowRefTagsResult.split("\n");
     refTags.pop(); // Remove last empty element
 
     // Filter ref tags, only including tags that point to the branch
+    // By checking whether all 40 digits in the tag commit ID matches an ID in the branch's commit log
     let refTagsPointingToBranch: string[] = refTags.filter((refTag) =>
-      commits.includes(refTag.substr(0, 7))
+      commits.includes(refTag.substr(0, 40))
     );
     // Only match the name of the tags pointing to the branch
     refTagsPointingToBranch = refTagsPointingToBranch.map(
