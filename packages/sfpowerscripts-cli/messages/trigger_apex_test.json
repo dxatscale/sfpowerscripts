@@ -1,5 +1,5 @@
 {
-    "commandDescription": "Triggers an asynchronous apex unit test in an org, This task is part of DX@Scale/SFPowerscripts",
+    "commandDescription": "Triggers Apex unit test in an org. Supports test level RunAllTestsInPackage, which optionally allows validation of individual class code coverage",
     "targetOrgFlagDescription": "username or alias for the target org; overrides default target org",
     "testLevelFlagDescription": "The test level of the test that need to be executed when the code is to be deployed",
     "packageFlagDescription": "Name of the package to run tests. Required when test level is RunAllTestsInPackage",
