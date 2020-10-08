@@ -1,9 +1,8 @@
 {
-    "commandDescription": "This task is used to create a delta package between two commits and bundle the created delta as as a deployable artifact,This task is part of SFPowerscripts, Please ensure Install SFDX Task is used before utilizing this task",
+    "commandDescription": "This task is used to create a delta package between two commits and bundle the created delta as as a deployable artifact. Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task",
     "packageNameFlagDescription": "The name of the package",
     "revisionFromFlagDescription": "Provide the full SHA Commit ID, from where the diff should start generating",
     "revisionToFlagDescription": "If not set, the head commit ID of the current branch is used",
-    "buildArtifactEnabledFlagDescription": "[DEPRECATED - always generate artifact] Create a build artifact, so that this pipeline can be consumed by a release pipeline",
     "repoUrlFlagDescription": "Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config",
     "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
     "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",

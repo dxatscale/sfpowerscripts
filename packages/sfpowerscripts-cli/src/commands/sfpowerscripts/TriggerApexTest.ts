@@ -17,8 +17,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
 
   public static examples = [
     `$ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunLocalTests -s`,
-    `$ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunApexTestSuite --apextestsuite <test_suite>`,
-    `$ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunApexTestSuite --apextestsuite <test_suite> -c -t <package>`
+    `$ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c`
   ];
 
 
