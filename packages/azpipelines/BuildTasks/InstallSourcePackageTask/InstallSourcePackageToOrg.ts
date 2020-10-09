@@ -385,19 +385,33 @@ async function generateDeploymentOptions(
   mdapi_options["wait_time"] = wait_time;
 
   if (skipTest) {
-    let result = {};
+    let result;
     try {
       result = await OrgDetails.getOrgDetails(target_org);
     } catch(err) {
-      console.log("Unable determine if org is a sandbox or production...Defaulting to sandbox");
-      result["IsSandbox"]=true;
+      console.log("Unable determine type of org...Defaulting to production");
+      console.log(
+        ` -------------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
+          `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
+          `-------------------------------------------------------------------------------------------------------------`
+      );
+      mdapi_options["testlevel"] = "RunLocalTests";
     }
 
     if (result["IsSandbox"]) {
-      tl.warning("Skipping tests for sandbox deployment...keep in mind that tests are mandatory for deployments to production");
+      console.log(
+        ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
+          `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
+          `-------------------------------------------------------------------------------------------------------------`
+      );
       mdapi_options["testlevel"] = "NoTestRun";
     } else {
-      throw new Error("Tests are mandatory for deployments to production");
+      console.log(
+        ` -------------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
+          `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
+          `-------------------------------------------------------------------------------------------------------------`
+      );
+      mdapi_options["testlevel"] = "RunLocalTests";
     }
 
   } else if (packageMetadata.isApexFound) {
