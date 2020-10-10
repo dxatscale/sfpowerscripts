@@ -5,9 +5,18 @@ const Table = require("cli-table");
 
 export default class ManifestHelpers {
 
-  public static getSFDXPackageManifest(
-    projectDirectory: string
-  ): { any } {
+
+  public static getAllPackages(projectDirectory: string): string[] {
+    let projectConfig = ManifestHelpers.getSFDXPackageManifest(projectDirectory);
+    let sfdxpackages=[];
+    projectConfig["packageDirectories"].forEach((pkg) => {
+     sfdxpackages.push(pkg["package"]);
+    });
+    return sfdxpackages;
+  }
+
+
+  public static getSFDXPackageManifest(projectDirectory: string): { any } {
     let projectConfigJSON: string;
     if (!isNullOrUndefined(projectDirectory)) {
       projectConfigJSON = path.join(projectDirectory, "sfdx-project.json");
@@ -18,27 +27,43 @@ export default class ManifestHelpers {
     let projectConfig = JSON.parse(fs.readFileSync(projectConfigJSON, "utf8"));
 
     if (isNullOrUndefined(projectConfig))
-      throw new Error(`sfdx-project.json doesn't exist or not reable at ${projectConfigJSON}`);
+      throw new Error(
+        `sfdx-project.json doesn't exist or not reable at ${projectConfigJSON}`
+      );
     else return projectConfig;
   }
 
+  public static getPackageType(projectConfig:any, sfdxPackage: string) {
+    let packageFound: boolean;
+    if (sfdxPackage) {
+      projectConfig["packageDirectories"].forEach((pkg) => {
+        if (sfdxPackage == pkg["package"]) {
+          packageFound = true;
+        }
+      });
+    }
 
+    if (!packageFound)
+      throw new Error("Package or package directory does not exist");
+    else {
+      if (projectConfig["packageAliases"][sfdxPackage]) {
+        return "Unlocked";
+      } else {
+        return "Source";
+      }
+    }
+  }
 
   public static getSFDXPackageDescriptor(
     projectDirectory: string,
     sfdxPackage: string
-  ): any  {
+  ): any {
     let packageDirectory: string;
     let sfdxPackageDescriptor: any;
 
-    let projectConfigJSON: string;
-    if (!isNullOrUndefined(projectDirectory)) {
-      projectConfigJSON = path.join(projectDirectory, "sfdx-project.json");
-    } else {
-      projectConfigJSON = "sfdx-project.json";
-    }
-
-    let projectConfig = JSON.parse(fs.readFileSync(projectConfigJSON, "utf8"));
+    let projectConfig = ManifestHelpers.getSFDXPackageManifest(
+      projectDirectory
+    );
 
     if (!isNullOrUndefined(sfdxPackage)) {
       projectConfig["packageDirectories"].forEach((pkg) => {
@@ -54,10 +79,7 @@ export default class ManifestHelpers {
     else return sfdxPackageDescriptor;
   }
 
-
-  public static getDefaultSFDXPackageDescriptor(
-    projectDirectory: string
-  ): any  {
+  public static getDefaultSFDXPackageDescriptor(projectDirectory: string): any {
     let packageDirectory: string;
     let sfdxPackageDescriptor: any;
 
@@ -70,18 +92,17 @@ export default class ManifestHelpers {
 
     let projectConfig = JSON.parse(fs.readFileSync(projectConfigJSON, "utf8"));
 
-      //Return the default package directory
-      projectConfig["packageDirectories"].forEach((pkg) => {
-        if (pkg["default"] == true) {
-          packageDirectory = pkg["path"];
-          sfdxPackageDescriptor = pkg;
-        }
-      });
+    //Return the default package directory
+    projectConfig["packageDirectories"].forEach((pkg) => {
+      if (pkg["default"] == true) {
+        packageDirectory = pkg["path"];
+        sfdxPackageDescriptor = pkg;
+      }
+    });
 
-      if (isNullOrUndefined(packageDirectory))
+    if (isNullOrUndefined(packageDirectory))
       throw new Error("Package or package directory not exist");
     else return sfdxPackageDescriptor;
-
   }
 
   public static cleanupMPDFromManifest(
@@ -103,13 +124,11 @@ export default class ManifestHelpers {
           sfdxManifest["packageDirectories"].splice(i, 1);
         }
       }
-    }
-    else
-    {
+    } else {
       let i = sfdxManifest["packageDirectories"].length;
       while (i--) {
-        if (!fs. existsSync(sfdxManifest["packageDirectories"][i]["path"])) {
-            sfdxManifest["packageDirectories"].splice(i, 1);
+        if (!fs.existsSync(sfdxManifest["packageDirectories"][i]["path"])) {
+          sfdxManifest["packageDirectories"].splice(i, 1);
         }
       }
     }
@@ -144,19 +163,16 @@ export default class ManifestHelpers {
           break;
         }
       }
-    } else if (
-      manifest["Package"]["types"]["name"] == "Profile"
-    ) {
+    } else if (manifest["Package"]["types"]["name"] == "Profile") {
       isProfilesFound = true;
     }
     return isProfilesFound;
   }
 
   public static printMetadataToDeploy(mdapiPackageManifest) {
-
     //If Manifest is null, just return
-    if(mdapiPackageManifest===null || mdapiPackageManifest===undefined)
-        return;
+    if (mdapiPackageManifest === null || mdapiPackageManifest === undefined)
+      return;
 
     let table = new Table({
       head: ["Metadata Type", "API Name"],

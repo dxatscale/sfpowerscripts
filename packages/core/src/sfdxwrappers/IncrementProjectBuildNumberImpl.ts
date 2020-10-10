@@ -12,7 +12,7 @@ export default class IncrementProjectBuildNumberImpl {
     private buildNumber: string
   ) {}
 
-  public async exec(): Promise<{status:boolean,ignore:boolean,versionNumber:string}> {
+  public  exec(): {status:boolean,ignore:boolean,versionNumber:string} {
     let project_config_path: string;
 
     if (!isNullOrUndefined(this.project_directory))
