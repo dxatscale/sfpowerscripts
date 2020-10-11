@@ -1,4 +1,5 @@
 import child_process = require("child_process");
+import Logger from "../utils/Logger";
 
 export default class DeleteScratchOrgImpl {
   
@@ -9,7 +10,7 @@ export default class DeleteScratchOrgImpl {
       encoding: "utf8" 
 
     });
-   console.log(result);
+   Logger.log(result);
   }
 
   public async buildExecCommand(): Promise<string> {

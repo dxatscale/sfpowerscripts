@@ -1,5 +1,6 @@
 import child_process = require("child_process");
 import { isNullOrUndefined, isNumber } from "util";
+import Logger from "../utils/Logger";
 const fs = require("fs");
 const path = require("path");
 
@@ -42,8 +43,8 @@ export default class IncrementProjectBuildNumberImpl {
     }
 
 
-    console.log(`Package : ${selected_package["package"]}`);
-    console.log(`Version : ${selected_package["versionNumber"]}`);
+    Logger.log(`Package : ${selected_package["package"]}`);
+    Logger.log(`Version : ${selected_package["versionNumber"]}`);
 
     let segments = (selected_package["versionNumber"] as String).split(".");
 
@@ -54,8 +55,8 @@ export default class IncrementProjectBuildNumberImpl {
     //Don't do anything, just return let the platform take care of the increment
     if (segments[3] == "NEXT") {
 
-      console.log("NEXT encountered in segment, will ignore all the option set in the task")
-      console.log(`Version : ${selected_package["versionNumber"]}`);
+      Logger.log("NEXT encountered in segment, will ignore all the option set in the task")
+      Logger.log(`Version : ${selected_package["versionNumber"]}`);
       return {status:true, ignore:true,versionNumber:selected_package["versionNumber"]};
     }
 
@@ -74,7 +75,7 @@ export default class IncrementProjectBuildNumberImpl {
       "versionNumber"
     ] = `${segments[0]}.${segments[1]}.${segments[2]}.${segments[3]}`;
 
-    console.log(`Updated Version : ${selected_package["versionNumber"]}`);
+    Logger.log(`Updated Version : ${selected_package["versionNumber"]}`);
 
     if (!this.appendBuildNumber) {
       fs.writeFileSync(

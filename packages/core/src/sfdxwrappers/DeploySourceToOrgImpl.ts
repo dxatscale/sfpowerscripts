@@ -6,6 +6,7 @@ import {
 } from "fs";
 import { onExit } from "../utils/OnExit";
 import ManifestHelpers from "../manifest/ManifestHelpers";
+import Logger from "../utils/Logger";
 const path = require("path");
 
 
@@ -42,7 +43,7 @@ export default class DeploySourceToOrgImpl {
         return deploySourceResult;
       }
 
-      console.log("Converting source to mdapi");
+      Logger.log("Converting source to mdapi");
       let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
         this.project_directory,
         this.source_directory
@@ -58,7 +59,7 @@ export default class DeploySourceToOrgImpl {
         );
     } catch (err) {
       //Do something here
-      console.log("Validation Ignore not found, using .forceignore");
+      Logger.log("Validation Ignore not found, using .forceignore");
     }
 
 
@@ -69,7 +70,7 @@ export default class DeploySourceToOrgImpl {
     let deploy_id = "";
     try {
       let command = this.buildExecCommand();
-      console.log(command);
+      Logger.log(command);
       let result = child_process.execSync(command, {
         cwd: this.project_directory,
         encoding: "utf8",
@@ -84,11 +85,11 @@ export default class DeploySourceToOrgImpl {
     }
 
     if (this.deployment_options["checkonly"])
-      console.log(
+      Logger.log(
         `Validation is in progress....  Unleashing the power of your code!`
       );
     else
-      console.log(
+      Logger.log(
         `Deployment is in progress....  Unleashing the power of your code!`
       );
 
@@ -106,25 +107,25 @@ export default class DeploySourceToOrgImpl {
         );
       } catch (err) {
         if (this.deployment_options["checkonly"])
-          console.log(`Validation Failed`);
-        else console.log(`Deployment Failed`);
+          Logger.log(`Validation Failed`);
+        else Logger.log(`Deployment Failed`);
         break;
       }
       let resultAsJSON = JSON.parse(result);
 
       if (resultAsJSON["status"] == 1) {
-        console.log("Validation/Deployment Failed");
+        Logger.log("Validation/Deployment Failed");
         commandExecStatus = false;
         break;
       } else if (
         resultAsJSON["result"]["status"] == "InProgress" ||
         resultAsJSON["result"]["status"] == "Pending"
       ) {
-        console.log(
+        Logger.log(
           `Processing ${resultAsJSON.result.numberComponentsDeployed} out of ${resultAsJSON.result.numberComponentsTotal}`
         );
       } else if (resultAsJSON["result"]["status"] == "Succeeded") {
-        console.log("Validation/Deployment Succeeded");
+        Logger.log("Validation/Deployment Succeeded");
         commandExecStatus = true;
         break;
       }
@@ -206,7 +207,7 @@ export default class DeploySourceToOrgImpl {
   private convertApexTestSuiteToListOfApexClasses(
     apextestsuite: string
   ): Promise<string> {
-    console.log(
+    Logger.log(
       `Converting an apex test suite  ${apextestsuite} to its consituent apex test classes`
     );
 

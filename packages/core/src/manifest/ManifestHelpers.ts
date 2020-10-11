@@ -1,4 +1,5 @@
 import { isNullOrUndefined } from "util";
+import Logger from "../utils/Logger";
 let fs = require("fs-extra");
 let path = require("path");
 const Table = require("cli-table");
@@ -198,7 +199,7 @@ export default class ManifestHelpers {
       let type = mdapiPackageManifest["Package"]["types"];
       pushTypeMembersIntoTable(type);
     }
-    console.log("The following metadata will be deployed:");
-    console.log(table.toString());
+    Logger.log("The following metadata will be deployed:");
+    Logger.log(table.toString());
   }
 }

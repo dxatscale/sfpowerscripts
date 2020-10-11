@@ -31,7 +31,7 @@ export default class CreateUnlockedPackageImpl {
     );
 
     let packageDirectory: string = packageDescriptor["path"];
-    console.log("Package Directory", packageDirectory);
+    //Logger.log("Package Directory", packageDirectory);
 
    //Resolve the package dependencies
     this.resolvePackageDependencies(packageDescriptor);
@@ -51,7 +51,7 @@ export default class CreateUnlockedPackageImpl {
     this.packageArtifactMetadata.payload = mdapiPackage.manifest;
 
     let command = this.buildExecCommand();
-    console.log("Package Creation Command", command);
+    //Logger.log("Package Creation Command", command);
     let child = child_process.exec(
       command,
       { cwd: this.project_directory, encoding: "utf8" },
@@ -62,7 +62,7 @@ export default class CreateUnlockedPackageImpl {
 
     let output = "";
     child.stdout.on("data", (data) => {
-      console.log(data.toString());
+     // Logger.log(data.toString());
       output += data.toString();
     });
 
@@ -72,7 +72,7 @@ export default class CreateUnlockedPackageImpl {
     ).result.SubscriberPackageVersionId;
 
     //Get the full details on the package
-    console.log("Fetching Version Number and Coverage details");
+   // Logger.log("Fetching Version Number and Coverage details");
     let pkgInfoResultAsJSON = child_process.execSync(
       this.buildInfoCommand(this.packageArtifactMetadata.package_version_id),
       {
@@ -81,7 +81,7 @@ export default class CreateUnlockedPackageImpl {
       }
     );
 
-    console.log("Package Info Fetched", pkgInfoResultAsJSON);
+   // Logger.log("Package Info Fetched", pkgInfoResultAsJSON);
 
     let pkgInfoResult = JSON.parse(pkgInfoResultAsJSON);
     this.packageArtifactMetadata.isDependencyValidated = this.isSkipValidation;
@@ -119,7 +119,7 @@ export default class CreateUnlockedPackageImpl {
   }
 
   private resolvePackageDependencies(packageDescriptor: any) {
-    console.log("Resolving project dependencies");
+  //  Logger.log("Resolving project dependencies");
     let resolveResult;
     if (this.isSkipValidation) {
       let resolveResult;
@@ -134,7 +134,7 @@ export default class CreateUnlockedPackageImpl {
         { cwd: this.project_directory, encoding: "utf8" }
       );
     }
-    console.log(resolveResult);
+    //Logger.log(resolveResult);
   }
 
   private buildExecCommand(): string {

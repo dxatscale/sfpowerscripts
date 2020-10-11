@@ -12,6 +12,7 @@ import {
   existsSync
 } from "fs";
 import ignore from "ignore";
+import Logger from "../utils/Logger";
 
 export default class MDAPIPackageGenerator {
   public static async getMDAPIPackageFromSourceDirectory(
@@ -46,11 +47,11 @@ export default class MDAPIPackageGenerator {
       let mdapiDir: string = `${this.makefolderid(5)}_mdapi`;
 
       if (!isNullOrUndefined(projectDir))
-        console.log(
+        Logger.log(
           `Converting to MDAPI Format ${sourceDirectory} in project directory ${projectDir}`
         );
       else
-        console.log(
+        Logger.log(
           `Converting to MDAPI Format ${sourceDirectory} in project directory`
         );
       child_process.execSync(
@@ -62,10 +63,10 @@ export default class MDAPIPackageGenerator {
       if (!isNullOrUndefined(projectDir))
         mdapiDirPath = path.resolve(projectDir, mdapiDir);
       else mdapiDirPath = path.resolve(mdapiDir);
-      console.log(`Converting to MDAPI  Format Completed at ${mdapiDirPath}`);
+      Logger.log(`Converting to MDAPI  Format Completed at ${mdapiDirPath}`);
       return mdapiDirPath;
     } catch (error) {
-      console.log(`Unable to convert source for directory ${sourceDirectory}`);
+      Logger.log(`Unable to convert source for directory ${sourceDirectory}`);
       throw error;
     }
   }

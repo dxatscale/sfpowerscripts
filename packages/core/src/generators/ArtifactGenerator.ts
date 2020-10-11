@@ -5,6 +5,7 @@ import GeneratePackageChangelog from "../changelog/GeneratePackageChangelog";
 import { Changelog } from "../changelog/interfaces/GenericChangelogInterfaces";
 import { isNullOrUndefined } from "util";
 import * as rimraf from "rimraf";
+import Logger from "../utils/Logger";
 
 export default class ArtifactGenerator {
 
@@ -85,7 +86,7 @@ export default class ArtifactGenerator {
         JSON.stringify(packageChangelog, null, 4)
       );
 
-      console.log("Artifact Copy Completed");
+      Logger.log("Artifact Copy Completed");
 
       return {
         artifactDirectory: path.resolve(abs_artifact_directory, aritfactDirectory),

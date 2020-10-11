@@ -8,19 +8,22 @@ import CreateUnlockedPackageImpl from "./CreateUnlockedPackageImpl";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import CreateSourcePackageImpl from "./CreateSourcePackageImpl";
 import IncrementProjectBuildNumberImpl from "./IncrementProjectBuildNumberImpl";
-import PubSub from "pubsub-js";
+import Logger from "../utils/Logger";
+import { EOL } from "os";
 
 export default class BuildImpl {
-  private limiter;
+  private limiter: Bottleneck;
   private packageBuildSchedulerWrappedForBottleNeck;
   private parentsToBeFulfilled;
   private childs;
-  private packages: string[];
+  private packagesToBeBuilt: string[];
   private packageCreationPromises: Array<
     Promise<PackageCreationResult>
   > = new Array();
   private projectConfig: { any: any };
-  parents: import("c:/Projects/sfpowerscripts/packages/core/src/parallelBuilder/DependencyHelper").AdjacentList;
+  private parents: any;
+  private packagesInQueue: string[];
+  private packagesBuilt: string[];
 
   public constructor(
     private config_file_path: string,
@@ -33,74 +36,132 @@ export default class BuildImpl {
     private buildNumber: string
   ) {
     this.limiter = new Bottleneck({
-      maxConcurrent: 1,
+      maxConcurrent: 7,
+      trackDoneStatus: true,
     });
 
     this.packageBuildSchedulerWrappedForBottleNeck = this.limiter.wrap(
       this.packageBuildScheduler
     );
+    this.packagesBuilt = [];
   }
 
   public async exec(): Promise<PackageCreationResult[]> {
+    console.log("-----------sfpowerscripts package builder------------------");
+    let executionStartTime = Date.now();
 
-    this.packages = ManifestHelpers.getAllPackages(this.project_directory);
+    this.packagesToBeBuilt = ManifestHelpers.getAllPackages(
+      this.project_directory
+    );
 
-    console.log("Computing Packages to be deployed")
-    //Do a diff Impl
-    if(this.isDiffCheckEnabled)
-    {
-      let packageToBeBuilt=[];
-     for await (const pkg of this.packages) {
-      let diffImpl:PackageDiffImpl = new PackageDiffImpl(pkg,this.project_directory, this.config_file_path);
-      let isToBeBuilt=await diffImpl.exec();
-      if(isToBeBuilt)
-      {
-        packageToBeBuilt.push(pkg);
-      }
-     }
-     this.packages=packageToBeBuilt;
-    }
+    Logger.isSupressLogs = true;
+
+    //console.log("Computing Packages to be deployed")
+    // //Do a diff Impl
+    // if(this.isDiffCheckEnabled)
+    // {
+    //   let packageToBeBuilt=[];
+    //  for await (const pkg of this.packages) {
+    //   let diffImpl:PackageDiffImpl = new PackageDiffImpl(pkg,this.project_directory, this.config_file_path);
+    //   let isToBeBuilt=await diffImpl.exec();
+    //   if(isToBeBuilt)
+    //   {
+    //     if(pkg!=='core-crm')
+    //      packageToBeBuilt.push(pkg);
+    //   }
+    //  }
+    //  this.packages=packageToBeBuilt;
+    // }
 
     //List all package that will be built
-    console.log("Packages that are being built",this.packages);
+    console.log("Packages scheduled to be built", this.packagesToBeBuilt);
+    let countOfPackagesToBeBuilt = this.packagesToBeBuilt.length;
 
     this.childs = DependencyHelper.getChildsOfAllPackages(
-      this.project_directory,this.packages
+      this.project_directory,
+      this.packagesToBeBuilt
     );
     this.parents = DependencyHelper.getParentsOfAllPackages(
-      this.project_directory,this.packages
+      this.project_directory,
+      this.packagesToBeBuilt
     );
 
-    console.log("childs",this.childs);
-    console.log("parents",this.parents);
-
-    this.parentsToBeFulfilled = DependencyHelper.getParentsToBeFullFilled(this.parents,this.packages);
-
-    console.log("parentsToBeFulfilled",this.parentsToBeFulfilled);
-
-    process.exit(0);
+    this.parentsToBeFulfilled = DependencyHelper.getParentsToBeFullFilled(
+      this.parents,
+      this.packagesToBeBuilt
+    );
 
     this.projectConfig = ManifestHelpers.getSFDXPackageManifest(
       this.project_directory
     );
     let sortedBatch = new BatchingTopoSort().sort(this.childs);
-    console.log("Computed Build Order", sortedBatch);
 
     let packageCreationResults: PackageCreationResult[];
 
-    //Do First Package First
-    let promiseForFirstPackage: Promise<PackageCreationResult> = this.packageBuildSchedulerWrappedForBottleNeck(
-      this.packages[0],
-      this.config_file_path,
-      this.devhub_alias,
-      this.wait_time,
-      this.isSkipValidation,
-      ManifestHelpers.getPackageType(this.projectConfig, this.packages[0])
-    );
-    this.packageCreationPromises.push(promiseForFirstPackage);
+    this.limiter.running().then((count) => {
+      console.log("Current Packages being run:", count);
+    });
 
-    //Other packages get added when other packages finish
+    //Do First Level Package First
+    let pushedPackages = [];
+    for (const pkg of sortedBatch[0]) {
+      let priority = 0;
+      let type = ManifestHelpers.getPackageType(this.projectConfig, pkg);
+      if (type == "Unlocked") {
+        priority = 1;
+      } else {
+        priority = 5;
+      }
+
+      let promiseForFirstPackage: Promise<PackageCreationResult> = this.limiter.schedule(
+        { id: pkg, priority: priority },
+        () =>
+          this.packageBuildScheduler(
+            pkg,
+            this.config_file_path,
+            this.devhub_alias,
+            this.wait_time,
+            this.isSkipValidation,
+            type
+          )
+      );
+      pushedPackages.push(pkg);
+      this.packageCreationPromises.push(promiseForFirstPackage);
+    }
+
+    //Remove Pushed Packages from the packages array
+    this.packagesToBeBuilt = this.packagesToBeBuilt.filter((el) => {
+      return !pushedPackages.includes(el);
+    });
+
+    this.packagesInQueue = Array.from(pushedPackages);
+
+    console.log(
+      `${EOL}Packages in queue:{${this.packagesInQueue.length}} `,
+      `${this.packagesInQueue}`
+    );
+    console.log(
+      `Awaiting Dependencies to be resolved:{${this.packagesToBeBuilt.length}} `,
+      `${this.packagesToBeBuilt}`
+    );
+
+    //Other packages get added when each one in the first level finishes
     packageCreationResults = await Promise.all(this.packageCreationPromises);
+
+    console.log(``);
+    console.log(``);
+
+    console.log(
+      `----------------------------------------------------------------------------------------------------`
+    );
+    console.log(
+      `${this.packagesBuilt.length} packages built in ${
+        (Date.now() - executionStartTime) / 1000 / 60
+      } minutes`
+    );
+    console.log(
+      `----------------------------------------------------------------------------------------------------`
+    );
 
     return packageCreationResults;
   }
@@ -114,6 +175,10 @@ export default class BuildImpl {
     packageType: string
   ): Promise<PackageCreationResult> {
     return new Promise((resolve, reject) => {
+      console.log(
+        `${EOL}Package execution initiated for:`,
+        `${sfdx_package}:${packageType}`
+      );
       let packageCreationPromise = this.createPackage(
         packageType,
         sfdx_package,
@@ -124,8 +189,43 @@ export default class BuildImpl {
       );
       packageCreationPromise.then(
         (packageMetadata) => {
+          this.packagesBuilt.push(packageMetadata.package_name);
+          console.log(
+            `${EOL}-- ${packageMetadata.package_name} Package created in ${
+              packageMetadata.creation_details.creation_time / 1000 / 60
+            } minutes`
+          );
+          console.log(`-- Package Details:--`);
+          console.log(
+            `-- Package Version Number:        `,
+            packageMetadata.package_version_number
+          );
+          if (packageMetadata.package_type == "unlocked") {
+            console.log(
+              `-- Package Version Id:             `,
+              packageMetadata.package_version_id
+            );
+            console.log(
+              `-- Package Test Coverage:          `,
+              packageMetadata.test_coverage
+            );
+            console.log(
+              `-- Package Coverage Check Passed:  `,
+              packageMetadata.has_passed_coverage_check
+            );
+          } else if (packageMetadata.package_type == "source") {
+            console.log(
+              `-- Apex In Package:             `,
+              packageMetadata.isApexFound
+            );
+            console.log(
+              `-- Profiles In Package:         `,
+              packageMetadata.isProfilesFound
+            );
+          }
+
           //let all my childs know, I am done building  and remove myself from
-          this.packages.forEach((pkg) => {
+          this.packagesToBeBuilt.forEach((pkg) => {
             const unFullfilledParents = this.parentsToBeFulfilled[pkg].filter(
               (pkg_name) => pkg_name !== packageMetadata.package_name
             );
@@ -133,23 +233,53 @@ export default class BuildImpl {
           });
 
           // Do a second pass and push packages with fulfilled parents to queue
-          this.packages.forEach((pkg) => {
+          let pushedPackages = [];
+          this.packagesToBeBuilt.forEach((pkg) => {
             if (this.parentsToBeFulfilled[pkg].length == 0) {
-              let packageCreationPromise: Promise<PackageCreationResult> = this.packageBuildSchedulerWrappedForBottleNeck(
-                this.packages[0],
-                this.config_file_path,
-                this.devhub_alias,
-                this.wait_time,
-                this.isSkipValidation,
-                this.isDiffCheckEnabled,
-                ManifestHelpers.getPackageType(
-                  this.projectConfig,
-                  this.packages[0]
-                )
+
+              let priority = 0;
+              let type = ManifestHelpers.getPackageType(this.projectConfig, pkg);
+              if (type == "Unlocked") {
+                priority = 1;
+              } else {
+                priority = 5;
+              }
+
+              let packageCreationPromise: Promise<PackageCreationResult> = this.limiter.schedule(
+                { id: pkg,priority:priority},
+                () =>
+                  this.packageBuildScheduler(
+                    pkg,
+                    this.config_file_path,
+                    this.devhub_alias,
+                    this.wait_time,
+                    this.isSkipValidation,
+                    type
+                  )
               );
+              pushedPackages.push(pkg);
+              this.packagesInQueue.push(pkg);
               this.packageCreationPromises.push(packageCreationPromise);
             }
           });
+
+          //Remove Pushed Packages from the packages array
+          this.packagesToBeBuilt = this.packagesToBeBuilt.filter((el) => {
+            return !pushedPackages.includes(el);
+          });
+          this.packagesInQueue = this.packagesInQueue.filter(
+            (pkg_name) => pkg_name !== packageMetadata.package_name
+          );
+
+          console.log(
+            `${EOL}Packages in queue:{${this.packagesInQueue.length}} `,
+            `${this.packagesInQueue}`
+          );
+          console.log(
+            `Awaiting Dependencies to be resolved:{${this.packagesToBeBuilt.length}} `,
+            `${this.packagesToBeBuilt}`
+          );
+
           resolve({
             status: "PackageCreated",
             message: `Package ${packageMetadata.package_name} Created  Sucessfully`,
@@ -158,7 +288,7 @@ export default class BuildImpl {
           });
         },
         (reason: any) => {
-          //let all my childs know that I failed, and there is no point continuing forward
+          console.log(reason);
         }
       );
     });

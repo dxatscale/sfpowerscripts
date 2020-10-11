@@ -1,4 +1,5 @@
 import child_process = require("child_process");
+import Logger from "../utils/Logger";
 import { onExit } from "../utils/OnExit";
 
 export default class PromoteUnlockedPackageImpl {
@@ -7,13 +8,13 @@ export default class PromoteUnlockedPackageImpl {
   public async exec(): Promise<void> {
     
     let command = this.buildExecCommand();
-    console.log("Executing command",command);
+    Logger.log("Executing command",command);
     let child = child_process.exec(command, { cwd: this.project_directory, encoding: "utf8" },(error, stdout, stderr) => {
       if (error) throw error;
     });
 
     child.stdout.on("data", data => {
-      console.log(data.toString());
+      Logger.log(data.toString());
     });
 
     await onExit(child);

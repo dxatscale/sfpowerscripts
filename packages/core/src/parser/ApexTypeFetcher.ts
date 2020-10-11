@@ -13,6 +13,7 @@ import {
   ApexParserListener,
   ThrowingErrorListener
 } from "apex-parser";
+import Logger from "../utils/Logger";
 
 export default class ApexTypeFetcher {
 
@@ -58,8 +59,8 @@ export default class ApexTypeFetcher {
         compilationUnitContext = parser.compilationUnit();
 
       } catch (err) {
-        console.log(`Failed to parse ${clsFile}`);
-        console.log(err);
+        Logger.log(`Failed to parse ${clsFile}`);
+        Logger.log(err);
 
         fileDescriptor["error"] = err;
 
@@ -68,7 +69,7 @@ export default class ApexTypeFetcher {
           this.parseSystemRunAs(err, clsPayload) ||
           this.parseTestMethod(err, clsPayload)
         ) {
-          console.log(`Manually identified test class ${clsFile}`)
+          Logger.log(`Manually identified test class ${clsFile}`)
           apexSortedByType["testClass"].push(fileDescriptor);
         } else {
           apexSortedByType["parseError"].push(fileDescriptor);

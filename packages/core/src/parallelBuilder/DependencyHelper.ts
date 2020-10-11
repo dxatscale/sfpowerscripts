@@ -7,12 +7,14 @@ export default class DependencyHelper {
 
 
   static getParentsToBeFullFilled(packagesWithParents: AdjacentList, packages: string[]): any {
-   for (let [pkgName, parents] of Object.entries(packagesWithParents)) {    
+   for (let [pkgName, parents] of Object.entries(packagesWithParents)) { 
     const fulfilledParents = parents.filter(
       (pkg_name) => packages.includes(pkg_name)
     );
-    parents=fulfilledParents;
+    packagesWithParents[pkgName]=fulfilledParents;
    }
+   
+   return packagesWithParents;
   }
 
 
@@ -23,7 +25,7 @@ export default class DependencyHelper {
     let dag: AdjacentList = {};
 
     for (const sfdx_package of projectConfig["packageDirectories"]) {
-      if(filterByPackages && !filterByPackages.includes(sfdx_package)) { continue; }
+      if(filterByPackages && !filterByPackages.includes(sfdx_package["package"])) { continue; }
       let dependents: string[] = [];
 
       for (const pkg of projectConfig["packageDirectories"]) {
@@ -54,7 +56,7 @@ export default class DependencyHelper {
 
   
     for (const sfdx_package of projectConfig["packageDirectories"]) {
-      if(filterByPackages && !filterByPackages.includes(sfdx_package)) { continue; }
+      if(filterByPackages && !filterByPackages.includes(sfdx_package["package"])) { continue; }
 
       let parents: string[] = [];
         if (sfdx_package["dependencies"] != null) {
