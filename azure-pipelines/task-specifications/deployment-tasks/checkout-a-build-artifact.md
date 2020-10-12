@@ -14,11 +14,11 @@ This task is used to checkout the code to a particular commit id from a 'git' re
 
 {% tabs %}
 {% tab title="Package Type Selection" %}
-![Checkout package artifacts support multiple types of packages](../../../.gitbook/assets/checkout-source-from-a-build-artifact.png)
+![](../../../.gitbook/assets/checkouttask.png)
 {% endtab %}
 
 {% tab title="Repository Provider Selection" %}
-![Repository Provider Selection](../../../.gitbook/assets/checkout-source-from-a-build-artifact-reposiitory-options.png)
+![](../../../.gitbook/assets/checkouttaskprovider.png)
 {% endtab %}
 {% endtabs %}
 

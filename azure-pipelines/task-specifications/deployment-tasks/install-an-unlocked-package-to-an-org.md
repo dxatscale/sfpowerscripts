@@ -19,7 +19,7 @@ description: Deployment Tasks
 
 **Task Snapshot**
 
-![](../../../.gitbook/assets/install-unlocked-package.png)
+![](../../../.gitbook/assets/installunlockedpackage.png)
 
 #### Parameters
 

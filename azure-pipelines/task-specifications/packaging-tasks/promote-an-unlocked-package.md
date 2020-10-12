@@ -12,7 +12,7 @@ This task is used to promote an unlocked package to ‘released’ state before 
 
 **Task Snapshot**
 
-![](../../../.gitbook/assets/promoteunlockedpackagesnapshot.png)
+![](../../../.gitbook/assets/promoteunlockedpackage.png)
 
 #### Parameters
 
