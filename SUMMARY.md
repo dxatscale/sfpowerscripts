@@ -34,6 +34,7 @@
     * [Checkout the project from repository for the associated artifact](azure-pipelines/task-specifications/deployment-tasks/checkout-a-build-artifact.md)
     * [Deploy a Package \(Source Format\) to an Org](azure-pipelines/task-specifications/deployment-tasks/deploy-a-source-repo-to-org.md)
     * [Deploy Destructive Maifest to an org](azure-pipelines/task-specifications/deployment-tasks/deploy-destructive-maifest-to-an-org.md)
+    * [Install a Source Package to an Org](azure-pipelines/task-specifications/deployment-tasks/install-a-source-package-to-an-org.md)
     * [Install an Unlocked Package to an org](azure-pipelines/task-specifications/deployment-tasks/install-an-unlocked-package-to-an-org.md)
   * [Testing Tasks](azure-pipelines/task-specifications/testing-tasks/README.md)
     * [Trigger Apex Test](azure-pipelines/task-specifications/testing-tasks/trigger-apex-test.md)
