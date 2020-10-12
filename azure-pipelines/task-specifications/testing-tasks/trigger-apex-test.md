@@ -2,7 +2,7 @@
 
 | **Task Id** | Version |
 | :--- | :--- |
-| sfpwowerscript-triggerapextest-task | 8.0.2 |
+| sfpwowerscript-triggerapextest-task | 9.0.3 |
 
 This task is used to trigger Apex unit tests, and also captures the results as an artifact and publishes the result in the "tests" tab. Supports "RunAllTestsInPackage" test level, which gives option to validate the code coverage of individual classes in the package.
 
@@ -97,6 +97,7 @@ None
 
 **Changelog**
 
+* 9.0.3 Add RunAllTestsInPackage test level [\#159](https://github.com/Accenture/sfpowerscripts/pull/159)
 * 8.0.2 Validate code coverage of individual classes for Apex test suite
 * 6.0.4 Refactored to use revamped folder structure
 * 4.0.6 Integration of Error Logs with Github

@@ -4,7 +4,7 @@ This task is a wrapper over sfpowerkit:package:dependencies:install command. It 
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpowerscript-installpackagedependencies-task | 4.0.9 |
+| sfpowerscript-installpackagedependencies-task | 5.0.5 |
 
 **Prerequisites**
 

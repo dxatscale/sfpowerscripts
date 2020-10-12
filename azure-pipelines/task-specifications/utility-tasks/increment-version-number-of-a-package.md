@@ -2,7 +2,7 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-incrementversionnumber-task | 9.0.8 |
+| sfpwowerscript-incrementversionnumber-task | 9.0.14 |
 
 This task is used to increment the version number of the package version provided in sfdx-project.json for either an unlocked package or an org based deployment. 
 

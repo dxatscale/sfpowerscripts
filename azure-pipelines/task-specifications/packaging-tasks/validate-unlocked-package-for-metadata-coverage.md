@@ -2,7 +2,7 @@
 
 | Task ID | Latest version |
 | :--- | :--- |
-| sfpwowerscript-validatedxunlockedpackage-task | 4.0.8 |
+| sfpwowerscript-validatedxunlockedpackage-task | 4.0.14 |
 
 This task is used to validate the metadata coverage of components that are part of the unlocked package you are building. Typically there are components in normal development that are not covered by unlocked packaging such as settings. Having this metadata in your project directory results in either these metadata to be skipped or results in an error during the time of packaging. This task checks whether the analyzed  source directory has any metadata that is not covered by unlocked packaging.
 

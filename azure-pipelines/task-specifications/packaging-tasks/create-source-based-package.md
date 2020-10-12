@@ -2,7 +2,7 @@
 
 | Task ID | Latest version |
 | :--- | :--- |
-| sfpwowerscripts-createsourcepackage-task | 12.0.0 |
+| sfpwowerscripts-createsourcepackage-task | 12.0.6 |
 
  At present, Salesforce unlocked package doesn't support packaging  of all  metadata types, also some metadata are not meant to be deployed using unlocked package \(such as org specific entities\). However to deploy such metadata across multiple org's, one has to resort to deploying metadata directly from a source repo using 'metadata api'.  Source based packages is a 'sfpowerscripts' construct  that allows one to have  the primary advantage of packaging \(mainly traceability, and cohesiveness\) to non packaging supported metadata components. 
 
@@ -77,6 +77,10 @@ steps:
 {% endtabs %}
 
 **Changelog**
+
+* 12.0.6 Refactor artifact structure [\#131](https://github.com/Accenture/sfpowerscripts/pull/131),
+
+  Automatically identify test classes and include in artifact metadata [\#160](https://github.com/Accenture/sfpowerscripts/pull/160)
 
 * 10.0.6 Update Core dependency
 * 10.0.1 

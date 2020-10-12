@@ -2,7 +2,7 @@
 
 | Task ID | Latest Version |
 | :--- | :--- |
-| sfpwowerscripts-createunlockedpackage-task | 11.0.6 |
+| sfpwowerscripts-createunlockedpackage-task | 12.0.5 |
 
 This task is used to create a new version of an Unlocked Package. The task can optionally generate a build artifact, containing metadata such as the package ID, name, version, repository URL and the commit ID from which it was generated. The build artifact can then be used in release pipelines to install the associated unlocked package in a Salesforce org. You can read more about unlocked packages [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_dev2gp.htm). 
 
@@ -108,6 +108,7 @@ Please ensure a package is already created before utilizing this task and the pa
 
 **Changelog**
 
+* 12.0.5 Refactor artifact structure [\#131](https://github.com/Accenture/sfpowerscripts/pull/131), resolve package dependencies to exact version [\#155](https://github.com/Accenture/sfpowerscripts/pull/155)
 * 11.0.6 Update Core dependency
 * 8.0.9 Refactored to use revamped folder structure
 * 7.0.2 Support for creation of multiple packages in a single build such as in a MonoRepo

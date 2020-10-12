@@ -2,7 +2,7 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-managescratchorg-task | 8.0.9 |
+| sfpwowerscript-managescratchorg-task | 8.0.15 |
 
 This task is used to create and delete a scratch org and mostly used in a Pull Request validation pipeline. The task is an exact wrapper over the sfdx force:org:create/ sfdx force:org:delete command. The task also features a post execution script which provides maintenance options such as delete the scratch org after all subsequent tasks are completed, maintain the scratch org for the provided number of days and also a ‘do nothing’ option, where the management is left to the end user.
 

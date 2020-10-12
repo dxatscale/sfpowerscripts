@@ -2,7 +2,7 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-validatetestcoveragepackage-task | 4.0.9 |
+| sfpwowerscript-validatetestcoveragepackage-task | 4.0.15 |
 
 This task is used to validate the code coverage of a second generation package.
 

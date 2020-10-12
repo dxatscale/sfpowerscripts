@@ -2,7 +2,7 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-authenticateorg-task | 9.0.8 |
+| sfpwowerscript-authenticateorg-task | 9.0.14 |
 
 This task is used to authenticate against a salesforce org to do further actions. The task supports authentication to org using JWT \(recommended\) or using username/password/security. The org can then further accessed by utilizing the provided alias. It is highly recommended to create a service user while using this task.
 

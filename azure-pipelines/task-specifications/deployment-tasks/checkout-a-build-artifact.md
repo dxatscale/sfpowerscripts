@@ -6,7 +6,7 @@ description: Deployment Helper Task / Release Pipelines
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-checkoutprojectfromartifact-task | 13.3.4 |
+| sfpwowerscript-checkoutprojectfromartifact-task | 14.0.5 |
 
 This task is used to checkout the code to a particular commit id from a 'git' repo as specified in the artifact produced by any  sfpowerscripts packaging tasks. This task is used in a release pipeline to have access to the code  for utilizing [deploying a package \(source format\) to an org](deploy-a-source-repo-to-org.md) task or any other source manipulations. The repo URL and commit id are already specified in the artifact produced by Packaging Tasks. This task at the moment only authenticating a few git  providers with HTTPS access. There is also an option for authenticating the agent with a preferred method before using this function \(.. already authenticate at the agent level\)
 
@@ -26,17 +26,18 @@ This task is used to checkout the code to a particular commit id from a 'git' re
 
 {% tabs %}
 {% tab title="Input Parameters " %}
-Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_ 
 
-* **Select the packaging type of the associated artifact /** _typeOfArtifact_ ****Select the associated artifact that needs to be checked out from the repository, possible values are Source Package \(source\), Delta Package\(delta\) and Unlocked Package \(unlocked\). This parameter is used to drive the other parameters when configuring in classic mode 
-* **Name of the artifact attached to this pipeline that needs to be checked out /** _artifact_ The source alias of the artifact that is attached to this release pipeline.  
 * **Name of the package that is generated as part of the artifact /** _package_
 
   Name of the sfdx package that generated this artifact
 
  
 
-* **Artifact Provider for the attached artifact /** artifactProvider The provider for the particular artifact that is attached to the pipeline, The task supports these possible values  - **Build Artifact** / _BuildArtifact_ ****: If your artifact is the output of a build pipeline, use this provider -  **Azure Artifact** / _AzureArtifact_: If you are using Azure Artifacts to store your artifacts, use this provider 
+* **Path to the directory where artifacts are downloaded** / _artifactDir_
+
+  Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used.
+
 * **Select the version control provider /** _versionControlProvider_  
   The version control provider that hosts the particular repository. Select the appropriate repository type from the drop down \(in UI\) or pass the name of the service connection. You can read more on using service connections  [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml).
 
@@ -66,7 +67,7 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 * **sfpowerscripts\_checked\_out\_path** The path to the directory where the source code is checked out
 
 {% hint style="danger" %}
-If this task is used in a Task Group, the output parameters would not be available, subsequent tasks, the checked out path follow this notion  
+If this task is used in a Task Group, the output parameters would not be available. For subsequent tasks, instead provide the checked out path manually, which follow this format:  
   
 $`(System.ArtifactsDirectory)/<artifact_alias>/<name_of_package>/source`
 {% endhint %}
@@ -86,6 +87,7 @@ When using the option Git which is already authenticate at the agent level, the 
 
 **Changelog**
 
+* 14.0.5 Refactor artifact structure [\#131](https://github.com/Accenture/sfpowerscripts/pull/131), remove the need for artifact source alias and artifact type as input parameters [\#151](https://github.com/Accenture/sfpowerscripts/commit/77f05de9411fc7f5d6fa32b68f3628fb6ef7fafa)
 * 13.3.4 Update Core dependency
 * 13.2.0   -  Added support for git authentication where the agent is already authenticated earlier -   Removed telemetry collection  -  Add support of the task to skipped if there is no artifact for 
 * 11.0.5 Refactored to use revamped folder structure

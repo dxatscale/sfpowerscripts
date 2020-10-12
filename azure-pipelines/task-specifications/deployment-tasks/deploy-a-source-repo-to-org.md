@@ -6,7 +6,7 @@ description: Deployment Tasks
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpowerscript-deploysourcetoorg-task | 9.0.6 |
+| sfpowerscript-deploysourcetoorg-task | 10.0.5 |
 
 This task is used to deploy/validate metadata which is in source format \(newer format\) to any org, be it a scratch org, sandbox or production. The task does the following things.
 
@@ -99,6 +99,7 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 **Changelog**
 
+* 10.0.5 Add ignore warnings and errors input parameters
 * 9.0.6 [\#115](https://github.com/Accenture/sfpowerscripts/pull/115) Print metadata to be deployed in console
 * 7.1.4 Fix bug related to empty folder check
 * 7.0.9 Refactored to use revamped folder structure
