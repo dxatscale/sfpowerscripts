@@ -145,11 +145,10 @@ async function run() {
 
     console.log("Path for the project", sourceDirectory);
     if (!isNullOrUndefined(subdirectory)) {
-      if (fs.existsSync(path.join(sourceDirectory, subdirectory))) {
-        sourceDirectory = path.join(sourceDirectory, subdirectory);
-      } else {
-        throw new Error(`Directory ${sourceDirectory} does not exist`);
-      }
+      sourceDirectory =  path.join(sourceDirectory, subdirectory);
+      if (!fs.existsSync(sourceDirectory)) {
+         throw new Error(`Directory ${sourceDirectory} does not exist`);
+      } 
     }
 
     // Apply Destructive Manifest
