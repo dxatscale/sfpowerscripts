@@ -6,11 +6,13 @@ description: >-
 
 # Generate Changelog \[ALPHA\]
 
-Generates a release change log that summarises artifact versions, work items \(user stories\) and commits that have been introduced in the release. 
-
 | Task ID | Version |
 | :--- | :--- |
 | ​sfpowerscripts-generatechangelog-task | ​1.0.0 |
+
+Generates a release change log that summarises artifact versions, work items \(user stories\) and commits that have been introduced in the release. 
+
+#### 
 
 #### Task Snapshot
 
