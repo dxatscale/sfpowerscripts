@@ -1,33 +1,5 @@
 # Change Log
 
-## Release 16
-
-August 10, 2020 Major
-
-Release 16 mainly features enhancements to the packaging/installation tasks, and the Trigger Apex Test task. There are also bug fixes impacting usability, and the PMD Apex Analysis tab which has been fixed.
-
-**Enhancements**
-
-* [\#90](https://github.com/Accenture/sfpowerscripts/pull/90) Introduce optional artifact directory flag in the CLI
-  * Allows the user to specify the directory to write the artifact metadata
-* [\#98](https://github.com/Accenture/sfpowerscripts/pull/98) Skip installation of unlocked package if it is already installed in the org
-* [\#103](https://github.com/Accenture/sfpowerscripts/pull/103) Show latest 10 tags only in the log output for package diff
-* [\#107](https://github.com/Accenture/sfpowerscripts/pull/107) Add support for the ignore warnings and ignore errors flags, in the Deploy Source task
-* [\#109](https://github.com/Accenture/sfpowerscripts/pull/109) [\#112](https://github.com/Accenture/sfpowerscripts/pull/112) Validate code coverage of individual classes, in the Trigger Apex Test task
-  * New optional flag for validating the code coverage of individual classes, when test level is Apex Test Suite
-  * Specify a package to validate, in order to filter out code coverage of classes belonging to dependencies
-  * Refactored Trigger Apex Test core implementation
-* [\#115](https://github.com/Accenture/sfpowerscripts/pull/115) Output a table of metadata to be deployed, in the Deploy Source task
-  * Refactored Deploy Source task to use utility function for converting from source to mdapi format
-
-**Bug fixes**
-
-* [\#93](https://github.com/Accenture/sfpowerscripts/issues/93) Fix output variable for scratch org username, in the Manage Scratch Org task
-* [\#94](https://github.com/Accenture/sfpowerscripts/issues/94) Artifact is no longer a required input for the Install Unlocked Package task
-* [\#106](https://github.com/Accenture/sfpowerscripts/issues/106) Fix deploy errors not being visible in some cases
-* [\#110](https://github.com/Accenture/sfpowerscripts/pull/110) Fix the lack of info when the package or package version number to increment is missing
-* [\#113](https://github.com/Accenture/sfpowerscripts/pull/113) Fix the PMD Apex Analysis tab which has been down for some time due to non-compatible updates from the vendor. Moved logs to extension document storage and fixed build ID retrieval.
-
 ## Release 15
 
 July 7, 2020 Major

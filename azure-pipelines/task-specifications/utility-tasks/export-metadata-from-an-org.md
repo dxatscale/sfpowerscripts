@@ -2,7 +2,7 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpowerscript-exportsourcefromorg-task | 3.0.8 |
+| sfpowerscript-exportsourcefromorg-task | 3.0.4 |
 
 This task is used to export the complete metadata \(in source format\) from a given org. This task is helpful for daily backups or further analysis of metadata
 
@@ -42,7 +42,6 @@ None
 
 **Changelog**
 
-* 3.0.8 Update Core dependency
 * 3.0.4 Remove telemetry collection
 * 2.0.9 Refactored to use revamped folder structure
 * 1.0.2 Initial Version

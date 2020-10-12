@@ -6,7 +6,7 @@ description: Deployment Tasks
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-deploydestructivemanifest-task | 5.0.4 |
+| sfpwowerscript-deploydestructivemanifest-task | 5.0.0 |
 
   
 This task is a wrapper over sfpowerkit:org:destruct \([link](https://github.com/Accenture/sfpowerkit)\). This is a helper task to delete metadata from an org using path to a destructive changeset \(destructiveChanges.xml\)  or by mentioning the contents in a multiline text field.
@@ -61,7 +61,6 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 **Changelog**
 
-* 5.0.4 Update Core dependency
 * 5.0.0  - Removed Telemetry  Collection - Added option to skip the task on missing destructive manifest file \([\#15](https://github.com/Accenture/sfpowerscripts/issues/15)\)
 * 3.0.9 Refactored to use revamped folder structure
 * 2.0.1 Updated with Telemetry
