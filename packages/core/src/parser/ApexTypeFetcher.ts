@@ -2,7 +2,7 @@ import fs from "fs-extra";
 const path = require("path");
 const glob = require("glob");
 
-import { CommonTokenStream,  ANTLRInputStream } from 'antlr4ts';
+import { CommonTokenStream } from 'antlr4ts';
 import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 
 import ApexTypeListener from "./listeners/ApexTypeListener";
@@ -11,6 +11,7 @@ import {
   ApexLexer,
   ApexParser,
   ApexParserListener,
+  CaseInsensitiveInputStream,
   ThrowingErrorListener
 } from "apex-parser";
 
@@ -48,7 +49,7 @@ export default class ApexTypeFetcher {
       // Parse cls file
       let compilationUnitContext;
       try {
-        let lexer = new ApexLexer(new ANTLRInputStream(clsPayload));
+        let lexer = new ApexLexer(new CaseInsensitiveInputStream(clsFile, clsPayload));
         let tokens: CommonTokenStream  = new CommonTokenStream(lexer);
 
         let parser = new ApexParser(tokens);
@@ -95,7 +96,6 @@ export default class ApexTypeFetcher {
         apexSortedByType["parseError"].push(fileDescriptor);
       }
     }
-
     return apexSortedByType;
   }
 
