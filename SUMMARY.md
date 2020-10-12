@@ -44,7 +44,7 @@
 
 ## CLI
 
-* [Using sfpowerscripts-cli sfdx extension](cli/getting-started.md)
+* [Using sfpowerscripts-cli sfdx plugin](cli/getting-started.md)
 
 ---
 

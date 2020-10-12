@@ -2,9 +2,27 @@
 
 | Task ID | Latest version |
 | :--- | :--- |
-| sfpwowerscripts-createsourcepackage-task | 10.0.6 |
+| sfpwowerscripts-createsourcepackage-task | 12.0.0 |
 
-This task is used to create a build artifact for a package directory  in your project typically to be used for  org based deployment / pre/post metadata installation of an unlocked package or using a hybrid \(org+unlocked development model\), which can then be associated with a release pipeline. You can read about [`checkout artifact task` ](../deployment-tasks/checkout-a-build-artifact.md)to understand further how both are interrelated.
+ At present, Salesforce unlocked package doesn't support packaging  of all  metadata types, also some metadata are not meant to be deployed using unlocked package \(such as org specific entities\). However to deploy such metadata across multiple org's, one has to resort to deploying metadata directly from a source repo using 'metadata api'.  Source based packages is a 'sfpowerscripts' construct  that allows one to have  the primary advantage of packaging \(mainly traceability, and cohesiveness\) to non packaging supported metadata components. 
+
+{% hint style="success" %}
+If you are not yet ready with unlocked packages, however would like to get started into the world of package based development, source package will be your primary starting point. 
+{% endhint %}
+
+This task generates a  build artifact which include the source \(metadata\) which will be deployed using the Install Source Package Task.
+
+{% hint style="danger" %}
+Source Packages are only traceable from an azure pipelines perspective. On your Salesforce org, it will be treated a normal metadata deployment.  
+{% endhint %}
+
+{% hint style="info" %}
+Source Packages like any other metadata deployment requires a unit test coverage of 75% for each classes that is part of the deployment. We recommend you ensure that your package have all the necessary test classes with sufficient coverage for optimal performance. In case it is not possible, switch the flag to 'Deploy via triggering all local tests in the org' in the Install Source Package Task.  
+  
+Please note this can considerably delay deployments considering how the test classes are written in the org
+{% endhint %}
+
+
 
 **Task Snapshot**
 
