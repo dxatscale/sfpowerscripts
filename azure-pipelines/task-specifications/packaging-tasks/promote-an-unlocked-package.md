@@ -22,18 +22,9 @@ This task is used to promote an unlocked package to ‘released’ state before 
 
   The name of the package that is to be promoted to the released state. This name does not have any significant value addition other than being just displayed in the task execution.
 
-* **Package to be promoted from /** _packagepromotedfrom_
+* **Path to the directory where artifacts are downloaded** / _artifactDir_
 
-  This task has three options, ‘**BuildArtifact/** _****BuildArtifact_,’ '**AzureArtifact** / _AzureArtifact_' or ‘**Custom/**_Custom_ ****’.   
-  Choose BuildArtifact if the package artifact was created as part of an Azure Build pipeline, and provide the name of the artifact. The AzureArtifact option is intended for attached artifacts from the Azure Artifacts registry \(e.g. Universal packages\); it also requires the name of the artifact to be passed. Finally, the Custom option allows the package version ID to be passed in as an identifier for the package to be promoted.
-
-* **Package Version ID** / _package\_version\_id_
-
-  When the 'Custom' option is selected for the 'package to be promoted from' field, provide the package version ID of the package to be promoted. 
-
-* **Name of the artifact that is attached to this release pipeline** / _artifact_
-
-  Provide the name of the attached artifact \(Build Artifact or Azure Artifact\).
+  Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used
 
 * **Project directory** / _project\_directory_
 
