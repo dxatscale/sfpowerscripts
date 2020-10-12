@@ -54,7 +54,14 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 * **Validate Deployment, do not deploy /**  _checkonly_
 
-  Enable this for doing a [validate only deployment](https://help.salesforce.com/articleView?id=deploy_monitoring.htm&type=5). Utilize this mechanism for Pull Request against Sandbox to validate the metadata or if you prefer a validate deployment before doing a quick deployment.  
+  Enable this for doing a [validate only deployment](https://help.salesforce.com/articleView?id=deploy_monitoring.htm&type=5). Utilize this mechanism for Pull Request against Sandbox to validate the metadata or if you prefer a validate deployment before doing a quick deployment.
+
+* **Ignore any warning during a deployment** / _ignorewarnings_  
+  Check this field to ignore warnings, default behaviour results in warnings treated as errors
+
+* **Ignore any errors during a deployment** / _ignoreerror_
+
+  Check this field to ignore any errors during deployment, if enabled failed components will be ignored
 
 * **Path to the .validationignore to use during validate only deployment /** _validation\_ignore_ Only enabled when _checkonly_ is enabled , this  is optional field  for specifying a path to .validationignore  \( a file following the same notions of .forceignore af\) that  can be specified  to ignore certain metadata during a validate only deployment. This is needed to overcome certain salesforce quirks, where certain metadata is not allowed for a validate only deployment 
 * **Wait Time  /** wait\_time
