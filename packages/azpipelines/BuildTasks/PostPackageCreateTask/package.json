@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-postcreatepackage-task",
   "description": "sfpowerscripts-postcreatepackage-task",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "private": true,
   "repository": {
     "type": "git",
