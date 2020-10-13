@@ -1,8 +1,5 @@
 import ManifestHelpers from "../manifest/ManifestHelpers";
 
-let fs = require("fs-extra");
-let path = require("path");
-
 export default class DependencyHelper {
 
 
