@@ -1,4 +1,4 @@
-name: Milestone17$(Rev:.r)
+name: Milestone18$(Rev:.r)
 
 pr:
   branches:
@@ -16,7 +16,7 @@ pr:
 variables:
  - group: Tokens
  - name: major
-   value: 17
+   value: 18
 
  - name: minor
    value: $[counter(variables['major'], 200)]
