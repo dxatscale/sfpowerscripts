@@ -24,16 +24,7 @@ export default class Build extends SfpowerscriptsCommand {
 
   public static examples = [
     `$ sfdx sfpowerscripts:Build -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
-    `$ sfdx sfpowerscripts:Build -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
-    `Output variable:`,
-    `sfpowerscripts_package_version_id`,
-    `<refname>_sfpowerscripts_package_version_id`,
-    `sfpowerscripts_artifact_metadata_directory`,
-    `<refname>_sfpowerscripts_artifact_metadata_directory`,
-    `sfpowerscripts_artifact_directory`,
-    `<refname>_sfpowerscripts_artifact_directory`,
-    `sfpowerscripts_package_version_number`,
-    `<refname>_sfpowerscripts_package_version_number`,
+    `$ sfdx sfpowerscripts:Build -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`
   ];
 
   protected static requiresUsername = false;
@@ -78,17 +69,13 @@ export default class Build extends SfpowerscriptsCommand {
     buildnumber: flags.string({
       description: messages.getMessage("waitTimeFlagDescription"),
       default: "1",
-    }),
-    refname: flags.string({
-      description: messages.getMessage("refNameFlagDescription"),
-    }),
+    })
   };
 
   public async execute() {
     try {
       const artifactDirectory: string = this.flags.artifactdir;
       const gittag: boolean = this.flags.gittag;
-      const refname: string = this.flags.refname;
       const repourl: string = this.flags.repourl;
       const config_file_path = this.flags.configfilepath;
       const isSkipValidation: boolean = this.flags.isvalidationtobeskipped;
