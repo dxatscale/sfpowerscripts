@@ -129,6 +129,7 @@ async function run() {
     }
 
     let sourceDirectory;
+    // Get package source directory from sfdx-project.json in sourceDirectoryPath
     if (!isNullOrUndefined(sfdx_package)) {
       sourceDirectory = ManifestHelpers.getSFDXPackageDescriptor(
         artifacts_filepaths[0].sourceDirectoryPath,
@@ -145,7 +146,16 @@ async function run() {
 
     console.log("Path for the project", sourceDirectory);
     if (!isNullOrUndefined(subdirectory)) {
-      sourceDirectory = path.join(sourceDirectory, subdirectory);
+      sourceDirectory =  path.join(sourceDirectory, subdirectory);
+
+      // Check whether the absolute source directory path exists
+      let absSourceDirectory = path.join(
+        artifacts_filepaths[0].sourceDirectoryPath,
+        sourceDirectory
+      );
+      if (!fs.existsSync(absSourceDirectory)) {
+        throw new Error(`Source directory ${absSourceDirectory} does not exist`);
+      }
     }
 
     // Apply Destructive Manifest
