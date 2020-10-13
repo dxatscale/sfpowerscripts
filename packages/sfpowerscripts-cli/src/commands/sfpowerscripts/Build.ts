@@ -97,6 +97,9 @@ export default class Build extends SfpowerscriptsCommand {
       let generatedPackages:PackageMetadata[] = await buildImpl.exec();
 
     
+      console.log(
+        `${EOL}----------------------------------------------------------------------------------------------------`
+      );
 
       for (let generatedPackage of generatedPackages) {
 
@@ -130,6 +133,9 @@ export default class Build extends SfpowerscriptsCommand {
           console.log(error);
         }
       }
+      console.log(
+        `${EOL}----------------------------------------------------------------------------------------------------`
+      );
     } catch (error) {
       console.log(error);
       process.exit(1);
