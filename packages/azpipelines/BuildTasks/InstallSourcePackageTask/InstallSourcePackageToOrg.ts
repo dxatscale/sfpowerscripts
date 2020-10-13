@@ -149,15 +149,12 @@ async function run() {
       sourceDirectory =  path.join(sourceDirectory, subdirectory);
 
       // Check whether the absolute source directory path exists
-      if (
-        !fs.existsSync(
-          path.join(
-            artifacts_filepaths[0].sourceDirectoryPath,
-            sourceDirectory
-          )
-        )
-      ) {
-        throw new Error(`Directory ${sourceDirectory} does not exist`);
+      let absSourceDirectory = path.join(
+        artifacts_filepaths[0].sourceDirectoryPath,
+        sourceDirectory
+      );
+      if (!fs.existsSync(absSourceDirectory)) {
+        throw new Error(`Source directory ${absSourceDirectory} does not exist`);
       }
     }
 
