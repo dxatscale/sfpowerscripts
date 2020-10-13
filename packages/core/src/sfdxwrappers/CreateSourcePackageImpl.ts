@@ -10,14 +10,37 @@ import path = require("path");
 import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
 import Logger from "../utils/Logger";
 const Table = require("cli-table");
+import * as log4js from "log4js";
 
 export default class CreateSourcePackageImpl {
+
+  private packageLogger:log4js.Logger;
+
+
   public constructor(
     private projectDirectory: string,
     private sfdx_package: string,
     private destructiveManifestFilePath: string,
     private packageArtifactMetadata: PackageMetadata
-  ) {}
+  ) {
+
+    let configuration:log4js.Configuration= {
+      appenders: {
+        fileLogger: {
+          type: 'file',
+          filename: `.sfpowerscripts/logs/${sfdx_package}`,
+          layout: {
+            type: 'pattern',
+            pattern: '%r %m%n'},
+          flags:'w'
+        }
+      },
+      categories: {
+        default: { appenders: ['fileLogger'], level: 'all' }
+      }
+    };
+    this.packageLogger= log4js.configure(configuration).getLogger();
+  }
 
   public async exec(): Promise<PackageMetadata> {
     //Only set package type to source if its not provided, delta will be setting it up
@@ -27,16 +50,16 @@ export default class CreateSourcePackageImpl {
     )
       this.packageArtifactMetadata.package_type = "source";
 
-    // Logger.log(
-    //   "--------------Create Source Package---------------------------"
-    // );
-    // Logger.log("Project Directory", this.projectDirectory);
-    // Logger.log("sfdx_package", this.sfdx_package);
-    // Logger.log(
-    //   "destructiveManifestFilePath",
-    //   this.destructiveManifestFilePath
-    // );
-    // Logger.log("packageArtifactMetadata", this.packageArtifactMetadata);
+    Logger.log(
+      "--------------Create Source Package---------------------------",null,this.packageLogger
+    );
+    Logger.log("Project Directory", this.projectDirectory,this.packageLogger);
+    Logger.log("sfdx_package", this.sfdx_package,this.packageLogger);
+    Logger.log(
+      "destructiveManifestFilePath",
+      this.destructiveManifestFilePath,this.packageLogger
+    );
+    Logger.log("packageArtifactMetadata", this.packageArtifactMetadata,this.packageLogger);
 
     let startTime = Date.now();
 
@@ -98,7 +121,7 @@ export default class CreateSourcePackageImpl {
       }
     } else {
       Logger.log(
-        "Proceeding with all packages.. as a particular package was not provided"
+        "Proceeding with all packages.. as a particular package was not provided",null,this.packageLogger
       );
     }
 
@@ -121,6 +144,14 @@ export default class CreateSourcePackageImpl {
       creation_time: elapsedTime,
       timestamp: Date.now(),
     };
+
+    // try
+    // {
+    // log4js.shutdown();
+    // }catch(error)
+    // {} //dont do anything with 
+
+
     return this.packageArtifactMetadata;
   }
 
@@ -144,18 +175,18 @@ export default class CreateSourcePackageImpl {
         classTypes?.testClass?.length > 0) {
         if (classTypes?.parseError?.length > 0) {
 
-          // Logger.log(
-          //   "---------------------------------------------------------------------------------------"
-          // );
-          // Logger.log("Unable to parse these classes to correctly identify test classes, Its not your issue, its ours! Please raise a issue in our repo!");
-         // this.printClassesIdentified(classTypes?.parseError);
+          Logger.log(
+            "---------------------------------------------------------------------------------------",null,this.packageLogger
+          );
+          Logger.log("Unable to parse these classes to correctly identify test classes, Its not your issue, its ours! Please raise a issue in our repo!",null,this.packageLogger);
+         this.printClassesIdentified(classTypes?.parseError);
           this.packageArtifactMetadata.isTriggerAllTests = true;
         }
 
         else {
-         // this.printHintForOptimizedDeployment();
+          this.printHintForOptimizedDeployment();
           this.packageArtifactMetadata.isTriggerAllTests = false;
-         // this.printClassesIdentified(classTypes?.testClass);
+          this.printClassesIdentified(classTypes?.testClass);
           this.packageArtifactMetadata.apexTestClassses = [];
           classTypes?.testClass.forEach(element => {
             this.packageArtifactMetadata.apexTestClassses.push(element.name);
@@ -167,33 +198,33 @@ export default class CreateSourcePackageImpl {
 
   private printEmptyArtifactWarning() {
     Logger.log(
-      "---------------------WARNING! Empty aritfact encountered-------------------------------"
+      "---------------------WARNING! Empty aritfact encountered-------------------------------",null,this.packageLogger
     );
     Logger.log(
-      "Either this folder is empty or the application of .forceignore results in an empty folder"
+      "Either this folder is empty or the application of .forceignore results in an empty folder",null,this.packageLogger
     );
-    Logger.log("Proceeding to create an empty artifact");
+    Logger.log("Proceeding to create an empty artifact",null,this.packageLogger);
     Logger.log(
-      "---------------------------------------------------------------------------------------"
+      "---------------------------------------------------------------------------------------",null,this.packageLogger
     );
   }
 
   private printHintForOptimizedDeployment() {
-    Logger.log(`---------------- OPTION FOR DEPLOYMENT OPTIMIZATION AVAILABLE-----------------------------------`);
+    Logger.log(`---------------- OPTION FOR DEPLOYMENT OPTIMIZATION AVAILABLE-----------------------------------`,null,this.packageLogger);
     Logger.log(`Following apex test classes were identified and can  be used for deploying this package,${EOL}` +
       `in an optimal manner, provided each individual class meets the test coverage requirement of 75% and above${EOL}` +
-      `Ensure each apex class/trigger is validated for coverage in the validation stage`);
-    Logger.log(`-----------------------------------------------------------------------------------------------`);
+      `Ensure each apex class/trigger is validated for coverage in the validation stage`,null,this.packageLogger);
+    Logger.log(`-----------------------------------------------------------------------------------------------`,null,this.packageLogger);
   }
 
   private printSlowDeploymentWarning() {
-    Logger.log(`-------WARNING! YOU MIGHT NOT BE ABLE TO DEPLOY OR WILL HAVE A SLOW DEPLOYMENT---------------`);
+    Logger.log(`-------WARNING! YOU MIGHT NOT BE ABLE TO DEPLOY OR WILL HAVE A SLOW DEPLOYMENT---------------`,null,this.packageLogger);
     Logger.log(
       `This package has apex classes/triggers, however apex test classes were not found, You would not be able to deploy${EOL}` +
       `to production org optimally if each class do not have coverage of 75% and above,We will attempt deploying${EOL}` +
-      `this package by triggering all local tests in the org which could be realy costly in terms of deployment time!${EOL}`
+      `this package by triggering all local tests in the org which could be realy costly in terms of deployment time!${EOL}`,null,this.packageLogger
     );
-    Logger.log(`---------------------------------------------------------------------------------------------`);
+    Logger.log(`---------------------------------------------------------------------------------------------`,null,this.packageLogger);
   }
 
   private getDestructiveChanges(
@@ -226,7 +257,7 @@ export default class CreateSourcePackageImpl {
       }
     } catch (error) {
       Logger.log(
-        "Unable to process destructive Manifest specified in the path or in the project manifest"
+        "Unable to process destructive Manifest specified in the path or in the project manifest",null,this.packageLogger
       );
       destructiveChangesPath = null;
     }
@@ -252,8 +283,8 @@ export default class CreateSourcePackageImpl {
       let item = [fetchedClass.name, fetchedClass.filepath,fetchedClass.error?fetchedClass.error:"N/A"];
       table.push(item);
     }
-    Logger.log("Following apex test classes were identified");
-    Logger.log(table.toString());
+    Logger.log("Following apex test classes were identified",null,this.packageLogger);
+    Logger.log(table.toString(),null,this.packageLogger);
   }
 }
 type DestructiveChanges = {

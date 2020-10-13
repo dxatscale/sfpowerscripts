@@ -44,7 +44,7 @@ export default class MDAPIPackageGenerator {
 
   private static convertSourceToMDAPI(projectDir, sourceDirectory): string {
     try {
-      let mdapiDir: string = `${this.makefolderid(5)}_mdapi`;
+      let mdapiDir: string = `.sfpowerscripts/${this.makefolderid(5)}_mdapi`;
 
       if (!isNullOrUndefined(projectDir))
         Logger.log(
@@ -74,7 +74,7 @@ export default class MDAPIPackageGenerator {
   private static makefolderid(length): string {
     var result = "";
     var characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     var charactersLength = characters.length;
     for (var i = 0; i < length; i++) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));

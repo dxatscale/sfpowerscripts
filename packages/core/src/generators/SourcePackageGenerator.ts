@@ -2,6 +2,7 @@ import { isNullOrUndefined } from "util";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import * as rimraf from "rimraf";
 import Logger from "../utils/Logger";
+import { mkdirpSync } from "fs-extra";
 let fs = require("fs-extra");
 let path = require("path");
 
@@ -18,7 +19,7 @@ export default class SourcePackageGenerator {
     destructiveManifestFilePath?: string
   ): string {
     
-    let artifactDirectory=`${this.makefolderid(5)}_source`, rootDirectory;
+    let artifactDirectory=`.sfpowerscripts/${this.makefolderid(5)}_source`, rootDirectory;
     if (!isNullOrUndefined(projectDirectory)) {
       rootDirectory = projectDirectory;
     } else {
@@ -28,6 +29,8 @@ export default class SourcePackageGenerator {
      if(isNullOrUndefined(packageDirectory))
        packageDirectory="";
 
+    mkdirpSync(artifactDirectory);
+       
     //Ensure the directory is clean
     rimraf.sync(path.join(artifactDirectory, packageDirectory))
 

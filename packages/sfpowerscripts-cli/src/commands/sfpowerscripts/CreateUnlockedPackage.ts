@@ -109,7 +109,7 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           repository_url = repository_url.slice(0, repository_url.length - 1);
         } else repository_url = this.flags.repourl;
 
-        let commit_id = exec("git log --pretty=format:'%H' -n 1", {
+        let commit_id = exec("git log --pretty=format:%H -n 1", {
           silent: true,
         });
 
