@@ -1,9 +1,9 @@
-import { Logger } from "log4js";
+
 
 export default class SFPLogger {
   public static isSupressLogs = false;
 
-  static log(key: any, value?: any, logger?:Logger) {
+  static log(key: any, value?: any, logger?:any) {
     if (logger) {
       if (value)
         try {

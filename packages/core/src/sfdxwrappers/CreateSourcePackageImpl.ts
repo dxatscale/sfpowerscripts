@@ -1,4 +1,4 @@
-import { Logger,configure } from "log4js";
+import { configure } from "log4js";
 import SFPLogger from "../utils/SFPLogger";
 import PackageMetadata from "../PackageMetadata";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
@@ -16,7 +16,7 @@ const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl {
 
-  private packageLogger:Logger;
+  private packageLogger;
 
 
   public constructor(
