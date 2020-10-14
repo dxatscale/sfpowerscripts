@@ -1,4 +1,4 @@
-// import { Logger,Configuration,configure } from "log4js";
+import { Logger,Configuration,configure } from "log4js";
 import SFPLogger from "../utils/SFPLogger";
 import PackageMetadata from "../PackageMetadata";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
@@ -16,7 +16,7 @@ const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl {
 
-  private packageLogger:any;
+  private packageLogger:Logger;
 
 
   public constructor(
@@ -26,22 +26,22 @@ export default class CreateSourcePackageImpl {
     private packageArtifactMetadata: PackageMetadata
   ) {
 
-    // let configuration:Configuration= {
-    //   appenders: {
-    //     fileLogger: {
-    //       type: 'file',
-    //       filename: `.sfpowerscripts/logs/${sfdx_package}`,
-    //       layout: {
-    //         type: 'pattern',
-    //         pattern: '%r %m%n'},
-    //       flags:'w'
-    //     }
-    //   },
-    //   categories: {
-    //     default: { appenders: ['fileLogger'], level: 'all' }
-    //   }
-    // };
-    this.packageLogger= null;
+    let configuration:Configuration= {
+      appenders: {
+        fileLogger: {
+          type: 'file',
+          filename: `.sfpowerscripts/logs/${sfdx_package}`,
+          layout: {
+            type: 'pattern',
+            pattern: '%r %m%n'},
+          flags:'w'
+        }
+      },
+      categories: {
+        default: { appenders: ['fileLogger'], level: 'all' }
+      }
+    };
+    this.packageLogger= configure(configuration).getLogger();
   }
 
   public async exec(): Promise<PackageMetadata> {
