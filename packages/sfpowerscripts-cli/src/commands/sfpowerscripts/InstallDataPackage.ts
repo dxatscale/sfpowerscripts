@@ -18,18 +18,16 @@ export default class InstallDataPackage extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:InstallDataPackage `
+    `$ sfdx sfpowerscripts:InstallDataPackage -n mypackage -u <org>`
   ];
 
 
   protected static flagsConfig = {
-    package: flags.string({char: 'n', description: messages.getMessage('packageFlagDescription')}),
-    targetorg: flags.string({char: 'u', description: messages.getMessage('targetOrgFlagDescription')}),
+    package: flags.string({char: 'n', description: messages.getMessage('packageFlagDescription'), required: true}),
+    targetorg: flags.string({char: 'u', description: messages.getMessage('targetOrgFlagDescription'), required: true}),
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
-    skipifalreadyinstalled: flags.boolean({char: "f",description: messages.getMessage("skipIfAlreadyInstalled")}),
     skiponmissingartifact: flags.boolean({description: messages.getMessage('skipOnMissingArtifactFlagDescription'), dependsOn: ['packageinstalledfrom']}),
-    noprompt: flags.boolean({description: messages.getMessage('noPromptFlagDescription')}),
-    subdirectory: flags.directory({description: messages.getMessage('subdirectoryFlagDescription')}),
+    subdirectory: flags.directory({description: messages.getMessage('subdirectoryFlagDescription')})
   };
 
   protected static requiresUsername = false;
@@ -43,7 +41,6 @@ export default class InstallDataPackage extends SfpowerscriptsCommand {
       let skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;
 
       const artifact_directory: string = this.flags.artifactdir;
-      const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
       const subdirectory: string = this.flags.subdirectory;
 
 
@@ -91,6 +88,10 @@ export default class InstallDataPackage extends SfpowerscriptsCommand {
         )
       }
 
+      let absPackageDirectory: string = path.join(sourceDirectory, packageDirectory);
+      if (!fs.existsSync(absPackageDirectory)) {
+        throw new Error(`Source directory ${absPackageDirectory} does not exist`)
+      }
 
       let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
         targetOrg,

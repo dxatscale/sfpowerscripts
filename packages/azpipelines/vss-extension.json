@@ -120,6 +120,9 @@
             "path": "BuildTasks/IncrementProjectBuildNumberTask"
         },
         {
+            "path": "BuildTasks/InstallDataPackageTask"
+        },
+        {
             "path": "BuildTasks/InstallUnlockedPackageTask"
         },
         {
@@ -385,6 +388,16 @@
             ],
             "properties": {
                 "name": "BuildTasks/IncrementProjectBuildNumberTask"
+            }
+        },
+        {
+            "id": "sfpowerscripts-installdatapackage-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "BuildTasks/InstallDataPackageTask"
             }
         },
         {

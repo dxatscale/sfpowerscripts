@@ -1,11 +1,11 @@
 {
   "id": "f33c11ff-5ea2-4502-be51-31d7aa27de6e",
   "name": "sfpowerscripts-createdatapackage-task",
-  "friendlyName": "Create a data package",
+  "friendlyName": "Create a new version of data package",
   "description": "Creates a versioned artifact from a source directory containing SFDMU-based data (in csv format and export json). The artifact can be consumed by release pipelines, to deploy the data to orgs",
   "helpMarkDown": "",
   "category": "Build",
-  "author": "{{taskauthor}}",
+  "author": "dxatscale@accenture.com",
   "version": {
       "Major": 1,
       "Minor": 0,
@@ -75,5 +75,11 @@
       "Node": {
           "target": "lib/CreateDataPackage.js"
       }
+  },
+  "postjobexecution": {
+    "Node": {
+        "target": "lib/PostPackageTaskCheck.js",
+        "argumentFormat": ""
+    }
   }
 }

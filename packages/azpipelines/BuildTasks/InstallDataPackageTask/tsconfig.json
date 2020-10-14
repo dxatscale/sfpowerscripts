@@ -6,7 +6,6 @@
       "composite": false
   },
   "files": [
-      "CreateDataPackage.ts",
-      "PostPackageTaskCheck.ts"
+      "InstallDataPackage.ts"
   ]
 }

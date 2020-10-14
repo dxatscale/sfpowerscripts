@@ -6,7 +6,7 @@ const path = require("path");
 export default class InstallDataPackageImpl {
   public constructor(
     private targetusername: string,
-    private sourceDirectory: string,
+    private projectDirectory: string,
     private packageDirectory: string
   ) {}
 
@@ -15,7 +15,7 @@ export default class InstallDataPackageImpl {
       let command = this.buildExecCommand();
       let child = child_process.exec(
         command,
-        { cwd: path.resolve(this.sourceDirectory), encoding: "utf8" },
+        { cwd: path.resolve(this.projectDirectory), encoding: "utf8" },
       );
 
       child.stdout.on("data", (data) => {
@@ -30,7 +30,7 @@ export default class InstallDataPackageImpl {
     } catch (err) {
       throw err;
     } finally {
-      let csvIssuesReportFilepath: string = path.join(this.sourceDirectory, this.packageDirectory, `CSVIssuesReport.csv`)
+      let csvIssuesReportFilepath: string = path.join(this.projectDirectory, this.packageDirectory, `CSVIssuesReport.csv`)
       if (fs.existsSync(csvIssuesReportFilepath)) {
         console.log(`\n---------------------WARNING: SFDMU detected CSV issues, verify the following files -------------------------------`);
         console.log(fs.readFileSync(csvIssuesReportFilepath, 'utf8'));

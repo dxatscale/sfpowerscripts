@@ -63,14 +63,13 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
 
       if (runBuild) {
         let commit_id = exec('git log --pretty=format:%H -n 1', {silent:true}).stdout;
-        console.log(commit_id);
+
         let repository_url: string;
         if (this.flags.repourl == null) {
           repository_url = exec('git config --get remote.origin.url', {silent:true});
           // Remove new line '\n' from end of url
           repository_url = repository_url.slice(0,repository_url.length - 1);
         } else repository_url = this.flags.repourl;
-        console.log(repository_url);
 
 
         let packageMetadata:PackageMetadata = {
@@ -78,7 +77,6 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
           package_version_number: version_number,
           sourceVersion: commit_id,
           repository_url:repository_url,
-          package_type:"data",
           apextestsuite: null
         };
         fs.writeFileSync(`test.json`, JSON.stringify(packageMetadata, null, 4));
@@ -90,10 +88,7 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
         );
         packageMetadata = await createDataPackageImpl.exec();
 
-        console.log(JSON.stringify(packageMetadata, function(key, val) {
-          if (key !== "payload")
-              return val;
-         }));
+        console.log(JSON.stringify(packageMetadata));
 
 
        //Generate Artifact

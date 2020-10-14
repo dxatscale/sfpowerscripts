@@ -2,13 +2,7 @@ import PackageMetadata from "../PackageMetadata";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
-import { isNullOrUndefined } from "util";
-import { EOL } from "os";
 
-const fs = require("fs-extra");
-import path = require("path");
-import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
-const Table = require("cli-table");
 
 export default class CreateDataPackageImpl {
   public constructor(
@@ -18,6 +12,8 @@ export default class CreateDataPackageImpl {
   ) {}
 
   public async exec(): Promise<PackageMetadata> {
+    this.packageArtifactMetadata.package_type = "data";
+
     console.log(
       "--------------Create Data Package---------------------------"
     );
