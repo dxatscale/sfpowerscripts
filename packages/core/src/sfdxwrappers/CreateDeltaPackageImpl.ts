@@ -2,7 +2,7 @@ import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 import { isNullOrUndefined } from "util";
 import ManifestHelpers from "../manifest/ManifestHelpers";
-import Logger from "../utils/Logger";
+import SFPLogger from "../utils/SFPLogger";
 const path = require("path");
 const fs = require("fs-extra");
 
@@ -62,7 +62,7 @@ export default class CreateDeltaPackageImpl {
 
     //Command
     let command = this.buildExecCommand();
-    Logger.log("Executing command", command);
+    SFPLogger.log("Executing command", command);
 
     let child = child_process.exec(
       command,
@@ -77,10 +77,10 @@ export default class CreateDeltaPackageImpl {
     );
 
     child.stdout.on("data", (data) => {
-      Logger.log(data.toString());
+      SFPLogger.log(data.toString());
     });
     child.stderr.on("data", (data) => {
-      Logger.log(data.toString());
+      SFPLogger.log(data.toString());
     });
 
     await onExit(child);

@@ -12,7 +12,7 @@ import {
   existsSync
 } from "fs";
 import ignore from "ignore";
-import Logger from "../utils/Logger";
+import SFPLogger from "../utils/SFPLogger";
 
 export default class MDAPIPackageGenerator {
   public static async getMDAPIPackageFromSourceDirectory(
@@ -47,11 +47,11 @@ export default class MDAPIPackageGenerator {
       let mdapiDir: string = `.sfpowerscripts/${this.makefolderid(5)}_mdapi`;
 
       if (!isNullOrUndefined(projectDir))
-        Logger.log(
+        SFPLogger.log(
           `Converting to MDAPI Format ${sourceDirectory} in project directory ${projectDir}`
         );
       else
-        Logger.log(
+        SFPLogger.log(
           `Converting to MDAPI Format ${sourceDirectory} in project directory`
         );
       child_process.execSync(
@@ -63,10 +63,10 @@ export default class MDAPIPackageGenerator {
       if (!isNullOrUndefined(projectDir))
         mdapiDirPath = path.resolve(projectDir, mdapiDir);
       else mdapiDirPath = path.resolve(mdapiDir);
-      Logger.log(`Converting to MDAPI  Format Completed at ${mdapiDirPath}`);
+      SFPLogger.log(`Converting to MDAPI  Format Completed at ${mdapiDirPath}`);
       return mdapiDirPath;
     } catch (error) {
-      Logger.log(`Unable to convert source for directory ${sourceDirectory}`);
+      SFPLogger.log(`Unable to convert source for directory ${sourceDirectory}`);
       throw error;
     }
   }

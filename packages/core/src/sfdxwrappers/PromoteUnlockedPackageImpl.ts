@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import Logger from "../utils/Logger";
+import SFPLogger from "../utils/SFPLogger";
 import { onExit } from "../utils/OnExit";
 
 export default class PromoteUnlockedPackageImpl {
@@ -8,13 +8,13 @@ export default class PromoteUnlockedPackageImpl {
   public async exec(): Promise<void> {
     
     let command = this.buildExecCommand();
-    Logger.log("Executing command",command);
+    SFPLogger.log("Executing command",command);
     let child = child_process.exec(command, { cwd: this.project_directory, encoding: "utf8" },(error, stdout, stderr) => {
       if (error) throw error;
     });
 
     child.stdout.on("data", data => {
-      Logger.log(data.toString());
+      SFPLogger.log(data.toString());
     });
 
     await onExit(child);

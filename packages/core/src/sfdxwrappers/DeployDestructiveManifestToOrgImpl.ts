@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import Logger from "../utils/Logger";
+import SFPLogger from "../utils/SFPLogger";
 import { onExit } from "../utils/OnExit";
 
 export default class DeployDestructiveManifestToOrgImpl {
@@ -20,10 +20,10 @@ export default class DeployDestructiveManifestToOrgImpl {
     );
 
     child.stdout.on("data", data => {
-      Logger.log(data.toString());
+      SFPLogger.log(data.toString());
     });
     child.stderr.on("data", data => {
-      Logger.log(data.toString());
+      SFPLogger.log(data.toString());
     });
 
     await onExit(child);

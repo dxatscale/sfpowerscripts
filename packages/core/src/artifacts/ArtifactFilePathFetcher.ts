@@ -1,6 +1,6 @@
 import path = require("path");
 import fs = require("fs");
-import Logger from "../utils/Logger";
+import SFPLogger from "../utils/SFPLogger";
 const glob = require("glob");
 
 export default class ArtifactFilePathFetcher {
@@ -49,7 +49,7 @@ export default class ArtifactFilePathFetcher {
       });
     }
 
-    Logger.log("Package Metadata File Paths",JSON.stringify(packageMetadataFilepaths));
+    SFPLogger.log("Package Metadata File Paths",JSON.stringify(packageMetadataFilepaths));
 
     for (let packageMetadataFilepath of packageMetadataFilepaths) {
       let sourceDirectory = path.join(
@@ -69,7 +69,7 @@ export default class ArtifactFilePathFetcher {
       });
     }
 
-    Logger.log("Artifact File Paths",JSON.stringify(artifacts_filepaths));
+    SFPLogger.log("Artifact File Paths",JSON.stringify(artifacts_filepaths));
     
     return artifacts_filepaths;
   }
@@ -91,7 +91,7 @@ export default class ArtifactFilePathFetcher {
       artifacts_filepaths.length === 0 &&
       isToSkipOnMissingArtifact
     ) {
-      Logger.log(
+      SFPLogger.log(
         `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${isToSkipOnMissingArtifact}`
       );
       return true;

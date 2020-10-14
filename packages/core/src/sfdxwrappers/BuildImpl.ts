@@ -8,7 +8,7 @@ import CreateUnlockedPackageImpl from "./CreateUnlockedPackageImpl";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import CreateSourcePackageImpl from "./CreateSourcePackageImpl";
 import IncrementProjectBuildNumberImpl from "./IncrementProjectBuildNumberImpl";
-import Logger from "../utils/Logger";
+import SFPLogger from "../utils/SFPLogger";
 import { EOL } from "os";
 import * as rimraf from "rimraf";
 const fs = require("fs-extra");
@@ -62,7 +62,7 @@ export default class BuildImpl {
       this.project_directory
     );
 
-    Logger.isSupressLogs = true;
+   
 
     rimraf.sync(".sfpowerscripts");
 
@@ -83,7 +83,7 @@ export default class BuildImpl {
       }
       this.packagesToBeBuilt = packageToBeBuilt;
     }
-
+    Logger.isSupressLogs = true;
     //List all package that will be built
     console.log("Packages scheduled to be built", this.packagesToBeBuilt);
    

@@ -1,7 +1,7 @@
 import { isNullOrUndefined } from "util";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import * as rimraf from "rimraf";
-import Logger from "../utils/Logger";
+import SFPLogger from "../utils/SFPLogger";
 import { mkdirpSync } from "fs-extra";
 let fs = require("fs-extra");
 let path = require("path");
@@ -72,7 +72,7 @@ export default class SourcePackageGenerator {
         );
       }
       catch (error) {
-        Logger.log("Unable to read/parse destructive manifest, Please check your artifacts, Will result in an error while deploying");
+        SFPLogger.log("Unable to read/parse destructive manifest, Please check your artifacts, Will result in an error while deploying");
       }
 
     }

@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import Logger from "../utils/Logger";
+import SFPLogger from "../utils/SFPLogger";
 import { onExit } from "../utils/OnExit";
 
 export default class CreateScratchOrgImpl {
@@ -19,7 +19,7 @@ export default class CreateScratchOrgImpl {
         if (error)
         { 
           child.stderr.on("data", data => {
-            Logger.log(data.toString());
+            SFPLogger.log(data.toString());
           });
           throw error;
         }
@@ -28,7 +28,7 @@ export default class CreateScratchOrgImpl {
 
     let output = "";
     child.stdout.on("data", data => {
-      Logger.log(data.toString());
+      SFPLogger.log(data.toString());
       output += data.toString();
     });
 

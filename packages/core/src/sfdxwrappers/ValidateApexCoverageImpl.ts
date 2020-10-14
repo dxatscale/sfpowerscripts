@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import Logger from "../utils/Logger";
+import SFPLogger from "../utils/SFPLogger";
 
 export default class ValidateApexCoverageImpl {
   public constructor(private target_org: string, private required_coverage: number) {}
@@ -15,7 +15,7 @@ export default class ValidateApexCoverageImpl {
     if( Number(resultAsJSON.result.coverage) < this.required_coverage)
      throw new Error(`Org Coverage is currently at ${resultAsJSON.result.coverage}, which is less than the required coverage ${ this.required_coverage} `);
 
-    Logger.log(`Org Coverage is currently at ${resultAsJSON.result.coverage}`);
+    SFPLogger.log(`Org Coverage is currently at ${resultAsJSON.result.coverage}`);
   }
 
   public async buildExecCommand(): Promise<string> {

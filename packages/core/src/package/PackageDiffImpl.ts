@@ -4,7 +4,7 @@ import { isNullOrUndefined } from "util";
 const path = require("path");
 import simplegit, { SimpleGit } from "simple-git/promise";
 import { exec } from "shelljs";
-import Logger from "../utils/Logger";
+import SFPLogger from "../utils/SFPLogger";
 
 export default class PackageDiffImpl {
   public constructor(
@@ -25,25 +25,25 @@ export default class PackageDiffImpl {
         "sfdx-project.json"
       );
       git = simplegit(this.project_directory);
-      Logger.log(`Project directory being analysed ${this.project_directory}`);
+      SFPLogger.log(`Project directory being analysed ${this.project_directory}`);
     } else {
       project_config_path = "sfdx-project.json";
       git = simplegit();
-      Logger.log(`Project directory being analysed ${process.cwd()}`);
+      SFPLogger.log(`Project directory being analysed ${process.cwd()}`);
     }
 
     let project_json = JSON.parse(fs.readFileSync(project_config_path));
 
     for (let dir of project_json["packageDirectories"]) {
       if (this.sfdx_package == dir.package) {
-        Logger.log(
+        SFPLogger.log(
           `Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`
         );
 
         let tag = await this.getLatestTag(git, this.sfdx_package);
 
         if (tag) {
-          Logger.log(`\nUtilizing tag ${tag} for ${this.sfdx_package}`);
+          SFPLogger.log(`\nUtilizing tag ${tag} for ${this.sfdx_package}`);
 
           // Get the list of modified files between the tag and HEAD refs
           let gitDiffResult: string = await git.diff([
@@ -65,21 +65,21 @@ export default class PackageDiffImpl {
             .filter(modified_files);
 
           if (!isNullOrUndefined(config_file_path))
-            Logger.log(`Checking for changes to ${config_file_path}`);
+            SFPLogger.log(`Checking for changes to ${config_file_path}`);
 
-          Logger.log(`Checking for changes in source directory '${dir.path}'`);
+          SFPLogger.log(`Checking for changes in source directory '${dir.path}'`);
           // From the filtered list of modified files, check whether the package has been modified
           for (let filename of modified_files) {
             if (
                 filename.includes(`${dir.path}`) ||
                 filename == config_file_path
             ) {
-                Logger.log(`Found change in ${filename}`);
+                SFPLogger.log(`Found change in ${filename}`);
                 return true;
             }
           }
 
-          Logger.log(`Checking for changes to package version number in sfdx-project.json`);
+          SFPLogger.log(`Checking for changes to package version number in sfdx-project.json`);
 
           return await this.isPackageVersionChanged(
             git,
@@ -87,7 +87,7 @@ export default class PackageDiffImpl {
             dir.versionNumber
           );
         } else {
-          Logger.log(
+          SFPLogger.log(
             `Tag missing for ${this.sfdx_package}...marking package for build anyways`
           );
           return true;
@@ -113,11 +113,11 @@ export default class PackageDiffImpl {
       sfdx_package,
       tags
     );
-    Logger.log("Analysing tags:");
+    SFPLogger.log("Analysing tags:");
     if (tagsPointingToBranch.length > 10) {
-      Logger.log(tagsPointingToBranch.slice(-10).toString().replace(/,/g, "\n"));
+      SFPLogger.log(tagsPointingToBranch.slice(-10).toString().replace(/,/g, "\n"));
     } else {
-      Logger.log(tagsPointingToBranch.toString().replace(/,/g, "\n"));
+      SFPLogger.log(tagsPointingToBranch.toString().replace(/,/g, "\n"));
     }
 
     let latestTag = tagsPointingToBranch.pop(); // Select latest tag
@@ -179,7 +179,7 @@ export default class PackageDiffImpl {
     }
 
     if ( packageVersionHead != packageVersionLatestTag) {
-        Logger.log(
+        SFPLogger.log(
             `Found change in package version number ${packageVersionLatestTag} -> ${packageVersionHead}`
         );
         return true;

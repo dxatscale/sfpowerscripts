@@ -5,12 +5,12 @@ import PackageMetadata from "../PackageMetadata";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
-import Logger from "../utils/Logger";
-import log4js=require("log4js");
+import SFPLogger from "../utils/SFPLogger";
+import { Logger,Configuration,configure } from "log4js";
 
 export default class CreateUnlockedPackageImpl {
 
-   private packageLogger:log4js.Logger;
+   private packageLogger:Logger;
  
 
   public constructor(
@@ -26,7 +26,7 @@ export default class CreateUnlockedPackageImpl {
     private isSkipValidation: boolean,
     private packageArtifactMetadata: PackageMetadata
   ) {
-    let configuration:log4js.Configuration= {
+    let configuration:Configuration= {
       appenders: {
         fileLogger: {
           type: 'file',
@@ -41,7 +41,7 @@ export default class CreateUnlockedPackageImpl {
         default: { appenders: ['fileLogger'], level: 'all' }
       }
     };
-    this.packageLogger= log4js.configure(configuration).getLogger();
+    this.packageLogger= configure(configuration).getLogger();
   }
 
   public async exec(): Promise<PackageMetadata> {
@@ -54,7 +54,7 @@ export default class CreateUnlockedPackageImpl {
     );
 
     let packageDirectory: string = packageDescriptor["path"];
-    Logger.log("Package Directory", packageDirectory,this.packageLogger);
+    SFPLogger.log("Package Directory", packageDirectory,this.packageLogger);
 
    //Resolve the package dependencies
     this.resolvePackageDependencies(packageDescriptor);
@@ -75,18 +75,15 @@ export default class CreateUnlockedPackageImpl {
 
    
     let command = this.buildExecCommand();
-    Logger.log("Package Creation Command", command,this.packageLogger);
+    SFPLogger.log("Package Creation Command", command,this.packageLogger);
     let child = child_process.exec(
       command,
-      { cwd: this.project_directory, encoding: "utf8" },
-      (error, stdout, stderr) => {
-        if (error) throw error;
-      }
+      { cwd: this.project_directory, encoding: "utf8" }
     );
 
     let output = "";
     child.stdout.on("data", (data) => {
-      Logger.log(data.toString(),null,this.packageLogger);
+      SFPLogger.log(data.toString(),null,this.packageLogger);
       output += data.toString();
     });
 
@@ -96,7 +93,7 @@ export default class CreateUnlockedPackageImpl {
     ).result.SubscriberPackageVersionId;
 
     //Get the full details on the package
-    Logger.log("Fetching Version Number and Coverage details",null,this.packageLogger);
+    SFPLogger.log("Fetching Version Number and Coverage details",null,this.packageLogger);
     let pkgInfoResultAsJSON = child_process.execSync(
       this.buildInfoCommand(this.packageArtifactMetadata.package_version_id),
       {
@@ -105,7 +102,7 @@ export default class CreateUnlockedPackageImpl {
       }
     );
 
-     Logger.log("Package Info Fetched", pkgInfoResultAsJSON,this.packageLogger);
+     SFPLogger.log("Package Info Fetched", pkgInfoResultAsJSON,this.packageLogger);
 
     let pkgInfoResult = JSON.parse(pkgInfoResultAsJSON);
     this.packageArtifactMetadata.isDependencyValidated = this.isSkipValidation;
@@ -144,7 +141,7 @@ export default class CreateUnlockedPackageImpl {
   }
 
   private resolvePackageDependencies(packageDescriptor: any) {
-   Logger.log("Resolving project dependencies",null,this.packageLogger);
+   SFPLogger.log("Resolving project dependencies",null,this.packageLogger);
     let resolveResult;
     if (this.isSkipValidation) {
       let resolveResult;
@@ -159,7 +156,7 @@ export default class CreateUnlockedPackageImpl {
         { cwd: this.project_directory, encoding: "utf8" }
       );
     }
-    Logger.log(resolveResult,null,this.packageLogger);
+    SFPLogger.log(resolveResult,null,this.packageLogger);
   }
 
   private buildExecCommand(): string {
