@@ -126,6 +126,9 @@
             "path": "BuildTasks/InstallSourcePackageTask"
         },
         {
+            "path": "BuildTasks/CreateDataPackageTask"
+        },
+        {
             "path": "BuildTasks/CreateSourcePackageTask"
         },
         {
@@ -402,6 +405,16 @@
             ],
             "properties": {
                 "name": "BuildTasks/InstallSourcePackageTask"
+            }
+        },
+        {
+            "id": "sfpowerscripts-createdatapackage-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "BuildTasks/CreateDataPackageTask"
             }
         },
         {

@@ -16,25 +16,25 @@ export default class InstallDataPackageImpl {
       let child = child_process.exec(
         command,
         { cwd: path.resolve(this.sourceDirectory), encoding: "utf8" },
-        (error, stdout, stderr) => {
-        if (error) {
-          throw error;
-        }
-      });
+      );
 
       child.stdout.on("data", (data) => {
         console.log(data.toString());
       });
 
+      child.stderr.on("data", (data) => {
+        console.log(data.toString());
+      });
+
       await onExit(child);
     } catch (err) {
+      throw err;
+    } finally {
       let csvIssuesReportFilepath: string = path.join(this.sourceDirectory, this.packageDirectory, `CSVIssuesReport.csv`)
       if (fs.existsSync(csvIssuesReportFilepath)) {
-        console.log(`CSV issues detected:`);
+        console.log(`\n---------------------WARNING: SFDMU detected CSV issues, verify the following files -------------------------------`);
         console.log(fs.readFileSync(csvIssuesReportFilepath, 'utf8'));
       }
-
-      throw err;
     }
   }
 

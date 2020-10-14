@@ -6,6 +6,7 @@
     "packages/azpipelines/BuildTasks/AnalyzeWithPMDTask",
     "packages/azpipelines/BuildTasks/AuthenticateOrgTaskCurrent",
     "packages/azpipelines/BuildTasks/CheckoutProjectFromArtifactTask",
+    "packages/azpipelines/BuildTasks/CreateDataPackageTask",
     "packages/azpipelines/BuildTasks/CreateDeltaPackageTask",
     "packages/azpipelines/BuildTasks/CreateSourcePackageTask",
     "packages/azpipelines/BuildTasks/CreateUnlockedPackageTask",

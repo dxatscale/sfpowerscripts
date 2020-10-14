@@ -43,6 +43,9 @@ export default class CreateDataPackageImpl {
       ]?.split(",");
     }
 
+    if (MDAPIPackageGenerator.isEmptyFolder(this.projectDirectory,packageDirectory)) {
+      this.printEmptyArtifactWarning();
+    }
 
     //Get Artifact Detailes
     let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
