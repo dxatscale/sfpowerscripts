@@ -1,3 +1,5 @@
+// import { Logger,Configuration,configure } from "log4js";
+import SFPLogger from "../utils/SFPLogger";
 import PackageMetadata from "../PackageMetadata";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ManifestHelpers from "../manifest/ManifestHelpers";
@@ -8,14 +10,13 @@ import { EOL } from "os";
 const fs = require("fs-extra");
 import path = require("path");
 import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
-import SFPLogger from "../utils/SFPLogger";
 const Table = require("cli-table");
-import { Logger,Configuration,configure } from "log4js";
+
 
 
 export default class CreateSourcePackageImpl {
 
-  private packageLogger:Logger;
+  private packageLogger:any;
 
 
   public constructor(
@@ -25,22 +26,22 @@ export default class CreateSourcePackageImpl {
     private packageArtifactMetadata: PackageMetadata
   ) {
 
-    let configuration:Configuration= {
-      appenders: {
-        fileLogger: {
-          type: 'file',
-          filename: `.sfpowerscripts/logs/${sfdx_package}`,
-          layout: {
-            type: 'pattern',
-            pattern: '%r %m%n'},
-          flags:'w'
-        }
-      },
-      categories: {
-        default: { appenders: ['fileLogger'], level: 'all' }
-      }
-    };
-    this.packageLogger= configure(configuration).getLogger();
+    // let configuration:Configuration= {
+    //   appenders: {
+    //     fileLogger: {
+    //       type: 'file',
+    //       filename: `.sfpowerscripts/logs/${sfdx_package}`,
+    //       layout: {
+    //         type: 'pattern',
+    //         pattern: '%r %m%n'},
+    //       flags:'w'
+    //     }
+    //   },
+    //   categories: {
+    //     default: { appenders: ['fileLogger'], level: 'all' }
+    //   }
+    // };
+    this.packageLogger= null;
   }
 
   public async exec(): Promise<PackageMetadata> {
