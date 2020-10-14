@@ -6,7 +6,7 @@ import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import SFPLogger from "../utils/SFPLogger";
-import { Logger,Configuration,configure } from "log4js";
+import { Logger,configure } from "log4js";
 
 export default class CreateUnlockedPackageImpl {
 
@@ -26,7 +26,7 @@ export default class CreateUnlockedPackageImpl {
     private isSkipValidation: boolean,
     private packageArtifactMetadata: PackageMetadata
   ) {
-    let configuration:Configuration= {
+    let configuration = {
       appenders: {
         fileLogger: {
           type: 'file',

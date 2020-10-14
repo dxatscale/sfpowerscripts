@@ -1,4 +1,4 @@
-import { Logger,Configuration,configure } from "log4js";
+import { Logger,configure } from "log4js";
 import SFPLogger from "../utils/SFPLogger";
 import PackageMetadata from "../PackageMetadata";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
@@ -26,7 +26,7 @@ export default class CreateSourcePackageImpl {
     private packageArtifactMetadata: PackageMetadata
   ) {
 
-    let configuration:Configuration= {
+    let configuration = {
       appenders: {
         fileLogger: {
           type: 'file',
