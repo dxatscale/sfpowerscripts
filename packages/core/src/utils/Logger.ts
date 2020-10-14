@@ -1,4 +1,4 @@
-import * as log4js from "log4js";
+import log4js=require("log4js");
 
 export default class Logger {
   public static isSupressLogs = false;

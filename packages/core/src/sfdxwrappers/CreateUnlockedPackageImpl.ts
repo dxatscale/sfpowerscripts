@@ -6,7 +6,7 @@ import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import Logger from "../utils/Logger";
-import * as log4js from "log4js";
+import log4js=require("log4js");
 
 export default class CreateUnlockedPackageImpl {
 

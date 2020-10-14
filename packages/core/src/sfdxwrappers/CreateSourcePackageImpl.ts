@@ -10,9 +10,7 @@ import path = require("path");
 import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
 import Logger from "../utils/Logger";
 const Table = require("cli-table");
-console.log("test");
-import * as log4js from "log4js";
-console.log("test2");
+import log4js=require("log4js");
 
 export default class CreateSourcePackageImpl {
 
