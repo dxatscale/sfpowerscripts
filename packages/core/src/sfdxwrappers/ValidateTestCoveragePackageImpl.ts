@@ -1,4 +1,5 @@
 import child_process = require("child_process");
+import SFPLogger from "../utils/SFPLogger";
 
 export default class ValidateTestCoveragePackageImpl {
 
@@ -13,7 +14,7 @@ export default class ValidateTestCoveragePackageImpl {
     if( Number(result.result.coverage) < this.required_coverage)
      throw new Error(`Package Code Coverage is currently at ${result.result.coverage}, which is less than the required coverage ${ this.required_coverage} `);
 
-    console.log(`Package Code Coverage is currently at ${result.result.coverage}`);
+    SFPLogger.log(`Package Code Coverage is currently at ${result.result.coverage}`);
   }
 
   public async buildExecCommand(): Promise<string> {

@@ -5,6 +5,7 @@ import { extract } from "../utils/Extract";
 
 import path = require("path");
 import fs = require("fs-extra");
+import SFPLogger from "../utils/SFPLogger";
 
 export default class ExportSourceFromAnOrgImpl {
   public constructor(
@@ -24,10 +25,10 @@ export default class ExportSourceFromAnOrgImpl {
     let child = child_process.exec(command, { encoding: "utf8" });
 
     child.stdout.on("data", data => {
-      console.log(data.toString());
+      SFPLogger.log(data.toString());
     });
     child.stderr.on("data", data => {
-      console.log(data.toString());
+      SFPLogger.log(data.toString());
     });
 
     await onExit(child);
@@ -38,10 +39,10 @@ export default class ExportSourceFromAnOrgImpl {
     child = child_process.exec(command, { encoding: "utf8" });
 
     child.stdout.on("data", data => {
-      console.log(data.toString());
+      SFPLogger.log(data.toString());
     });
     child.stderr.on("data", data => {
-      console.log(data.toString());
+      SFPLogger.log(data.toString());
     });
     await onExit(child);
 
@@ -76,8 +77,8 @@ export default class ExportSourceFromAnOrgImpl {
     if (this.source_directory)
       command += ` -o ${path.join(this.source_directory, "package.xml")}`;
 
-    console.log("Generated Command");
-    console.log(command);
+    SFPLogger.log("Generated Command");
+    SFPLogger.log(command);
 
     return command;
   }
@@ -89,8 +90,8 @@ export default class ExportSourceFromAnOrgImpl {
 
     command += ` -r  ${path.join(this.source_directory)}`;
 
-    console.log("Generated Command");
-    console.log(command);
+    SFPLogger.log("Generated Command");
+    SFPLogger.log(command);
 
     return command;
   }

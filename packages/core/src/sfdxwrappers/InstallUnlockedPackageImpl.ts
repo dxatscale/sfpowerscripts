@@ -3,6 +3,7 @@ import { isNullOrUndefined } from "util";
 import { onExit } from "../utils/OnExit";
 import PackageMetadata from "../PackageMetadata";
 import ManifestHelpers from "../manifest/ManifestHelpers";
+import SFPLogger from "../utils/SFPLogger";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -37,13 +38,13 @@ export default class InstallUnlockedPackageImpl {
       });
 
       child.stdout.on("data", (data) => {
-        console.log(data.toString());
+        SFPLogger.log(data.toString());
       });
 
       await onExit(child);
       return PackageInstallationResult.Succeeded;
     } else {
-      console.log("Skipping Package Installation")
+      SFPLogger.log("Skipping Package Installation")
       return PackageInstallationResult.Skipped
     }
   }
@@ -60,13 +61,13 @@ export default class InstallUnlockedPackageImpl {
     if (!isNullOrUndefined(this.options["installationkey"]))
       command += ` --installationkey=${this.options["installationkey"]}`;
 
-    console.log(`Generated Command ${command}`);
+    SFPLogger.log(`Generated Command ${command}`);
     return command;
   }
 
   private checkWhetherPackageIsIntalledInOrg(): boolean {
     try {
-      console.log(`Checking Whether Package with ID ${this.package_version_id} is installed in  ${this.targetusername}`)
+      SFPLogger.log(`Checking Whether Package with ID ${this.package_version_id} is installed in  ${this.targetusername}`)
       let command = `sfdx sfpowerkit:package:version:info  -u ${this.targetusername} --json`;
       let result = JSON.parse(child_process.execSync(command).toString());
       if (result.status == 0) {
@@ -76,7 +77,7 @@ export default class InstallUnlockedPackageImpl {
           return true;
         });
         if (packageFound) {
-          console.log(
+          SFPLogger.log(
             "Package To be installed was found in the target org",
             packageFound
           );
@@ -84,7 +85,7 @@ export default class InstallUnlockedPackageImpl {
         }
       }
     } catch (error) {
-      console.log(
+      SFPLogger.log(
         "Unable to check whether this package is installed in the target org"
       );
       return false;

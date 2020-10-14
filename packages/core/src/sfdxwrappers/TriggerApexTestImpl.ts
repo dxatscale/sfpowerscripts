@@ -6,6 +6,7 @@ import path = require("path");
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import ApexTypeFetcher, { ApexSortedByType } from "../parser/ApexTypeFetcher";
 import ManifestHelpers from "../manifest/ManifestHelpers";
+import SFPLogger from "../utils/SFPLogger";
 const Table = require("cli-table");
 
 export default class TriggerApexTestImpl {
@@ -63,7 +64,7 @@ export default class TriggerApexTestImpl {
           return test_result;
         }
     } finally {
-      console.log(output);
+      SFPLogger.log(output);
     }
 
     let test_report_json;
@@ -74,7 +75,7 @@ export default class TriggerApexTestImpl {
         )
         .toString();
 
-      console.log('test_id',test_id);
+      SFPLogger.log('test_id',test_id);
       test_result.id = test_id;
 
       let test_report_json_file = fs
@@ -175,12 +176,12 @@ export default class TriggerApexTestImpl {
       command += ` -s ${this.test_options["apextestsuite"]}`;
     }
 
-    console.log(`Generated Command: ${command}`);
+    SFPLogger.log(`Generated Command: ${command}`);
     return command;
   }
 
   private async validateClassCodeCoverage(): Promise<{name: string, coveredPercent: number}[]>  {
-    console.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
+    SFPLogger.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
     let classesWithInvalidCoverage: {name: string, coveredPercent: number}[] = [];
 
     let mdapiPackage: {mdapiDir: string, manifest} = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
@@ -327,7 +328,7 @@ export default class TriggerApexTestImpl {
             // Filter out undetermined classes that failed to parse
             for (let parseError of this.apexSortedByType["parseError"]) {
               if (parseError["name"] === packageClass) {
-                console.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
+                SFPLogger.log(`Skipping coverage validation for ${packageClass}, unable to determine identity of class`);
                 return false;
               }
             }
@@ -361,7 +362,7 @@ export default class TriggerApexTestImpl {
     classesWithInvalidCoverage.forEach( (classWithInvalidCoverage) => {
       table.push([classWithInvalidCoverage.name, classWithInvalidCoverage.coveredPercent]);
     })
-    console.log(`The following classes do not satisfy the ${this.test_options["coverageThreshold"]}% code coverage requirement:`);
-    console.log(table.toString());
+    SFPLogger.log(`The following classes do not satisfy the ${this.test_options["coverageThreshold"]}% code coverage requirement:`);
+    SFPLogger.log(table.toString());
   }
 }
