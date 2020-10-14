@@ -12,6 +12,7 @@ import Logger from "../utils/Logger";
 const Table = require("cli-table");
 console.log("test");
 import * as log4js from "log4js";
+console.log("test2");
 
 export default class CreateSourcePackageImpl {
 
