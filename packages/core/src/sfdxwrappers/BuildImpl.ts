@@ -83,7 +83,7 @@ export default class BuildImpl {
       }
       this.packagesToBeBuilt = packageToBeBuilt;
     }
-    Logger.isSupressLogs = true;
+    SFPLogger.isSupressLogs = true;
     //List all package that will be built
     console.log("Packages scheduled to be built", this.packagesToBeBuilt);
    

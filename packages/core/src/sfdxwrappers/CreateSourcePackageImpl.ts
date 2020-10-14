@@ -15,7 +15,7 @@ import { Logger,Configuration,configure } from "log4js";
 
 export default class CreateSourcePackageImpl {
 
-  private packageLogger:log4js.Logger;
+  private packageLogger:Logger;
 
 
   public constructor(
