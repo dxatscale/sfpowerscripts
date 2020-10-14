@@ -41,8 +41,7 @@ async function run() {
         package_name: sfdx_package,
         package_version_number: version_number,
         sourceVersion: commitId,
-        repository_url: repositoryUrl,
-        apextestsuite:null
+        repository_url: repositoryUrl
       };
 
 
@@ -66,11 +65,11 @@ async function run() {
 
       tl.setVariable("sfpowerscripts_package_version_number", version_number);
       tl.setVariable(
-        "sfpowerscripts_source_package_metadata_path",
+        "sfpowerscripts_data_package_metadata_path",
         artifact.artifactMetadataFilePath
       );
       tl.setVariable(
-        "sfpowerscripts_source_package_path",
+        "sfpowerscripts_data_package_path",
         artifact.artifactSourceDirectory
       );
 

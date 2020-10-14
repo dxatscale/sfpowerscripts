@@ -64,7 +64,7 @@
     }
   ],
   "execution": {
-      "Node": {
+      "Node10": {
           "target": "lib/InstallDataPackageTask/InstallDataPackage.js"
       }
   }

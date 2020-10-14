@@ -76,11 +76,10 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
           package_name: sfdx_package,
           package_version_number: version_number,
           sourceVersion: commit_id,
-          repository_url:repository_url,
-          apextestsuite: null
+          repository_url:repository_url
         };
-        fs.writeFileSync(`test.json`, JSON.stringify(packageMetadata, null, 4));
-        //Convert to MDAPI
+
+
         let createDataPackageImpl = new CreateDataPackageImpl(
           null,
           sfdx_package,
@@ -94,14 +93,14 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
        //Generate Artifact
         let artifact = await ArtifactGenerator.generateArtifact(sfdx_package,process.cwd(),artifactDirectory,packageMetadata);
 
-        console.log(`Created source package ${sfdx_package}_sfpowerscripts_artifact`);
+        console.log(`Created data package ${sfdx_package}_sfpowerscripts_artifact`);
 
         if (this.flags.gittag) {
           exec(`git config --global user.email "sfpowerscripts@dxscale"`);
           exec(`git config --global user.name "sfpowerscripts"`);
           let tagname = `${sfdx_package}_v${version_number}`;
           console.log(`Creating tag ${tagname}`);
-          exec(`git tag -a -m "${sfdx_package} Source Package ${version_number}" ${tagname} HEAD`, {silent:false});
+          exec(`git tag -a -m "${sfdx_package} Data Package ${version_number}" ${tagname} HEAD`, {silent:false});
         }
 
         console.log("\nOutput variables:");

@@ -46,8 +46,7 @@ async function run() {
         package_name: sfdx_package,
         package_version_number: version_number,
         sourceVersion: commitId,
-        repository_url: repositoryUrl,
-        apextestsuite:null
+        repository_url: repositoryUrl
       };
 
       //Convert to MDAPI

@@ -63,21 +63,21 @@
         "description": "The version number of the package that was created"
     },
     {
-        "name": "sfpowerscripts_source_package_metadata_path",
+        "name": "sfpowerscripts_data_package_metadata_path",
         "description": "The path to the metadata artifact  created by this task"
     },
     {
-        "name": "sfpowerscripts_source_package_path",
-        "description": "The path to source artifact built by this task"
+        "name": "sfpowerscripts_data_package_path",
+        "description": "The path to data pacakge artifact built by this task"
     }
 ],
   "execution": {
-      "Node": {
+      "Node10": {
           "target": "lib/CreateDataPackage.js"
       }
   },
   "postjobexecution": {
-    "Node": {
+    "Node10": {
         "target": "lib/PostPackageTaskCheck.js",
         "argumentFormat": ""
     }
