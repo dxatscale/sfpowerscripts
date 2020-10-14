@@ -1,4 +1,5 @@
 import child_process = require("child_process");
+import SFPLogger from "../utils/SFPLogger";
 import { onExit } from "../utils/OnExit";
 
 export default class ReconcileProfileAgainstOrgImpl {
@@ -19,10 +20,10 @@ export default class ReconcileProfileAgainstOrgImpl {
     );
 
     child.stdout.on("data", data => {
-      console.log(data.toString());
+      SFPLogger.log(data.toString());
     });
     child.stderr.on("data", data => {
-      console.log(data.toString());
+      SFPLogger.log(data.toString());
     });
 
     await onExit(child);

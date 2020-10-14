@@ -2,6 +2,7 @@ import ManifestHelpers from "../manifest/ManifestHelpers";
 import simplegit, { SimpleGit, LogOptions } from "simple-git/promise";
 import { ListLogSummary } from "simple-git/typings/response";
 import { Changelog } from "./interfaces/GenericChangelogInterfaces";
+import SFPLogger from "../utils/SFPLogger";
 
 /**
  * A class for generating a changelog between two commits
@@ -30,8 +31,8 @@ export default class GeneratePackageChangelog {
               this.sfdx_package
           );
         } catch (err) {
-          console.log(err);
-          console.log(`Unable to find descriptor for package ${this.sfdx_package}`);
+          SFPLogger.log(err);
+          SFPLogger.log(`Unable to find descriptor for package ${this.sfdx_package}`);
         }
 
         let revFrom: string;

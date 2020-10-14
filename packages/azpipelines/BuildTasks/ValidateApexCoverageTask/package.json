@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-validateapextestcoverage-task",
   "description": "sfpowerscripts-validateapextestcoverage-task",
-  "version": "4.0.15",
+  "version": "4.0.16",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^2.1.6",
+    "@dxatscale/sfpowerscripts.core": "^3.0.0",
     "azure-pipelines-task-lib": "^2.8.0"
   }
 }

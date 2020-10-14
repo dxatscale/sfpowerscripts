@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 12,
+        "Major": 13,
         "Minor": 0,
-        "Patch": 7
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -72,12 +72,12 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/CreateSourcePackage.js"
         }
     },
     "postjobexecution": {
-        "Node": {
+        "Node10": {
             "target": "lib/PostPackageTaskCheck.js",
             "argumentFormat": ""
         }

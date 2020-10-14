@@ -14,6 +14,7 @@ import {
   CaseInsensitiveInputStream,
   ThrowingErrorListener
 } from "apex-parser";
+import SFPLogger from "../utils/SFPLogger";
 
 export default class ApexTypeFetcher {
 
@@ -59,8 +60,8 @@ export default class ApexTypeFetcher {
         compilationUnitContext = parser.compilationUnit();
 
       } catch (err) {
-        console.log(`Failed to parse ${clsFile}`);
-        console.log(err);
+        SFPLogger.log(`Failed to parse ${clsFile}`);
+        SFPLogger.log(err);
 
         fileDescriptor["error"] = err;
 
@@ -69,7 +70,7 @@ export default class ApexTypeFetcher {
           this.parseSystemRunAs(err, clsPayload) ||
           this.parseTestMethod(err, clsPayload)
         ) {
-          console.log(`Manually identified test class ${clsFile}`)
+          SFPLogger.log(`Manually identified test class ${clsFile}`)
           apexSortedByType["testClass"].push(fileDescriptor);
         } else {
           apexSortedByType["parseError"].push(fileDescriptor);
