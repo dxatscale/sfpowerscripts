@@ -1,9 +1,8 @@
 import tl = require("azure-pipelines-task-lib/task");
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
-import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
+import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDataPackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator"
-import { isNullOrUndefined } from "util";
 
 
 
@@ -19,8 +18,6 @@ async function run() {
 
     let isRunBuild: boolean;
     if (isDiffCheck) {
-
-
       let packageDiffImpl = new PackageDiffImpl(
         sfdx_package,
         projectDirectory
@@ -39,8 +36,6 @@ async function run() {
     } else isRunBuild = true;
 
     if (isRunBuild) {
-
-
       //Create Metadata Artifact
       let packageMetadata:PackageMetadata = {
         package_name: sfdx_package,
@@ -49,24 +44,16 @@ async function run() {
         repository_url: repositoryUrl
       };
 
-      //Convert to MDAPI
-      let createSourcePackageImpl = new CreateSourcePackageImpl(
-        projectDirectory,
-        sfdx_package,
-        null,
-        packageMetadata
+
+      let createDataPackageImpl: CreateDataPackageImpl = new CreateDataPackageImpl(
+          projectDirectory,
+          sfdx_package,
+          packageMetadata
       );
-      packageMetadata = await createSourcePackageImpl.exec();
+      packageMetadata = await createDataPackageImpl.exec();
 
 
-
-      console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata,(key:string,value:any)=>{
-         if(key=="payload" || key == "destructiveChanges")
-           return undefined;
-         else
-            return value;
-      }));
-
+      console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata));
 
 
       let artifact= await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
@@ -78,11 +65,11 @@ async function run() {
 
       tl.setVariable("sfpowerscripts_package_version_number", version_number);
       tl.setVariable(
-        "sfpowerscripts_source_package_metadata_path",
-       artifact.artifactMetadataFilePath
+        "sfpowerscripts_data_package_metadata_path",
+        artifact.artifactMetadataFilePath
       );
       tl.setVariable(
-        "sfpowerscripts_source_package_path",
+        "sfpowerscripts_data_package_path",
         artifact.artifactSourceDirectory
       );
 
@@ -91,7 +78,7 @@ async function run() {
       if (isGitTag) {
         let tagname: string = `${sfdx_package}_v${version_number}`;
         tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`, tagname);
-        if (isNullOrUndefined(projectDirectory))
+        if (projectDirectory == null)
           tl.setVariable(
             `${sfdx_package}_sfpowerscripts_project_directory_path`,
             tl.getVariable("Build.Repository.LocalPath")

@@ -1,0 +1,15 @@
+{
+  "name": "sfpowerscripts-createdatapackage-task",
+  "description": "sfpowerscripts-createdatapackage-task",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "version": "node ../../versionupdate.js && git add task.json",
+    "build": "rimraf lib && tsc -b"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@dxatscale/sfpowerscripts.core": "^3.0.0",
+    "azure-pipelines-task-lib": "^2.8.0"
+  }
+}

@@ -8,5 +8,6 @@
          "**/node_modules":true,
          "packages/azpipelines/build":true,
          "**/lib":true
-     }
+     },
+     "editor.tabSize": 2
 }

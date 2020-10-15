@@ -50,7 +50,10 @@ export default class ManifestHelpers {
       if (projectConfig["packageAliases"][sfdxPackage]) {
         return "Unlocked";
       } else {
-        return "Source";
+        if (projectConfig["packageDirectories"][sfdxPackage].type.toLowerCase() === "data")
+          return "Data";
+        else
+          return "Source";
       }
     }
   }

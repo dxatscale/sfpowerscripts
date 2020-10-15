@@ -7,6 +7,7 @@ import { exec } from "shelljs";
 import CreateUnlockedPackageImpl from "./CreateUnlockedPackageImpl";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import CreateSourcePackageImpl from "./CreateSourcePackageImpl";
+import CreateDataPackageImpl from "./CreateDataPackageImpl";
 import IncrementProjectBuildNumberImpl from "./IncrementProjectBuildNumberImpl";
 import SFPLogger from "../utils/SFPLogger";
 import { EOL } from "os";
@@ -16,6 +17,7 @@ const fs = require("fs-extra");
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
 const PRIORITY_SOURCE_PKG = 5;
+const PRIORITY_DATA_PKG = 5;
 export default class BuildImpl {
   private limiter: Bottleneck;
   private parentsToBeFulfilled;
@@ -62,7 +64,7 @@ export default class BuildImpl {
       this.project_directory
     );
 
-   
+
 
     rimraf.sync(".sfpowerscripts");
 
@@ -86,7 +88,7 @@ export default class BuildImpl {
     SFPLogger.isSupressLogs = true;
     //List all package that will be built
     console.log("Packages scheduled to be built", this.packagesToBeBuilt);
-   
+
 
     this.childs = DependencyHelper.getChildsOfAllPackages(
       this.project_directory,
@@ -164,7 +166,7 @@ export default class BuildImpl {
       `----------------------------------------------------------------------------------------------------`
     );
 
-    
+
     return this.generatedPackages;
   }
 
@@ -279,12 +281,16 @@ export default class BuildImpl {
   private getPriorityandTypeOfAPackage(pkg: string) {
     let priority = 0;
     let type = ManifestHelpers.getPackageType(this.projectConfig, pkg);
-    if (type == "Unlocked") {
+    if (type === "Unlocked") {
       if (this.childs[pkg] > 0)
         priority = PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY;
       else priority = PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY;
-    } else {
+    } else if (type === "Source") {
       priority = PRIORITY_SOURCE_PKG;
+    } else if (type === "Data") {
+      priority = PRIORITY_DATA_PKG;
+    } else {
+      throw new Error(`Unknown package type ${type}`);
     }
 
     return { priority, type };
@@ -352,7 +358,7 @@ export default class BuildImpl {
     console.log(`Package creation initiated for  ${sfdx_package}`);
 
     let result;
-    if (packageType == "Unlocked") {
+    if (packageType === "Unlocked") {
       result = this.createUnlockedPackage(
         sfdx_package,
         commit_id,
@@ -362,12 +368,20 @@ export default class BuildImpl {
         wait_time,
         isSkipValidation
       );
-    } else {
+    } else if (packageType === "Source") {
       result = this.createSourcePackage(
         sfdx_package,
         commit_id,
         repository_url
       );
+    } else if (packageType == "Data") {
+      result = this.createDataPackage(
+        sfdx_package,
+        commit_id,
+        repository_url
+      );
+    } else {
+      throw new Error(`Unknown package type ${packageType}`)
     }
 
     return result;
@@ -433,7 +447,6 @@ export default class BuildImpl {
       apextestsuite: null,
     };
 
-    //Convert to MDAPI
     let createSourcePackageImpl = new CreateSourcePackageImpl(
       this.project_directory,
       sfdx_package,
@@ -441,6 +454,41 @@ export default class BuildImpl {
       packageMetadata
     );
     let result = createSourcePackageImpl.exec();
+
+    return result;
+  }
+
+  private createDataPackage(
+    sfdx_package: string,
+    commit_id: string,
+    repository_url: string
+  ): Promise<PackageMetadata> {
+    let incrementedVersionNumber;
+    if (this.buildNumber) {
+      let incrementBuildNumber = new IncrementProjectBuildNumberImpl(
+        this.project_directory,
+        sfdx_package,
+        "BuildNumber",
+        false,
+        this.buildNumber
+      );
+      incrementedVersionNumber = incrementBuildNumber.exec();
+    }
+
+    let packageMetadata: PackageMetadata = {
+      package_name: sfdx_package,
+      sourceVersion: commit_id,
+      package_version_number: incrementedVersionNumber?.versionNumber,
+      repository_url: repository_url,
+      package_type: "data"
+    };
+
+    let createDataPackageImpl = new CreateDataPackageImpl(
+      this.project_directory,
+      sfdx_package,
+      packageMetadata
+    );
+    let result = createDataPackageImpl.exec();
 
     return result;
   }

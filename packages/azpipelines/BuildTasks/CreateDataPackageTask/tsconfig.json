@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+ "compilerOptions": {
+      "outDir": "./lib",
+      "sourceRoot": "./",
+      "composite": false
+  },
+  "files": [
+      "CreateDataPackage.ts",
+      "PostPackageTaskCheck.ts"
+  ]
+}
