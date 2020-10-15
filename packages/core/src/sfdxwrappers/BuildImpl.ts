@@ -47,8 +47,7 @@ export default class BuildImpl {
     private executorcount:number
   ) {
     this.limiter = new Bottleneck({
-      maxConcurrent: executorcount,
-      trackDoneStatus: true,
+      maxConcurrent: this.executorcount
     });
 
     this.packagesBuilt = [];

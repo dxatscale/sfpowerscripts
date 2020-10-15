@@ -40,7 +40,7 @@ export default class Build extends SfpowerscriptsCommand {
     }),
     gittag: flags.boolean({
       description: messages.getMessage("gitTagFlagDescription"),
-      default: true,
+      default: false,
     }),
     repourl: flags.string({
       char: "r",
@@ -146,7 +146,8 @@ export default class Build extends SfpowerscriptsCommand {
       if(failedPackages.length>0)
       {
         process.exit(1);
-      }      
+      }
+
 
 
     } catch (error) {
