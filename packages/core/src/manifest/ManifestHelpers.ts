@@ -62,7 +62,7 @@ export default class ManifestHelpers {
     return sfdxPackageDescriptor;
   }
 
-  private static getPackageDescriptorFromConfig(sfdxPackage: string, projectConfig: any) {
+  public static getPackageDescriptorFromConfig(sfdxPackage: string, projectConfig: any) {
     let sfdxPackageDescriptor: any;
 
     if (!isNullOrUndefined(sfdxPackage)) {

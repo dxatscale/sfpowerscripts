@@ -65,7 +65,7 @@ export default class Build extends SfpowerscriptsCommand {
       description: messages.getMessage("waitTimeFlagDescription"),
       default: "120",
     }),
-    buildnumber: flags.string({
+    buildnumber: flags.number({
       description: messages.getMessage("waitTimeFlagDescription"),
       default: "1",
     }),
@@ -85,7 +85,7 @@ export default class Build extends SfpowerscriptsCommand {
       const devhub_alias = this.flags.devhubalias;
       const wait_time = this.flags.waittime;
       const diffcheck: boolean = this.flags.diffcheck;
-      const buildNumber: string = this.flags.buildnumber;
+      const buildNumber: number = this.flags.buildnumber;
       const executorcount:number = this.flags.executorcount;
 
       let buildImpl = new BuildImpl(

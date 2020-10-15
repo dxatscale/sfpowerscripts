@@ -63,19 +63,29 @@ export default class CreateUnlockedPackageImpl {
     this.packageArtifactMetadata.payload = mdapiPackage.manifest;
 
     let command = this.buildExecCommand();
+    let output = "";
     SFPLogger.log("Package Creation Command", command, this.packageLogger);
     let child = child_process.exec(command, {
       cwd: this.project_directory,
-      encoding: "utf8",
+      encoding: "utf8"
+    },(error, stdout, stderr) => {
+      if (error)
+      { 
+        child.stderr.on("data", data => {
+          SFPLogger.log(data.toString(),null,this.packageLogger);
+        });
+      }
     });
 
-    let output = "";
+  
     child.stdout.on("data", (data) => {
       SFPLogger.log(data.toString(), null, this.packageLogger);
       output += data.toString();
     });
 
     await onExit(child);
+
+
     this.packageArtifactMetadata.package_version_id = JSON.parse(
       output
     ).result.SubscriberPackageVersionId;
@@ -172,7 +182,7 @@ export default class CreateUnlockedPackageImpl {
         { cwd: this.project_directory, encoding: "utf8" }
       );
     }
-    SFPLogger.log(resolveResult, null, this.packageLogger);
+    SFPLogger.log("Resolved Depenendecies", resolveResult, this.packageLogger);
   }
 
   private buildExecCommand(): string {

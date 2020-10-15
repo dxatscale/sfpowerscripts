@@ -12,7 +12,9 @@ import IncrementProjectBuildNumberImpl from "./IncrementProjectBuildNumberImpl";
 import SFPLogger from "../utils/SFPLogger";
 import { EOL } from "os";
 import * as rimraf from "rimraf";
+import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 const fs = require("fs-extra");
+let path = require("path");
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -43,7 +45,7 @@ export default class BuildImpl {
     private wait_time: string,
     private isSkipValidation: boolean,
     private isDiffCheckEnabled: boolean,
-    private buildNumber: string,
+    private buildNumber: number,
     private executorcount:number
   ) {
     this.limiter = new Bottleneck({
@@ -403,13 +405,18 @@ export default class BuildImpl {
       repository_url: repository_url,
     };
 
+
+
+    let projectDirectory = SourcePackageGenerator.generateSourcePackageArtifact(null,sfdx_package,ManifestHelpers.getPackageDescriptorFromConfig(sfdx_package,this.projectConfig)["path"],null,config_file_path);
+
+
     let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
       sfdx_package,
       null,
-      config_file_path,
+      path.join('config','project-scratch-def.json'),
       true,
       null,
-      null,
+      projectDirectory,
       devhub_alias,
       wait_time,
       !isSkipValidation,
@@ -433,7 +440,7 @@ export default class BuildImpl {
         sfdx_package,
         "BuildNumber",
         false,
-        this.buildNumber
+        this.buildNumber.toString()
       );
       incrementedVersionNumber = incrementBuildNumber.exec();
     }
@@ -470,7 +477,7 @@ export default class BuildImpl {
         sfdx_package,
         "BuildNumber",
         false,
-        this.buildNumber
+        this.buildNumber.toString()
       );
       incrementedVersionNumber = incrementBuildNumber.exec();
     }

@@ -16,7 +16,8 @@ export default class SourcePackageGenerator {
     projectDirectory: string,
     sfdx_package: string,
     packageDirectory:string,
-    destructiveManifestFilePath?: string
+    destructiveManifestFilePath?: string,
+    configFilePath?:string
   ): string {
     
     let artifactDirectory=`.sfpowerscripts/${this.makefolderid(5)}_source`, rootDirectory;
@@ -53,6 +54,10 @@ export default class SourcePackageGenerator {
       SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory);
     } 
   
+    if(configFilePath)
+    {
+      SourcePackageGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory);
+    }
   
     fs.copySync(
       path.join(rootDirectory,packageDirectory),
@@ -77,6 +82,23 @@ export default class SourcePackageGenerator {
 
     }
   }
+
+  private static copyConfigFilePath(configFilePath: string, artifactDirectory: string, projectDirectory: any) {
+    if (fs.existsSync(configFilePath)) {
+      try {
+        fs.mkdirsSync(path.join(artifactDirectory, "config"));
+        fs.copySync(
+          path.join(projectDirectory, configFilePath),
+          path.join(artifactDirectory, "config", "project-scratch-def.json")
+        );
+      }
+      catch (error) {
+        SFPLogger.log("Unable to read/parse the config file path");
+      }
+
+    }
+  }
+
 
   private static makefolderid(length): string {
     var result = "";

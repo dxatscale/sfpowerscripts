@@ -8,9 +8,9 @@ export default class SFPLogger {
     if (logger) {
       if (value)
         try {
-          fs.appendFileSync(logger, `${key}  ":"  ${JSON.stringify(value)} ${EOL}`, 'utf8')
+          fs.appendFileSync(logger, `${key}  :  ${JSON.stringify(value)} ${EOL}`, 'utf8')
         } catch (error) {
-          fs.appendFileSync(logger, `${key}  ":"  ${value} ${EOL}`, 'utf8')
+          fs.appendFileSync(logger, `${key}  :  ${value} ${EOL}`, 'utf8')
         }
       else 
       fs.appendFileSync(logger, `${key}${EOL}`, 'utf8')
