@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-createdatapackage-task",
   "description": "sfpowerscripts-createdatapackage-task",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "scripts": {
     "version": "node ../../versionupdate.js && git add task.json",
@@ -9,7 +9,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^3.0.2",
+    "@dxatscale/sfpowerscripts.core": "^3.0.3",
     "azure-pipelines-task-lib": "^2.8.0"
   }
 }

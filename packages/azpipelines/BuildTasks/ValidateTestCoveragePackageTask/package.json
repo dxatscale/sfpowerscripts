@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-validatetestcoverage-task",
   "description": "sfpowerscripts-validatetestcoverage-task",
-  "version": "4.0.19",
+  "version": "4.0.20",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^3.0.2",
+    "@dxatscale/sfpowerscripts.core": "^3.0.3",
     "azure-pipelines-task-lib": "^2.8.0"
   }
 }

@@ -68,6 +68,10 @@ export default class Build extends SfpowerscriptsCommand {
     buildnumber: flags.string({
       description: messages.getMessage("waitTimeFlagDescription"),
       default: "1",
+    }),
+    executorcount: flags.number({
+      description: messages.getMessage("waitTimeFlagDescription"),
+      default: 5,
     })
   };
 
@@ -82,6 +86,7 @@ export default class Build extends SfpowerscriptsCommand {
       const wait_time = this.flags.waittime;
       const diffcheck: boolean = this.flags.diffcheck;
       const buildNumber: string = this.flags.buildnumber;
+      const executorcount:number = this.flags.executorcount;
 
       let buildImpl = new BuildImpl(
         config_file_path,
@@ -91,9 +96,10 @@ export default class Build extends SfpowerscriptsCommand {
         wait_time,
         isSkipValidation,
         diffcheck,
-        buildNumber
+        buildNumber,
+        executorcount
       );
-      let generatedPackages:PackageMetadata[] = await buildImpl.exec();
+      let {generatedPackages, failedPackages} = await buildImpl.exec();
 
     
       console.log(
@@ -132,9 +138,17 @@ export default class Build extends SfpowerscriptsCommand {
           console.log(error);
         }
       }
+
       console.log(
         `${EOL}----------------------------------------------------------------------------------------------------`
       );
+
+      if(failedPackages.length>0)
+      {
+        process.exit(1);
+      }      
+
+
     } catch (error) {
       console.log(error);
       process.exit(1);

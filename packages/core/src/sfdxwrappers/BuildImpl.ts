@@ -43,10 +43,11 @@ export default class BuildImpl {
     private wait_time: string,
     private isSkipValidation: boolean,
     private isDiffCheckEnabled: boolean,
-    private buildNumber: string
+    private buildNumber: string,
+    private executorcount:number
   ) {
     this.limiter = new Bottleneck({
-      maxConcurrent: 10,
+      maxConcurrent: executorcount,
       trackDoneStatus: true,
     });
 
@@ -56,7 +57,7 @@ export default class BuildImpl {
     this.packageCreationPromises = new Array();
   }
 
-  public async exec(): Promise<PackageMetadata[]> {
+  public async exec(): Promise<{generatedPackages:PackageMetadata[],failedPackages:string[]}> {
     console.log("-----------sfpowerscripts package builder------------------");
     let executionStartTime = Date.now();
 
@@ -167,7 +168,7 @@ export default class BuildImpl {
     );
 
 
-    return this.generatedPackages;
+    return {generatedPackages:this.generatedPackages,failedPackages:this.failedPackages};
   }
 
   private printQueueDetails() {
