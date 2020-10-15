@@ -9,7 +9,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^2.1.6",
+    "@dxatscale/sfpowerscripts.core": "^3.0.0",
     "azure-devops-node-api": "^10.1.1",
     "azure-pipelines-task-lib": "^2.8.0"
   }
