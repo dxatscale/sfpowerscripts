@@ -6,11 +6,12 @@ import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import SFPLogger from "../utils/SFPLogger";
-import { Logger,configure } from "log4js";
+const fs = require("fs-extra");
+import { EOL } from "os";
 
 export default class CreateUnlockedPackageImpl {
 
-   private packageLogger:Logger;
+   private packageLogger;
  
 
   public constructor(
@@ -26,22 +27,8 @@ export default class CreateUnlockedPackageImpl {
     private isSkipValidation: boolean,
     private packageArtifactMetadata: PackageMetadata
   ) {
-    let configuration = {
-      appenders: {
-        fileLogger: {
-          type: 'file',
-          filename: `.sfpowerscripts/logs/${sfdx_package}`,
-          layout: {
-            type: 'pattern',
-            pattern: '%r %m%n'},
-          flags:'w'
-        }
-      },
-      categories: {
-        default: { appenders: ['fileLogger'], level: 'all' }
-      }
-    };
-    this.packageLogger= configure(configuration).getLogger();
+    fs.outputFileSync(`.sfpowerscripts/logs/${sfdx_package}`, `sfpowerscripts--log${EOL}`)
+    this.packageLogger=`.sfpowerscripts/logs/${sfdx_package}`;
   }
 
   public async exec(): Promise<PackageMetadata> {

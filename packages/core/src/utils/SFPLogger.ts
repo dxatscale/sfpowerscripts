@@ -1,4 +1,5 @@
-
+const fs = require("fs-extra");
+import { EOL } from "os";
 
 export default class SFPLogger {
   public static isSupressLogs = false;
@@ -7,11 +8,12 @@ export default class SFPLogger {
     if (logger) {
       if (value)
         try {
-          logger.debug(key + ":" + JSON.stringify(value));
+          fs.appendFileSync(logger, `${key}  ":"  ${JSON.stringify(value)} ${EOL}`, 'utf8')
         } catch (error) {
-          logger.debug(key + ":" + value);
+          fs.appendFileSync(logger, `${key}  ":"  ${value} ${EOL}`, 'utf8')
         }
-      else logger.debug(key);
+      else 
+      fs.appendFileSync(logger, `${key}${EOL}`, 'utf8')
     }
 
     if (!this.isSupressLogs) {

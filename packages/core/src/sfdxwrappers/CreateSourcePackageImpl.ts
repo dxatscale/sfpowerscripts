@@ -1,4 +1,4 @@
-import { configure } from "log4js";
+
 import SFPLogger from "../utils/SFPLogger";
 import PackageMetadata from "../PackageMetadata";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
@@ -25,23 +25,10 @@ export default class CreateSourcePackageImpl {
     private destructiveManifestFilePath: string,
     private packageArtifactMetadata: PackageMetadata
   ) {
-
-    let configuration = {
-      appenders: {
-        fileLogger: {
-          type: 'file',
-          filename: `.sfpowerscripts/logs/${sfdx_package}`,
-          layout: {
-            type: 'pattern',
-            pattern: '%r %m%n'},
-          flags:'w'
-        }
-      },
-      categories: {
-        default: { appenders: ['fileLogger'], level: 'all' }
-      }
-    };
-    this.packageLogger= configure(configuration).getLogger();
+     
+    fs.outputFileSync(`.sfpowerscripts/logs/${sfdx_package}`, `sfpowerscripts--log${EOL}`)
+    this.packageLogger=`.sfpowerscripts/logs/${sfdx_package}`;
+   
   }
 
   public async exec(): Promise<PackageMetadata> {
