@@ -35,26 +35,16 @@ export default class ManifestHelpers {
   }
 
   public static getPackageType(projectConfig:any, sfdxPackage: string) {
-    let packageFound: boolean;
-    if (sfdxPackage) {
-      projectConfig["packageDirectories"].forEach((pkg) => {
-        if (sfdxPackage == pkg["package"]) {
-          packageFound = true;
-        }
-      });
-    }
 
-    if (!packageFound)
-      throw new Error("Package or package directory does not exist");
-    else {
-      if (projectConfig["packageAliases"][sfdxPackage]) {
-        return "Unlocked";
-      } else {
-        if (projectConfig["packageDirectories"][sfdxPackage].type?.toLowerCase() === "data")
-          return "Data";
-        else
-          return "Source";
-      }
+    let packageDescriptor = ManifestHelpers.getPackageDescriptorFromConfig(sfdxPackage,projectConfig);
+
+    if (projectConfig["packageAliases"][sfdxPackage]) {
+      return "Unlocked";
+    } else {
+      if (packageDescriptor.type?.toLowerCase() === "data")
+        return "Data";
+      else
+        return "Source";
     }
   }
 
@@ -62,25 +52,32 @@ export default class ManifestHelpers {
     projectDirectory: string,
     sfdxPackage: string
   ): any {
-    let packageDirectory: string;
-    let sfdxPackageDescriptor: any;
 
     let projectConfig = ManifestHelpers.getSFDXPackageManifest(
       projectDirectory
     );
 
+    let sfdxPackageDescriptor = ManifestHelpers.getPackageDescriptorFromConfig(sfdxPackage, projectConfig);
+
+    return sfdxPackageDescriptor;
+  }
+
+  private static getPackageDescriptorFromConfig(sfdxPackage: string, projectConfig: any) {
+    let sfdxPackageDescriptor: any;
+
     if (!isNullOrUndefined(sfdxPackage)) {
       projectConfig["packageDirectories"].forEach((pkg) => {
         if (sfdxPackage == pkg["package"]) {
-          packageDirectory = pkg["path"];
           sfdxPackageDescriptor = pkg;
         }
       });
     }
 
-    if (isNullOrUndefined(packageDirectory))
+    if ( sfdxPackageDescriptor == null) {
       throw new Error("Package or package directory does not exist");
-    else return sfdxPackageDescriptor;
+    }
+
+    return sfdxPackageDescriptor;
   }
 
   public static getDefaultSFDXPackageDescriptor(projectDirectory: string): any {
