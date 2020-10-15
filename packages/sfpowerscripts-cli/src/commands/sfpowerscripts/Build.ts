@@ -67,7 +67,7 @@ export default class Build extends SfpowerscriptsCommand {
     }),
     buildnumber: flags.number({
       description: messages.getMessage("waitTimeFlagDescription"),
-      default: "1",
+      default: 1,
     }),
     executorcount: flags.number({
       description: messages.getMessage("waitTimeFlagDescription"),
