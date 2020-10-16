@@ -1,6 +1,6 @@
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
-import BuildImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/BuildImpl";
+import BuildImpl from "@dxatscale/sfpowerscripts.core/lib/parallelBuilder/BuildImpl";
 import { EOL } from "os";
 
 import { flags } from "@salesforce/command";
