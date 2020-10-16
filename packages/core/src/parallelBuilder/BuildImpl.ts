@@ -1,18 +1,19 @@
-import BatchingTopoSort from "../parallelBuilder/BatchingTopoSort";
+import BatchingTopoSort from "./BatchingTopoSort";
 import PackageMetadata from "../PackageMetadata";
-import DependencyHelper from "../parallelBuilder/DependencyHelper";
+import DependencyHelper from "./DependencyHelper";
 import Bottleneck from "bottleneck";
 import PackageDiffImpl from "../package/PackageDiffImpl";
 import { exec } from "shelljs";
-import CreateUnlockedPackageImpl from "./CreateUnlockedPackageImpl";
+import CreateUnlockedPackageImpl from "../sfdxwrappers/CreateUnlockedPackageImpl";
 import ManifestHelpers from "../manifest/ManifestHelpers";
-import CreateSourcePackageImpl from "./CreateSourcePackageImpl";
-import CreateDataPackageImpl from "./CreateDataPackageImpl";
-import IncrementProjectBuildNumberImpl from "./IncrementProjectBuildNumberImpl";
+import CreateSourcePackageImpl from "../sfdxwrappers/CreateSourcePackageImpl";
+import CreateDataPackageImpl from "../sfdxwrappers/CreateDataPackageImpl";
+import IncrementProjectBuildNumberImpl from "../sfdxwrappers/IncrementProjectBuildNumberImpl";
 import SFPLogger from "../utils/SFPLogger";
 import { EOL } from "os";
 import * as rimraf from "rimraf";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
+import PackageVersionListImpl from "../sfdxwrappers/PackageVersionListImpl";
 const fs = require("fs-extra");
 let path = require("path");
 
@@ -21,6 +22,7 @@ const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
 const PRIORITY_SOURCE_PKG = 5;
 const PRIORITY_DATA_PKG = 5;
 export default class BuildImpl {
+
   private limiter: Bottleneck;
   private parentsToBeFulfilled;
   private childs;
@@ -32,10 +34,14 @@ export default class BuildImpl {
   private packagesBuilt: string[];
   private failedPackages: string[];
   private generatedPackages: PackageMetadata[];
+  private orgDependentPackages:string[];
+  private packageInfo:any[];
+
   private recursiveAll = (a) =>
     Promise.all(a).then((r) =>
       r.length == a.length ? r : this.recursiveAll(a)
     );
+ private  unlockedPackages: any[];
 
   public constructor(
     private config_file_path: string,
@@ -56,6 +62,7 @@ export default class BuildImpl {
     this.failedPackages = [];
     this.generatedPackages = [];
     this.packageCreationPromises = new Array();
+    this.orgDependentPackages=[];
   }
 
   public async exec(): Promise<{generatedPackages:PackageMetadata[],failedPackages:string[]}> {
@@ -69,6 +76,8 @@ export default class BuildImpl {
 
 
     rimraf.sync(".sfpowerscripts");
+
+    
 
     console.log("Computing Packages to be deployed");
     //Do a diff Impl
@@ -90,6 +99,11 @@ export default class BuildImpl {
     SFPLogger.isSupressLogs = true;
     //List all package that will be built
     console.log("Packages scheduled to be built", this.packagesToBeBuilt);
+
+    console.log("Fetching Unlocked Package Info..");
+    this.orgDependentPackages = await this.getOrgDependentPackages();
+    this.unlockedPackages = await this.getUnlockedPacakges();
+
 
 
     this.childs = DependencyHelper.getChildsOfAllPackages(
@@ -406,10 +420,12 @@ export default class BuildImpl {
     };
 
 
+  
 
+    //Create a working directory
     let projectDirectory = SourcePackageGenerator.generateSourcePackageArtifact(null,sfdx_package,ManifestHelpers.getPackageDescriptorFromConfig(sfdx_package,this.projectConfig)["path"],null,config_file_path);
 
-
+   
     let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
       sfdx_package,
       null,
@@ -421,7 +437,8 @@ export default class BuildImpl {
       wait_time,
       !isSkipValidation,
       isSkipValidation,
-      packageMetadata
+      packageMetadata,
+      this.orgDependentPackages.includes(sfdx_package)
     );
 
     let result = createUnlockedPackageImpl.exec();
@@ -439,7 +456,7 @@ export default class BuildImpl {
         this.project_directory,
         sfdx_package,
         "BuildNumber",
-        false,
+        true,
         this.buildNumber.toString()
       );
       incrementedVersionNumber = incrementBuildNumber.exec();
@@ -465,6 +482,41 @@ export default class BuildImpl {
     return result;
   }
 
+  private async getOrgDependentPackages()
+  {
+  let orgDependentPackages=[];
+  let packageInfo = await this.getPackageInfo();
+  packageInfo.forEach(pkg => {
+      if(pkg.IsOrgDependent === 'Yes' )
+          orgDependentPackages.push(pkg.Name);
+    });
+    
+    return orgDependentPackages;
+  }
+
+  private async getUnlockedPacakges()
+  {
+  let unlockedPackages=[];
+  let packageInfo = await this.getPackageInfo();
+  packageInfo.forEach(pkg => {
+      if(pkg.IsOrgDependent === 'No' )
+      unlockedPackages.push(pkg.Name);
+    });
+    
+    return unlockedPackages;
+  }
+
+
+  private  async getPackageInfo()
+  {
+     if(this.packageInfo==null)
+     {
+     this.packageInfo = await new PackageVersionListImpl(this.project_directory,this.devhub_alias).exec(); 
+     }
+     return this.packageInfo;
+  }
+
+  
   private createDataPackage(
     sfdx_package: string,
     commit_id: string,
@@ -476,7 +528,7 @@ export default class BuildImpl {
         this.project_directory,
         sfdx_package,
         "BuildNumber",
-        false,
+        true,
         this.buildNumber.toString()
       );
       incrementedVersionNumber = incrementBuildNumber.exec();

@@ -24,13 +24,15 @@ export default class CreateUnlockedPackageImpl {
     private wait_time: string,
     private isCoverageEnabled: boolean,
     private isSkipValidation: boolean,
-    private packageArtifactMetadata: PackageMetadata
+    private packageArtifactMetadata: PackageMetadata,
+    private isOrgDependentPackage?:boolean
   ) {
     fs.outputFileSync(
       `.sfpowerscripts/logs/${sfdx_package}`,
       `sfpowerscripts--log${EOL}`
     );
     this.packageLogger = `.sfpowerscripts/logs/${sfdx_package}`;
+    
   }
 
   public async exec(): Promise<PackageMetadata> {
@@ -197,9 +199,9 @@ export default class CreateUnlockedPackageImpl {
     if (!isNullOrUndefined(this.packageArtifactMetadata.tag))
       command += ` -t ${this.packageArtifactMetadata.tag}`;
 
-    if (this.isCoverageEnabled) command += ` -c`;
+    if (this.isCoverageEnabled && !this.isOrgDependentPackage) command += ` -c`;
 
-    if (this.isSkipValidation) command += ` --skipvalidation`;
+    if (this.isSkipValidation && !this.isOrgDependentPackage) command += ` --skipvalidation`;
 
     command += ` -v ${this.devhub_alias}`;
 
