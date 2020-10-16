@@ -80,6 +80,8 @@ export default class BuildImpl {
     
 
     console.log("Computing Packages to be deployed");
+    SFPLogger.isSupressLogs = true;
+
     //Do a diff Impl
     if (this.isDiffCheckEnabled) {
       let packageToBeBuilt = [];
@@ -96,7 +98,7 @@ export default class BuildImpl {
       }
       this.packagesToBeBuilt = packageToBeBuilt;
     }
-    SFPLogger.isSupressLogs = true;
+  
     //List all package that will be built
     console.log("Packages scheduled to be built", this.packagesToBeBuilt);
 
@@ -123,8 +125,8 @@ export default class BuildImpl {
     this.projectConfig = ManifestHelpers.getSFDXPackageManifest(
       this.project_directory
     );
-    let sortedBatch = new BatchingTopoSort().sort(this.childs);
-
+    let sortedBatch  = new BatchingTopoSort().sort(this.childs);
+    
     //Do First Level Package First
     let pushedPackages = [];
     for (const pkg of sortedBatch[0]) {
@@ -242,7 +244,7 @@ export default class BuildImpl {
 
     //let all my childs know, I am done building  and remove myself from
     this.packagesToBeBuilt.forEach((pkg) => {
-      const unFullfilledParents = this.parentsToBeFulfilled[pkg].filter(
+      const unFullfilledParents = this.parentsToBeFulfilled[pkg]?.filter(
         (pkg_name) => pkg_name !== packageMetadata.package_name
       );
       this.parentsToBeFulfilled[pkg] = unFullfilledParents;
@@ -251,7 +253,7 @@ export default class BuildImpl {
     // Do a second pass and push packages with fulfilled parents to queue
     let pushedPackages = [];
     this.packagesToBeBuilt.forEach((pkg) => {
-      if (this.parentsToBeFulfilled[pkg].length == 0) {
+      if (this.parentsToBeFulfilled[pkg]?.length == 0) {
         let { priority, type } = this.getPriorityandTypeOfAPackage(pkg);
         let packagePromise: Promise<PackageMetadata> = this.limiter
           .schedule({ id: pkg, priority: priority }, () =>

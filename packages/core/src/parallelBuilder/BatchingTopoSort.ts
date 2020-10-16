@@ -3,6 +3,7 @@ import { AdjacentList } from "./DependencyHelper";
 export default class BatchingTopoSort {
   public sort(dag: AdjacentList) {
     try {
+     
       const indegrees = this.countInDegrees(dag);
       let sorted = [];
       let roots = this.getRoots(indegrees);
