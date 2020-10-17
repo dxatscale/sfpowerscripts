@@ -213,6 +213,7 @@ async function run() {
       }
     }
 
+    
     //Construct Deploy Command for actual payload
     let deploymentOptions = await generateDeploymentOptions(
       packageMetadataFromStorage,
@@ -221,6 +222,8 @@ async function run() {
       skipTesting,
       target_org
     );
+
+
     let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
       target_org,
       artifacts_filepaths[0].sourceDirectoryPath,
@@ -235,7 +238,8 @@ async function run() {
       tl.setVariable("sfpowerscripts_deploysource_id", result.deploy_id);
     }
 
-    if (result.result) {
+
+    if (result.result && !result.message.startsWith("skip:")) {
       console.log("Applying Post Deployment Activites");
       //Apply PostDeployment Activities
       try {
@@ -263,7 +267,11 @@ async function run() {
           target_org: target_org,
           sub_directory: subdirectory,
         });
-      } else {
+      } else if(result.result && result.message.startsWith("skip:"))
+      {
+        tl.setResult(tl.TaskResult.Skipped, result.message);
+      }
+      else {
         //Update existing environment map
         packageMetadataFromStorage.deployments.push({
           target_org: target_org,
@@ -277,7 +285,8 @@ async function run() {
         extensionName
       );
       tl.setResult(tl.TaskResult.Succeeded, result.message);
-    } else {
+    }    
+    else {
       tl.error(result.message);
       tl.setResult(
         tl.TaskResult.Failed,
