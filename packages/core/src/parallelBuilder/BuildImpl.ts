@@ -66,8 +66,8 @@ export default class BuildImpl {
   }
 
   public async exec(): Promise<{generatedPackages:PackageMetadata[],failedPackages:string[]}> {
-    console.log("-----------sfpowerscripts package builder------------------");
-    let executionStartTime = Date.now();
+    
+  
 
     this.packagesToBeBuilt = ManifestHelpers.getAllPackages(
       this.project_directory
@@ -166,25 +166,6 @@ export default class BuildImpl {
     //Other packages get added when each one in the first level finishes
     await this.recursiveAll(this.packageCreationPromises);
 
-    console.log(``);
-    console.log(``);
-
-    console.log(
-      `----------------------------------------------------------------------------------------------------`
-    );
-    console.log(
-      `${this.packagesBuilt.length} packages created in ${this.getFormattedTime(
-        Date.now() - executionStartTime
-      )} minutes with {${this.failedPackages.length}} errors`
-    );
-    if (this.failedPackages.length > 0) {
-      console.log(`Failed To Build`, this.failedPackages);
-    }
-    console.log(
-      `----------------------------------------------------------------------------------------------------`
-    );
-
-
     return {generatedPackages:this.generatedPackages,failedPackages:this.failedPackages};
   }
 
@@ -199,12 +180,7 @@ export default class BuildImpl {
     );
   }
 
-  private getFormattedTime(milliseconds: number): string {
-    let date = new Date(0);
-    date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
-    let timeString = date.toISOString().substr(11, 8);
-    return timeString;
-  }
+ 
 
   private handlePackageError(reason: any, pkg: string): any {
     console.log(`${EOL}-----------------------------------------`);
@@ -215,8 +191,7 @@ export default class BuildImpl {
     } catch (e) {
       console.log(`Unable to display logs for pkg ${pkg}`);
     }
-    console.log(`${EOL}Removed all childs of ${pkg} from queue`);
-    console.log(`${EOL}-----------------------------------------`);
+    
 
     //Remove the package from packages To Be Built
     this.packagesToBeBuilt = this.packagesToBeBuilt.filter((el) => {
@@ -228,14 +203,17 @@ export default class BuildImpl {
       else return true;
     });
 
-    //Remove my childs
+    //Remove myself and my  childs
+    this.failedPackages.push(pkg);
     this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkg) => {
       if (this.childs[pkg].includes(pkg)) {
+        this.failedPackages.push(this.childs[pkg])
         return false;
       }
     });
+    console.log(`${EOL}Removed all childs of ${pkg} from queue`);
+    console.log(`${EOL}-----------------------------------------`);
 
-    this.failedPackages.push(pkg);
   }
 
   private queueChildPackages(packageMetadata: PackageMetadata): any {

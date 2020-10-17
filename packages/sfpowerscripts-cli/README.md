@@ -3,6 +3,7 @@
 Simple wrappers around sfdx commands to help set up CI/CD quickly. These commands are universal and may be used on any automation platform, as long as a shell process is available for executing the commands.
 
 ## Installation
+
 The [SFDX CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) and [sfpowerkit plugin](https://github.com/Accenture/sfpowerkit) are required for this plugin to work. If you have not already done so, please install both of these before continuing.
 
 To install the sfpowerscripts plugin, run the following command:
@@ -31,6 +32,7 @@ EXAMPLE
 ```
 
 ## Output variables
+
 Many of the commands listed below will output variables which may be consumed as flag inputs in subsequent commands. Simply pass the **variable name** to the command, and it will be substituted with the corresponding value, at runtime.
 
 Eg.
@@ -46,6 +48,7 @@ Eg.
 ```
 
 The following output variables are currently supported:
+
 * sfpowerscripts_incremented_project_version
 * sfpowerscripts_artifact_directory
 * sfpowerscripts_artifact_metadata_directory
@@ -60,6 +63,7 @@ If you require access to the variables at the shell layer, you may do so using t
 
 
 ### Reference name
+
 Commands that output variables optionally accept a `--refname` flag that prefixes output variables with a user-specified string. The prefix is intended as a variable namespace that allows the same command to be invoked multiple times without overwriting the output variables.
 
 ```
@@ -78,6 +82,7 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 <!-- usagestop -->
   ## Commands
   <!-- commands -->
+* [`sfpowerscripts:Build`](#sfpowerscriptsBuild)
 * [`sfpowerscripts:AnalyzeWithPMD`](#sfpowerscriptsanalyzewithpmd)
 * [`sfpowerscripts:CreateDeltaPackage`](#sfpowerscriptscreatedeltapackage)
 * [`sfpowerscripts:CreateSourcePackage`](#sfpowerscriptscreatesourcepackage)
@@ -90,6 +95,67 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 * [`sfpowerscripts:InstallUnlockedPackage`](#sfpowerscriptsinstallunlockedpackage)
 * [`sfpowerscripts:TriggerApexTest`](#sfpowerscriptstriggerapextest)
 * [`sfpowerscripts:ValidateApexCoverage`](#sfpowerscriptsvalidateapexcoverage)
+
+## `sfpowerscripts:Build`
+
+Build all packages (unlocked/source/data) in a repo in parallel with understanding of the dependency of each packages
+
+```
+USAGE
+  $ sfdx sfpowerscripts:Build [-v <string>] [--diffcheck] [--gittag] [-r <string>] [-f <filepath>]
+  [--artifactdir <directory>] [-s] [--waittime <string>] [--buildnumber <number>]
+  [--executorcount <number>][--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+
+ 
+  -f, --configfilepath=configfilepath
+      [default: config/project-scratch-def.json] Path in the current project directory containing  config file for the
+      packaging org
+
+  -k, --installationkey=installationkey
+      Installation key for this package
+
+ 
+  -r --repourl=repourl
+      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
+
+  -s, --isvalidationtobeskipped
+      Skips validation of dependencies, package ancestors, and metadata during package version creation. Skipping
+      validation reduces the time it takes to create a new package version, but package versions created without
+      validation can’t be promoted.
+
+  -v, --devhubalias=devhubalias
+      [default: HubOrg] Provide the alias of the devhub previously authenticated, default value is HubOrg if using the
+      Authenticate Devhub task
+
+ 
+  --artifactdir=artifactdir
+      [default: artifacts] The directory where the artifact is to be written
+
+  --diffcheck
+      Only build when the package has changed
+
+  --gittag
+      Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
+      [default: warn] logging level for this command invocation
+
+
+  --buildnumber=buildnumber
+       [default: 1] The build number to be used for source packages, Unlocked Packages will be assigned 
+       the buildnumber from Saleforce directly if using .NEXT
+
+  --waittime=waittime
+      [default: 120] wait time for command to finish in minutes
+
+  --executorcount=executorcount
+       [default: 5] Number of parallel package task schedulors
+
+```
+
+
 
 ## `sfpowerscripts:AnalyzeWithPMD`
 

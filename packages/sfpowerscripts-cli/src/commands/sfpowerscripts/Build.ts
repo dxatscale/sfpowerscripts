@@ -15,7 +15,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages(
   "@dxatscale/sfpowerscripts",
-  "create_unlocked_package"
+  "build"
 );
 
 export default class Build extends SfpowerscriptsCommand {
@@ -23,7 +23,7 @@ export default class Build extends SfpowerscriptsCommand {
 
   public static examples = [
     `$ sfdx sfpowerscripts:Build -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
-    `$ sfdx sfpowerscripts:Build -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`
+    `$ sfdx sfpowerscripts:Build -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
   ];
 
   protected static requiresUsername = false;
@@ -66,13 +66,13 @@ export default class Build extends SfpowerscriptsCommand {
       default: "120",
     }),
     buildnumber: flags.number({
-      description: messages.getMessage("waitTimeFlagDescription"),
+      description: messages.getMessage("buildNumberFlagDescription"),
       default: 1,
     }),
     executorcount: flags.number({
-      description: messages.getMessage("waitTimeFlagDescription"),
+      description: messages.getMessage("executorCountFlagDescription"),
       default: 5,
-    })
+    }),
   };
 
   public async execute() {
@@ -86,7 +86,13 @@ export default class Build extends SfpowerscriptsCommand {
       const wait_time = this.flags.waittime;
       const diffcheck: boolean = this.flags.diffcheck;
       const buildNumber: number = this.flags.buildnumber;
-      const executorcount:number = this.flags.executorcount;
+      const executorcount: number = this.flags.executorcount;
+
+      console.log(
+        "-----------sfpowerscripts package builder------------------"
+      );
+
+      let executionStartTime = Date.now();
 
       let buildImpl = new BuildImpl(
         config_file_path,
@@ -99,16 +105,10 @@ export default class Build extends SfpowerscriptsCommand {
         buildNumber,
         executorcount
       );
-      let {generatedPackages, failedPackages} = await buildImpl.exec();
+      let { generatedPackages, failedPackages } = await buildImpl.exec();
 
     
-      console.log(
-        `${EOL}----------------------------------------------------------------------------------------------------`
-      );
-
       for (let generatedPackage of generatedPackages) {
-
-       
         try {
           await ArtifactGenerator.generateArtifact(
             generatedPackage.package_name,
@@ -116,16 +116,13 @@ export default class Build extends SfpowerscriptsCommand {
             artifactDirectory,
             generatedPackage
           );
-          console.log(
-            `${EOL}Generated Artifact for ${generatedPackage.package_name}`
-          );
 
           if (gittag) {
+            
             exec(`git config --global user.email "sfpowerscripts@dxscale"`);
             exec(`git config --global user.name "sfpowerscripts"`);
 
             let tagname = `${generatedPackage.package_name}_v${generatedPackage.package_version_number}`;
-            console.log(`Creating tag ${tagname}`);
             exec(
               `git tag -a -m "${generatedPackage.package_name} ${generatedPackage.package_type} Package ${generatedPackage.package_version_number}" ${tagname} HEAD`,
               { silent: false }
@@ -139,20 +136,40 @@ export default class Build extends SfpowerscriptsCommand {
         }
       }
 
+      console.log(`${EOL}${EOL}`);
+
+
       console.log(
-        `${EOL}----------------------------------------------------------------------------------------------------`
+        `----------------------------------------------------------------------------------------------------`
+      );
+      console.log(
+        `${
+          generatedPackages.length
+        } packages created in ${this.getFormattedTime(
+          Date.now() - executionStartTime
+        )} minutes with {${failedPackages.length}} errors`
+      );
+      if (failedPackages.length > 0) {
+        console.log(`Packages Failed To Build`, failedPackages);
+      }
+      console.log(
+        `----------------------------------------------------------------------------------------------------`
       );
 
-      if(failedPackages.length>0)
-      {
+
+      if (failedPackages.length > 0) {
         process.exit(1);
       }
-
-
-
     } catch (error) {
       console.log(error);
       process.exit(1);
     }
+  }
+
+  private getFormattedTime(milliseconds: number): string {
+    let date = new Date(0);
+    date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
+    let timeString = date.toISOString().substr(11, 8);
+    return timeString;
   }
 }
