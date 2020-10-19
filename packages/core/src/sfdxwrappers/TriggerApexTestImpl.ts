@@ -233,6 +233,25 @@ export default class TriggerApexTestImpl {
       classesWithInvalidCoverage = classesWithInvalidCoverage.concat(classesWithoutTest);
     }
 
+    // Check for triggers with no test class
+    let namesOfTriggersWithoutTest: string[] = triggers.filter( (trigger) => {
+      // Filter out triggers if accounted for in coverage json
+      for (let classCoverage of code_coverage_json) {
+        if (classCoverage["name"] === trigger) {
+          return false
+        }
+      }
+      return true
+    });
+
+    if (namesOfTriggersWithoutTest.length > 0) {
+      let triggersWithoutTest: {name: string, coveredPercent: number}[] = namesOfTriggersWithoutTest.map(
+        (triggerName) => {
+          return {name: triggerName, coveredPercent: 0};
+        });
+      classesWithInvalidCoverage = classesWithInvalidCoverage.concat(triggersWithoutTest);
+    }
+
     return classesWithInvalidCoverage;
   }
 
