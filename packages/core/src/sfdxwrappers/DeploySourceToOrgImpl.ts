@@ -38,7 +38,7 @@ export default class DeploySourceToOrgImpl {
         return deploySourceResult;
       } else if (status.result == "skip") {
         deploySourceResult.result = true;
-        deploySourceResult.message = status.message;
+        deploySourceResult.message = "skip:"+status.message;
         return deploySourceResult;
       }
 

@@ -139,7 +139,8 @@ export default class MDAPIPackageGenerator {
       if (err.code === "ENOENT") {
         throw new Error(`No such file or directory ${err.path}`); // Re-throw error if .forceignore does not exist
       } else if (!isToBreakBuildIfEmpty) {
-        status.message = `Something wrong with the path provided  ${directoryToCheck},,but skipping `;
+
+        status.message = `Something wrong with the path provided  ${directoryToCheck},,but skipping, The exception is ${err}`;
         status.result = "skip";
         return status;
       } else throw err;
@@ -164,7 +165,7 @@ export default class MDAPIPackageGenerator {
     // Construct file paths that are relative to the project directory.
     files.forEach((file, index, files) => {
       let filepath = path.join(dirToCheck, file);
-      files[index] = path.relative(process.cwd(), filepath);
+      files[index] = path.relative(projectDirectory==null?process.cwd():projectDirectory, filepath);
     });
 
     let forceignorePath;
