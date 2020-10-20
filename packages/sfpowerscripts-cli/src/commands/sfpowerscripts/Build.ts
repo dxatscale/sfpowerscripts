@@ -73,6 +73,11 @@ export default class Build extends SfpowerscriptsCommand {
       description: messages.getMessage("executorCountFlagDescription"),
       default: 5,
     }),
+    validatemode: flags.boolean({
+      description: messages.getMessage("executorCountFlagDescription"),
+      hidden:true,
+      default: false,
+    })
   };
 
   public async execute() {
@@ -87,6 +92,7 @@ export default class Build extends SfpowerscriptsCommand {
       const diffcheck: boolean = this.flags.diffcheck;
       const buildNumber: number = this.flags.buildnumber;
       const executorcount: number = this.flags.executorcount;
+      const isValidateMode:boolean = this.flags.validatemode;
 
       console.log(
         "-----------sfpowerscripts package builder------------------"
@@ -103,7 +109,8 @@ export default class Build extends SfpowerscriptsCommand {
         isSkipValidation,
         diffcheck,
         buildNumber,
-        executorcount
+        executorcount,
+        isValidateMode
       );
       let { generatedPackages, failedPackages } = await buildImpl.exec();
 
