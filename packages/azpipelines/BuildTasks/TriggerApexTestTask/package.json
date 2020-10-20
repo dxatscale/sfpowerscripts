@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-triggerapextest-task",
   "description": "sfpowerscripts-triggerapextest-task",
-  "version": "9.0.15",
+  "version": "9.0.16",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^3.0.13",
+    "@dxatscale/sfpowerscripts.core": "^3.0.14",
     "azure-pipelines-task-lib": "^2.8.0",
     "fs-extra": "^8.1.0"
   }
