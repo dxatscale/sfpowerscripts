@@ -10,7 +10,8 @@ export default class PackageDiffImpl {
   public constructor(
     private sfdx_package: string,
     private project_directory: string,
-    private config_file_path?: string
+    private config_file_path?: string,
+    private override?: boolean
   ) {}
 
   public async exec(): Promise<boolean> {
@@ -40,7 +41,12 @@ export default class PackageDiffImpl {
           `Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`
         );
 
-        let tag = await this.getLatestTag(git, this.sfdx_package);
+        let tag: string;
+        if ( this.override != null ) {
+          tag = this.getLatestTagFromFile();
+        } else {
+          tag = await this.getLatestTag(git, this.sfdx_package);
+        }
 
         if (tag) {
           SFPLogger.log(`\nUtilizing tag ${tag} for ${this.sfdx_package}`);
@@ -185,6 +191,19 @@ export default class PackageDiffImpl {
         return true;
     } else {
         return false;
+    }
+  }
+
+  private getLatestTagFromFile(): string {
+    if (fs.existsSync(`packageDiffTags.json`)) {
+      let latestTags = JSON.parse(fs.readFileSync(`packageDiffTags.json`, 'utf8'));
+      if (latestTags[this.sfdx_package] != null) {
+        return latestTags[this.sfdx_package];
+      } else {
+        throw new Error(`Tag missing for ${this.sfdx_package} in packageDiffTags.json`);
+      }
+    } else {
+      throw new Error(`packageDiffTags.json does not exist`);
     }
   }
 }

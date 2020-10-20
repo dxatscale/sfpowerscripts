@@ -22,7 +22,6 @@ const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
 const PRIORITY_SOURCE_PKG = 5;
 const PRIORITY_DATA_PKG = 5;
 export default class BuildImpl {
-
   private limiter: Bottleneck;
   private parentsToBeFulfilled;
   private childs;
@@ -34,14 +33,14 @@ export default class BuildImpl {
   private packagesBuilt: string[];
   private failedPackages: string[];
   private generatedPackages: PackageMetadata[];
-  private orgDependentPackages:string[];
-  private packageInfo:any[];
+  private orgDependentPackages: string[];
+  private packageInfo: any[];
 
   private recursiveAll = (a) =>
     Promise.all(a).then((r) =>
       r.length == a.length ? r : this.recursiveAll(a)
     );
- private  unlockedPackages: any[];
+  private unlockedPackages: any[];
 
   public constructor(
     private config_file_path: string,
@@ -52,32 +51,29 @@ export default class BuildImpl {
     private isSkipValidation: boolean,
     private isDiffCheckEnabled: boolean,
     private buildNumber: number,
-    private executorcount:number
+    private executorcount: number,
+    private isValidateMode:boolean
   ) {
     this.limiter = new Bottleneck({
-      maxConcurrent: this.executorcount
+      maxConcurrent: this.executorcount,
     });
 
     this.packagesBuilt = [];
     this.failedPackages = [];
     this.generatedPackages = [];
     this.packageCreationPromises = new Array();
-    this.orgDependentPackages=[];
+    this.orgDependentPackages = [];
   }
 
-  public async exec(): Promise<{generatedPackages:PackageMetadata[],failedPackages:string[]}> {
-    
-  
-
+  public async exec(): Promise<{
+    generatedPackages: PackageMetadata[];
+    failedPackages: string[];
+  }> {
     this.packagesToBeBuilt = ManifestHelpers.getAllPackages(
       this.project_directory
     );
 
-
-
     rimraf.sync(".sfpowerscripts");
-
-    
 
     console.log("Computing Packages to be deployed");
     SFPLogger.isSupressLogs = true;
@@ -85,28 +81,33 @@ export default class BuildImpl {
     //Do a diff Impl
     if (this.isDiffCheckEnabled) {
       let packageToBeBuilt = [];
+
+      let override: boolean;
+      if (this.isValidateMode) {
+        override = true;
+      }
+
       for await (const pkg of this.packagesToBeBuilt) {
         let diffImpl: PackageDiffImpl = new PackageDiffImpl(
           pkg,
           this.project_directory,
-          this.config_file_path
+          this.config_file_path,
+          override
         );
         let isToBeBuilt = await diffImpl.exec();
         if (isToBeBuilt) {
-           packageToBeBuilt.push(pkg);
+          packageToBeBuilt.push(pkg);
         }
       }
       this.packagesToBeBuilt = packageToBeBuilt;
     }
-  
+
     //List all package that will be built
     console.log("Packages scheduled to be built", this.packagesToBeBuilt);
 
     console.log("Fetching Unlocked Package Info..");
     this.orgDependentPackages = await this.getOrgDependentPackages();
     this.unlockedPackages = await this.getUnlockedPacakges();
-
-
 
     this.childs = DependencyHelper.getChildsOfAllPackages(
       this.project_directory,
@@ -125,8 +126,8 @@ export default class BuildImpl {
     this.projectConfig = ManifestHelpers.getSFDXPackageManifest(
       this.project_directory
     );
-    let sortedBatch  = new BatchingTopoSort().sort(this.childs);
-    
+    let sortedBatch = new BatchingTopoSort().sort(this.childs);
+
     //Do First Level Package First
     let pushedPackages = [];
     for (const pkg of sortedBatch[0]) {
@@ -139,7 +140,8 @@ export default class BuildImpl {
             this.config_file_path,
             this.devhub_alias,
             this.wait_time,
-            this.isSkipValidation
+            this.isSkipValidation,
+            this.isValidateMode
           )
         )
         .then(
@@ -166,7 +168,10 @@ export default class BuildImpl {
     //Other packages get added when each one in the first level finishes
     await this.recursiveAll(this.packageCreationPromises);
 
-    return {generatedPackages:this.generatedPackages,failedPackages:this.failedPackages};
+    return {
+      generatedPackages: this.generatedPackages,
+      failedPackages: this.failedPackages,
+    };
   }
 
   private printQueueDetails() {
@@ -180,8 +185,6 @@ export default class BuildImpl {
     );
   }
 
- 
-
   private handlePackageError(reason: any, pkg: string): any {
     console.log(`${EOL}-----------------------------------------`);
     console.log(`Package Creation Failed for ${pkg}`);
@@ -191,7 +194,6 @@ export default class BuildImpl {
     } catch (e) {
       console.log(`Unable to display logs for pkg ${pkg}`);
     }
-    
 
     //Remove the package from packages To Be Built
     this.packagesToBeBuilt = this.packagesToBeBuilt.filter((el) => {
@@ -207,13 +209,12 @@ export default class BuildImpl {
     this.failedPackages.push(pkg);
     this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkg) => {
       if (this.childs[pkg].includes(pkg)) {
-        this.failedPackages.push(this.childs[pkg])
+        this.failedPackages.push(this.childs[pkg]);
         return false;
       }
     });
     console.log(`${EOL}Removed all childs of ${pkg} from queue`);
     console.log(`${EOL}-----------------------------------------`);
-
   }
 
   private queueChildPackages(packageMetadata: PackageMetadata): any {
@@ -241,7 +242,8 @@ export default class BuildImpl {
               this.config_file_path,
               this.devhub_alias,
               this.wait_time,
-              this.isSkipValidation
+              this.isSkipValidation,
+              this.isValidateMode
             )
           )
           .then(
@@ -336,7 +338,8 @@ export default class BuildImpl {
     config_file_path: string,
     devhub_alias: string,
     wait_time: string,
-    isSkipValidation: boolean
+    isSkipValidation: boolean,
+    isValidateMode: boolean
   ): Promise<PackageMetadata> {
     let repository_url: string;
     if (this.repourl == null) {
@@ -354,30 +357,46 @@ export default class BuildImpl {
     console.log(`Package creation initiated for  ${sfdx_package}`);
 
     let result;
-    if (packageType === "Unlocked") {
-      result = this.createUnlockedPackage(
-        sfdx_package,
-        commit_id,
-        repository_url,
-        config_file_path,
-        devhub_alias,
-        wait_time,
-        isSkipValidation
-      );
-    } else if (packageType === "Source") {
-      result = this.createSourcePackage(
-        sfdx_package,
-        commit_id,
-        repository_url
-      );
-    } else if (packageType == "Data") {
-      result = this.createDataPackage(
-        sfdx_package,
-        commit_id,
-        repository_url
-      );
+    if (!isValidateMode) {
+      if (packageType === "Unlocked") {
+        result = this.createUnlockedPackage(
+          sfdx_package,
+          commit_id,
+          repository_url,
+          config_file_path,
+          devhub_alias,
+          wait_time,
+          isSkipValidation
+        );
+      } else if (packageType === "Source") {
+        result = this.createSourcePackage(
+          sfdx_package,
+          commit_id,
+          repository_url
+        );
+      } else if (packageType == "Data") {
+        result = this.createDataPackage(
+          sfdx_package,
+          commit_id,
+          repository_url
+        );
+      } else {
+        throw new Error(`Unknown package type ${packageType}`);
+      }
     } else {
-      throw new Error(`Unknown package type ${packageType}`)
+      if (packageType === "Source" || packageType == "Unlocked") {
+        result = this.createSourcePackage(
+          sfdx_package,
+          commit_id,
+          repository_url
+        );
+      } else if (packageType == "Data") {
+        result = this.createDataPackage(
+          sfdx_package,
+          commit_id,
+          repository_url
+        );
+      }
     }
 
     return result;
@@ -399,17 +418,22 @@ export default class BuildImpl {
       repository_url: repository_url,
     };
 
-
-  
-
     //Create a working directory
-    let projectDirectory = SourcePackageGenerator.generateSourcePackageArtifact(null,sfdx_package,ManifestHelpers.getPackageDescriptorFromConfig(sfdx_package,this.projectConfig)["path"],null,config_file_path);
+    let projectDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
+      null,
+      sfdx_package,
+      ManifestHelpers.getPackageDescriptorFromConfig(
+        sfdx_package,
+        this.projectConfig
+      )["path"],
+      null,
+      config_file_path
+    );
 
-   
     let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
       sfdx_package,
       null,
-      path.join('config','project-scratch-def.json'),
+      path.join("config", "project-scratch-def.json"),
       true,
       null,
       projectDirectory,
@@ -462,41 +486,36 @@ export default class BuildImpl {
     return result;
   }
 
-  private async getOrgDependentPackages()
-  {
-  let orgDependentPackages=[];
-  let packageInfo = await this.getPackageInfo();
-  packageInfo.forEach(pkg => {
-      if(pkg.IsOrgDependent === 'Yes' )
-          orgDependentPackages.push(pkg.Name);
+  private async getOrgDependentPackages() {
+    let orgDependentPackages = [];
+    let packageInfo = await this.getPackageInfo();
+    packageInfo.forEach((pkg) => {
+      if (pkg.IsOrgDependent === "Yes") orgDependentPackages.push(pkg.Name);
     });
-    
+
     return orgDependentPackages;
   }
 
-  private async getUnlockedPacakges()
-  {
-  let unlockedPackages=[];
-  let packageInfo = await this.getPackageInfo();
-  packageInfo.forEach(pkg => {
-      if(pkg.IsOrgDependent === 'No' )
-      unlockedPackages.push(pkg.Name);
+  private async getUnlockedPacakges() {
+    let unlockedPackages = [];
+    let packageInfo = await this.getPackageInfo();
+    packageInfo.forEach((pkg) => {
+      if (pkg.IsOrgDependent === "No") unlockedPackages.push(pkg.Name);
     });
-    
+
     return unlockedPackages;
   }
 
-
-  private  async getPackageInfo()
-  {
-     if(this.packageInfo==null)
-     {
-     this.packageInfo = await new PackageVersionListImpl(this.project_directory,this.devhub_alias).exec(); 
-     }
-     return this.packageInfo;
+  private async getPackageInfo() {
+    if (this.packageInfo == null) {
+      this.packageInfo = await new PackageVersionListImpl(
+        this.project_directory,
+        this.devhub_alias
+      ).exec();
+    }
+    return this.packageInfo;
   }
 
-  
   private createDataPackage(
     sfdx_package: string,
     commit_id: string,
@@ -519,7 +538,7 @@ export default class BuildImpl {
       sourceVersion: commit_id,
       package_version_number: incrementedVersionNumber?.versionNumber,
       repository_url: repository_url,
-      package_type: "data"
+      package_type: "data",
     };
 
     let createDataPackageImpl = new CreateDataPackageImpl(
@@ -531,7 +550,7 @@ export default class BuildImpl {
 
     return result;
   }
-  
+
   private getFormattedTime(milliseconds: number): string {
     let date = new Date(0);
     date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
