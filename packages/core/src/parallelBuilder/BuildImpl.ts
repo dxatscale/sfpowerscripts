@@ -81,11 +81,18 @@ export default class BuildImpl {
     //Do a diff Impl
     if (this.isDiffCheckEnabled) {
       let packageToBeBuilt = [];
+
+      let override: boolean;
+      if (this.isValidateMode) {
+        override = true;
+      }
+
       for await (const pkg of this.packagesToBeBuilt) {
         let diffImpl: PackageDiffImpl = new PackageDiffImpl(
           pkg,
           this.project_directory,
-          this.config_file_path
+          this.config_file_path,
+          override
         );
         let isToBeBuilt = await diffImpl.exec();
         if (isToBeBuilt) {
