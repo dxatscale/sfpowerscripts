@@ -44,6 +44,7 @@ export default class CodeAnalysisArtifactProcessor {
            filename: fileName,
             beginLine: element["$"]["beginline"],
             priority: element["$"]["priority"],
+            externalInfoUrl: element["$"]["externalInfoUrl"],
             problem: element["_"]
           };
 
@@ -70,6 +71,7 @@ export interface CodeAnalyisDetail {
   beginLine: number;
   priority: number;
   problem: string;
+  externalInfoUrl: string;
 }
 export interface CodeAnalysisResult {
   name: string;

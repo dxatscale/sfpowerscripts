@@ -241,6 +241,9 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
   public render(): JSX.Element {
     const rowGetter = ({ index }) =>
       this.state.sortedList[index] ? this.state.sortedList[index] : {};
+    
+    const cellRenderer = ({ cellData, columnData, columnIndex, dataKey, isScrolling, rowData, rowIndex }) => 
+      (<a href="{rowData.externalInfoUrl}" target="_blank">{rowData.problem}</a>)
 
     return (
       <div className="container">
@@ -300,8 +303,9 @@ class PMDAnalysisTab extends React.Component<{}, IBuildInfoTabState> {
                       />
                       <Column label="Priority" dataKey="priority" width={150} />
                       <Column label="Problem"
-                       dataKey="problem" 
+                       dataKey="problem"
                        width= { (width/3) } 
+                       cellRenderer={cellRenderer}
                        />
                     </Table>
                   )}
