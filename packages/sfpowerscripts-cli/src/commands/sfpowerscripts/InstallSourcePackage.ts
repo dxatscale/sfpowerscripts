@@ -10,7 +10,6 @@ import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails"
 import { Messages } from "@salesforce/core";
 import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
 import { flags } from "@salesforce/command";
-import { tmpdir } from "os";
 const fs = require("fs-extra");
 const path = require("path");
 const glob = require("glob");
