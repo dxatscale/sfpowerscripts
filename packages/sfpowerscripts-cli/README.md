@@ -92,6 +92,7 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 * [`sfpowerscripts:ExportSource`](#sfpowerscriptsexportsource)
 * [`sfpowerscripts:GenerateChangelog [BETA]`](#sfpowerscriptsgeneratechangelog)
 * [`sfpowerscripts:IncrementBuildNumber`](#sfpowerscriptsincrementbuildnumber)
+* [`sfpowerscripts:InstallSourcePackage`](#sfpowerscriptsinstallsourcepackage)
 * [`sfpowerscripts:InstallUnlockedPackage`](#sfpowerscriptsinstallunlockedpackage)
 * [`sfpowerscripts:TriggerApexTest`](#sfpowerscriptstriggerapextest)
 * [`sfpowerscripts:ValidateApexCoverage`](#sfpowerscriptsvalidateapexcoverage)
@@ -666,6 +667,44 @@ EXAMPLE
   <refname>_sfpowerscripts_incremented_project_version
 ```
 
+## `sfpowerscripts:InstallSourcePackage`
+
+Installs a sfpowerscripts source package to the target org
+
+
+```
+USAGE
+  $ sfdx sfpowerscripts:InstallSourcePackage -n <string> -u <string> [--artifactdir <directory>] [-s] [--subdirectory <directory>] [-o] [-t] [--waittime <string>] [--json] [--loglevel   
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -n, --package=package                                                             (required) Name of the package to be installed
+
+  -o, --optimizedeployment                                                          Optimize deployment by triggering test classes that are in
+                                                                                     the package, rather  than using the whole tests in the org
+
+  -s, --skiponmissingartifact                                                       Skip package installation if the build artifact is missing.
+                                                                                    Enable this if artifacts are only being created for modified
+                                                                                    packages
+
+  -t, --skiptesting                                                                 Skips running test when deploying to a sandbox
+
+  -u, --targetorg=targetorg                                                         (required) Alias/User Name of the target environment
+
+  --artifactdir=artifactdir                                                         [default: artifacts] The directory where the artifact is located
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for this command invocation
+
+  --subdirectory=subdirectory                                                       Install specific subdirectory in the package. Useful when package
+                                                                                    consists of multiple discrete subdirectories in a single package
+
+  --waittime=waittime                                                               [default: 120] wait time for command to finish in minutes
+
+EXAMPLE
+  $ sfdx sfpowerscripts:InstallSourcePackage -n mypackage -u <org>
+```
 
 
 ## `sfpowerscripts:InstallUnlockedPackage`
