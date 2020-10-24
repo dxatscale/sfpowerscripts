@@ -3,7 +3,7 @@
     "id": "sfpowerscripts",
     "publisher": "AzlamSalam",
     "name": "sfpowerscripts",
-    "version": "17.1.5",
+    "version": "18.0.0",
     "description": "Azure Pipelines tasks for working with Salesforce",
     "tags": [
         "Extension",
@@ -120,10 +120,16 @@
             "path": "BuildTasks/IncrementProjectBuildNumberTask"
         },
         {
+            "path": "BuildTasks/InstallDataPackageTask"
+        },
+        {
             "path": "BuildTasks/InstallUnlockedPackageTask"
         },
         {
             "path": "BuildTasks/InstallSourcePackageTask"
+        },
+        {
+            "path": "BuildTasks/CreateDataPackageTask"
         },
         {
             "path": "BuildTasks/CreateSourcePackageTask"
@@ -385,6 +391,16 @@
             }
         },
         {
+            "id": "sfpowerscripts-installdatapackage-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "BuildTasks/InstallDataPackageTask"
+            }
+        },
+        {
             "id": "sfpwowerscript-installunlockedpackage-task",
             "type": "ms.vss-distributed-task.task",
             "targets": [
@@ -402,6 +418,16 @@
             ],
             "properties": {
                 "name": "BuildTasks/InstallSourcePackageTask"
+            }
+        },
+        {
+            "id": "sfpowerscripts-createdatapackage-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "BuildTasks/CreateDataPackageTask"
             }
         },
         {

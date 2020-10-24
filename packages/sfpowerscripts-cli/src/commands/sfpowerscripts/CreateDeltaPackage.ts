@@ -25,7 +25,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:CreateDeltaPackage -n <packagename> -r <61635fb> -t <3cf01b9> -v <version> -b\n`,
+    `$ sfdx sfpowerscripts:CreateDeltaPackage -n <packagename> -r <61635fb> -t <3cf01b9> -v <version>\n`,
     `Output variable:`,
     `sfpowerscripts_delta_package_path`,
     `<refname>_sfpowerscripts_delta_package_path`,
@@ -115,7 +115,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
         .generatedestructivemanifest;
 
 
-      
+
 
       let createDeltaPackageImp = new CreateDeltaPackageImpl(
         null,
@@ -151,7 +151,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
         repository_url: repository_url,
       };
 
-     
+
 
     //Switch to delta and let source package know all tests has to be triggered
     packageMetadata.package_type = "delta";

@@ -3,7 +3,6 @@
     "packageFlagDescription": "The name of the package",
     "versionNumberFlagDescription": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task",
     "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
-    "apextestsuiteFlagDescription":"Apex Test Suite that needs to be associated with the source package, Source packages when deployed to production require each individual classes in the package to have more than 75% coverage, Hence this apex test task should cover all the classes",
     "destructiveManiFestFilePathFlagDescription":"Path to a destructiveChanges.xml, mentioning any metadata that need to be deleted before the contents in the source package need to be installed in the org",
     "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
     "diffCheckFlagDescription": "Only build when the package has changed",

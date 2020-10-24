@@ -1,6 +1,7 @@
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 import { isNullOrUndefined } from "util";
+import SFPLogger from "../utils/SFPLogger";
 
 
 export default class AnalyzeWithPMDImpl {
@@ -16,8 +17,8 @@ export default class AnalyzeWithPMDImpl {
          throw error;
     });
    
-    child.stdout.on("data",data=>{console.log(data.toString()); });
-    child.stderr.on("data",data=>{console.log(data.toString()); });
+    child.stdout.on("data",data=>{SFPLogger.log(data.toString()); });
+    child.stderr.on("data",data=>{SFPLogger.log(data.toString()); });
     
 
     await onExit(child);
@@ -48,7 +49,7 @@ export default class AnalyzeWithPMDImpl {
 
     command+=` --loglevel INFO`
 
-    console.log(command);
+    SFPLogger.log(command);
     return command;
   }
 

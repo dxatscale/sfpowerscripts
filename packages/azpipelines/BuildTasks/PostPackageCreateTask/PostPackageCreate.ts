@@ -46,7 +46,7 @@ async function createandPushGitTag(
 
   await git.addConfig("user.email", "sfpowerscripts@dxscale");
 
-  await git.silent(false).addAnnotatedTag(tagname, "Unlocked Package");
+  await git.silent(false).addAnnotatedTag(tagname, "sfpowerscripts Package");
 
   console.log(`Created tag ${tagname}`);
 

@@ -1,3 +1,5 @@
+
+import SFPLogger from "../utils/SFPLogger";
 import PackageMetadata from "../PackageMetadata";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ManifestHelpers from "../manifest/ManifestHelpers";
@@ -10,13 +12,24 @@ import path = require("path");
 import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
 const Table = require("cli-table");
 
+
+
 export default class CreateSourcePackageImpl {
+
+  private packageLogger;
+
+
   public constructor(
     private projectDirectory: string,
     private sfdx_package: string,
     private destructiveManifestFilePath: string,
     private packageArtifactMetadata: PackageMetadata
-  ) {}
+  ) {
+     
+    fs.outputFileSync(`.sfpowerscripts/logs/${sfdx_package}`, `sfpowerscripts--log${EOL}`)
+    this.packageLogger=`.sfpowerscripts/logs/${sfdx_package}`;
+   
+  }
 
   public async exec(): Promise<PackageMetadata> {
     //Only set package type to source if its not provided, delta will be setting it up
@@ -26,16 +39,16 @@ export default class CreateSourcePackageImpl {
     )
       this.packageArtifactMetadata.package_type = "source";
 
-    console.log(
-      "--------------Create Source Package---------------------------"
+    SFPLogger.log(
+      "--------------Create Source Package---------------------------",null,this.packageLogger
     );
-    console.log("Project Directory", this.projectDirectory);
-    console.log("sfdx_package", this.sfdx_package);
-    console.log(
+    SFPLogger.log("Project Directory", this.projectDirectory,this.packageLogger);
+    SFPLogger.log("sfdx_package", this.sfdx_package,this.packageLogger);
+    SFPLogger.log(
       "destructiveManifestFilePath",
-      this.destructiveManifestFilePath
+      this.destructiveManifestFilePath,this.packageLogger
     );
-    console.log("packageArtifactMetadata", this.packageArtifactMetadata);
+    SFPLogger.log("packageArtifactMetadata", this.packageArtifactMetadata,this.packageLogger);
 
     let startTime = Date.now();
 
@@ -96,8 +109,8 @@ export default class CreateSourcePackageImpl {
         this.printEmptyArtifactWarning();
       }
     } else {
-      console.log(
-        "Proceeding with all packages.. as a particular package was not provided"
+      SFPLogger.log(
+        "Proceeding with all packages.. as a particular package was not provided",null,this.packageLogger
       );
     }
 
@@ -120,6 +133,14 @@ export default class CreateSourcePackageImpl {
       creation_time: elapsedTime,
       timestamp: Date.now(),
     };
+
+    // try
+    // {
+    // log4js.shutdown();
+    // }catch(error)
+    // {} //dont do anything with 
+
+
     return this.packageArtifactMetadata;
   }
 
@@ -143,11 +164,11 @@ export default class CreateSourcePackageImpl {
         classTypes?.testClass?.length > 0) {
         if (classTypes?.parseError?.length > 0) {
 
-          console.log(
-            "---------------------------------------------------------------------------------------"
+          SFPLogger.log(
+            "---------------------------------------------------------------------------------------",null,this.packageLogger
           );
-          console.log("Unable to parse these classes to correctly identify test classes, Its not your issue, its ours! Please raise a issue in our repo!");
-          this.printClassesIdentified(classTypes?.parseError);
+          SFPLogger.log("Unable to parse these classes to correctly identify test classes, Its not your issue, its ours! Please raise a issue in our repo!",null,this.packageLogger);
+         this.printClassesIdentified(classTypes?.parseError);
           this.packageArtifactMetadata.isTriggerAllTests = true;
         }
 
@@ -165,34 +186,34 @@ export default class CreateSourcePackageImpl {
   }
 
   private printEmptyArtifactWarning() {
-    console.log(
-      "---------------------WARNING! Empty aritfact encountered-------------------------------"
+    SFPLogger.log(
+      "---------------------WARNING! Empty aritfact encountered-------------------------------",null,this.packageLogger
     );
-    console.log(
-      "Either this folder is empty or the application of .forceignore results in an empty folder"
+    SFPLogger.log(
+      "Either this folder is empty or the application of .forceignore results in an empty folder",null,this.packageLogger
     );
-    console.log("Proceeding to create an empty artifact");
-    console.log(
-      "---------------------------------------------------------------------------------------"
+    SFPLogger.log("Proceeding to create an empty artifact",null,this.packageLogger);
+    SFPLogger.log(
+      "---------------------------------------------------------------------------------------",null,this.packageLogger
     );
   }
 
   private printHintForOptimizedDeployment() {
-    console.log(`---------------- OPTION FOR DEPLOYMENT OPTIMIZATION AVAILABLE-----------------------------------`);
-    console.log(`Following apex test classes were identified and can  be used for deploying this package,${EOL}` +
+    SFPLogger.log(`---------------- OPTION FOR DEPLOYMENT OPTIMIZATION AVAILABLE-----------------------------------`,null,this.packageLogger);
+    SFPLogger.log(`Following apex test classes were identified and can  be used for deploying this package,${EOL}` +
       `in an optimal manner, provided each individual class meets the test coverage requirement of 75% and above${EOL}` +
-      `Ensure each apex class/trigger is validated for coverage in the validation stage`);
-    console.log(`-----------------------------------------------------------------------------------------------`);
+      `Ensure each apex class/trigger is validated for coverage in the validation stage`,null,this.packageLogger);
+    SFPLogger.log(`-----------------------------------------------------------------------------------------------`,null,this.packageLogger);
   }
 
   private printSlowDeploymentWarning() {
-    console.log(`-------WARNING! YOU MIGHT NOT BE ABLE TO DEPLOY OR WILL HAVE A SLOW DEPLOYMENT---------------`);
-    console.log(
+    SFPLogger.log(`-------WARNING! YOU MIGHT NOT BE ABLE TO DEPLOY OR WILL HAVE A SLOW DEPLOYMENT---------------`,null,this.packageLogger);
+    SFPLogger.log(
       `This package has apex classes/triggers, however apex test classes were not found, You would not be able to deploy${EOL}` +
       `to production org optimally if each class do not have coverage of 75% and above,We will attempt deploying${EOL}` +
-      `this package by triggering all local tests in the org which could be realy costly in terms of deployment time!${EOL}`
+      `this package by triggering all local tests in the org which could be realy costly in terms of deployment time!${EOL}`,null,this.packageLogger
     );
-    console.log(`---------------------------------------------------------------------------------------------`);
+    SFPLogger.log(`---------------------------------------------------------------------------------------------`,null,this.packageLogger);
   }
 
   private getDestructiveChanges(
@@ -224,8 +245,8 @@ export default class CreateSourcePackageImpl {
         isDestructiveChangesFound = true;
       }
     } catch (error) {
-      console.log(
-        "Unable to process destructive Manifest specified in the path or in the project manifest"
+      SFPLogger.log(
+        "Unable to process destructive Manifest specified in the path or in the project manifest",null,this.packageLogger
       );
       destructiveChangesPath = null;
     }
@@ -251,8 +272,8 @@ export default class CreateSourcePackageImpl {
       let item = [fetchedClass.name, fetchedClass.filepath,fetchedClass.error?fetchedClass.error:"N/A"];
       table.push(item);
     }
-    console.log("Following apex test classes were identified");
-    console.log(table.toString());
+    SFPLogger.log("Following apex test classes were identified",null,this.packageLogger);
+    SFPLogger.log(table.toString(),null,this.packageLogger);
   }
 }
 type DestructiveChanges = {

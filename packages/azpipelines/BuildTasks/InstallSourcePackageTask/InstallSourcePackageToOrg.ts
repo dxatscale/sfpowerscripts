@@ -15,7 +15,7 @@ import {
   updatePackageDeploymentDetails,
 } from "../Common/PackageExtensionStorageHelper";
 import ArtifactHelper from "../Common/ArtifactHelper";
-
+import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails"
 const fs = require("fs-extra");
 const path = require("path");
 const glob = require("glob");
@@ -129,6 +129,7 @@ async function run() {
     }
 
     let sourceDirectory;
+    // Get package source directory from sfdx-project.json in sourceDirectoryPath
     if (!isNullOrUndefined(sfdx_package)) {
       sourceDirectory = ManifestHelpers.getSFDXPackageDescriptor(
         artifacts_filepaths[0].sourceDirectoryPath,
@@ -145,7 +146,16 @@ async function run() {
 
     console.log("Path for the project", sourceDirectory);
     if (!isNullOrUndefined(subdirectory)) {
-      sourceDirectory = path.join(sourceDirectory, subdirectory);
+      sourceDirectory =  path.join(sourceDirectory, subdirectory);
+
+      // Check whether the absolute source directory path exists
+      let absSourceDirectory = path.join(
+        artifacts_filepaths[0].sourceDirectoryPath,
+        sourceDirectory
+      );
+      if (!fs.existsSync(absSourceDirectory)) {
+        throw new Error(`Source directory ${absSourceDirectory} does not exist`);
+      }
     }
 
     // Apply Destructive Manifest
@@ -203,13 +213,17 @@ async function run() {
       }
     }
 
+    
     //Construct Deploy Command for actual payload
     let deploymentOptions = await generateDeploymentOptions(
       packageMetadataFromStorage,
       wait_time,
       optimizeDeployment,
-      skipTesting
+      skipTesting,
+      target_org
     );
+
+
     let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
       target_org,
       artifacts_filepaths[0].sourceDirectoryPath,
@@ -224,7 +238,8 @@ async function run() {
       tl.setVariable("sfpowerscripts_deploysource_id", result.deploy_id);
     }
 
-    if (result.result) {
+
+    if (result.result && !result.message.startsWith("skip:")) {
       console.log("Applying Post Deployment Activites");
       //Apply PostDeployment Activities
       try {
@@ -235,7 +250,8 @@ async function run() {
             artifacts_filepaths[0].sourceDirectoryPath,
             target_org,
             sourceDirectory,
-            wait_time
+            wait_time,
+            skipTesting
           );
         }
       } catch (error) {
@@ -251,7 +267,11 @@ async function run() {
           target_org: target_org,
           sub_directory: subdirectory,
         });
-      } else {
+      } else if(result.result && result.message.startsWith("skip:"))
+      {
+        tl.setResult(tl.TaskResult.Skipped, result.message);
+      }
+      else {
         //Update existing environment map
         packageMetadataFromStorage.deployments.push({
           target_org: target_org,
@@ -265,7 +285,8 @@ async function run() {
         extensionName
       );
       tl.setResult(tl.TaskResult.Succeeded, result.message);
-    } else {
+    }    
+    else {
       tl.error(result.message);
       tl.setResult(
         tl.TaskResult.Failed,
@@ -317,7 +338,8 @@ async function reconcileAndRedeployProfiles(
   sourceDirectoryPath: string,
   target_org: string,
   sourceDirectory: string,
-  wait_time: string
+  wait_time: string,
+  skipTest:boolean
 ) {
   if (profileFolders.length > 0) {
     profileFolders.forEach((folder) => {
@@ -347,8 +369,13 @@ async function reconcileAndRedeployProfiles(
     let deploymentOptions = {};
     deploymentOptions["ignore_warnings"] = true;
     deploymentOptions["wait_time"] = wait_time;
-    deploymentOptions["testlevel"] = "RunSpecifiedTests";
-    deploymentOptions["specified_tests"] = "skip";
+
+    if (skipTest) {
+      deploymentOptions["testlevel"] = "NoTestRun";
+    } else {
+      deploymentOptions["testlevel"] = "RunSpecifiedTests";
+      deploymentOptions["specified_tests"] = "skip";
+    }
 
     let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
       target_org,
@@ -369,19 +396,45 @@ async function generateDeploymentOptions(
   packageMetadata: PackageMetadata,
   wait_time: string,
   optimizeDeployment: boolean,
-  skipTest:boolean
+  skipTest:boolean,
+  target_org: string
 ): Promise<any> {
   let mdapi_options = {};
   mdapi_options["ignore_warnings"] = true;
   mdapi_options["wait_time"] = wait_time;
 
-  
-  if (packageMetadata.isApexFound) {
-     if(skipTest)
-     {
+  if (skipTest) {
+    let result;
+    try {
+      result = await OrgDetails.getOrgDetails(target_org);
+    } catch(err) {
+      console.log("Unable determine type of org...Defaulting to production");
+      console.log(
+        ` -------------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
+          `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
+          `-------------------------------------------------------------------------------------------------------------`
+      );
+      mdapi_options["testlevel"] = "RunLocalTests";
+    }
+
+    if (result["IsSandbox"]) {
+      console.log(
+        ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
+          `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
+          `-------------------------------------------------------------------------------------------------------------`
+      );
       mdapi_options["testlevel"] = "NoTestRun";
-     }
-     else if(packageMetadata.isTriggerAllTests)
+    } else {
+      console.log(
+        ` -------------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
+          `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
+          `-------------------------------------------------------------------------------------------------------------`
+      );
+      mdapi_options["testlevel"] = "RunLocalTests";
+    }
+
+  } else if (packageMetadata.isApexFound) {
+     if(packageMetadata.isTriggerAllTests)
      {
       mdapi_options["testlevel"] = "RunLocalTests";
      }
@@ -393,11 +446,9 @@ async function generateDeploymentOptions(
     } else {
       mdapi_options["testlevel"] = "RunLocalTests";
     }
-  }
-  else
-  {
+  } else {
     mdapi_options["testlevel"] = "RunSpecifiedTests";
-    mdapi_options["specified_tests"] = "skip"; 
+    mdapi_options["specified_tests"] = "skip";
   }
   return mdapi_options;
 }

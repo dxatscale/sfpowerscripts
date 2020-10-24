@@ -5,8 +5,14 @@ import PackageMetadata from "../PackageMetadata";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
+import SFPLogger from "../utils/SFPLogger";
+const fs = require("fs-extra");
+import { EOL } from "os";
+import { delay } from "../utils/Delay";
 
 export default class CreateUnlockedPackageImpl {
+  private packageLogger;
+
   public constructor(
     private sfdx_package: string,
     private version_number: string,
@@ -18,8 +24,16 @@ export default class CreateUnlockedPackageImpl {
     private wait_time: string,
     private isCoverageEnabled: boolean,
     private isSkipValidation: boolean,
-    private packageArtifactMetadata: PackageMetadata
-  ) {}
+    private packageArtifactMetadata: PackageMetadata,
+    private isOrgDependentPackage?:boolean
+  ) {
+    fs.outputFileSync(
+      `.sfpowerscripts/logs/${sfdx_package}`,
+      `sfpowerscripts--log${EOL}`
+    );
+    this.packageLogger = `.sfpowerscripts/logs/${sfdx_package}`;
+    
+  }
 
   public async exec(): Promise<PackageMetadata> {
     this.packageArtifactMetadata.package_type = "unlocked";
@@ -31,9 +45,9 @@ export default class CreateUnlockedPackageImpl {
     );
 
     let packageDirectory: string = packageDescriptor["path"];
-    console.log("Package Directory", packageDirectory);
+    SFPLogger.log("Package Directory", packageDirectory, this.packageLogger);
 
-   //Resolve the package dependencies
+    //Resolve the package dependencies
     this.resolvePackageDependencies(packageDescriptor);
 
     //Redo the fetch of the descriptor as the above command would have redone the dependencies
@@ -51,46 +65,35 @@ export default class CreateUnlockedPackageImpl {
     this.packageArtifactMetadata.payload = mdapiPackage.manifest;
 
     let command = this.buildExecCommand();
-    console.log("Package Creation Command", command);
-    let child = child_process.exec(
-      command,
-      { cwd: this.project_directory, encoding: "utf8" },
-      (error, stdout, stderr) => {
-        if (error) throw error;
-      }
-    );
-
     let output = "";
+    SFPLogger.log("Package Creation Command", command, this.packageLogger);
+    let child = child_process.exec(command, {
+      cwd: this.project_directory,
+      encoding: "utf8"
+    },(error, stdout, stderr) => {
+      if (error)
+      { 
+        child.stderr.on("data", data => {
+          SFPLogger.log(data.toString(),null,this.packageLogger);
+        });
+      }
+    });
+
+  
     child.stdout.on("data", (data) => {
-      console.log(data.toString());
+      SFPLogger.log(data.toString(), null, this.packageLogger);
       output += data.toString();
     });
 
     await onExit(child);
+
+
     this.packageArtifactMetadata.package_version_id = JSON.parse(
       output
     ).result.SubscriberPackageVersionId;
 
     //Get the full details on the package
-    console.log("Fetching Version Number and Coverage details");
-    let pkgInfoResultAsJSON = child_process.execSync(
-      this.buildInfoCommand(this.packageArtifactMetadata.package_version_id),
-      {
-        cwd: this.project_directory,
-        encoding: "utf8",
-      }
-    );
-
-    console.log("Package Info Fetched", pkgInfoResultAsJSON);
-
-    let pkgInfoResult = JSON.parse(pkgInfoResultAsJSON);
-    this.packageArtifactMetadata.isDependencyValidated = this.isSkipValidation;
-    this.packageArtifactMetadata.package_version_number =
-      pkgInfoResult.result[0].packageVersionNumber;
-    this.packageArtifactMetadata.test_coverage =
-      pkgInfoResult.result[0].coverage;
-    this.packageArtifactMetadata.has_passed_coverage_check =
-      pkgInfoResult.result[0].HasPassedCodeCoverageCheck;
+    await this.getPackageInfo();
 
     //Generate Source Artifact
     let mdapiPackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
@@ -118,8 +121,56 @@ export default class CreateUnlockedPackageImpl {
     return this.packageArtifactMetadata;
   }
 
+  private async getPackageInfo() {
+
+    
+    while (true) {
+      try {
+        SFPLogger.log(
+          "Fetching Version Number and Coverage details",
+          null,
+          this.packageLogger
+        );
+        let pkgInfoResultAsJSON = child_process.execSync(
+          this.buildInfoCommand(
+            this.packageArtifactMetadata.package_version_id
+          ),
+          {
+            cwd: this.project_directory,
+            encoding: "utf8",
+          }
+        );
+
+        SFPLogger.log(
+          "Package Info Fetched",
+          pkgInfoResultAsJSON,
+          this.packageLogger
+        );
+
+        let pkgInfoResult = JSON.parse(pkgInfoResultAsJSON);
+        this.packageArtifactMetadata.isDependencyValidated = this.isSkipValidation;
+        this.packageArtifactMetadata.package_version_number =
+          pkgInfoResult.result[0].packageVersionNumber;
+        this.packageArtifactMetadata.test_coverage =
+          pkgInfoResult.result[0].coverage;
+        this.packageArtifactMetadata.has_passed_coverage_check =
+          pkgInfoResult.result[0].HasPassedCodeCoverageCheck;
+          break;
+      } catch (error) {
+        SFPLogger.log(
+          "Unable to fetch package version info",
+          null,
+          this.packageLogger
+        );
+        console.log('Retrying...')
+        await delay(2000);
+        continue;
+      }
+    }
+  }
+
   private resolvePackageDependencies(packageDescriptor: any) {
-    console.log("Resolving project dependencies");
+    SFPLogger.log("Resolving project dependencies", null, this.packageLogger);
     let resolveResult;
     if (this.isSkipValidation) {
       let resolveResult;
@@ -127,14 +178,13 @@ export default class CreateUnlockedPackageImpl {
         `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -w`,
         { cwd: this.project_directory, encoding: "utf8" }
       );
-    }
-    else {
+    } else {
       resolveResult = child_process.execSync(
         `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -w --usedependencyvalidatedpackages`,
         { cwd: this.project_directory, encoding: "utf8" }
       );
     }
-    console.log(resolveResult);
+    SFPLogger.log("Resolved Depenendecies", resolveResult, this.packageLogger);
   }
 
   private buildExecCommand(): string {
@@ -149,9 +199,9 @@ export default class CreateUnlockedPackageImpl {
     if (!isNullOrUndefined(this.packageArtifactMetadata.tag))
       command += ` -t ${this.packageArtifactMetadata.tag}`;
 
-    if (this.isCoverageEnabled) command += ` -c`;
+    if (this.isCoverageEnabled && !this.isOrgDependentPackage) command += ` -c`;
 
-    if (this.isSkipValidation) command += ` --skipvalidation`;
+    if (this.isSkipValidation && !this.isOrgDependentPackage) command += ` --skipvalidation`;
 
     command += ` -v ${this.devhub_alias}`;
 

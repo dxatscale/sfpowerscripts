@@ -3,6 +3,7 @@
 Simple wrappers around sfdx commands to help set up CI/CD quickly. These commands are universal and may be used on any automation platform, as long as a shell process is available for executing the commands.
 
 ## Installation
+
 The [SFDX CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) and [sfpowerkit plugin](https://github.com/Accenture/sfpowerkit) are required for this plugin to work. If you have not already done so, please install both of these before continuing.
 
 To install the sfpowerscripts plugin, run the following command:
@@ -31,14 +32,23 @@ EXAMPLE
 ```
 
 ## Output variables
+
 Many of the commands listed below will output variables which may be consumed as flag inputs in subsequent commands. Simply pass the **variable name** to the command, and it will be substituted with the corresponding value, at runtime.
 
 Eg.
 ```
-  $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> --versionnumber <refname>_sfpowerscripts_incremented_project_version
+  $ sfdx sfpowerscripts:IncrementBuildNumber -n <mypackage>
+
+    ...
+
+    Output variable:
+    sfpowerscripts_incremented_project_version=1.0.0.1
+
+  $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> --versionnumber sfpowerscripts_incremented_project_version
 ```
 
 The following output variables are currently supported:
+
 * sfpowerscripts_incremented_project_version
 * sfpowerscripts_artifact_directory
 * sfpowerscripts_artifact_metadata_directory
@@ -53,6 +63,7 @@ If you require access to the variables at the shell layer, you may do so using t
 
 
 ### Reference name
+
 Commands that output variables optionally accept a `--refname` flag that prefixes output variables with a user-specified string. The prefix is intended as a variable namespace that allows the same command to be invoked multiple times without overwriting the output variables.
 
 ```
@@ -71,6 +82,7 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 <!-- usagestop -->
   ## Commands
   <!-- commands -->
+* [`sfpowerscripts:Build`](#sfpowerscriptsBuild)
 * [`sfpowerscripts:AnalyzeWithPMD`](#sfpowerscriptsanalyzewithpmd)
 * [`sfpowerscripts:CreateDeltaPackage`](#sfpowerscriptscreatedeltapackage)
 * [`sfpowerscripts:CreateSourcePackage`](#sfpowerscriptscreatesourcepackage)
@@ -78,10 +90,72 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 * [`sfpowerscripts:DeployDestructiveManifest`](#sfpowerscriptsdeploydestructivemanifest)
 * [`sfpowerscripts:DeploySource`](#sfpowerscriptsdeploysource)
 * [`sfpowerscripts:ExportSource`](#sfpowerscriptsexportsource)
+* [`sfpowerscripts:GenerateChangelog [BETA]`](#sfpowerscriptsgeneratechangelog)
 * [`sfpowerscripts:IncrementBuildNumber`](#sfpowerscriptsincrementbuildnumber)
 * [`sfpowerscripts:InstallUnlockedPackage`](#sfpowerscriptsinstallunlockedpackage)
 * [`sfpowerscripts:TriggerApexTest`](#sfpowerscriptstriggerapextest)
 * [`sfpowerscripts:ValidateApexCoverage`](#sfpowerscriptsvalidateapexcoverage)
+
+## `sfpowerscripts:Build`
+
+Build all packages (unlocked/source/data) in a repo in parallel with understanding of the dependency of each packages
+
+```
+USAGE
+  $ sfdx sfpowerscripts:Build [-v <string>] [--diffcheck] [--gittag] [-r <string>] [-f <filepath>]
+  [--artifactdir <directory>] [-s] [--waittime <string>] [--buildnumber <number>]
+  [--executorcount <number>][--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+
+ 
+  -f, --configfilepath=configfilepath
+      [default: config/project-scratch-def.json] Path in the current project directory containing  config file for the
+      packaging org
+
+  -k, --installationkey=installationkey
+      Installation key for this package
+
+ 
+  -r --repourl=repourl
+      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
+
+  -s, --isvalidationtobeskipped
+      Skips validation of dependencies, package ancestors, and metadata during package version creation. Skipping
+      validation reduces the time it takes to create a new package version, but package versions created without
+      validation can’t be promoted.
+
+  -v, --devhubalias=devhubalias
+      [default: HubOrg] Provide the alias of the devhub previously authenticated, default value is HubOrg if using the
+      Authenticate Devhub task
+
+ 
+  --artifactdir=artifactdir
+      [default: artifacts] The directory where the artifact is to be written
+
+  --diffcheck
+      Only build when the package has changed
+
+  --gittag
+      Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
+      [default: warn] logging level for this command invocation
+
+
+  --buildnumber=buildnumber
+       [default: 1] The build number to be used for source packages, Unlocked Packages will be assigned 
+       the buildnumber from Saleforce directly if using .NEXT
+
+  --waittime=waittime
+      [default: 120] wait time for command to finish in minutes
+
+  --executorcount=executorcount
+       [default: 5] Number of parallel package task schedulors
+
+```
+
+
 
 ## `sfpowerscripts:AnalyzeWithPMD`
 
@@ -98,10 +172,6 @@ OPTIONS
                                                                                      should be reported as failure if 1
                                                                                      or more critical defects are
                                                                                      reported during the analysis
-
-  -d, --projectdir=projectdir                                                        The project directory should
-                                                                                     contain a sfdx-project.json for
-                                                                                     this command to succeed
 
   -o, --outputpath=outputpath                                                        The file to which the output for
                                                                                      static analysis will be written
@@ -143,8 +213,6 @@ EXAMPLE
   <refname>_sfpowerscripts_pmd_output_path
 ```
 
-_See code: [lib/commands/sfpowerscripts/AnalyzeWithPMD.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/AnalyzeWithPMD.js)_
-
 ## `sfpowerscripts:CreateDeltaPackage`
 
 This task is used to create a delta package between two commits and bundle the created delta as as a deployable artifact. Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.
@@ -156,14 +224,6 @@ USAGE
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -b, --buildartifactenabled                                                        [DEPRECATED - always generate artifact]
-                                                                                    Create a build artifact, so that
-                                                                                    this pipeline can be consumed by a
-                                                                                    release pipeline
-
-  -d, --projectdir=projectdir                                                       The project directory should contain
-                                                                                    a sfdx-project.json for this command
-                                                                                    to succeed
 
   -n, --package=package                                                             (required) The name of the package
 
@@ -219,8 +279,6 @@ EXAMPLES
   <refname>_sfpowerscripts_artifact_directory
 ```
 
-_See code: [lib/commands/sfpowerscripts/CreateDeltaPackage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/CreateDeltaPackage.js)_
-
 ## `sfpowerscripts:CreateSourcePackage`
 
 This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata (e.g. commit Id), source code & an optional destructive manifest. The artifact can then be consumed by release pipelines, to deploy the package.
@@ -231,8 +289,6 @@ USAGE
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -d, --projectdir=projectdir
-      The project directory should contain a sfdx-project.json for this command to succeed
 
   -n, --package=package
       (required) The name of the package
@@ -275,7 +331,6 @@ OPTIONS
 EXAMPLES
   $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --refname <name>
   $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --diffcheck --gittag
-  $ sfdx sfpowerscripts:CreateSourcePackage -n mypackage -v <version> --destructivemanifestfilepath=destructiveChanges.xml --apextestsuite=<package> testSuite-meta.xml
 
   Output variable:
   sfpowerscripts_artifact_metadata_directory
@@ -285,8 +340,6 @@ EXAMPLES
   sfpowerscripts_package_version_number
   <refname>_sfpowerscripts_package_version_number
 ```
-
-_See code: [lib/commands/sfpowerscripts/CreateSourcePackage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/CreateSourcePackage.js)_
 
 ## `sfpowerscripts:CreateUnlockedPackage`
 
@@ -301,9 +354,6 @@ USAGE
 OPTIONS
   -b, --buildartifactenabled
       [DEPRECATED - always generate artifact] Create a build artifact, so that this pipeline can be consumed by a release pipeline
-
-  -d, --projectdir=projectdir
-      The project directory should contain a sfdx-project.json for this command to succeed
 
   -f, --configfilepath=configfilepath
       [default: config/project-scratch-def.json] Path in the current project directory containing  config file for the
@@ -377,7 +427,7 @@ EXAMPLES
   <refname>_sfpowerscripts_package_version_number
 ```
 
-_See code: [lib/commands/sfpowerscripts/CreateUnlockedPackage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/CreateUnlockedPackage.js)_
+
 
 ## `sfpowerscripts:DeployDestructiveManifest`
 
@@ -409,6 +459,8 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
       [default: warn] logging level for this command invocation
 
+  --skiponmissingmanifest
+      Skip if unable to find destructive manfiest file
 EXAMPLES
   $ sfdx sfpowerscripts:DeployDestructiveManifest -u scratchorg -m Text -t "<?xml version="1.0" encoding="UTF-8"?>
   <Package
@@ -416,7 +468,7 @@ EXAMPLES
   </Package>"
 ```
 
-_See code: [lib/commands/sfpowerscripts/DeployDestructiveManifest.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/DeployDestructiveManifest.js)_
+
 
 ## `sfpowerscripts:DeploySource`
 
@@ -436,9 +488,6 @@ OPTIONS
   -c, --checkonly
       Validate a deployment, but don't save to the org, Use this for Stage 1/2 CI Run's
 
-  -d, --projectdir=projectdir
-      The  directory should contain a sfdx-project.json for this command to succeed
-
   -f, --validationignore=validationignore
       [default: .forceignore] Validation only deployment has issues with certain metadata such as apexttestsuite, create a
       different file similar to .forceignore and use it during validate only deployment
@@ -451,6 +500,12 @@ OPTIONS
 
   --apextestsuite=apextestsuite
       Name of the Apex Test Suite that needs to be executed during this deployment
+
+  --ignoreerrors
+      Ignores the deploy errors, and continues with the deploy operation
+
+  --ignorewarnings
+      Ignores any warnings generated during metadata deployment
 
   --json
       format output as json
@@ -477,7 +532,7 @@ EXAMPLE
   <refname_sfpowerkit_deploysource_id
 ```
 
-_See code: [lib/commands/sfpowerscripts/DeploySource.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/DeploySource.js)_
+
 
 ## `sfpowerscripts:ExportSource`
 
@@ -523,11 +578,49 @@ EXAMPLE
   <refname>_sfpowerscripts_exportedsource_zip_path
 ```
 
-_See code: [lib/commands/sfpowerscripts/ExportSource.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/ExportSource.js)_
+
+
+## `sfpowerscripts:GenerateChangelog [BETA]`
+
+Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository
+
+```
+USAGE
+  $ sfdx sfpowerscripts:GenerateChangelog -d <directory> -n <string> -w <string> -r <string> -b <string> [--limit <integer>] [--workitemurl
+  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -b, --branchname=branchname                                                       (required) Repository branch in which the changelog files are
+                                                                                    located
+
+  -d, --artifactdir=artifactdir                                                     (required) [default: artifacts] Directory containing
+                                                                                    sfpowerscripts artifacts
+
+  -n, --releasename=releasename                                                     (required) Name of the release for which to generate
+                                                                                    changelog
+
+  -r, --repourl=repourl                                                             (required) Repository in which the changelog files are
+                                                                                    located. Assumes user is already authenticated.
+
+  -w, --workitemfilter=workitemfilter                                               (required) Regular expression used to search for work items
+                                                                                    (user stories) introduced in release
+
+  --json                                                                            format output as json
+
+  --limit=limit                                                                     limit the number of releases to display in changelog markdown
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for this command invocation
+
+  --workitemurl=workitemurl                                                         Generic URL for work items. Each work item ID will be
+                                                                                    appended to the URL, providing quick access to work items
+
+EXAMPLE
+  $ sfdx sfpowerscripts:GenerateChangelog -n <releaseName> -d path/to/artifact/directory -w <regexp> -r <repoURL> -b <branchName>
+```
 
 ## `sfpowerscripts:IncrementBuildNumber`
 
-Increment the selected version counter by one and adds a commit to  to your repository. This task does not push the change to the repository. If a push to the repository is required, include a step after the package is created to push this commit to the repository.
+Increment the selected version counter by one and optionally commit changes to sfdx-project.json. This command does not push changes to the source repository.
 
 Please note this task skips all the options if it figures a .NEXT in the build number for an unlocked package
 
@@ -541,7 +634,7 @@ OPTIONS
       Set the build segment of the version number to the build number rather than incremenenting
 
   -c, --commitchanges
-      Mark this if you want to commit the sfdx-project json to the repository, Please note this will not push to the repo
+      Mark this if you want to commit the modified sfdx-project json, Please note this will not push to the repo
       only commits in the local checked out repo, You would need to have a push to the repo at the end of the packaging
       task if everything is successfull
 
@@ -573,7 +666,7 @@ EXAMPLE
   <refname>_sfpowerscripts_incremented_project_version
 ```
 
-_See code: [lib/commands/sfpowerscripts/IncrementBuildNumber.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/IncrementBuildNumber.js)_
+
 
 ## `sfpowerscripts:InstallUnlockedPackage`
 
@@ -590,6 +683,9 @@ OPTIONS
                                                                                     compilation of apex, flag to trigger
                                                                                     compilation of package only
 
+  -f, --skipifalreadyinstalled                                                      Skip the package installation if the
+                                                                                    package is already installed in the org
+
   -i, --packageinstalledfrom                                                        automatically retrieve the version
                                                                                     ID of the package to be installed,
                                                                                     from the build artifact
@@ -598,6 +694,11 @@ OPTIONS
                                                                                     package
 
   -n, --package=package                                                             Name of the package to be installed
+
+  -s, --skiponmissingartifact                                                       Skip package installation if the build
+                                                                                    artifact is missing.
+                                                                                    Enable this if artifacts are only
+                                                                                    being created for modified packages
 
   -u, --targetorg=targetorg                                                         Alias/User Name of the target
                                                                                     environment
@@ -632,11 +733,11 @@ EXAMPLE
   $ sfdx InstallUnlockedPackage -n packagename -u sandboxalias -i
 ```
 
-_See code: [lib/commands/sfpowerscripts/InstallUnlockedPackage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/InstallUnlockedPackage.js)_
+
 
 ## `sfpowerscripts:TriggerApexTest`
 
-Triggers an asynchronous apex unit test in an org. Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.
+Triggers Apex unit test in an org. Supports test level RunAllTestsInPackage, which optionally allows validation of individual class code coverage
 
 ```
 USAGE
@@ -645,10 +746,23 @@ USAGE
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -l, --testlevel=RunSpecifiedTests|RunApexTestSuite|RunLocalTests|RunAllTestsInOrg  [default: RunLocalTests] The test
+
+  -c, --validateindividualclasscoverage                                              Enable code coverage validation for
+                                                                                     individual classes, when test level is
+                                                                                     RunAllTestsInPackage
+
+  -l, --testlevel=RunSpecifiedTests|RunApexTestSuite|RunLocalTests|RunAllTestsInOrg|RunAllTestsInPackage
+                                                                                     [default: RunLocalTests] The test
                                                                                      level of the test that need to be
                                                                                      executed when the code is to be
                                                                                      deployed
+
+  -n, --package=package                                                              Name of the package to run
+                                                                                     tests. Required when test level is
+                                                                                     RunAllTestsInPackage
+
+  -p, --coveragepercent=coveragepercent                                              [default: 75] Minimum coverage percentage
+                                                                                     required for each class in package
 
   -s, --synchronous                                                                  Select an option if the tests are
                                                                                      to be run synchronously
@@ -674,11 +788,8 @@ OPTIONS
 
 EXAMPLE
   $ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunLocalTests -s
-  $ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunApexTestSuite --apextestsuite <test_suite>
-  $ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunApexTestSuite --apextestsuite <test_suite> -c -t <package>
+  $ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c
 ```
-
-_See code: [lib/commands/sfpowerscripts/TriggerApexTest.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/TriggerApexTest.js)_
 
 ## `sfpowerscripts:ValidateApexCoverage`
 
@@ -707,5 +818,5 @@ EXAMPLE
   $ sfdx sfpowerscripts:ValidateApexCoverage -u scratchorg -t 80
 ```
 
-_See code: [lib/commands/sfpowerscripts/ValidateApexCoverage.js](https://github.com/Accenture/sfpowerscripts/blob/v0.0.22-alpha.1/lib/commands/sfpowerscripts/ValidateApexCoverage.js)_
+
 <!-- commandsstop -->

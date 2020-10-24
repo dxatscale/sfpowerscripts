@@ -1,6 +1,7 @@
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 import { isNullOrUndefined } from "util";
+import SFPLogger from "../utils/SFPLogger";
 
 
 export default class ValidateDXUnlockedPackageImpl {
@@ -14,8 +15,8 @@ export default class ValidateDXUnlockedPackageImpl {
          throw error;
     });
    
-    child.stdout.on("data",data=>{console.log(data.toString()); });
-    child.stderr.on("data",data=>{console.log(data.toString()); });
+    child.stdout.on("data",data=>{SFPLogger.log(data.toString()); });
+    child.stderr.on("data",data=>{SFPLogger.log(data.toString()); });
     
 
     await onExit(child);

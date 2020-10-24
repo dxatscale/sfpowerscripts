@@ -12,6 +12,7 @@ import {
   existsSync
 } from "fs";
 import ignore from "ignore";
+import SFPLogger from "../utils/SFPLogger";
 
 export default class MDAPIPackageGenerator {
   public static async getMDAPIPackageFromSourceDirectory(
@@ -43,14 +44,14 @@ export default class MDAPIPackageGenerator {
 
   private static convertSourceToMDAPI(projectDir, sourceDirectory): string {
     try {
-      let mdapiDir: string = `${this.makefolderid(5)}_mdapi`;
+      let mdapiDir: string = `.sfpowerscripts/${this.makefolderid(5)}_mdapi`;
 
       if (!isNullOrUndefined(projectDir))
-        console.log(
+        SFPLogger.log(
           `Converting to MDAPI Format ${sourceDirectory} in project directory ${projectDir}`
         );
       else
-        console.log(
+        SFPLogger.log(
           `Converting to MDAPI Format ${sourceDirectory} in project directory`
         );
       child_process.execSync(
@@ -62,10 +63,10 @@ export default class MDAPIPackageGenerator {
       if (!isNullOrUndefined(projectDir))
         mdapiDirPath = path.resolve(projectDir, mdapiDir);
       else mdapiDirPath = path.resolve(mdapiDir);
-      console.log(`Converting to MDAPI  Format Completed at ${mdapiDirPath}`);
+      SFPLogger.log(`Converting to MDAPI  Format Completed at ${mdapiDirPath}`);
       return mdapiDirPath;
     } catch (error) {
-      console.log(`Unable to convert source for directory ${sourceDirectory}`);
+      SFPLogger.log(`Unable to convert source for directory ${sourceDirectory}`);
       throw error;
     }
   }
@@ -73,7 +74,7 @@ export default class MDAPIPackageGenerator {
   private static makefolderid(length): string {
     var result = "";
     var characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     var charactersLength = characters.length;
     for (var i = 0; i < length; i++) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -139,7 +140,8 @@ export default class MDAPIPackageGenerator {
       if (err.code === "ENOENT") {
         throw new Error(`No such file or directory ${err.path}`); // Re-throw error if .forceignore does not exist
       } else if (!isToBreakBuildIfEmpty) {
-        status.message = `Something wrong with the path provided  ${directoryToCheck},,but skipping `;
+
+        status.message = `Something wrong with the path provided  ${directoryToCheck},,but skipping, The exception is ${err}`;
         status.result = "skip";
         return status;
       } else throw err;
@@ -164,7 +166,7 @@ export default class MDAPIPackageGenerator {
     // Construct file paths that are relative to the project directory.
     files.forEach((file, index, files) => {
       let filepath = path.join(dirToCheck, file);
-      files[index] = path.relative(process.cwd(), filepath);
+      files[index] = path.relative(projectDirectory==null?process.cwd():projectDirectory, filepath);
     });
 
     let forceignorePath;

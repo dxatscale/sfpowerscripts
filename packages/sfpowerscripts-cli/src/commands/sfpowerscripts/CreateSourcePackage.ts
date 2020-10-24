@@ -81,8 +81,7 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
           package_version_number: version_number,
           sourceVersion: commit_id,
           repository_url:repository_url,
-          package_type:"source",
-          apextestsuite: null
+          package_type:"source"
         };
 
         //Convert to MDAPI
