@@ -114,7 +114,9 @@ export default class Build extends SfpowerscriptsCommand {
       );
       let { generatedPackages, failedPackages } = await buildImpl.exec();
 
-    
+      console.log(`${EOL}${EOL}`);    
+      console.log("Generating Artifacts and Tags....");
+
       for (let generatedPackage of generatedPackages) {
         try {
           await ArtifactGenerator.generateArtifact(
@@ -143,7 +145,7 @@ export default class Build extends SfpowerscriptsCommand {
         }
       }
 
-      console.log(`${EOL}${EOL}`);
+     
 
 
       console.log(

@@ -16,7 +16,6 @@ export default class PackageVersionListImpl {
     let output="";
     child.stdout.on("data", data => {
       output+=data;
-      SFPLogger.log(data.toString());
     });
 
     await onExit(child);
