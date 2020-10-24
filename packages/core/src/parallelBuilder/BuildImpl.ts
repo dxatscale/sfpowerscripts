@@ -105,6 +105,14 @@ export default class BuildImpl {
     //List all package that will be built
     console.log("Packages scheduled to be built", this.packagesToBeBuilt);
 
+    
+    if(this.packagesBuilt.length==0)
+    return {
+      generatedPackages: this.generatedPackages,
+      failedPackages: this.failedPackages,
+    };
+
+
     console.log("Fetching Unlocked Package Info..");
     this.orgDependentPackages = await this.getOrgDependentPackages();
     this.unlockedPackages = await this.getUnlockedPacakges();
