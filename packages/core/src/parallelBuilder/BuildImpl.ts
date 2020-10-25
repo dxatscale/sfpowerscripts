@@ -12,10 +12,8 @@ import IncrementProjectBuildNumberImpl from "../sfdxwrappers/IncrementProjectBui
 import SFPLogger from "../utils/SFPLogger";
 import { EOL } from "os";
 import * as rimraf from "rimraf";
-import SourcePackageGenerator from "../generators/SourcePackageGenerator";
-import PackageVersionListImpl from "../sfdxwrappers/PackageVersionListImpl";
 const fs = require("fs-extra");
-let path = require("path");
+
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
