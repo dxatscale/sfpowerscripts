@@ -58,7 +58,7 @@
     "sfpowerscripts-validatetestcoverage-task": "file:BuildTasks\\ValidateTestCoveragePackageTask",
     "shelljs": "^0.8.3",
     "simple-git": "2.0.0",
-    "unzip-stream": "0.3.0"
+    "unzip-stream": "0.3.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^8.0.1",
