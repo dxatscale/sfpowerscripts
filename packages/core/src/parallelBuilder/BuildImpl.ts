@@ -103,6 +103,14 @@ export default class BuildImpl {
     console.log("Packages scheduled to be built", this.packagesToBeBuilt);
 
 
+    
+    if(this.packagesBuilt.length==0)
+    return {
+      generatedPackages: this.generatedPackages,
+      failedPackages: this.failedPackages,
+    };
+
+
     this.childs = DependencyHelper.getChildsOfAllPackages(
       this.project_directory,
       this.packagesToBeBuilt
