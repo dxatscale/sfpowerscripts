@@ -84,11 +84,24 @@ export default class BuildImpl {
         override = true;
       }
 
+      this.projectConfig = ManifestHelpers.getSFDXPackageManifest(
+        this.project_directory
+      );
+
+      this.childs = DependencyHelper.getChildsOfAllPackages(
+        this.project_directory,
+        this.packagesToBeBuilt
+      );
+
       for await (const pkg of this.packagesToBeBuilt) {
+
+
+        let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,this.childs,pkg);
+
         let diffImpl: PackageDiffImpl = new PackageDiffImpl(
           pkg,
           this.project_directory,
-          this.config_file_path,
+          (type=="Data"||type=="Source")?null:this.config_file_path,
           override
         );
         let isToBeBuilt = await diffImpl.exec();
@@ -104,17 +117,14 @@ export default class BuildImpl {
 
 
     
-    if(this.packagesBuilt.length==0)
+    if(this.packagesToBeBuilt.length==0)
     return {
       generatedPackages: this.generatedPackages,
       failedPackages: this.failedPackages,
     };
 
 
-    this.childs = DependencyHelper.getChildsOfAllPackages(
-      this.project_directory,
-      this.packagesToBeBuilt
-    );
+   
     this.parents = DependencyHelper.getParentsOfAllPackages(
       this.project_directory,
       this.packagesToBeBuilt
@@ -125,15 +135,13 @@ export default class BuildImpl {
       this.packagesToBeBuilt
     );
 
-    this.projectConfig = ManifestHelpers.getSFDXPackageManifest(
-      this.project_directory
-    );
+
     let sortedBatch = new BatchingTopoSort().sort(this.childs);
 
     //Do First Level Package First
     let pushedPackages = [];
     for (const pkg of sortedBatch[0]) {
-      let { priority, type } = this.getPriorityandTypeOfAPackage(pkg);
+      let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,this.childs,pkg);
       let packagePromise: Promise<PackageMetadata> = this.limiter
         .schedule({ id: pkg, priority: priority }, () =>
           this.createPackage(
@@ -235,7 +243,7 @@ export default class BuildImpl {
     let pushedPackages = [];
     this.packagesToBeBuilt.forEach((pkg) => {
       if (this.parentsToBeFulfilled[pkg]?.length == 0) {
-        let { priority, type } = this.getPriorityandTypeOfAPackage(pkg);
+        let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,this.childs,pkg);
         let packagePromise: Promise<PackageMetadata> = this.limiter
           .schedule({ id: pkg, priority: priority }, () =>
             this.createPackage(
@@ -278,11 +286,11 @@ export default class BuildImpl {
     this.printQueueDetails();
   }
 
-  private getPriorityandTypeOfAPackage(pkg: string) {
+  private getPriorityandTypeOfAPackage(projectConfig:any,childs:any,pkg: string) {
     let priority = 0;
-    let type = ManifestHelpers.getPackageType(this.projectConfig, pkg);
+    let type = ManifestHelpers.getPackageType(projectConfig, pkg);
     if (type === "Unlocked") {
-      if (this.childs[pkg] > 0)
+      if (childs[pkg] > 0)
         priority = PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY;
       else priority = PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY;
     } else if (type === "Source") {
