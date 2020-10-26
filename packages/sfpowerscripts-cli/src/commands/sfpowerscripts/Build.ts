@@ -121,7 +121,11 @@ export default class Build extends SfpowerscriptsCommand {
         console.log("No packages found to be built.. .. ");
         return;
       }
-    
+      
+      console.log(`${EOL}${EOL}`);    
+      console.log("Generating Artifacts and Tags....");
+
+   
       for (let generatedPackage of generatedPackages) {
         try {
           await ArtifactGenerator.generateArtifact(
@@ -150,7 +154,7 @@ export default class Build extends SfpowerscriptsCommand {
         }
       }
 
-      console.log(`${EOL}${EOL}`);
+     
 
 
       console.log(
