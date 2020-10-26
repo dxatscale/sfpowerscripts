@@ -88,15 +88,11 @@ export default class BuildImpl {
         this.project_directory
       );
 
-      this.childs = DependencyHelper.getChildsOfAllPackages(
-        this.project_directory,
-        this.packagesToBeBuilt
-      );
-
+      
       for await (const pkg of this.packagesToBeBuilt) {
 
 
-        let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,this.childs,pkg);
+        let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,pkg);
 
         let diffImpl: PackageDiffImpl = new PackageDiffImpl(
           pkg,
@@ -124,6 +120,11 @@ export default class BuildImpl {
     };
 
 
+     
+    this.childs = DependencyHelper.getChildsOfAllPackages(
+      this.project_directory,
+      this.packagesToBeBuilt
+    );
    
     this.parents = DependencyHelper.getParentsOfAllPackages(
       this.project_directory,
@@ -135,13 +136,14 @@ export default class BuildImpl {
       this.packagesToBeBuilt
     );
 
+   
 
     let sortedBatch = new BatchingTopoSort().sort(this.childs);
 
     //Do First Level Package First
     let pushedPackages = [];
     for (const pkg of sortedBatch[0]) {
-      let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,this.childs,pkg);
+      let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,pkg);
       let packagePromise: Promise<PackageMetadata> = this.limiter
         .schedule({ id: pkg, priority: priority }, () =>
           this.createPackage(
@@ -243,7 +245,7 @@ export default class BuildImpl {
     let pushedPackages = [];
     this.packagesToBeBuilt.forEach((pkg) => {
       if (this.parentsToBeFulfilled[pkg]?.length == 0) {
-        let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,this.childs,pkg);
+        let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,pkg);
         let packagePromise: Promise<PackageMetadata> = this.limiter
           .schedule({ id: pkg, priority: priority }, () =>
             this.createPackage(
@@ -286,11 +288,15 @@ export default class BuildImpl {
     this.printQueueDetails();
   }
 
-  private getPriorityandTypeOfAPackage(projectConfig:any,childs:any,pkg: string) {
+  private getPriorityandTypeOfAPackage(projectConfig:any,pkg: string) {
     let priority = 0;
+    let childs =  DependencyHelper.getChildsOfAllPackages(
+      this.project_directory,
+      this.packagesToBeBuilt
+    );
     let type = ManifestHelpers.getPackageType(projectConfig, pkg);
     if (type === "Unlocked") {
-      if (childs[pkg] > 0)
+      if (childs[pkg].length > 0)
         priority = PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY;
       else priority = PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY;
     } else if (type === "Source") {
