@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-checkoutprojectfromartifact-task",
   "description": "sfpowerscripts-checkoutprojectfromartifact-task",
-  "version": "14.0.20",
+  "version": "14.0.21",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^3.0.15",
+    "@dxatscale/sfpowerscripts.core": "^3.0.16",
     "azure-pipelines-task-lib": "^2.8.0",
     "fs-extra": "^8.1.0",
     "simple-git": "2.0.0"

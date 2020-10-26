@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-validatedxunlockedpackage-task",
   "description": "sfpowerscripts-validatedxunlockedpackage-task",
-  "version": "4.0.28",
+  "version": "4.0.29",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^3.0.15",
+    "@dxatscale/sfpowerscripts.core": "^3.0.16",
     "azure-pipelines-task-lib": "^2.8.0"
   }
 }
