@@ -7,6 +7,7 @@ import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import ApexTypeFetcher, { ApexSortedByType } from "../parser/ApexTypeFetcher";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import SFPLogger from "../utils/SFPLogger";
+import ignore from "ignore";
 const Table = require("cli-table");
 
 export default class TriggerApexTestImpl {
@@ -154,6 +155,7 @@ export default class TriggerApexTestImpl {
       command += ` -t ${this.test_options["specified_tests"]}`;
     } else if (this.test_options["testlevel"] === "RunAllTestsInPackage") {
       // Get name of test classes in package directory
+
       this.packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
         this.project_directory,
         this.test_options["package"]
@@ -162,9 +164,34 @@ export default class TriggerApexTestImpl {
       let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
       this.apexSortedByType =  apexTypeFetcher.getApexTypeOfClsFiles(this.packageDescriptor["path"]);
 
-      let testClassNames: string[] = this.apexSortedByType["testClass"].map( (fileDescriptor) =>
-        fileDescriptor.name
-      );
+
+      // Filter test classes against .forceignore
+      let forceignorePath: string;
+      if (this.project_directory != null)
+        forceignorePath = path.join(this.project_directory, ".forceignore");
+      else forceignorePath = ".forceignore";
+
+      // Transform test class filepaths to relative paths
+      let testClasses = this.apexSortedByType.testClass.map( (testClass) => {
+        let testClassWithRelativePath = testClass;
+
+        testClassWithRelativePath.filepath = path.relative(
+          this.project_directory == null ? process.cwd() : this.project_directory,
+          testClass["filepath"]
+        );
+
+        return testClassWithRelativePath;
+      });
+
+      let testClassFilepaths: string[] = testClasses.map((testClass) => testClass.filepath);
+
+      testClassFilepaths = ignore()
+        .add(fs.readFileSync(forceignorePath, 'utf8'))
+        .filter(testClassFilepaths);
+
+      testClasses = testClasses.filter((testClass) => testClassFilepaths.includes(testClass.filepath));
+
+      let testClassNames: string[] = testClasses.map((fileDescriptor) => fileDescriptor.name);
 
       if (testClassNames.length === 0) {
         throw new Error("No test classes found in package");
