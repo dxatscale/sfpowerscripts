@@ -12,10 +12,8 @@ import IncrementProjectBuildNumberImpl from "../sfdxwrappers/IncrementProjectBui
 import SFPLogger from "../utils/SFPLogger";
 import { EOL } from "os";
 import * as rimraf from "rimraf";
-import SourcePackageGenerator from "../generators/SourcePackageGenerator";
-import PackageVersionListImpl from "../sfdxwrappers/PackageVersionListImpl";
 const fs = require("fs-extra");
-let path = require("path");
+
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -33,7 +31,7 @@ export default class BuildImpl {
   private packagesBuilt: string[];
   private failedPackages: string[];
   private generatedPackages: PackageMetadata[];
-  private orgDependentPackages: string[];
+
   private packageInfo: any[];
 
   private recursiveAll = (a) =>
@@ -62,7 +60,6 @@ export default class BuildImpl {
     this.failedPackages = [];
     this.generatedPackages = [];
     this.packageCreationPromises = new Array();
-    this.orgDependentPackages = [];
   }
 
   public async exec(): Promise<{
@@ -105,9 +102,14 @@ export default class BuildImpl {
     //List all package that will be built
     console.log("Packages scheduled to be built", this.packagesToBeBuilt);
 
-    console.log("Fetching Unlocked Package Info..");
-    this.orgDependentPackages = await this.getOrgDependentPackages();
-    this.unlockedPackages = await this.getUnlockedPacakges();
+
+    
+    if(this.packagesBuilt.length==0)
+    return {
+      generatedPackages: this.generatedPackages,
+      failedPackages: this.failedPackages,
+    };
+
 
     this.childs = DependencyHelper.getChildsOfAllPackages(
       this.project_directory,
@@ -418,31 +420,19 @@ export default class BuildImpl {
       repository_url: repository_url,
     };
 
-    //Create a working directory
-    let projectDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
-      null,
-      sfdx_package,
-      ManifestHelpers.getPackageDescriptorFromConfig(
-        sfdx_package,
-        this.projectConfig
-      )["path"],
-      null,
-      config_file_path
-    );
 
     let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
       sfdx_package,
       null,
-      path.join("config", "project-scratch-def.json"),
+      this.config_file_path,
       true,
       null,
-      projectDirectory,
+      this.project_directory,
       devhub_alias,
       wait_time,
       !isSkipValidation,
       isSkipValidation,
-      packageMetadata,
-      this.orgDependentPackages.includes(sfdx_package)
+      packageMetadata
     );
 
     let result = createUnlockedPackageImpl.exec();
@@ -486,35 +476,6 @@ export default class BuildImpl {
     return result;
   }
 
-  private async getOrgDependentPackages() {
-    let orgDependentPackages = [];
-    let packageInfo = await this.getPackageInfo();
-    packageInfo.forEach((pkg) => {
-      if (pkg.IsOrgDependent === "Yes") orgDependentPackages.push(pkg.Name);
-    });
-
-    return orgDependentPackages;
-  }
-
-  private async getUnlockedPacakges() {
-    let unlockedPackages = [];
-    let packageInfo = await this.getPackageInfo();
-    packageInfo.forEach((pkg) => {
-      if (pkg.IsOrgDependent === "No") unlockedPackages.push(pkg.Name);
-    });
-
-    return unlockedPackages;
-  }
-
-  private async getPackageInfo() {
-    if (this.packageInfo == null) {
-      this.packageInfo = await new PackageVersionListImpl(
-        this.project_directory,
-        this.devhub_alias
-      ).exec();
-    }
-    return this.packageInfo;
-  }
 
   private createDataPackage(
     sfdx_package: string,
