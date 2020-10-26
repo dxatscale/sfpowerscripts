@@ -106,7 +106,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       const triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
         this.flags.targetorg,
         test_options,
-        this.flags.projectdir
+        null
       );
       console.log("Executing command");
       let result = await triggerApexTestImpl.exec();
