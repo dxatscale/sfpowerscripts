@@ -110,61 +110,20 @@ export default class PackageDiffImpl {
       `-l`,
       `${sfdx_package}_v*`,
       `--sort=version:refname`,
+      `--merged`
     ]);
     let tags: string[] = gitTagResult.split("\n");
     tags.pop(); // Remove last empty element
 
-    let tagsPointingToBranch = await this.filterTagsAgainstBranch(
-      git,
-      sfdx_package,
-      tags
-    );
     SFPLogger.log("Analysing tags:");
-    if (tagsPointingToBranch.length > 10) {
-      SFPLogger.log(tagsPointingToBranch.slice(-10).toString().replace(/,/g, "\n"));
+    if (tags.length > 10) {
+      SFPLogger.log(tags.slice(-10).toString().replace(/,/g, "\n"));
     } else {
-      SFPLogger.log(tagsPointingToBranch.toString().replace(/,/g, "\n"));
+      SFPLogger.log(tags.toString().replace(/,/g, "\n"));
     }
 
-    let latestTag = tagsPointingToBranch.pop(); // Select latest tag
+    let latestTag = tags.pop(); // Select latest tag
     return latestTag;
-  }
-
-  private async filterTagsAgainstBranch(
-    git: any,
-    sfdx_package: string,
-    tags: string[]
-  ): Promise<string[]> {
-    // Get all the commit ID's (un-abbreviated) on the current branch
-    let gitLogResult = await git.log([`--pretty=format:%H`]);
-    let commits: string[] = gitLogResult["all"][0]["hash"].split("\n");
-
-    // Get the tags' associated commit ID
-    // Dereference (-d) tags into object IDs
-    let gitShowRefTagsResult = exec(
-      `git show-ref --tags -d | grep "${sfdx_package}_v*"`,
-      { silent: true }
-    )["stdout"];
-    let refTags: string[] = gitShowRefTagsResult.split("\n");
-    refTags.pop(); // Remove last empty element
-
-    // Filter ref tags, only including tags that point to the branch
-    // By checking whether all 40 digits in the tag commit ID matches an ID in the branch's commit log
-    let refTagsPointingToBranch: string[] = refTags.filter((refTag) =>
-      commits.includes(refTag.substr(0, 40))
-    );
-    // Only match the name of the tags pointing to the branch
-    refTagsPointingToBranch = refTagsPointingToBranch.map(
-      (refTagPointingToBranch) =>
-        refTagPointingToBranch.match(/(?:refs\/tags\/)(.*)(?:\^{})$/)[1]
-    );
-
-    // Filter the sorted tags - only including tags that point to the branch
-    let tagsPointingToBranch: string[] = tags.filter((tag) =>
-      refTagsPointingToBranch.includes(tag)
-    );
-
-    return tagsPointingToBranch;
   }
 
   private async isPackageVersionChanged(
