@@ -3,8 +3,8 @@ const fs = require("fs");
 import { isNullOrUndefined } from "util";
 const path = require("path");
 import simplegit, { SimpleGit } from "simple-git/promise";
-import { exec } from "shelljs";
 import SFPLogger from "../utils/SFPLogger";
+import ManifestHelpers from "../manifest/ManifestHelpers";
 
 export default class PackageDiffImpl {
   public constructor(
@@ -20,7 +20,7 @@ export default class PackageDiffImpl {
     let config_file_path: string = this.config_file_path;
 
     let project_config_path: string;
-    if (!isNullOrUndefined(this.project_directory)) {
+    if (this.project_directory != null) {
       project_config_path = path.join(
         this.project_directory,
         "sfdx-project.json"
@@ -70,18 +70,27 @@ export default class PackageDiffImpl {
             .add(fs.readFileSync(forceignorePath).toString())
             .filter(modified_files);
 
-          if (!isNullOrUndefined(config_file_path))
+          let packageType: string = ManifestHelpers.getPackageType(project_json, this.sfdx_package);
+
+          if (config_file_path != null && packageType === "Unlocked")
             SFPLogger.log(`Checking for changes to ${config_file_path}`);
 
           SFPLogger.log(`Checking for changes in source directory '${dir.path}'`);
           // From the filtered list of modified files, check whether the package has been modified
           for (let filename of modified_files) {
-            if (
-                filename.includes(`${dir.path}`) ||
-                filename == config_file_path
-            ) {
+            if (config_file_path != null && packageType === "Unlocked") {
+              if (
+                  filename.includes(`${dir.path}`) ||
+                  filename === config_file_path
+              ) {
+                  SFPLogger.log(`Found change in ${filename}`);
+                  return true;
+              }
+            } else {
+              if (filename.includes(`${dir.path}`)) {
                 SFPLogger.log(`Found change in ${filename}`);
                 return true;
+              }
             }
           }
 
