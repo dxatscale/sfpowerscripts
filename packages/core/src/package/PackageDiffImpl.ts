@@ -36,7 +36,7 @@ export default class PackageDiffImpl {
     let project_json = JSON.parse(fs.readFileSync(project_config_path));
 
     for (let dir of project_json["packageDirectories"]) {
-      if (this.sfdx_package == dir.package) {
+      if (this.sfdx_package === dir.package) {
         SFPLogger.log(
           `Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`
         );
@@ -147,7 +147,7 @@ export default class PackageDiffImpl {
 
     let packageVersionLatestTag: string;
     for (let dir of project_json["packageDirectories"]) {
-      if (this.sfdx_package == dir.package) {
+      if (this.sfdx_package === dir.package) {
         packageVersionLatestTag = dir.versionNumber;
       }
     }
