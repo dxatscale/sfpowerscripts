@@ -7,7 +7,6 @@ import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import ApexTypeFetcher, { ApexSortedByType } from "../parser/ApexTypeFetcher";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import SFPLogger from "../utils/SFPLogger";
-import ignore from "ignore";
 const Table = require("cli-table");
 
 export default class TriggerApexTestImpl {
