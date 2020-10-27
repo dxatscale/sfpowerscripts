@@ -11,7 +11,7 @@ import ignore from "ignore";
 const Table = require("cli-table");
 
 export default class TriggerApexTestImpl {
-  private packageDescriptor;
+  private mdapiPackage: {mdapiDir: string, manifest};
   private apexSortedByType: ApexSortedByType;
 
   public constructor(
@@ -37,7 +37,7 @@ export default class TriggerApexTestImpl {
     try {
       //Print final output
       let child = child_process.exec(
-        this.buildExecCommand(),
+        await this.buildExecCommand(),
         {
           maxBuffer: 1024 * 1024 * 5,
           encoding: "utf8"
@@ -127,7 +127,7 @@ export default class TriggerApexTestImpl {
     return test_result;
   }
 
-  private buildExecCommand(): string {
+  private async buildExecCommand(): Promise<string> {
     let command = `npx sfdx force:apex:test:run -u ${this.target_org}`;
 
     if (this.test_options["synchronous"] == true) command += ` -y`;
@@ -156,13 +156,18 @@ export default class TriggerApexTestImpl {
     } else if (this.test_options["testlevel"] === "RunAllTestsInPackage") {
       // Get name of test classes in package directory
 
-      this.packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
         this.project_directory,
         this.test_options["package"]
       );
 
+      this.mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
+        this.project_directory,
+        packageDescriptor["path"]
+      );
+
       let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
-      this.apexSortedByType =  apexTypeFetcher.getApexTypeOfClsFiles(this.packageDescriptor["path"]);
+      this.apexSortedByType =  apexTypeFetcher.getApexTypeOfClsFiles(path.join(this.mdapiPackage.mdapiDir, `classes`));
 
       if (this.apexSortedByType["parseError"].length > 0) {
         for (let parseError of this.apexSortedByType["parseError"]) {
@@ -170,33 +175,7 @@ export default class TriggerApexTestImpl {
         }
       }
 
-      // Filter test classes against .forceignore
-      let forceignorePath: string;
-      if (this.project_directory != null)
-        forceignorePath = path.join(this.project_directory, ".forceignore");
-      else forceignorePath = ".forceignore";
-
-      // Transform test class filepaths to relative paths
-      let testClasses = this.apexSortedByType.testClass.map( (testClass) => {
-        let testClassWithRelativePath = testClass;
-
-        testClassWithRelativePath.filepath = path.relative(
-          this.project_directory == null ? process.cwd() : this.project_directory,
-          testClass["filepath"]
-        );
-
-        return testClassWithRelativePath;
-      });
-
-      let testClassFilepaths: string[] = testClasses.map((testClass) => testClass.filepath);
-
-      testClassFilepaths = ignore()
-        .add(fs.readFileSync(forceignorePath, 'utf8'))
-        .filter(testClassFilepaths);
-
-      testClasses = testClasses.filter((testClass) => testClassFilepaths.includes(testClass.filepath));
-
-      let testClassNames: string[] = testClasses.map((fileDescriptor) => fileDescriptor.name);
+      let testClassNames: string[] = this.apexSortedByType["testClass"].map((fileDescriptor) => fileDescriptor.name);
 
       if (testClassNames.length === 0) {
         throw new Error("No test classes found in package");
@@ -216,13 +195,8 @@ export default class TriggerApexTestImpl {
     SFPLogger.log(`Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`);
     let classesWithInvalidCoverage: {name: string, coveredPercent: number}[] = [];
 
-    let mdapiPackage: {mdapiDir: string, manifest} = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
-      this.project_directory,
-      this.packageDescriptor["path"]
-    );
-
-    let packageClasses: string[] = this.getClassesFromPackageManifest(mdapiPackage);
-    let triggers: string[] = this.getTriggersFromPackageManifest(mdapiPackage);
+    let packageClasses: string[] = this.getClassesFromPackageManifest(this.mdapiPackage);
+    let triggers: string[] = this.getTriggersFromPackageManifest(this.mdapiPackage);
 
     let code_coverage = fs.readFileSync(
       path.join(
