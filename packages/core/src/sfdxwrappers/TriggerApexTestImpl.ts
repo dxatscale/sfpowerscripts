@@ -164,6 +164,11 @@ export default class TriggerApexTestImpl {
       let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
       this.apexSortedByType =  apexTypeFetcher.getApexTypeOfClsFiles(this.packageDescriptor["path"]);
 
+      if (this.apexSortedByType["parseError"].length > 0) {
+        for (let parseError of this.apexSortedByType["parseError"]) {
+          SFPLogger.log(`Failed to parse ${parseError.name}`);
+        }
+      }
 
       // Filter test classes against .forceignore
       let forceignorePath: string;
