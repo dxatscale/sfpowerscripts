@@ -3,8 +3,8 @@ const fs = require("fs");
 import { isNullOrUndefined } from "util";
 const path = require("path");
 import simplegit, { SimpleGit } from "simple-git/promise";
-import { exec } from "shelljs";
 import SFPLogger from "../utils/SFPLogger";
+import ManifestHelpers from "../manifest/ManifestHelpers";
 
 export default class PackageDiffImpl {
   public constructor(
@@ -20,7 +20,7 @@ export default class PackageDiffImpl {
     let config_file_path: string = this.config_file_path;
 
     let project_config_path: string;
-    if (!isNullOrUndefined(this.project_directory)) {
+    if (this.project_directory != null) {
       project_config_path = path.join(
         this.project_directory,
         "sfdx-project.json"
@@ -36,7 +36,7 @@ export default class PackageDiffImpl {
     let project_json = JSON.parse(fs.readFileSync(project_config_path));
 
     for (let dir of project_json["packageDirectories"]) {
-      if (this.sfdx_package == dir.package) {
+      if (this.sfdx_package === dir.package) {
         SFPLogger.log(
           `Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`
         );
@@ -70,18 +70,27 @@ export default class PackageDiffImpl {
             .add(fs.readFileSync(forceignorePath).toString())
             .filter(modified_files);
 
-          if (!isNullOrUndefined(config_file_path))
+          let packageType: string = ManifestHelpers.getPackageType(project_json, this.sfdx_package);
+
+          if (config_file_path != null && packageType === "Unlocked")
             SFPLogger.log(`Checking for changes to ${config_file_path}`);
 
           SFPLogger.log(`Checking for changes in source directory '${dir.path}'`);
           // From the filtered list of modified files, check whether the package has been modified
           for (let filename of modified_files) {
-            if (
-                filename.includes(`${dir.path}`) ||
-                filename == config_file_path
-            ) {
+            if (config_file_path != null && packageType === "Unlocked") {
+              if (
+                  filename.includes(`${dir.path}`) ||
+                  filename === config_file_path
+              ) {
+                  SFPLogger.log(`Found change in ${filename}`);
+                  return true;
+              }
+            } else {
+              if (filename.includes(`${dir.path}`)) {
                 SFPLogger.log(`Found change in ${filename}`);
                 return true;
+              }
             }
           }
 
@@ -110,61 +119,20 @@ export default class PackageDiffImpl {
       `-l`,
       `${sfdx_package}_v*`,
       `--sort=version:refname`,
+      `--merged`
     ]);
     let tags: string[] = gitTagResult.split("\n");
     tags.pop(); // Remove last empty element
 
-    let tagsPointingToBranch = await this.filterTagsAgainstBranch(
-      git,
-      sfdx_package,
-      tags
-    );
     SFPLogger.log("Analysing tags:");
-    if (tagsPointingToBranch.length > 10) {
-      SFPLogger.log(tagsPointingToBranch.slice(-10).toString().replace(/,/g, "\n"));
+    if (tags.length > 10) {
+      SFPLogger.log(tags.slice(-10).toString().replace(/,/g, "\n"));
     } else {
-      SFPLogger.log(tagsPointingToBranch.toString().replace(/,/g, "\n"));
+      SFPLogger.log(tags.toString().replace(/,/g, "\n"));
     }
 
-    let latestTag = tagsPointingToBranch.pop(); // Select latest tag
+    let latestTag = tags.pop(); // Select latest tag
     return latestTag;
-  }
-
-  private async filterTagsAgainstBranch(
-    git: any,
-    sfdx_package: string,
-    tags: string[]
-  ): Promise<string[]> {
-    // Get all the commit ID's (un-abbreviated) on the current branch
-    let gitLogResult = await git.log([`--pretty=format:%H`]);
-    let commits: string[] = gitLogResult["all"][0]["hash"].split("\n");
-
-    // Get the tags' associated commit ID
-    // Dereference (-d) tags into object IDs
-    let gitShowRefTagsResult = exec(
-      `git show-ref --tags -d | grep "${sfdx_package}_v*"`,
-      { silent: true }
-    )["stdout"];
-    let refTags: string[] = gitShowRefTagsResult.split("\n");
-    refTags.pop(); // Remove last empty element
-
-    // Filter ref tags, only including tags that point to the branch
-    // By checking whether all 40 digits in the tag commit ID matches an ID in the branch's commit log
-    let refTagsPointingToBranch: string[] = refTags.filter((refTag) =>
-      commits.includes(refTag.substr(0, 40))
-    );
-    // Only match the name of the tags pointing to the branch
-    refTagsPointingToBranch = refTagsPointingToBranch.map(
-      (refTagPointingToBranch) =>
-        refTagPointingToBranch.match(/(?:refs\/tags\/)(.*)(?:\^{})$/)[1]
-    );
-
-    // Filter the sorted tags - only including tags that point to the branch
-    let tagsPointingToBranch: string[] = tags.filter((tag) =>
-      refTagsPointingToBranch.includes(tag)
-    );
-
-    return tagsPointingToBranch;
   }
 
   private async isPackageVersionChanged(
@@ -179,7 +147,7 @@ export default class PackageDiffImpl {
 
     let packageVersionLatestTag: string;
     for (let dir of project_json["packageDirectories"]) {
-      if (this.sfdx_package == dir.package) {
+      if (this.sfdx_package === dir.package) {
         packageVersionLatestTag = dir.versionNumber;
       }
     }
