@@ -75,6 +75,13 @@ export default class BuildImpl {
     console.log("Computing Packages to be deployed");
     SFPLogger.isSupressLogs = true;
 
+
+    // Read Manifest
+    this.projectConfig = ManifestHelpers.getSFDXPackageManifest(
+      this.project_directory
+    );
+
+
     //Do a diff Impl
     if (this.isDiffCheckEnabled) {
       let packageToBeBuilt = [];
@@ -83,10 +90,6 @@ export default class BuildImpl {
       if (this.isValidateMode) {
         override = true;
       }
-
-      this.projectConfig = ManifestHelpers.getSFDXPackageManifest(
-        this.project_directory
-      );
 
       
       for await (const pkg of this.packagesToBeBuilt) {
