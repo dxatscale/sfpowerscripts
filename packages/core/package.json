@@ -20,6 +20,7 @@
     "cli-table": "^0.3.1",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.6",
+    "hot-shots": "^8.2.0",
     "ignore": "^5.1.6",
     "rimraf": "^3.0.2",
     "shelljs": "^0.8.4",

@@ -7,6 +7,7 @@ import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -167,6 +168,17 @@ export default class Build extends SfpowerscriptsCommand {
           Date.now() - executionStartTime
         )} minutes with {${failedPackages.length}} errors`
       );
+
+      let tags:string[]=[];
+      if(isSkipValidation)
+         tags.push("Validation_Skipped")
+      if(isValidateMode)
+        tags.push("Validation_Mode")
+      if(diffcheck)
+        tags.push("Diff_Check_Enabled")
+
+      SFPStatsSender.logElapsedTime("total_package_build_elapsed_time",Date.now() - executionStartTime,tags);
+
       if (failedPackages.length > 0) {
         console.log(`Packages Failed To Build`, failedPackages);
       }
