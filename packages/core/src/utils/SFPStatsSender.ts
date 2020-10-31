@@ -13,18 +13,23 @@ export default class SFPStatsSender {
       host: host,
       port: port==null?8125:Number(port),
       protocol: protocol=="tcp"?"tcp":"udp",
-      prefix:"sfpowerscripts"
+      prefix:"sfpowerscripts."
     };
     SFPStatsSender.client = new StatsDClient(options);
   }
 
-   static logElapsedTime(metric: string, elapsedMilliSeconds: number,tags?:string[]) {
+   static logElapsedTime(metric: string, elapsedMilliSeconds: number,tags?:{ [key: string]: string } | string[]) {
     if (SFPStatsSender.client != null)
         SFPStatsSender.client.timing(metric, elapsedMilliSeconds,tags);
   }
 
-   static logGuage(metric: string, value: number,tags?:string[]) {
+   static logGauge(metric: string, value: number,tags?:{ [key: string]: string } | string[]) {
     if (SFPStatsSender.client != null)
       SFPStatsSender.client.gauge(metric, value,tags);
+  }
+
+  static logCount(metric: string,tags?:{ [key: string]: string } | string[]) {
+    if (SFPStatsSender.client != null)
+      SFPStatsSender.client.increment(metric,tags)
   }
 }

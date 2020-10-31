@@ -10,6 +10,7 @@ import { EOL } from "os";
 const fs = require("fs-extra");
 import path = require("path");
 import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
+import SFPStatsSender from "../utils/SFPStatsSender";
 const Table = require("cli-table");
 
 
@@ -140,7 +141,9 @@ export default class CreateSourcePackageImpl {
     // }catch(error)
     // {} //dont do anything with 
 
-
+    SFPStatsSender.logElapsedTime("package.elapsed.time",this.packageArtifactMetadata.creation_details.creation_time,{package:this.packageArtifactMetadata.package_name,type:this.packageArtifactMetadata.package_type});
+    SFPStatsSender.logCount("package.created",{package:this.packageArtifactMetadata.package_name,type:this.packageArtifactMetadata.package_type});
+    
     return this.packageArtifactMetadata;
   }
 

@@ -169,15 +169,20 @@ export default class Build extends SfpowerscriptsCommand {
         )} minutes with {${failedPackages.length}} errors`
       );
 
-      let tags:string[]=[];
-      if(isSkipValidation)
-         tags.push("Validation_Skipped")
-      if(isValidateMode)
-        tags.push("Validation_Mode")
-      if(diffcheck)
-        tags.push("Diff_Check_Enabled")
 
-      SFPStatsSender.logElapsedTime("total_package_build_elapsed_time",Date.now() - executionStartTime,tags);
+      let tags={};
+
+     
+      if(isSkipValidation)
+         tags["isSkipValidation"]="true";
+      if(isValidateMode)
+        tags["isValidateMode"]="true";
+      if(diffcheck)
+          tags["isDiffCheck"]="true";
+    
+      
+      SFPStatsSender.logElapsedTime("build.total_packages.elapsed_time",Date.now() - executionStartTime,tags);
+
 
       if (failedPackages.length > 0) {
         console.log(`Packages Failed To Build`, failedPackages);

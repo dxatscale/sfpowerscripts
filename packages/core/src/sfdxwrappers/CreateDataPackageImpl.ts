@@ -5,6 +5,7 @@ import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import SFPLogger from "../utils/SFPLogger";
 const fs = require("fs-extra");
 import { EOL } from "os";
+import SFPStatsSender from "../utils/SFPStatsSender";
 
 
 export default class CreateDataPackageImpl {
@@ -70,6 +71,11 @@ export default class CreateDataPackageImpl {
       creation_time: elapsedTime,
       timestamp: Date.now(),
     };
+
+    SFPStatsSender.logElapsedTime("package.elapsed.time",this.packageArtifactMetadata.creation_details.creation_time,{package:this.packageArtifactMetadata.package_name,type:this.packageArtifactMetadata.package_type});
+    SFPStatsSender.logCount("package.created",{package:this.packageArtifactMetadata.package_name,type:this.packageArtifactMetadata.package_type});
+    
+    
     return this.packageArtifactMetadata;
   }
 

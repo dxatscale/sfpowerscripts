@@ -12,6 +12,7 @@ import IncrementProjectBuildNumberImpl from "../sfdxwrappers/IncrementProjectBui
 import SFPLogger from "../utils/SFPLogger";
 import { EOL } from "os";
 import * as rimraf from "rimraf";
+import SFPStatsSender from "../utils/SFPStatsSender";
 const fs = require("fs-extra");
 
 
@@ -106,6 +107,7 @@ export default class BuildImpl {
         let isToBeBuilt = await diffImpl.exec();
         if (isToBeBuilt) {
           packageToBeBuilt.push(pkg);
+         SFPStatsSender.logCount("build.scheduled.packages",{package:pkg});
         }
       }
       this.packagesToBeBuilt = packageToBeBuilt;
@@ -113,6 +115,7 @@ export default class BuildImpl {
 
     //List all package that will be built
     console.log("Packages scheduled to be built", this.packagesToBeBuilt);
+
 
 
     
@@ -222,8 +225,12 @@ export default class BuildImpl {
 
     //Remove myself and my  childs
     this.failedPackages.push(pkg);
+    SFPStatsSender.logCount("build.failed.packages",{package:pkg});
     this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkg) => {
       if (this.childs[pkg].includes(pkg)) {
+        this.childs[pkg].forEach(removedChilds => {
+          SFPStatsSender.logCount("build.failed.packages",{package:removedChilds}); 
+        });
         this.failedPackages.push(this.childs[pkg]);
         return false;
       }
@@ -263,6 +270,7 @@ export default class BuildImpl {
           )
           .then(
             (packageMetadata: PackageMetadata) => {
+              SFPStatsSender.logCount("build.succeeded.packages",{package:pkg});
               this.generatedPackages.push(packageMetadata);
               this.queueChildPackages(packageMetadata);
             },

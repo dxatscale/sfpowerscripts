@@ -10,6 +10,7 @@ const fs = require("fs-extra");
 import { EOL } from "os";
 import { delay } from "../utils/Delay";
 import PackageVersionListImpl from "./PackageVersionListImpl";
+import SFPStatsSender from "../utils/SFPStatsSender";
 const path = require("path");
 
 export default class CreateUnlockedPackageImpl {
@@ -181,6 +182,11 @@ export default class CreateUnlockedPackageImpl {
       creation_time: elapsedTime,
       timestamp: Date.now(),
     };
+
+    SFPStatsSender.logElapsedTime("package.elapsed.time",this.packageArtifactMetadata.creation_details.creation_time,{package:this.packageArtifactMetadata.package_name,type:this.packageArtifactMetadata.package_type,isValidated:String(this.packageArtifactMetadata.isDependencyValidated)});
+    SFPStatsSender.logCount("package.created",{package:this.packageArtifactMetadata.package_name,type:this.packageArtifactMetadata.package_type,isValidated:String(this.packageArtifactMetadata.isDependencyValidated)});
+    
+
 
     return this.packageArtifactMetadata;
   }
