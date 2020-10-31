@@ -1,14 +1,14 @@
 {
   "name": "@dxatscale/sfpowerscripts",
   "description": "Simple wrappers around sfdx commands to help set up CI/CD quickly",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "author": "dxatscale",
   "bin": {
     "readVars": "./scripts/readVars.sh"
   },
   "bugs": "https://github.com/Accenture/sfpowerscripts/issues",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^3.0.18",
+    "@dxatscale/sfpowerscripts.core": "^3.0.19",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",

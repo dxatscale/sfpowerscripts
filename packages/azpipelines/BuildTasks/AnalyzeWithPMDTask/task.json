@@ -9,7 +9,7 @@
     "version": {
         "Major": 7,
         "Minor": 0,
-        "Patch": 24
+        "Patch": 25
     },
     "instanceNameFormat": "Analyze $(directory) using PMD",
     "inputs": [
