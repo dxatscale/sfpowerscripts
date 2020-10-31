@@ -36,6 +36,9 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     async run(): Promise<any> {
         this.loadSfpowerscriptsVariables(this.flags);
 
+       //Initialise StatsD
+        this.initializeStatsD();
+
         // Execute command run code
         await this.execute();
     }
@@ -49,7 +52,6 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     private loadSfpowerscriptsVariables(flags: OutputFlags<any>): void {
         require("dotenv").config();
 
-        this.initializeStatsD();
 
         for (let flag in flags ) {
             for ( let sfpowerscripts_variable of this.sfpowerscripts_variable_dictionary ) {
