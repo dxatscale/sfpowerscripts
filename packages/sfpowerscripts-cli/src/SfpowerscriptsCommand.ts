@@ -1,5 +1,6 @@
 import { SfdxCommand } from "@salesforce/command";
 import { OutputFlags } from "@oclif/parser";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -35,6 +36,9 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     async run(): Promise<any> {
         this.loadSfpowerscriptsVariables(this.flags);
 
+       //Initialise StatsD
+        this.initializeStatsD();
+
         // Execute command run code
         await this.execute();
     }
@@ -48,6 +52,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     private loadSfpowerscriptsVariables(flags: OutputFlags<any>): void {
         require("dotenv").config();
 
+
         for (let flag in flags ) {
             for ( let sfpowerscripts_variable of this.sfpowerscripts_variable_dictionary ) {
                 if (
@@ -59,6 +64,14 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
                     break;
                 }
             }
+        }
+    }
+
+    private initializeStatsD()
+    {
+        if(process.env.SFPOWERSCRIPTS_STATSD)
+        {
+            SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFFPOWERSCRIPTS_STATSD_HOST,process.env.SFFPOWERSCRIPTS_STATSD_PROTOCOL);
         }
     }
 }
