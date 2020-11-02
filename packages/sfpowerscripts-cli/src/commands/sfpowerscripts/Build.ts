@@ -153,6 +153,20 @@ export default class Build extends SfpowerscriptsCommand {
         }
       }
 
+
+      //Temporary Log
+      console.log("Sending Metrics if enabled..")
+      SFPStatsSender.logGauge(
+        "build.duration",
+        Date.now() - executionStartTime,
+        {
+          is_diffcheck_enabled: String(diffcheck),
+          is_dependency_validated: isSkipValidation ? "false" : "true",
+          pr_mode: String(isValidateMode)
+        }
+      );
+      console.log("Sending Metrics.... completed")
+
       console.log(
         `----------------------------------------------------------------------------------------------------`
       );
@@ -164,15 +178,7 @@ export default class Build extends SfpowerscriptsCommand {
         )} minutes with {${failedPackages.length}} errors`
       );
 
-      SFPStatsSender.logGauge(
-        "build.duration",
-        Date.now() - executionStartTime,
-        {
-          is_diffcheck_enabled: String(diffcheck),
-          is_dependency_validated: isSkipValidation ? "false" : "true",
-          pr_mode: String(isValidateMode)
-        }
-      );
+      
 
       if (failedPackages.length > 0) {
         console.log(`Packages Failed To Build`, failedPackages);
