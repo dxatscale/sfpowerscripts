@@ -36,6 +36,7 @@ export default class Build extends SfpowerscriptsCommand {
     }),
     diffcheck: flags.boolean({
       description: messages.getMessage("diffCheckFlagDescription"),
+      default: false
     }),
     gittag: flags.boolean({
       description: messages.getMessage("gitTagFlagDescription"),
@@ -85,13 +86,16 @@ export default class Build extends SfpowerscriptsCommand {
       const gittag: boolean = this.flags.gittag;
       const repourl: string = this.flags.repourl;
       const config_file_path = this.flags.configfilepath;
-      const isSkipValidation: boolean = this.flags.isvalidationtobeskipped;
+      let   isSkipValidation: boolean = this.flags.isvalidationtobeskipped;
       const devhub_alias = this.flags.devhubalias;
       const wait_time = this.flags.waittime;
       const diffcheck: boolean = this.flags.diffcheck;
       const buildNumber: number = this.flags.buildnumber;
       const executorcount: number = this.flags.executorcount;
       const isValidateMode: boolean = this.flags.validatemode;
+
+      if(isValidateMode)
+        isSkipValidation=true;
 
       console.log(
         "-----------sfpowerscripts package builder------------------"
@@ -165,7 +169,7 @@ export default class Build extends SfpowerscriptsCommand {
           pr_mode: String(isValidateMode)
         }
       );
-      console.log("Sending Metrics.... completed")
+     
 
       console.log(
         `----------------------------------------------------------------------------------------------------`
