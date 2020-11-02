@@ -159,17 +159,23 @@ export default class Build extends SfpowerscriptsCommand {
 
 
       //Temporary Log
-      console.log("Sending Metrics if enabled..")
+      let tag = {
+        is_diffcheck_enabled: String(diffcheck),
+        is_dependency_validated: isSkipValidation ? "false" : "true",
+        pr_mode: String(isValidateMode)
+      };
+      console.log("Sending Metrics if enabled..",tag);
       SFPStatsSender.logGauge(
         "build.duration",
-        Date.now() - executionStartTime,
-        {
-          is_diffcheck_enabled: String(diffcheck),
-          is_dependency_validated: isSkipValidation ? "false" : "true",
-          pr_mode: String(isValidateMode)
-        }
+        (Date.now() - executionStartTime),
+        tag
       );
      
+      if(!diffcheck && !isSkipValidation)
+      SFPStatsSender.logGauge(
+        "build.elapsed_time",
+        (Date.now() - executionStartTime)
+      );
 
       console.log(
         `----------------------------------------------------------------------------------------------------`
