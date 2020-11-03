@@ -124,7 +124,8 @@ export default class Build extends SfpowerscriptsCommand {
         diffcheck,
         buildNumber,
         executorcount,
-        isValidateMode
+        isValidateMode,
+        branch
       );
       let { generatedPackages, failedPackages } = await buildImpl.exec();
 

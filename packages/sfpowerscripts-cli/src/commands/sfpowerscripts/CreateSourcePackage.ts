@@ -76,12 +76,19 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
 
 
 
+          //Get the current git branch
+          let branch = exec("git branch --show-current", {
+            silent: true,
+          });
+          branch = branch.slice(0, branch.length - 1);
+
         let packageMetadata:PackageMetadata = {
           package_name: sfdx_package,
           package_version_number: version_number,
           sourceVersion: commit_id,
           repository_url:repository_url,
-          package_type:"source"
+          package_type:"source",
+          branch:branch
         };
 
         //Convert to MDAPI

@@ -110,6 +110,11 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       } else repository_url = this.flags.repourl;
 
 
+        //Get the current git branch
+        let branch = exec("git branch --show-current", {
+          silent: true,
+        });
+        branch = branch.slice(0, branch.length - 1);
 
       const generate_destructivemanifest = this.flags
         .generatedestructivemanifest;
@@ -149,6 +154,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
         sourceVersionFrom: revisionFrom,
         sourceVersionTo: revision_to,
         repository_url: repository_url,
+        branch:branch
       };
 
 

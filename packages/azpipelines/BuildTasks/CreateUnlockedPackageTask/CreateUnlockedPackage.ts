@@ -59,6 +59,7 @@ async function run() {
         sourceVersion: tl.getVariable("build.sourceVersion"),
         repository_url: tl.getVariable("build.repository.uri"),
         tag: tag,
+        branch:tl.getVariable("build.sourceBranch")
       };
 
       let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
