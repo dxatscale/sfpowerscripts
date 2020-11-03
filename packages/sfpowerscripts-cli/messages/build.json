@@ -10,5 +10,6 @@
     "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
     "isValidationToBeSkippedFlagDescription": "Skips validation of dependencies, package ancestors, and metadata during package version creation. Skipping validation reduces the time it takes to create a new package version, but package versions created without validation can’t be promoted.",
     "waitTimeFlagDescription": "Wait time for command to finish in minutes",
-    "executorCountFlagDescription": "Number of parallel package task schedulors"
+    "executorCountFlagDescription": "Number of parallel package task schedulors",
+    "tagFlagDescription":"Tag the build with a label, useful to identify in metrics"
 }

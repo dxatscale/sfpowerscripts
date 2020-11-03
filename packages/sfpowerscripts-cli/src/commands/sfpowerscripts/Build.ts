@@ -73,6 +73,9 @@ export default class Build extends SfpowerscriptsCommand {
       description: messages.getMessage("executorCountFlagDescription"),
       default: 5,
     }),
+    tag:flags.string({
+      description:messages.getMessage("tagFlagDescription"),
+    }),
     validatemode: flags.boolean({
       description: messages.getMessage("executorCountFlagDescription"),
       hidden: true,
@@ -100,6 +103,14 @@ export default class Build extends SfpowerscriptsCommand {
       console.log(
         "-----------sfpowerscripts package builder------------------"
       );
+
+
+      //Get the current git branch
+      let branch = exec("git branch --show-current",{
+        silent: true
+      });
+      branch=branch.slice(0, branch.length - 1);
+
 
       let executionStartTime = Date.now();
 
@@ -158,17 +169,24 @@ export default class Build extends SfpowerscriptsCommand {
       }
 
 
-      //Temporary Log
-      let tag = {
+
+      let tags = {
         is_diffcheck_enabled: String(diffcheck),
         is_dependency_validated: isSkipValidation ? "false" : "true",
-        pr_mode: String(isValidateMode)
+        pr_mode: String(isValidateMode),
+        branch: branch
       };
-      console.log("Sending Metrics if enabled..",tag);
+
+     if(!(this.flags.tag==null || this.flags.tag==undefined))
+     {
+       tags["tag"]=this.flags.tag;
+     }
+
+      console.log("Sending Metrics if enabled..",tags);
       SFPStatsSender.logGauge(
         "build.duration",
         (Date.now() - executionStartTime),
-        tag
+        tags
       );
      
       if(!diffcheck && !isSkipValidation)
