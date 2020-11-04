@@ -217,11 +217,11 @@ export default class Build extends SfpowerscriptsCommand {
       );
 
       if (failedPackages.length > 0) {
-       return 1;
+       process.exitCode=1;
       }
     } catch (error) {
       console.log(error);
-      return 1;
+      process.exitCode=1;
     }
   }
 
