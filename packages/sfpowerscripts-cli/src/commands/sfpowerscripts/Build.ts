@@ -73,6 +73,9 @@ export default class Build extends SfpowerscriptsCommand {
       description: messages.getMessage("executorCountFlagDescription"),
       default: 5,
     }),
+    branch:flags.string({
+      description:messages.getMessage("branchFlagDescription"),
+    }),
     tag:flags.string({
       description:messages.getMessage("tagFlagDescription"),
     }),
@@ -96,6 +99,7 @@ export default class Build extends SfpowerscriptsCommand {
       const buildNumber: number = this.flags.buildnumber;
       const executorcount: number = this.flags.executorcount;
       const isValidateMode: boolean = this.flags.validatemode;
+      const branch:string=this.flags.branch;
 
       if(isValidateMode)
         isSkipValidation=true;
@@ -105,12 +109,7 @@ export default class Build extends SfpowerscriptsCommand {
       );
 
 
-      //Get the current git branch
-      let branch = exec("git branch --show-current",{
-        silent: true
-      });
-      branch=branch.slice(0, branch.length - 1);
-
+     
 
       let executionStartTime = Date.now();
 
@@ -190,10 +189,12 @@ export default class Build extends SfpowerscriptsCommand {
       );
      
       if(!diffcheck && !isSkipValidation)
+      {
       SFPStatsSender.logGauge(
         "build.elapsed_time",
         (Date.now() - executionStartTime)
       );
+      }
 
       console.log(
         `----------------------------------------------------------------------------------------------------`
@@ -216,11 +217,11 @@ export default class Build extends SfpowerscriptsCommand {
       );
 
       if (failedPackages.length > 0) {
-        process.exit(1);
+       return 1;
       }
     } catch (error) {
       console.log(error);
-      process.exit(1);
+      return 1;
     }
   }
 
