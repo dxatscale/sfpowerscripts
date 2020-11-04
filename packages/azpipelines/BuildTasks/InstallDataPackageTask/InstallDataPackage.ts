@@ -13,10 +13,12 @@ import {
 import ArtifactHelper from "../Common/ArtifactHelper";
 const fs = require("fs");
 const path = require("path");
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
 
 async function run() {
   try {
     console.log("Install Data Package To Org");
+    let startTime=Date.now();
 
     const target_org: string = tl.getInput("target_org", true);
     const sfdx_package: string = tl.getInput("package", true);
@@ -113,18 +115,28 @@ async function run() {
     await installDataPackageImpl.exec();
 
 
+    let elapsedTime=Date.now()-startTime;
+
+    SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,sub_directory: subdirectory,type:"data"})
+    SFPStatsSender.logCount("package.installation",{package:sfdx_package, sub_directory: subdirectory,type:"data"})
+
+
     //No environment info available, create and push
     if (packageMetadataFromStorage.deployments == null) {
       packageMetadataFromStorage.deployments = new Array();
       packageMetadataFromStorage.deployments.push({
         target_org: target_org,
         sub_directory: subdirectory,
+        installation_time:elapsedTime,
+        timestamp:Date.now()
       });
     } else {
       //Update existing environment map
       packageMetadataFromStorage.deployments.push({
         target_org: target_org,
         sub_directory: subdirectory,
+        installation_time:elapsedTime,
+        timestamp:Date.now()
       });
     }
 
@@ -137,7 +149,10 @@ async function run() {
     tl.setResult(tl.TaskResult.Succeeded, "Package installed successfully");
 
   } catch (err) {
+   
     tl.setResult(tl.TaskResult.Failed, err.message);
+    
+    SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"data"})
   }
 }
 
