@@ -96,6 +96,9 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
         "isValidationToBeSkippedFlagDescription"
       ),
     }),
+    branch:flags.string({
+      description:messages.getMessage("branchFlagDescription"),
+    }),
     tag: flags.string({
       description: messages.getMessage("tagFlagDescription"),
     }),
@@ -114,6 +117,8 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
       const version_number: string = this.flags.versionnumber;
       const artifactDirectory: string = this.flags.artifactdir;
       const refname: string = this.flags.refname;
+      const branch:string=this.flags.branch;
+
 
       let tag: string = this.flags.tag;
       let config_file_path = this.flags.configfilepath;
@@ -158,11 +163,6 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           silent: true,
         });
 
-        //Get the current git branch
-        let branch = exec("git branch --show-current", {
-          silent: true,
-        });
-        branch = branch.slice(0, branch.length - 1);
 
         let packageMetadata: PackageMetadata = {
           package_name: sfdx_package,

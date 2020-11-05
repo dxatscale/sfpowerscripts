@@ -33,6 +33,9 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
     versionnumber: flags.string({required: true, char: 'v', description: messages.getMessage('versionNumberFlagDescription')}),
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
     diffcheck: flags.boolean({description: messages.getMessage('diffCheckFlagDescription')}),
+    branch:flags.string({
+      description:messages.getMessage("branchFlagDescription"),
+    }),
     gittag: flags.boolean({description: messages.getMessage('gitTagFlagDescription')}),
     repourl: flags.string({char: 'r', description: messages.getMessage('repoUrlFlagDescription')}),
     refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
@@ -46,6 +49,8 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
       const version_number: string = this.flags.versionnumber;
       const artifactDirectory: string = this.flags.artifactdir;
       const refname: string = this.flags.refname;
+      const branch:string=this.flags.branch;
+
 
 
       let runBuild: boolean;
@@ -72,11 +77,7 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
         } else repository_url = this.flags.repourl;
 
 
-          //Get the current git branch
-          let branch = exec("git branch --show-current", {
-            silent: true,
-          });
-          branch = branch.slice(0, branch.length - 1);
+       
 
         let packageMetadata:PackageMetadata = {
           package_name: sfdx_package,

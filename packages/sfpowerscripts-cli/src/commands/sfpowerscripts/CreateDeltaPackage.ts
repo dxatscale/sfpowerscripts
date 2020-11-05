@@ -62,6 +62,9 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
     repourl: flags.string({
       description: messages.getMessage("repoUrlFlagDescription"),
     }),
+    branch:flags.string({
+      description:messages.getMessage("branchFlagDescription"),
+    }),
     artifactdir: flags.directory({
       description: messages.getMessage("artifactDirectoryFlagDescription"),
       default: "artifacts",
@@ -85,6 +88,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       const artifactDirectory = this.flags.artifactdir;
       const versionName: string = this.flags.versionname;
       const refname: string = this.flags.refname;
+      const branch:string=this.flags.branch;
 
       let git: SimpleGit = simplegit();
 
@@ -110,11 +114,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       } else repository_url = this.flags.repourl;
 
 
-        //Get the current git branch
-        let branch = exec("git branch --show-current", {
-          silent: true,
-        });
-        branch = branch.slice(0, branch.length - 1);
+       
 
       const generate_destructivemanifest = this.flags
         .generatedestructivemanifest;
