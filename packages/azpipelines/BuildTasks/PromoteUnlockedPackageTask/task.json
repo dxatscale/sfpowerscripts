@@ -46,7 +46,7 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "Package version ID (starts with 04t) to promote",
-            "visibleRule": "isCustomPackageVersionid = true"
+            "visibleRule": "isCustomPackageVersionId = true"
         },
         {
             "name": "projectDirectory",
