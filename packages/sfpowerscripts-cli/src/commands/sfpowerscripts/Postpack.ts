@@ -68,11 +68,11 @@ export default class Postpack extends SfpowerscriptsCommand {
         console.log(`Failed to promote:`, unpromotedPackages);
       }
 
-      console.log("Zipping artifacts");
       let zip = new AdmZip();
       for (let artifact_filepaths of artifacts_filepaths) {
         let artifactFilepath: string = path.dirname(artifact_filepaths["packageMetadataFilePath"]);
         zip.addLocalFolder(artifactFilepath, path.basename(artifactFilepath));
+        console.log(`Zipping ${path.basename(artifactFilepath)}`);
         zip.writeZip(artifactFilepath + `.zip`);
       }
 

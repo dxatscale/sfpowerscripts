@@ -15,6 +15,10 @@ export default class PromoteUnlockedPackageImpl {
       SFPLogger.log(data.toString());
     });
 
+    child.stderr.on("data", data => {
+      SFPLogger.log(data.toString());
+    });
+
     await onExit(child);
   }
 
