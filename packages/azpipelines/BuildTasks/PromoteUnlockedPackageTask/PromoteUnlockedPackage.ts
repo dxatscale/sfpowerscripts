@@ -3,7 +3,6 @@ import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxw
 import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactHelper from "../Common/ArtifactHelper";
-import { isNullOrUndefined } from "util";
 const fs = require("fs");
 
 
