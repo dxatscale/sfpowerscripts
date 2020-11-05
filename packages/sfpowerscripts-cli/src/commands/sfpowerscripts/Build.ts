@@ -7,8 +7,8 @@ import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
+import fs = require("fs");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
-import { string } from "@oclif/command/lib/flags";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -109,7 +109,7 @@ export default class Build extends SfpowerscriptsCommand {
       );
 
 
-     
+
 
       let executionStartTime = Date.now();
 
@@ -140,14 +140,39 @@ export default class Build extends SfpowerscriptsCommand {
       console.log(`${EOL}${EOL}`);
       console.log("Generating Artifacts and Tags....");
 
+      const buildResult: BuildResult = {
+        packages: [],
+        summary: {
+          scheduled_packages: null,
+          elapsed_time: null,
+          succeeded: null,
+          failed: null
+        }
+      };
+
       for (let generatedPackage of generatedPackages) {
         try {
-          await ArtifactGenerator.generateArtifact(
+          let artifactFilepaths = await ArtifactGenerator.generateArtifact(
             generatedPackage.package_name,
             process.cwd(),
             artifactDirectory,
             generatedPackage
           );
+
+          try {
+            let packageMetadata: PackageMetadata = JSON.parse(
+              fs.readFileSync(artifactFilepaths.artifactMetadataFilePath, "utf8")
+            );
+
+            buildResult["packages"].push({
+              name: packageMetadata["package_name"],
+              version: packageMetadata["package_version_number"],
+              elapsed_time: packageMetadata["creation_details"]?.creation_time,
+              status: "succeeded"
+            });
+          } catch (err) {
+            console.log(`Failed to parse ${artifactFilepaths.artifactMetadataFilePath}`);
+          }
 
           if (gittag) {
             exec(`git config --global user.email "sfpowerscripts@dxscale"`);
@@ -167,7 +192,22 @@ export default class Build extends SfpowerscriptsCommand {
         }
       }
 
+      for (let failedPackage of failedPackages) {
+        buildResult["packages"].push({
+          name: failedPackage,
+          version: null,
+          elapsed_time: null,
+          status: "failed"
+        })
+      }
 
+      let totalElapsedTime: number = Date.now() - executionStartTime;
+      buildResult["summary"].scheduled_packages = generatedPackages.length + failedPackages.length;
+      buildResult["summary"].elapsed_time = totalElapsedTime;
+      buildResult["summary"].succeeded = generatedPackages.length;
+      buildResult["summary"].failed = failedPackages.length;
+
+      fs.writeFileSync(`buildResult.json`, JSON.stringify(buildResult, null, 4));
 
       let tags = {
         is_diffcheck_enabled: String(diffcheck),
@@ -187,7 +227,7 @@ export default class Build extends SfpowerscriptsCommand {
         (Date.now() - executionStartTime),
         tags
       );
-     
+
       if(!diffcheck && !isSkipValidation)
       {
       SFPStatsSender.logGauge(
@@ -203,11 +243,11 @@ export default class Build extends SfpowerscriptsCommand {
         `${
           generatedPackages.length
         } packages created in ${this.getFormattedTime(
-          Date.now() - executionStartTime
+          totalElapsedTime
         )} minutes with {${failedPackages.length}} errors`
       );
 
-      
+
 
       if (failedPackages.length > 0) {
         console.log(`Packages Failed To Build`, failedPackages);
@@ -230,5 +270,20 @@ export default class Build extends SfpowerscriptsCommand {
     date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
     let timeString = date.toISOString().substr(11, 8);
     return timeString;
+  }
+}
+
+interface BuildResult {
+  packages: {
+    name: string,
+    version: string,
+    elapsed_time: number,
+    status: string
+  }[],
+  summary: {
+    scheduled_packages: number,
+    elapsed_time: number,
+    succeeded: number,
+    failed: number
   }
 }
