@@ -12,8 +12,8 @@ import IncrementProjectBuildNumberImpl from "../sfdxwrappers/IncrementProjectBui
 import SFPLogger from "../utils/SFPLogger";
 import { EOL } from "os";
 import * as rimraf from "rimraf";
+import SFPStatsSender from "../utils/SFPStatsSender";
 const fs = require("fs-extra");
-
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -50,7 +50,7 @@ export default class BuildImpl {
     private isDiffCheckEnabled: boolean,
     private buildNumber: number,
     private executorcount: number,
-    private isValidateMode:boolean
+    private isValidateMode: boolean
   ) {
     this.limiter = new Bottleneck({
       maxConcurrent: this.executorcount,
@@ -75,12 +75,15 @@ export default class BuildImpl {
     console.log("Computing Packages to be deployed");
     SFPLogger.isSupressLogs = true;
 
-
     // Read Manifest
     this.projectConfig = ManifestHelpers.getSFDXPackageManifest(
       this.project_directory
     );
 
+    SFPStatsSender.logCount("build.scheduled", {
+      isDiffCheckEnabled: this.isDiffCheckEnabled ? "true" : "false",
+      prMode: this.isValidateMode ? "true" : "false",
+    });
 
     //Do a diff Impl
     if (this.isDiffCheckEnabled) {
@@ -91,16 +94,16 @@ export default class BuildImpl {
         override = true;
       }
 
-      
       for await (const pkg of this.packagesToBeBuilt) {
-
-
-        let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,pkg);
+        let { priority, type } = this.getPriorityandTypeOfAPackage(
+          this.projectConfig,
+          pkg
+        );
 
         let diffImpl: PackageDiffImpl = new PackageDiffImpl(
           pkg,
           this.project_directory,
-          (type=="Data"||type=="Source")?null:this.config_file_path,
+          type == "Data" || type == "Source" ? null : this.config_file_path,
           override
         );
         let isToBeBuilt = await diffImpl.exec();
@@ -114,21 +117,32 @@ export default class BuildImpl {
     //List all package that will be built
     console.log("Packages scheduled to be built", this.packagesToBeBuilt);
 
+    //Log Packages to be built
+    for await (const pkg of this.packagesToBeBuilt) {
+      let { priority, type } = this.getPriorityandTypeOfAPackage(
+        this.projectConfig,
+        pkg
+      );
+      SFPStatsSender.logCount("build.scheduled.packages", {
+        package: pkg,
+        type: type,
+        is_diffcheck_enabled: String(this.isDiffCheckEnabled),
+        is_dependency_validated: this.isSkipValidation ? "false" : "true",
+        pr_mode: String(this.isValidateMode),
+      });
+    }
 
-    
-    if(this.packagesToBeBuilt.length==0)
-    return {
-      generatedPackages: this.generatedPackages,
-      failedPackages: this.failedPackages,
-    };
+    if (this.packagesToBeBuilt.length == 0)
+      return {
+        generatedPackages: this.generatedPackages,
+        failedPackages: this.failedPackages,
+      };
 
-
-     
     this.childs = DependencyHelper.getChildsOfAllPackages(
       this.project_directory,
       this.packagesToBeBuilt
     );
-   
+
     this.parents = DependencyHelper.getParentsOfAllPackages(
       this.project_directory,
       this.packagesToBeBuilt
@@ -139,14 +153,15 @@ export default class BuildImpl {
       this.packagesToBeBuilt
     );
 
-   
-
     let sortedBatch = new BatchingTopoSort().sort(this.childs);
 
     //Do First Level Package First
     let pushedPackages = [];
     for (const pkg of sortedBatch[0]) {
-      let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,pkg);
+      let { priority, type } = this.getPriorityandTypeOfAPackage(
+        this.projectConfig,
+        pkg
+      );
       let packagePromise: Promise<PackageMetadata> = this.limiter
         .schedule({ id: pkg, priority: priority }, () =>
           this.createPackage(
@@ -162,6 +177,13 @@ export default class BuildImpl {
         .then(
           (packageMetadata: PackageMetadata) => {
             this.generatedPackages.push(packageMetadata);
+            SFPStatsSender.logCount("build.succeeded.packages", {
+              package: pkg,
+              type: type,
+              is_diffcheck_enabled: String(this.isDiffCheckEnabled),
+              is_dependency_validated: this.isSkipValidation ? "false" : "true",
+              pr_mode: String(this.isValidateMode),
+            });
             this.queueChildPackages(packageMetadata);
           },
           (reason: any) => this.handlePackageError(reason, pkg)
@@ -222,8 +244,14 @@ export default class BuildImpl {
 
     //Remove myself and my  childs
     this.failedPackages.push(pkg);
+    SFPStatsSender.logCount("build.failed.packages", { package: pkg });
     this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkg) => {
       if (this.childs[pkg].includes(pkg)) {
+        this.childs[pkg].forEach((removedChilds) => {
+          SFPStatsSender.logCount("build.failed.packages", {
+            package: removedChilds,
+          });
+        });
         this.failedPackages.push(this.childs[pkg]);
         return false;
       }
@@ -248,7 +276,10 @@ export default class BuildImpl {
     let pushedPackages = [];
     this.packagesToBeBuilt.forEach((pkg) => {
       if (this.parentsToBeFulfilled[pkg]?.length == 0) {
-        let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig,pkg);
+        let { priority, type } = this.getPriorityandTypeOfAPackage(
+          this.projectConfig,
+          pkg
+        );
         let packagePromise: Promise<PackageMetadata> = this.limiter
           .schedule({ id: pkg, priority: priority }, () =>
             this.createPackage(
@@ -263,6 +294,13 @@ export default class BuildImpl {
           )
           .then(
             (packageMetadata: PackageMetadata) => {
+              SFPStatsSender.logCount("build.succeeded.packages", {
+                package: pkg,
+                type: type,
+                is_diffcheck_enabled: String(this.isDiffCheckEnabled),
+                is_dependency_validated: this.isSkipValidation ? "false" : "true",
+                pr_mode: String(this.isValidateMode),
+              });
               this.generatedPackages.push(packageMetadata);
               this.queueChildPackages(packageMetadata);
             },
@@ -291,9 +329,9 @@ export default class BuildImpl {
     this.printQueueDetails();
   }
 
-  private getPriorityandTypeOfAPackage(projectConfig:any,pkg: string) {
+  private getPriorityandTypeOfAPackage(projectConfig: any, pkg: string) {
     let priority = 0;
-    let childs =  DependencyHelper.getChildsOfAllPackages(
+    let childs = DependencyHelper.getChildsOfAllPackages(
       this.project_directory,
       this.packagesToBeBuilt
     );
@@ -437,7 +475,6 @@ export default class BuildImpl {
       repository_url: repository_url,
     };
 
-
     let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
       sfdx_package,
       null,
@@ -492,7 +529,6 @@ export default class BuildImpl {
 
     return result;
   }
-
 
   private createDataPackage(
     sfdx_package: string,

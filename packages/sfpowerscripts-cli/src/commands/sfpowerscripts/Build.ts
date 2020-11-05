@@ -8,16 +8,14 @@ import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
 import fs = require("fs");
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages(
-  "@dxatscale/sfpowerscripts",
-  "build"
-);
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "build");
 
 export default class Build extends SfpowerscriptsCommand {
   public static description = messages.getMessage("commandDescription");
@@ -38,6 +36,7 @@ export default class Build extends SfpowerscriptsCommand {
     }),
     diffcheck: flags.boolean({
       description: messages.getMessage("diffCheckFlagDescription"),
+      default: false
     }),
     gittag: flags.boolean({
       description: messages.getMessage("gitTagFlagDescription"),
@@ -74,11 +73,17 @@ export default class Build extends SfpowerscriptsCommand {
       description: messages.getMessage("executorCountFlagDescription"),
       default: 5,
     }),
+    branch:flags.string({
+      description:messages.getMessage("branchFlagDescription"),
+    }),
+    tag:flags.string({
+      description:messages.getMessage("tagFlagDescription"),
+    }),
     validatemode: flags.boolean({
       description: messages.getMessage("executorCountFlagDescription"),
-      hidden:true,
+      hidden: true,
       default: false,
-    })
+    }),
   };
 
   public async execute() {
@@ -87,17 +92,24 @@ export default class Build extends SfpowerscriptsCommand {
       const gittag: boolean = this.flags.gittag;
       const repourl: string = this.flags.repourl;
       const config_file_path = this.flags.configfilepath;
-      const isSkipValidation: boolean = this.flags.isvalidationtobeskipped;
+      let   isSkipValidation: boolean = this.flags.isvalidationtobeskipped;
       const devhub_alias = this.flags.devhubalias;
       const wait_time = this.flags.waittime;
       const diffcheck: boolean = this.flags.diffcheck;
       const buildNumber: number = this.flags.buildnumber;
       const executorcount: number = this.flags.executorcount;
-      const isValidateMode:boolean = this.flags.validatemode;
+      const isValidateMode: boolean = this.flags.validatemode;
+      const branch:string=this.flags.branch;
+
+      if(isValidateMode)
+        isSkipValidation=true;
 
       console.log(
         "-----------sfpowerscripts package builder------------------"
       );
+
+
+
 
       let executionStartTime = Date.now();
 
@@ -115,9 +127,11 @@ export default class Build extends SfpowerscriptsCommand {
       );
       let { generatedPackages, failedPackages } = await buildImpl.exec();
 
-
-      if(diffcheck && generatedPackages.length == 0 && failedPackages.length==0)
-      {
+      if (
+        diffcheck &&
+        generatedPackages.length == 0 &&
+        failedPackages.length == 0
+      ) {
         console.log(`${EOL}${EOL}`);
         console.log("No packages found to be built.. .. ");
         return;
@@ -161,7 +175,6 @@ export default class Build extends SfpowerscriptsCommand {
           }
 
           if (gittag) {
-
             exec(`git config --global user.email "sfpowerscripts@dxscale"`);
             exec(`git config --global user.name "sfpowerscripts"`);
 
@@ -196,6 +209,33 @@ export default class Build extends SfpowerscriptsCommand {
 
       fs.writeFileSync(`buildResult.json`, JSON.stringify(buildResult, null, 4));
 
+      let tags = {
+        is_diffcheck_enabled: String(diffcheck),
+        is_dependency_validated: isSkipValidation ? "false" : "true",
+        pr_mode: String(isValidateMode),
+        branch: branch
+      };
+
+     if(!(this.flags.tag==null || this.flags.tag==undefined))
+     {
+       tags["tag"]=this.flags.tag;
+     }
+
+      console.log("Sending Metrics if enabled..",tags);
+      SFPStatsSender.logGauge(
+        "build.duration",
+        (Date.now() - executionStartTime),
+        tags
+      );
+
+      if(!diffcheck && !isSkipValidation)
+      {
+      SFPStatsSender.logGauge(
+        "build.elapsed_time",
+        (Date.now() - executionStartTime)
+      );
+      }
+
       console.log(
         `----------------------------------------------------------------------------------------------------`
       );
@@ -206,6 +246,9 @@ export default class Build extends SfpowerscriptsCommand {
           totalElapsedTime
         )} minutes with {${failedPackages.length}} errors`
       );
+
+
+
       if (failedPackages.length > 0) {
         console.log(`Packages Failed To Build`, failedPackages);
       }
@@ -213,13 +256,12 @@ export default class Build extends SfpowerscriptsCommand {
         `----------------------------------------------------------------------------------------------------`
       );
 
-
       if (failedPackages.length > 0) {
-        process.exit(1);
+       process.exitCode=1;
       }
     } catch (error) {
       console.log(error);
-      process.exit(1);
+      process.exitCode=1;
     }
   }
 
