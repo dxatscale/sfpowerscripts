@@ -37,6 +37,7 @@ async function run() {
       sourceVersionFrom: revisionFrom,
       sourceVersionTo: revision_to,
       repository_url: repository_url,
+      branch:tl.getVariable("build.sourceBranch")
     };
 
     let createDeltaPackageImpl = new CreateDeltaPackageImpl(

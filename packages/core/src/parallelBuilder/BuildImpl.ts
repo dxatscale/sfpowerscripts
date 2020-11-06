@@ -50,7 +50,8 @@ export default class BuildImpl {
     private isDiffCheckEnabled: boolean,
     private buildNumber: number,
     private executorcount: number,
-    private isValidateMode: boolean
+    private isValidateMode: boolean,
+    private branch:string
   ) {
     this.limiter = new Bottleneck({
       maxConcurrent: this.executorcount,
@@ -473,6 +474,7 @@ export default class BuildImpl {
       package_type: "unlocked",
       sourceVersion: commit_id,
       repository_url: repository_url,
+      branch:this.branch
     };
 
     let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
@@ -517,6 +519,7 @@ export default class BuildImpl {
       repository_url: repository_url,
       package_type: "source",
       apextestsuite: null,
+      branch:this.branch
     };
 
     let createSourcePackageImpl = new CreateSourcePackageImpl(
@@ -553,6 +556,7 @@ export default class BuildImpl {
       package_version_number: incrementedVersionNumber?.versionNumber,
       repository_url: repository_url,
       package_type: "data",
+      branch:this.branch
     };
 
     let createDataPackageImpl = new CreateDataPackageImpl(

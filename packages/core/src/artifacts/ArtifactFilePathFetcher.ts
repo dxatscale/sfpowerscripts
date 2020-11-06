@@ -14,6 +14,11 @@ export default class ArtifactFilePathFetcher {
     artifactDirectory: string,
     sfdx_package?: string
   ): ArtifactFilePaths[] {
+
+    if (!fs.existsSync(artifactDirectory)) {
+      throw new Error(`Artifact directory ${path.resolve(artifactDirectory)} does not exist`);
+    }
+
     let artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePathsFromArtifactDirectory(
       artifactDirectory,
       sfdx_package
@@ -70,7 +75,7 @@ export default class ArtifactFilePathFetcher {
     }
 
     SFPLogger.log("Artifact File Paths",JSON.stringify(artifacts_filepaths));
-    
+
     return artifacts_filepaths;
   }
 
