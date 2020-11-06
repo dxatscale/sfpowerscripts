@@ -40,8 +40,7 @@ export default class TriggerApexTestImpl {
         {
           maxBuffer: 1024 * 1024 * 5,
           encoding: "utf8"
-        },
-        (error, stdout, stderr) => {}
+        }
       );
 
       child.stdout.on("data", data => {

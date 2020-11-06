@@ -8,16 +8,12 @@ export default class ValidateDXUnlockedPackageImpl {
   public constructor(private validate_package: string,private bypass:string, private project_directory: string) {}
 
   public async exec(command: string): Promise<void> {
-   
-    let child=child_process.exec(command,  { encoding: "utf8", cwd:this.project_directory },(error,stdout,stderr)=>{
 
-      if(error)
-         throw error;
-    });
-   
+    let child=child_process.exec(command,  { encoding: "utf8", cwd:this.project_directory });
+
     child.stdout.on("data",data=>{SFPLogger.log(data.toString()); });
     child.stderr.on("data",data=>{SFPLogger.log(data.toString()); });
-    
+
 
     await onExit(child);
 
@@ -39,5 +35,5 @@ export default class ValidateDXUnlockedPackageImpl {
     return command;
   }
 
- 
+
 }

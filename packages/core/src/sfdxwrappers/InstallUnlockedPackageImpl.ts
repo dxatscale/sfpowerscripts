@@ -33,13 +33,16 @@ export default class InstallUnlockedPackageImpl {
       let command = this.buildPackageInstallCommand();
       let child = child_process.exec(command, (error, stdout, stderr) => {
         if (error) {
-          throw error;
+          child.stderr.on("data", (data) => {
+            SFPLogger.log(data.toString());
+          });
         }
       });
 
       child.stdout.on("data", (data) => {
         SFPLogger.log(data.toString());
       });
+
 
       await onExit(child);
       return PackageInstallationResult.Succeeded;

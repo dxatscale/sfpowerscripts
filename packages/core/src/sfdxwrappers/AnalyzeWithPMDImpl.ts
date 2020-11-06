@@ -10,16 +10,12 @@ export default class AnalyzeWithPMDImpl {
   public constructor(private project_directory:string, private directory: string, private ruleset:string, private format:string, private ouputPath: string, private version:string) {}
 
   public async exec(command: string): Promise<void> {
-   
-    let child=child_process.exec(command,  { encoding: "utf8",maxBuffer: 1024 * 1024*5, cwd:this.project_directory },(error,stdout,stderr)=>{
 
-      if(error)
-         throw error;
-    });
-   
+    let child=child_process.exec(command,  { encoding: "utf8",maxBuffer: 1024 * 1024*5, cwd:this.project_directory });
+
     child.stdout.on("data",data=>{SFPLogger.log(data.toString()); });
     child.stderr.on("data",data=>{SFPLogger.log(data.toString()); });
-    
+
 
     await onExit(child);
 
@@ -53,5 +49,5 @@ export default class AnalyzeWithPMDImpl {
     return command;
   }
 
- 
+
 }
