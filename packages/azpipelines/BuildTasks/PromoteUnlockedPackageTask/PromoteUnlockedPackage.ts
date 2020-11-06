@@ -3,7 +3,6 @@ import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxw
 import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactHelper from "../Common/ArtifactHelper";
-import { isNullOrUndefined } from "util";
 const fs = require("fs");
 
 
@@ -19,13 +18,19 @@ async function run() {
       "skip_on_missing_artifact",
       false
     );
+    const isCustomPackageVersionId: boolean = tl.getBoolInput("isCustomPackageVersionId", false);
     const projectDir=tl.getInput("projectDirectory",false);
 
-    let package_version_id,sourceDirectory;
+    let package_version_id: string;
+    let sourceDirectory: string;
 
 
-    if(!isNullOrUndefined(projectDir))
-      {
+    if(isCustomPackageVersionId) {
+      console.log("Using custom package version Id");
+      package_version_id = tl.getInput("packageVersionId", false);
+      sourceDirectory = projectDir;
+    } else {
+      console.log("Finding package version ID stored in artifact metadata");
        //Fetch Artifact
       let artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         ArtifactHelper.getArtifactDirectory(artifactDir),
@@ -54,11 +59,6 @@ async function run() {
 
      // Get Source Directory
       sourceDirectory = artifacts_filepaths[0].sourceDirectoryPath;
-    }
-    else
-    {
-      console.log("Using project directory for prmoting package")
-      sourceDirectory = projectDir;
     }
 
 

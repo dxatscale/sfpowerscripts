@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 8,
+        "Major": 9,
         "Minor": 0,
-        "Patch": 28
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -30,6 +30,23 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used"
+        },
+        {
+            "name": "isCustomPackageVersionId",
+            "type": "boolean",
+            "label": "Provide custom package version ID",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Check this option to specify a custom package version ID to promote"
+        },
+        {
+            "name": "packageVersionId",
+            "type": "string",
+            "label": "Package version ID",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Package version ID (starts with 04t) to promote",
+            "visibleRule": "isCustomPackageVersionId = true"
         },
         {
             "name": "projectDirectory",
