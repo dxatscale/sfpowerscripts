@@ -15,7 +15,7 @@ export default class InstallDataPackageImpl {
       let command = this.buildExecCommand();
       let child = child_process.exec(
         command,
-        { cwd: path.resolve(this.projectDirectory), encoding: "utf8" },
+        { cwd: path.resolve(this.projectDirectory), encoding: "utf8" }
       );
 
       child.stdout.on("data", (data) => {

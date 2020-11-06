@@ -17,11 +17,10 @@ export default class CreateScratchOrgImpl {
       { cwd: this.working_directory, encoding: "utf8" },
       (error, stdout, stderr) => {
         if (error)
-        { 
+        {
           child.stderr.on("data", data => {
             SFPLogger.log(data.toString());
           });
-          throw error;
         }
       }
     );
@@ -32,7 +31,7 @@ export default class CreateScratchOrgImpl {
       output += data.toString();
     });
 
- 
+
 
 
     await onExit(child);
