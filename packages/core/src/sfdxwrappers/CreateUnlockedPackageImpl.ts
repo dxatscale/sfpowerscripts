@@ -47,7 +47,7 @@ export default class CreateUnlockedPackageImpl {
       this.project_directory
     );
 
-    
+
 
     //Create a working directory
     let workingDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
@@ -136,16 +136,13 @@ export default class CreateUnlockedPackageImpl {
       command,
       {
         cwd: workingDirectory,
-        encoding: "utf8",
-      },
-      (error, stdout, stderr) => {
-        if (error) {
-          child.stderr.on("data", (data) => {
-            SFPLogger.log(data.toString(), null, this.packageLogger);
-          });
-        }
+        encoding: "utf8"
       }
     );
+
+    child.stderr.on("data", (data) => {
+      SFPLogger.log(data.toString(), null, this.packageLogger);
+    });
 
     child.stdout.on("data", (data) => {
       SFPLogger.log(data.toString(), null, this.packageLogger);
