@@ -2,7 +2,6 @@ import TriggerApexTestImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 const path = require("path");
 
 // Initialize Messages with the current plugin directory
