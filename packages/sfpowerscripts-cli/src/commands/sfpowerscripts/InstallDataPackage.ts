@@ -3,6 +3,7 @@ import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallDataPackageImpl'
 import ManifestHelpers from '@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers';
 import { Messages } from '@salesforce/core';
+import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 const fs = require("fs");
 const path = require("path");
 
@@ -43,6 +44,7 @@ export default class InstallDataPackage extends SfpowerscriptsCommand {
       const artifact_directory: string = this.flags.artifactdir;
       const subdirectory: string = this.flags.subdirectory;
 
+      let startTime=Date.now();
 
       let artifactMetadataFilepath = path.join(
           artifact_directory,
@@ -101,9 +103,14 @@ export default class InstallDataPackage extends SfpowerscriptsCommand {
 
       await installDataPackageImpl.exec();
 
+      let elapsedTime=Date.now()-startTime;
+      
+      SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"unlocked", target_org:targetOrg})
+      SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"unlocked",target_org:targetOrg})
+
     } catch(err) {
       console.log(err);
-      process.exit(1);
+      process.exitCode=1;
     }
   }
 }

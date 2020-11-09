@@ -71,7 +71,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     {
         if(process.env.SFPOWERSCRIPTS_STATSD)
         {
-            SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFFPOWERSCRIPTS_STATSD_PROTOCOL);
+            SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
         }
     }
 }

@@ -10,6 +10,7 @@ import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails"
 import { Messages } from "@salesforce/core";
 import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
 import { flags } from "@salesforce/command";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 const fs = require("fs-extra");
 const path = require("path");
 const glob = require("glob");
@@ -62,7 +63,7 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
     let tmpDirObj = tmp.dirSync({unsafeCleanup: true});
     let tempDir = tmpDirObj.name;
    
-
+    let startTime=Date.now();
     console.log("sfpowerscripts.Install Source Package To Org");
 
     try
@@ -249,6 +250,9 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
             tempDir
           );
         }
+
+
+
       } catch (error) {
         console.log(
           "Failed to apply reconcile the second time, Partial Metadata applied"
@@ -256,12 +260,17 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
       }
 
   }
+  let elapsedTime=Date.now()-startTime;
+      
+  SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"source", target_org:target_org})
+  SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"source",target_org:target_org})
+   
   }catch(error)
   {
     // Cleanup temp directories
     tmpDirObj.removeCallback();
     console.log(error);
-    process.exit(1);
+    process.exitCode=1;
   }
   finally
   {

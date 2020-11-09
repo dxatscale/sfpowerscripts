@@ -13,10 +13,12 @@ import {
 import ArtifactHelper from "../Common/ArtifactHelper";
 const fs = require("fs");
 const path = require("path");
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
 
 async function run() {
   try {
     console.log("Install Data Package To Org");
+    let startTime=Date.now();
 
     const target_org: string = tl.getInput("target_org", true);
     const sfdx_package: string = tl.getInput("package", true);
@@ -35,6 +37,12 @@ async function run() {
     const webApi = await getWebAPIWithoutToken();
     const extensionManagementApi: ExtensionManagementApi.IExtensionManagementApi = await webApi.getExtensionManagementApi();
     let extensionName = await getExtensionName(extensionManagementApi);
+
+    //Initialize StatsD
+    SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
+
+
+
 
     //Fetch Artifact
     let artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
@@ -113,18 +121,26 @@ async function run() {
     await installDataPackageImpl.exec();
 
 
+    let elapsedTime=Date.now()-startTime;
+
+
+
     //No environment info available, create and push
     if (packageMetadataFromStorage.deployments == null) {
       packageMetadataFromStorage.deployments = new Array();
       packageMetadataFromStorage.deployments.push({
         target_org: target_org,
         sub_directory: subdirectory,
+        installation_time:elapsedTime,
+        timestamp:Date.now()
       });
     } else {
       //Update existing environment map
       packageMetadataFromStorage.deployments.push({
         target_org: target_org,
         sub_directory: subdirectory,
+        installation_time:elapsedTime,
+        timestamp:Date.now()
       });
     }
 
@@ -134,10 +150,18 @@ async function run() {
       extensionName
     );
 
+
+    SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"data", target_org:target_org});
+    SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"data",target_org:target_org});
+
+
     tl.setResult(tl.TaskResult.Succeeded, "Package installed successfully");
 
   } catch (err) {
+   
     tl.setResult(tl.TaskResult.Failed, err.message);
+    
+    SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"data"})
   }
 }
 

@@ -12,6 +12,7 @@ import {
 } from "../Common/PackageExtensionStorageHelper";
 import { isNullOrUndefined } from "util";
 import ArtifactHelper from "../Common/ArtifactHelper";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
 const fs = require("fs");
 
 
@@ -41,12 +42,16 @@ async function run() {
 
      let package_version_id: string;
      let packageMetadataFromStorage:PackageMetadata;
+     let startTime=Date.now();
 
      //WebAPI Initialization
      const webApi = await getWebAPIWithoutToken();
      const extensionManagementApi = await webApi.getExtensionManagementApi();
      let extensionName = await getExtensionName(extensionManagementApi);
 
+
+     //Initialize StatsD
+     SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
 
 
     if (package_installedfrom == "Custom") {
@@ -94,7 +99,7 @@ async function run() {
       upgradetype: upgrade_type,
     };
 
-    let startTime=Date.now();
+
     let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
       package_version_id,
       target_org,
@@ -104,7 +109,11 @@ async function run() {
       skip_if_package_installed,
       packageMetadataFromStorage
     );
-    let endTime=Date.now()-startTime;
+    let elapsedTime=Date.now()-startTime;
+
+    SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"unlocked"})
+    SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"unlocked"})
+
 
     let result: PackageInstallationResult = await installUnlockedPackageImpl.exec();
     if (result == PackageInstallationResult.Skipped) {
@@ -120,7 +129,7 @@ async function run() {
           packageMetadataFromStorage.deployments.push({
             target_org: target_org,
             sub_directory: null,
-            installation_time:endTime,
+            installation_time:elapsedTime,
             timestamp:Date.now()
           });
         } else {
@@ -128,7 +137,7 @@ async function run() {
           packageMetadataFromStorage.deployments.push({
             target_org: target_org,
             sub_directory: null,
-            installation_time:endTime,
+            installation_time:elapsedTime,
             timestamp:Date.now()
           });
         }
@@ -144,6 +153,7 @@ async function run() {
     }
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
+    SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"unlocked"})
   }
 }
 
