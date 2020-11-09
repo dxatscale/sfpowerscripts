@@ -98,9 +98,9 @@ async function run() {
 
     if (isStatsDClientEnabled) {
       const statsDConfig: string = tl.getInput("statsd_config", false);
-      if (!(statsDConfig == null || statsDConfig == undefined)) {
+      if (statsDConfig != null) {
         let statsDConfigDetails = statsDConfig.split(":");
-      
+
         switch (statsDConfigDetails.length) {
           case 1:
             console.log("Found one statsd config from the input,using the rest of the config based on defaults");
@@ -113,7 +113,7 @@ async function run() {
             break;
 
           case 2:
-            console.log("Found twp statsd config from the input,using the default protocol");
+            console.log("Found two statsd config from the input,using the default protocol");
             tl.setVariable(
               "SFPOWERSCRIPTS_STATSD_HOST",
               statsDConfigDetails[0]
@@ -130,7 +130,7 @@ async function run() {
               tl.setVariable("SFPOWERSCRIPTS_STATSD_HOST",statsDConfigDetails[1] );
               tl.setVariable("SFPOWERSCRIPTS_STATSD_HOST",statsDConfigDetails[2]);
               break;
-        
+
           default:
                 tl.warning("Incorrect StatsD config passed, Please check the documentation");
         }

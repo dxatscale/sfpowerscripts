@@ -51,10 +51,10 @@
         {
             "name": "enable_statsd",
             "type": "boolean",
-            "label": "Enable sending metrics about build to a statsd deamon",
+            "label": "Enable sending metrics about build to a statsd daemon",
             "defaultValue": false,
             "required": false,
-            "helpMarkDown": "Enable this flag to send metrics to a statsd deamon\""
+            "helpMarkDown": "Enable this flag to send metrics to a statsd daemon"
         },
         {
             "name": "statsd_config",
@@ -63,7 +63,7 @@
             "defaultValue": "",
             "visibleRule": "enable_statsd = true",
             "required": false,
-            "helpMarkDown": "Provide the config to statsd deamon, the deamon should be reachable by the agent"
+            "helpMarkDown": "Provide the config to statsd daemon, the daemon should be reachable by the agent"
         }
     ],
     "execution": {
