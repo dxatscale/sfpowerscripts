@@ -45,7 +45,6 @@
     "sfpowerscripts-createunlockedpackage-task": "file:BuildTasks\\CreateUnlockedPackageTask",
     "sfpowerscripts-deploydestructivemanifesttoorg-task": "file:BuildTasks\\DeployDestructiveManifestToOrgTask",
     "sfpowerscripts-deploysourcetoorg-task": "file:BuildTasks\\DeploySourceToOrgTask",
-    "sfpowerscripts-exportsourcefromorg-task": "file:BuildTasks\\ExportSourceFromAnOrgTask",
     "sfpowerscripts-incrementprojectbuildnumber-task": "file:BuildTasks\\IncrementProjectBuildNumberTask",
     "sfpowerscripts-installpackagedependencies-task": "file:BuildTasks\\InstallPackageDependenciesTask",
     "sfpowerscripts-installsfdx-task": "file:BuildTasks\\InstallSFDXCLITaskCurrent",
