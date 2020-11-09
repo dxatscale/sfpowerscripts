@@ -31,11 +31,11 @@ async function run() {
 
 
     let child=child_process.exec(
-      command,{ cwd: working_directory,encoding: "utf8" },(error,stdout,stderr)=>{
-      if (error) {
-        child.stderr.on("data",data=>{console.log(data.toString()); });
-      }
-    });
+      command,
+      { cwd: working_directory,encoding: "utf8" }
+    );
+
+    child.stderr.on("data",data=>{console.log(data.toString()); });
 
     child.stdout.on("data",data=>{console.log(data.toString()); });
 

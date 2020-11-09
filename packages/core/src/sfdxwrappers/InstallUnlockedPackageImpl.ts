@@ -31,12 +31,10 @@ export default class InstallUnlockedPackageImpl {
      ManifestHelpers.printMetadataToDeploy(this.packageMetadata?.payload);
 
       let command = this.buildPackageInstallCommand();
-      let child = child_process.exec(command, (error, stdout, stderr) => {
-        if (error) {
-          child.stderr.on("data", (data) => {
-            SFPLogger.log(data.toString());
-          });
-        }
+      let child = child_process.exec(command);
+
+      child.stderr.on("data", (data) => {
+        SFPLogger.log(data.toString());
       });
 
       child.stdout.on("data", (data) => {
