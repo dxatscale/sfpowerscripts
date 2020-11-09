@@ -55,7 +55,7 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
-        let packageDiffImpl = new PackageDiffImpl(sfdx_package, null);
+        let packageDiffImpl = new PackageDiffImpl(sfdx_package, null, null, null, "data");
 
         runBuild = await packageDiffImpl.exec();
 
@@ -77,7 +77,7 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
         } else repository_url = this.flags.repourl;
 
 
-       
+
 
         let packageMetadata:PackageMetadata = {
           package_name: sfdx_package,
