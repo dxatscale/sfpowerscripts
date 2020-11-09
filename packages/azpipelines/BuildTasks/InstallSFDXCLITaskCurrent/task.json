@@ -49,7 +49,7 @@
             "helpMarkDown": "Provide the list of other plugins seperated by comma in the format \"pluginame1@version,pluginname2@version)\""
         },
         {
-            "name": "enable_statsd",
+            "name": "enableStatsd",
             "type": "boolean",
             "label": "Enable sending metrics about build to a statsd daemon",
             "defaultValue": false,
@@ -61,7 +61,7 @@
             "type": "string",
             "label": "URI to StatsD server, format <HOST>:<PORT>:<PROTOCOL>",
             "defaultValue": "",
-            "visibleRule": "enable_statsd = true",
+            "visibleRule": "enableStatsd = true",
             "required": false,
             "helpMarkDown": "Provide the config to statsd daemon, the daemon should be reachable by the agent"
         }
