@@ -122,8 +122,7 @@ async function run() {
             tl.setVariable("SFPOWERSCRIPTS_STATSD_HOST", "udp");
             break;
 
-          case 2:
-             
+          case 3:
               tl.setVariable(
                 "SFPOWERSCRIPTS_STATSD_HOST",
                 statsDConfigDetails[0]
