@@ -70,6 +70,28 @@ target.copy = function() {
   console.log("  images copied");
 };
 
+target.create = function() {
+
+let i=0;
+  //tfx extension create --root build --output-path dist --manifest-globs vss-extension.json --bypass-validation
+ while(true)
+ {
+  try
+  {
+  let result = shell.exec(
+    'tfx extension create --root build --output-path dist --manifest-globs vss-extension.json --bypass-validation');
+  }
+  catch(error )
+  {
+    if(i<=10)
+       continue;
+    else
+       break;
+  }
+ }
+
+}
+
 target.incrementversion = function() {
   //Reading current versions from manifest
   var manifestPath = path.join(__dirname, "vss-extension.json");
