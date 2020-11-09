@@ -39,7 +39,7 @@
     "shelljs": "~0.7.8",
     "shx": "^0.3.2",
     "style-loader": "~0.23.1",
-    "tfx-cli": "0.6.4",
+    "tfx-cli": "0.8.3",
     "ts-loader": "~5.2.2",
     "ts-node": "^8",
     "tslint": "^5",
