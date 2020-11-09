@@ -80,11 +80,14 @@ let i=0;
   {
   let result = shell.exec(
     'tfx extension create --root build --output-path dist --manifest-globs vss-extension.json --bypass-validation');
+  break;
   }
   catch(error )
   {
-    if(i<=10)
+    if(i<=10) {
+       i++;
        continue;
+    }
     else
        break;
   }
