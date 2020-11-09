@@ -41,7 +41,8 @@ async function run() {
         package_name: sfdx_package,
         package_version_number: version_number,
         sourceVersion: commitId,
-        repository_url: repositoryUrl
+        repository_url: repositoryUrl,
+        branch:tl.getVariable("build.sourceBranch")
       };
 
 
