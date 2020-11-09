@@ -2,6 +2,7 @@ import TriggerApexTestImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
+import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 const path = require("path");
 
 // Initialize Messages with the current plugin directory
@@ -71,6 +72,8 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
   public async execute(){
     try {
 
+
+    
       let test_options = {};
       test_options["wait_time"] = this.flags.waittime;
       test_options["testlevel"] = this.flags.testlevel;
@@ -116,10 +119,12 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       } else {
         console.log(`${result.message}`);
       }
+
+      
     } catch(err) {
       console.log("\n");
       console.error(err.message);
-      process.exit(1);
+      process.exitCode=1;
     }
   }
 }

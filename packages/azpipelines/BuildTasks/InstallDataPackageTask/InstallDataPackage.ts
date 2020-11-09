@@ -38,6 +38,12 @@ async function run() {
     const extensionManagementApi: ExtensionManagementApi.IExtensionManagementApi = await webApi.getExtensionManagementApi();
     let extensionName = await getExtensionName(extensionManagementApi);
 
+    //Initialize StatsD
+    SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
+
+
+
+
     //Fetch Artifact
     let artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
       ArtifactHelper.getArtifactDirectory(artifactDir),
@@ -117,8 +123,6 @@ async function run() {
 
     let elapsedTime=Date.now()-startTime;
 
-    SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,sub_directory: subdirectory,type:"data"})
-    SFPStatsSender.logCount("package.installation",{package:sfdx_package, sub_directory: subdirectory,type:"data"})
 
 
     //No environment info available, create and push
@@ -145,6 +149,11 @@ async function run() {
       extensionManagementApi,
       extensionName
     );
+
+
+    SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"data", target_org:target_org});
+    SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"data",target_org:target_org});
+
 
     tl.setResult(tl.TaskResult.Succeeded, "Package installed successfully");
 

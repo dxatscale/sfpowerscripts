@@ -274,8 +274,11 @@ async function run() {
       //Calculate Elapsed Time
       let elapsedTime=Date.now()-startTime;
 
-      SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,sub_directory:subdirectory,type:"source"})
-      SFPStatsSender.logCount("package.installation",{package:sfdx_package,sub_directory:subdirectory,type:"source"})
+
+      
+     SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"source", target_org:target_org});
+     SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"source",target_org:target_org});
+
 
       //No environment info available, create and push
       if (isNullOrUndefined(packageMetadataFromStorage.deployments)) {
