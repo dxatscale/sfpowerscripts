@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-promoteunlocked-task",
   "description": "sfpowerscripts-promoteunlocked-task",
-  "version": "9.0.0",
+  "version": "9.0.2",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^3.0.24",
+    "@dxatscale/sfpowerscripts.core": "^3.0.26",
     "azure-pipelines-task-lib": "^2.8.0"
   }
 }

@@ -14,17 +14,12 @@ export default class CreateScratchOrgImpl {
   public async exec(command: string): Promise<any> {
     let child = child_process.exec(
       command,
-      { cwd: this.working_directory, encoding: "utf8" },
-      (error, stdout, stderr) => {
-        if (error)
-        { 
-          child.stderr.on("data", data => {
-            SFPLogger.log(data.toString());
-          });
-          throw error;
-        }
-      }
+      { cwd: this.working_directory, encoding: "utf8" }
     );
+
+    child.stderr.on("data", data => {
+      SFPLogger.log(data.toString());
+    });
 
     let output = "";
     child.stdout.on("data", data => {
@@ -32,7 +27,7 @@ export default class CreateScratchOrgImpl {
       output += data.toString();
     });
 
- 
+
 
 
     await onExit(child);
