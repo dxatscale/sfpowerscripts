@@ -16,7 +16,7 @@ async function run() {
       false
     );
     const isStatsDClientEnabled: boolean = tl.getBoolInput(
-      "enable_statsd",
+      "enableStatsd",
       false
     );
 
