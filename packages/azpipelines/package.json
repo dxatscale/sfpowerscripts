@@ -19,7 +19,7 @@
     "build": "rimraf build && shx mkdir build && npm run build:copy && npm run compile:tasks && npm run build:ui",
     "postbuild": "rimraf -g build/BuildTasks/**/*.ts && rimraf -g build/UI/**/*.tsx",
     "increment:azpipelines:version": "node make incrementversion",
-    "package:azpipelines": "tfx extension create --root build --output-path dist --manifest-globs vss-extension.json",
+    "package:azpipelines": "tfx extension create --root build --output-path dist --manifest-globs vss-extension.json --bypass-validation",
     "publish:azpipelines": "node make.js publish"
   },
   "author": "dxatscale",
