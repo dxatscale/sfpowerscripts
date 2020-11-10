@@ -47,6 +47,8 @@ export default class CreateUnlockedPackageImpl {
       this.project_directory
     );
 
+
+
     //Create a working directory
     let workingDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
       this.project_directory,
@@ -134,16 +136,13 @@ export default class CreateUnlockedPackageImpl {
       command,
       {
         cwd: workingDirectory,
-        encoding: "utf8",
-      },
-      (error, stdout, stderr) => {
-        if (error) {
-          child.stderr.on("data", (data) => {
-            SFPLogger.log(data.toString(), null, this.packageLogger);
-          });
-        }
+        encoding: "utf8"
       }
     );
+
+    child.stderr.on("data", (data) => {
+      SFPLogger.log(data.toString(), null, this.packageLogger);
+    });
 
     child.stdout.on("data", (data) => {
       SFPLogger.log(data.toString(), null, this.packageLogger);
@@ -279,6 +278,9 @@ export default class CreateUnlockedPackageImpl {
 
     if (!isNullOrUndefined(this.packageArtifactMetadata.tag))
       command += ` -t ${this.packageArtifactMetadata.tag}`;
+
+   if (!isNullOrUndefined(this.packageArtifactMetadata.branch))
+      command += ` --branch ${this.packageArtifactMetadata.branch}`;
 
     if (this.isCoverageEnabled && !this.isOrgDependentPackage) command += ` -c`;
 

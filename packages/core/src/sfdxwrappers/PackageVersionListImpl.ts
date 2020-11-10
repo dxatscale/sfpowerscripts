@@ -6,11 +6,16 @@ export default class PackageVersionListImpl {
   public constructor(private  project_directory:string,private devhub_alias: string) {}
 
   public async exec(): Promise<any> {
-    
+
     let command = this.buildExecCommand();
     SFPLogger.log("Executing command",command);
-    let child = child_process.exec(command, { cwd: this.project_directory, encoding: "utf8" },(error, stdout, stderr) => {
-      if (error) throw error;
+    let child = child_process.exec(
+      command,
+      { cwd: this.project_directory, encoding: "utf8" }
+    );
+
+    child.stderr.on("data", data => {
+      SFPLogger.log(data);
     });
 
     let output="";
@@ -19,7 +24,7 @@ export default class PackageVersionListImpl {
     });
 
     await onExit(child);
- 
+
     let result =  JSON.parse(output);
     if(result.status==0)
     {
@@ -29,7 +34,7 @@ export default class PackageVersionListImpl {
     {
       throw new Error("Unable to fetch Package Info");
     }
-  
+
 
   }
 

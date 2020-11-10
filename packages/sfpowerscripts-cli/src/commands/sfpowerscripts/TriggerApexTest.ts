@@ -71,6 +71,8 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
   public async execute(){
     try {
 
+
+    
       let test_options = {};
       test_options["wait_time"] = this.flags.waittime;
       test_options["testlevel"] = this.flags.testlevel;
@@ -116,10 +118,12 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       } else {
         console.log(`${result.message}`);
       }
+
+      
     } catch(err) {
       console.log("\n");
       console.error(err.message);
-      process.exit(1);
+      process.exitCode=1;
     }
   }
 }

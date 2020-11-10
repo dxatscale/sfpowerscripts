@@ -8,6 +8,7 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata"
 import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManagementApi";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
 import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import {
   getExtensionName,
@@ -49,6 +50,14 @@ async function run() {
     const webApi = await getWebAPIWithoutToken();
     const extensionManagementApi: ExtensionManagementApi.IExtensionManagementApi = await webApi.getExtensionManagementApi();
     let extensionName = await getExtensionName(extensionManagementApi);
+
+
+     //Initialize StatsD
+     SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
+
+
+     //Intialize Time
+     let startTime=Date.now();
 
     //Fetch Artifact
     let artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
@@ -260,12 +269,25 @@ async function run() {
         );
       }
 
+
+      
+      //Calculate Elapsed Time
+      let elapsedTime=Date.now()-startTime;
+
+
+      
+     SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"source", target_org:target_org});
+     SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"source",target_org:target_org});
+
+
       //No environment info available, create and push
       if (isNullOrUndefined(packageMetadataFromStorage.deployments)) {
         packageMetadataFromStorage.deployments = new Array();
         packageMetadataFromStorage.deployments.push({
           target_org: target_org,
           sub_directory: subdirectory,
+          timestamp:Date.now(),
+          installation_time:elapsedTime
         });
       } else if(result.result && result.message.startsWith("skip:"))
       {
@@ -276,6 +298,8 @@ async function run() {
         packageMetadataFromStorage.deployments.push({
           target_org: target_org,
           sub_directory: subdirectory,
+          timestamp:Date.now(),
+          installation_time:elapsedTime
         });
       }
 
@@ -295,6 +319,7 @@ async function run() {
     }
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
+    SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"source"})
   }
 }
 

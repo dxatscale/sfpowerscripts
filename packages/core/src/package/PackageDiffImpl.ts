@@ -1,6 +1,5 @@
 import ignore from "ignore";
 const fs = require("fs");
-import { isNullOrUndefined } from "util";
 const path = require("path");
 import simplegit, { SimpleGit } from "simple-git/promise";
 import SFPLogger from "../utils/SFPLogger";
@@ -11,7 +10,8 @@ export default class PackageDiffImpl {
     private sfdx_package: string,
     private project_directory: string,
     private config_file_path?: string,
-    private override?: boolean
+    private override?: boolean,
+    private package_type?: string
   ) {}
 
   public async exec(): Promise<boolean> {
@@ -60,15 +60,18 @@ export default class PackageDiffImpl {
           let modified_files: string[] = gitDiffResult.split("\n");
           modified_files.pop(); // Remove last empty element
 
-          let forceignorePath: string;
-          if (!isNullOrUndefined(this.project_directory))
-            forceignorePath = path.join(this.project_directory, ".forceignore");
-          else forceignorePath = ".forceignore";
+          // Apply forceignore if not data package type
+          if (this.package_type != "data") {
+            let forceignorePath: string;
+            if (this.project_directory != null)
+              forceignorePath = path.join(this.project_directory, ".forceignore");
+            else forceignorePath = ".forceignore";
 
-          // Filter the list of modified files with .forceignore
-          modified_files = ignore()
-            .add(fs.readFileSync(forceignorePath).toString())
-            .filter(modified_files);
+            // Filter the list of modified files with .forceignore
+            modified_files = ignore()
+              .add(fs.readFileSync(forceignorePath).toString())
+              .filter(modified_files);
+          }
 
           let packageType: string = ManifestHelpers.getPackageType(project_json, this.sfdx_package);
 

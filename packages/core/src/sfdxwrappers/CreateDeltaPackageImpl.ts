@@ -70,9 +70,6 @@ export default class CreateDeltaPackageImpl {
         maxBuffer: 1024 * 1024 * 5,
         encoding: "utf8",
         cwd: this.projectDirectory,
-      },
-      (error, stdout, stderr) => {
-        if (error) throw error;
       }
     );
 

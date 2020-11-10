@@ -38,7 +38,7 @@ export default class ManifestHelpers {
 
     let packageDescriptor = ManifestHelpers.getPackageDescriptorFromConfig(sfdxPackage,projectConfig);
 
-    if (projectConfig["packageAliases"][sfdxPackage]) {
+    if (projectConfig["packageAliases"]?.[sfdxPackage]) {
       return "Unlocked";
     } else {
       if (packageDescriptor.type?.toLowerCase() === "data")

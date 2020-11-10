@@ -2,6 +2,7 @@ import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxw
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
+import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 const fs = require("fs");
 const path = require("path");
 
@@ -98,12 +99,15 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
         package_version_id = this.flags.packageversionid;
       }
 
+
       let options = {
         installationkey: installationkey,
         apexcompile: apexcompileonlypackage ? `package` : `all`,
         securitytype: security_type,
         upgradetype: upgrade_type
       };
+
+      let startTime=Date.now();
 
       let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
         package_version_id,
@@ -117,9 +121,16 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
 
       await installUnlockedPackageImpl.exec();
 
+      let elapsedTime=Date.now()-startTime;
+      
+      SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"unlocked", target_org:targetOrg})
+      SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"unlocked",target_org:targetOrg})
+
+      
+
     } catch(err) {
       console.log(err);
-      process.exit(1);
+      process.exitCode=1;
     }
   }
 }
