@@ -53,7 +53,7 @@ export default class IncrementProjectBuildNumberImpl {
     if (this.segment == "Patch") segments[2] = String(Number(segments[2]) + 1);
 
     //Don't do anything, just return let the platform take care of the increment
-    if (segments[3] == "NEXT") {
+    if (segments[3] == "NEXT" && this.segment == "BuildNumber") {
 
       SFPLogger.log("NEXT encountered in segment, will ignore all the option set in the task")
       SFPLogger.log(`Version : ${selected_package["versionNumber"]}`);
