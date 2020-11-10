@@ -36,7 +36,7 @@ stages:
     displayName: 'Build To Validate CLI'
     timeoutInMinutes: 10
     pool:
-      vmImage: 'macOS-latest'
+      vmImage: 'windows-latest'
     steps:
       - template: build_templates/buildcli.yml
         parameters:
@@ -49,7 +49,7 @@ stages:
     displayName: 'Build and Deploy Azure Pipelines Extension to Review'
     timeoutInMinutes: 40
     pool:
-      vmImage: 'macOS-latest'
+      vmImage: 'windows-latest'
     environment: review
     strategy:
        runOnce:
@@ -79,7 +79,7 @@ stages:
     displayName: 'Install Extension to Review'
     dependsOn: WaitPluginToInstallonReview
     pool:
-      vmImage: 'macOS-latest'
+      vmImage: 'windows-latest'
     steps:
 
     - task: CmdLine@2
