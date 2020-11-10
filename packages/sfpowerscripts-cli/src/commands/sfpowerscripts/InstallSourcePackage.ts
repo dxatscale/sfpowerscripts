@@ -26,7 +26,7 @@ Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_source_package');
 
 export default class InstallSourcePackage extends SfpowerscriptsCommand {
- 
+
 
   public static description = messages.getMessage('commandDescription');
 
@@ -44,12 +44,12 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
     optimizedeployment: flags.boolean({char:'o',description: messages.getMessage('optimizedeployment'),default:false,required:false}),
     skiptesting: flags.boolean({char:'t',description: messages.getMessage('skiptesting'),default:false,required:false}),
     waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '120'}),
-    
+
   };
 
 
   public async execute(): Promise<any> {
-    
+
     const target_org: string = this.flags.targetorg;
     const sfdx_package: string =this.flags.package;
     const artifact_directory: string = this.flags.artifactdir;
@@ -62,7 +62,7 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
 
     let tmpDirObj = tmp.dirSync({unsafeCleanup: true});
     let tempDir = tmpDirObj.name;
-   
+
     let startTime=Date.now();
     console.log("sfpowerscripts.Install Source Package To Org");
 
@@ -204,7 +204,7 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
       }
     }
 
-    
+
     //Construct Deploy Command for actual payload
     let deploymentOptions = await this.generateDeploymentOptions(
       packageMetadata,
@@ -233,7 +233,6 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
       }
     }
 
-
     if (result.result && !result.message.startsWith("skip:")) {
       console.log("Applying Post Deployment Activites");
       //Apply PostDeployment Activities
@@ -258,18 +257,19 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
           "Failed to apply reconcile the second time, Partial Metadata applied"
         );
       }
-
-  }
+    } else if (result.result === false) {
+      console.log(result.message);
+      throw new Error("Deployment failed");
+    }
   let elapsedTime=Date.now()-startTime;
-      
+
   SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"source", target_org:target_org})
   SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"source",target_org:target_org})
-   
+
   }catch(error)
   {
-    // Cleanup temp directories
-    tmpDirObj.removeCallback();
     console.log(error);
+    SFPStatsSender.logCount("package.installation.failure",{package:sfdx_package,type:"source",target_org:target_org})
     process.exitCode=1;
   }
   finally
@@ -314,7 +314,7 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
     }
     return { profileFolders, isReconcileActivated, isReconcileErrored };
   }
-  
+
   private   async reconcileAndRedeployProfiles(
     profileFolders: string[],
     sourceDirectoryPath: string,
@@ -331,14 +331,14 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
           path.join(sourceDirectoryPath, folder)
         );
       });
-  
+
       //Now Reconcile
       let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
         target_org,
         path.join(sourceDirectoryPath)
       );
       await reconcileProfileAgainstOrg.exec();
-  
+
       //Now deploy the profies alone
       fs.appendFileSync(
         path.join(sourceDirectoryPath, ".forceignore"),
@@ -348,18 +348,18 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
         path.join(sourceDirectoryPath, ".forceignore"),
         "!**.profile-meta.xml"
       );
-  
+
       let deploymentOptions = {};
       deploymentOptions["ignore_warnings"] = true;
       deploymentOptions["wait_time"] = wait_time;
-  
+
       if (skipTest) {
         deploymentOptions["testlevel"] = "NoTestRun";
       } else {
         deploymentOptions["testlevel"] = "RunSpecifiedTests";
         deploymentOptions["specified_tests"] = "skip";
       }
-  
+
       let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
         target_org,
         sourceDirectoryPath,
@@ -368,13 +368,13 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
         false
       );
       let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
-  
+
       if (!profileReconcile.result) {
         console.log("Unable to deploy reconciled  profiles");
       }
     }
   }
-  
+
   private async  generateDeploymentOptions(
     packageMetadata: PackageMetadata,
     wait_time: string,
@@ -385,7 +385,7 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
     let mdapi_options = {};
     mdapi_options["ignore_warnings"] = true;
     mdapi_options["wait_time"] = wait_time;
-  
+
     if (skipTest) {
       let result;
       try {
@@ -399,7 +399,7 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
         );
         mdapi_options["testlevel"] = "RunLocalTests";
       }
-  
+
       if (result["IsSandbox"]) {
         console.log(
           ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
@@ -415,7 +415,7 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
         );
         mdapi_options["testlevel"] = "RunLocalTests";
       }
-  
+
     } else if (packageMetadata.isApexFound) {
        if(packageMetadata.isTriggerAllTests)
        {
@@ -435,7 +435,7 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
     }
     return mdapi_options;
   }
-  
+
   private getAStringOfSpecificTestClasses(apexTestClassses: string[]) {
     const doublequote = '"';
     let specifedTests = doublequote + apexTestClassses.join(",") + doublequote;
@@ -443,20 +443,3 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
   }
 
 }
-
-
-
-
-
-   
-   
-
-   
-
-
-    
-
-
-
-
-
