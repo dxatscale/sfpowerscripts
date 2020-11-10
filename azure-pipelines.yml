@@ -32,7 +32,7 @@ stages:
   - job: BuildCLI
     displayName: sfdx-plugin
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     steps:
              - template: build_templates/buildcli.yml
                parameters:
@@ -45,7 +45,7 @@ stages:
     displayName: azpipelines
     timeoutInMinutes: 20
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     environment: alpha
     strategy:
        runOnce:
@@ -74,7 +74,7 @@ stages:
   - job: BuildCLI
     displayName: sfdx-plugin
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     steps:
              - template: build_templates/buildcli.yml
                parameters:
@@ -87,7 +87,7 @@ stages:
     displayName: azpipelines
     timeoutInMinutes: 20
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     environment: beta
     strategy:
        runOnce:
@@ -115,7 +115,7 @@ stages:
   - job: BuildCLI
     displayName: sfdx-plugin
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     steps:
              - template: build_templates/buildcli.yml
                parameters:
@@ -128,7 +128,7 @@ stages:
     displayName: azpipelines
     timeoutInMinutes: 20
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     environment: hotfix
     strategy:
        runOnce:
@@ -155,7 +155,7 @@ stages:
   - job: BuildCLI
     displayName: sfdx-plugin
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     steps:
              - template: build_templates/buildcli.yml
                parameters:
@@ -170,7 +170,7 @@ stages:
     dependsOn: BuildCLI
     timeoutInMinutes: 30
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     environment: prod
     strategy:
        runOnce:
