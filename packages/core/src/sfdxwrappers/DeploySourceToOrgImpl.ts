@@ -39,7 +39,7 @@ export default class DeploySourceToOrgImpl {
         return deploySourceResult;
       } else if (status.result == "skip") {
         deploySourceResult.result = true;
-        deploySourceResult.message = status.message;
+        deploySourceResult.message = "skip:"+status.message;
         return deploySourceResult;
       }
 
@@ -147,8 +147,7 @@ export default class DeploySourceToOrgImpl {
       //Print final output
       let child = child_process.exec(
         `npx sfdx force:mdapi:deploy:report  -i ${deploy_id} -u ${this.target_org}`,
-        { cwd: this.project_directory, encoding: "utf8" },
-        (error, stdout, stderr) => {}
+        { cwd: this.project_directory, encoding: "utf8" }
       );
 
       child.stderr.on("data", (data) => {

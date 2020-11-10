@@ -45,7 +45,7 @@ stages:
     displayName: azpipelines
     timeoutInMinutes: 20
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     environment: alpha
     strategy:
        runOnce:
@@ -87,7 +87,7 @@ stages:
     displayName: azpipelines
     timeoutInMinutes: 20
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     environment: beta
     strategy:
        runOnce:
@@ -128,7 +128,7 @@ stages:
     displayName: azpipelines
     timeoutInMinutes: 20
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     environment: hotfix
     strategy:
        runOnce:
@@ -170,7 +170,7 @@ stages:
     dependsOn: BuildCLI
     timeoutInMinutes: 30
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     environment: prod
     strategy:
        runOnce:

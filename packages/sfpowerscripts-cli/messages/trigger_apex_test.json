@@ -8,6 +8,5 @@
     "apexTestSuiteFlagDescription": "comma-separated list of Apex test suite names to run",
     "validateIndividualClassCoverageFlagDescription": "Enable code coverage validation for individual classes, when test level is RunAllTestsInPackage",
     "coveragePercentFlagDescription": "Minimum coverage percentage required for each class in package",
-    "projectDirFlagDescription": "The project directory should contain a sfdx-project.json",
     "waitTimeFlagDescription": "wait time for command to finish in minutes"
 }

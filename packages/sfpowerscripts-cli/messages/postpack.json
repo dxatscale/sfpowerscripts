@@ -1,0 +1,7 @@
+{
+  "commandDescription": "Performs post-packaging tasks such as promotion of unlocked packages and zipping. Users can then upload the artifact to an Artifact registry of their choice",
+  "artifactDirectoryFlagDescription": "The directory where artifacts are located",
+  "promoteFlagDescription": "Promote validated unlocked packages, so that they can be installed in production",
+  "pushTagsFlagDescription": "Push Git tags to default remote",
+  "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
+}

@@ -9,14 +9,11 @@ export default class DeployDestructiveManifestToOrgImpl {
   ) {}
 
   public async exec() {
- 
+
     let command = this.buildExecCommand();
     let child = child_process.exec(
       command,
-      { encoding: "utf8" },
-      (error, stdout, stderr) => {
-        if (error) throw error;
-      }
+      { encoding: "utf8" }
     );
 
     child.stdout.on("data", data => {

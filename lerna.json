@@ -12,7 +12,6 @@
     "packages/azpipelines/BuildTasks/CreateUnlockedPackageTask",
     "packages/azpipelines/BuildTasks/DeployDestructiveManifestToOrgTask",
     "packages/azpipelines/BuildTasks/DeploySourceToOrgTask",
-    "packages/azpipelines/BuildTasks/ExportSourceFromAnOrgTask",
     "packages/azpipelines/BuildTasks/GenerateChangelogTask",
     "packages/azpipelines/BuildTasks/IncrementProjectBuildNumberTask",
     "packages/azpipelines/BuildTasks/InstallPackageDependenciesTask",

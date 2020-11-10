@@ -50,14 +50,6 @@ steps:
                  git config --global user.name "sfpowerkitci"
 
 
-          - task: CmdLine@2
-            displayName: 'Checkout the current version of the branch'
-            condition: eq( ${{ parameters.publish }},true)
-            inputs:
-                 script: |
-                  git checkout  $(System.PullRequest.SourceBranch)
-                 workingDirectory: '$(System.DefaultWorkingDirectory)'
-
 
           - task: Cache@2
             displayName: Cache NPM Modules
