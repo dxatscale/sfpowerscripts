@@ -1,7 +1,7 @@
 {
   "name": "@dxatscale/sfpowerscripts.azpipelines",
   "private": true,
-  "version": "18.0.13",
+  "version": "18.0.25",
   "description": "CI/CD extensions for Salesforce",
   "repository": {
     "type": "git",
@@ -19,7 +19,7 @@
     "build": "rimraf build && shx mkdir build && npm run build:copy && npm run compile:tasks && npm run build:ui",
     "postbuild": "rimraf -g build/BuildTasks/**/*.ts && rimraf -g build/UI/**/*.tsx",
     "increment:azpipelines:version": "node make incrementversion",
-    "package:azpipelines": "tfx extension create --root build --output-path dist --manifest-globs vss-extension.json",
+    "package:azpipelines": "node make.js create",
     "publish:azpipelines": "node make.js publish"
   },
   "author": "dxatscale",
@@ -45,7 +45,6 @@
     "sfpowerscripts-createunlockedpackage-task": "file:BuildTasks\\CreateUnlockedPackageTask",
     "sfpowerscripts-deploydestructivemanifesttoorg-task": "file:BuildTasks\\DeployDestructiveManifestToOrgTask",
     "sfpowerscripts-deploysourcetoorg-task": "file:BuildTasks\\DeploySourceToOrgTask",
-    "sfpowerscripts-exportsourcefromorg-task": "file:BuildTasks\\ExportSourceFromAnOrgTask",
     "sfpowerscripts-incrementprojectbuildnumber-task": "file:BuildTasks\\IncrementProjectBuildNumberTask",
     "sfpowerscripts-installpackagedependencies-task": "file:BuildTasks\\InstallPackageDependenciesTask",
     "sfpowerscripts-installsfdx-task": "file:BuildTasks\\InstallSFDXCLITaskCurrent",

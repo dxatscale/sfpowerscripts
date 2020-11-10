@@ -7,9 +7,9 @@
     "category": "Utility",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 7,
+        "Major": 8,
         "Minor": 0,
-        "Patch": 30
+        "Patch": 2
     },
     "runsOn": [
         "Agent"
@@ -47,6 +47,23 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "Provide the list of other plugins seperated by comma in the format \"pluginame1@version,pluginname2@version)\""
+        },
+        {
+            "name": "enableStatsd",
+            "type": "boolean",
+            "label": "Enable sending metrics about build to a statsd daemon",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Enable this flag to send metrics to a statsd daemon"
+        },
+        {
+            "name": "statsd_config",
+            "type": "string",
+            "label": "URI to StatsD server, format <HOST>:<PORT>:<PROTOCOL>",
+            "defaultValue": "",
+            "visibleRule": "enableStatsd = true",
+            "required": false,
+            "helpMarkDown": "Provide the config to statsd daemon, the daemon should be reachable by the agent"
         }
     ],
     "execution": {

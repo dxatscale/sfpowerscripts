@@ -6,6 +6,7 @@
     "repoUrlFlagDescription": "Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config",
     "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
     "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
+    "branchFlagDescription":"The git branch that this build is triggered on, Useful for metrics and general identification purposes",
     "versionNameFlagDescription": "Provide a meaningful name such as the default value, so this artifact can be identified in the release",
     "generateDestructiveManifestFlagDescription": "Check this option to generate a destructive manifest to be deployed",
     "refNameFlagDescription": "Reference name to be prefixed to output variables"

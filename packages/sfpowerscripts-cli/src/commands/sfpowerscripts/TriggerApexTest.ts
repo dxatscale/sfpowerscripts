@@ -71,6 +71,8 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
   public async execute(){
     try {
 
+
+    
       let test_options = {};
       test_options["wait_time"] = this.flags.waittime;
       test_options["testlevel"] = this.flags.testlevel;
@@ -106,7 +108,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       const triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
         this.flags.targetorg,
         test_options,
-        this.flags.projectdir
+        null
       );
       console.log("Executing command");
       let result = await triggerApexTestImpl.exec();
@@ -116,10 +118,12 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       } else {
         console.log(`${result.message}`);
       }
+
+      
     } catch(err) {
       console.log("\n");
       console.error(err.message);
-      process.exit(1);
+      process.exitCode=1;
     }
   }
 }

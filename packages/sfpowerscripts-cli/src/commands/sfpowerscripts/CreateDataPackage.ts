@@ -33,6 +33,9 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
     versionnumber: flags.string({required: true, char: 'v', description: messages.getMessage('versionNumberFlagDescription')}),
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
     diffcheck: flags.boolean({description: messages.getMessage('diffCheckFlagDescription')}),
+    branch:flags.string({
+      description:messages.getMessage("branchFlagDescription"),
+    }),
     gittag: flags.boolean({description: messages.getMessage('gitTagFlagDescription')}),
     repourl: flags.string({char: 'r', description: messages.getMessage('repoUrlFlagDescription')}),
     refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
@@ -46,11 +49,13 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
       const version_number: string = this.flags.versionnumber;
       const artifactDirectory: string = this.flags.artifactdir;
       const refname: string = this.flags.refname;
+      const branch:string=this.flags.branch;
+
 
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
-        let packageDiffImpl = new PackageDiffImpl(sfdx_package, null);
+        let packageDiffImpl = new PackageDiffImpl(sfdx_package, null, null, null, "data");
 
         runBuild = await packageDiffImpl.exec();
 
@@ -72,11 +77,14 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
         } else repository_url = this.flags.repourl;
 
 
+
+
         let packageMetadata:PackageMetadata = {
           package_name: sfdx_package,
           package_version_number: version_number,
           sourceVersion: commit_id,
-          repository_url:repository_url
+          repository_url:repository_url,
+          branch:branch
         };
 
 
