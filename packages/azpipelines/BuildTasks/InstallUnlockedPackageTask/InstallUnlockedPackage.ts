@@ -51,7 +51,7 @@ async function run() {
 
 
      //Initialize StatsD
-     SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
+     SFPStatsSender.initialize(tl.getVariable("SFPOWERSCRIPTS_STATSD_PORT"),tl.getVariable("SFPOWERSCRIPTS_STATSD_HOST"),tl.getVariable("SFPOWERSCRIPTS_STATSD_PROTOCOL"));
 
 
     if (package_installedfrom == "Custom") {
