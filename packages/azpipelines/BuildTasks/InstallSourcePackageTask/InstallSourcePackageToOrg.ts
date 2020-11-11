@@ -52,8 +52,8 @@ async function run() {
     let extensionName = await getExtensionName(extensionManagementApi);
 
 
-     //Initialize StatsD
-     SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
+   //Initialize StatsD
+   SFPStatsSender.initialize(tl.getVariable("SFPOWERSCRIPTS_STATSD_PORT"),tl.getVariable("SFPOWERSCRIPTS_STATSD_HOST"),tl.getVariable("SFPOWERSCRIPTS_STATSD_PROTOCOL"));
 
 
      //Intialize Time
