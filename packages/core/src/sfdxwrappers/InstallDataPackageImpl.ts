@@ -16,7 +16,7 @@ export default class InstallDataPackageImpl {
   public async exec(): Promise<void> {
     try {
       if (
-        /AssignPermissionSets/i.test(this.packageMetadata.preDeploymentSteps?.toString()) &&
+        new RegExp("AssignPermissionSets", "i").test(this.packageMetadata.preDeploymentSteps?.toString()) &&
         this.packageMetadata.permissionSetsToAssign
       ) {
         let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
