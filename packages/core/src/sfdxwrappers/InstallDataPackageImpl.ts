@@ -1,3 +1,5 @@
+import PackageMetadata from "../PackageMetadata";
+import AssignPermissionSetsImpl from "../sfdxwrappers/AssignPermissionSetsImpl";
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 import fs = require("fs");
@@ -7,11 +9,26 @@ export default class InstallDataPackageImpl {
   public constructor(
     private targetusername: string,
     private projectDirectory: string,
-    private packageDirectory: string
+    private packageDirectory: string,
+    private packageMetadata: PackageMetadata
   ) {}
 
   public async exec(): Promise<void> {
     try {
+      if (
+        /AssignPermissionSets/i.test(this.packageMetadata.preDeploymentSteps?.toString()) &&
+        this.packageMetadata.permissionSetsToAssign
+      ) {
+        let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
+          this.targetusername,
+          this.packageMetadata.permissionSetsToAssign,
+          this.projectDirectory
+        )
+
+        console.log("Executing pre-deployment step: AssignPermissionSets");
+        assignPermissionSetsImpl.exec();
+      }
+
       let command = this.buildExecCommand();
       let child = child_process.exec(
         command,
@@ -27,6 +44,7 @@ export default class InstallDataPackageImpl {
       });
 
       await onExit(child);
+
     } catch (err) {
       throw err;
     } finally {

@@ -58,6 +58,9 @@ export default class CreateDataPackageImpl {
       this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor[
         "postDeploymentSteps"
       ]?.split(",");
+
+      this.packageArtifactMetadata.permissionSetsToAssign = packageDescriptor
+        .permissionSetsToAssign?.split(",");
     }
 
     if (
