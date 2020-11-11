@@ -113,7 +113,8 @@ async function run() {
     let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
       target_org,
       artifacts_filepaths[0].sourceDirectoryPath,
-      sourceDirectory
+      sourceDirectory,
+      packageMetadataFromArtifact
     )
 
     await installDataPackageImpl.exec();
@@ -156,9 +157,9 @@ async function run() {
     tl.setResult(tl.TaskResult.Succeeded, "Package installed successfully");
 
   } catch (err) {
-   
+
     tl.setResult(tl.TaskResult.Failed, err.message);
-    
+
     SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"data"})
   }
 }
