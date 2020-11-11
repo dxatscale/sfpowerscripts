@@ -108,8 +108,8 @@ async function run() {
               "SFPOWERSCRIPTS_STATSD_HOST",
               statsDConfigDetails[0]
             );
-            tl.setVariable("SFPOWERSCRIPTS_STATSD_HOST", "8125");
-            tl.setVariable("SFPOWERSCRIPTS_STATSD_HOST", "udp");
+            tl.setVariable("SFPOWERSCRIPTS_STATSD_PORT", "8125");
+            tl.setVariable("SFPOWERSCRIPTS_STATSD_PROTOCOL", "udp");
             break;
 
           case 2:
@@ -118,8 +118,8 @@ async function run() {
               "SFPOWERSCRIPTS_STATSD_HOST",
               statsDConfigDetails[0]
             );
-            tl.setVariable("SFPOWERSCRIPTS_STATSD_HOST",statsDConfigDetails[1] );
-            tl.setVariable("SFPOWERSCRIPTS_STATSD_HOST", "udp");
+            tl.setVariable("SFPOWERSCRIPTS_STATSD_PORT",statsDConfigDetails[1] );
+            tl.setVariable("SFPOWERSCRIPTS_STATSD_PROTOCOL", "udp");
             break;
 
           case 3:
@@ -127,8 +127,8 @@ async function run() {
                 "SFPOWERSCRIPTS_STATSD_HOST",
                 statsDConfigDetails[0]
               );
-              tl.setVariable("SFPOWERSCRIPTS_STATSD_HOST",statsDConfigDetails[1] );
-              tl.setVariable("SFPOWERSCRIPTS_STATSD_HOST",statsDConfigDetails[2]);
+              tl.setVariable("SFPOWERSCRIPTS_STATSD_PORT",statsDConfigDetails[1] );
+              tl.setVariable("SFPOWERSCRIPTS_STATSD_PROTOCOL",statsDConfigDetails[2]);
               break;
 
           default:
