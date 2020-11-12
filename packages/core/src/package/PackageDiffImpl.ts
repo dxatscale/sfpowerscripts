@@ -11,7 +11,6 @@ export default class PackageDiffImpl {
     private project_directory: string,
     private config_file_path?: string,
     private override?: boolean,
-    private package_type?: string
   ) {}
 
   public async exec(): Promise<boolean> {
@@ -60,8 +59,9 @@ export default class PackageDiffImpl {
           let modified_files: string[] = gitDiffResult.split("\n");
           modified_files.pop(); // Remove last empty element
 
+          let packageType: string = ManifestHelpers.getPackageType(project_json, this.sfdx_package);
           // Apply forceignore if not data package type
-          if (this.package_type != "data") {
+          if (packageType !== "Data") {
             let forceignorePath: string;
             if (this.project_directory != null)
               forceignorePath = path.join(this.project_directory, ".forceignore");
@@ -73,7 +73,6 @@ export default class PackageDiffImpl {
               .filter(modified_files);
           }
 
-          let packageType: string = ManifestHelpers.getPackageType(project_json, this.sfdx_package);
 
           if (config_file_path != null && packageType === "Unlocked")
             SFPLogger.log(`Checking for changes to ${config_file_path}`);

@@ -45,20 +45,19 @@ export default class CreateDataPackageImpl {
     let startTime = Date.now();
 
     //Get Package Descriptor
-    let packageDescriptor, packageDirectory: string;
-    if (this.sfdx_package != null) {
-      packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
-        this.projectDirectory,
-        this.sfdx_package
-      );
-      packageDirectory = packageDescriptor["path"];
-      this.packageArtifactMetadata.preDeploymentSteps = packageDescriptor[
-        "preDeploymentSteps"
-      ]?.split(",");
-      this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor[
-        "postDeploymentSteps"
-      ]?.split(",");
-    }
+    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      this.projectDirectory,
+      this.sfdx_package
+    );
+
+    let packageDirectory: string = packageDescriptor["path"];
+
+    this.packageArtifactMetadata.preDeploymentSteps = packageDescriptor[
+      "preDeploymentSteps"
+    ]?.split(",");
+    this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor[
+      "postDeploymentSteps"
+    ]?.split(",");
 
     if (
       MDAPIPackageGenerator.isEmptyFolder(
