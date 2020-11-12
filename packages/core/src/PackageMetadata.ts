@@ -13,6 +13,7 @@ export default interface PackageMetadata {
     branch?:string;
     apextestsuite?: string;
     isApexFound?:boolean;
+    permissionSetsToAssign?: string[],
     apexTestClassses?:string[];
     isTriggerAllTests?:boolean;
     isProfilesFound?:boolean;
@@ -28,4 +29,3 @@ export default interface PackageMetadata {
     creation_details?:{creation_time?:number,timestamp?:number}
     deployments?:{target_org:string,sub_directory?:string,installation_time?:number,timestamp?:number}[];
   }
-  
