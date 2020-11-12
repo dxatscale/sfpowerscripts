@@ -3,7 +3,7 @@ import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageD
 import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDataPackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator"
-
+import ManifestHelper from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 
 
 async function run() {
@@ -15,6 +15,11 @@ async function run() {
     let projectDirectory: string = tl.getInput("project_directory", false);
     let commitId = tl.getVariable("build.sourceVersion");
     let repositoryUrl = tl.getVariable("build.repository.uri");
+
+    let packageDescriptor = ManifestHelper.getSFDXPackageDescriptor(projectDirectory, sfdx_package);
+    if (packageDescriptor.type?.toLowerCase() !== "data") {
+      throw new Error("Data packages must have 'type' property of 'data' defined in sfdx-project.json");
+    }
 
     let isRunBuild: boolean;
     if (isDiffCheck) {

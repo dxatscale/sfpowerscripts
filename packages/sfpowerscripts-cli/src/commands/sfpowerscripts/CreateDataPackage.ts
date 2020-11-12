@@ -5,6 +5,7 @@ import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageD
 import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDataPackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import { exec } from "shelljs";
 import fs = require("fs-extra");
 
@@ -51,11 +52,14 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
       const refname: string = this.flags.refname;
       const branch:string=this.flags.branch;
 
-
+      let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(null, sfdx_package);
+      if (packageDescriptor.type?.toLowerCase() !== "data") {
+        throw new Error("Data packages must have 'type' property of 'data' defined in sfdx-project.json");
+      }
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
-        let packageDiffImpl = new PackageDiffImpl(sfdx_package, null, null, null, "data");
+        let packageDiffImpl = new PackageDiffImpl(sfdx_package, null);
 
         runBuild = await packageDiffImpl.exec();
 
@@ -125,7 +129,7 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
         }
       }
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
       // Fail the task when an error occurs
       process.exit(1);
     }
