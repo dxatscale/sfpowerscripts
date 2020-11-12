@@ -59,6 +59,9 @@ export default class CreateDataPackageImpl {
       "postDeploymentSteps"
     ]?.split(",");
 
+    this.packageArtifactMetadata.permissionSetsToAssign = packageDescriptor
+        .permissionSetsToAssign?.split(",");
+
     if (
       MDAPIPackageGenerator.isEmptyFolder(
         this.projectDirectory,

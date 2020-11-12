@@ -98,13 +98,14 @@ export default class InstallDataPackage extends SfpowerscriptsCommand {
       let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
         targetOrg,
         sourceDirectory,
-        packageDirectory
+        packageDirectory,
+        packageMetadata
       )
 
       await installDataPackageImpl.exec();
 
       let elapsedTime=Date.now()-startTime;
-      
+
       SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"unlocked", target_org:targetOrg})
       SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"unlocked",target_org:targetOrg})
 
