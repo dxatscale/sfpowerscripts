@@ -34,7 +34,7 @@ stages:
 
   - job: BuildCLI
     displayName: 'Build To Validate CLI'
-    timeoutInMinutes: 10
+    timeoutInMinutes: 15
     pool:
       vmImage: 'windows-latest'
     steps:
