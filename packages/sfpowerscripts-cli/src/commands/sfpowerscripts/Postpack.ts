@@ -33,6 +33,8 @@ export default class Postpack extends SfpowerscriptsCommand {
 
   public async execute(){
     try {
+      let result: boolean = true;
+
       let artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);
 
       if (artifacts_filepaths.length === 0) {
@@ -59,6 +61,7 @@ export default class Postpack extends SfpowerscriptsCommand {
 
               promotedPackages.push(packageMetadata["package_name"]);
             } catch (err) {
+              result = false;
               // Remove artifacts that failed to promote
               artifacts_filepaths.splice(i,1);
               unpromotedPackages.push(packageMetadata["package_name"]);
@@ -83,10 +86,14 @@ export default class Postpack extends SfpowerscriptsCommand {
         git.pushTags();
       }
 
+      // Overall exit status is 1 if a package failed to promote
+      if (!result) {
+        throw new Error();
+      }
     } catch (err) {
       console.log(err.message);
       // Fail the task when an error occurs
-      process.exit(1);
+      process.exitCode = 1;
     }
   }
 }
