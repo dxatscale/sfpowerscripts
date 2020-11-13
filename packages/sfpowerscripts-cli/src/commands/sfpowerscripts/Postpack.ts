@@ -42,7 +42,8 @@ export default class Postpack extends SfpowerscriptsCommand {
       if (this.flags.promote) {
         let promotedPackages: string[] = [];
         let unpromotedPackages: string[] = [];
-        for (let i = 0; i < artifacts_filepaths.length; i++) {
+        let nArtifacts: number = artifacts_filepaths.length;
+        for (let i = 0; i < nArtifacts; i++) {
           let packageMetadata: PackageMetadata = JSON.parse(
             fs.readFileSync(artifacts_filepaths[i]["packageMetadataFilePath"], 'utf8')
           );
