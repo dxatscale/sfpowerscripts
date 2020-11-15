@@ -318,8 +318,9 @@ async function run() {
       );
     }
   } catch (err) {
+    SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"source"});
     tl.setResult(tl.TaskResult.Failed, err.message);
-    SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"source"})
+    
   }
 }
 

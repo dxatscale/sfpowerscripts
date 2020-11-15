@@ -116,6 +116,14 @@ export default class TriggerApexTestImpl {
       ) {
         test_result.message = `${test_report_json.summary.passing} Tests passed with overall Test Run Coverage of ${test_report_json.summary.testRunCoverage} percent`;
         test_result.result = true;
+
+
+        SFPStatsSender.logGauge("package.testcoverage", test_report_json.summary.testRunCoverage,{
+          package: this.test_options["package"],
+          from:"triggerapextest"
+        });
+
+
       } else {
         test_result.message = `There are classes that do not satisfy the minimum code coverage of ${this.test_options["coverageThreshold"]}%`;
         test_result.result = false;

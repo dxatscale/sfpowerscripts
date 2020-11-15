@@ -194,6 +194,14 @@ export default class CreateUnlockedPackageImpl {
       is_dependency_validated: String(this.packageArtifactMetadata.isDependencyValidated)
     });
 
+
+    if(this.packageArtifactMetadata.isDependencyValidated) {
+        SFPStatsSender.logGauge("package.testcoverage", this.packageArtifactMetadata.test_coverage,{
+         package: this.packageArtifactMetadata.package_name,
+         from:"createpackage"
+       });
+    }
+
     return this.packageArtifactMetadata;
   }
 
