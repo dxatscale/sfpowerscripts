@@ -170,7 +170,7 @@ export default class PackageDiffImpl {
       if (latestTags[this.sfdx_package] != null) {
         return latestTags[this.sfdx_package];
       } else {
-        throw new Error(`Tag missing for ${this.sfdx_package} in packageDiffTags.json`);
+        return null;
       }
     } else {
       throw new Error(`packageDiffTags.json does not exist`);
