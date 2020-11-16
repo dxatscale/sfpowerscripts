@@ -193,7 +193,8 @@ async function run() {
     let payload: string = generateMarkdown(
       releaseChangelog,
       tl.getInput("workItemUrl", false),
-      parseInt(tl.getInput("limit", false), 10)
+      parseInt(tl.getInput("limit", false), 10),
+      tl.getInput("showAllArtifacts", false)
     );
 
     fs.writeFileSync(

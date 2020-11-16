@@ -1,6 +1,6 @@
 import { ReleaseChangelog, Release } from "./interfaces/ReleaseChangelogInterfaces"
 
-export default function generateMarkdown(releaseChangelog: ReleaseChangelog, workItemURL: string, limit: number): string {
+export default function generateMarkdown(releaseChangelog: ReleaseChangelog, workItemURL: string, limit: number, showAllArtifacts: boolean): string {
   let payload: string = "";
 
   let limitReleases: number;
@@ -17,7 +17,8 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
 
       payload += "## Artifacts\n";
       for (let artifactNum = 0 ; artifactNum < release["artifacts"].length ; artifactNum++) {
-          payload += `**${release["artifacts"][artifactNum]["name"]}**     v${release["artifacts"][artifactNum]["version"]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
+          if (release["artifacts"][artifactNum]["from"] !== release["artifacts"][artifactNum]["to"] || showAllArtifacts)
+            payload += `**${release["artifacts"][artifactNum]["name"]}**     v${release["artifacts"][artifactNum]["version"]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
       }
 
       payload += "## Work Items\n";
@@ -36,19 +37,22 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
 
       payload += "\n## Commits\n";
       for (let artifact of release["artifacts"]) {
-          payload += `\n### ${artifact["name"]}\n`;
-          if (artifact["commits"].length > 0) {
-              for (let commit of artifact["commits"]) {
-                  let commitDate: Date = new Date(commit.date);
-                  payload += `  - ${getDate(commitDate)}, ${getTime(commitDate)}      ${commit.commitId}      ${commit.message}\n`;
-              }
-          } else if (artifact["from"] === artifact["to"]) {
+          if (artifact["from"] !== artifact["to"]) {
+            payload += `\n### ${artifact["name"]}\n`;
+            if (artifact["commits"].length > 0) {
+                for (let commit of artifact["commits"]) {
+                    let commitDate: Date = new Date(commit.date);
+                    payload += `  - ${getDate(commitDate)}, ${getTime(commitDate)}      ${commit.commitId}      ${commit.message}\n`;
+                }
+            } else {
+                payload += ` - No changes to ${artifact["name"]} package directory detected. Artifact version may have been updated due to:\n`;
+                payload += `    - Modified scratch org definition file\n`;
+                payload += `    - Incremented package version in sfdx-project.json\n`;
+                payload += `    - Build all packages\n`
+            }
+          }  else if (artifact["from"] === artifact["to"] && showAllArtifacts) {
+              payload += `\n### ${artifact["name"]}\n`;
               payload += `  - Artifact version has not changed\n`
-          } else {
-              payload += ` - No changes to ${artifact["name"]} package directory detected. Artifact version may have been updated due to:\n`;
-              payload += `    - Modified scratch org definition file\n`;
-              payload += `    - Incremented package version in sfdx-project.json\n`;
-              payload += `    - Build all packages\n`
           }
       }
   }
