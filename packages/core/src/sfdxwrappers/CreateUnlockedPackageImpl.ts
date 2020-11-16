@@ -84,11 +84,11 @@ export default class CreateUnlockedPackageImpl {
 
 
     console.log("-------------------------")
-    console.log("Package",this.sfdx_package);
-    console.log("IsOrgDependent",this.isOrgDependentPackage);
+    console.log("Package",packageTypeInfo.Name);
+    console.log("IsOrgDependent",packageTypeInfo.IsOrgDependent);
     console.log("Package Id",packageTypeInfo.Id);
     console.log("-------------------------")
-    
+
     
 
     //Resolve the package dependencies
