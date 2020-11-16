@@ -40,6 +40,14 @@
             "helpMarkDown": "Limit the number of releases to display in the changelog markdown"
         },
         {
+            "name": "showAllArtifacts",
+            "type": "boolean",
+            "label": "Show all artifacts",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Show all artifacts in changelog markdown, including artifacts that have not changed in the release"
+        },
+        {
             "name": "workItemFilter",
             "type": "string",
             "label": "Work Item Pattern",

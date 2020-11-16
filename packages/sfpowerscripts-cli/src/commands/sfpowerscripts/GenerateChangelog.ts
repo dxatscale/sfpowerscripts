@@ -59,6 +59,10 @@ export default class GenerateChangelog extends SfdxCommand {
       char: "b",
       description: messages.getMessage('branchNameFlagDescription')
     }),
+    showallartifacts: flags.boolean({
+      required: false,
+      description: messages.getMessage('showAllArtifactsFlagDescription')
+    }),
     forcepush: flags.boolean({
       description: messages.getMessage('forcePushFlagDescription'),
       hidden: true,
@@ -231,7 +235,7 @@ export default class GenerateChangelog extends SfdxCommand {
         JSON.stringify(releaseChangelog, null, 4)
       );
 
-      let payload: string = generateMarkdown(releaseChangelog, this.flags.workitemurl, this.flags.limit);
+      let payload: string = generateMarkdown(releaseChangelog, this.flags.workitemurl, this.flags.limit, this.flags.showallartifacts);
       fs.writeFileSync(
         path.join(repoTempDir,`Release-Changelog.md`),
         payload
