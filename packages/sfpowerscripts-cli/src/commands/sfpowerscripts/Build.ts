@@ -229,14 +229,6 @@ export default class Build extends SfpowerscriptsCommand {
         tags
       );
 
-      if(!diffcheck && !isSkipValidation)
-      {
-      SFPStatsSender.logGauge(
-        "build.elapsed_time",
-        (Date.now() - executionStartTime)
-      );
-      }
-
       console.log(
         `----------------------------------------------------------------------------------------------------`
       );
