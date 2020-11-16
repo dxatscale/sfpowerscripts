@@ -194,7 +194,7 @@ async function run() {
       releaseChangelog,
       tl.getInput("workItemUrl", false),
       parseInt(tl.getInput("limit", false), 10),
-      tl.getInput("showAllArtifacts", false)
+      tl.getBoolInput("showAllArtifacts", false)
     );
 
     fs.writeFileSync(
