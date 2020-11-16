@@ -82,6 +82,15 @@ export default class CreateUnlockedPackageImpl {
     if (packageTypeInfo.IsOrgDependent == "Yes")
       this.isOrgDependentPackage = true;
 
+
+    console.log("-------------------------")
+    console.log("Package",this.sfdx_package);
+    console.log("IsOrgDependent",this.isOrgDependentPackage);
+    console.log("Package Id",packageTypeInfo.Id);
+    console.log("-------------------------")
+    
+    
+
     //Resolve the package dependencies
     if (this.isOrgDependentPackage) {
       // Store original dependencies to artifact
