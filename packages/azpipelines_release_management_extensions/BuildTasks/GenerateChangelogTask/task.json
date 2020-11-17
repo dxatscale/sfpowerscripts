@@ -1,7 +1,7 @@
 {
-    "id": "87d5162d-07ee-40ea-8bf4-ac8dfdb907f1",
+    "id": "cfadd6bd-238f-451f-842e-f734736154fd",
     "name": "sfpowerscripts-generatechangelog-task",
-    "friendlyName": "Generate Changelog [ALPHA]",
+    "friendlyName": "Generate Changelog",
     "description": "Generates a release changelog that summarises artifact versions, work items (user stories) and commits that are introduced in a release",
     "helpMarkDown": "https://dxatscale.gitbook.io/sfpowerscripts/azure-pipelines/task-specifications/utility-tasks/sfpowerscripts-generatechangelog-task",
     "category": "Build",
