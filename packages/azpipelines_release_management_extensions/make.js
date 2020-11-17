@@ -78,7 +78,7 @@ let i=0;
  {
   try
   {
-  let result = shell.exec(
+  shell.exec(
     'tfx extension create --root build --output-path dist --manifest-globs vss-extension.json --bypass-validation');
   break;
   }
@@ -89,7 +89,7 @@ let i=0;
        continue;
     }
     else
-       break;
+      throw error("Failed to create pacakage");
   }
  }
 
@@ -103,9 +103,9 @@ target.incrementversion = function() {
   if (options.stage === "dev" || options.stage === "review") {
     var ref = new Date(2000, 1, 1);
     var now = new Date();
-    var major = semver.major(manifest.version);
-    var minor = Math.floor((now - ref) / 86400000);
-    var patch = Math.floor(
+    let major = semver.major(manifest.version);
+    let minor = Math.floor((now - ref) / 86400000);
+    let patch = Math.floor(
       Math.floor(
         now.getSeconds() + 60 * (now.getMinutes() + 60 * now.getHours())
       ) * 0.5
@@ -114,8 +114,8 @@ target.incrementversion = function() {
     options.public = false;
   } else {
     //Treat patch as the build number, let major and minor be developer controlled
-    var major = semver.major(manifest.version);
-    var minor = semver.minor(manifest.version);
+    let  major = semver.major(manifest.version);
+    let  minor = semver.minor(manifest.version);
     options.version = major + "." + minor + "." + options.buildNumber;
   }
   updateExtensionManifest(binariesPath, options);
