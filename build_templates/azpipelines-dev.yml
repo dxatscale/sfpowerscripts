@@ -58,3 +58,16 @@ stages:
                inputs:
                      script: |
                       az devops extension install --extension-id sfpowerscripts-dev  --publisher-id AzlamSalam --org https://dev.azure.com/safebot
+
+
+             - task: CmdLine@2
+               displayName: 'Uninstall the release management extension'
+               inputs:
+                     script: |
+                      az devops extension uninstall --extension-id sfpowerscripts-release-extension-dev  --publisher-id dxatscale --org https://dev.azure.com/safebot -y
+
+             - task: CmdLine@2
+               displayName: 'Install the new version of the release management plugin'
+               inputs:
+                     script: |
+                      az devops extension install --extension-id fpowerscripts-release-extension-dev  --publisher-id dxatscale --org https://dev.azure.com/safebot
