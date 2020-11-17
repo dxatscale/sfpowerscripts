@@ -70,4 +70,4 @@ stages:
                displayName: 'Install the new version of the release management plugin'
                inputs:
                      script: |
-                      az devops extension install --extension-id fpowerscripts-release-extension-dev  --publisher-id dxatscale --org https://dev.azure.com/safebot
+                      az devops extension install --extension-id sfpowerscripts-release-extension-dev  --publisher-id dxatscale --org https://dev.azure.com/safebot
