@@ -135,7 +135,7 @@ target.publish = function() {
     shell.exec(
       'tfx extension publish --vsix "' +
         packagesPath +
-        "/AzlamSalam.sfpowerscripts-" +
+        "/dxatscale.sfpowerscripts-release-extension-" +
         manifest.version +
         '.vsix"' +
         " --token " +
@@ -145,7 +145,7 @@ target.publish = function() {
     shell.exec(
       'tfx extension publish --vsix "' +
         packagesPath +
-        "/AzlamSalam.sfpowerscripts-" +
+        "/dxatscale.sfpowerscripts-release-extension-" +
         options.stage +
         "-" +
         manifest.version +
@@ -168,41 +168,41 @@ updateExtensionManifest = function(dir, options) {
 
   if (options.stage == "dev") {
     manifest.version = options.version;
-    manifest.id = "sfpowerscripts" + "-" + "dev";
-    manifest.name = "sfpowerscripts" + " (" + "dev" + ")";
+    manifest.id = "sfpowerscripts-release-extension" + "-" + "dev";
+    manifest.name = "sfpowerscripts-release-extension" + " (" + "dev" + ")";
     manifest.public = false;
     manifest.baseUri = "https://localhost:3000/build/";
     version = options.version;
   } else if (options.stage == "review") {
     manifest.version = options.version;
-    manifest.id = "sfpowerscripts" + "-" + "review";
-    manifest.name = "sfpowerscripts" + " (" + "review" + ")";
+    manifest.id = "sfpowerscripts-release-extension" + "-" + "review";
+    manifest.name = "sfpowerscripts-release-extension" + " (" + "review" + ")";
     manifest.public = false;
     version = options.version;
   } else if (options.stage == "alpha") {
     manifest.version = options.version;
-    manifest.id = "sfpowerscripts" + "-" + "alpha";
-    manifest.name = "sfpowerscripts" + " (" + "alpha" + ")";
+    manifest.id = "sfpowerscripts-release-extension" + "-" + "alpha";
+    manifest.name = "sfpowerscripts-release-extension" + " (" + "alpha" + ")";
     manifest.public = false;
     version = options.version;
   }
    else if (options.stage == "beta") {
     manifest.version = options.version;
-    manifest.id = "sfpowerscripts" + "-" + "beta";
-    manifest.name = "sfpowerscripts" + " (" + "beta" + ")";
+    manifest.id = "sfpowerscripts-release-extension" + "-" + "beta";
+    manifest.name = "sfpowerscripts-release-extension" + " (" + "beta" + ")";
     manifest.public = false;
     version = options.version;
   }
   else if (options.stage == "hotfix") {
     manifest.version = options.version;
-    manifest.id = "sfpowerscripts" + "-" + "hotfix";
-    manifest.name = "sfpowerscripts" + " (" + "hotfix" + ")";
+    manifest.id = "sfpowerscripts-release-extension" + "-" + "hotfix";
+    manifest.name = "sfpowerscripts-release-extension" + " (" + "hotfix" + ")";
     manifest.public = false;
     version = options.version;
   }
   else {
-    manifest.id = "sfpowerscripts";
-    manifest.name = "sfpowerscripts";
+    manifest.id = "sfpowerscripts-release-extension";
+    manifest.name = "sfpowerscripts-release-extension";
     manifest.public = true;
     version = options.version;
   }

@@ -1,6 +1,6 @@
 {
     "manifestVersion": 1,
-    "id": "sfpowerscripts_release_extension",
+    "id": "sfpowerscripts-release-extension",
     "publisher": "dxatscale",
     "name": "sfpowerscripts-release-extension",
     "version": "1.0.0",
@@ -23,17 +23,6 @@
     "icons": {
         "default": "tools-icon.png"
     },
-    "screenshots": [
-        {
-            "path": "review_scratch_org.png"
-        },
-        {
-            "path": "trigger_apex_test.png"
-        },
-        {
-            "path": "pr_pipeline_scratchorg.png"
-        }
-    ],
     "public": false,
     "targets": [
         {
