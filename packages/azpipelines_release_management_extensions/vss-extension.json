@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "sfpowerscripts_release_extension",
     "publisher": "dxatscale",
-    "name": "sfpowerscripts",
+    "name": "sfpowerscripts-release-extension",
     "version": "1.0.0",
     "description": "Additonal capability for Release Orchestration when used with sfpowerscripts",
     "tags": [

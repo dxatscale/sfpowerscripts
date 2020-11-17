@@ -24,7 +24,7 @@ stages:
     displayName: 'Build and Deploy Azure Pipelines Extension to Develop'
     timeoutInMinutes: 40
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'windows-latest'
     environment: develop
     strategy:
        runOnce:

@@ -79,8 +79,17 @@ export default class CreateUnlockedPackageImpl {
     let packageTypeInfo = CreateUnlockedPackageImpl.packageTypeInfos.find(
       (pkg) => pkg.Name == this.sfdx_package
     );
-    if (packageTypeInfo.IsOrgDependent === "Yes")
+    if (packageTypeInfo.IsOrgDependent == "Yes")
       this.isOrgDependentPackage = true;
+
+
+    console.log("-------------------------")
+    console.log("Package",packageTypeInfo.Name);
+    console.log("IsOrgDependent",packageTypeInfo.IsOrgDependent);
+    console.log("Package Id",packageTypeInfo.Id);
+    console.log("-------------------------")
+
+    
 
     //Resolve the package dependencies
     if (this.isOrgDependentPackage) {
