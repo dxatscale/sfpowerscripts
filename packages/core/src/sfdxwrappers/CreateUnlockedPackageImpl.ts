@@ -70,24 +70,31 @@ export default class CreateUnlockedPackageImpl {
       this.sfdx_package
     );
 
+    
+
+    let packageId = ManifestHelpers.getPackageId(
+       projectManifest,
+      this.sfdx_package
+    );
+
     let packageDirectory: string = packageDescriptor["path"];
     SFPLogger.log("Package Directory", packageDirectory, this.packageLogger);
 
     //Get Type of Package
-    SFPLogger.log("Fetching Package Type Info from DevHub");
+    SFPLogger.log("Fetching Package Type Info from DevHub",null,this.packageLogger);
     await this.getPackageTypeInfos();
     let packageTypeInfo = CreateUnlockedPackageImpl.packageTypeInfos.find(
-      (pkg) => pkg.Name == this.sfdx_package
+      (pkg) => pkg.Id == packageId
     );
     if (packageTypeInfo.IsOrgDependent == "Yes")
       this.isOrgDependentPackage = true;
 
 
-    console.log("-------------------------")
-    console.log("Package",packageTypeInfo.Name);
-    console.log("IsOrgDependent",packageTypeInfo.IsOrgDependent);
-    console.log("Package Id",packageTypeInfo.Id);
-    console.log("-------------------------")
+    SFPLogger.log("-------------------------",null, this.packageLogger)
+    SFPLogger.log("Package",packageTypeInfo.Name,this.packageLogger);
+    SFPLogger.log("IsOrgDependent",packageTypeInfo.IsOrgDependent,this.packageLogger);
+    SFPLogger.log("Package Id",packageTypeInfo.Id,this.packageLogger);
+    SFPLogger.log("-------------------------",null, this.packageLogger)
 
     
 
