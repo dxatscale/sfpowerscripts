@@ -84,6 +84,14 @@ steps:
                script: |
                 npm run increment:azpipelines:version -- --version=${{ parameters.version }}  --stage=${{ parameters.stageToDeploy }} --buildNumber=${{ parameters.buildNumber }}
                workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines'
+
+          - task: CmdLine@2
+            displayName: 'Set Release Mode to ${{ parameters.stageToDeploy }} for release management'
+            inputs:
+               script: |
+                npm run increment:azpipelines:version -- --version=${{ parameters.version }}  --stage=${{ parameters.stageToDeploy }} --buildNumber=${{ parameters.buildNumber }}
+               workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines_release_management_extensions'
+
           
           - task: CmdLine@2
             displayName: 'Create package'
