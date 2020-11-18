@@ -62,21 +62,17 @@ async function run() {
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata));
 
 
-      let artifact= await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
+      let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
 
-      tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);
+      tl.uploadArtifact(`sfpowerscripts_artifacts`, artifactFilepath);
 
 
 
 
       tl.setVariable("sfpowerscripts_package_version_number", version_number);
       tl.setVariable(
-        "sfpowerscripts_data_package_metadata_path",
-        artifact.artifactMetadataFilePath
-      );
-      tl.setVariable(
-        "sfpowerscripts_data_package_path",
-        artifact.artifactSourceDirectory
+        "sfpowerscripts_artifact_path",
+        artifactFilepath
       );
 
 
