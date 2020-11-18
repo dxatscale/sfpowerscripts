@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-installdatapackage-task",
   "description": "sfpowerscripts-installdatapackage-task",
-  "version": "1.0.34",
+  "version": "1.0.36",
   "private": true,
   "scripts": {
     "version": "node ../../versionupdate.js && git add task.json",
@@ -9,7 +9,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^3.0.36",
+    "@dxatscale/sfpowerscripts.core": "^3.0.38",
     "azure-devops-node-api": "^10.1.1",
     "azure-pipelines-task-lib": "^2.8.0"
   }
