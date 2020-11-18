@@ -150,9 +150,6 @@
             "path": "BuildTasks/ValidateTestCoveragePackageTask"
         },
         {
-            "path": "BuildTasks/GenerateChangelogTask"
-        },
-        {
             "path": "BuildTasks/CreateDeltaPackageTask"
         },
         {
@@ -485,16 +482,6 @@
             ],
             "properties": {
                 "name": "BuildTasks/ValidateTestCoveragePackageTask"
-            }
-        },
-        {
-            "id": "sfpowerscripts-generatechangelog-task",
-            "type": "ms.vss-distributed-task.task",
-            "targets": [
-                "ms.vss-distributed-task.tasks"
-            ],
-            "properties": {
-                "name": "BuildTasks/GenerateChangelogTask"
             }
         },
         {
