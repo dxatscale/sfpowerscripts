@@ -6,11 +6,11 @@ import DeployDestructiveManifestToOrgImpl from "@dxatscale/sfpowerscripts.core/l
 import DeploySourceResult from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceResult";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
-import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails"
+import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
 import { Messages } from "@salesforce/core";
-import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
 import { flags } from "@salesforce/command";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import InstallPackageCommand from "../../InstallPackageCommand";
 const fs = require("fs-extra");
 const path = require("path");
 const glob = require("glob");
@@ -25,7 +25,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_source_package');
 
-export default class InstallSourcePackage extends SfpowerscriptsCommand {
+export default class InstallSourcePackage extends InstallPackageCommand {
 
 
   public static description = messages.getMessage('commandDescription');
@@ -43,12 +43,11 @@ export default class InstallSourcePackage extends SfpowerscriptsCommand {
     subdirectory: flags.directory({description: messages.getMessage('subdirectoryFlagDescription')}),
     optimizedeployment: flags.boolean({char:'o',description: messages.getMessage('optimizedeployment'),default:false,required:false}),
     skiptesting: flags.boolean({char:'t',description: messages.getMessage('skiptesting'),default:false,required:false}),
-    waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '120'}),
-
+    waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '120'})
   };
 
 
-  public async execute(): Promise<any> {
+  public async install(): Promise<any> {
 
     const target_org: string = this.flags.targetorg;
     const sfdx_package: string =this.flags.package;
