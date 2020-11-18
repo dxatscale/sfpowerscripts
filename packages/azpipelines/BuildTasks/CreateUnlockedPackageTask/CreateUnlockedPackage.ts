@@ -3,7 +3,6 @@ import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwr
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator"
-import path = require("path");
 
 async function run() {
   try {
@@ -122,7 +121,7 @@ async function run() {
 
       let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
 
-      tl.uploadArtifact(`sfpowerscripts_artifacts`, artifactFilepath, path.basename(artifactFilepath));
+      tl.uploadArtifact(`sfpowerscripts_artifacts`, artifactFilepath, `sfpowerscripts_artifacts`);
     }
   } catch (err) {
     console.log(err);

@@ -3,7 +3,6 @@ import CreateDeltaPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrapp
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
-import path = require("path");
 
 async function run() {
   try {
@@ -89,7 +88,7 @@ async function run() {
     tl.uploadArtifact(
       `sfpowerscripts_artifacts`,
       artifactFilepath,
-      path.basename(artifactFilepath)
+      `sfpowerscripts_artifacts`
     );
 
     tl.setVariable(
