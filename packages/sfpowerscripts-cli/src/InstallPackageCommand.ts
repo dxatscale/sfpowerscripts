@@ -15,6 +15,9 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_pac
  */
 export default abstract class InstallPackageCommand extends SfpowerscriptsCommand {
 
+  /**
+   * Flags that are common/required on all package installation commands
+   */
   protected static flagsConfig = {
     package: flags.string({char: 'n', description: messages.getMessage('packageFlagDescription'), required: true}),
     targetorg: flags.string({char: 'u', description: messages.getMessage('targetOrgFlagDescription'), required: true}),
@@ -34,7 +37,7 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
   async execute(): Promise<any> {
     this.preInstall();
 
-    // await this.install();
+    await this.install();
 
     this.postInstall();
   }
@@ -44,7 +47,6 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
    * the primary install
    */
   private preInstall(): void {
-    console.log(this.flags);
 
     let artifactPath: string = path.resolve(
       this.flags.artifactdir,
