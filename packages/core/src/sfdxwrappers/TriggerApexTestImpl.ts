@@ -117,6 +117,15 @@ export default class TriggerApexTestImpl {
           test_result.message = `${test_report_json.summary.passing} Tests passed with overall Test Run Coverage of ${test_report_json.summary.testRunCoverage} percent`;
           test_result.result = true;
         
+
+          SFPStatsSender.logGauge("apextest.tests.ran",  test_report_json.summary.testsRan, {
+            test_result: String(test_result.result),
+            package: this.test_options["package"],
+            type: this.test_options["testlevel"],
+            target_org: this.target_org,
+          });
+
+
           let testTotalTime = test_report_json.summary.testTotalTime.split(" ")[0];
           SFPStatsSender.logElapsedTime("apextest.testtotal.time", testTotalTime, {
             test_result: String(test_result.result),
