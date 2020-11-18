@@ -1,10 +1,9 @@
 import tl = require("azure-pipelines-task-lib/task");
-import { isNullOrUndefined } from "util";
 import CreateDeltaPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDeltaPackageImpl";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
-
+import path = require("path");
 
 async function run() {
   try {
@@ -17,7 +16,7 @@ async function run() {
     let options: any = {};
     options["bypass_directories"] = tl.getInput("bypass_directories", false);
     options["only_diff_for"] = tl.getInput("only_diff_for", false);
-    if (isNullOrUndefined(revision_to)) {
+    if (revision_to == null) {
       revision_to = tl.getVariable("build.sourceVersion");
     }
     const generate_destructivemanifest = tl.getBoolInput(
@@ -89,7 +88,8 @@ async function run() {
 
     tl.uploadArtifact(
       `sfpowerscripts_artifacts`,
-      artifactFilepath
+      artifactFilepath,
+      path.basename(artifactFilepath)
     );
 
     tl.setVariable(

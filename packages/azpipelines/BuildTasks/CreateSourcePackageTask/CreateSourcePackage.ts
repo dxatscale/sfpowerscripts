@@ -2,8 +2,8 @@ import tl = require("azure-pipelines-task-lib/task");
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator"
-import { isNullOrUndefined } from "util";
+import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
+import path = require("path");
 
 
 
@@ -72,7 +72,7 @@ async function run() {
 
       let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
 
-      tl.uploadArtifact(`sfpowerscripts_artifacts`, artifactFilepath);
+      tl.uploadArtifact(`sfpowerscripts_artifacts`, artifactFilepath, path.basename(artifactFilepath));
 
 
 
@@ -89,7 +89,7 @@ async function run() {
       if (isGitTag) {
         let tagname: string = `${sfdx_package}_v${version_number}`;
         tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`, tagname);
-        if (isNullOrUndefined(projectDirectory))
+        if (projectDirectory == null)
           tl.setVariable(
             `${sfdx_package}_sfpowerscripts_project_directory_path`,
             tl.getVariable("Build.Repository.LocalPath")
