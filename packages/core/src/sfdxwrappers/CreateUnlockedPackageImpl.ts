@@ -71,7 +71,7 @@ export default class CreateUnlockedPackageImpl {
       this.sfdx_package
     );
 
-    
+
 
     let packageId = ManifestHelpers.getPackageId(
        projectManifest,
@@ -97,7 +97,7 @@ export default class CreateUnlockedPackageImpl {
     SFPLogger.log("Package Id",packageTypeInfo.Id,this.packageLogger);
     SFPLogger.log("-------------------------",null, this.packageLogger)
 
-    
+
 
     //Resolve the package dependencies
     if (this.isOrgDependentPackage) {
@@ -148,7 +148,7 @@ export default class CreateUnlockedPackageImpl {
 
     this.packageArtifactMetadata.payload = mdapiPackage.manifest;
     this.packageArtifactMetadata.metadataCount=mdapiPackage.metadataCount;
-   
+
 
 
 
@@ -181,6 +181,10 @@ export default class CreateUnlockedPackageImpl {
 
     //Get the full details on the package
     await this.getPackageInfo();
+
+    // Verify that code coverage is above 75%, if codecoverage is enabled
+    if (this.isCoverageEnabled && this.packageArtifactMetadata.test_coverage < 75)
+      throw new Error(`Code coverage of ${this.packageArtifactMetadata.package_version_id} is below 75%`);
 
     //Generate Source Artifact
     let mdapiPackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
