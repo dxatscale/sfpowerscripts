@@ -5,9 +5,9 @@ import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageD
 import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
-import { isNullOrUndefined } from "util";
 import { exec } from "shelljs";
 const fs = require("fs-extra");
+import path = require("path");
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -151,7 +151,7 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
 
       if (runBuild) {
         let repository_url: string;
-        if (isNullOrUndefined(this.flags.repourl)) {
+        if (this.flags.repourl == null) {
           repository_url = exec("git config --get remote.origin.url", {
             silent: true,
           });
@@ -209,15 +209,17 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
         );
 
         //Generate Artifact
-        let artifact = await ArtifactGenerator.generateArtifact(
+        let artifactFilepath: string = await ArtifactGenerator.generateArtifact(
           sfdx_package,
           process.cwd(),
           artifactDirectory,
           packageMetadata
         );
 
+        console.log(`Created data package ${path.basename(artifactFilepath)}`);
+
         console.log("\nOutput variables:");
-        if (!isNullOrUndefined(refname)) {
+        if (refname != null) {
           fs.writeFileSync(
             ".env",
             `${refname}_sfpowerscripts_package_version_id=${packageMetadata.package_version_id}\n`,
@@ -228,11 +230,11 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           );
           fs.writeFileSync(
             ".env",
-            `${refname}_sfpowerscripts_artifact_directory=${artifact.artifactDirectory}\n`,
+            `${refname}_sfpowerscripts_artifact_directory=${artifactFilepath}\n`,
             { flag: "a" }
           );
           console.log(
-            `${refname}_sfpowerscripts_artifact_directory=${artifact.artifactDirectory}`
+            `${refname}_sfpowerscripts_artifact_directory=${artifactFilepath}`
           );
           fs.writeFileSync(
             ".env",
@@ -253,11 +255,11 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           );
           fs.writeFileSync(
             ".env",
-            `sfpowerscripts_artifact_directory=${artifact.artifactDirectory}\n`,
+            `sfpowerscripts_artifact_directory=${artifactFilepath}\n`,
             { flag: "a" }
           );
           console.log(
-            `sfpowerscripts_artifact_directory=${artifact.artifactDirectory}`
+            `sfpowerscripts_artifact_directory=${artifactFilepath}`
           );
           fs.writeFileSync(
             ".env",

@@ -33,8 +33,7 @@
     "nanoid": "^2.1.11",
     "sfpowerscripts-generatechangelog-task": "file:BuildTasks\\GenerateChangelogTask",
     "shelljs": "^0.8.3",
-    "simple-git": "2.0.0",
-    "unzip-stream": "0.3.0"
+    "simple-git": "2.0.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^8.0.1",
