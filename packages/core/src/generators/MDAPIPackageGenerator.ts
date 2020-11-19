@@ -13,6 +13,7 @@ import {
 } from "fs";
 import ignore from "ignore";
 import SFPLogger from "../utils/SFPLogger";
+const glob = require("glob");
 
 export default class MDAPIPackageGenerator {
   public static async getMDAPIPackageFromSourceDirectory(
@@ -20,10 +21,12 @@ export default class MDAPIPackageGenerator {
     sourceDirectory?: string
   ): Promise<{
     mdapiDir: string;
+    metadataCount:number;
     manifest;
   }> {
-    const mdapiPackage: { mdapiDir: string; manifest } = {
+    const mdapiPackage: { mdapiDir: string; metadataCount:number, manifest } = {
       mdapiDir: "",
+      metadataCount:0,
       manifest: {},
     };
 
@@ -37,6 +40,17 @@ export default class MDAPIPackageGenerator {
       path.join(mdapiDir, "package.xml"),
       "utf8"
     );
+
+
+      // Search the source directory for metadata files to return count
+      let metadataFiles: string[] = glob.sync(
+        `**/*-meta.xml`,
+        {
+          cwd: path.join(projectDirectory,sourceDirectory),
+          absolute: true,
+        }
+      );
+     mdapiPackage.metadataCount = metadataFiles.length;
 
     mdapiPackage.manifest = await this.xml2json(packageXml);
     return mdapiPackage;

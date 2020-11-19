@@ -13,6 +13,7 @@ import PackageVersionListImpl from "./PackageVersionListImpl";
 import SFPStatsSender from "../utils/SFPStatsSender";
 const path = require("path");
 
+
 export default class CreateUnlockedPackageImpl {
   private packageLogger;
   private static packageTypeInfos: any[];
@@ -143,7 +144,14 @@ export default class CreateUnlockedPackageImpl {
       workingDirectory,
       packageDirectory
     );
+
+
     this.packageArtifactMetadata.payload = mdapiPackage.manifest;
+    this.packageArtifactMetadata.metadataCount=mdapiPackage.metadataCount;
+   
+
+
+
 
     let command = this.buildExecCommand();
     let output = "";
@@ -194,6 +202,16 @@ export default class CreateUnlockedPackageImpl {
       creation_time: elapsedTime,
       timestamp: Date.now(),
     };
+
+
+    SFPStatsSender.logGauge(
+      "package.metadatacount",
+      this.packageArtifactMetadata.metadataCount,
+      {
+        package: this.packageArtifactMetadata.package_name,
+        type: this.packageArtifactMetadata.package_type
+      }
+    );
 
     SFPStatsSender.logElapsedTime(
       "package.elapsed.time",

@@ -22,6 +22,7 @@ export default interface PackageMetadata {
     isDestructiveChangesFound?:boolean;
     destructiveChanges?:any;
     payload?:any;
+    metadataCount?:number;
     sourceDir?:string;
     dependencies?:any;
     preDeploymentSteps?:string[];

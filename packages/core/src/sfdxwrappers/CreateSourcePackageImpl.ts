@@ -104,6 +104,7 @@ export default class CreateSourcePackageImpl {
         );
 
         this.packageArtifactMetadata.payload = mdapiPackage.manifest;
+        this.packageArtifactMetadata.metadataCount = mdapiPackage.metadataCount;
         this.packageArtifactMetadata.isApexFound = ManifestHelpers.checkApexInPayload(
           mdapiPackage.manifest
         );
@@ -143,6 +144,15 @@ export default class CreateSourcePackageImpl {
       timestamp: Date.now(),
     };
 
+    
+    SFPStatsSender.logGauge(
+      "package.metadatacount",
+      this.packageArtifactMetadata.metadataCount,
+      {
+        package: this.packageArtifactMetadata.package_name,
+        type: this.packageArtifactMetadata.package_type
+      }
+    );
     SFPStatsSender.logElapsedTime(
       "package.elapsed.time",
       this.packageArtifactMetadata.creation_details.creation_time,
