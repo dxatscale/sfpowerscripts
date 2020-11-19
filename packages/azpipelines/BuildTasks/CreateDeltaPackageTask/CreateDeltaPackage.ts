@@ -1,10 +1,8 @@
 import tl = require("azure-pipelines-task-lib/task");
-import { isNullOrUndefined } from "util";
 import CreateDeltaPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDeltaPackageImpl";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
-
 
 async function run() {
   try {
@@ -17,7 +15,7 @@ async function run() {
     let options: any = {};
     options["bypass_directories"] = tl.getInput("bypass_directories", false);
     options["only_diff_for"] = tl.getInput("only_diff_for", false);
-    if (isNullOrUndefined(revision_to)) {
+    if (revision_to == null) {
       revision_to = tl.getVariable("build.sourceVersion");
     }
     const generate_destructivemanifest = tl.getBoolInput(
@@ -56,7 +54,7 @@ async function run() {
      //Switch to delta and let source package know all tests has to be triggered
     packageMetadata.package_type = "delta";
     packageMetadata.isTriggerAllTests = true;
-    
+
     let createSourcePackageImpl = new CreateSourcePackageImpl(
       deltaPackage.deltaDirectory,
       sfdx_package,
@@ -77,27 +75,21 @@ async function run() {
           else return value;
         })
     );
-    
-   
-   
-    let artifact = await ArtifactGenerator.generateArtifact(
+
+
+
+    let artifactFilepath: string = await ArtifactGenerator.generateArtifact(
       sfdx_package,
       projectDirectory,
       tl.getVariable("agent.tempDirectory"),
       packageMetadata
     );
-    if (!(sfdx_package===null || sfdx_package===undefined))
-      tl.uploadArtifact(
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        artifact.artifactDirectory,
-        `${sfdx_package}_sfpowerscripts_artifact`
-      );
-    else
-      tl.uploadArtifact(
-        `sfpowerscripts_artifact`,
-        artifact.artifactDirectory,
-        `sfpowerscripts_artifact`
-      );
+
+    tl.uploadArtifact(
+      `sfpowerscripts_artifacts`,
+      artifactFilepath,
+      `sfpowerscripts_artifacts`
+    );
 
     tl.setVariable(
       "sfpowerscripts_delta_package_path",

@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 13,
+        "Major": 14,
         "Minor": 0,
-        "Patch": 36
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -63,12 +63,8 @@
             "description": "The version number of the package that was created"
         },
         {
-            "name": "sfpowerscripts_source_package_metadata_path",
-            "description": "The path to the metadata artifact  created by this task"
-        },
-        {
-            "name": "sfpowerscripts_source_package_path",
-            "description": "The path to source artifact built by this task"
+            "name": "sfpowerscripts_artifact_path",
+            "description": "The path to the artifact created by this task"
         }
     ],
     "execution": {

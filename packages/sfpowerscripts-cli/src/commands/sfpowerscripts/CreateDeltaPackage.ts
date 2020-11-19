@@ -3,12 +3,12 @@ import { Messages } from "@salesforce/core";
 import CreateDeltaPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDeltaPackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
-import { isNullOrUndefined } from "util";
 import { exec } from "shelljs";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import simplegit, { SimpleGit } from "simple-git/promise";
 const fs = require("fs-extra");
+import path = require("path");
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -105,7 +105,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       let options: any = {};
 
       let repository_url: string;
-      if (isNullOrUndefined(this.flags.repourl)) {
+      if (this.flags.repourl == null) {
         repository_url = exec("git config --get remote.origin.url", {
           silent: true,
         });
@@ -114,7 +114,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       } else repository_url = this.flags.repourl;
 
 
-       
+
 
       const generate_destructivemanifest = this.flags
         .generatedestructivemanifest;
@@ -134,7 +134,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       let deltaPackage = await createDeltaPackageImp.exec();
       let deltaPackageFilePath = deltaPackage.deltaDirectory;
 
-      if (!isNullOrUndefined(refname)) {
+      if (refname != null) {
         fs.writeFileSync(
           ".env",
           `${refname}_sfpowerscripts_delta_package_path=${deltaPackageFilePath}\n`,
@@ -186,16 +186,17 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       //Generate Artifact
         //Switch to delta
       packageMetadata.package_type="delta";
-      let artifact= await ArtifactGenerator.generateArtifact(sfdx_package,process.cwd(),artifactDirectory,packageMetadata);
+      let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,process.cwd(),artifactDirectory,packageMetadata);
 
+      console.log(`Created Delta package ${path.basename(artifactFilepath)}`);
 
       console.log("\nOutput variables:");
-      if (!isNullOrUndefined(refname)) {
-        fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_directory=${artifact.artifactDirectory}\n`, {flag:'a'});
-        console.log(`${refname}_sfpowerscripts_artifact_directory=${artifact.artifactDirectory}`);
+      if (refname != null) {
+        fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_directory=${artifactFilepath}\n`, {flag:'a'});
+        console.log(`${refname}_sfpowerscripts_artifact_directory=${artifactFilepath}`);
       } else {
-        fs.writeFileSync('.env', `sfpowerscripts_artifact_directory=${artifact.artifactSourceDirectory}\n`, {flag:'a'});
-        console.log(`sfpowerscripts_artifact_directory=${artifact.artifactSourceDirectory}`);
+        fs.writeFileSync('.env', `sfpowerscripts_artifact_directory=${artifactFilepath}\n`, {flag:'a'});
+        console.log(`sfpowerscripts_artifact_directory=${artifactFilepath}`);
       }
 
 
