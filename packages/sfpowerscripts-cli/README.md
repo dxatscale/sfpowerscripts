@@ -56,7 +56,6 @@ The following output variables are currently supported:
 * sfpowerscripts_package_version_id
 * sfpowerscripts_package_version_number
 * sfpowerscripts_pmd_output_path
-* sfpowerscripts_exportedsource_zip_path
 * sfpowerkit_deploysource_id
 
 If you require access to the variables at the shell layer, you may do so using the [readVars](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/scripts) helper script, which is included as part of this package.
@@ -89,7 +88,6 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 * [`sfpowerscripts:CreateUnlockedPackage`](#sfpowerscriptscreateunlockedpackage)
 * [`sfpowerscripts:DeployDestructiveManifest`](#sfpowerscriptsdeploydestructivemanifest)
 * [`sfpowerscripts:DeploySource`](#sfpowerscriptsdeploysource)
-* [`sfpowerscripts:ExportSource`](#sfpowerscriptsexportsource)
 * [`sfpowerscripts:GenerateChangelog [BETA]`](#sfpowerscriptsgeneratechangelog)
 * [`sfpowerscripts:IncrementBuildNumber`](#sfpowerscriptsincrementbuildnumber)
 * [`sfpowerscripts:InstallSourcePackage`](#sfpowerscriptsinstallsourcepackage)
@@ -109,7 +107,7 @@ USAGE
 
 OPTIONS
 
- 
+
   -f, --configfilepath=configfilepath
       [default: config/project-scratch-def.json] Path in the current project directory containing  config file for the
       packaging org
@@ -117,7 +115,7 @@ OPTIONS
   -k, --installationkey=installationkey
       Installation key for this package
 
- 
+
   -r --repourl=repourl
       Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
 
@@ -130,7 +128,7 @@ OPTIONS
       [default: HubOrg] Provide the alias of the devhub previously authenticated, default value is HubOrg if using the
       Authenticate Devhub task
 
- 
+
   --artifactdir=artifactdir
       [default: artifacts] The directory where the artifact is to be written
 
@@ -145,7 +143,7 @@ OPTIONS
 
 
   --buildnumber=buildnumber
-       [default: 1] The build number to be used for source packages, Unlocked Packages will be assigned 
+       [default: 1] The build number to be used for source packages, Unlocked Packages will be assigned
        the buildnumber from Saleforce directly if using .NEXT
 
   --waittime=waittime
@@ -533,54 +531,6 @@ EXAMPLE
   <refname_sfpowerkit_deploysource_id
 ```
 
-
-
-## `sfpowerscripts:ExportSource`
-
-Export source from any org for storing to backup or further analysis. Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.
-
-```
-USAGE
-  $ sfdx sfpowerscripts:ExportSource [-u <string>] [-d <string>] [--quickfilter <string>] [-x] [-e] [--refname <string>]
-  [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -d, --sourcedir=sourcedir                                                         [default: metadata] The directory to
-                                                                                    which the source should be exported
-                                                                                    to
-
-  -e, --isunzipenabled                                                              Unzip the exported metadata/source
-                                                                                    from the zip into the provided
-                                                                                    folder
-
-  -u, --targetorg=targetorg                                                         [default: scratchorg] Alias or
-                                                                                    username of the target org where
-                                                                                    metadata is to be retrieved
-
-  -x, --ismanagedpackagestobeexcluded                                               Exclude managed package components
-                                                                                    from the export
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --quickfilter=quickfilter                                                         Comma separated values  of metadata
-                                                                                    type, member or file names to be
-                                                                                    excluded while building the manifest
-
-  --refname=refname                                                                 Reference name to be prefixed to
-                                                                                    output variables
-
-EXAMPLE
-  $ sfdx sfpowerscripts:ExportSource -u scratchorg -d metadata -x -e
-  Output variable:
-  sfpowerscripts_exportedsource_zip_path
-  <refname>_sfpowerscripts_exportedsource_zip_path
-```
-
-
-
 ## `sfpowerscripts:GenerateChangelog [BETA]`
 
 Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository
@@ -674,7 +624,7 @@ Installs a sfpowerscripts source package to the target org
 
 ```
 USAGE
-  $ sfdx sfpowerscripts:InstallSourcePackage -n <string> -u <string> [--artifactdir <directory>] [-s] [--subdirectory <directory>] [-o] [-t] [--waittime <string>] [--json] [--loglevel   
+  $ sfdx sfpowerscripts:InstallSourcePackage -n <string> -u <string> [--artifactdir <directory>] [-s] [--subdirectory <directory>] [-o] [-t] [--waittime <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS

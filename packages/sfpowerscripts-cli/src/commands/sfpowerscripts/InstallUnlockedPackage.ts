@@ -1,8 +1,8 @@
 import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl';
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
+import InstallPackageCommand from '../../InstallPackageCommand';
 const fs = require("fs");
 const path = require("path");
 
@@ -13,7 +13,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_unlocked_package');
 
-export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
+export default class InstallUnlockedPackage extends InstallPackageCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -42,7 +42,7 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async execute(){
+  public async install(){
    try {
 
       const targetOrg: string = this.flags.targetorg;
@@ -122,11 +122,11 @@ export default class InstallUnlockedPackage extends SfpowerscriptsCommand {
       await installUnlockedPackageImpl.exec();
 
       let elapsedTime=Date.now()-startTime;
-      
+
       SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"unlocked", target_org:targetOrg})
       SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"unlocked",target_org:targetOrg})
 
-      
+
 
     } catch(err) {
       console.log(err);

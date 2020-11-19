@@ -1,9 +1,9 @@
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
-import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallDataPackageImpl'
+import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallDataPackageImpl';
 import ManifestHelpers from '@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
+import InstallPackageCommand from '../../InstallPackageCommand';
 const fs = require("fs");
 const path = require("path");
 
@@ -14,7 +14,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_data_package');
 
-export default class InstallDataPackage extends SfpowerscriptsCommand {
+export default class InstallDataPackage extends InstallPackageCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -34,7 +34,7 @@ export default class InstallDataPackage extends SfpowerscriptsCommand {
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
 
-  public async execute(){
+  public async install(){
    try {
 
       const targetOrg: string = this.flags.targetorg;
