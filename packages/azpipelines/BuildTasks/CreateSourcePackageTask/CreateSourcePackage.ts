@@ -2,8 +2,7 @@ import tl = require("azure-pipelines-task-lib/task");
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator"
-import { isNullOrUndefined } from "util";
+import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 
 
 
@@ -70,29 +69,26 @@ async function run() {
 
 
 
-      let artifact= await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
+      let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
 
-      tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);
+      tl.uploadArtifact(`sfpowerscripts_artifacts`, artifactFilepath, `sfpowerscripts_artifacts`);
 
 
 
 
       tl.setVariable("sfpowerscripts_package_version_number", version_number);
       tl.setVariable(
-        "sfpowerscripts_source_package_metadata_path",
-       artifact.artifactMetadataFilePath
+        "sfpowerscripts_artifact_path",
+        artifactFilepath
       );
-      tl.setVariable(
-        "sfpowerscripts_source_package_path",
-        artifact.artifactSourceDirectory
-      );
+
 
 
       //Create Git Tag
       if (isGitTag) {
         let tagname: string = `${sfdx_package}_v${version_number}`;
         tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`, tagname);
-        if (isNullOrUndefined(projectDirectory))
+        if (projectDirectory == null)
           tl.setVariable(
             `${sfdx_package}_sfpowerscripts_project_directory_path`,
             tl.getVariable("Build.Repository.LocalPath")
