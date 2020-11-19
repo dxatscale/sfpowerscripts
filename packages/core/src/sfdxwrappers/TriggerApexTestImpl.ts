@@ -134,7 +134,7 @@ export default class TriggerApexTestImpl {
             target_org: this.target_org,
           });
 
-          SFPStatsSender.logGauge("package.testcoverage", test_report_json.summary.testRunCoverage,{
+          SFPStatsSender.logGauge("apextest.testcoverage", test_report_json.summary.testRunCoverage,{
             package: this.test_options["package"],
             from:"triggerapextest"
           });
