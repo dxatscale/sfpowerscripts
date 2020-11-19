@@ -4,6 +4,7 @@ import path = require("path");
 import fs = require("fs");
 import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
+import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/src/artifacts/ArtifactFilePathFetcher";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_package_command');
@@ -48,15 +49,20 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
    */
   private preInstall(): void {
 
-    let artifactPath: string = path.resolve(
+    ArtifactFilePathFetcher.fetchArtifactFilePaths(
       this.flags.artifactdir,
-      `${this.flags.package}_sfpowerscripts_artifact.zip`
+      this.flags.package
     );
 
-    if (fs.existsSync(artifactPath)) {
-      let zip = new AdmZip(artifactPath);
-      zip.extractAllTo(this.flags.artifactdir, true);
-    }
+    // let artifactPath: string = path.resolve(
+    //   this.flags.artifactdir,
+    //   `${this.flags.package}_sfpowerscripts_artifact.zip`
+    // );
+
+    // if (fs.existsSync(artifactPath)) {
+    //   let zip = new AdmZip(artifactPath);
+    //   zip.extractAllTo(this.flags.artifactdir, true);
+    // }
   }
 
   /**
