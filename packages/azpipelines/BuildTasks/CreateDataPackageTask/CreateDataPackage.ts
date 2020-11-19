@@ -3,8 +3,7 @@ import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageD
 import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDataPackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator"
-
-
+import ManifestHelper from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 
 async function run() {
   try {
@@ -15,6 +14,11 @@ async function run() {
     let projectDirectory: string = tl.getInput("project_directory", false);
     let commitId = tl.getVariable("build.sourceVersion");
     let repositoryUrl = tl.getVariable("build.repository.uri");
+
+    let packageDescriptor = ManifestHelper.getSFDXPackageDescriptor(projectDirectory, sfdx_package);
+    if (packageDescriptor.type?.toLowerCase() !== "data") {
+      throw new Error("Data packages must have 'type' property of 'data' defined in sfdx-project.json");
+    }
 
     let isRunBuild: boolean;
     if (isDiffCheck) {
@@ -57,21 +61,17 @@ async function run() {
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata));
 
 
-      let artifact= await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
+      let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
 
-      tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);
+      tl.uploadArtifact(`sfpowerscripts_artifacts`, artifactFilepath, `sfpowerscripts_artifacts`);
 
 
 
 
       tl.setVariable("sfpowerscripts_package_version_number", version_number);
       tl.setVariable(
-        "sfpowerscripts_data_package_metadata_path",
-        artifact.artifactMetadataFilePath
-      );
-      tl.setVariable(
-        "sfpowerscripts_data_package_path",
-        artifact.artifactSourceDirectory
+        "sfpowerscripts_artifact_path",
+        artifactFilepath
       );
 
 

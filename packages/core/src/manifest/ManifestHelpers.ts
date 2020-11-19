@@ -7,6 +7,17 @@ const Table = require("cli-table");
 export default class ManifestHelpers {
 
 
+  public static getPackageId(projectConfig: any, sfdxPackage: string) {
+     if (projectConfig["packageAliases"]?.[sfdxPackage]) {
+       return projectConfig["packageAliases"][sfdxPackage]
+     }
+     else
+     {
+       throw Error("No Package Id found in sfdx-project.json. Please ensure package alias have the package added")
+     }
+  }
+
+
   public static getAllPackages(projectDirectory: string): string[] {
     let projectConfig = ManifestHelpers.getSFDXPackageManifest(projectDirectory);
     let sfdxpackages=[];
