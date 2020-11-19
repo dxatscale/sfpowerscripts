@@ -4,8 +4,6 @@ import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageD
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator"
 
-import { isNullOrUndefined } from "util";
-
 async function run() {
   try {
     let sfdx_package: string = tl.getInput("package", true);
@@ -90,7 +88,7 @@ async function run() {
       if (isGitTagActive) {
         let tagname = `${sfdx_package}_v${packageMetadata.package_version_number}`;
         tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`, tagname);
-        if (isNullOrUndefined(projectDirectory))
+        if (projectDirectory == null)
           tl.setVariable(
             `${sfdx_package}_sfpowerscripts_project_directory_path`,
             tl.getVariable("Build.Repository.LocalPath")
@@ -121,9 +119,9 @@ async function run() {
      }));
 
 
-      let artifact= await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
+      let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
 
-      tl.uploadArtifact(`${sfdx_package}_sfpowerscripts_artifact`, artifact.artifactDirectory,`${sfdx_package}_sfpowerscripts_artifact`);
+      tl.uploadArtifact(`sfpowerscripts_artifacts`, artifactFilepath, `sfpowerscripts_artifacts`);
     }
   } catch (err) {
     console.log(err);

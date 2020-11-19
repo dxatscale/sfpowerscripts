@@ -2,6 +2,7 @@ import path = require("path");
 import fs = require("fs");
 import SFPLogger from "../utils/SFPLogger";
 const glob = require("glob");
+import AdmZip = require('adm-zip');
 
 export default class ArtifactFilePathFetcher {
   /**
@@ -36,6 +37,22 @@ export default class ArtifactFilePathFetcher {
     sfdx_package: string
   ): ArtifactFilePaths[] {
     const artifacts_filepaths: ArtifactFilePaths[] = [];
+
+    // Decompress artifacts
+    let zipArtifactFilepaths: string[] = glob.sync(
+      `**/*_sfpowerscripts_artifact_*.zip`,
+      {
+        cwd: artifactDirectory,
+        absolute: true,
+      }
+    );
+
+    if (zipArtifactFilepaths.length > 0) {
+      for (let zipArtifactFilepath of zipArtifactFilepaths) {
+        let zip = new AdmZip(zipArtifactFilepath);
+        zip.extractAllTo(artifactDirectory, true);
+      }
+    }
 
     // Search entire pipeline workspace for files matching artifact_metadata.json
     let packageMetadataFilepaths: string[] = glob.sync(

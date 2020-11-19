@@ -70,17 +70,33 @@ export default class CreateUnlockedPackageImpl {
       this.sfdx_package
     );
 
+    
+
+    let packageId = ManifestHelpers.getPackageId(
+       projectManifest,
+      this.sfdx_package
+    );
+
     let packageDirectory: string = packageDescriptor["path"];
     SFPLogger.log("Package Directory", packageDirectory, this.packageLogger);
 
     //Get Type of Package
-    SFPLogger.log("Fetching Package Type Info from DevHub");
+    SFPLogger.log("Fetching Package Type Info from DevHub",null,this.packageLogger);
     await this.getPackageTypeInfos();
     let packageTypeInfo = CreateUnlockedPackageImpl.packageTypeInfos.find(
-      (pkg) => pkg.Name == this.sfdx_package
+      (pkg) => pkg.Id == packageId
     );
-    if (packageTypeInfo.IsOrgDependent === "Yes")
+    if (packageTypeInfo.IsOrgDependent == "Yes")
       this.isOrgDependentPackage = true;
+
+
+    SFPLogger.log("-------------------------",null, this.packageLogger)
+    SFPLogger.log("Package",packageTypeInfo.Name,this.packageLogger);
+    SFPLogger.log("IsOrgDependent",packageTypeInfo.IsOrgDependent,this.packageLogger);
+    SFPLogger.log("Package Id",packageTypeInfo.Id,this.packageLogger);
+    SFPLogger.log("-------------------------",null, this.packageLogger)
+
+    
 
     //Resolve the package dependencies
     if (this.isOrgDependentPackage) {
@@ -193,6 +209,14 @@ export default class CreateUnlockedPackageImpl {
       type: this.packageArtifactMetadata.package_type,
       is_dependency_validated: String(this.packageArtifactMetadata.isDependencyValidated)
     });
+
+
+    if(this.packageArtifactMetadata.isDependencyValidated) {
+        SFPStatsSender.logGauge("package.testcoverage", this.packageArtifactMetadata.test_coverage,{
+         package: this.packageArtifactMetadata.package_name,
+         from:"createpackage"
+       });
+    }
 
     return this.packageArtifactMetadata;
   }

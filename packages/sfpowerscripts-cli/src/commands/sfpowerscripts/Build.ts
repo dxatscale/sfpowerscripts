@@ -1,4 +1,3 @@
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import BuildImpl from "@dxatscale/sfpowerscripts.core/lib/parallelBuilder/BuildImpl";
 import { EOL } from "os";
@@ -153,27 +152,21 @@ export default class Build extends SfpowerscriptsCommand {
 
       for (let generatedPackage of generatedPackages) {
         try {
-          let artifactFilepaths = await ArtifactGenerator.generateArtifact(
+          await ArtifactGenerator.generateArtifact(
             generatedPackage.package_name,
             process.cwd(),
             artifactDirectory,
             generatedPackage
           );
 
-          try {
-            let packageMetadata: PackageMetadata = JSON.parse(
-              fs.readFileSync(artifactFilepaths.artifactMetadataFilePath, "utf8")
-            );
 
-            buildResult["packages"].push({
-              name: packageMetadata["package_name"],
-              version: packageMetadata["package_version_number"],
-              elapsed_time: packageMetadata["creation_details"]?.creation_time,
-              status: "succeeded"
-            });
-          } catch (err) {
-            console.log(`Failed to parse ${artifactFilepaths.artifactMetadataFilePath}`);
-          }
+          buildResult["packages"].push({
+            name: generatedPackage["package_name"],
+            version: generatedPackage["package_version_number"],
+            elapsed_time: generatedPackage["creation_details"]?.creation_time,
+            status: "succeeded"
+          });
+
 
           if (gittag) {
             exec(`git config --global user.email "sfpowerscripts@dxscale"`);
@@ -228,14 +221,6 @@ export default class Build extends SfpowerscriptsCommand {
         (Date.now() - executionStartTime),
         tags
       );
-
-      if(!diffcheck && !isSkipValidation)
-      {
-      SFPStatsSender.logGauge(
-        "build.elapsed_time",
-        (Date.now() - executionStartTime)
-      );
-      }
 
       console.log(
         `----------------------------------------------------------------------------------------------------`

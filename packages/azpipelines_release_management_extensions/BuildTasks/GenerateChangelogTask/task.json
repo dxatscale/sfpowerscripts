@@ -1,15 +1,15 @@
 {
-    "id": "87d5162d-07ee-40ea-8bf4-ac8dfdb907f1",
+    "id": "cfadd6bd-238f-451f-842e-f734736154fd",
     "name": "sfpowerscripts-generatechangelog-task",
-    "friendlyName": "Generate Changelog [ALPHA]",
+    "friendlyName": "Generate Changelog",
     "description": "Generates a release changelog that summarises artifact versions, work items (user stories) and commits that are introduced in a release",
     "helpMarkDown": "https://dxatscale.gitbook.io/sfpowerscripts/azure-pipelines/task-specifications/utility-tasks/sfpowerscripts-generatechangelog-task",
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 1,
+        "Major": 2,
         "Minor": 0,
-        "Patch": 33
+        "Patch": 6
     },
     "runsOn": [
         "Agent"
@@ -38,6 +38,14 @@
             "label": "Limit number of releases to display",
             "required": false,
             "helpMarkDown": "Limit the number of releases to display in the changelog markdown"
+        },
+        {
+            "name": "showAllArtifacts",
+            "type": "boolean",
+            "label": "Show all artifacts",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Show all artifacts in changelog markdown, including artifacts that have not changed in the release"
         },
         {
             "name": "workItemFilter",

@@ -9,7 +9,7 @@
   "license": "MIT",
   "dependencies": {
     "azure-devops-node-api": "^10.1.1",
-    "azure-pipelines-task-lib": "^2.11.2",
+    "azure-pipelines-task-lib": "^2.11.3",
     "glob": "^7.1.6",
     "shelljs": "^0.8.3"
   }

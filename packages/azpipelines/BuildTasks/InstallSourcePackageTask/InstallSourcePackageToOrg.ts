@@ -52,8 +52,8 @@ async function run() {
     let extensionName = await getExtensionName(extensionManagementApi);
 
 
-     //Initialize StatsD
-     SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
+   //Initialize StatsD
+   SFPStatsSender.initialize(tl.getVariable("SFPOWERSCRIPTS_STATSD_PORT"),tl.getVariable("SFPOWERSCRIPTS_STATSD_HOST"),tl.getVariable("SFPOWERSCRIPTS_STATSD_PROTOCOL"));
 
 
      //Intialize Time
@@ -318,8 +318,9 @@ async function run() {
       );
     }
   } catch (err) {
+    SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"source"});
     tl.setResult(tl.TaskResult.Failed, err.message);
-    SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"source"})
+    
   }
 }
 
