@@ -8,8 +8,8 @@
     "author": "dxatscale@accenture.com",
     "version": {
         "Major": 1,
-        "Minor": 0,
-        "Patch": 46
+        "Minor": 1,
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
