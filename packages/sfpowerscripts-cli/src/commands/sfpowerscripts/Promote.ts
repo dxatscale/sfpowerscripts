@@ -29,34 +29,34 @@ export default class Promote extends SfpowerscriptsCommand {
   public async execute(){
     let unpromotedPackages: {name: string, error: string}[] = [];
     try {
-      let artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);
+      let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);
 
-      if (artifacts_filepaths.length === 0) {
+      if (artifacts.length === 0) {
         throw new Error(`No artifacts found at ${this.flags.artifactdir}`);
       }
 
       let result: boolean = true;
       let promotedPackages: string[] = [];
-      for (let artifact_filepaths of artifacts_filepaths) {
+      for (let artifact of artifacts) {
         let packageMetadata: PackageMetadata = JSON.parse(
-          fs.readFileSync(artifact_filepaths["packageMetadataFilePath"], 'utf8')
+          fs.readFileSync(artifact.packageMetadataFilePath, 'utf8')
         );
 
-        if (packageMetadata["package_type"] === "unlocked") {
+        if (packageMetadata.package_type === "unlocked") {
           try {
             let promoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
-              artifact_filepaths["sourceDirectoryPath"],
-              packageMetadata["package_version_id"],
+              artifact.sourceDirectoryPath,
+              packageMetadata.package_version_id,
               this.flags.devhubalias
             );
             await promoteUnlockedPackageImpl.exec();
 
-            promotedPackages.push(packageMetadata["package_name"]);
+            promotedPackages.push(packageMetadata.package_name);
           } catch (err) {
             result = false;
 
             unpromotedPackages.push({
-              name: packageMetadata["package_name"],
+              name: packageMetadata.package_name,
               error: err.message
             });
           }
