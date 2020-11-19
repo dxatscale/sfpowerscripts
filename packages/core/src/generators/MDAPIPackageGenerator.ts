@@ -6,11 +6,7 @@ const xmlParser = require("xml2js").Parser({ explicitArray: false });
 export type MDAPIPackageArtifact = {
   mdapiDir: string;
 };
-import {
-  readdirSync,
-  readFileSync,
-  existsSync
-} from "fs";
+import { readdirSync, readFileSync, existsSync } from "fs";
 import ignore from "ignore";
 import SFPLogger from "../utils/SFPLogger";
 const glob = require("glob");
@@ -21,12 +17,16 @@ export default class MDAPIPackageGenerator {
     sourceDirectory?: string
   ): Promise<{
     mdapiDir: string;
-    metadataCount:number;
+    metadataCount: number;
     manifest;
   }> {
-    const mdapiPackage: { mdapiDir: string; metadataCount:number, manifest } = {
+    const mdapiPackage: {
+      mdapiDir: string;
+      metadataCount: number;
+      manifest;
+    } = {
       mdapiDir: "",
-      metadataCount:0,
+      metadataCount: 0,
       manifest: {},
     };
 
@@ -41,16 +41,16 @@ export default class MDAPIPackageGenerator {
       "utf8"
     );
 
-
-      // Search the source directory for metadata files to return count
-      let metadataFiles: string[] = glob.sync(
-        `**/*-meta.xml`,
-        {
-          cwd: path.join(projectDirectory,sourceDirectory),
-          absolute: true,
-        }
-      );
-     mdapiPackage.metadataCount = metadataFiles.length;
+    // Search the source directory for metadata files to return count
+    try {
+      let metadataFiles: string[] = glob.sync(`**/*-meta.xml`, {
+        cwd: projectDirectory?path.join(projectDirectory,sourceDirectory):sourceDirectory,
+        absolute: true,
+      });
+      mdapiPackage.metadataCount = metadataFiles.length;
+    } catch (error) {
+      console.log("Unable to process counts", error);
+    }
 
     mdapiPackage.manifest = await this.xml2json(packageXml);
     return mdapiPackage;
@@ -80,7 +80,9 @@ export default class MDAPIPackageGenerator {
       SFPLogger.log(`Converting to MDAPI  Format Completed at ${mdapiDirPath}`);
       return mdapiDirPath;
     } catch (error) {
-      SFPLogger.log(`Unable to convert source for directory ${sourceDirectory}`);
+      SFPLogger.log(
+        `Unable to convert source for directory ${sourceDirectory}`
+      );
       throw error;
     }
   }
@@ -104,7 +106,6 @@ export default class MDAPIPackageGenerator {
       });
     });
   }
-
 
   public static isToBreakBuildForEmptyDirectory(
     projectDir: string,
@@ -154,14 +155,12 @@ export default class MDAPIPackageGenerator {
       if (err.code === "ENOENT") {
         throw new Error(`No such file or directory ${err.path}`); // Re-throw error if .forceignore does not exist
       } else if (!isToBreakBuildIfEmpty) {
-
         status.message = `Something wrong with the path provided  ${directoryToCheck},,but skipping, The exception is ${err}`;
         status.result = "skip";
         return status;
       } else throw err;
     }
   }
-
 
   public static isEmptyFolder(
     projectDirectory: string,
@@ -180,7 +179,10 @@ export default class MDAPIPackageGenerator {
     // Construct file paths that are relative to the project directory.
     files.forEach((file, index, files) => {
       let filepath = path.join(dirToCheck, file);
-      files[index] = path.relative(projectDirectory==null?process.cwd():projectDirectory, filepath);
+      files[index] = path.relative(
+        projectDirectory == null ? process.cwd() : projectDirectory,
+        filepath
+      );
     });
 
     let forceignorePath;
