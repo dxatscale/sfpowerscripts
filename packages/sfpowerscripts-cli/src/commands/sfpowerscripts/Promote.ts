@@ -37,16 +37,15 @@ export default class Promote extends SfpowerscriptsCommand {
 
       let result: boolean = true;
       let promotedPackages: string[] = [];
-      let nArtifacts: number = artifacts_filepaths.length;
-      for (let i = 0; i < nArtifacts; i++) {
+      for (let artifact_filepaths of artifacts_filepaths) {
         let packageMetadata: PackageMetadata = JSON.parse(
-          fs.readFileSync(artifacts_filepaths[i]["packageMetadataFilePath"], 'utf8')
+          fs.readFileSync(artifact_filepaths["packageMetadataFilePath"], 'utf8')
         );
 
         if (packageMetadata["package_type"] === "unlocked") {
           try {
             let promoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
-              process.cwd(),
+              artifact_filepaths["sourceDirectoryPath"],
               packageMetadata["package_version_id"],
               this.flags.devhubalias
             );
