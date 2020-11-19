@@ -5,8 +5,10 @@ import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageD
 import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDataPackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import { exec } from "shelljs";
 import fs = require("fs-extra");
+import path = require("path");
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_data_package');
@@ -51,11 +53,14 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
       const refname: string = this.flags.refname;
       const branch:string=this.flags.branch;
 
-
+      let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(null, sfdx_package);
+      if (packageDescriptor.type?.toLowerCase() !== "data") {
+        throw new Error("Data packages must have 'type' property of 'data' defined in sfdx-project.json");
+      }
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
-        let packageDiffImpl = new PackageDiffImpl(sfdx_package, null, null, null, "data");
+        let packageDiffImpl = new PackageDiffImpl(sfdx_package, null);
 
         runBuild = await packageDiffImpl.exec();
 
@@ -99,9 +104,9 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
 
 
        //Generate Artifact
-        let artifact = await ArtifactGenerator.generateArtifact(sfdx_package,process.cwd(),artifactDirectory,packageMetadata);
+        let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,process.cwd(),artifactDirectory,packageMetadata);
 
-        console.log(`Created data package ${sfdx_package}_sfpowerscripts_artifact`);
+        console.log(`Created data package ${path.basename(artifactFilepath)}`);
 
         if (this.flags.gittag) {
           exec(`git config --global user.email "sfpowerscripts@dxscale"`);
@@ -113,19 +118,19 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
 
         console.log("\nOutput variables:");
         if (refname != null) {
-          fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_directory=${artifact.artifactDirectory}\n`, {flag:'a'});
-          console.log(`${refname}_sfpowerscripts_artifact_directory=${artifact.artifactDirectory}`);
+          fs.writeFileSync('.env', `${refname}_sfpowerscripts_artifact_directory=${artifactFilepath}\n`, {flag:'a'});
+          console.log(`${refname}_sfpowerscripts_artifact_directory=${artifactFilepath}`);
           fs.writeFileSync('.env', `${refname}_sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});
           console.log(`${refname}_sfpowerscripts_package_version_number=${version_number}`);
         } else {
-          fs.writeFileSync('.env', `sfpowerscripts_artifact_directory=${artifact.artifactSourceDirectory}\n`, {flag:'a'});
-          console.log(`sfpowerscripts_artifact_directory=${artifact.artifactSourceDirectory}`);
+          fs.writeFileSync('.env', `sfpowerscripts_artifact_directory=${artifactFilepath}\n`, {flag:'a'});
+          console.log(`sfpowerscripts_artifact_directory=${artifactFilepath}`);
           fs.writeFileSync('.env', `sfpowerscripts_package_version_number=${version_number}\n`, {flag:'a'});
           console.log(`sfpowerscripts_package_version_number=${version_number}`);
         }
       }
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
       // Fail the task when an error occurs
       process.exit(1);
     }

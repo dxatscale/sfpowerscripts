@@ -12,7 +12,8 @@
     "packages/azpipelines/BuildTasks/CreateUnlockedPackageTask",
     "packages/azpipelines/BuildTasks/DeployDestructiveManifestToOrgTask",
     "packages/azpipelines/BuildTasks/DeploySourceToOrgTask",
-    "packages/azpipelines/BuildTasks/GenerateChangelogTask",
+    "packages/azpipelines_release_management_extensions/BuildTasks/Common",
+    "packages/azpipelines_release_management_extensions/BuildTasks/GenerateChangelogTask",
     "packages/azpipelines/BuildTasks/IncrementProjectBuildNumberTask",
     "packages/azpipelines/BuildTasks/InstallPackageDependenciesTask",
     "packages/azpipelines/BuildTasks/InstallSFDXCLITaskCurrent",
@@ -26,7 +27,8 @@
     "packages/azpipelines/BuildTasks/ValidateDXUnlockedPackageTask",
     "packages/azpipelines/BuildTasks/ValidateTestCoveragePackageTask",
     "packages/azpipelines/BuildTasks/PostPackageCreateTask",
-    "packages/azpipelines"
+    "packages/azpipelines",
+    "packages/azpipelines_release_management_extensions"
   ],
   "version": "independent",
   "command": {

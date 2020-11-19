@@ -1,11 +1,11 @@
 # sfpowerscripts - azure pipelines extension
 
  
-SFPowerscripts is an Azure Pipelines Extension that converts Azure Pipelines into a CI/CD platform for Salesforce. The extension features the following tasks. You can read the documenation at  [sfpowerscripts](https://www.sfpowerscripts.com) website.
+sfpowerscripts is an Azure Pipelines Extension that converts Azure Pipelines into a CI/CD platform for Salesforce. The extension features the following tasks. You can read the documenation at  [sfpowerscripts](https://www.sfpowerscripts.com) website.
 
 Please note this extension only works with the newer source format based repositories only and  works with both Hosted Linux and Windows Agents
 
-The changelog is available at [https://sfpowerscripts.com/changelog/](https://sfpowerscripts.com/changelog/)
+The changelog is available at [changelog](https://dxatscale.gitbook.io/sfpowerscripts/change-log)
 
 ## Build Result Enhancements
 
@@ -48,7 +48,7 @@ The changelog is available at [https://sfpowerscripts.com/changelog/](https://sf
 
 For eg: a Pull Request validation for an unlocked package  should feature the tasks in this order
 
-![PR Pipeline](https://sfpowerscripts.com/images/PR%20Pipeline%20ScratchOrg.png)
+![PR Pipeline](https://gblobscdn.gitbook.com/assets%2F-MAtjpG8XNzMssUmQti_%2F-MAvM7zZz3vSV2vSpdG0%2F-MAvND22p7cwu2uvIzdU%2FPR%20Pipeline%20ScratchOrg.png?alt=media&token=d6a53bfb-2436-4c1b-b247-30b678079a12)
 
  1. Install the SFDX CLI
  2. Validate the unlocked package for metadata coverage
@@ -56,7 +56,8 @@ For eg: a Pull Request validation for an unlocked package  should feature the ta
  4. Create a Scratch Org
  5. Install Package Dependencies in the target scratch org
  6. Deploy source to the target scratch org
- 7. Delete the scratch org ( optional :  Utilize post action on create scratch org task )
+ 7. Trigger Apex Tests in the Scratch Org
+ 8. Delete the scratch org ( optional :  Utilize post action on create scratch org task )
 
 * Most of the tasks are very thin wrappers aroud the equivalent sfdx cli commands or the open source sfpowerkit (SFDX CLI extension). Almost all parameters that are requred during a CI run is exposed. If you feel that is not enough for the task at hand, one can quickly fall back to command line parameterized just for the task
 
@@ -64,8 +65,8 @@ For eg: a Pull Request validation for an unlocked package  should feature the ta
 
 #### Getting Started
 
-Checkout SFPowerscripts documentation here on how to [Get Started](https://sfpowerscripts.com/gettingstarted/) with these tasks. The [repo](https://github.com/azlamsalam/sfpowerscripts/tree/master/SamplePipelines) also features sample pipelines that demonstrate the usage of pipelines.
+Checkout SFPowerscripts documentation here on how to [Get Started](https://dxatscale.gitbook.io/sfpowerscripts/support) with these tasks.
 
 #### What if there is an issue with the extension?
 
-Please create an issue using the methods listed [here](https://sfpowerscripts.com/support/).
+Please create an issue using the methods listed [here](https://dxatscale.gitbook.io/sfpowerscripts/support).
