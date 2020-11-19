@@ -84,6 +84,14 @@ steps:
                script: |
                 npm run increment:azpipelines:version -- --version=${{ parameters.version }}  --stage=${{ parameters.stageToDeploy }} --buildNumber=${{ parameters.buildNumber }}
                workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines'
+
+          - task: CmdLine@2
+            displayName: 'Set Release Mode to ${{ parameters.stageToDeploy }} for release management'
+            inputs:
+               script: |
+                npm run increment:azpipelines:version -- --version=${{ parameters.version }}  --stage=${{ parameters.stageToDeploy }} --buildNumber=${{ parameters.buildNumber }}
+               workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines_release_management_extensions'
+
           
           - task: CmdLine@2
             displayName: 'Create package'
@@ -97,12 +105,34 @@ steps:
               script: |
                npm run publish:azpipelines --  --version=$(Build.BuildNumber) --token=$(publish_token) --stage=${{ parameters.stageToDeploy }} --organization=${{ parameters.organization }}
               workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines'
- 
+
+          - task: CmdLine@2
+            displayName: 'Create release package'
+            inputs:
+              script: 'npm run package:azpipelines'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines_release_management_extensions'
+        
+          - task: CmdLine@2
+            displayName: 'Publish the package for ${{ parameters.stageToDeploy }}'
+            inputs:
+              script: |
+               npm run publish:azpipelines --  --version=$(Build.BuildNumber) --token=$(publish_token) --stage=${{ parameters.stageToDeploy }} --organization=${{ parameters.organization }}
+              workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines_release_management_extensions'
+
+
 
           - task: PublishBuildArtifacts@1
             displayName: Publish Extension Artifiact
             condition: always()
             inputs:
                pathtoPublish: '$(System.DefaultWorkingDirectory)/packages/azpipelines/dist' 
+               artifactName: 'vsix' 
+               publishLocation: 'Container' 
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish Extension Artifacts for Release Management Extension
+            condition: always()
+            inputs:
+               pathtoPublish: '$(System.DefaultWorkingDirectory)/packages/azpipelines_release_management_extensions/dist' 
                artifactName: 'vsix' 
                publishLocation: 'Container' 

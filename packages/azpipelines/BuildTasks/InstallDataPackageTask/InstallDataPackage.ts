@@ -38,10 +38,8 @@ async function run() {
     const extensionManagementApi: ExtensionManagementApi.IExtensionManagementApi = await webApi.getExtensionManagementApi();
     let extensionName = await getExtensionName(extensionManagementApi);
 
-    //Initialize StatsD
-    SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
-
-
+   //Initialize StatsD
+   SFPStatsSender.initialize(tl.getVariable("SFPOWERSCRIPTS_STATSD_PORT"),tl.getVariable("SFPOWERSCRIPTS_STATSD_HOST"),tl.getVariable("SFPOWERSCRIPTS_STATSD_PROTOCOL"));
 
 
     //Fetch Artifact
@@ -115,7 +113,8 @@ async function run() {
     let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
       target_org,
       artifacts_filepaths[0].sourceDirectoryPath,
-      sourceDirectory
+      sourceDirectory,
+      packageMetadataFromArtifact
     )
 
     await installDataPackageImpl.exec();
@@ -158,9 +157,9 @@ async function run() {
     tl.setResult(tl.TaskResult.Succeeded, "Package installed successfully");
 
   } catch (err) {
-   
+
     tl.setResult(tl.TaskResult.Failed, err.message);
-    
+
     SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"data"})
   }
 }

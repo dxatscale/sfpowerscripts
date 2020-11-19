@@ -143,12 +143,6 @@ export default class CreateSourcePackageImpl {
       timestamp: Date.now(),
     };
 
-    // try
-    // {
-    // log4js.shutdown();
-    // }catch(error)
-    // {} //dont do anything with
-
     SFPStatsSender.logElapsedTime(
       "package.elapsed.time",
       this.packageArtifactMetadata.creation_details.creation_time,

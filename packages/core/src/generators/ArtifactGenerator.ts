@@ -3,9 +3,9 @@ import fs = require("fs-extra");
 import PackageMetadata from "../PackageMetadata";
 import GeneratePackageChangelog from "../changelog/GeneratePackageChangelog";
 import { Changelog } from "../changelog/interfaces/GenericChangelogInterfaces";
-import { isNullOrUndefined } from "util";
 import * as rimraf from "rimraf";
 import SFPLogger from "../utils/SFPLogger";
+import AdmZip = require('adm-zip');
 
 export default class ArtifactGenerator {
 
@@ -16,34 +16,30 @@ export default class ArtifactGenerator {
     project_directory: string,
     artifact_directory: string,
     packageArtifactMetadata: PackageMetadata
-  ): Promise<{artifactDirectory:string,artifactMetadataFilePath:string,artifactSourceDirectory:string,changelogDirectory:string}> {
+  ): Promise<string> {
 
     try {
-      let abs_artifact_directory: string;
+      // Artifact folder consisting of artifact metadata, changelog & source
+      let artifactFolder: string = sfdx_package == null ? "sfpowerscripts_artifact" : `${sfdx_package}_sfpowerscripts_artifact`;
 
-      if(!isNullOrUndefined(artifact_directory))
+      // Absolute filepath of artifact
+      let artifactFilepath: string;
+
+      if(artifact_directory != null)
       {
-          abs_artifact_directory = path.resolve(artifact_directory);
+          artifactFilepath = path.resolve(artifact_directory, artifactFolder);
       }
       else
       {
-          abs_artifact_directory=process.cwd();
+          artifactFilepath=path.resolve(artifactFolder);
 
       }
 
-      let aritfactDirectory = isNullOrUndefined(sfdx_package)?"sfpowerscripts_artifact":`${sfdx_package}_sfpowerscripts_artifact`;
 
-
-      let sfdx_package_artifact: string = path.join(
-        abs_artifact_directory,
-        aritfactDirectory
-      );
-
-
-      fs.mkdirpSync(sfdx_package_artifact);
+      fs.mkdirpSync(artifactFilepath);
 
       let sourcePackage: string = path.join(
-        sfdx_package_artifact,
+        artifactFilepath,
         `source`
       );
       fs.mkdirpSync(sourcePackage);
@@ -57,7 +53,7 @@ export default class ArtifactGenerator {
       packageArtifactMetadata.sourceDir=`source`;
 
       let artifactMetadataFilePath: string = path.join(
-        sfdx_package_artifact,
+        artifactFilepath,
         `artifact_metadata.json`
       );
 
@@ -77,7 +73,7 @@ export default class ArtifactGenerator {
       let packageChangelog: Changelog = await generatePackageChangelog.exec();
 
       let changelogFilepath: string = path.join(
-        sfdx_package_artifact,
+        artifactFilepath,
         `changelog.json`
       );
 
@@ -88,12 +84,16 @@ export default class ArtifactGenerator {
 
       SFPLogger.log("Artifact Copy Completed");
 
-      return {
-        artifactDirectory: path.resolve(abs_artifact_directory, aritfactDirectory),
-        artifactMetadataFilePath: artifactMetadataFilePath,
-        artifactSourceDirectory: sourcePackage,
-        changelogDirectory: changelogFilepath
-      };
+      let zip = new AdmZip();
+      zip.addLocalFolder(artifactFilepath, artifactFolder);
+      SFPLogger.log(`Zipping ${artifactFolder}`);
+      let zipArtifactFilepath: string = artifactFilepath + `_` + packageArtifactMetadata.package_version_number + `.zip`;
+      zip.writeZip(zipArtifactFilepath);
+
+      // Cleanup unzipped artifact
+      rimraf.sync(artifactFilepath);
+
+      return zipArtifactFilepath;
     } catch (error) {
       throw new Error("Unable to create artifact" + error);
     }

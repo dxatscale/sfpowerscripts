@@ -21,7 +21,6 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         'sfpowerscripts_package_version_id',
         'sfpowerscripts_package_version_number',
         'sfpowerscripts_pmd_output_path',
-        'sfpowerscripts_exportedsource_zip_path',
         'sfpowerkit_deploysource_id'
     ];
 

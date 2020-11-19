@@ -1,6 +1,6 @@
 import { ReleaseChangelog, Release } from "./interfaces/ReleaseChangelogInterfaces"
 
-export default function generateMarkdown(releaseChangelog: ReleaseChangelog, workItemURL: string, limit: number): string {
+export default function generateMarkdown(releaseChangelog: ReleaseChangelog, workItemURL: string, limit: number, showAllArtifacts: boolean): string {
   let payload: string = "";
 
   let limitReleases: number;
@@ -15,41 +15,66 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
 
       payload += `\n# ${release["name"]}\n`;
 
-      payload += "## Artifacts\n";
+      payload += "### Artifacts\n";
       for (let artifactNum = 0 ; artifactNum < release["artifacts"].length ; artifactNum++) {
-          payload += `**${release["artifacts"][artifactNum]["name"]}**     v${release["artifacts"][artifactNum]["version"]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
+          if (release["artifacts"][artifactNum]["from"] !== release["artifacts"][artifactNum]["to"] || showAllArtifacts)
+            payload += `**${release["artifacts"][artifactNum]["name"]}**     v${release["artifacts"][artifactNum]["version"]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
       }
 
-      payload += "## Work Items\n";
-      for (let workItem in release["workItems"]) {
-          let specificWorkItemURL: string;
-          if (workItemURL != null) {
-              if (workItemURL.endsWith('/')) {
-                 specificWorkItemURL = workItemURL.concat(workItem);
-              }
-              else {
-                 specificWorkItemURL = workItemURL.concat(`/${workItem}`);
-              }
-          }
-          payload += `  - [${workItem}](${specificWorkItemURL})\n`
+      payload += "### Work Items\n";
+      if (Object.keys(release["workItems"]).length > 0) {
+        for (let workItem in release["workItems"]) {
+            let specificWorkItemURL: string;
+            if (workItemURL != null) {
+                if (workItemURL.endsWith('/')) {
+                    specificWorkItemURL = workItemURL.concat(workItem);
+                }
+                else {
+                    specificWorkItemURL = workItemURL.concat(`/${workItem}`);
+                }
+            }
+            payload += `  - [${workItem}](${specificWorkItemURL})\n`
+        }
+      } else {
+          payload += `N/A\n`;
       }
 
-      payload += "\n## Commits\n";
+      let versionChangeOnly: string[] = [];
+      let noChangeInVersion: string[] = [];
+      let isCommitsSectionEmpty: boolean = true;
+      payload += "\n### Commits\n";
       for (let artifact of release["artifacts"]) {
-          payload += `\n### ${artifact["name"]}\n`;
-          if (artifact["commits"].length > 0) {
-              for (let commit of artifact["commits"]) {
-                  let commitDate: Date = new Date(commit.date);
-                  payload += `  - ${getDate(commitDate)}, ${getTime(commitDate)}      ${commit.commitId}      ${commit.message}\n`;
+          if (artifact["from"] !== artifact["to"]) {
+              if (artifact["commits"].length > 0) {
+                  isCommitsSectionEmpty = false;
+                  payload += `\n#### ${artifact["name"]}\n`;
+                  for (let commit of artifact["commits"]) {
+                      let commitDate: Date = new Date(commit.date);
+                      payload += `  - ${getDate(commitDate)}, ${getTime(commitDate)}      ${commit.commitId}      ${commit.message}\n`;
+                  }
+              } else {
+                  versionChangeOnly.push(artifact["name"]);
               }
-          } else if (artifact["from"] === artifact["to"]) {
-              payload += `  - Artifact version has not changed\n`
-          } else {
-              payload += ` - No changes to ${artifact["name"]} package directory detected. Artifact version may have been updated due to:\n`;
-              payload += `    - Modified scratch org definition file\n`;
-              payload += `    - Incremented package version in sfdx-project.json\n`;
-              payload += `    - Build all packages\n`
+          }  else if (artifact["from"] === artifact["to"]) {
+              noChangeInVersion.push(artifact["name"]);
           }
+      }
+
+      if (isCommitsSectionEmpty) {
+          payload += `N/A\n`;
+      }
+
+      if (versionChangeOnly.length > 0) {
+        payload += "\n### Additional Information\n";
+        payload += `The following artifacts' version may have changed due to an update in the scratch org definition file, `;
+        payload += `incremented package version in SFDX project configuration, or build all packages:\n`
+
+        versionChangeOnly.forEach( (artifactName) => payload += `  - ${artifactName}\n`);
+      }
+
+      if (noChangeInVersion.length > 0 && showAllArtifacts) {
+        payload += "\nArtifacts with no changes:\n";
+        noChangeInVersion.forEach( (artifactName) => payload += `  - ${artifactName}\n`);
       }
   }
   return payload;
