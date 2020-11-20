@@ -100,56 +100,63 @@ export default class TriggerApexTestImpl {
         });
         test_result.result = false;
       } else {
+        // Tests passed, set result to true
+        test_result.result = true;
+        test_result.message = `${test_report_json.summary.passing} Tests passed.\n`;
 
-        let classesWithInvalidCoverage: {
-          name: string;
-          coveredPercent: number;
-        }[];
+        let packageCoverage: number = this.calculatePackageCoverage();
+        console.log(`Overall package coverage: ${packageCoverage}%`);
 
-        if (this.test_options["isValidateCoverage"]) {
-          classesWithInvalidCoverage = await this.validateClassCodeCoverage();
+        if (this.test_options.validatePackageCoverage) {
+          let {result, message} = this.validatePackageCoverage(packageCoverage);
+          test_result.result = result;
+          test_result.message += message;
+
+          if (result) {
+            SFPStatsSender.logGauge("apextest.packagecoverage", packageCoverage,{
+              package: this.test_options["package"]
+            });
+          }
         }
 
-        if (
-          isNullOrUndefined(classesWithInvalidCoverage) ||
-          classesWithInvalidCoverage.length === 0
-        ) {
-          test_result.message = `${test_report_json.summary.passing} Tests passed with overall Test Run Coverage of ${test_report_json.summary.testRunCoverage} percent`;
-          test_result.result = true;
-        
+        if (this.test_options.validateIndividualClassCoverage) {
+          test_result.result = this.validateIndividualClassCodeCoverage();
 
-          SFPStatsSender.logGauge("apextest.tests.ran",  test_report_json.summary.testsRan, {
-            test_result: String(test_result.result),
-            package: this.test_options["package"],
-            type: this.test_options["testlevel"],
-            target_org: this.target_org,
-          });
-
-
-          let testTotalTime = test_report_json.summary.testTotalTime.split(" ")[0];
-          SFPStatsSender.logElapsedTime("apextest.testtotal.time", testTotalTime, {
-            test_result: String(test_result.result),
-            package: this.test_options["package"],
-            type: this.test_options["testlevel"],
-            target_org: this.target_org,
-          });
-
-          SFPStatsSender.logGauge("apextest.testcoverage", test_report_json.summary.testRunCoverage,{
-            package: this.test_options["package"],
-            from:"triggerapextest"
-          });
-
-
-        } else {
-          test_result.message = `There are classes that do not satisfy the minimum code coverage of ${this.test_options["coverageThreshold"]}%`;
-          test_result.result = false;
-
-          this.printClassesWithInvalidCoverage(classesWithInvalidCoverage);
+          if (!test_result.result)
+            test_result.message += `There are classes that do not satisfy the minimum code coverage of ${this.test_options["coverageThreshold"]}%.`;
+          else
+            test_result.message += `Individidual coverage of classes is greater than ${this.test_options.coverageThreshold}%. `
         }
+
+
+
+        SFPStatsSender.logGauge("apextest.tests.ran",  test_report_json.summary.testsRan, {
+          test_result: String(test_result.result),
+          package: this.test_options["package"],
+          type: this.test_options["testlevel"],
+          target_org: this.target_org,
+        });
+
+
+        let testTotalTime = test_report_json.summary.testTotalTime.split(" ")[0];
+        SFPStatsSender.logElapsedTime("apextest.testtotal.time", testTotalTime, {
+          test_result: String(test_result.result),
+          package: this.test_options["package"],
+          type: this.test_options["testlevel"],
+          target_org: this.target_org,
+        });
+
+        SFPStatsSender.logGauge("apextest.testcoverage", test_report_json.summary.testRunCoverage,{
+          package: this.test_options["package"]
+        });
       }
+
+      return test_result;
     } catch (err) {
       test_result.result = false;
       test_result.message = error;
+
+      return test_result;
     } finally {
       let elapsedTime = Date.now() - startTime;
 
@@ -165,8 +172,45 @@ export default class TriggerApexTestImpl {
         type: this.test_options["testlevel"],
         target_org: this.target_org,
       });
+    }
+  }
 
-      return test_result;
+  private validatePackageCoverage(packageCoverage: number): { result: boolean, message: string} {
+    if (this.test_options.coverageThreshold < 75) {
+      console.log("Setting minimum coverage percentage to 75%.");
+      this.test_options.coverageThreshold = 75;
+    }
+
+    let projectConfig = ManifestHelpers.getSFDXPackageManifest(this.project_directory);
+    let packageType = ManifestHelpers.getPackageType(projectConfig, this.test_options.package);
+    if (packageType === "Unlocked") {
+      if (packageCoverage < this.test_options.coverageThreshold) {
+        // Coverage inadequate, set result to false
+        return {
+          result: false,
+          message: `The package has an overall coverage of ${packageCoverage}%, which does not meet the required overall coverage of ${this.test_options.coverageThreshold}%.`
+        };
+      } else {
+        return {
+          result: true,
+          message: `Package overall coverage is greater than ${this.test_options.coverageThreshold}%. `
+        };
+      }
+    } else if (packageType === "Source") {
+      console.log("Package type is 'source'. Validating individual class coverage");
+      if (this.validateIndividualClassCodeCoverage()) {
+        return {
+          result: true,
+          message: `Individidual coverage of classes is greater than ${this.test_options.coverageThreshold}%. `
+        };
+      } else {
+        return {
+          result: false,
+          message: `There are classes that do not satisfy the minimum code coverage of ${this.test_options["coverageThreshold"]}%.`
+        };
+      }
+    } else {
+      throw new Error("Unhandled package type");
     }
   }
 
@@ -237,9 +281,50 @@ export default class TriggerApexTestImpl {
     return command;
   }
 
-  private async validateClassCodeCoverage(): Promise<
-    { name: string; coveredPercent: number }[]
-  > {
+  /**
+   * Calculate the package coverage, also known as percentage lines covered
+   */
+  private calculatePackageCoverage(): number {
+    let packageClasses: string[] = this.getClassesFromPackageManifest(
+      this.mdapiPackage
+    );
+    let triggers: string[] = this.getTriggersFromPackageManifest(
+      this.mdapiPackage
+    );
+
+    let code_coverage = fs.readFileSync(
+      path.join(
+        this.test_options["outputdir"],
+        `test-result-codecoverage.json`
+      ),
+      "utf8"
+    );
+
+    let code_coverage_json = JSON.parse(code_coverage);
+    code_coverage_json = this.filterCodeCoverageToPackageClasses(
+      code_coverage_json,
+      packageClasses,
+      triggers
+    );
+
+    let totalLines: number = 0;
+    let totalCovered: number = 0;
+    for (let classCoverage of code_coverage_json) {
+      if (classCoverage.coveredPercent !== null) {
+        totalLines += classCoverage.totalLines;
+        totalCovered += classCoverage.totalCovered;
+      }
+    }
+
+    return Math.floor(totalCovered / totalLines * 100);
+  }
+
+  private validateIndividualClassCodeCoverage(): boolean {
+    if (this.test_options.coverageThreshold < 75) {
+      console.log("Setting minimum coverage percentage to 75%.");
+      this.test_options.coverageThreshold = 75;
+    }
+
     SFPLogger.log(
       `Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`
     );
@@ -333,7 +418,12 @@ export default class TriggerApexTestImpl {
       }
     }
 
-    return classesWithInvalidCoverage;
+    this.printClassesWithInvalidCoverage(classesWithInvalidCoverage);
+
+    if (classesWithInvalidCoverage.length > 0)
+      return false
+    else
+      return true
   }
 
   /**
