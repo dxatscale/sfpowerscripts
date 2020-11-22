@@ -1,6 +1,5 @@
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
-import { isNullOrUndefined } from "util";
 import fs = require("fs-extra");
 import path = require("path");
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
@@ -175,44 +174,7 @@ export default class TriggerApexTestImpl {
     }
   }
 
-  private validatePackageCoverage(packageCoverage: number): { result: boolean, message: string} {
-    if (this.test_options.coverageThreshold < 75) {
-      console.log("Setting minimum coverage percentage to 75%.");
-      this.test_options.coverageThreshold = 75;
-    }
 
-    let projectConfig = ManifestHelpers.getSFDXPackageManifest(this.project_directory);
-    let packageType = ManifestHelpers.getPackageType(projectConfig, this.test_options.package);
-    if (packageType === "Unlocked") {
-      if (packageCoverage < this.test_options.coverageThreshold) {
-        // Coverage inadequate, set result to false
-        return {
-          result: false,
-          message: `The package has an overall coverage of ${packageCoverage}%, which does not meet the required overall coverage of ${this.test_options.coverageThreshold}%.`
-        };
-      } else {
-        return {
-          result: true,
-          message: `Package overall coverage is greater than ${this.test_options.coverageThreshold}%. `
-        };
-      }
-    } else if (packageType === "Source") {
-      console.log("Package type is 'source'. Validating individual class coverage");
-      if (this.validateIndividualClassCodeCoverage()) {
-        return {
-          result: true,
-          message: `Individidual coverage of classes is greater than ${this.test_options.coverageThreshold}%. `
-        };
-      } else {
-        return {
-          result: false,
-          message: `There are classes that do not satisfy the minimum code coverage of ${this.test_options["coverageThreshold"]}%.`
-        };
-      }
-    } else {
-      throw new Error("Unhandled package type");
-    }
-  }
 
   private async buildExecCommand(): Promise<string> {
     let command = `npx sfdx force:apex:test:run -u ${this.target_org}`;
@@ -319,6 +281,45 @@ export default class TriggerApexTestImpl {
     return Math.floor(totalCovered / totalLines * 100);
   }
 
+  private validatePackageCoverage(packageCoverage: number): { result: boolean, message: string} {
+    if (this.test_options.coverageThreshold < 75) {
+      console.log("Setting minimum coverage percentage to 75%.");
+      this.test_options.coverageThreshold = 75;
+    }
+
+    let projectConfig = ManifestHelpers.getSFDXPackageManifest(this.project_directory);
+    let packageType = ManifestHelpers.getPackageType(projectConfig, this.test_options.package);
+    if (packageType === "Unlocked") {
+      if (packageCoverage < this.test_options.coverageThreshold) {
+        // Coverage inadequate, set result to false
+        return {
+          result: false,
+          message: `The package has an overall coverage of ${packageCoverage}%, which does not meet the required overall coverage of ${this.test_options.coverageThreshold}%.`
+        };
+      } else {
+        return {
+          result: true,
+          message: `Package overall coverage is greater than ${this.test_options.coverageThreshold}%. `
+        };
+      }
+    } else if (packageType === "Source") {
+      console.log("Package type is 'source'. Validating individual class coverage");
+      if (this.validateIndividualClassCodeCoverage()) {
+        return {
+          result: true,
+          message: `Individidual coverage of classes is greater than ${this.test_options.coverageThreshold}%. `
+        };
+      } else {
+        return {
+          result: false,
+          message: `There are classes that do not satisfy the minimum code coverage of ${this.test_options["coverageThreshold"]}%.`
+        };
+      }
+    } else {
+      throw new Error("Unhandled package type");
+    }
+  }
+
   private validateIndividualClassCodeCoverage(): boolean {
     if (this.test_options.coverageThreshold < 75) {
       console.log("Setting minimum coverage percentage to 75%.");
@@ -418,12 +419,11 @@ export default class TriggerApexTestImpl {
       }
     }
 
-    this.printClassesWithInvalidCoverage(classesWithInvalidCoverage);
-
-    if (classesWithInvalidCoverage.length > 0)
-      return false
-    else
-      return true
+    if (classesWithInvalidCoverage.length > 0) {
+      this.printClassesWithInvalidCoverage(classesWithInvalidCoverage);
+      return false;
+    } else
+      return true;
   }
 
   /**
