@@ -145,6 +145,9 @@ export default class TriggerApexTestImpl {
         type: this.test_options["testlevel"],
         target_org: this.target_org,
       });
+
+      // Delete test-run-id.txt, to prevent subsequent test runs from picking up old test results
+      fs.unlinkSync(path.join(this.test_options["outputdir"], "test-run-id.txt"));
     }
   }
 
