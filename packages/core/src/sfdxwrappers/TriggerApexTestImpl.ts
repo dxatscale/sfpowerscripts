@@ -33,8 +33,6 @@ export default class TriggerApexTestImpl {
       message: "",
     };
 
-    let output = "";
-    let error = "";
     try {
       //Print final output
       let child = child_process.exec(await this.buildExecCommand(), {
@@ -42,70 +40,43 @@ export default class TriggerApexTestImpl {
         encoding: "utf8",
       });
 
-      child.stdout.on("data", (data) => {
-        output += data.toString();
-      });
-      child.stderr.on("data", (data) => {
-        error += data.toString();
-      });
 
       await onExit(child);
     } catch (err) {
+      //  Catch test failures
+
       if (
         err.message === "Package or package directory does not exist" ||
         err.message === "No test classes found in package"
       ) {
-        // Terminate execution without running command
+        // Terminate execution immediately if package does exist or package does not have test classes
         test_result.result = false;
         test_result.message = err.message;
         return test_result;
       }
-    } finally {
-      SFPLogger.log(output);
     }
 
-    let test_report_json;
+    let test_report;
     try {
-      let test_id = fs
-        .readFileSync(
-          path.join(this.test_options["outputdir"], "test-run-id.txt")
-        )
-        .toString();
+      test_result.id = this.getTestId();
 
-      SFPLogger.log("test_id", test_id);
-      test_result.id = test_id;
+      test_report = this.getTestReport(test_result.id);
 
-      let test_report_json_file = fs
-        .readFileSync(
-          path.join(
-            this.test_options["outputdir"],
-            `test-result-${test_id}.json`
-          )
-        )
-        .toString();
+      let packageCoverage: number;
+      if (this.test_options["testlevel"] === "RunAllTestsInPackage")
+        packageCoverage = this.calculatePackageCoverage();
 
-      test_report_json = JSON.parse(test_report_json_file);
+      this.printTestResults(test_report);
+      this.printTestSummary(test_report, packageCoverage)
 
-      //Print human readable output to console
-      if (test_report_json.summary.outcome == "Failed") {
-        test_result.message = `${test_report_json.summary.failing} Tests failed with overall Test Run Coverage of ${test_report_json.summary.testRunCoverage}`;
-        test_result.message += "\nFailed Test Cases:";
-
-        test_report_json.tests.forEach((element) => {
-          if (element.Outcome == "Fail") {
-            test_result.message +=
-              "\n" +
-              `${element.MethodName}  ${element.Message}    ${element.StackTrace}`;
-          }
-        });
+      test_result.message = `${test_report.summary.testsRan} Ran, with ${test_report.summary.passing} Tests passed and ${test_report.summary.failing} Tests failed\n`;
+      if (test_report.summary.outcome == "Failed") {
         test_result.result = false;
       } else {
         // Tests passed, set result to true
         test_result.result = true;
-        test_result.message = `${test_report_json.summary.passing} Tests passed.\n`;
 
-        let packageCoverage: number = this.calculatePackageCoverage();
-        console.log(`Overall package coverage: ${packageCoverage}%`);
+
 
         if (this.test_options.validatePackageCoverage) {
           let {result, message} = this.validatePackageCoverage(packageCoverage);
@@ -130,7 +101,7 @@ export default class TriggerApexTestImpl {
 
 
 
-        SFPStatsSender.logGauge("apextest.tests.ran",  test_report_json.summary.testsRan, {
+        SFPStatsSender.logGauge("apextest.tests.ran",  test_report.summary.testsRan, {
           test_result: String(test_result.result),
           package: this.test_options["package"],
           type: this.test_options["testlevel"],
@@ -138,7 +109,7 @@ export default class TriggerApexTestImpl {
         });
 
 
-        let testTotalTime = test_report_json.summary.testTotalTime.split(" ")[0];
+        let testTotalTime = test_report.summary.testTotalTime.split(" ")[0];
         SFPStatsSender.logElapsedTime("apextest.testtotal.time", testTotalTime, {
           test_result: String(test_result.result),
           package: this.test_options["package"],
@@ -146,7 +117,7 @@ export default class TriggerApexTestImpl {
           target_org: this.target_org,
         });
 
-        SFPStatsSender.logGauge("apextest.testcoverage", test_report_json.summary.testRunCoverage,{
+        SFPStatsSender.logGauge("apextest.testcoverage", test_report.summary.testRunCoverage,{
           package: this.test_options["package"]
         });
       }
@@ -154,7 +125,7 @@ export default class TriggerApexTestImpl {
       return test_result;
     } catch (err) {
       test_result.result = false;
-      test_result.message = error;
+      test_result.message = err.message;
 
       return test_result;
     } finally {
@@ -175,8 +146,6 @@ export default class TriggerApexTestImpl {
     }
   }
 
-
-
   private async buildExecCommand(): Promise<string> {
     let command = `npx sfdx force:apex:test:run -u ${this.target_org}`;
 
@@ -184,7 +153,7 @@ export default class TriggerApexTestImpl {
 
     command += ` -c`;
 
-    command += ` -r human`;
+    command += ` -r json`;
     //wait time
     command += ` -w  ${this.test_options["wait_time"]}`;
 
@@ -244,6 +213,31 @@ export default class TriggerApexTestImpl {
     return command;
   }
 
+  private getTestReport(testId: string) {
+    let test_report_json = fs
+      .readFileSync(
+        path.join(
+          this.test_options["outputdir"],
+          `test-result-${testId}.json`
+        )
+      )
+      .toString();
+
+
+    return JSON.parse(test_report_json);
+  }
+
+  private getTestId(): string {
+    let test_id = fs
+      .readFileSync(
+        path.join(this.test_options["outputdir"], "test-run-id.txt")
+      )
+      .toString();
+
+    SFPLogger.log("test_id", test_id);
+    return test_id;
+  }
+
   /**
    * Calculate the package coverage, also known as percentage lines covered
    */
@@ -255,7 +249,7 @@ export default class TriggerApexTestImpl {
       this.mdapiPackage
     );
 
-    let code_coverage = fs.readFileSync(
+    let code_coverage_json = fs.readFileSync(
       path.join(
         this.test_options["outputdir"],
         `test-result-codecoverage.json`
@@ -263,16 +257,16 @@ export default class TriggerApexTestImpl {
       "utf8"
     );
 
-    let code_coverage_json = JSON.parse(code_coverage);
-    code_coverage_json = this.filterCodeCoverageToPackageClasses(
-      code_coverage_json,
+    let code_coverage = JSON.parse(code_coverage_json);
+    code_coverage = this.filterCodeCoverageToPackageClassesAndTriggers(
+      code_coverage,
       packageClasses,
       triggers
     );
 
     let totalLines: number = 0;
     let totalCovered: number = 0;
-    for (let classCoverage of code_coverage_json) {
+    for (let classCoverage of code_coverage) {
       if (classCoverage.coveredPercent !== null) {
         totalLines += classCoverage.totalLines;
         totalCovered += classCoverage.totalCovered;
@@ -343,7 +337,7 @@ export default class TriggerApexTestImpl {
       this.mdapiPackage
     );
 
-    let code_coverage = fs.readFileSync(
+    let code_coverage_json = fs.readFileSync(
       path.join(
         this.test_options["outputdir"],
         `test-result-codecoverage.json`
@@ -351,15 +345,15 @@ export default class TriggerApexTestImpl {
       "utf8"
     );
 
-    let code_coverage_json = JSON.parse(code_coverage);
-    code_coverage_json = this.filterCodeCoverageToPackageClasses(
-      code_coverage_json,
+    let code_coverage = JSON.parse(code_coverage_json);
+    code_coverage = this.filterCodeCoverageToPackageClassesAndTriggers(
+      code_coverage,
       packageClasses,
       triggers
     );
 
     // Check code coverage of package classes that have test classes
-    for (let classCoverage of code_coverage_json) {
+    for (let classCoverage of code_coverage) {
       if (
         classCoverage["coveredPercent"] !== null &&
         classCoverage["coveredPercent"] < this.test_options["coverageThreshold"]
@@ -375,7 +369,7 @@ export default class TriggerApexTestImpl {
     let namesOfClassesWithoutTest: string[] = packageClasses.filter(
       (packageClass) => {
         // Filter out package class if accounted for in coverage json
-        for (let classCoverage of code_coverage_json) {
+        for (let classCoverage of code_coverage) {
           if (classCoverage["name"] === packageClass) {
             return false;
           }
@@ -400,7 +394,7 @@ export default class TriggerApexTestImpl {
       // Check for triggers with no test class
       let namesOfTriggersWithoutTest: string[] = triggers.filter((trigger) => {
         // Filter out triggers if accounted for in coverage json
-        for (let classCoverage of code_coverage_json) {
+        for (let classCoverage of code_coverage) {
           if (classCoverage["name"] === trigger) {
             return false;
           }
@@ -434,7 +428,7 @@ export default class TriggerApexTestImpl {
    * @param packageClasses
    * @param triggers
    */
-  private filterCodeCoverageToPackageClasses(
+  private filterCodeCoverageToPackageClassesAndTriggers(
     codeCoverage,
     packageClasses: string[],
     triggers: string[]
@@ -562,7 +556,7 @@ export default class TriggerApexTestImpl {
     classesWithInvalidCoverage: { name: string; coveredPercent: number }[]
   ) {
     let table = new Table({
-      head: ["Class", "Coverage Percent"],
+      head: ["Class", "Coverage Percent"]
     });
 
     classesWithInvalidCoverage.forEach((classWithInvalidCoverage) => {
@@ -574,6 +568,45 @@ export default class TriggerApexTestImpl {
     SFPLogger.log(
       `The following classes do not satisfy the ${this.test_options["coverageThreshold"]}% code coverage requirement:`
     );
+    SFPLogger.log(table.toString());
+  }
+
+  private printTestSummary(testResult: any, packageCoverage: number){
+    SFPLogger.log("\n\n\n=== Test Summary");
+    let table = new Table({
+      head: ["Name", "Value"]
+    });
+
+    if (
+      this.test_options.testlevel === "RunAllTestsInPackage" ||
+      this.test_options.testlevel === "RunApexTestSuite" ||
+      this.test_options.testlevel === "RunSpecifiedTests"
+    ) {
+      delete testResult.summary.testRunCoverage;
+      delete testResult.summary.orgWideCoverage;
+
+      if (this.test_options.testlevel === "RunAllTestsInPackage")
+        testResult.summary.packageCoverage = packageCoverage;
+    }
+
+    Object.entries<string|number>(testResult.summary).forEach( (keyValuePair) => {
+      table.push(keyValuePair);
+    })
+
+    SFPLogger.log(table.toString());
+  }
+
+  private printTestResults(testResult: any) {
+    SFPLogger.log("=== Test Results");
+
+    let table = new Table({
+      head: ["Test Name", "Outcome", "Message", "Runtime (ms)"]
+    });
+
+    testResult.tests.forEach( (test) => {
+      table.push([test.FullName, test.Outcome, test.Message ? test.Message : "", test.RunTime]);
+    });
+
     SFPLogger.log(table.toString());
   }
 }
