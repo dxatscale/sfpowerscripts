@@ -41,6 +41,7 @@ export default class InstallSourcePackageImpl {
       isPackageInstalled = await PackageInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
         this.sfdx_package,
         this.packageMetadata,
+        this.subdirectory,
         this.isPackageCheckHandledByCaller
       );
       if (isPackageInstalled) {
