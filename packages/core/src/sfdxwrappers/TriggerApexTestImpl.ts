@@ -12,6 +12,7 @@ const Table = require("cli-table");
 export default class TriggerApexTestImpl {
   private mdapiPackage: { mdapiDir: string; manifest };
   private apexSortedByType: ApexSortedByType;
+  private isValidateIndividualClassCoverageExecuted: boolean = false;
 
   public constructor(
     private target_org: string,
@@ -118,7 +119,7 @@ export default class TriggerApexTestImpl {
           }
         }
 
-        if (this.test_options.validateIndividualClassCoverage) {
+        if (this.test_options.validateIndividualClassCoverage && !this.isValidateIndividualClassCoverageExecuted) {
           test_result.result = this.validateIndividualClassCodeCoverage();
 
           if (!test_result.result)
@@ -303,6 +304,7 @@ export default class TriggerApexTestImpl {
         };
       }
     } else if (packageType === "Source") {
+      this.isValidateIndividualClassCoverageExecuted = true;
       console.log("Package type is 'source'. Validating individual class coverage");
       if (this.validateIndividualClassCodeCoverage()) {
         return {
