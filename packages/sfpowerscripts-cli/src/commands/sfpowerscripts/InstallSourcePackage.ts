@@ -148,7 +148,8 @@ export default class InstallSourcePackage extends InstallPackageCommand {
 
 
     } catch (error) {
-
+      console.log(error);
+      process.exitCode=1;
     }
   }
 }

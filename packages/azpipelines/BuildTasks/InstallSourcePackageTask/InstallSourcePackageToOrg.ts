@@ -129,7 +129,7 @@ async function run() {
     let result = await installSourcePackageImpl.exec();
 
     //No environment info available, create and push
-    if ((result.result = PackageInstallationStatus.Succeeded)) {
+    if ((result.result == PackageInstallationStatus.Succeeded)) {
       if (isNullOrUndefined(packageMetadataFromStorage.deployments)) {
         packageMetadataFromStorage.deployments = new Array();
         packageMetadataFromStorage.deployments.push({

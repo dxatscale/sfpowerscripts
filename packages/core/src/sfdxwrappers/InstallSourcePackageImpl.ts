@@ -206,7 +206,6 @@ export default class InstallSourcePackageImpl {
           );
         }
       } else if (result.result === false) {
-        SFPLogger.log(result.message);
         throw new Error("Deployment failed with error " + result.message);
       }
       let elapsedTime = Date.now() - startTime;
