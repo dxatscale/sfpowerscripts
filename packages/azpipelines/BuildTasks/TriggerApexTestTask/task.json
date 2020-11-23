@@ -9,7 +9,7 @@
     "version": {
         "Major": 9,
         "Minor": 0,
-        "Patch": 44
+        "Patch": 45
     },
     "runsOn": [
         "Agent"
@@ -74,22 +74,31 @@
             "required": false
         },
         {
-            "name": "isValidateCoverage",
+            "name": "validateIndividualClassCoverage",
             "type": "boolean",
             "label": "Validate code coverage of individual classes",
             "defaultValue": false,
-            "helpMarkDown": "When enabled, verifies whether indvidual classes meet the minimum code coverage requirement",
+            "helpMarkDown": "Validates indvidual classes meet the minimum required percentage coverage",
+            "required": false,
+            "visibleRule": "testlevel = RunAllTestsInPackage"
+        },
+        {
+            "name": "validatePackageCoverage",
+            "type": "boolean",
+            "label": "Validate code coverage of package",
+            "defaultValue": false,
+            "helpMarkDown": "Validates whether package coverage is greater than the minimum required percentage coverage",
             "required": false,
             "visibleRule": "testlevel = RunAllTestsInPackage"
         },
         {
             "name": "coverageThreshold",
             "type": "string",
-            "label": "Minimum percentage coverage required per test class",
+            "label": "Minimum required percentage coverage",
             "defaultValue": "75",
-            "helpMarkDown": "Minimum coverage required per test class, in order for the task to succeed",
+            "helpMarkDown": "Minimum required percentage coverage, when validating code coverage",
             "required": false,
-            "visibleRule": "isValidateCoverage = true"
+            "visibleRule": "validateIndividualClassCoverage = true || validatePackageCoverage = true"
         },
         {
             "name": "project_directory",
@@ -98,7 +107,7 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "The project directory should contain a sfdx-project.json",
-            "visibleRule": "isValidateCoverage = true"
+            "visibleRule": "testlevel = RunAllTestsInPackage"
         },
         {
             "name": "wait_time",

@@ -43,6 +43,10 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       description: messages.getMessage('validateIndividualClassCoverageFlagDescription'),
       default: false
     }),
+    validatepackagecoverage: flags.boolean({
+      description: messages.getMessage('validatePackageCoverageFlagDescription'),
+      default: false
+    }),
     synchronous: flags.boolean({
       char: 's',
       description: messages.getMessage('synchronousFlagDescription')
@@ -72,13 +76,14 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
     try {
 
 
-    
+
       let test_options = {};
       test_options["wait_time"] = this.flags.waittime;
       test_options["testlevel"] = this.flags.testlevel;
       test_options["package"] = this.flags.package;
       test_options["synchronous"] = this.flags.synchronous;
-      test_options["isValidateCoverage"] = this.flags.validateindividualclasscoverage;
+      test_options["validateIndividualClassCoverage"] = this.flags.validateindividualclasscoverage;
+      test_options["validatePackageCoverage"] = this.flags.validatepackagecoverage;
       test_options["coverageThreshold"] = this.flags.coveragepercent;
 
       // Input validation
@@ -88,10 +93,10 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       ) {
         throw new Error("Package name must be specified when test level is RunAllTestsInPackage")
       } else if (
-        test_options["isValidateCoverage"] &&
+        (test_options["validateIndividualClassCoverage"] || test_options["validatePackageCoverage"]) &&
         test_options["testlevel"] !== "RunAllTestsInPackage"
       ) {
-        throw new Error("--validateindividualclasscoverage is only available for test level RunAllTestsInPackage");
+        throw new Error("Code coverage validation is only available for test level RunAllTestsInPackage");
       }
 
 
@@ -119,7 +124,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
         console.log(`${result.message}`);
       }
 
-      
+
     } catch(err) {
       console.log("\n");
       console.error(err.message);
