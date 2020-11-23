@@ -107,7 +107,7 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "The project directory should contain a sfdx-project.json",
-            "visibleRule": "isValidateCoverage = true"
+            "visibleRule": "testlevel = RunAllTestsInPackage"
         },
         {
             "name": "wait_time",
