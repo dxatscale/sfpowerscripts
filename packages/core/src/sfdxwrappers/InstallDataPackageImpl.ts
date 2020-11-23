@@ -3,6 +3,9 @@ import AssignPermissionSetsImpl from "../sfdxwrappers/AssignPermissionSetsImpl";
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 import fs = require("fs");
+import PackageInstallationStatusChecker from "../package/PackageInstallationStatusChecker";
+import SFPLogger from "../utils/SFPLogger";
+import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
 const path = require("path");
 
 export default class InstallDataPackageImpl {
@@ -10,11 +13,26 @@ export default class InstallDataPackageImpl {
     private targetusername: string,
     private projectDirectory: string,
     private packageDirectory: string,
-    private packageMetadata: PackageMetadata
+    private packageMetadata: PackageMetadata,
+    private skip_if_package_installed: boolean,
+    private isPackageCheckHandledByCaller?:boolean
   ) {}
 
-  public async exec(): Promise<void> {
+  public async exec(): Promise<PackageInstallationResult> {
     try {
+
+      let isPackageInstalled = false;
+      if (this.skip_if_package_installed) {
+        isPackageInstalled = await PackageInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(this.packageMetadata.package_name,this.packageMetadata, this.isPackageCheckHandledByCaller);
+        if(isPackageInstalled)
+          {
+           SFPLogger.log("Skipping Package Installation")
+           return { result: PackageInstallationStatus.Skipped }
+          }
+      }
+  
+
+
       if (
         new RegExp("AssignPermissionSets", "i").test(this.packageMetadata.preDeploymentSteps?.toString()) &&
         this.packageMetadata.permissionSetsToAssign
@@ -44,6 +62,12 @@ export default class InstallDataPackageImpl {
       });
 
       await onExit(child);
+
+
+      await PackageInstallationStatusChecker.updatePackageInstalledInOrg(this.targetusername,this.packageMetadata,this.isPackageCheckHandledByCaller);
+
+
+
 
     } catch (err) {
       throw err;
