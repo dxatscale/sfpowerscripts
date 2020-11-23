@@ -11,8 +11,7 @@ import {
   PackageInstallationStatus,
 } from "../package/PackageInstallationResult";
 import SFPLogger from "../utils/SFPLogger";
-import InstalledAritfactsFetcher from "../org/InstalledAritfactsFetcher";
-import InstallArtifactUpdate from "../org/InstallArtifactUpdate";
+
 import PackageInstallationStatusChecker from "../package/PackageInstallationStatusChecker";
 
 const fs = require("fs-extra");

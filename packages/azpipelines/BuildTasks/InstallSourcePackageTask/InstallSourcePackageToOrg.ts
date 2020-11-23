@@ -14,13 +14,9 @@ import {
   updatePackageDeploymentDetails,
 } from "../Common/PackageExtensionStorageHelper";
 import ArtifactHelper from "../Common/ArtifactHelper";
-import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 const fs = require("fs-extra");
-const path = require("path");
-const glob = require("glob");
-const os = require("os");
-const { EOL } = require("os");
+
 
 async function run() {
   try {
