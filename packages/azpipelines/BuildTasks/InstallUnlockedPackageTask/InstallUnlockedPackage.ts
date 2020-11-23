@@ -1,7 +1,5 @@
 import tl = require("azure-pipelines-task-lib/task");
-import InstallUnlockedPackageImpl, {
-  PackageInstallationResult,
-} from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
+import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
 import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
@@ -13,6 +11,7 @@ import {
 import { isNullOrUndefined } from "util";
 import ArtifactHelper from "../Common/ArtifactHelper";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
+import { PackageInstallationResult, PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 const fs = require("fs");
 
 
@@ -118,7 +117,7 @@ async function run() {
 
 
     let result: PackageInstallationResult = await installUnlockedPackageImpl.exec();
-    if (result == PackageInstallationResult.Skipped) {
+    if (result.result == PackageInstallationStatus.Skipped) {
       tl.setResult(
         tl.TaskResult.Skipped,
         "Skipping Package Installation as already installed"

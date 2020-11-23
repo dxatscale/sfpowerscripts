@@ -28,6 +28,7 @@ export default class InstallDataPackage extends InstallPackageCommand {
     targetorg: flags.string({char: 'u', description: messages.getMessage('targetOrgFlagDescription'), required: true}),
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
     skiponmissingartifact: flags.boolean({char: 's', description: messages.getMessage('skipOnMissingArtifactFlagDescription')}),
+    skipifalreadyinstalled: flags.boolean({description: messages.getMessage("skipIfAlreadyInstalled")}),
     subdirectory: flags.directory({description: messages.getMessage('subdirectoryFlagDescription')})
   };
 
@@ -39,8 +40,8 @@ export default class InstallDataPackage extends InstallPackageCommand {
 
       const targetOrg: string = this.flags.targetorg;
       const sfdx_package: string = this.flags.package;
-      let skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;
-
+      const skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;
+      const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
       const artifact_directory: string = this.flags.artifactdir;
       const subdirectory: string = this.flags.subdirectory;
 
@@ -76,30 +77,13 @@ export default class InstallDataPackage extends InstallPackageCommand {
         `source`
       )
 
-      let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(sourceDirectory, sfdx_package);
-
-      let packageDirectory: string;
-      if (subdirectory) {
-        packageDirectory = path.join(
-          packageDescriptor["path"],
-          subdirectory
-        );
-      } else {
-        packageDirectory = path.join(
-          packageDescriptor["path"]
-        )
-      }
-
-      let absPackageDirectory: string = path.join(sourceDirectory, packageDirectory);
-      if (!fs.existsSync(absPackageDirectory)) {
-        throw new Error(`Source directory ${absPackageDirectory} does not exist`)
-      }
-
       let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
+        sfdx_package,
         targetOrg,
         sourceDirectory,
-        packageDirectory,
-        packageMetadata
+        subdirectory,
+        packageMetadata,
+        skipIfAlreadyInstalled
       )
 
       await installDataPackageImpl.exec();
