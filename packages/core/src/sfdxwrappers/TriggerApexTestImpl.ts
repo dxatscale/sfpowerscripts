@@ -45,6 +45,8 @@ export default class TriggerApexTestImpl {
     } catch (err) {
       //  Catch test failures
 
+      console.log(err.message);
+
       if (
         err.message === "Package or package directory does not exist" ||
         err.message === "No test classes found in package"
