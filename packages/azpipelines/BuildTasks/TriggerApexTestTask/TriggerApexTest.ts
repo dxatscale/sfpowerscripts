@@ -14,7 +14,8 @@ async function run() {
     test_options["synchronous"] = tl.getBoolInput("synchronous", false);
     test_options["coverageThreshold"] = parseInt(tl.getInput("coverageThreshold", false), 10);
     test_options["package"] = tl.getInput("package", false);
-    test_options["isValidateCoverage"] = tl.getBoolInput("isValidateCoverage", false);
+    test_options["validateIndividualClassCoverage"] = tl.getBoolInput("validateIndividualClassCoverage", false);
+    test_options["validatePackageCoverage"] = tl.getBoolInput("validatePackageCoverage", false);
 
     // Input validation
     if (
@@ -23,10 +24,10 @@ async function run() {
     ) {
       throw new Error("Package name must be specified when test level is RunAllTestsInPackage");
     } else if (
-      test_options["isValidateCoverage"] &&
+      (test_options["validateIndividualClassCoverage"] || test_options["validatePackageCoverage"]) &&
       test_options["testlevel"] !== "RunAllTestsInPackage"
     ) {
-      throw new Error("'Validate code coverage of individual classes' is only available for test level RunAllTestsInPackage");
+      throw new Error("Code coverage validation is only available for test level RunAllTestsInPackage");
     }
 
 
