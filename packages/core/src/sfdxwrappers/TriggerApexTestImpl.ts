@@ -65,12 +65,10 @@ export default class TriggerApexTestImpl {
       let packageCoverage: number;
       if (this.test_options["testlevel"] === "RunAllTestsInPackage") {
         packageCoverage = this.calculatePackageCoverage();
-
-        let individualClassCoverage = this.getIndividualClassCoverage();
-        this.printIndividualClassCoverage(individualClassCoverage);
       }
 
       this.printTestResults(test_report);
+      this.printCoverageReport();
       this.printTestSummary(test_report, packageCoverage)
 
       test_result.message = `${test_report.summary.testsRan} Ran, with ${test_report.summary.passing} Tests passed and ${test_report.summary.failing} Tests failed\n`;
@@ -149,6 +147,7 @@ export default class TriggerApexTestImpl {
       });
     }
   }
+
 
   private async buildExecCommand(): Promise<string> {
     let command = `npx sfdx force:apex:test:run -u ${this.target_org}`;
@@ -349,13 +348,6 @@ export default class TriggerApexTestImpl {
       coveredPercent: number;
     }[] = [];
 
-    let packageClasses: string[] = this.getClassesFromPackageManifest(
-      this.mdapiPackage
-    );
-    let triggers: string[] = this.getTriggersFromPackageManifest(
-      this.mdapiPackage
-    );
-
     let code_coverage_json = fs.readFileSync(
       path.join(
         this.test_options["outputdir"],
@@ -363,8 +355,22 @@ export default class TriggerApexTestImpl {
       ),
       "utf8"
     );
-
     let code_coverage = JSON.parse(code_coverage_json);
+
+    // Return every class in coverage json if test level is not RunAllTestsInPackage
+    if (this.test_options.testlevel !== "RunAllTestsInPackage") {
+      return code_coverage.map( (cls) => {
+        return {name: cls.name, coveredPercent: cls.coveredPercent}
+      });
+    }
+
+    let packageClasses: string[] = this.getClassesFromPackageManifest(
+      this.mdapiPackage
+    );
+    let triggers: string[] = this.getTriggersFromPackageManifest(
+      this.mdapiPackage
+    );
+
     code_coverage = this.filterCodeCoverageToPackageClassesAndTriggers(
       code_coverage,
       packageClasses,
@@ -564,32 +570,9 @@ export default class TriggerApexTestImpl {
 
     return packageClasses;
   }
-
-  private printClassesWithInvalidCoverage(
-    classesWithInvalidCoverage: { name: string; coveredPercent: number }[]
-  ) {
-    SFPLogger.log(
-      `The following classes do not satisfy the ${this.test_options["coverageThreshold"]}% code coverage requirement:`
-    );
-
-    this.printIndividualClassCoverage(classesWithInvalidCoverage);
-  }
-
-  private printIndividualClassCoverage(
-    individualClassCoverage: { name: string; coveredPercent: number }[]
-  ) {
-    let table = new Table({
-      head: ["Class", "Coverage Percent"]
-    });
-
-    individualClassCoverage.forEach((cls) => {
-      table.push([
-        cls.name,
-        cls.coveredPercent,
-      ]);
-    });
-
-    SFPLogger.log(table.toString());
+  private printCoverageReport() {
+    let individualClassCoverage = this.getIndividualClassCoverage();
+    this.printIndividualClassCoverage(individualClassCoverage);
   }
 
   private printTestSummary(testResult: any, packageCoverage: number){
@@ -626,6 +609,33 @@ export default class TriggerApexTestImpl {
 
     testResult.tests.forEach( (test) => {
       table.push([test.FullName, test.Outcome, test.Message ? test.Message : "", test.RunTime]);
+    });
+
+    SFPLogger.log(table.toString());
+  }
+
+  private printClassesWithInvalidCoverage(
+    classesWithInvalidCoverage: { name: string; coveredPercent: number }[]
+  ) {
+    SFPLogger.log(
+      `The following classes do not satisfy the ${this.test_options["coverageThreshold"]}% code coverage requirement:`
+    );
+
+    this.printIndividualClassCoverage(classesWithInvalidCoverage);
+  }
+
+  private printIndividualClassCoverage(
+    individualClassCoverage: { name: string; coveredPercent: number }[]
+  ) {
+    let table = new Table({
+      head: ["Class", "Coverage Percent"]
+    });
+
+    individualClassCoverage.forEach((cls) => {
+      table.push([
+        cls.name,
+        cls.coveredPercent,
+      ]);
     });
 
     SFPLogger.log(table.toString());
