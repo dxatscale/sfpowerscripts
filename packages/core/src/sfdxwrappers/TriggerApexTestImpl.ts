@@ -63,8 +63,12 @@ export default class TriggerApexTestImpl {
       test_report = this.getTestReport(test_result.id);
 
       let packageCoverage: number;
-      if (this.test_options["testlevel"] === "RunAllTestsInPackage")
+      if (this.test_options["testlevel"] === "RunAllTestsInPackage") {
         packageCoverage = this.calculatePackageCoverage();
+
+        let individualClassCoverage = this.getIndividualClassCoverage();
+        this.printIndividualClassCoverage(individualClassCoverage);
+      }
 
       this.printTestResults(test_report);
       this.printTestSummary(test_report, packageCoverage)
@@ -91,7 +95,7 @@ export default class TriggerApexTestImpl {
         }
 
         if (this.test_options.validateIndividualClassCoverage && !this.isValidateIndividualClassCoverageExecuted) {
-          test_result.result = this.validateIndividualClassCodeCoverage();
+          test_result.result = this.validateIndividualClassCoverage();
 
           if (!test_result.result)
             test_result.message += `There are classes that do not satisfy the minimum code coverage of ${this.test_options["coverageThreshold"]}%.`;
@@ -300,7 +304,7 @@ export default class TriggerApexTestImpl {
     } else if (packageType === "Source") {
       this.isValidateIndividualClassCoverageExecuted = true;
       console.log("Package type is 'source'. Validating individual class coverage");
-      if (this.validateIndividualClassCodeCoverage()) {
+      if (this.validateIndividualClassCoverage()) {
         return {
           result: true,
           message: `Individidual coverage of classes is greater than ${this.test_options.coverageThreshold}%. `
@@ -316,16 +320,31 @@ export default class TriggerApexTestImpl {
     }
   }
 
-  private validateIndividualClassCodeCoverage(): boolean {
+  private validateIndividualClassCoverage(): boolean {
     if (this.test_options.coverageThreshold < 75) {
       console.log("Setting minimum coverage percentage to 75%.");
       this.test_options.coverageThreshold = 75;
     }
 
     SFPLogger.log(
-      `Validating individual classes for code coverage greater than ${this.test_options["coverageThreshold"]} percent`
+      `Validating individual classes for code coverage greater than ${this.test_options.coverageThreshold} percent`
     );
-    let classesWithInvalidCoverage: {
+
+    let individualClassCoverage = this.getIndividualClassCoverage();
+    let classesWithInvalidCoverage = individualClassCoverage.filter( (cls) => {
+      return cls.coveredPercent < this.test_options.coverageThreshold
+    });
+
+    if (classesWithInvalidCoverage.length > 0) {
+      this.printClassesWithInvalidCoverage(classesWithInvalidCoverage);
+      return false;
+    } else
+      return true;
+  }
+
+  private getIndividualClassCoverage(): {name: string, coveredPercent: number}[] {
+
+    let individualClassCoverage: {
       name: string;
       coveredPercent: number;
     }[] = [];
@@ -352,13 +371,11 @@ export default class TriggerApexTestImpl {
       triggers
     );
 
-    // Check code coverage of package classes that have test classes
     for (let classCoverage of code_coverage) {
       if (
-        classCoverage["coveredPercent"] !== null &&
-        classCoverage["coveredPercent"] < this.test_options["coverageThreshold"]
+        classCoverage["coveredPercent"] !== null
       ) {
-        classesWithInvalidCoverage.push({
+        individualClassCoverage.push({
           name: classCoverage["name"],
           coveredPercent: classCoverage["coveredPercent"],
         });
@@ -385,7 +402,7 @@ export default class TriggerApexTestImpl {
       }[] = namesOfClassesWithoutTest.map((className) => {
         return { name: className, coveredPercent: 0 };
       });
-      classesWithInvalidCoverage = classesWithInvalidCoverage.concat(
+      individualClassCoverage = individualClassCoverage.concat(
         classesWithoutTest
       );
     }
@@ -409,17 +426,13 @@ export default class TriggerApexTestImpl {
         }[] = namesOfTriggersWithoutTest.map((triggerName) => {
           return { name: triggerName, coveredPercent: 0 };
         });
-        classesWithInvalidCoverage = classesWithInvalidCoverage.concat(
+        individualClassCoverage = individualClassCoverage.concat(
           triggersWithoutTest
         );
       }
     }
 
-    if (classesWithInvalidCoverage.length > 0) {
-      this.printClassesWithInvalidCoverage(classesWithInvalidCoverage);
-      return false;
-    } else
-      return true;
+    return individualClassCoverage;
   }
 
   /**
@@ -555,19 +568,27 @@ export default class TriggerApexTestImpl {
   private printClassesWithInvalidCoverage(
     classesWithInvalidCoverage: { name: string; coveredPercent: number }[]
   ) {
+    SFPLogger.log(
+      `The following classes do not satisfy the ${this.test_options["coverageThreshold"]}% code coverage requirement:`
+    );
+
+    this.printIndividualClassCoverage(classesWithInvalidCoverage);
+  }
+
+  private printIndividualClassCoverage(
+    individualClassCoverage: { name: string; coveredPercent: number }[]
+  ) {
     let table = new Table({
       head: ["Class", "Coverage Percent"]
     });
 
-    classesWithInvalidCoverage.forEach((classWithInvalidCoverage) => {
+    individualClassCoverage.forEach((cls) => {
       table.push([
-        classWithInvalidCoverage.name,
-        classWithInvalidCoverage.coveredPercent,
+        cls.name,
+        cls.coveredPercent,
       ]);
     });
-    SFPLogger.log(
-      `The following classes do not satisfy the ${this.test_options["coverageThreshold"]}% code coverage requirement:`
-    );
+
     SFPLogger.log(table.toString());
   }
 
