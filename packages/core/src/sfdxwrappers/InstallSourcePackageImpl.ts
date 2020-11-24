@@ -368,6 +368,7 @@ export default class InstallSourcePackageImpl {
             `-------------------------------------------------------------------------------------------------------------`
         );
         mdapi_options["testlevel"] = "RunLocalTests";
+        return;
       }
 
       if (result["IsSandbox"]) {

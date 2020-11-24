@@ -14,6 +14,7 @@ export default class OrgDetails {
               { encoding: "utf8" }
             );
             let result = JSON.parse(cmdOutput);
+            console.log(result);
             if (result["status"] == 0) {
               SFPLogger.log(result["result"]["records"][0]);
               return result["result"]["records"][0];
