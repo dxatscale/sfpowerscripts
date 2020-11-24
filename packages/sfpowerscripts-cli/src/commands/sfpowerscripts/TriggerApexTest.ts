@@ -93,10 +93,10 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       ) {
         throw new Error("Package name must be specified when test level is RunAllTestsInPackage")
       } else if (
-        test_options["isValidateCoverage"] &&
+        (test_options["validateIndividualClassCoverage"] || test_options["validatePackageCoverage"]) &&
         test_options["testlevel"] !== "RunAllTestsInPackage"
       ) {
-        throw new Error("--validateindividualclasscoverage is only available for test level RunAllTestsInPackage");
+        throw new Error("Code coverage validation is only available for test level RunAllTestsInPackage");
       }
 
 

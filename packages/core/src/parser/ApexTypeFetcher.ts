@@ -64,17 +64,8 @@ export default class ApexTypeFetcher {
         SFPLogger.log(err);
 
         fileDescriptor["error"] = err;
+        apexSortedByType["parseError"].push(fileDescriptor);
 
-        // Manually parse class if error is caused by System.runAs() or testMethod modifier
-        if (
-          this.parseSystemRunAs(err, clsPayload) ||
-          this.parseTestMethod(err, clsPayload)
-        ) {
-          SFPLogger.log(`Manually identified test class ${clsFile}`)
-          apexSortedByType["testClass"].push(fileDescriptor);
-        } else {
-          apexSortedByType["parseError"].push(fileDescriptor);
-        }
         continue;
       }
 
@@ -98,32 +89,6 @@ export default class ApexTypeFetcher {
       }
     }
     return apexSortedByType;
-  }
-
-  /**
-   * Bypass error parsing System.runAs()
-   * @param error
-   * @param clsPayload
-   */
-  private parseSystemRunAs(error, clsPayload: string): boolean {
-    return (
-      error["message"].includes("missing ';' at '{'") &&
-      /System.runAs/i.test(clsPayload) &&
-      /@isTest/i.test(clsPayload)
-    );
-  }
-
-  /**
-   * Bypass error parsing testMethod modifier
-   * @param error
-   * @param clsPayload
-   */
-  private parseTestMethod(error, clsPayload: string): boolean {
-    return (
-      error["message"].includes("no viable alternative at input") &&
-      /testMethod/i.test(error["message"]) &&
-      /testMethod/i.test(clsPayload)
-    );
   }
 }
 
