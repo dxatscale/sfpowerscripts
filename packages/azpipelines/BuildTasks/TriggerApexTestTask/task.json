@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 9,
+        "Major": 10,
         "Minor": 0,
-        "Patch": 45
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
