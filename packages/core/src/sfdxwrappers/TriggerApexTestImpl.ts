@@ -45,6 +45,8 @@ export default class TriggerApexTestImpl {
     } catch (err) {
       //  Catch test failures
 
+      console.log(err.message);
+
       if (
         err.message === "Package or package directory does not exist" ||
         err.message === "No test classes found in package"
@@ -145,6 +147,9 @@ export default class TriggerApexTestImpl {
         type: this.test_options["testlevel"],
         target_org: this.target_org,
       });
+
+      // Delete test-run-id.txt, to prevent subsequent test runs from picking up old test results
+      fs.unlinkSync(path.join(this.test_options["outputdir"], "test-run-id.txt"));
     }
   }
 
@@ -357,85 +362,85 @@ export default class TriggerApexTestImpl {
     );
     let code_coverage = JSON.parse(code_coverage_json);
 
-    // Return every class in coverage json if test level is not RunAllTestsInPackage
-    if (this.test_options.testlevel !== "RunAllTestsInPackage") {
-      return code_coverage.map( (cls) => {
-        return {name: cls.name, coveredPercent: cls.coveredPercent}
-      });
-    }
-
-    let packageClasses: string[] = this.getClassesFromPackageManifest(
-      this.mdapiPackage
-    );
-    let triggers: string[] = this.getTriggersFromPackageManifest(
-      this.mdapiPackage
-    );
-
-    code_coverage = this.filterCodeCoverageToPackageClassesAndTriggers(
-      code_coverage,
-      packageClasses,
-      triggers
-    );
-
-    for (let classCoverage of code_coverage) {
-      if (
-        classCoverage["coveredPercent"] !== null
-      ) {
-        individualClassCoverage.push({
-          name: classCoverage["name"],
-          coveredPercent: classCoverage["coveredPercent"],
-        });
-      }
-    }
-
-    // Check for package classes with no test class
-    let namesOfClassesWithoutTest: string[] = packageClasses.filter(
-      (packageClass) => {
-        // Filter out package class if accounted for in coverage json
-        for (let classCoverage of code_coverage) {
-          if (classCoverage["name"] === packageClass) {
-            return false;
-          }
-        }
-        return true;
-      }
-    );
-
-    if (namesOfClassesWithoutTest.length > 0) {
-      let classesWithoutTest: {
-        name: string;
-        coveredPercent: number;
-      }[] = namesOfClassesWithoutTest.map((className) => {
-        return { name: className, coveredPercent: 0 };
-      });
-      individualClassCoverage = individualClassCoverage.concat(
-        classesWithoutTest
+    if (this.test_options.testlevel === "RunAllTestsInPackage") {
+      let packageClasses: string[] = this.getClassesFromPackageManifest(
+        this.mdapiPackage
       );
-    }
+      let triggers: string[] = this.getTriggersFromPackageManifest(
+        this.mdapiPackage
+      );
 
-    if (triggers != null) {
-      // Check for triggers with no test class
-      let namesOfTriggersWithoutTest: string[] = triggers.filter((trigger) => {
-        // Filter out triggers if accounted for in coverage json
-        for (let classCoverage of code_coverage) {
-          if (classCoverage["name"] === trigger) {
-            return false;
-          }
+      code_coverage = this.filterCodeCoverageToPackageClassesAndTriggers(
+        code_coverage,
+        packageClasses,
+        triggers
+      );
+
+      for (let classCoverage of code_coverage) {
+        if (
+          classCoverage["coveredPercent"] !== null
+        ) {
+          individualClassCoverage.push({
+            name: classCoverage["name"],
+            coveredPercent: classCoverage["coveredPercent"],
+          });
         }
-        return true;
-      });
+      }
 
-      if (namesOfTriggersWithoutTest.length > 0) {
-        let triggersWithoutTest: {
+      // Check for package classes with no test class
+      let namesOfClassesWithoutTest: string[] = packageClasses.filter(
+        (packageClass) => {
+          // Filter out package class if accounted for in coverage json
+          for (let classCoverage of code_coverage) {
+            if (classCoverage["name"] === packageClass) {
+              return false;
+            }
+          }
+          return true;
+        }
+      );
+
+      if (namesOfClassesWithoutTest.length > 0) {
+        let classesWithoutTest: {
           name: string;
           coveredPercent: number;
-        }[] = namesOfTriggersWithoutTest.map((triggerName) => {
-          return { name: triggerName, coveredPercent: 0 };
+        }[] = namesOfClassesWithoutTest.map((className) => {
+          return { name: className, coveredPercent: 0 };
         });
         individualClassCoverage = individualClassCoverage.concat(
-          triggersWithoutTest
+          classesWithoutTest
         );
       }
+
+      if (triggers != null) {
+        // Check for triggers with no test class
+        let namesOfTriggersWithoutTest: string[] = triggers.filter((trigger) => {
+          // Filter out triggers if accounted for in coverage json
+          for (let classCoverage of code_coverage) {
+            if (classCoverage["name"] === trigger) {
+              return false;
+            }
+          }
+          return true;
+        });
+
+        if (namesOfTriggersWithoutTest.length > 0) {
+          let triggersWithoutTest: {
+            name: string;
+            coveredPercent: number;
+          }[] = namesOfTriggersWithoutTest.map((triggerName) => {
+            return { name: triggerName, coveredPercent: 0 };
+          });
+          individualClassCoverage = individualClassCoverage.concat(
+            triggersWithoutTest
+          );
+        }
+      }
+    } else {
+      // Return every class in coverage json if test level is not RunAllTestsInPackage
+      individualClassCoverage = code_coverage.map( (cls) => {
+        return {name: cls.name, coveredPercent: cls.coveredPercent}
+      });
     }
 
     return individualClassCoverage;
