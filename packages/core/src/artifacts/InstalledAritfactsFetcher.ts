@@ -17,14 +17,13 @@ export default class InstalledAritfactsFetcher {
           );
           let result = JSON.parse(cmdOutput);
           if (result["status"] == 0) {
-            SFPLogger.log(result["result"]["records"]);
             InstalledAritfactsFetcher.artifacts = result["result"]["records"];
             return InstalledAritfactsFetcher.artifacts;
           } else {
             bail(
               new Error(
                 "Unable to fetch any sfpowerscripts artifacts in the org\n" +
-                  "1. No sfpowercripts package is not installed in the org\n" +
+                  "1. sfpowercripts package is notinstalled in the org\n" +
                   "2. The required prerequisite object is not deployed to this org\n"
               )
             );

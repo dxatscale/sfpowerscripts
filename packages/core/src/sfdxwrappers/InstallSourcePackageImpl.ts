@@ -12,7 +12,7 @@ import {
 } from "../package/PackageInstallationResult";
 import SFPLogger from "../utils/SFPLogger";
 
-import PackageInstallationStatusChecker from "../package/PackageInstallationStatusChecker";
+import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
 
 const fs = require("fs-extra");
 const path = require("path");
@@ -35,10 +35,12 @@ export default class InstallSourcePackageImpl {
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
+
+
     let isPackageInstalled = false;
     if (this.skip_if_package_installed) {
-      isPackageInstalled = await PackageInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
-        this.sfdx_package,
+      isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+        this.targetusername,
         this.packageMetadata,
         this.subdirectory,
         this.isPackageCheckHandledByCaller
@@ -195,9 +197,10 @@ export default class InstallSourcePackageImpl {
             );
           }
 
-          await PackageInstallationStatusChecker.updatePackageInstalledInOrg(
+          await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
             this.targetusername,
             this.packageMetadata,
+            this.subdirectory,
             this.isPackageCheckHandledByCaller
           );
         } catch (error) {

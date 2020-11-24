@@ -3,7 +3,7 @@ import AssignPermissionSetsImpl from "../sfdxwrappers/AssignPermissionSetsImpl";
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 import fs = require("fs");
-import PackageInstallationStatusChecker from "../package/PackageInstallationStatusChecker";
+import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
 import SFPLogger from "../utils/SFPLogger";
 import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
 import ManifestHelpers from "../manifest/ManifestHelpers";
@@ -47,7 +47,7 @@ export default class InstallDataPackageImpl {
 
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
-        isPackageInstalled = await PackageInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(this.packageMetadata.package_name,this.packageMetadata,this.subDirectory, this.isPackageCheckHandledByCaller);
+        isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(this.targetusername,this.packageMetadata,this.subDirectory, this.isPackageCheckHandledByCaller);
         if(isPackageInstalled)
           {
            SFPLogger.log("Skipping Package Installation")
@@ -88,7 +88,7 @@ export default class InstallDataPackageImpl {
       await onExit(child);
 
 
-      await PackageInstallationStatusChecker.updatePackageInstalledInOrg(this.targetusername,this.packageMetadata,this.isPackageCheckHandledByCaller);
+      await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(this.targetusername,this.packageMetadata,this.subDirectory,this.isPackageCheckHandledByCaller);
 
 
 

@@ -5,30 +5,32 @@ import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
 const retry = require("async-retry");
 
 //Update sfpowerscripts Artifats installed in an Org
-export default class InstallArtifactUpdate {
+export default class ArtifactInstallationStatusUpdater {
   public static async updateArtifact(
     username: string,
-    packageMetadata: PackageMetadata
+    packageMetadata: PackageMetadata,
+    subdirectory?:string
   ): Promise<boolean> {
-    let artifactId = InstallArtifactUpdate.getRecordId(
+    let artifactId = await ArtifactInstallationStatusUpdater.getRecordId(
       username,
-      packageMetadata
+      packageMetadata,
+      subdirectory
     );
 
     return await retry(
       async (bail) => {
-        SFPLogger.log("Updating Org with new Artifacts");
+     
         let cmdOutput;
+        let packageName= packageMetadata.package_name+(subdirectory?"_"+subdirectory:"");
+        SFPLogger.log("Updating Org with new Artifacts "+packageName+" "+packageMetadata.package_version_number+" "+artifactId?artifactId:"");
         if (artifactId == null) {
           cmdOutput = child_process.execSync(
-            `sfdx force:data:record:create -s SfpowerscriptsArtifact__c -u ${username} \
-            -v "Name=${packageMetadata.package_name} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}`,
-            { encoding: "utf8" }
+            `sfdx force:data:record:create --json -s SfpowerscriptsArtifact__c -u ${username}  -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}"`,
+            { encoding: "utf8"}
           );
         } else if (artifactId) {
           cmdOutput = child_process.execSync(
-            `sfdx force:data:record:update -s SfpowerscriptsArtifact__c -u ${username} \
-              -v "Name=${packageMetadata.package_name} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion} -i ${artifactId}`,
+            `sfdx force:data:record:update --json -s SfpowerscriptsArtifact__c -u ${username} -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}" -i ${artifactId}`,
             { encoding: "utf8" }
           );
         }
@@ -52,15 +54,17 @@ export default class InstallArtifactUpdate {
 
   private static async getRecordId(
     username: string,
-    packageMetadata: PackageMetadata
-  ): Promise<boolean> {
+    packageMetadata: PackageMetadata,
+    subdirectory?:string
+  ): Promise<string> {
     let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(
       username
     );
+
+    let packageName = packageMetadata.package_name+(subdirectory?"_"+subdirectory:"");
     for (const artifact of installedArtifacts) {
       if (
-        artifact.Name === packageMetadata.package_name &&
-        artifact.Version__c === packageMetadata.package_version_number
+        artifact.Name === packageName && artifact.Version__c === packageMetadata.package_version_number
       ) {
         return artifact.Id;
       }
