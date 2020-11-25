@@ -68,8 +68,7 @@ export default class InstallSourcePackage extends InstallPackageCommand {
 
   public async install(): Promise<any> {
     const target_org: string = this.flags.targetorg;
-    const sfdx_package: string = this.flags.package;
-    const artifact_directory: string = this.flags.artifactdir;
+    const sfdx_package: string =this.flags.package;
     const subdirectory: string = this.flags.subdirectory;
     const skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;
     const optimizeDeployment: boolean = this.flags.optimizedeployment;
@@ -79,15 +78,13 @@ export default class InstallSourcePackage extends InstallPackageCommand {
 
 
 
-  
+
     console.log("sfpowerscripts.Install Source Package To Org");
 
-    try {
-      let artifactMetadataFilepath = path.join(
-        artifact_directory,
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        `artifact_metadata.json`
-      );
+    try
+    {
+
+    let artifactMetadataFilepath = this.artifactFilePaths.packageMetadataFilePath;
 
       console.log(
         `Checking for ${sfdx_package} Build Artifact at path ${artifactMetadataFilepath}`
@@ -118,11 +115,7 @@ export default class InstallSourcePackage extends InstallPackageCommand {
       console.log("Package Metadata:");
       console.log(packageMetadata);
 
-      let sourceDirectory: string = path.join(
-        artifact_directory,
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        `source`
-      );
+      let sourceDirectory: string = this.artifactFilePaths.sourceDirectoryPath;
 
 
       let options = {

@@ -46,11 +46,7 @@ export default class InstallDataPackage extends InstallPackageCommand {
 
       let startTime=Date.now();
 
-      let artifactMetadataFilepath = path.join(
-          artifact_directory,
-          `${sfdx_package}_sfpowerscripts_artifact`,
-          `artifact_metadata.json`
-      );
+      let artifactMetadataFilepath = this.artifactFilePaths.packageMetadataFilePath;
 
       console.log(`Checking for ${sfdx_package} Build Artifact at path ${artifactMetadataFilepath}`);
 
@@ -70,11 +66,7 @@ export default class InstallDataPackage extends InstallPackageCommand {
       console.log("Package Metadata:");
       console.log(packageMetadata);
 
-      let sourceDirectory: string = path.join(
-        artifact_directory,
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        `source`
-      )
+      let sourceDirectory: string = this.artifactFilePaths.sourceDirectoryPath;
 
       let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
         sfdx_package,
