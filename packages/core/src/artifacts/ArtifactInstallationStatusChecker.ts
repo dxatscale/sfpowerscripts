@@ -12,7 +12,8 @@ export default class ArtifactInstallationStatusChecker {
     subdirectory:string,
     isHandledByCaller: boolean
   ): Promise<boolean> {
-    if (isHandledByCaller) return true;
+    if (isHandledByCaller) return false; //This is already handled by the caller, in that case if it reached here, we should 
+                                         //always install
 
     try {
       let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(
@@ -39,7 +40,8 @@ export default class ArtifactInstallationStatusChecker {
     subdirectory:string,
     isHandledByCaller: boolean
   ):Promise<boolean> {
-    if (isHandledByCaller) return true;
+    if (isHandledByCaller) return true; //This is to be handled by the caller, in that case if it reached here, we should 
+                                        //just ignore
 
     try {
       await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata,subdirectory);
