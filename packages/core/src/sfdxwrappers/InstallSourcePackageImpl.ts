@@ -388,7 +388,7 @@ export default class InstallSourcePackageImpl {
         return mdapi_options;
       }
 
-      if (result["IsSandbox"]) {
+      if (result && result["IsSandbox"]) {
         console.log(
           ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
             `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +

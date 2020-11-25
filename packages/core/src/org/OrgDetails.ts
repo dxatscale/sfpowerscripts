@@ -28,6 +28,7 @@ export default class OrgDetails {
           catch(error)
           {
             console.log("Unable to fetch org details, retrying",error);
+            throw error;
           }
         },
         { retries: 3, minTimeout: 2000 }
