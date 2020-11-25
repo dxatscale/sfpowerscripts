@@ -48,27 +48,24 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
    * the primary install
    */
   private preInstall(): void {
-    this.artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+    let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
       this.flags.artifactdir,
       this.flags.package
-    )[0];
+    );
 
-    if (
-      this.artifactFilePaths === undefined &&
-      !this.flags.skiponmissingartifact
-    ) {
-      throw new Error(
-        `${this.flags.package} artifact not found at ${this.flags.artifactdir}...Please check the inputs`
-      );
-    } else if (
-      this.artifactFilePaths === undefined &&
-      this.flags.skiponmissingartifact
-    ) {
-      console.log(
-        `Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${this.flags.skiponmissingartifact}`
-      );
-      process.exit(0);
-    }
+    if (artifacts.length === 0) {
+      if (!this.flags.skiponmissingartifact) {
+        throw new Error(
+          `${this.flags.package} artifact not found at ${this.flags.artifactdir}...Please check the inputs`
+        );
+      } else if (this.flags.skiponmissingartifact) {
+        console.log(
+          `Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${this.flags.skiponmissingartifact}`
+        );
+        process.exit(0);
+      }
+    } else
+      this.artifactFilePaths = artifacts[0];
   }
 
   /**
