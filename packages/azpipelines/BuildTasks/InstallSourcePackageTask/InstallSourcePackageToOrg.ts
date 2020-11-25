@@ -53,8 +53,7 @@ async function run() {
       tl.getVariable("SFPOWERSCRIPTS_STATSD_PROTOCOL")
     );
 
-    //Intialize Time
-    let startTime = Date.now();
+
 
     //Fetch Artifact
     let artifacts_filepaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(

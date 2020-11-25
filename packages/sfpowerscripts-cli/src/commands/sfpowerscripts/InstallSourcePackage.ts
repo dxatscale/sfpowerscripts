@@ -1,5 +1,3 @@
-import { isNullOrUndefined } from "util";
-
 import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
 

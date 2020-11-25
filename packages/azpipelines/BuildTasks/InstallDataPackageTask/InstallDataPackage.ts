@@ -4,7 +4,6 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata"
 import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManagementApi";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import {
   getExtensionName,
   fetchPackageArtifactFromStorage,
@@ -12,7 +11,6 @@ import {
 } from "../Common/PackageExtensionStorageHelper";
 import ArtifactHelper from "../Common/ArtifactHelper";
 const fs = require("fs");
-const path = require("path");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
 
 async function run() {
