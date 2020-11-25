@@ -369,9 +369,9 @@ export default class InstallSourcePackageImpl {
       } catch (err) {
         console.log(
           ` -------------------------WARNING! SKIPPING TESTS AS ORG TYPE CANNOT BE DETERMINED! ------------------------------------${EOL}` +
-            `Tests are mandatory for deployments to production and cannot be skipped. This deployment might fail as org` +
+            `Tests are mandatory for deployments to production and cannot be skipped. This deployment might fail as org${EOL}` +
             `type cannot be determined` +
-            `-------------------------------------------------------------------------------------------------------------`
+            `-------------------------------------------------------------------------------------------------------------${EOL}`
         );
 
         mdapi_options["testlevel"] = "NoTestRun";
