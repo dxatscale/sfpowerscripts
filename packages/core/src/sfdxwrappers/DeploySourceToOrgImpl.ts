@@ -80,7 +80,7 @@ export default class DeploySourceToOrgImpl {
       deploy_id = resultAsJSON.result.id;
     } catch (error) {
       deploySourceResult.result = false;
-      deploySourceResult.message =;
+      deploySourceResult.message = error;
       return deploySourceResult;
     }
 
