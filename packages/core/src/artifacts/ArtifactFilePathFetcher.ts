@@ -101,7 +101,6 @@ export default class ArtifactFilePathFetcher {
 
     // Overwrite existing files
     zip.extractAllTo(unzippedArtifactsDirectory, true);
-    // TODO see if extractall returns file paths
 
     let artifactName: string = path.basename(artifact).match(/.*_sfpowerscripts_artifact/)[0]
 
