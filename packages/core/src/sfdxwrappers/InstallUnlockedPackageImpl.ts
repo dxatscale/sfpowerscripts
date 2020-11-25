@@ -4,6 +4,7 @@ import { onExit } from "../utils/OnExit";
 import PackageMetadata from "../PackageMetadata";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import SFPLogger from "../utils/SFPLogger";
+import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -43,10 +44,10 @@ export default class InstallUnlockedPackageImpl {
 
 
       await onExit(child);
-      return PackageInstallationResult.Succeeded;
+      return { result: PackageInstallationStatus.Succeeded}
     } else {
       SFPLogger.log("Skipping Package Installation")
-      return PackageInstallationResult.Skipped
+      return { result: PackageInstallationStatus.Skipped }
     }
   }
 
@@ -94,10 +95,7 @@ export default class InstallUnlockedPackageImpl {
   }
 }
 
-export enum PackageInstallationResult {
-  Skipped,
-  Succeeded
-}
+
 
 type PackageInfo= {
   packageName: string;

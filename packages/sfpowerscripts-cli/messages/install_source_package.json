@@ -7,5 +7,6 @@
   "subdirectoryFlagDescription": "Install specific subdirectory in the package. Useful when package consists of multiple discrete sub-packages",
   "waitTimeFlagDescription": "wait time for command to finish in minutes",
   "optimizedeployment":"Optimize deployment by triggering test classes that are in the package, rather than using the whole tests in the org",
-  "skiptesting":"Skips running test when deploying to a sandbox"
+  "skiptesting":"Skips running test when deploying to a sandbox",
+  "skipIfAlreadyInstalled":"Skip the package installation if the package is already installed in the org"
 }

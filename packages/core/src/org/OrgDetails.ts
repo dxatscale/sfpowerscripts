@@ -9,6 +9,7 @@ export default class OrgDetails {
       return await retry(
         async bail => {
            SFPLogger.log("Querying Org Details");
+
             let cmdOutput = child_process.execSync(
               `sfdx force:data:soql:query -q "SELECT Id, InstanceName, IsSandbox, Name, OrganizationType FROM Organization" -u ${username} --json`,
               { encoding: "utf8" }
@@ -22,6 +23,7 @@ export default class OrgDetails {
             {
               bail(new Error("Unable to fetch Org details"));
             }
+         
         },
         { retries: 3, minTimeout: 2000 }
       );

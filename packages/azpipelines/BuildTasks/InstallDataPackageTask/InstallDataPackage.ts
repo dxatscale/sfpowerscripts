@@ -4,7 +4,6 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata"
 import * as ExtensionManagementApi from "azure-devops-node-api/ExtensionManagementApi";
 import { getWebAPIWithoutToken } from "../Common/WebAPIHelper";
 import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import {
   getExtensionName,
   fetchPackageArtifactFromStorage,
@@ -12,14 +11,12 @@ import {
 } from "../Common/PackageExtensionStorageHelper";
 import ArtifactHelper from "../Common/ArtifactHelper";
 const fs = require("fs");
-const path = require("path");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
 
 async function run() {
   try {
     console.log("Install Data Package To Org");
-    let startTime=Date.now();
-
+    const startTime=Date.now();
     const target_org: string = tl.getInput("target_org", true);
     const sfdx_package: string = tl.getInput("package", true);
     const artifactDir = tl.getInput("artifactDir", false);
@@ -89,32 +86,15 @@ async function run() {
       return;
     }
 
-    let sourceDirectory;
-    // Get package source directory from sfdx-project.json in sourceDirectoryPath
-    sourceDirectory = ManifestHelpers.getSFDXPackageDescriptor(
-      artifacts_filepaths[0].sourceDirectoryPath,
-      sfdx_package
-    )["path"];
-
-    console.log("Path for the project", sourceDirectory);
-    if (subdirectory != null) {
-      sourceDirectory =  path.join(sourceDirectory, subdirectory);
-
-      // Check whether the absolute source directory path exists
-      let absSourceDirectory = path.join(
-        artifacts_filepaths[0].sourceDirectoryPath,
-        sourceDirectory
-      );
-      if (!fs.existsSync(absSourceDirectory)) {
-        throw new Error(`Source directory ${absSourceDirectory} does not exist`);
-      }
-    }
 
     let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
+      sfdx_package,
       target_org,
       artifacts_filepaths[0].sourceDirectoryPath,
-      sourceDirectory,
-      packageMetadataFromArtifact
+      subdirectory,
+      packageMetadataFromStorage,
+      skip_if_package_installed,
+      true
     )
 
     await installDataPackageImpl.exec();
