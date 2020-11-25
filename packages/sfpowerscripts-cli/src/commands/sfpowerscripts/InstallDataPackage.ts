@@ -4,7 +4,6 @@ import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 import InstallPackageCommand from '../../InstallPackageCommand';
 const fs = require("fs");
-const path = require("path");
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
