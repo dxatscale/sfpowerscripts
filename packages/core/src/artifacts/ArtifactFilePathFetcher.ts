@@ -48,11 +48,7 @@ export default class ArtifactFilePathFetcher {
 
     SFPLogger.log("Artifact File Paths",JSON.stringify(result));
 
-    if (result.length > 0) {
-      return result;
-    } else {
-      return null
-    }
+    return result;
   }
 
   /**
@@ -208,12 +204,12 @@ export default class ArtifactFilePathFetcher {
     artifacts: ArtifactFilePaths[],
     isToSkipOnMissingArtifact: boolean
   ): boolean {
-    if (artifacts === null && !isToSkipOnMissingArtifact) {
+    if (artifacts.length === 0 && !isToSkipOnMissingArtifact) {
       throw new Error(
         `Artifact not found, Please check the inputs`
       );
     } else if (
-      artifacts === null && isToSkipOnMissingArtifact
+      artifacts.length === 0 && isToSkipOnMissingArtifact
     ) {
       SFPLogger.log(
         `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${isToSkipOnMissingArtifact}`

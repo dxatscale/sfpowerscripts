@@ -70,7 +70,6 @@ export default class InstallSourcePackage extends InstallPackageCommand {
     const target_org: string = this.flags.targetorg;
     const sfdx_package: string =this.flags.package;
     const subdirectory: string = this.flags.subdirectory;
-    const skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;
     const optimizeDeployment: boolean = this.flags.optimizedeployment;
     const skipTesting: boolean = this.flags.skiptesting;
     const wait_time: string = this.flags.waittime;
@@ -85,28 +84,6 @@ export default class InstallSourcePackage extends InstallPackageCommand {
     {
 
     let artifactMetadataFilepath = this.artifactFilePaths.packageMetadataFilePath;
-
-      console.log(
-        `Checking for ${sfdx_package} Build Artifact at path ${artifactMetadataFilepath}`
-      );
-
-      if (
-        !fs.existsSync(artifactMetadataFilepath) &&
-        !skip_on_missing_artifact
-      ) {
-        throw new Error(
-          `Artifact not found at ${artifactMetadataFilepath}.. Please check the inputs`
-        );
-      } else if (
-        !fs.existsSync(artifactMetadataFilepath) &&
-        skip_on_missing_artifact
-      ) {
-        console.log(
-          `Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${skip_on_missing_artifact}`
-        );
-        process.exitCode = 0;
-        return;
-      }
 
       let packageMetadata = JSON.parse(
         fs.readFileSync(artifactMetadataFilepath).toString()
