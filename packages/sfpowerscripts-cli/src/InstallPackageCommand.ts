@@ -2,6 +2,7 @@ import SfpowerscriptsCommand from "./SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
 import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
+import * as rimraf from "rimraf";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_package_command');
@@ -58,6 +59,7 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
    * the primary install
    */
   private postInstall(): void {
-
+    // Delete temp directory containing unzipped artifacts
+    rimraf.sync(".sfpowerscripts/unzippedArtifacts");
   }
 }

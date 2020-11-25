@@ -1,8 +1,9 @@
 import path = require("path");
-import fs = require("fs");
+import fs from "fs-extra";
 import SFPLogger from "../utils/SFPLogger";
 const glob = require("glob");
-import AdmZip = require('adm-zip');
+import AdmZip = require("adm-zip");
+import semver = require("semver");
 
 export default class ArtifactFilePathFetcher {
   /**
@@ -21,19 +22,7 @@ export default class ArtifactFilePathFetcher {
       throw new Error(`Artifact directory ${path.resolve(artifactDirectory)} does not exist`);
     }
 
-    let artifacts: string[] = this.findArtifacts(artifactDirectory);
-
-    if (sfdx_package) {
-      // Artifact format: <sfdx_package>_sfpowerscripts_artifact OR <sfdx_package>_sfpowerscripts_artifact_<version>.zip
-      let searchPattern: RegExp = new RegExp(`^${sfdx_package}_sfpowerscripts_artifact`);
-      artifacts = artifacts.filter( (artifact) => {
-        return searchPattern.test(path.basename(artifact));
-      });
-
-      // TODO: zip & folder are both present
-      // TODO: more than one artifact (e.g. different versions)
-      // TODO: No artifacts
-    }
+    let artifacts: string[] = this.findArtifacts(artifactDirectory, sfdx_package);
 
     SFPLogger.log("Artifacts", artifacts);
 
@@ -59,8 +48,11 @@ export default class ArtifactFilePathFetcher {
 
     SFPLogger.log("Artifact File Paths",JSON.stringify(result));
 
-    // TODO: return null if length is zero
-    return result;
+    if (result.length > 0) {
+      return result;
+    } else {
+      return null
+    }
   }
 
   /**
@@ -100,31 +92,33 @@ export default class ArtifactFilePathFetcher {
   private static fetchArtifactFilePathsFromZipFile(
     artifact: string
   ): ArtifactFilePaths {
-    SFPLogger.log(`Unzipping ${artifact}`);
+    let unzippedArtifactsDirectory: string = ".sfpowerscripts/unzippedArtifacts";
 
+    fs.mkdirpSync(`.sfpowerscripts/unzippedArtifacts`);
+
+    SFPLogger.log(`Unzipping ${artifact} to ${unzippedArtifactsDirectory}`);
     let zip = new AdmZip(artifact);
 
-    let artifactDirectory: string = path.dirname(artifact);
     // Overwrite existing files
-    zip.extractAllTo(artifactDirectory, true);
+    zip.extractAllTo(unzippedArtifactsDirectory, true);
     // TODO see if extractall returns file paths
 
     let artifactName: string = path.basename(artifact).match(/.*_sfpowerscripts_artifact/)[0]
 
     let packageMetadataFilePath = path.join(
-      artifactDirectory,
+      unzippedArtifactsDirectory,
       artifactName,
       "artifact_metadata.json"
     );
 
     let sourceDirectory = path.join(
-      artifactDirectory,
+      unzippedArtifactsDirectory,
       artifactName,
       `source`
     );
 
     let changelogFilePath = path.join(
-      artifactDirectory,
+      unzippedArtifactsDirectory,
       artifactName,
       `changelog.json`
     );
@@ -142,17 +136,57 @@ export default class ArtifactFilePathFetcher {
 
   /**
    * Find zip artifacts, and folder artifacts for backward compatibility
+   * Artifact format/s:
+   * <sfdx_package>_sfpowerscripts_artifact
+   * <sfdx_package>_sfpowerscripts_artifact_<version>.zip
    */
   private static findArtifacts(
-    artifactDirectory: string
+    artifactDirectory: string,
+    sfdx_package: string
   ): string[] {
-    return glob.sync(
-      `**/*_sfpowerscripts_artifact*`,
+    let pattern: string;
+    if (sfdx_package) {
+      pattern = `**/${sfdx_package}_sfpowerscripts_artifact*`;
+    } else {
+      pattern = `**/*_sfpowerscripts_artifact*`;
+    }
+
+    let artifacts: string[] = glob.sync(
+      pattern,
       {
         cwd: artifactDirectory,
         absolute: true,
       }
     );
+
+    if (sfdx_package && artifacts.length > 1) {
+      SFPLogger.log(`Found more than one artifact for ${sfdx_package}`);
+      let latestArtifact: string = ArtifactFilePathFetcher.getLatestArtifact(artifacts);
+      SFPLogger.log(`Using latest artifact ${latestArtifact}`);
+      return [latestArtifact];
+    } else
+      return artifacts;
+  }
+
+  /**
+   * Get the artifact with the latest semantic version
+   * @param artifacts
+   */
+  private static getLatestArtifact(artifacts: string[]) {
+      // Consider zip artifacts only
+      artifacts = artifacts.filter((artifact) => path.extname(artifact) === ".zip");
+
+      let versions: string[] = artifacts.map( (artifact) => {
+        let tokens = artifact.split("_");
+        let version = tokens[tokens.length - 1];
+        return version.slice(0, version.indexOf(".zip"));
+      });
+
+      // Pick artifact with latest semantic version
+      let sortedVersions: string[] = semver.sort(versions);
+      let latestVersion: string = sortedVersions.pop();
+
+      return artifacts.find((artifact) => artifact.includes(latestVersion));
   }
 
   /**
@@ -172,16 +206,15 @@ export default class ArtifactFilePathFetcher {
    * @param isToSkipOnMissingArtifact
    */
   public static missingArtifactDecider(
-    artifacts_filepaths: ArtifactFilePaths[],
+    artifacts: ArtifactFilePaths[],
     isToSkipOnMissingArtifact: boolean
   ): boolean {
-    if (artifacts_filepaths.length === 0 && !isToSkipOnMissingArtifact) {
+    if (artifacts === null && !isToSkipOnMissingArtifact) {
       throw new Error(
         `Artifact not found, Please check the inputs`
       );
     } else if (
-      artifacts_filepaths.length === 0 &&
-      isToSkipOnMissingArtifact
+      artifacts === null && isToSkipOnMissingArtifact
     ) {
       SFPLogger.log(
         `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${isToSkipOnMissingArtifact}`
