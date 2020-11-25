@@ -11,13 +11,17 @@ export default class ArtifactInstallationStatusUpdater {
     packageMetadata: PackageMetadata,
     subdirectory?:string
   ): Promise<boolean> {
+
+
     let artifactId = await ArtifactInstallationStatusUpdater.getRecordId(
       username,
       packageMetadata,
       subdirectory
     );
 
-    return  retry(
+
+
+    return await retry(
       async (bail) => {
      
         let cmdOutput;
