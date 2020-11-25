@@ -13,6 +13,7 @@ export default class OrgDetails {
               `sfdx force:data:soql:query -q "SELECT Id, InstanceName, IsSandbox, Name, OrganizationType FROM Organization" -u ${username} --json`,
               { encoding: "utf8" }
             );
+            console.log(cmdOutput);
             let result = JSON.parse(cmdOutput);
             console.log(result);
             if (result["status"] == 0) {

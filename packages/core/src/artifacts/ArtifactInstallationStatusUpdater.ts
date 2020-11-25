@@ -17,7 +17,7 @@ export default class ArtifactInstallationStatusUpdater {
       subdirectory
     );
 
-    return await retry(
+    return  retry(
       async (bail) => {
      
         let cmdOutput;

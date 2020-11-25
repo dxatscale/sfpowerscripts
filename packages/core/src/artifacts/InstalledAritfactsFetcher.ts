@@ -8,7 +8,7 @@ export default class InstalledAritfactsFetcher {
 
   public static async getListofArtifacts(username: string): Promise<any> {
     if (InstalledAritfactsFetcher.artifacts == null) {
-      return await retry(
+      return  retry(
         async (bail) => {
           SFPLogger.log("Querying Installed Artifacts from the Org");
           let cmdOutput = child_process.execSync(

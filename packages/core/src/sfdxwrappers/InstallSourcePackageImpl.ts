@@ -54,80 +54,16 @@ export default class InstallSourcePackageImpl {
     let tmpDirObj = tmp.dirSync({ unsafeCleanup: true });
     let tempDir = tmpDirObj.name;
 
-    let startTime = Date.now();
-
+  
     try {
-      if (this.packageMetadata.package_type == "delta") {
-        console.log(
-          ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT---------------------------------------------${EOL}` +
-            `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
-            `75% test coverage, However being a dynamically generated delta package, we will deploying via triggering all local tests${EOL}` +
-            `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}` +
-            `-------------------------------------------------------------------------------------------------------------`
-        );
-        this.packageMetadata.isTriggerAllTests = true;
-      } else if (
-        this.packageMetadata.package_type == "source" &&
-        this.packageMetadata.isApexFound == true &&
-        this.packageMetadata.apexTestClassses == null
-      ) {
-        console.log(
-          ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT--------------------------------------------${EOL}` +
-            `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
-            `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying ${EOL}` +
-            `via triggering all local tests,This definitely is not optimal approach on large orgs` +
-            `Please consider adding test classes for the classes in the package ${EOL}` +
-            `-------------------------------------------------------------------------------------------------------------`
-        );
-        this.packageMetadata.isTriggerAllTests = true;
-      }
-
-      let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
-        this.sourceDirectory,
-        this.sfdx_package
-      );
-
-      let packageDirectory: string;
-      if (this.subdirectory) {
-        packageDirectory = path.join(
-          packageDescriptor["path"],
-          this.subdirectory
-        );
-      } else {
-        packageDirectory = path.join(packageDescriptor["path"]);
-      }
-
-      let absPackageDirectory: string = path.join(
-        this.sourceDirectory,
-        packageDirectory
-      );
-      if (!fs.existsSync(absPackageDirectory)) {
-        throw new Error(
-          `Source directory ${absPackageDirectory} does not exist`
-        );
-      }
-
+      
+      let startTime = Date.now();
+      this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(this.packageMetadata);
+      let packageDirectory: string = this.getPackageDirectory();
+      
       // Apply Destructive Manifest
       if (this.packageMetadata.isDestructiveChangesFound) {
-        try {
-          console.log(
-            "Attempt to delete components mentioned in destructive manifest"
-          );
-          let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
-            this.targetusername,
-            path.join(
-              this.sourceDirectory,
-              "destructive",
-              "destructiveChanges.xml"
-            )
-          );
-
-          deployDestructiveManifestToOrg.exec();
-        } catch (error) {
-          console.log(
-            "We attempted a deletion of components, However were are not succesfull. Either the components are already deleted or there are components which have dependency to components in the manifest, Please check whether this manifest works!"
-          );
-        }
+        await this.applyDestructiveChanges();
       }
 
       //Apply Reconcile if Profiles are found
@@ -247,6 +183,86 @@ export default class InstallSourcePackageImpl {
       // Cleanup temp directories
       tmpDirObj.removeCallback();
     }
+  }
+
+  private async applyDestructiveChanges() {
+    try {
+      console.log(
+        "Attempt to delete components mentioned in destructive manifest"
+      );
+      let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
+        this.targetusername,
+        path.join(
+          this.sourceDirectory,
+          "destructive",
+          "destructiveChanges.xml"
+        )
+      );
+
+      await deployDestructiveManifestToOrg.exec();
+    } catch (error) {
+      console.log(
+        "We attempted a deletion of components, However were are not succesfull. Either the components are already deleted or there are components which have dependency to components in the manifest, Please check whether this manifest works!"
+      );
+    }
+  }
+
+  private getPackageDirectory() {
+    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      this.sourceDirectory,
+      this.sfdx_package
+    );
+
+    let packageDirectory: string;
+    if (this.subdirectory) {
+      packageDirectory = path.join(
+        packageDescriptor["path"],
+        this.subdirectory
+      );
+    } else {
+      packageDirectory = path.join(packageDescriptor["path"]);
+    }
+
+    let absPackageDirectory: string = path.join(
+      this.sourceDirectory,
+      packageDirectory
+    );
+    if (!fs.existsSync(absPackageDirectory)) {
+      throw new Error(
+        `Source directory ${absPackageDirectory} does not exist`
+      );
+    }
+    return packageDirectory;
+  }
+
+  private isAllTestsToBeTriggered(packageMetadata:PackageMetadata)
+  {
+    if (packageMetadata.package_type == "delta") {
+      console.log(
+        ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT---------------------------------------------${EOL}` +
+          `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
+          `75% test coverage, However being a dynamically generated delta package, we will deploying via triggering all local tests${EOL}` +
+          `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}` +
+          `-------------------------------------------------------------------------------------------------------------`
+      );
+      return true;
+    } else if (
+      this.packageMetadata.package_type == "source" &&
+      this.packageMetadata.isApexFound == true &&
+      this.packageMetadata.apexTestClassses == null
+    ) {
+      console.log(
+        ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT--------------------------------------------${EOL}` +
+          `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
+          `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying ${EOL}` +
+          `via triggering all local tests,This definitely is not optimal approach on large orgs` +
+          `Please consider adding test classes for the classes in the package ${EOL}` +
+          `-------------------------------------------------------------------------------------------------------------`
+      );
+      return true;
+    }
+    else
+     return false;
   }
 
   private async reconcileProfilesBeforeDeployment(
