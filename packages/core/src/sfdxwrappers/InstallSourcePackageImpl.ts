@@ -35,8 +35,6 @@ export default class InstallSourcePackageImpl {
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
-
-
     let isPackageInstalled = false;
     if (this.skip_if_package_installed) {
       isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
@@ -54,13 +52,13 @@ export default class InstallSourcePackageImpl {
     let tmpDirObj = tmp.dirSync({ unsafeCleanup: true });
     let tempDir = tmpDirObj.name;
 
-  
     try {
-      
       let startTime = Date.now();
-      this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(this.packageMetadata);
+      this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(
+        this.packageMetadata
+      );
       let packageDirectory: string = this.getPackageDirectory();
-      
+
       // Apply Destructive Manifest
       if (this.packageMetadata.isDestructiveChangesFound) {
         await this.applyDestructiveChanges();
@@ -192,11 +190,7 @@ export default class InstallSourcePackageImpl {
       );
       let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
         this.targetusername,
-        path.join(
-          this.sourceDirectory,
-          "destructive",
-          "destructiveChanges.xml"
-        )
+        path.join(this.sourceDirectory, "destructive", "destructiveChanges.xml")
       );
 
       await deployDestructiveManifestToOrg.exec();
@@ -228,15 +222,12 @@ export default class InstallSourcePackageImpl {
       packageDirectory
     );
     if (!fs.existsSync(absPackageDirectory)) {
-      throw new Error(
-        `Source directory ${absPackageDirectory} does not exist`
-      );
+      throw new Error(`Source directory ${absPackageDirectory} does not exist`);
     }
     return packageDirectory;
   }
 
-  private isAllTestsToBeTriggered(packageMetadata:PackageMetadata)
-  {
+  private isAllTestsToBeTriggered(packageMetadata: PackageMetadata) {
     if (packageMetadata.package_type == "delta") {
       console.log(
         ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT---------------------------------------------${EOL}` +
@@ -260,9 +251,7 @@ export default class InstallSourcePackageImpl {
           `-------------------------------------------------------------------------------------------------------------`
       );
       return true;
-    }
-    else
-     return false;
+    } else return false;
   }
 
   private async reconcileProfilesBeforeDeployment(
@@ -378,13 +367,14 @@ export default class InstallSourcePackageImpl {
       try {
         result = await OrgDetails.getOrgDetails(target_org);
       } catch (err) {
-        console.log("Unable determine type of org...Defaulting to production");
         console.log(
-          ` -------------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
-            `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
+          ` -------------------------WARNING! SKIPPING TESTS AS ORG TYPE CANNOT BE DETERMINED! ------------------------------------${EOL}` +
+            `Tests are mandatory for deployments to production and cannot be skipped. This deployment might fail as org` +
+            `type cannot be determined` +
             `-------------------------------------------------------------------------------------------------------------`
         );
-        mdapi_options["testlevel"] = "RunLocalTests";
+
+        mdapi_options["testlevel"] = "NoTestRun";
         return mdapi_options;
       }
 
