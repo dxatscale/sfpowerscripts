@@ -80,13 +80,13 @@ export default class DeploySourceToOrgImpl {
       deploy_id = resultAsJSON.result.id;
     } catch (error) {
       deploySourceResult.result = false;
-      deploySourceResult.message = error;
+      deploySourceResult.message =;
       return deploySourceResult;
     }
 
     if (this.deployment_options["checkonly"])
       SFPLogger.log(
-        `Validation is in progress....  Unleashing the power of your code!`
+        `Validation only deployment  is in progress....  Unleashing the power of your code!`
       );
     else
       SFPLogger.log(

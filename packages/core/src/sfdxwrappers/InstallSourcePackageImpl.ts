@@ -371,6 +371,7 @@ export default class InstallSourcePackageImpl {
     let mdapi_options = {};
     mdapi_options["ignore_warnings"] = true;
     mdapi_options["wait_time"] = wait_time;
+    mdapi_options["checkonly"] = false;
 
     if (skipTest) {
       let result;
@@ -384,7 +385,7 @@ export default class InstallSourcePackageImpl {
             `-------------------------------------------------------------------------------------------------------------`
         );
         mdapi_options["testlevel"] = "RunLocalTests";
-        return;
+        return mdapi_options;
       }
 
       if (result["IsSandbox"]) {
