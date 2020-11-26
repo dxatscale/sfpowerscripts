@@ -1,7 +1,8 @@
 import SfpowerscriptsCommand from "./SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
-import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
+import * as rimraf from "rimraf";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_package_command');
@@ -22,6 +23,8 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
     skiponmissingartifact: flags.boolean({char: 's', description: messages.getMessage('skipOnMissingArtifactFlagDescription')})
   };
+
+  protected artifactFilePaths: ArtifactFilePaths;
 
   /**
    * Procedures unique to the type of package installation
@@ -45,12 +48,24 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
    * the primary install
    */
   private preInstall(): void {
-
-    ArtifactFilePathFetcher.fetchArtifactFilePaths(
+    let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
       this.flags.artifactdir,
       this.flags.package
     );
 
+    if (artifacts.length === 0) {
+      if (!this.flags.skiponmissingartifact) {
+        throw new Error(
+          `${this.flags.package} artifact not found at ${this.flags.artifactdir}...Please check the inputs`
+        );
+      } else if (this.flags.skiponmissingartifact) {
+        console.log(
+          `Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${this.flags.skiponmissingartifact}`
+        );
+        process.exit(0);
+      }
+    } else
+      this.artifactFilePaths = artifacts[0];
   }
 
   /**
@@ -58,6 +73,7 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
    * the primary install
    */
   private postInstall(): void {
-
+    // Delete temp directory containing unzipped artifacts
+    rimraf.sync(".sfpowerscripts/unzippedArtifacts");
   }
 }

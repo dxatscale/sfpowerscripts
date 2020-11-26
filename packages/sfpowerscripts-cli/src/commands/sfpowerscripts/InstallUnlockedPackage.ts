@@ -4,7 +4,6 @@ import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 import InstallPackageCommand from '../../InstallPackageCommand';
 const fs = require("fs");
-const path = require("path");
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -47,12 +46,10 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
 
       const targetOrg: string = this.flags.targetorg;
       const sfdx_package: string = this.flags.package;
-      let skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;
       const package_installedfrom = this.flags.packageinstalledfrom;
 
       const installationkey = this.flags.installationkey;
       const apexcompileonlypackage = this.flags.apexcompileonlypackage;
-      const artifact_directory: string = this.flags.artifactdir;
       const security_type = this.flags.securitytype;
       const upgrade_type = this.flags.upgradetype;
       const wait_time = this.flags.waittime;
@@ -67,26 +64,9 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
 
         let package_version_id_file_path;
 
-        package_version_id_file_path = path.join(
-          artifact_directory,
-          `${sfdx_package}_sfpowerscripts_artifact`,
-          `artifact_metadata.json`
-        );
+        package_version_id_file_path = this.artifactFilePaths.packageMetadataFilePath;
 
-        console.log(`Checking for ${sfdx_package} Build Artifact at path ${package_version_id_file_path}`);
-
-        if (!fs.existsSync(package_version_id_file_path) && !skip_on_missing_artifact) {
-          throw new Error(
-            `Artifact not found at ${package_version_id_file_path}.. Please check the inputs`
-          );
-        } else if(!fs.existsSync(package_version_id_file_path) && skip_on_missing_artifact) {
-          console.log(`Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${skip_on_missing_artifact}`);
-          process.exit(0);
-        }
-
-
-
-         packageMetadata = JSON.parse(fs
+        packageMetadata = JSON.parse(fs
           .readFileSync(package_version_id_file_path)
           .toString());
         console.log("Package Metadata:");

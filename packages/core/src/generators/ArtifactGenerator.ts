@@ -87,7 +87,12 @@ export default class ArtifactGenerator {
       let zip = new AdmZip();
       zip.addLocalFolder(artifactFilepath, artifactFolder);
       SFPLogger.log(`Zipping ${artifactFolder}`);
-      let zipArtifactFilepath: string = artifactFilepath + `_` + packageArtifactMetadata.package_version_number + `.zip`;
+
+      let packageVersionNumber: string = ArtifactGenerator.substituteBuildNumberWithPreRelease(
+        packageArtifactMetadata.package_version_number
+      );
+
+      let zipArtifactFilepath: string = artifactFilepath + `_` + packageVersionNumber + `.zip`;
       zip.writeZip(zipArtifactFilepath);
 
       // Cleanup unzipped artifact
@@ -97,5 +102,20 @@ export default class ArtifactGenerator {
     } catch (error) {
       throw new Error("Unable to create artifact" + error);
     }
+  }
+
+  private static substituteBuildNumberWithPreRelease(packageVersionNumber: string) {
+    let segments = packageVersionNumber.split(".");
+
+    if (segments.length === 4) {
+      packageVersionNumber = segments.reduce( (version, segment, segmentsIdx) => {
+        if (segmentsIdx === 3)
+          return version + "-" + segment
+        else
+          return version + "." + segment
+      });
+    }
+
+    return packageVersionNumber;
   }
 }

@@ -4,7 +4,6 @@ import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 import InstallPackageCommand from '../../InstallPackageCommand';
 const fs = require("fs");
-const path = require("path");
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -39,29 +38,12 @@ export default class InstallDataPackage extends InstallPackageCommand {
 
       const targetOrg: string = this.flags.targetorg;
       const sfdx_package: string = this.flags.package;
-      const skip_on_missing_artifact: boolean = this.flags.skiponmissingartifact;
       const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
-      const artifact_directory: string = this.flags.artifactdir;
       const subdirectory: string = this.flags.subdirectory;
 
       let startTime=Date.now();
 
-      let artifactMetadataFilepath = path.join(
-          artifact_directory,
-          `${sfdx_package}_sfpowerscripts_artifact`,
-          `artifact_metadata.json`
-      );
-
-      console.log(`Checking for ${sfdx_package} Build Artifact at path ${artifactMetadataFilepath}`);
-
-      if (!fs.existsSync(artifactMetadataFilepath) && !skip_on_missing_artifact) {
-          throw new Error(
-          `Artifact not found at ${artifactMetadataFilepath}.. Please check the inputs`
-          );
-      } else if(!fs.existsSync(artifactMetadataFilepath) && skip_on_missing_artifact) {
-          console.log(`Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${skip_on_missing_artifact}`);
-          process.exit(0);
-      }
+      let artifactMetadataFilepath = this.artifactFilePaths.packageMetadataFilePath;
 
       let packageMetadata = JSON.parse(fs
       .readFileSync(artifactMetadataFilepath)
@@ -70,11 +52,7 @@ export default class InstallDataPackage extends InstallPackageCommand {
       console.log("Package Metadata:");
       console.log(packageMetadata);
 
-      let sourceDirectory: string = path.join(
-        artifact_directory,
-        `${sfdx_package}_sfpowerscripts_artifact`,
-        `source`
-      )
+      let sourceDirectory: string = this.artifactFilePaths.sourceDirectoryPath;
 
       let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
         sfdx_package,
