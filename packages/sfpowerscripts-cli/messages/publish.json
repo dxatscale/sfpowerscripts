@@ -2,5 +2,6 @@
   "commandDescription": "Publish artifacts to an artifact registry, using a user-provided scrip that is responsible for authenticating & uploading to the registry.",
   "artifactDirectoryFlagDescription": "The directory containing artifacts to be published",
   "publishPromotedOnlyFlagDescription": "Only publish unlocked packages that have been promoted",
+  "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated",
   "scriptPathFlagDescription": "Path to script that authenticates and uploaded artifacts to the registry"
 }
