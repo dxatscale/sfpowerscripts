@@ -82,6 +82,7 @@ export default class ArtifactFilePathFetcher {
 
     ArtifactFilePathFetcher.existsArtifactFilepaths(artifactFilePaths);
 
+
     return artifactFilePaths;
   }
 
@@ -135,9 +136,9 @@ export default class ArtifactFilePathFetcher {
    * <sfdx_package>_sfpowerscripts_artifact
    * <sfdx_package>_sfpowerscripts_artifact_<version>.zip
    */
-  private static findArtifacts(
+  public static findArtifacts(
     artifactDirectory: string,
-    sfdx_package: string
+    sfdx_package?: string
   ): string[] {
     let pattern: string;
     if (sfdx_package) {
