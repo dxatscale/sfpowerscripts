@@ -117,8 +117,16 @@ export default class Promote extends SfpowerscriptsCommand {
 
         try {
           console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
+
+          let cmd: string;
+          if (process.platform !== 'win32') {
+            cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact}`;
+          } else {
+            cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact}`
+          }
+
           child_process.execSync(
-            `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact}`,
+            cmd,
             {
               cwd: process.cwd(),
               stdio: ['ignore', 'ignore', 'inherit']
