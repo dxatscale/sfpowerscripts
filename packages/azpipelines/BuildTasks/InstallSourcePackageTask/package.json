@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscript-installsourcepackage-task",
   "description": "sfpowerscript-installsourcepackage-task",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^3.2.1",
+    "@dxatscale/sfpowerscripts.core": "^3.3.0",
     "azure-devops-node-api": "^10.1.1",
     "azure-pipelines-task-lib": "^2.8.0",
     "fs-extra": "^8.1.0",

@@ -1,6 +1,6 @@
 {
   "name": "@dxatscale/sfpowerscripts.core",
-  "version": "3.2.1",
+  "version": "3.3.0",
   "description": "Core Module used by sfpowerscripts",
   "main": "lib/index",
   "types": "lib/index",
@@ -27,8 +27,8 @@
     "semver": "^7.3.2",
     "shelljs": "^0.8.4",
     "simple-git": "2.0.0",
-    "xml2js": "^0.4.23",
-    "tmp": "^0.2.1"
+    "tmp": "^0.2.1",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@types/async-retry": "^1.4.2"
