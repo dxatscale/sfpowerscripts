@@ -44,6 +44,10 @@ export default class Promote extends SfpowerscriptsCommand {
       required: true,
       char: 'f',
       description: messages.getMessage('scriptPathFlagDescription')
+    }),
+    tag: flags.string({
+      char: 't',
+      description: messages.getMessage('tagFlagDescription')
     })
   };
 
@@ -103,9 +107,7 @@ export default class Promote extends SfpowerscriptsCommand {
         );
 
         if (this.flags.publishpromotedonly && packageType === "unlocked") {
-          let isReleased = packageVersionList.result.find( (pkg) => {
-            return pkg.SubscriberPackageVersionId === packageVersionId;
-          });
+          let isReleased = this.isPackageVersionIdReleased(packageVersionList, packageVersionId);
 
           if (!isReleased) {
             failedArtifacts.push(`${packageName} v${packageVersionNumber}`);
@@ -120,9 +122,9 @@ export default class Promote extends SfpowerscriptsCommand {
 
           let cmd: string;
           if (process.platform !== 'win32') {
-            cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact}`;
+            cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
           } else {
-            cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact}`
+            cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
           }
 
           child_process.execSync(
@@ -166,30 +168,45 @@ export default class Promote extends SfpowerscriptsCommand {
         `----------------------------------------------------------------------------------------------------`
       );
 
-      let tag = {
+      let tags = {
         publish_promoted_only: this.flags.publishpromotedonly ? "true" : "false"
       };
+
+      if (this.flags.tag != null) {
+        tags["tag"] = this.flags.tag;
+      }
 
       SFPStatsSender.logGauge(
         "publish.duration",
         totalElapsedTime,
-        tag
+        tags
       );
 
       SFPStatsSender.logGauge(
         "publish.succeeded",
         nPublishedArtifacts,
-        tag
+        tags
       );
 
       if (failedArtifacts.length > 0) {
         SFPStatsSender.logGauge(
           "publish.failed",
           failedArtifacts.length,
-          tag
+          tags
         );
       }
     }
+  }
+
+  private isPackageVersionIdReleased(packageVersionList: any, packageVersionId: string): boolean {
+    let packageVersion = packageVersionList.result.find((pkg) => {
+      return pkg.SubscriberPackageVersionId === packageVersionId;
+    });
+
+    if (packageVersion)
+      return true
+    else
+      return false
   }
 
   private getPackageVersionIdAndType(
