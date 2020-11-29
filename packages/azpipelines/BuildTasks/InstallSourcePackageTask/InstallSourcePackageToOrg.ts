@@ -136,6 +136,7 @@ async function run() {
           sub_directory: subdirectory,
           timestamp: Date.now()
         });
+        tl.setVariable("sfpowerscripts_installsourcepackage_deployment_id", result.deploy_id);
       } else {
         //Update existing environment map
         packageMetadataFromStorage.deployments.push({

@@ -1,9 +1,9 @@
 import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
 
-
 import InstallPackageCommand from "../../InstallPackageCommand";
-import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallSourcePackageImpl"
+import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallSourcePackageImpl";
+import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 
 const fs = require("fs-extra");
 
@@ -39,7 +39,9 @@ export default class InstallSourcePackage extends InstallPackageCommand {
       description: messages.getMessage("artifactDirectoryFlagDescription"),
       default: "artifacts",
     }),
-    skipifalreadyinstalled: flags.boolean({description: messages.getMessage("skipIfAlreadyInstalled")}),
+    skipifalreadyinstalled: flags.boolean({
+      description: messages.getMessage("skipIfAlreadyInstalled"),
+    }),
     skiponmissingartifact: flags.boolean({
       char: "s",
       description: messages.getMessage("skipOnMissingArtifactFlagDescription"),
@@ -63,26 +65,23 @@ export default class InstallSourcePackage extends InstallPackageCommand {
       description: messages.getMessage("waitTimeFlagDescription"),
       default: "120",
     }),
+    refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
   };
 
   public async install(): Promise<any> {
     const target_org: string = this.flags.targetorg;
-    const sfdx_package: string =this.flags.package;
+    const sfdx_package: string = this.flags.package;
     const subdirectory: string = this.flags.subdirectory;
     const optimizeDeployment: boolean = this.flags.optimizedeployment;
     const skipTesting: boolean = this.flags.skiptesting;
     const wait_time: string = this.flags.waittime;
     const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
 
-
-
-
     console.log("sfpowerscripts.Install Source Package To Org");
 
-    try
-    {
-
-    let artifactMetadataFilepath = this.artifactFilePaths.packageMetadataFilePath;
+    try {
+      let artifactMetadataFilepath = this.artifactFilePaths
+        .packageMetadataFilePath;
 
       let packageMetadata = JSON.parse(
         fs.readFileSync(artifactMetadataFilepath).toString()
@@ -93,12 +92,10 @@ export default class InstallSourcePackage extends InstallPackageCommand {
 
       let sourceDirectory: string = this.artifactFilePaths.sourceDirectoryPath;
 
-
       let options = {
-        optimizeDeployment : optimizeDeployment,
-        skipTesting:skipTesting
+        optimizeDeployment: optimizeDeployment,
+        skipTesting: skipTesting,
       };
-
 
       let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
         sfdx_package,
@@ -109,14 +106,31 @@ export default class InstallSourcePackage extends InstallPackageCommand {
         wait_time,
         skipIfAlreadyInstalled,
         packageMetadata
-      )
+      );
 
-      await installSourcePackageImpl.exec();
-
-
+      let result = await installSourcePackageImpl.exec();
+      if (result.result == PackageInstallationStatus.Failed) {
+        throw new Error(result.message);
+      } else {
+        if (result.deploy_id) {
+          if (this.flags.refname) {
+            fs.writeFileSync(
+              ".env",
+              `${this.flags.refname}_sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}\n`,
+              { flag: "a" }
+            );
+          } else {
+            fs.writeFileSync(
+              ".env",
+              `sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}\n`,
+              { flag: "a" }
+            );
+          }
+        }
+      }
     } catch (error) {
       console.log(error);
-      process.exitCode=1;
+      process.exitCode = 1;
     }
   }
 }

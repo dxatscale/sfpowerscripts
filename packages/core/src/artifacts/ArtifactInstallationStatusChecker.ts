@@ -29,7 +29,7 @@ export default class ArtifactInstallationStatusChecker {
         }
       }
     } catch (error) {
-      SFPLogger.log("Unable to fetch artifacts from the org", error);
+      SFPLogger.log("Unable to fetch artifacts from the org");
     }
     return false;
   }
@@ -47,8 +47,7 @@ export default class ArtifactInstallationStatusChecker {
       await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata,subdirectory);
     } catch (error) {
       SFPLogger.log(
-        "Unable to update details about artifacts to the org",
-        error
+        "Unable to update details about artifacts to the org"
       );
     }
     return false;
