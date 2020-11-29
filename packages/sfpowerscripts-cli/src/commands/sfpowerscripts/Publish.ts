@@ -107,9 +107,7 @@ export default class Promote extends SfpowerscriptsCommand {
         );
 
         if (this.flags.publishpromotedonly && packageType === "unlocked") {
-          let isReleased = packageVersionList.result.find( (pkg) => {
-            return pkg.SubscriberPackageVersionId === packageVersionId;
-          });
+          let isReleased = this.isPackageVersionIdReleased(packageVersionList, packageVersionId);
 
           if (!isReleased) {
             failedArtifacts.push(`${packageName} v${packageVersionNumber}`);
@@ -198,6 +196,17 @@ export default class Promote extends SfpowerscriptsCommand {
         );
       }
     }
+  }
+
+  private isPackageVersionIdReleased(packageVersionList: any, packageVersionId: string): boolean {
+    let packageVersion = packageVersionList.result.find((pkg) => {
+      return pkg.SubscriberPackageVersionId === packageVersionId;
+    });
+
+    if (packageVersion)
+      return true
+    else
+      return false
   }
 
   private getPackageVersionIdAndType(
