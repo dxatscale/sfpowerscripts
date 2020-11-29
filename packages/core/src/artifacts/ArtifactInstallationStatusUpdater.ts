@@ -1,5 +1,4 @@
 import child_process = require("child_process");
-import ignore from "ignore";
 import PackageMetadata from "../PackageMetadata";
 import SFPLogger from "../utils/SFPLogger";
 import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
