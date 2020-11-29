@@ -13,7 +13,7 @@ export default class InstalledAritfactsFetcher {
           SFPLogger.log("Querying Installed Artifacts from the Org");
           let cmdOutput = child_process.execSync(
             `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c" -r json -u ${username}`,
-            { encoding: "utf8" }
+            { encoding: "utf8", stdio:"pipe" }
           );
           let result = JSON.parse(cmdOutput);
           if (result["status"] == 0) {

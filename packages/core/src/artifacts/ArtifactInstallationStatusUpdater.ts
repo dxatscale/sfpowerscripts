@@ -1,4 +1,5 @@
 import child_process = require("child_process");
+import ignore from "ignore";
 import PackageMetadata from "../PackageMetadata";
 import SFPLogger from "../utils/SFPLogger";
 import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
@@ -30,12 +31,12 @@ export default class ArtifactInstallationStatusUpdater {
         if (artifactId == null) {
           cmdOutput = child_process.execSync(
             `sfdx force:data:record:create --json -s SfpowerscriptsArtifact__c -u ${username}  -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}"`,
-            { encoding: "utf8"}
+            { encoding: "utf8",stdio:"pipe"}
           );
         } else if (artifactId) {
           cmdOutput = child_process.execSync(
             `sfdx force:data:record:update --json -s SfpowerscriptsArtifact__c -u ${username} -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}" -i ${artifactId}`,
-            { encoding: "utf8" }
+            { encoding: "utf8" ,stdio:"pipe"}
           );
         }
 
