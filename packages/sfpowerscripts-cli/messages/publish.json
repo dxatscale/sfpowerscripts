@@ -3,5 +3,6 @@
   "artifactDirectoryFlagDescription": "The directory containing artifacts to be published",
   "publishPromotedOnlyFlagDescription": "Only publish unlocked packages that have been promoted",
   "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated",
-  "scriptPathFlagDescription": "Path to script that authenticates and uploaded artifacts to the registry"
+  "scriptPathFlagDescription": "Path to script that authenticates and uploaded artifacts to the registry",
+  "tagFlagDescription":"Tag the publish with a label, useful for identification in metrics"
 }
