@@ -99,7 +99,11 @@ export default class ArtifactFilePathFetcher {
     // Overwrite existing files
     zip.extractAllTo(unzippedArtifactsDirectory, true);
 
-    let artifactName: string = path.basename(artifact).match(/.*_sfpowerscripts_artifact/)[0]
+
+    let artifactName: string = path.basename(artifact).match(/.*sfpowerscripts_artifact/)?.[0]
+    if (artifactName == null) {
+      throw new Error(`Failed to fetch artifact file paths for ${artifact}`);
+    }
 
     let packageMetadataFilePath = path.join(
       unzippedArtifactsDirectory,
