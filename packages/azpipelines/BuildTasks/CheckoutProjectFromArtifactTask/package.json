@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-checkoutprojectfromartifact-task",
   "description": "sfpowerscripts-checkoutprojectfromartifact-task",
-  "version": "14.0.52",
+  "version": "15.0.0",
   "private": true,
   "repository": {
     "type": "git",
