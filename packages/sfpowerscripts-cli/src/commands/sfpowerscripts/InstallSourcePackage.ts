@@ -65,7 +65,9 @@ export default class InstallSourcePackage extends InstallPackageCommand {
       description: messages.getMessage("waitTimeFlagDescription"),
       default: "120",
     }),
-    refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
+    refname: flags.string({
+      description: messages.getMessage('refNameFlagDescription')
+    })
   };
 
   public async install(): Promise<any> {
