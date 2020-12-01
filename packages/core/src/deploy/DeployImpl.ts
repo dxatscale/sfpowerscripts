@@ -34,160 +34,207 @@ export default class DeployImpl {
 
     let project_config = ManifestHelpers.getSFDXPackageManifest(this.projectDirectory);
 
-    // TODO: Add support for non-validate mode
-    if (this.isValidateMode) {
-      for (let pkg of project_config["packageDirectories"]) {
-        let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.artifactDir, pkg.package);
+    for (let pkg of project_config["packageDirectories"]) {
+      let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+        this.artifactDir,
+        pkg.package
+      );
 
-        if (artifacts.length === 0)
-          throw new Error(`Artifact not found for ${pkg.package}`);
+      if (artifacts.length === 0)
+        throw new Error(`Artifact not found for ${pkg.package}`);
 
-        let packageMetadata: PackageMetadata = JSON.parse(
-          fs.readFileSync(artifacts[0].packageMetadataFilePath, 'utf8')
+      let packageMetadata: PackageMetadata = JSON.parse(
+        fs.readFileSync(artifacts[0].packageMetadataFilePath, 'utf8')
+      );
+
+      let packageType: string = ManifestHelpers.getPackageType(
+        project_config,
+        pkg.package
+      );
+
+      await this.installPackage(
+        packageType,
+        this.isValidateMode,
+        pkg.package,
+        this.targetusername,
+        artifacts[0].sourceDirectoryPath,
+        packageMetadata,
+        this.wait_time
+      );
+
+      if (
+        this.isValidateMode &&
+        (packageType === "Unlocked" || packageType === "Source")
+      )
+        await this.triggerApexTests(
+          pkg.package,
+          this.targetusername,
+          packageMetadata
         );
+    }
+  }
 
-        let packageType: string = ManifestHelpers.getPackageType(
-          project_config,
-          pkg.package
+  /**
+   * Decider for which package installation type to run
+   */
+  private async installPackage(
+    packageType: string,
+    isValidateMode: boolean,
+    sfdx_package: string,
+    targetUsername: string,
+    sourceDirectoryPath: string,
+    packageMetadata: PackageMetadata,
+    wait_time: string
+  ): Promise<void> {
+    if (!isValidateMode) {
+      if (packageType === "Unlocked") {
+        await this.installUnlockedPackage(
+          targetUsername,
+          packageMetadata,
+          wait_time
         );
-
-        if (packageType === "Source" || packageType === "Unlocked") {
-          let options = {
-            optimizeDeployment: false,
-            skipTesting: true,
-          };
-
-          let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
-            pkg.package,
-            this.targetusername,
-            artifacts[0].sourceDirectoryPath,
-            null,
-            options,
-            this.wait_time,
-            true,
-            packageMetadata,
-            false
-          );
-
-          let installResult = await installSourcePackageImpl.exec();
-
-          if (installResult.result === PackageInstallationStatus.Failed)
-            throw new Error(installResult.message);
-
-          if (packageMetadata.apexTestClassses) {
-            let test_options = {
-              wait_time: "60",
-              testlevel: "RunAllTestsInPackage",
-              package: pkg.package,
-              synchronous: false,
-              validateIndividualClassCoverage: false,
-              validatePackageCoverage: true,
-              coverageThreshold: 75,
-              outputdir: ".testresults"
-            };
-
-            let triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
-              this.targetusername,
-              test_options,
-              this.projectDirectory
-            );
-
-            let testResult = await triggerApexTestImpl.exec();
-            if (!testResult.result)
-              throw new Error(testResult.message);
-            else
-              console.log(testResult.message);
-          }
-        } else if (packageType === "Data") {
-          let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
-            pkg.package,
-            this.targetusername,
-            artifacts[0].sourceDirectoryPath,
-            null,
-            packageMetadata,
-            true,
-            false
-          );
-          let installResult = await installDataPackageImpl.exec();
-
-          if (installResult.result === PackageInstallationStatus.Failed)
-            throw new Error(installResult.message);
-        } else {
-          throw new Error(`Unhandled package type ${packageType}`);
-        }
+      } else if (packageType === "Source") {
+        await this.installSourcePackage(
+          sfdx_package,
+          targetUsername,
+          sourceDirectoryPath,
+          packageMetadata,
+          wait_time
+        );
+      } else if (packageType === "Data") {
+        await this.installDataPackage(
+          sfdx_package,
+          targetUsername,
+          sourceDirectoryPath,
+          packageMetadata
+        );
+      } else {
+        throw new Error(`Unhandled package type ${packageType}`);
       }
     } else {
-      for (let pkg of project_config["packageDirectories"]) {
-        let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.artifactDir, pkg.package);
-
-        if (artifacts.length === 0)
-          throw new Error(`Artifact not found for ${pkg.package}`);
-
-        let packageMetadata: PackageMetadata = JSON.parse(
-          fs.readFileSync(artifacts[0].packageMetadataFilePath, 'utf8')
+      if (packageType === "Source" || packageType === "Unlocked") {
+        await this.installSourcePackage(
+          sfdx_package,
+          targetUsername,
+          sourceDirectoryPath,
+          packageMetadata,
+          wait_time
         );
-
-        let packageType: string = ManifestHelpers.getPackageType(project_config, pkg.package);
-
-        if (packageType === "Unlocked") {
-          let options = {
-            installationkey: null,
-            apexcompile: "package",
-            securitytype: "AdminsOnly",
-            upgradetype: "Mixed"
-          };
-
-          let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
-            packageMetadata.package_version_id,
-            this.targetusername,
-            options,
-            this.wait_time,
-            "10",
-            true,
-            packageMetadata
-          );
-
-          await installUnlockedPackageImpl.exec();
-        } else if (packageType === "Source") {
-          let options = {
-            optimizeDeployment: false,
-            skipTesting: true,
-          };
-
-          let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
-            pkg.package,
-            this.targetusername,
-            artifacts[0].sourceDirectoryPath,
-            null,
-            options,
-            this.wait_time,
-            true,
-            packageMetadata,
-            false
-          );
-
-          let installResult = await installSourcePackageImpl.exec();
-
-          if (installResult.result === PackageInstallationStatus.Failed)
-            throw new Error(installResult.message);
-        } else if (packageType === "Data") {
-          let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
-            pkg.package,
-            this.targetusername,
-            artifacts[0].sourceDirectoryPath,
-            null,
-            packageMetadata,
-            true,
-            false
-          );
-          let installResult = await installDataPackageImpl.exec();
-
-          if (installResult.result === PackageInstallationStatus.Failed)
-            throw new Error(installResult.message);
-        } else {
-          throw new Error(`Unhandled package type ${packageType}`);
-        }
+      } else if ( packageType === "Data") {
+        await this.installDataPackage(
+          sfdx_package,
+          targetUsername,
+          sourceDirectoryPath,
+          packageMetadata
+        );
       }
+    }
+  }
+
+  private async installUnlockedPackage(
+    targetUsername: string,
+    packageMetadata: PackageMetadata,
+    wait_time: string
+  ) {
+    let options = {
+      installationkey: null,
+      apexcompile: "package",
+      securitytype: "AdminsOnly",
+      upgradetype: "Mixed"
+    };
+
+    let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
+      packageMetadata.package_version_id,
+      targetUsername,
+      options,
+      wait_time,
+      "10",
+      true,
+      packageMetadata
+    );
+
+    await installUnlockedPackageImpl.exec();
+  }
+
+  private async installSourcePackage(
+    sfdx_package: string,
+    targetUsername: string,
+    sourceDirectoryPath: string,
+    packageMetadata: PackageMetadata,
+    wait_time: string
+  ) {
+    let options = {
+      optimizeDeployment: false,
+      skipTesting: true,
+    };
+
+    let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
+      sfdx_package,
+      targetUsername,
+      sourceDirectoryPath,
+      null,
+      options,
+      wait_time,
+      true,
+      packageMetadata,
+      false
+    );
+
+    let installResult = await installSourcePackageImpl.exec();
+
+    if (installResult.result === PackageInstallationStatus.Failed)
+      throw new Error(installResult.message);
+  }
+
+  private async installDataPackage(
+    sfdx_package: string,
+    targetUsername: string,
+    sourceDirectoryPath: string,
+    packageMetadata: PackageMetadata
+  ) {
+    let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
+      sfdx_package,
+      targetUsername,
+      sourceDirectoryPath,
+      null,
+      packageMetadata,
+      true,
+      false
+    );
+    let installResult = await installDataPackageImpl.exec();
+
+    if (installResult.result === PackageInstallationStatus.Failed)
+      throw new Error(installResult.message);
+  }
+
+  private async triggerApexTests(
+    sfdx_package: string,
+    targetUsername: string,
+    packageMetadata: PackageMetadata
+  ) {
+    if (packageMetadata.apexTestClassses) {
+      let test_options = {
+        wait_time: "60",
+        testlevel: "RunAllTestsInPackage",
+        package: sfdx_package,
+        synchronous: false,
+        validateIndividualClassCoverage: false,
+        validatePackageCoverage: true,
+        coverageThreshold: 75,
+        outputdir: ".testresults"
+      };
+
+      let triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
+        targetUsername,
+        test_options,
+        process.cwd()
+      );
+
+      let testResult = await triggerApexTestImpl.exec();
+      if (!testResult.result)
+        throw new Error(testResult.message);
+      else
+        console.log(testResult.message);
     }
   }
 
