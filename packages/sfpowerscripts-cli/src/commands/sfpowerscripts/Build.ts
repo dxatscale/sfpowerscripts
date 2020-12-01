@@ -26,6 +26,7 @@ export default class Build extends SfpowerscriptsCommand {
 
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
+  protected static requiresProject = true;
 
   protected static flagsConfig = {
     devhubalias: flags.string({
