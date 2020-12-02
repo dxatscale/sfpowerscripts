@@ -45,7 +45,7 @@ export default class Deploy extends SfpowerscriptsCommand {
     validatemode: flags.boolean({
       description: messages.getMessage("validateModeFlagDescription"),
       hidden: true,
-      default: true,
+      default: false,
     })
   };
 

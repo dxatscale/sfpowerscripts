@@ -14,6 +14,8 @@ import {
   PackageInstallationStatus,
 } from "../package/PackageInstallationResult";
 import SFPLogger from "../utils/SFPLogger";
+import { EOL } from "os";
+
 
 export default class DeployImpl {
 
@@ -23,7 +25,8 @@ export default class DeployImpl {
   private artifactDir: string,
   private wait_time: string,
   private validateClassCoverageFor: string[],
-  private isValidateMode: boolean
+  private isValidateMode: boolean,
+  private coverageThreshold?: number
  ){}
 
   public async exec(): Promise<void> {
@@ -47,9 +50,16 @@ export default class DeployImpl {
         fs.readFileSync(artifacts[0].packageMetadataFilePath, 'utf8')
       );
 
-      let packageType: string = ManifestHelpers.getPackageType(
-        project_config,
-        pkg.package
+      let packageType: string = packageMetadata.package_type;
+
+      console.log(
+        `-------------------------Installing Package------------------------------------${EOL}` +
+          `Name: ${pkg.package}${EOL}` +
+          `Type: ${packageMetadata.package_type}${EOL}` +
+          `Version Number: ${packageMetadata.package_version_number}${EOL}` +
+          `Metadata Count: ${packageMetadata.metadataCount}${EOL}` +
+          `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}` +
+        `-------------------------------------------------------------------------------${EOL}`
       );
 
       await this.installPackage(
@@ -59,17 +69,19 @@ export default class DeployImpl {
         this.targetusername,
         artifacts[0].sourceDirectoryPath,
         packageMetadata,
+        pkg.aliasfy,
         this.wait_time
       );
 
       if (
         this.isValidateMode &&
-        (packageType === "Unlocked" || packageType === "Source")
+        (packageType === "unlocked" || packageType === "source")
       )
         await this.triggerApexTests(
           pkg.package,
           this.targetusername,
-          packageMetadata
+          packageMetadata,
+          this.coverageThreshold
         );
     }
   }
@@ -84,24 +96,32 @@ export default class DeployImpl {
     targetUsername: string,
     sourceDirectoryPath: string,
     packageMetadata: PackageMetadata,
+    aliasfy: boolean,
     wait_time: string
   ): Promise<void> {
     if (!isValidateMode) {
-      if (packageType === "Unlocked") {
+      if (packageType === "unlocked") {
         await this.installUnlockedPackage(
           targetUsername,
           packageMetadata,
           wait_time
         );
-      } else if (packageType === "Source") {
+      } else if (packageType === "source") {
+        let options = {
+          optimizeDeployment: true,
+          skipTesting: false,
+        };
+
         await this.installSourcePackage(
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
           packageMetadata,
+          options,
+          null,
           wait_time
         );
-      } else if (packageType === "Data") {
+      } else if (packageType === "data") {
         await this.installDataPackage(
           sfdx_package,
           targetUsername,
@@ -112,15 +132,24 @@ export default class DeployImpl {
         throw new Error(`Unhandled package type ${packageType}`);
       }
     } else {
-      if (packageType === "Source" || packageType === "Unlocked") {
+      if (packageType === "source" || packageType === "unlocked") {
+        let options = {
+          optimizeDeployment: false,
+          skipTesting: true,
+        };
+
+        let subdirectory: string = aliasfy ? targetUsername : null;
+
         await this.installSourcePackage(
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
           packageMetadata,
+          options,
+          subdirectory,
           wait_time
         );
-      } else if ( packageType === "Data") {
+      } else if ( packageType === "data") {
         await this.installDataPackage(
           sfdx_package,
           targetUsername,
@@ -135,7 +164,7 @@ export default class DeployImpl {
     targetUsername: string,
     packageMetadata: PackageMetadata,
     wait_time: string
-  ) {
+  ): Promise<void> {
     let options = {
       installationkey: null,
       apexcompile: "package",
@@ -161,18 +190,16 @@ export default class DeployImpl {
     targetUsername: string,
     sourceDirectoryPath: string,
     packageMetadata: PackageMetadata,
+    options: any,
+    subdirectory: string,
     wait_time: string
-  ) {
-    let options = {
-      optimizeDeployment: false,
-      skipTesting: true,
-    };
+  ): Promise<void> {
 
     let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
       sfdx_package,
       targetUsername,
       sourceDirectoryPath,
-      null,
+      subdirectory,
       options,
       wait_time,
       true,
@@ -191,7 +218,7 @@ export default class DeployImpl {
     targetUsername: string,
     sourceDirectoryPath: string,
     packageMetadata: PackageMetadata
-  ) {
+  ): Promise<void> {
     let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
       sfdx_package,
       targetUsername,
@@ -210,9 +237,10 @@ export default class DeployImpl {
   private async triggerApexTests(
     sfdx_package: string,
     targetUsername: string,
-    packageMetadata: PackageMetadata
+    packageMetadata: PackageMetadata,
+    coverageThreshold: number
   ) {
-    if (packageMetadata.apexTestClassses) {
+    if (packageMetadata.isApexFound) {
       let test_options = {
         wait_time: "60",
         testlevel: "RunAllTestsInPackage",
@@ -220,7 +248,7 @@ export default class DeployImpl {
         synchronous: false,
         validateIndividualClassCoverage: false,
         validatePackageCoverage: true,
-        coverageThreshold: 75,
+        coverageThreshold: coverageThreshold || 75,
         outputdir: ".testresults"
       };
 

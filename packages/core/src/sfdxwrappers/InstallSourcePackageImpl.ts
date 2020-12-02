@@ -44,7 +44,7 @@ export default class InstallSourcePackageImpl {
         this.isPackageCheckHandledByCaller
       );
       if (isPackageInstalled) {
-        SFPLogger.log("Skipping Package Installation");
+        console.log("Skipping Package Installation");
         return { result: PackageInstallationStatus.Skipped };
       }
     }
@@ -138,7 +138,7 @@ export default class InstallSourcePackageImpl {
             this.isPackageCheckHandledByCaller
           );
 
-          
+
         } catch (error) {
           console.log(
             "Failed to apply reconcile the second time, Partial Metadata applied"
@@ -231,7 +231,7 @@ export default class InstallSourcePackageImpl {
 
   private isAllTestsToBeTriggered(packageMetadata: PackageMetadata) {
     if (packageMetadata.package_type == "delta") {
-      console.log(
+      SFPLogger.log(
         ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT---------------------------------------------${EOL}` +
           `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
           `75% test coverage, However being a dynamically generated delta package, we will deploying via triggering all local tests${EOL}` +
@@ -244,7 +244,7 @@ export default class InstallSourcePackageImpl {
       this.packageMetadata.isApexFound == true &&
       this.packageMetadata.apexTestClassses == null
     ) {
-      console.log(
+      SFPLogger.log(
         ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT--------------------------------------------${EOL}` +
           `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
           `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying ${EOL}` +
@@ -369,7 +369,7 @@ export default class InstallSourcePackageImpl {
       try {
         result = await OrgDetails.getOrgDetails(target_org);
       } catch (err) {
-        console.log(
+        SFPLogger.log(
           ` -------------------------WARNING! SKIPPING TESTS AS ORG TYPE CANNOT BE DETERMINED! ------------------------------------${EOL}` +
             `Tests are mandatory for deployments to production and cannot be skipped. This deployment might fail as org${EOL}` +
             `type cannot be determined` +
@@ -381,14 +381,14 @@ export default class InstallSourcePackageImpl {
       }
 
       if (result && result["IsSandbox"]) {
-        console.log(
+        SFPLogger.log(
           ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
             `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
             `-------------------------------------------------------------------------------------------------------------`
         );
         mdapi_options["testlevel"] = "NoTestRun";
       } else {
-        console.log(
+        SFPLogger.log(
           ` -------------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
             `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
             `-------------------------------------------------------------------------------------------------------------`

@@ -210,7 +210,7 @@ export default class ManifestHelpers {
       let type = mdapiPackageManifest["Package"]["types"];
       pushTypeMembersIntoTable(type);
     }
-    SFPLogger.log("The following metadata will be deployed:");
-    SFPLogger.log(table.toString());
+    console.log("The following metadata will be deployed:");
+    console.log(table.toString());
   }
 }
