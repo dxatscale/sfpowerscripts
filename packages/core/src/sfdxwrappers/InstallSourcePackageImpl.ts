@@ -138,7 +138,7 @@ export default class InstallSourcePackageImpl {
             this.isPackageCheckHandledByCaller
           );
 
-          
+
         } catch (error) {
           console.log(
             "Failed to apply reconcile the second time, Partial Metadata applied"
@@ -204,10 +204,17 @@ export default class InstallSourcePackageImpl {
   }
 
   private getPackageDirectory() {
-    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
-      this.sourceDirectory,
-      this.sfdx_package
-    );
+    let packageDescriptor;
+    if (this.sfdx_package) {
+      packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+        this.sourceDirectory,
+        this.sfdx_package
+      );
+    } else {
+      packageDescriptor = ManifestHelpers.getDefaultSFDXPackageDescriptor(
+        this.sourceDirectory
+      );
+    }
 
     let packageDirectory: string;
     if (this.subdirectory) {
