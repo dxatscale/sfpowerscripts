@@ -42,6 +42,7 @@ async function run() {
      let package_version_id: string;
      let packageMetadataFromStorage:PackageMetadata;
      let startTime=Date.now();
+     let sourceDirectory;
 
      //WebAPI Initialization
      const webApi = await getWebAPIWithoutToken();
@@ -71,6 +72,7 @@ async function run() {
       );
 
       let packageMetadataFromArtifact: PackageMetadata = JSON.parse(fs.readFileSync(artifacts_filepaths[0].packageMetadataFilePath, "utf8"));
+      sourceDirectory = artifacts_filepaths[0].sourceDirectoryPath;
 
 
       console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadataFromArtifact,(key:string,value:any)=>{
@@ -106,7 +108,8 @@ async function run() {
       wait_time,
       publish_wait_time,
       skip_if_package_installed,
-      packageMetadataFromStorage
+      packageMetadataFromStorage,
+      sourceDirectory
     );
 
     let elapsedTime=Date.now()-startTime;
