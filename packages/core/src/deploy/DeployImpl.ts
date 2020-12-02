@@ -323,6 +323,9 @@ export default class DeployImpl {
 
     let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.artifactDir);
 
+    if (artifacts.length === 0)
+      throw new Error(`No artifacts found in ${this.artifactDir}`);
+
     for (let artifact of artifacts) {
       let packageMetadata: PackageMetadata = JSON.parse(
         fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
