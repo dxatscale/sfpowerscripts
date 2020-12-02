@@ -24,7 +24,6 @@ export default class DeployImpl {
   private projectDirectory: string,
   private artifactDir: string,
   private wait_time: string,
-  private validateClassCoverageFor: string[],
   private logsGroupSymbol: string,
   private isValidateMode: boolean,
   private coverageThreshold?: number

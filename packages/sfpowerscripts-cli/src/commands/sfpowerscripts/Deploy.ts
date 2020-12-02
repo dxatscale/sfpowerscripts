@@ -60,7 +60,6 @@ export default class Deploy extends SfpowerscriptsCommand {
         process.cwd(),
         this.flags.artifactdir,
         this.flags.waittime,
-        this.flags.validateclasscoveragefor,
         this.flags.logsgroupsymbol,
         this.flags.validatemode
       );
