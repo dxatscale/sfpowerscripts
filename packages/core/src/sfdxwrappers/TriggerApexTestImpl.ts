@@ -149,7 +149,9 @@ export default class TriggerApexTestImpl {
       });
 
       // Delete test-run-id.txt, to prevent subsequent test runs from picking up old test results
-      fs.unlinkSync(path.join(this.test_options["outputdir"], "test-run-id.txt"));
+      let testRunIdFilePath: string = path.join(this.test_options["outputdir"], "test-run-id.txt");
+      if (fs.existsSync(testRunIdFilePath))
+        fs.unlinkSync(testRunIdFilePath);
     }
   }
 
