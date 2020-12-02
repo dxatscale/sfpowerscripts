@@ -42,6 +42,10 @@ export default class Deploy extends SfpowerscriptsCommand {
       char: "c",
       description: messages.getMessage("validateClassCoverageForFlagDescription")
     }),
+    logsgroupsymbol: flags.string({
+      char: "s",
+      description: messages.getMessage("logsGroupSymbolFlagDescription")
+    }),
     validatemode: flags.boolean({
       description: messages.getMessage("validateModeFlagDescription"),
       hidden: true,
@@ -57,6 +61,7 @@ export default class Deploy extends SfpowerscriptsCommand {
         this.flags.artifactdir,
         this.flags.waittime,
         this.flags.validateclasscoveragefor,
+        this.flags.logsgroupsymbol,
         this.flags.validatemode
       );
 

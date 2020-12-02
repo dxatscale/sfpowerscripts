@@ -25,6 +25,7 @@ export default class DeployImpl {
   private artifactDir: string,
   private wait_time: string,
   private validateClassCoverageFor: string[],
+  private logsGroupSymbol: string,
   private isValidateMode: boolean,
   private coverageThreshold?: number
  ){}
@@ -52,6 +53,9 @@ export default class DeployImpl {
 
       let packageType: string = packageMetadata.package_type;
 
+      if (this.logsGroupSymbol)
+        console.log(this.logsGroupSymbol);
+
       console.log(
         `-------------------------Installing Package------------------------------------${EOL}` +
           `Name: ${pkg.package}${EOL}` +
@@ -62,27 +66,38 @@ export default class DeployImpl {
         `-------------------------------------------------------------------------------${EOL}`
       );
 
-      await this.installPackage(
-        packageType,
-        this.isValidateMode,
-        pkg.package,
-        this.targetusername,
-        artifacts[0].sourceDirectoryPath,
-        packageMetadata,
-        pkg.aliasfy,
-        this.wait_time
-      );
 
-      if (
-        this.isValidateMode &&
-        (packageType === "unlocked" || packageType === "source")
-      )
-        await this.triggerApexTests(
+      if (!this.isSkipDeployment(pkg, this.targetusername)) {
+        await this.installPackage(
+          packageType,
+          this.isValidateMode,
           pkg.package,
           this.targetusername,
+          artifacts[0].sourceDirectoryPath,
           packageMetadata,
-          this.coverageThreshold
+          this.isSkipTesting(pkg),
+          pkg.aliasfy,
+          this.wait_time
         );
+
+        if (!this.isSkipTesting(pkg)) {
+          if (
+            this.isValidateMode &&
+            (packageType === "unlocked" || packageType === "source")
+          ) {
+            await this.triggerApexTests(
+              pkg.package,
+              this.targetusername,
+              packageMetadata,
+              pkg.skipCoverageValidation,
+              this.coverageThreshold
+            );
+          }
+        } else
+          console.log(`Skipping testing of ${pkg.package}\n`);
+      } else {
+        console.log(`Skipping deployment of ${pkg.package}\n`);
+      }
     }
   }
 
@@ -96,6 +111,7 @@ export default class DeployImpl {
     targetUsername: string,
     sourceDirectoryPath: string,
     packageMetadata: PackageMetadata,
+    skipTesting: boolean,
     aliasfy: boolean,
     wait_time: string
   ): Promise<void> {
@@ -109,7 +125,7 @@ export default class DeployImpl {
       } else if (packageType === "source") {
         let options = {
           optimizeDeployment: true,
-          skipTesting: false,
+          skipTesting: skipTesting,
         };
 
         await this.installSourcePackage(
@@ -238,6 +254,7 @@ export default class DeployImpl {
     sfdx_package: string,
     targetUsername: string,
     packageMetadata: PackageMetadata,
+    skipCoverageValidation: boolean,
     coverageThreshold: number
   ) {
     if (packageMetadata.isApexFound) {
@@ -247,7 +264,7 @@ export default class DeployImpl {
         package: sfdx_package,
         synchronous: false,
         validateIndividualClassCoverage: false,
-        validatePackageCoverage: true,
+        validatePackageCoverage: !skipCoverageValidation,
         coverageThreshold: coverageThreshold || 75,
         outputdir: ".testresults"
       };
@@ -264,6 +281,30 @@ export default class DeployImpl {
       else
         console.log(testResult.message);
     }
+  }
+
+  /**
+   * Checks if package should be installed to target username
+   * @param packageDescriptor
+   */
+  private isSkipDeployment(packageDescriptor: any, targetUsername: string): boolean {
+    let skipDeployOnOrgs = packageDescriptor.skipDeployOnOrgs;
+    if (skipDeployOnOrgs) {
+      if (typeof(skipDeployOnOrgs) !== "string")
+        throw new Error(`Expected comma-separated string for "skipDeployOnOrgs". Received ${JSON.stringify(packageDescriptor,null,4)}`);
+      else
+        return (
+          skipDeployOnOrgs
+            .split(",")
+            .map((org) => org.trim())
+            .includes(targetUsername)
+        );
+    } else
+      return false;
+  }
+
+  private isSkipTesting(packageDescriptor: any): boolean {
+    return packageDescriptor.skipTesting ? true : false;
   }
 
   /**
