@@ -43,8 +43,10 @@ export default class DeployImpl {
         pkg.package
       );
 
-      if (artifacts.length === 0)
-        throw new Error(`Artifact not found for ${pkg.package}`);
+      if (artifacts.length === 0) {
+        console.log(`Skipping as artifact not found for ${pkg.package}\n`);
+        continue;
+      }
 
       let packageMetadata: PackageMetadata = JSON.parse(
         fs.readFileSync(artifacts[0].packageMetadataFilePath, 'utf8')
