@@ -639,7 +639,7 @@ export default class TriggerApexTestImpl {
     individualClassCoverage.forEach((cls) => {
       table.push([
         cls.name,
-        cls.coveredPercent,
+        `${cls.coveredPercent}`,
       ]);
     });
 
