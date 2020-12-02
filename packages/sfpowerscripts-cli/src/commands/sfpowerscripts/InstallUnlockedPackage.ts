@@ -63,7 +63,7 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
         // Figure out the package version id from the artifact
 
         let package_version_id_file_path =this.artifactFilePaths.packageMetadataFilePath;
-        let sourceDirectory: string = this.artifactFilePaths.sourceDirectoryPath;
+        sourceDirectory = this.artifactFilePaths.sourceDirectoryPath;
 
 
         packageMetadata = JSON.parse(fs
