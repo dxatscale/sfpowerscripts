@@ -7,9 +7,9 @@
     "category": "Deploy",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 11,
-        "Minor": 2,
-        "Patch": 8
+        "Major": 12,
+        "Minor": 0,
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -137,7 +137,7 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/InstallUnlockedPackageTask/InstallUnlockedPackage.js"
         }
     }
