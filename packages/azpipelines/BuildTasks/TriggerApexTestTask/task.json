@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 10,
+        "Major": 11,
         "Minor": 0,
-        "Patch": 4
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -119,12 +119,12 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/TriggerApexTest.js"
         }
     },
     "postjobexecution": {
-        "Node": {
+        "Node10": {
             "target": "lib/PostTriggerApexTest.js",
             "argumentFormat": ""
         }
