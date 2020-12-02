@@ -599,6 +599,7 @@ export default class TriggerApexTestImpl {
     }
 
     Object.entries<string|number>(testResult.summary).forEach( (keyValuePair) => {
+      keyValuePair[1] = keyValuePair[1] || "";
       table.push(keyValuePair);
     })
 
@@ -613,7 +614,12 @@ export default class TriggerApexTestImpl {
     });
 
     testResult.tests.forEach( (test) => {
-      table.push([test.FullName, test.Outcome, test.Message ? test.Message : "", test.RunTime]);
+      table.push([
+        test.FullName || "",
+        test.Outcome || "",
+        test.Message || "",
+        test.RunTime || ""
+      ]);
     });
 
     SFPLogger.log(table.toString());
@@ -638,8 +644,8 @@ export default class TriggerApexTestImpl {
 
     individualClassCoverage.forEach((cls) => {
       table.push([
-        cls.name,
-        `${cls.coveredPercent}`,
+        cls.name || "",
+        cls.coveredPercent || "",
       ]);
     });
 
