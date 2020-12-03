@@ -74,6 +74,9 @@ export default class CreateSourcePackageImpl {
       this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor[
         "postDeploymentSteps"
       ]?.split(",");
+
+      this.packageArtifactMetadata.permissionSetsToAssign = packageDescriptor
+          .permissionSetsToAssign?.split(",");
     }
 
     //Generate Destructive Manifest

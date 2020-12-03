@@ -13,6 +13,7 @@ import {
 import SFPLogger from "../utils/SFPLogger";
 
 import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
+import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
 
 const fs = require("fs-extra");
 const path = require("path");
@@ -130,20 +131,20 @@ export default class InstallSourcePackageImpl {
               tempDir
             );
           }
-
-          await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
-            this.targetusername,
-            this.packageMetadata,
-            this.subdirectory,
-            this.isPackageCheckHandledByCaller
-          );
-
-
         } catch (error) {
           console.log(
             "Failed to apply reconcile the second time, Partial Metadata applied"
           );
         }
+
+        this.applyPermsets();
+
+        await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
+          this.targetusername,
+          this.packageMetadata,
+          this.subdirectory,
+          this.isPackageCheckHandledByCaller
+        );
       } else if (result.result === false) {
         throw new Error("Deployment failed with error " + result.message);
       }
@@ -182,6 +183,28 @@ export default class InstallSourcePackageImpl {
     } finally {
       // Cleanup temp directories
       tmpDirObj.removeCallback();
+    }
+  }
+
+  private applyPermsets() {
+    try {
+      if (
+        new RegExp("AssignPermissionSets", "i").test(
+          this.packageMetadata.postDeploymentSteps?.toString()
+        ) &&
+        this.packageMetadata.permissionSetsToAssign
+      ) {
+        let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
+          this.targetusername,
+          this.packageMetadata.permissionSetsToAssign,
+          this.sourceDirectory
+        );
+
+        console.log("Executing post-deployment step: AssignPermissionSets");
+        assignPermissionSetsImpl.exec();
+      }
+    } catch (error) {
+      console.log("Unable to apply permsets, skipping");
     }
   }
 

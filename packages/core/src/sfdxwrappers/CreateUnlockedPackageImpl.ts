@@ -13,7 +13,6 @@ import PackageVersionListImpl from "./PackageVersionListImpl";
 import SFPStatsSender from "../utils/SFPStatsSender";
 const path = require("path");
 
-
 export default class CreateUnlockedPackageImpl {
   private packageLogger;
   private static packageTypeInfos: any[];
@@ -48,8 +47,6 @@ export default class CreateUnlockedPackageImpl {
       this.project_directory
     );
 
-
-
     //Create a working directory
     let workingDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
       this.project_directory,
@@ -71,10 +68,8 @@ export default class CreateUnlockedPackageImpl {
       this.sfdx_package
     );
 
-    
-
     let packageId = ManifestHelpers.getPackageId(
-       projectManifest,
+      projectManifest,
       this.sfdx_package
     );
 
@@ -82,7 +77,11 @@ export default class CreateUnlockedPackageImpl {
     SFPLogger.log("Package Directory", packageDirectory, this.packageLogger);
 
     //Get Type of Package
-    SFPLogger.log("Fetching Package Type Info from DevHub",null,this.packageLogger);
+    SFPLogger.log(
+      "Fetching Package Type Info from DevHub",
+      null,
+      this.packageLogger
+    );
     await this.getPackageTypeInfos();
     let packageTypeInfo = CreateUnlockedPackageImpl.packageTypeInfos.find(
       (pkg) => pkg.Id == packageId
@@ -90,41 +89,29 @@ export default class CreateUnlockedPackageImpl {
     if (packageTypeInfo.IsOrgDependent == "Yes")
       this.isOrgDependentPackage = true;
 
+    SFPLogger.log("-------------------------", null, this.packageLogger);
+    SFPLogger.log("Package", packageTypeInfo.Name, this.packageLogger);
+    SFPLogger.log(
+      "IsOrgDependent",
+      packageTypeInfo.IsOrgDependent,
+      this.packageLogger
+    );
+    SFPLogger.log("Package Id", packageTypeInfo.Id, this.packageLogger);
+    SFPLogger.log("-------------------------", null, this.packageLogger);
 
-    SFPLogger.log("-------------------------",null, this.packageLogger)
-    SFPLogger.log("Package",packageTypeInfo.Name,this.packageLogger);
-    SFPLogger.log("IsOrgDependent",packageTypeInfo.IsOrgDependent,this.packageLogger);
-    SFPLogger.log("Package Id",packageTypeInfo.Id,this.packageLogger);
-    SFPLogger.log("-------------------------",null, this.packageLogger)
 
-    
+    //Fetch Post Deployment Steps
+    this.fetchPostDeploymentSteps(packageDescriptor);
+
+    //cleanup sfpowerscripts constructs in working directory
+    this.deleteSFPowerscriptsAdditionsToManifest(workingDirectory);
 
     //Resolve the package dependencies
     if (this.isOrgDependentPackage) {
       // Store original dependencies to artifact
       this.packageArtifactMetadata.dependencies =
         packageDescriptor["dependencies"];
-
-      //Remove dependencies of org dependent packages
-      let projectManifestFromWorkingDirectory = ManifestHelpers.getSFDXPackageManifest(
-        workingDirectory
-      );
-      let packageDescriptorInWorkingDirectory = ManifestHelpers.getPackageDescriptorFromConfig(
-        this.sfdx_package,
-        projectManifestFromWorkingDirectory
-      );
-
-      //Cleanup sfpowerscripts constructs
-      delete packageDescriptorInWorkingDirectory["dependencies"];
-      delete packageDescriptorInWorkingDirectory["type"];
-      delete packageDescriptorInWorkingDirectory["preDeploymentSteps"];
-      delete packageDescriptorInWorkingDirectory["postDeploymentSteps"];
-
-      fs.writeJsonSync(
-        path.join(workingDirectory, "sfdx-project.json"),
-        projectManifestFromWorkingDirectory
-      );
-    } else if (!this.isOrgDependentPackage && !this.isSkipValidation) {
+    } else if (!this.isOrgDependentPackage && !this.isSkipValidation) { // With dependencies, so fetch it again
       this.resolvePackageDependencies(packageDescriptor, workingDirectory);
       //Redo the fetch of the descriptor as the above command would have redone the dependencies
       packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
@@ -145,24 +132,16 @@ export default class CreateUnlockedPackageImpl {
       packageDirectory
     );
 
-
     this.packageArtifactMetadata.payload = mdapiPackage.manifest;
-    this.packageArtifactMetadata.metadataCount=mdapiPackage.metadataCount;
-   
-
-
-
+    this.packageArtifactMetadata.metadataCount = mdapiPackage.metadataCount;
 
     let command = this.buildExecCommand();
     let output = "";
     SFPLogger.log("Package Creation Command", command, this.packageLogger);
-    let child = child_process.exec(
-      command,
-      {
-        cwd: workingDirectory,
-        encoding: "utf8"
-      }
-    );
+    let child = child_process.exec(command, {
+      cwd: workingDirectory,
+      encoding: "utf8",
+    });
 
     child.stderr.on("data", (data) => {
       SFPLogger.log(data.toString(), null, this.packageLogger);
@@ -203,13 +182,12 @@ export default class CreateUnlockedPackageImpl {
       timestamp: Date.now(),
     };
 
-
     SFPStatsSender.logGauge(
       "package.metadatacount",
       this.packageArtifactMetadata.metadataCount,
       {
         package: this.packageArtifactMetadata.package_name,
-        type: this.packageArtifactMetadata.package_type
+        type: this.packageArtifactMetadata.package_type,
       }
     );
 
@@ -219,24 +197,61 @@ export default class CreateUnlockedPackageImpl {
       {
         package: this.packageArtifactMetadata.package_name,
         type: this.packageArtifactMetadata.package_type,
-        is_dependency_validated: String(this.packageArtifactMetadata.isDependencyValidated)
+        is_dependency_validated: String(
+          this.packageArtifactMetadata.isDependencyValidated
+        ),
       }
     );
     SFPStatsSender.logCount("package.created", {
       package: this.packageArtifactMetadata.package_name,
       type: this.packageArtifactMetadata.package_type,
-      is_dependency_validated: String(this.packageArtifactMetadata.isDependencyValidated)
+      is_dependency_validated: String(
+        this.packageArtifactMetadata.isDependencyValidated
+      ),
     });
 
-
-    if(this.packageArtifactMetadata.isDependencyValidated) {
-        SFPStatsSender.logGauge("package.testcoverage", this.packageArtifactMetadata.test_coverage,{
-         package: this.packageArtifactMetadata.package_name,
-         from:"createpackage"
-       });
+    if (this.packageArtifactMetadata.isDependencyValidated) {
+      SFPStatsSender.logGauge(
+        "package.testcoverage",
+        this.packageArtifactMetadata.test_coverage,
+        {
+          package: this.packageArtifactMetadata.package_name,
+          from: "createpackage",
+        }
+      );
     }
 
     return this.packageArtifactMetadata;
+  }
+
+  private fetchPostDeploymentSteps(packageDescriptor: any) {
+    this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor["postDeploymentSteps"]?.split(",");
+
+    this.packageArtifactMetadata.permissionSetsToAssign = packageDescriptor
+      .permissionSetsToAssign?.split(",");
+  }
+
+  private deleteSFPowerscriptsAdditionsToManifest(workingDirectory: string) {
+    let projectManifestFromWorkingDirectory = ManifestHelpers.getSFDXPackageManifest(
+      workingDirectory
+    );
+    let packageDescriptorInWorkingDirectory = ManifestHelpers.getPackageDescriptorFromConfig(
+      this.sfdx_package,
+      projectManifestFromWorkingDirectory
+    );
+
+    //Cleanup sfpowerscripts constructs
+    if (this.isOrgDependentPackage)
+      delete packageDescriptorInWorkingDirectory["dependencies"];
+    delete packageDescriptorInWorkingDirectory["type"];
+    delete packageDescriptorInWorkingDirectory["preDeploymentSteps"];
+    delete packageDescriptorInWorkingDirectory["postDeploymentSteps"];
+    delete packageDescriptorInWorkingDirectory["permissionSetsToAssign"]
+
+    fs.writeJsonSync(
+      path.join(workingDirectory, "sfdx-project.json"),
+      projectManifestFromWorkingDirectory
+    );
   }
 
   private async getPackageInfo() {
@@ -264,7 +279,8 @@ export default class CreateUnlockedPackageImpl {
         );
 
         let pkgInfoResult = JSON.parse(pkgInfoResultAsJSON);
-        this.packageArtifactMetadata.isDependencyValidated = !this.isSkipValidation;
+        this.packageArtifactMetadata.isDependencyValidated = !this
+          .isSkipValidation;
         this.packageArtifactMetadata.package_version_number =
           pkgInfoResult.result[0].packageVersionNumber;
         this.packageArtifactMetadata.test_coverage =
@@ -321,7 +337,7 @@ export default class CreateUnlockedPackageImpl {
     if (!isNullOrUndefined(this.packageArtifactMetadata.tag))
       command += ` -t ${this.packageArtifactMetadata.tag}`;
 
-   if (!isNullOrUndefined(this.packageArtifactMetadata.branch))
+    if (!isNullOrUndefined(this.packageArtifactMetadata.branch))
       command += ` --branch ${this.packageArtifactMetadata.branch}`;
 
     if (this.isCoverageEnabled && !this.isOrgDependentPackage) command += ` -c`;
