@@ -383,7 +383,7 @@ export default class DeployImpl {
     });
 
     // Filter out packages that are to be skipped on the target org
-    packagesToDeploy = packages.filter( (pkg) => !this.isSkipDeployment(pkg, this.targetusername));
+    packagesToDeploy = packagesToDeploy.filter( (pkg) => !this.isSkipDeployment(pkg, this.targetusername));
 
     if (packagesToDeploy == null || packagesToDeploy.length === 0)
       throw new Error(`No artifacts from project config to be deployed`);
