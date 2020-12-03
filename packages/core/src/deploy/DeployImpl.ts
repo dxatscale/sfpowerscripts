@@ -117,7 +117,7 @@ export default class DeployImpl {
 
             if (!testResult.result) {
               if (i !== queue.length - 1)
-                failed = queue.slice(i+1);
+                failed = queue.slice(i+1).map((pkg) => pkg.package);
 
               throw new Error(testResult.message);
             } else
