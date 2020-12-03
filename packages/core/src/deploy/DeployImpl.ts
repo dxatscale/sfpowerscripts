@@ -217,7 +217,7 @@ export default class DeployImpl {
     return packageInstallationResult;
   }
 
-  private async installUnlockedPackage(
+  private installUnlockedPackage(
     targetUsername: string,
     packageMetadata: PackageMetadata,
     wait_time: string
@@ -239,10 +239,10 @@ export default class DeployImpl {
       packageMetadata
     );
 
-    return await installUnlockedPackageImpl.exec();
+    return installUnlockedPackageImpl.exec();
   }
 
-  private async installSourcePackage(
+  private installSourcePackage(
     sfdx_package: string,
     targetUsername: string,
     sourceDirectoryPath: string,
@@ -264,10 +264,10 @@ export default class DeployImpl {
       false
     );
 
-    return await installSourcePackageImpl.exec();
+    return installSourcePackageImpl.exec();
   }
 
-  private async installDataPackage(
+  private installDataPackage(
     sfdx_package: string,
     targetUsername: string,
     sourceDirectoryPath: string,
@@ -282,7 +282,7 @@ export default class DeployImpl {
       true,
       false
     );
-    return await installDataPackageImpl.exec();
+    return installDataPackageImpl.exec();
   }
 
   private async triggerApexTests(
