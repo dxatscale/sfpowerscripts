@@ -3,7 +3,6 @@ import { isNullOrUndefined } from "util";
 import { onExit } from "../utils/OnExit";
 import PackageMetadata from "../PackageMetadata";
 import ManifestHelpers from "../manifest/ManifestHelpers";
-import SFPLogger from "../utils/SFPLogger";
 import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
 import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
 
@@ -20,42 +19,46 @@ export default class InstallUnlockedPackageImpl {
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
+    try {
+      let isPackageInstalled = false;
+      if (this.skip_if_package_installed) {
+        isPackageInstalled = this.checkWhetherPackageIsIntalledInOrg();
+      }
+
+      if (!isPackageInstalled) {
+
+       //Print Metadata carried in the package
+       ManifestHelpers.printMetadataToDeploy(this.packageMetadata?.payload);
+
+        let command = this.buildPackageInstallCommand();
+        let child = child_process.exec(command);
+
+        child.stderr.on("data", (data) => {
+          console.log(data.toString());
+        });
+
+        child.stdout.on("data", (data) => {
+          console.log(data.toString());
+        });
 
 
-
-    let isPackageInstalled = false;
-    if (this.skip_if_package_installed) {
-      isPackageInstalled = this.checkWhetherPackageIsIntalledInOrg();
-    }
-
-    if (!isPackageInstalled) {
-
-     //Print Metadata carried in the package
-     ManifestHelpers.printMetadataToDeploy(this.packageMetadata?.payload);
-
-      let command = this.buildPackageInstallCommand();
-      let child = child_process.exec(command);
-
-      child.stderr.on("data", (data) => {
-        SFPLogger.log(data.toString());
-      });
-
-      child.stdout.on("data", (data) => {
-        SFPLogger.log(data.toString());
-      });
+        await onExit(child);
 
 
-      await onExit(child);
+        //apply post deployment steps
+        if(this.sourceDirectory)
+         this.applyPermsets();
 
-
-      //apply post deployment steps
-      if(this.sourceDirectory)
-       this.applyPermsets();
-
-      return { result: PackageInstallationStatus.Succeeded}
-    } else {
-      SFPLogger.log("Skipping Package Installation")
-      return { result: PackageInstallationStatus.Skipped }
+        return { result: PackageInstallationStatus.Succeeded}
+      } else {
+        console.log("Skipping Package Installation")
+        return { result: PackageInstallationStatus.Skipped }
+      }
+    } catch (err) {
+      return {
+        result: PackageInstallationStatus.Failed,
+        message: err.message
+      }
     }
   }
 
@@ -94,13 +97,13 @@ export default class InstallUnlockedPackageImpl {
     if (!isNullOrUndefined(this.options["installationkey"]))
       command += ` --installationkey=${this.options["installationkey"]}`;
 
-    SFPLogger.log(`Generated Command ${command}`);
+      console.log(`Generated Command ${command}`);
     return command;
   }
 
   private checkWhetherPackageIsIntalledInOrg(): boolean {
     try {
-      SFPLogger.log(`Checking Whether Package with ID ${this.package_version_id} is installed in  ${this.targetusername}`)
+      console.log(`Checking Whether Package with ID ${this.package_version_id} is installed in  ${this.targetusername}`)
       let command = `sfdx sfpowerkit:package:version:info  -u ${this.targetusername} --json`;
       let result = JSON.parse(child_process.execSync(command).toString());
       if (result.status == 0) {
@@ -110,7 +113,7 @@ export default class InstallUnlockedPackageImpl {
           return true;
         });
         if (packageFound) {
-          SFPLogger.log(
+          console.log(
             "Package To be installed was found in the target org",
             packageFound
           );
@@ -118,7 +121,7 @@ export default class InstallUnlockedPackageImpl {
         }
       }
     } catch (error) {
-      SFPLogger.log(
+      console.log(
         "Unable to check whether this package is installed in the target org"
       );
       return false;

@@ -3,6 +3,7 @@ import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 import InstallPackageCommand from '../../InstallPackageCommand';
+import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult';
 const fs = require("fs");
 
 // Initialize Messages with the current plugin directory
@@ -100,15 +101,18 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
         sourceDirectory
       );
 
-      await installUnlockedPackageImpl.exec();
+      let result = await installUnlockedPackageImpl.exec();
 
       let elapsedTime=Date.now()-startTime;
 
-      SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"unlocked", target_org:targetOrg})
-      SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"unlocked",target_org:targetOrg})
+      if (result.result === PackageInstallationStatus.Failed) {
+        SFPStatsSender.logCount("package.installation.failure",{package:sfdx_package,type:"unlocked"})
 
-
-
+        throw new Error(result.message);
+      } else if (result.result === PackageInstallationStatus.Succeeded) {
+        SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"unlocked", target_org:targetOrg});
+        SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"unlocked",target_org:targetOrg});
+      }
     } catch(err) {
       console.log(err);
       process.exitCode=1;

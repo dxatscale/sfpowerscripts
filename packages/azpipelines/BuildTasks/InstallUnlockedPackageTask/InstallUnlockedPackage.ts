@@ -112,20 +112,28 @@ async function run() {
       sourceDirectory
     );
 
-    let elapsedTime=Date.now()-startTime;
-      
-    SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"unlocked", target_org:target_org})
-    SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"unlocked",target_org:target_org})
-
-
-
     let result: PackageInstallationResult = await installUnlockedPackageImpl.exec();
-    if (result.result == PackageInstallationStatus.Skipped) {
+    let elapsedTime=Date.now()-startTime;
+
+
+    if (result.result === PackageInstallationStatus.Skipped) {
       tl.setResult(
         tl.TaskResult.Skipped,
         "Skipping Package Installation as already installed"
       );
-    } else {
+    } else if (result.result === PackageInstallationStatus.Failed) {
+      SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"unlocked"})
+
+      tl.error(result.message);
+      tl.setResult(
+        tl.TaskResult.Failed,
+        result.message
+      );
+    } else if (result.result === PackageInstallationStatus.Succeeded) {
+
+      SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"unlocked", target_org:target_org})
+      SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"unlocked",target_org:target_org})
+
       if (package_installedfrom != "Custom") {
         //No environment info available, create and push
         if (isNullOrUndefined(packageMetadataFromStorage.deployments)) {
@@ -154,11 +162,12 @@ async function run() {
       }
 
       tl.setResult(tl.TaskResult.Succeeded, "Package Installed Successfully");
+    } else {
+      throw new Error(`Unhandled package installation result ${result.result}`);
     }
   } catch (err) {
     SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"unlocked"})
     tl.setResult(tl.TaskResult.Failed, err.message);
- 
   }
 }
 

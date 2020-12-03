@@ -23,7 +23,7 @@ export default class DeployImpl {
     private targetusername: string,
     private artifactDir: string,
     private wait_time: string,
-    private logsGroupSymbol: string,
+    private logsGroupSymbol: string[],
     private tags: any,
     private isValidateMode: boolean,
     private coverageThreshold?: number
@@ -44,7 +44,7 @@ export default class DeployImpl {
         this.tags
       );
 
-      console.log(`Packages to be deployed:`, queue);
+      console.log(`Packages to be deployed:`, queue.map( (pkg) => pkg.package));
 
       await this.validateArtifacts();
 
@@ -60,8 +60,11 @@ export default class DeployImpl {
 
         let packageType: string = packageMetadata.package_type;
 
-        if (this.logsGroupSymbol)
-          console.log(this.logsGroupSymbol);
+        if (this.logsGroupSymbol?.[0])
+          console.log(this.logsGroupSymbol[0], "Installing", queue[i].package);
+
+        let isApexFoundMessage: string =
+          packageMetadata.package_type === "unlocked" ? "" : `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}`
 
         console.log(
           `-------------------------Installing Package------------------------------------${EOL}` +
@@ -69,7 +72,7 @@ export default class DeployImpl {
             `Type: ${packageMetadata.package_type}${EOL}` +
             `Version Number: ${packageMetadata.package_version_number}${EOL}` +
             `Metadata Count: ${packageMetadata.metadataCount}${EOL}` +
-            `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}` +
+            isApexFoundMessage +
           `-------------------------------------------------------------------------------${EOL}`
         );
 
@@ -91,7 +94,7 @@ export default class DeployImpl {
         else if (packageInstallationResult.result === PackageInstallationStatus.Skipped)
           skipped.push(queue[i].package);
         else if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
-          failed = queue.slice(i);
+          failed = queue.slice(i).map( (pkg) => pkg.package);
           throw new Error(packageInstallationResult.message);
         }
         else
@@ -114,6 +117,9 @@ export default class DeployImpl {
         } else
           console.log(`Skipping testing of ${queue[i].package}\n`);
       }
+
+      if (this.logsGroupSymbol?.[1])
+      console.log(this.logsGroupSymbol[1]);
 
       return {
         deployed: deployed,
@@ -204,6 +210,8 @@ export default class DeployImpl {
           sourceDirectoryPath,
           packageMetadata
         );
+      } else {
+        throw new Error(`Unhandled package type ${packageType}`);
       }
     }
     return packageInstallationResult;
@@ -375,7 +383,7 @@ export default class DeployImpl {
     });
 
     // Filter out packages that are to be skipped on the target org
-    packagesToDeploy = packages.filter( (pkg) => this.isSkipDeployment(pkg, this.targetusername));
+    packagesToDeploy = packages.filter( (pkg) => !this.isSkipDeployment(pkg, this.targetusername));
 
     if (packagesToDeploy == null || packagesToDeploy.length === 0)
       throw new Error(`No artifacts from project config to be deployed`);

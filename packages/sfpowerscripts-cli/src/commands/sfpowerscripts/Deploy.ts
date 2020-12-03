@@ -37,7 +37,7 @@ export default class Deploy extends SfpowerscriptsCommand {
       description: messages.getMessage("waitTimeFlagDescription"),
       default: "120",
     }),
-    logsgroupsymbol: flags.string({
+    logsgroupsymbol: flags.array({
       char: "s",
       description: messages.getMessage("logsGroupSymbolFlagDescription")
     }),
@@ -84,6 +84,9 @@ export default class Deploy extends SfpowerscriptsCommand {
       process.exitCode = 1;
     } finally {
       let totalElapsedTime: number = Date.now() - executionStartTime;
+
+      if (this.flags.logsgroupsymbol?.[0])
+        console.log(this.flags.logsgroupsymbol[0], "Deployment Summary");
 
       console.log(
         `----------------------------------------------------------------------------------------------------`

@@ -3,7 +3,7 @@
     "targetOrgFlagDescription": "Alias/User Name of the target environment",
     "artifactDirectoryFlagDescription": "The directory containing artifacts to be deployed",
     "waitTimeFlagDescription": "Wait time for command to finish in minutes",
-    "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console",
+    "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.",
     "tagFlagDescription":"Tag the deploy with a label, useful for identification in metrics",
     "validateModeFlagDescription": "Enable for validation deployments"
 }
