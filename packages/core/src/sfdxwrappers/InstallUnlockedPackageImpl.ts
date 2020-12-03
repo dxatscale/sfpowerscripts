@@ -97,7 +97,7 @@ export default class InstallUnlockedPackageImpl {
     if (!isNullOrUndefined(this.options["installationkey"]))
       command += ` --installationkey=${this.options["installationkey"]}`;
 
-      console.log(`Generated Command ${command}`);
+    console.log(`Generated Command ${command}`);
     return command;
   }
 

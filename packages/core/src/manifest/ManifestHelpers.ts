@@ -1,5 +1,4 @@
 import { isNullOrUndefined } from "util";
-import SFPLogger from "../utils/SFPLogger";
 let fs = require("fs-extra");
 let path = require("path");
 const Table = require("cli-table");
