@@ -131,15 +131,6 @@ export default class InstallSourcePackageImpl {
               tempDir
             );
           }
-
-          await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
-            this.targetusername,
-            this.packageMetadata,
-            this.subdirectory,
-            this.isPackageCheckHandledByCaller
-          );
-
-
         } catch (error) {
           console.log(
             "Failed to apply reconcile the second time, Partial Metadata applied"
