@@ -56,15 +56,15 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
       const publish_wait_time = this.flags.publishwaittime;
       const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
       let packageMetadata;
-
+      let sourceDirectory;
       let package_version_id;
 
       if (package_installedfrom) {
         // Figure out the package version id from the artifact
 
-        let package_version_id_file_path;
+        let package_version_id_file_path =this.artifactFilePaths.packageMetadataFilePath;
+        sourceDirectory = this.artifactFilePaths.sourceDirectoryPath;
 
-        package_version_id_file_path = this.artifactFilePaths.packageMetadataFilePath;
 
         packageMetadata = JSON.parse(fs
           .readFileSync(package_version_id_file_path)
@@ -96,7 +96,8 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
         wait_time,
         publish_wait_time,
         skipIfAlreadyInstalled,
-        packageMetadata
+        packageMetadata,
+        sourceDirectory
       );
 
       await installUnlockedPackageImpl.exec();

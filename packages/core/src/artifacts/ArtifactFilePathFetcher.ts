@@ -24,19 +24,20 @@ export default class ArtifactFilePathFetcher {
 
     let artifacts: string[] = this.findArtifacts(artifactDirectory, sfdx_package);
 
+    if (artifacts.length === 0) {
+      // For backwards compatibility, find artifact metadata
+      artifacts = ArtifactFilePathFetcher.findArtifactMetadata(artifactDirectory, sfdx_package);
+    }
+
     SFPLogger.log("Artifacts", artifacts);
 
     for(let artifact of artifacts) {
-      let fsStats = fs.lstatSync(artifact);
       let artifactFilePaths: ArtifactFilePaths
-      if (fsStats.isDirectory()) {
+      if (path.basename(artifact) === "artifact_metadata.json") {
         artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePathsFromFolder(
           artifact
         );
-      } else if (
-        fsStats.isFile() &&
-        path.extname(artifact) === ".zip"
-      ) {
+      } else if (path.extname(artifact) === ".zip") {
         artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePathsFromZipFile(
           artifact
         );
@@ -52,25 +53,20 @@ export default class ArtifactFilePathFetcher {
   }
 
   /**
-   * Helper method for retrieving the ArtifactFilePaths of a pipeline artifact
-   * @param sfdx_package
+   * Helper method for retrieving the ArtifactFilePaths of an artifact folder
+   * @param packageMetadataFilePath
    */
   private static fetchArtifactFilePathsFromFolder(
-    artifact: string
+    packageMetadataFilePath: string
   ): ArtifactFilePaths {
 
-    let packageMetadataFilePath = path.join(
-      artifact,
-      "artifact_metadata.json"
-    );
-
     let sourceDirectory = path.join(
-      artifact,
+      path.dirname(packageMetadataFilePath),
       `source`
     );
 
     let changelogFilePath = path.join(
-      artifact,
+      path.dirname(packageMetadataFilePath),
       `changelog.json`
     );
 
@@ -86,6 +82,10 @@ export default class ArtifactFilePathFetcher {
     return artifactFilePaths;
   }
 
+  /**
+   * Helper method for retrieving ArtifactFilePaths of an artifact zip
+   * @param artifact
+   */
   private static fetchArtifactFilePathsFromZipFile(
     artifact: string
   ): ArtifactFilePaths {
@@ -99,7 +99,11 @@ export default class ArtifactFilePathFetcher {
     // Overwrite existing files
     zip.extractAllTo(unzippedArtifactsDirectory, true);
 
-    let artifactName: string = path.basename(artifact).match(/.*_sfpowerscripts_artifact/)[0]
+
+    let artifactName: string = path.basename(artifact).match(/.*sfpowerscripts_artifact/)?.[0]
+    if (artifactName == null) {
+      throw new Error(`Failed to fetch artifact file paths for ${artifact}`);
+    }
 
     let packageMetadataFilePath = path.join(
       unzippedArtifactsDirectory,
@@ -131,9 +135,9 @@ export default class ArtifactFilePathFetcher {
   }
 
   /**
-   * Find zip artifacts, and folder artifacts for backward compatibility
+   * Find zip artifacts
    * Artifact format/s:
-   * <sfdx_package>_sfpowerscripts_artifact
+   * sfpowerscripts_artifact_<version>.zip
    * <sfdx_package>_sfpowerscripts_artifact_<version>.zip
    */
   public static findArtifacts(
@@ -142,9 +146,9 @@ export default class ArtifactFilePathFetcher {
   ): string[] {
     let pattern: string;
     if (sfdx_package) {
-      pattern = `**/${sfdx_package}_sfpowerscripts_artifact*`;
+      pattern = `**/${sfdx_package}_sfpowerscripts_artifact*.zip`;
     } else {
-      pattern = `**/*_sfpowerscripts_artifact*`;
+      pattern = `**/*sfpowerscripts_artifact*.zip`;
     }
 
     let artifacts: string[] = glob.sync(
@@ -183,6 +187,35 @@ export default class ArtifactFilePathFetcher {
       let latestVersion: string = sortedVersions.pop();
 
       return artifacts.find((artifact) => artifact.includes(latestVersion));
+  }
+
+  /**
+   * Find artifact metadata json
+   * For backwards compatability with artifacts as a folder
+   * @param artifactDirectory
+   * @param sfdx_package
+   */
+  private static findArtifactMetadata(
+    artifactDirectory: string,
+    sfdx_package?: string
+  ): string[] {
+    let packageMetadataFilepaths: string[] = glob.sync(
+      `**/artifact_metadata.json`,
+      {
+        cwd: artifactDirectory,
+        absolute: true,
+      }
+    );
+
+    if (sfdx_package) {
+      // Filter and only return ArtifactFilePaths for sfdx_package
+      packageMetadataFilepaths = packageMetadataFilepaths.filter((filepath) => {
+        let artifactMetadata = JSON.parse(fs.readFileSync(filepath, "utf8"));
+        return artifactMetadata["package_name"] === sfdx_package;
+      });
+    }
+
+    return packageMetadataFilepaths;
   }
 
   /**

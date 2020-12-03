@@ -5,6 +5,7 @@ import PackageMetadata from "../PackageMetadata";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import SFPLogger from "../utils/SFPLogger";
 import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
+import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -14,7 +15,8 @@ export default class InstallUnlockedPackageImpl {
     private wait_time: string,
     private publish_wait_time: string,
     private skip_if_package_installed: boolean,
-    private packageMetadata:PackageMetadata
+    private packageMetadata:PackageMetadata,
+    private sourceDirectory?:string
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -44,10 +46,39 @@ export default class InstallUnlockedPackageImpl {
 
 
       await onExit(child);
+
+
+      //apply post deployment steps
+      if(this.sourceDirectory)
+       this.applyPermsets();
+
       return { result: PackageInstallationStatus.Succeeded}
     } else {
       SFPLogger.log("Skipping Package Installation")
       return { result: PackageInstallationStatus.Skipped }
+    }
+  }
+
+
+  private applyPermsets() {
+    try {
+      if (
+        new RegExp("AssignPermissionSets", "i").test(
+          this.packageMetadata.postDeploymentSteps?.toString()
+        ) &&
+        this.packageMetadata.permissionSetsToAssign
+      ) {
+        let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
+          this.targetusername,
+          this.packageMetadata.permissionSetsToAssign,
+          this.sourceDirectory
+        );
+
+        console.log("Executing post-deployment step: AssignPermissionSets");
+        assignPermissionSetsImpl.exec();
+      }
+    } catch (error) {
+      console.log("Unable to apply permsets, skipping");
     }
   }
 
