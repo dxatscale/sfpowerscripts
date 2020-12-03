@@ -8,6 +8,7 @@ import InstallUnlockedPackageImpl from "../sfdxwrappers/InstallUnlockedPackageIm
 import TriggerApexTestImpl from "../sfdxwrappers/TriggerApexTestImpl";
 import SFPStatsSender from "../utils/SFPStatsSender";
 import fs = require("fs");
+import path = require("path");
 import {
   PackageInstallationResult,
   PackageInstallationStatus,
@@ -385,10 +386,12 @@ export default class DeployImpl {
     let packages = ManifestHelpers.getSFDXPackageManifest(null)["packageDirectories"];
     let artifacts = ArtifactFilePathFetcher.findArtifacts(this.artifactDir);
 
+
     packagesToDeploy =  packages.filter( (pkg) => {
       let pattern = RegExp(`^${pkg.package}_sfpowerscripts_artifact.*`);
-      return artifacts.find((artifact) => pattern.test(artifact));
+      return artifacts.find((artifact) => pattern.test(path.basename(artifact)));
     });
+
 
     // Filter out packages that are to be skipped on the target org
     packagesToDeploy = packagesToDeploy.filter( (pkg) => !this.isSkipDeployment(pkg, this.targetusername));
