@@ -106,13 +106,21 @@ export default class DeployImpl {
             this.isValidateMode &&
             (packageType === "unlocked" || packageType === "source")
           ) {
-            await this.triggerApexTests(
+            let testResult = await this.triggerApexTests(
               queue[i].package,
               this.targetusername,
               packageMetadata,
               queue[i].skipCoverageValidation,
               this.coverageThreshold
             );
+
+            if (!testResult.result) {
+              if (i !== queue.length - 1)
+                failed = queue.slice(i+1);
+
+              throw new Error(testResult.message);
+            } else
+              console.log(testResult.message);
           }
         } else
           console.log(`Skipping testing of ${queue[i].package}\n`);
@@ -291,7 +299,11 @@ export default class DeployImpl {
     packageMetadata: PackageMetadata,
     skipCoverageValidation: boolean,
     coverageThreshold: number
-  ) {
+  ): Promise<{
+    id: string,
+    result: boolean,
+    message: string
+    }> {
     if (packageMetadata.isApexFound) {
       let test_options = {
         wait_time: "60",
@@ -310,11 +322,7 @@ export default class DeployImpl {
         null
       );
 
-      let testResult = await triggerApexTestImpl.exec();
-      if (!testResult.result)
-        throw new Error(testResult.message);
-      else
-        console.log(testResult.message);
+      return await triggerApexTestImpl.exec();
     }
   }
 
