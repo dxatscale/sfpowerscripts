@@ -102,15 +102,15 @@ export default class DeployImpl {
           throw new Error(`Unhandled PackageInstallationResult ${packageInstallationResult.result}`);
 
 
-        if (!this.isSkipTesting(queue[i])) {
-          if (
-            this.isValidateMode &&
-            (packageType === "unlocked" || packageType === "source")
-          ) {
+        if (
+          this.isValidateMode &&
+          (packageType === "unlocked" || packageType === "source") &&
+          packageMetadata.isApexFound
+        ) {
+          if (!this.isSkipTesting(queue[i])) {
             let testResult = await this.triggerApexTests(
               queue[i].package,
               this.targetusername,
-              packageMetadata,
               queue[i].skipCoverageValidation,
               this.coverageThreshold
             );
@@ -122,9 +122,9 @@ export default class DeployImpl {
               throw new Error(testResult.message);
             } else
               console.log(testResult.message);
-          }
-        } else
-          console.log(`Skipping testing of ${queue[i].package}\n`);
+          } else
+            console.log(`Skipping testing of ${queue[i].package}\n`);
+        }
       }
 
       if (this.logsGroupSymbol?.[1])
@@ -297,7 +297,6 @@ export default class DeployImpl {
   private async triggerApexTests(
     sfdx_package: string,
     targetUsername: string,
-    packageMetadata: PackageMetadata,
     skipCoverageValidation: boolean,
     coverageThreshold: number
   ): Promise<{
@@ -305,7 +304,6 @@ export default class DeployImpl {
     result: boolean,
     message: string
     }> {
-    if (packageMetadata.isApexFound) {
       let test_options = {
         wait_time: "60",
         testlevel: "RunAllTestsInPackage",
@@ -324,7 +322,6 @@ export default class DeployImpl {
       );
 
       return await triggerApexTestImpl.exec();
-    }
   }
 
   /**
