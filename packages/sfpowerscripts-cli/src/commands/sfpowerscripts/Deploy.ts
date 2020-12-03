@@ -1,7 +1,6 @@
 import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
-import fs = require("fs");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import DeployImpl from "@dxatscale/sfpowerscripts.core/lib/deploy/DeployImpl";
 
@@ -38,13 +37,13 @@ export default class Deploy extends SfpowerscriptsCommand {
       description: messages.getMessage("waitTimeFlagDescription"),
       default: "120",
     }),
-    validateclasscoveragefor: flags.array({
-      char: "c",
-      description: messages.getMessage("validateClassCoverageForFlagDescription")
-    }),
     logsgroupsymbol: flags.string({
       char: "s",
       description: messages.getMessage("logsGroupSymbolFlagDescription")
+    }),
+    tag: flags.string({
+      char: 't',
+      description: messages.getMessage('tagFlagDescription')
     }),
     validatemode: flags.boolean({
       description: messages.getMessage("validateModeFlagDescription"),
@@ -54,23 +53,93 @@ export default class Deploy extends SfpowerscriptsCommand {
   };
 
   public async execute() {
+    let executionStartTime = Date.now();
+    let deploymentResult: {deployed: string[], skipped: string[], failed: string[]};
+
+    let tags = {
+      targetOrg: this.flags.targetorg
+    };
+
+    if (this.flags.tag != null) {
+      tags["tag"] = this.flags.tag;
+    }
+
     try {
       let deployImpl: DeployImpl = new DeployImpl(
         this.flags.targetorg,
-        process.cwd(),
         this.flags.artifactdir,
         this.flags.waittime,
         this.flags.logsgroupsymbol,
+        tags,
         this.flags.validatemode
       );
 
-      await deployImpl.exec();
+      deploymentResult = await deployImpl.exec();
 
-      console.log("Deployment complete");
+      if (deploymentResult.failed.length > 0) {
+        process.exitCode = 1;
+      }
     } catch (error) {
       console.log(error);
-      process.exitCode=1;
+      process.exitCode = 1;
+    } finally {
+      let totalElapsedTime: number = Date.now() - executionStartTime;
+
+      console.log(
+        `----------------------------------------------------------------------------------------------------`
+      );
+      console.log(
+        `${deploymentResult.deployed.length} packages deployed in ${this.getFormattedTime(
+          totalElapsedTime
+        )} with {${deploymentResult.failed.length}} errors and {${deploymentResult.skipped.length}} skipped`
+      );
+
+
+      if (deploymentResult.skipped.length > 0) {
+        console.log(`\nPackages Skipped`, deploymentResult.skipped);
+      }
+
+      if (deploymentResult.failed.length > 0) {
+        console.log(`\nPackages Failed to Deploy`, deploymentResult.failed);
+      }
+      console.log(
+        `----------------------------------------------------------------------------------------------------`
+      );
+
+      SFPStatsSender.logGauge(
+        "deploy.duration",
+        totalElapsedTime,
+        tags
+      );
+
+      SFPStatsSender.logGauge(
+        "deploy.succeeded",
+        deploymentResult.deployed.length,
+        tags
+      );
+
+      if (deploymentResult.skipped.length > 0) {
+        SFPStatsSender.logGauge(
+          "deploy.skipped",
+          deploymentResult.skipped.length,
+          tags
+        );
+      }
+
+      if (deploymentResult.failed.length > 0) {
+        SFPStatsSender.logGauge(
+          "deploy.failed",
+          deploymentResult.failed.length,
+          tags
+        );
+      }
     }
   }
 
+  private getFormattedTime(milliseconds: number): string {
+    let date = new Date(0);
+    date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
+    let timeString = date.toISOString().substr(11, 8);
+    return timeString;
+  }
 }

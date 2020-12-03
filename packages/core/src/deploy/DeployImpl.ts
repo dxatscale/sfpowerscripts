@@ -6,8 +6,7 @@ import InstallSourcePackageImpl from "../sfdxwrappers/InstallSourcePackageImpl";
 import InstallDataPackageImpl from "../sfdxwrappers/InstallDataPackageImpl";
 import InstallUnlockedPackageImpl from "../sfdxwrappers/InstallUnlockedPackageImpl";
 import TriggerApexTestImpl from "../sfdxwrappers/TriggerApexTestImpl";
-import child_process = require("child_process");
-import path = require("path");
+import SFPStatsSender from "../utils/SFPStatsSender";
 import fs = require("fs");
 import {
   PackageInstallationResult,
@@ -19,86 +18,116 @@ import { EOL } from "os";
 
 export default class DeployImpl {
 
- constructor(
-  private targetusername: string,
-  private projectDirectory: string,
-  private artifactDir: string,
-  private wait_time: string,
-  private logsGroupSymbol: string,
-  private isValidateMode: boolean,
-  private coverageThreshold?: number
- ){}
 
-  public async exec(): Promise<void> {
+  constructor(
+    private targetusername: string,
+    private artifactDir: string,
+    private wait_time: string,
+    private logsGroupSymbol: string,
+    private tags: any,
+    private isValidateMode: boolean,
+    private coverageThreshold?: number
+  ){}
+
+  public async exec(): Promise<{deployed: string[], skipped: string[], failed: string[]}> {
     SFPLogger.isSupressLogs = true;
+    let deployed: string[] = [];
+    let skipped: string[] = [];
+    let failed: string[] = [];
 
-    await this.validateArtifacts();
+    try {
+      let queue: any[] = this.getPackagesToDeploy();
 
-
-    let project_config = ManifestHelpers.getSFDXPackageManifest(this.projectDirectory);
-
-    for (let pkg of project_config["packageDirectories"]) {
-      let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-        this.artifactDir,
-        pkg.package
+      SFPStatsSender.logGauge(
+        "deploy.scheduled",
+        queue.length,
+        this.tags
       );
 
-      if (artifacts.length === 0) {
-        console.log(`Skipping as artifact not found for ${pkg.package}\n`);
-        continue;
-      }
+      console.log(`Packages to be deployed:`, queue);
 
-      let packageMetadata: PackageMetadata = JSON.parse(
-        fs.readFileSync(artifacts[0].packageMetadataFilePath, 'utf8')
-      );
+      await this.validateArtifacts();
 
-      let packageType: string = packageMetadata.package_type;
+      for (let i = 0 ; i < queue.length ; i++) {
+        let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+          this.artifactDir,
+          queue[i].package
+        );
 
-      if (this.logsGroupSymbol)
-        console.log(this.logsGroupSymbol);
+        let packageMetadata: PackageMetadata = JSON.parse(
+          fs.readFileSync(artifacts[0].packageMetadataFilePath, 'utf8')
+        );
 
-      console.log(
-        `-------------------------Installing Package------------------------------------${EOL}` +
-          `Name: ${pkg.package}${EOL}` +
-          `Type: ${packageMetadata.package_type}${EOL}` +
-          `Version Number: ${packageMetadata.package_version_number}${EOL}` +
-          `Metadata Count: ${packageMetadata.metadataCount}${EOL}` +
-          `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}` +
-        `-------------------------------------------------------------------------------${EOL}`
-      );
+        let packageType: string = packageMetadata.package_type;
+
+        if (this.logsGroupSymbol)
+          console.log(this.logsGroupSymbol);
+
+        console.log(
+          `-------------------------Installing Package------------------------------------${EOL}` +
+            `Name: ${queue[i].package}${EOL}` +
+            `Type: ${packageMetadata.package_type}${EOL}` +
+            `Version Number: ${packageMetadata.package_version_number}${EOL}` +
+            `Metadata Count: ${packageMetadata.metadataCount}${EOL}` +
+            `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}` +
+          `-------------------------------------------------------------------------------${EOL}`
+        );
 
 
-      if (!this.isSkipDeployment(pkg, this.targetusername)) {
-        await this.installPackage(
+        let packageInstallationResult = await this.installPackage(
           packageType,
           this.isValidateMode,
-          pkg.package,
+          queue[i].package,
           this.targetusername,
           artifacts[0].sourceDirectoryPath,
           packageMetadata,
-          this.isSkipTesting(pkg),
-          pkg.aliasfy,
+          this.isSkipTesting(queue[i]),
+          queue[i].aliasfy,
           this.wait_time
         );
 
-        if (!this.isSkipTesting(pkg)) {
+        if (packageInstallationResult.result === PackageInstallationStatus.Succeeded)
+          deployed.push(queue[i].package);
+        else if (packageInstallationResult.result === PackageInstallationStatus.Skipped)
+          skipped.push(queue[i].package);
+        else if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
+          failed = queue.slice(i);
+          throw new Error(packageInstallationResult.message);
+        }
+        else
+          throw new Error(`Unhandled PackageInstallationResult ${packageInstallationResult.result}`);
+
+
+        if (!this.isSkipTesting(queue[i])) {
           if (
             this.isValidateMode &&
             (packageType === "unlocked" || packageType === "source")
           ) {
             await this.triggerApexTests(
-              pkg.package,
+              queue[i].package,
               this.targetusername,
               packageMetadata,
-              pkg.skipCoverageValidation,
+              queue[i].skipCoverageValidation,
               this.coverageThreshold
             );
           }
         } else
-          console.log(`Skipping testing of ${pkg.package}\n`);
-      } else {
-        console.log(`Skipping deployment of ${pkg.package}\n`);
+          console.log(`Skipping testing of ${queue[i].package}\n`);
       }
+
+      return {
+        deployed: deployed,
+        skipped: skipped,
+        failed: failed
+      };
+    } catch (err) {
+      console.log(err);
+
+      return {
+        deployed: deployed,
+        skipped: skipped,
+        failed: failed
+      };
     }
   }
 
@@ -115,10 +144,12 @@ export default class DeployImpl {
     skipTesting: boolean,
     aliasfy: boolean,
     wait_time: string
-  ): Promise<void> {
+  ): Promise<PackageInstallationResult> {
+    let packageInstallationResult: PackageInstallationResult;
+
     if (!isValidateMode) {
       if (packageType === "unlocked") {
-        await this.installUnlockedPackage(
+        packageInstallationResult = await this.installUnlockedPackage(
           targetUsername,
           packageMetadata,
           wait_time
@@ -129,7 +160,7 @@ export default class DeployImpl {
           skipTesting: skipTesting,
         };
 
-        await this.installSourcePackage(
+        packageInstallationResult = await this.installSourcePackage(
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
@@ -139,7 +170,7 @@ export default class DeployImpl {
           wait_time
         );
       } else if (packageType === "data") {
-        await this.installDataPackage(
+        packageInstallationResult = await this.installDataPackage(
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
@@ -157,7 +188,7 @@ export default class DeployImpl {
 
         let subdirectory: string = aliasfy ? targetUsername : null;
 
-        await this.installSourcePackage(
+        packageInstallationResult= await this.installSourcePackage(
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
@@ -167,7 +198,7 @@ export default class DeployImpl {
           wait_time
         );
       } else if ( packageType === "data") {
-        await this.installDataPackage(
+        packageInstallationResult = await this.installDataPackage(
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
@@ -175,13 +206,14 @@ export default class DeployImpl {
         );
       }
     }
+    return packageInstallationResult;
   }
 
   private async installUnlockedPackage(
     targetUsername: string,
     packageMetadata: PackageMetadata,
     wait_time: string
-  ): Promise<void> {
+  ): Promise<PackageInstallationResult> {
     let options = {
       installationkey: null,
       apexcompile: "package",
@@ -199,7 +231,7 @@ export default class DeployImpl {
       packageMetadata
     );
 
-    await installUnlockedPackageImpl.exec();
+    return await installUnlockedPackageImpl.exec();
   }
 
   private async installSourcePackage(
@@ -210,7 +242,7 @@ export default class DeployImpl {
     options: any,
     subdirectory: string,
     wait_time: string
-  ): Promise<void> {
+  ): Promise<PackageInstallationResult> {
 
     let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
       sfdx_package,
@@ -224,10 +256,7 @@ export default class DeployImpl {
       false
     );
 
-    let installResult = await installSourcePackageImpl.exec();
-
-    if (installResult.result === PackageInstallationStatus.Failed)
-      throw new Error(installResult.message);
+    return await installSourcePackageImpl.exec();
   }
 
   private async installDataPackage(
@@ -235,7 +264,7 @@ export default class DeployImpl {
     targetUsername: string,
     sourceDirectoryPath: string,
     packageMetadata: PackageMetadata
-  ): Promise<void> {
+  ): Promise<PackageInstallationResult> {
     let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
       sfdx_package,
       targetUsername,
@@ -245,10 +274,7 @@ export default class DeployImpl {
       true,
       false
     );
-    let installResult = await installDataPackageImpl.exec();
-
-    if (installResult.result === PackageInstallationStatus.Failed)
-      throw new Error(installResult.message);
+    return await installDataPackageImpl.exec();
   }
 
   private async triggerApexTests(
@@ -273,7 +299,7 @@ export default class DeployImpl {
       let triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
         targetUsername,
         test_options,
-        process.cwd()
+        null
       );
 
       let testResult = await triggerApexTestImpl.exec();
@@ -312,19 +338,11 @@ export default class DeployImpl {
    * Verify that artifacts are on the same source version as HEAD
    */
   private async validateArtifacts(): Promise<void> {
-    let git: SimpleGit;
-    if (this.projectDirectory) {
-      git = simplegit(this.projectDirectory);
-    } else {
-      git = simplegit();
-    }
+    let git: SimpleGit = simplegit();
 
     let head: string = await git.revparse([`HEAD`]);
 
     let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.artifactDir);
-
-    if (artifacts.length === 0)
-      throw new Error(`No artifacts found in ${this.artifactDir}`);
 
     for (let artifact of artifacts) {
       let packageMetadata: PackageMetadata = JSON.parse(
@@ -342,5 +360,26 @@ export default class DeployImpl {
     }
   }
 
+  /**
+   * Returns the packages in the project config that have an artifact
+   */
+  private getPackagesToDeploy(): any[] {
+    let packagesToDeploy: any[];
 
+    let packages = ManifestHelpers.getSFDXPackageManifest(null)["packageDirectories"];
+    let artifacts = ArtifactFilePathFetcher.findArtifacts(this.artifactDir);
+
+    packagesToDeploy =  packages.filter( (pkg) => {
+      let pattern = RegExp(`^${pkg.package}_sfpowerscripts_artifact.*`);
+      return artifacts.find((artifact) => pattern.test(artifact));
+    });
+
+    // Filter out packages that are to be skipped on the target org
+    packagesToDeploy = packages.filter( (pkg) => this.isSkipDeployment(pkg, this.targetusername));
+
+    if (packagesToDeploy == null || packagesToDeploy.length === 0)
+      throw new Error(`No artifacts from project config to be deployed`);
+    else
+      return packagesToDeploy
+  }
 }
