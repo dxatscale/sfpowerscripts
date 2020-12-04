@@ -39,6 +39,10 @@ export default class TriggerApexTestImpl {
         encoding: "utf8",
       });
 
+      child.stderr.on(
+        "data",
+        data => console.log(data.toString())
+      );
 
       await onExit(child);
     } catch (err) {

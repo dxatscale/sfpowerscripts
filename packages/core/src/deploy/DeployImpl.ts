@@ -92,8 +92,10 @@ export default class DeployImpl {
 
         if (packageInstallationResult.result === PackageInstallationStatus.Succeeded)
           deployed.push(queue[i].package);
-        else if (packageInstallationResult.result === PackageInstallationStatus.Skipped)
+        else if (packageInstallationResult.result === PackageInstallationStatus.Skipped) {
           skipped.push(queue[i].package);
+          continue;
+        }
         else if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
           failed = queue.slice(i).map( (pkg) => pkg.package);
           throw new Error(packageInstallationResult.message);
@@ -163,10 +165,13 @@ export default class DeployImpl {
     let packageInstallationResult: PackageInstallationResult;
 
     if (!isValidateMode) {
+      let skip_if_package_installed: boolean = true;
+
       if (packageType === "unlocked") {
         packageInstallationResult = await this.installUnlockedPackage(
           targetUsername,
           packageMetadata,
+          skip_if_package_installed,
           wait_time
         );
       } else if (packageType === "source") {
@@ -182,6 +187,7 @@ export default class DeployImpl {
           packageMetadata,
           options,
           null,
+          skip_if_package_installed,
           wait_time
         );
       } else if (packageType === "data") {
@@ -189,12 +195,16 @@ export default class DeployImpl {
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
+          skip_if_package_installed,
           packageMetadata
         );
       } else {
         throw new Error(`Unhandled package type ${packageType}`);
       }
     } else {
+      // Do not 'skip if package installed', for validate mode
+      let skip_if_package_installed: boolean = false;
+
       if (packageType === "source" || packageType === "unlocked") {
         let options = {
           optimizeDeployment: false,
@@ -210,6 +220,7 @@ export default class DeployImpl {
           packageMetadata,
           options,
           subdirectory,
+          skip_if_package_installed,
           wait_time
         );
       } else if ( packageType === "data") {
@@ -217,6 +228,7 @@ export default class DeployImpl {
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
+          skip_if_package_installed,
           packageMetadata
         );
       } else {
@@ -229,6 +241,7 @@ export default class DeployImpl {
   private installUnlockedPackage(
     targetUsername: string,
     packageMetadata: PackageMetadata,
+    skip_if_package_installed: boolean,
     wait_time: string
   ): Promise<PackageInstallationResult> {
     let options = {
@@ -244,7 +257,7 @@ export default class DeployImpl {
       options,
       wait_time,
       "10",
-      true,
+      skip_if_package_installed,
       packageMetadata
     );
 
@@ -258,6 +271,7 @@ export default class DeployImpl {
     packageMetadata: PackageMetadata,
     options: any,
     subdirectory: string,
+    skip_if_package_installed: boolean,
     wait_time: string
   ): Promise<PackageInstallationResult> {
 
@@ -268,7 +282,7 @@ export default class DeployImpl {
       subdirectory,
       options,
       wait_time,
-      true,
+      skip_if_package_installed,
       packageMetadata,
       false
     );
@@ -280,6 +294,7 @@ export default class DeployImpl {
     sfdx_package: string,
     targetUsername: string,
     sourceDirectoryPath: string,
+    skip_if_package_installed: boolean,
     packageMetadata: PackageMetadata
   ): Promise<PackageInstallationResult> {
     let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
@@ -288,7 +303,7 @@ export default class DeployImpl {
       sourceDirectoryPath,
       null,
       packageMetadata,
-      true,
+      skip_if_package_installed,
       false
     );
     return installDataPackageImpl.exec();
