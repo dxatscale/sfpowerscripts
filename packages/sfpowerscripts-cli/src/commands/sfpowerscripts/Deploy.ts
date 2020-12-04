@@ -38,7 +38,7 @@ export default class Deploy extends SfpowerscriptsCommand {
       default: "120",
     }),
     logsgroupsymbol: flags.array({
-      char: "s",
+      char: "g",
       description: messages.getMessage("logsGroupSymbolFlagDescription")
     }),
     tag: flags.string({
