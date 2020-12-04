@@ -12,6 +12,7 @@ import {
 import ArtifactHelper from "../Common/ArtifactHelper";
 const fs = require("fs");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
+import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 
 async function run() {
   try {
@@ -97,44 +98,50 @@ async function run() {
       true
     )
 
-    await installDataPackageImpl.exec();
+    let result = await installDataPackageImpl.exec();
 
 
     let elapsedTime=Date.now()-startTime;
 
 
+    if (result.result === PackageInstallationStatus.Succeeded) {
+      //No environment info available, create and push
+      if (packageMetadataFromStorage.deployments == null) {
+        packageMetadataFromStorage.deployments = new Array();
+        packageMetadataFromStorage.deployments.push({
+          target_org: target_org,
+          sub_directory: subdirectory,
+          installation_time:elapsedTime,
+          timestamp:Date.now()
+        });
+      } else {
+        //Update existing environment map
+        packageMetadataFromStorage.deployments.push({
+          target_org: target_org,
+          sub_directory: subdirectory,
+          installation_time:elapsedTime,
+          timestamp:Date.now()
+        });
+      }
 
-    //No environment info available, create and push
-    if (packageMetadataFromStorage.deployments == null) {
-      packageMetadataFromStorage.deployments = new Array();
-      packageMetadataFromStorage.deployments.push({
-        target_org: target_org,
-        sub_directory: subdirectory,
-        installation_time:elapsedTime,
-        timestamp:Date.now()
-      });
-    } else {
-      //Update existing environment map
-      packageMetadataFromStorage.deployments.push({
-        target_org: target_org,
-        sub_directory: subdirectory,
-        installation_time:elapsedTime,
-        timestamp:Date.now()
-      });
+      await updatePackageDeploymentDetails(
+        packageMetadataFromStorage,
+        extensionManagementApi,
+        extensionName
+      );
+
+
+      SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"data", target_org:target_org});
+      SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"data",target_org:target_org});
+
+
+      tl.setResult(tl.TaskResult.Succeeded, "Package installed successfully");
+    } else if (result.result === PackageInstallationStatus.Failed) {
+      tl.setResult(tl.TaskResult.Failed, result.message);
+
+      SFPStatsSender.logCount("package.installation.failure",{package:tl.getInput("package",false),type:"data"});
     }
 
-    await updatePackageDeploymentDetails(
-      packageMetadataFromStorage,
-      extensionManagementApi,
-      extensionName
-    );
-
-
-    SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"data", target_org:target_org});
-    SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"data",target_org:target_org});
-
-
-    tl.setResult(tl.TaskResult.Succeeded, "Package installed successfully");
 
   } catch (err) {
 

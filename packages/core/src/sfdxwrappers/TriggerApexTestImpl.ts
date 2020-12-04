@@ -5,7 +5,6 @@ import path = require("path");
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import ApexTypeFetcher, { ApexSortedByType } from "../parser/ApexTypeFetcher";
 import ManifestHelpers from "../manifest/ManifestHelpers";
-import SFPLogger from "../utils/SFPLogger";
 import SFPStatsSender from "../utils/SFPStatsSender";
 const Table = require("cli-table");
 
@@ -202,7 +201,7 @@ export default class TriggerApexTestImpl {
 
       if (this.apexSortedByType["parseError"].length > 0) {
         for (let parseError of this.apexSortedByType["parseError"]) {
-          SFPLogger.log(`Failed to parse ${parseError.name}`);
+          console.log(`Failed to parse ${parseError.name}`);
         }
       }
 
@@ -219,7 +218,7 @@ export default class TriggerApexTestImpl {
       command += ` -s ${this.test_options["apextestsuite"]}`;
     }
 
-    SFPLogger.log(`Generated Command: ${command}`);
+    console.log(`Generated Command: ${command}`);
     return command;
   }
 
@@ -244,7 +243,7 @@ export default class TriggerApexTestImpl {
       )
       .toString();
 
-    SFPLogger.log("test_id", test_id);
+      console.log("test_id", test_id);
     return test_id;
   }
 
@@ -332,7 +331,7 @@ export default class TriggerApexTestImpl {
       this.test_options.coverageThreshold = 75;
     }
 
-    SFPLogger.log(
+    console.log(
       `Validating individual classes for code coverage greater than ${this.test_options.coverageThreshold} percent`
     );
 
@@ -550,7 +549,7 @@ export default class TriggerApexTestImpl {
             // Filter out undetermined classes that failed to parse
             for (let parseError of this.apexSortedByType["parseError"]) {
               if (parseError["name"] === packageClass) {
-                SFPLogger.log(
+                console.log(
                   `Skipping coverage validation for ${packageClass}, unable to determine identity of class`
                 );
                 return false;
@@ -583,7 +582,7 @@ export default class TriggerApexTestImpl {
   }
 
   private printTestSummary(testResult: any, packageCoverage: number){
-    SFPLogger.log("\n\n\n=== Test Summary");
+    console.log("\n\n\n=== Test Summary");
     let table = new Table({
       head: ["Name", "Value"]
     });
@@ -605,11 +604,11 @@ export default class TriggerApexTestImpl {
       table.push(keyValuePair);
     })
 
-    SFPLogger.log(table.toString());
+    console.log(table.toString());
   }
 
   private printTestResults(testResult: any) {
-    SFPLogger.log("=== Test Results");
+    console.log("=== Test Results");
 
     let table = new Table({
       head: ["Test Name", "Outcome", "Message", "Runtime (ms)"]
@@ -624,13 +623,13 @@ export default class TriggerApexTestImpl {
       ]);
     });
 
-    SFPLogger.log(table.toString());
+    console.log(table.toString());
   }
 
   private printClassesWithInvalidCoverage(
     classesWithInvalidCoverage: { name: string; coveredPercent: number }[]
   ) {
-    SFPLogger.log(
+    console.log(
       `The following classes do not satisfy the ${this.test_options["coverageThreshold"]}% code coverage requirement:`
     );
 
@@ -651,6 +650,6 @@ export default class TriggerApexTestImpl {
       ]);
     });
 
-    SFPLogger.log(table.toString());
+    console.log(table.toString());
   }
 }

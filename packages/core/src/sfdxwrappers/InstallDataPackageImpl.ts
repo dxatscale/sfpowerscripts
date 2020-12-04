@@ -4,7 +4,6 @@ import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 import fs = require("fs");
 import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
-import SFPLogger from "../utils/SFPLogger";
 import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 
@@ -22,12 +21,12 @@ export default class InstallDataPackageImpl {
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
-   
+
     let packageDirectory: string;
 
     try {
       let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(this.sourceDirectory, this.sfdx_package);
-      
+
       if (this.subDirectory) {
         packageDirectory = path.join(
           packageDescriptor["path"],
@@ -50,11 +49,11 @@ export default class InstallDataPackageImpl {
         isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(this.targetusername,this.packageMetadata,this.subDirectory, this.isPackageCheckHandledByCaller);
         if(isPackageInstalled)
           {
-           SFPLogger.log("Skipping Package Installation")
+           console.log("Skipping Package Installation")
            return { result: PackageInstallationStatus.Skipped }
           }
       }
-  
+
 
 
       if (
@@ -90,11 +89,11 @@ export default class InstallDataPackageImpl {
 
       await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(this.targetusername,this.packageMetadata,this.subDirectory,this.isPackageCheckHandledByCaller);
 
-
+      return {result: PackageInstallationStatus.Succeeded};
 
 
     } catch (err) {
-      throw err;
+      return {result: PackageInstallationStatus.Failed, message: err.message};
     } finally {
       let csvIssuesReportFilepath: string = path.join(this.sourceDirectory, packageDirectory, `CSVIssuesReport.csv`)
       if (fs.existsSync(csvIssuesReportFilepath)) {

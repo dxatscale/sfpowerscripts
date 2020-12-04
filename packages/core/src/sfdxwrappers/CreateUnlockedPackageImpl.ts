@@ -243,10 +243,14 @@ export default class CreateUnlockedPackageImpl {
     //Cleanup sfpowerscripts constructs
     if (this.isOrgDependentPackage)
       delete packageDescriptorInWorkingDirectory["dependencies"];
+
     delete packageDescriptorInWorkingDirectory["type"];
     delete packageDescriptorInWorkingDirectory["preDeploymentSteps"];
     delete packageDescriptorInWorkingDirectory["postDeploymentSteps"];
-    delete packageDescriptorInWorkingDirectory["permissionSetsToAssign"]
+    delete packageDescriptorInWorkingDirectory["permissionSetsToAssign"];
+    delete packageDescriptorInWorkingDirectory["skipDeployOnOrgs"];
+    delete packageDescriptorInWorkingDirectory["skipTesting"];
+    delete packageDescriptorInWorkingDirectory["skipCoverageValidation"];
 
     fs.writeJsonSync(
       path.join(workingDirectory, "sfdx-project.json"),

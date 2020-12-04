@@ -70,7 +70,7 @@ export default class DeploySourceToOrgImpl {
     let deploy_id = "";
     try {
       let command = this.buildExecCommand();
-      SFPLogger.log(command);
+      console.log(command);
       let result = child_process.execSync(command, {
         cwd: this.project_directory,
         encoding: "utf8",
@@ -85,11 +85,11 @@ export default class DeploySourceToOrgImpl {
     }
 
     if (this.deployment_options["checkonly"])
-      SFPLogger.log(
+      console.log(
         `Validation only deployment  is in progress....  Unleashing the power of your code!`
       );
     else
-      SFPLogger.log(
+      console.log(
         `Deployment is in progress....  Unleashing the power of your code!`
       );
 
@@ -107,25 +107,25 @@ export default class DeploySourceToOrgImpl {
         );
       } catch (err) {
         if (this.deployment_options["checkonly"])
-          SFPLogger.log(`Validation Failed`);
-        else SFPLogger.log(`Deployment Failed`);
+          console.log(`Validation Failed`);
+        else console.log(`Deployment Failed`);
         break;
       }
       let resultAsJSON = JSON.parse(result);
 
       if (resultAsJSON["status"] == 1) {
-        SFPLogger.log("Validation/Deployment Failed");
+        console.log("Validation/Deployment Failed");
         commandExecStatus = false;
         break;
       } else if (
         resultAsJSON["result"]["status"] == "InProgress" ||
         resultAsJSON["result"]["status"] == "Pending"
       ) {
-        SFPLogger.log(
+        console.log(
           `Processing ${resultAsJSON.result.numberComponentsDeployed} out of ${resultAsJSON.result.numberComponentsTotal}`
         );
       } else if (resultAsJSON["result"]["status"] == "Succeeded") {
-        SFPLogger.log("Validation/Deployment Succeeded");
+        console.log("Validation/Deployment Succeeded");
         commandExecStatus = true;
         break;
       }
@@ -206,7 +206,7 @@ export default class DeploySourceToOrgImpl {
   private convertApexTestSuiteToListOfApexClasses(
     apextestsuite: string
   ): Promise<string> {
-    SFPLogger.log(
+    console.log(
       `Converting an apex test suite  ${apextestsuite} to its consituent apex test classes`
     );
 
