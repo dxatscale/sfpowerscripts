@@ -321,7 +321,7 @@ export default class DeployImpl {
         null
       );
 
-      return await triggerApexTestImpl.exec();
+      return triggerApexTestImpl.exec();
   }
 
   /**
