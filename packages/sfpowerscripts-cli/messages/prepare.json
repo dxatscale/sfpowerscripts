@@ -1,0 +1,4 @@
+{
+  "commandDescription": "Prepare a scratch org with all the packages upfront, so that any incoming change can be validated in an optimized manner",
+  "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
+}

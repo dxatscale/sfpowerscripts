@@ -42,6 +42,12 @@
     "topics": {
       "sfpowerscripts": {
         "description": "Simple wrappers around sfdx commands to help set up CI/CD quickly"
+      } ,
+      "sfpowerscripts:orchestrator": {
+        "description": "Orchestrate packages from a monorepo through its lifecycle, driven by descriptors in your sfdx-project.json"
+      },
+      "sfpowerscripts:orchestrator:prepare": {
+        "description": "Prepare a pool of scratch org's to be used as ephemereal CI environments"
       }
     },
     "devPlugins": [
