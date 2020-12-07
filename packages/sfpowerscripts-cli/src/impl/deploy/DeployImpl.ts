@@ -1,19 +1,19 @@
-import ArtifactFilePathFetcher from "../artifacts/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/src/artifacts/ArtifactFilePathFetcher";
 import simplegit, { SimpleGit } from "simple-git/promise";
-import PackageMetadata from "../PackageMetadata";
-import ManifestHelpers from "../manifest/ManifestHelpers";
-import InstallSourcePackageImpl from "../sfdxwrappers/InstallSourcePackageImpl";
-import InstallDataPackageImpl from "../sfdxwrappers/InstallDataPackageImpl";
-import InstallUnlockedPackageImpl from "../sfdxwrappers/InstallUnlockedPackageImpl";
-import TriggerApexTestImpl from "../sfdxwrappers/TriggerApexTestImpl";
-import SFPStatsSender from "../utils/SFPStatsSender";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/src/PackageMetadata";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
+import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/InstallSourcePackageImpl";
+import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/InstallDataPackageImpl";
+import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/InstallUnlockedPackageImpl";
+import TriggerApexTestImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/TriggerApexTestImpl";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/src/utils/SFPStatsSender";
 import fs = require("fs");
 import path = require("path");
 import {
   PackageInstallationResult,
   PackageInstallationStatus,
-} from "../package/PackageInstallationResult";
-import SFPLogger from "../utils/SFPLogger";
+} from "@dxatscale/sfpowerscripts.core/src/package/PackageInstallationResult";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
 import { EOL } from "os";
 
 
@@ -27,6 +27,7 @@ export default class DeployImpl {
     private logsGroupSymbol: string[],
     private tags: any,
     private isValidateMode: boolean,
+    private isPrepareMode:boolean,
     private coverageThreshold?: number
   ){}
 
@@ -107,7 +108,7 @@ export default class DeployImpl {
         if (
           this.isValidateMode &&
           (packageType === "unlocked" || packageType === "source") &&
-          packageMetadata.isApexFound
+          packageMetadata.isApexFound && !this.isPrepareMode
         ) {
           if (!this.isSkipTesting(queue[i])) {
             let testResult = await this.triggerApexTests(

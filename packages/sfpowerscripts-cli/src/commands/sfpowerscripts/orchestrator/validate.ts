@@ -9,8 +9,6 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
 
 export default class Validate extends SfpowerscriptsCommand {
 
-
-
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [

@@ -1,5 +1,5 @@
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
-import BuildImpl from "@dxatscale/sfpowerscripts.core/lib/parallelBuilder/BuildImpl";
+
 import { EOL } from "os";
 
 import { flags } from "@salesforce/command";
@@ -8,6 +8,7 @@ import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
 import fs = require("fs");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import BuildImpl from "../../../impl/parallelBuilder/BuildImpl";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
