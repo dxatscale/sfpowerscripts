@@ -1,14 +1,14 @@
 import { Messages, SfdxError } from "@salesforce/core";
-import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from "@salesforce/command";
 import * as path from "path";
-import { registerNamespace, sfdx } from "../../../../impl/prepare/pool/sfdxnode/parallel";
-import PrepareScratchOrgPoolImpl from "../../../../impl/prepare/pool/PrepareScratchOrgPoolImpl";
+import { registerNamespace, sfdx } from "../../../impl/pool/sfdxnode/parallel";
+import PrepareScratchOrgPoolImpl from "../../../impl/prepare/PrepareImpl";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
 
-export default class Create extends SfpowerscriptsCommand {
+export default class Prepare extends SfpowerscriptsCommand {
   protected static requiresDevhubUsername = true;
   protected static requiresProject = true;
 

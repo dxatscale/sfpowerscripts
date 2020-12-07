@@ -1,16 +1,16 @@
-import ScratchOrgUtils, { ScratchOrg } from "./utils/ScratchOrgUtils";
+import ScratchOrgUtils, { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
 import { LoggerLevel, Org } from "@salesforce/core";
 import * as fs from "fs-extra";
 import Bottleneck from "bottleneck";
 import * as rimraf from "rimraf";
-import { SfdxApi } from "./sfdxnode/types";
+import { SfdxApi } from "../pool/sfdxnode/types";
 import PrepareASingleOrgImpl, {
   ScriptExecutionResult,
-} from "../PrepareASingleOrgImpl";
+} from "./PrepareASingleOrgImpl";
 import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
 import child_process = require("child_process");
 
-export default class PrepareScratchOrgPoolImpl {
+export default class PrepareImpl {
   private poolConfig: PoolConfig;
   private totalToBeAllocated: number;
   private limits;

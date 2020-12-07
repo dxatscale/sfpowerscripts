@@ -1,11 +1,9 @@
 import { Org } from "@salesforce/core";
-import { SfdxApi } from "./pool/sfdxnode/types";
-import { ScratchOrg } from "./pool/utils/ScratchOrgUtils";
+import { SfdxApi } from "../pool/sfdxnode/types";
+import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
 import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import * as fs from "fs-extra";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
-import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import path = require("path");
 import DeployImpl from "../deploy/DeployImpl";
 import { EOL } from "os";
