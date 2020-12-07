@@ -2,7 +2,8 @@ import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
-import DeployImpl from "@dxatscale/sfpowerscripts.core/lib/deploy/DeployImpl";
+import DeployImpl from "../../../impl/deploy/DeployImpl";
+
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -71,7 +72,8 @@ export default class Deploy extends SfpowerscriptsCommand {
         this.flags.waittime,
         this.flags.logsgroupsymbol,
         tags,
-        this.flags.validatemode
+        this.flags.validatemode,
+        false
       );
 
       deploymentResult = await deployImpl.exec();

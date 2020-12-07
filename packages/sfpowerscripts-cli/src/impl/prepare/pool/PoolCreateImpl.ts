@@ -2,13 +2,12 @@ import ScratchOrgUtils, { ScratchOrg } from "./utils/ScratchOrgUtils";
 import { LoggerLevel, Org } from "@salesforce/core";
 import * as fs from "fs-extra";
 import Bottleneck from "bottleneck";
-import * as path from "path";
 import * as rimraf from "rimraf";
 import { SfdxApi } from "./sfdxnode/types";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import PrepareASingleOrgImpl, {
   ScriptExecutionResult,
-} from "../prepare/PrepareASingleOrgImpl";
+} from "../PrepareASingleOrgImpl";
 
 export default class PoolCreateImpl {
   private poolConfig: PoolConfig;
@@ -28,7 +27,8 @@ export default class PoolCreateImpl {
     private configFilePath: string,
     private batchSize: number,
     private fetchArtifactScript: string,
-    private installAll:boolean
+    private installAll:boolean,
+    private keys:string,
   ) {
     this.limiter = new Bottleneck({
       maxConcurrent: this.batchSize,
@@ -42,10 +42,7 @@ export default class PoolCreateImpl {
   public async poolScratchOrgs(): Promise<boolean> {
     await ScratchOrgUtils.checkForNewVersionCompatible(this.hubOrg);
     let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
-    let ipRangeExecPromises: Array<Promise<{
-      username: string;
-      success: boolean;
-    }>> = new Array();
+   
 
     await this.hubOrg.refreshAuth();
 
@@ -328,10 +325,12 @@ export default class PoolCreateImpl {
     );
 
     let prepareASingleOrgImpl: PrepareASingleOrgImpl = new PrepareASingleOrgImpl(
+      this.sfdx,
       scratchOrg,
       hubOrgUserName,
       this.fetchArtifactScript,
-      this.installAll
+      this.installAll,
+      this.keys
     );
     let result = await prepareASingleOrgImpl.prepare();
 

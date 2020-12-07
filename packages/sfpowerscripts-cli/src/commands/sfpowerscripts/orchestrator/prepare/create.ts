@@ -2,8 +2,8 @@ import { Messages, SfdxError } from "@salesforce/core";
 import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand";
 import { flags } from "@salesforce/command";
 import * as path from "path";
-import { registerNamespace, sfdx } from "../../../../pool/sfdxnode/parallel";
-import PoolCreateImpl from "../../../../pool/poolCreateImpl";
+import { registerNamespace, sfdx } from "../../../../impl/prepare/pool/sfdxnode/parallel";
+import PoolCreateImpl from "../../../../impl/prepare/pool/poolCreateImpl";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
@@ -39,13 +39,16 @@ export default class Create extends SfpowerscriptsCommand {
     installallpackages: flags.boolean({
       required: false,
       default: false,
-      char: "s",
       description: messages.getMessage("installallpackagesDescription"),
     }),
     artifactfetchscripts: flags.filepath({
       required: false,
       dependsOn: ["installallpackages"],
       char: "s",
+      description: messages.getMessage("artifactfetchscriptsDescription"),
+    }),
+    keys: flags.string({
+      required: false,
       description: messages.getMessage("artifactfetchscriptsDescription"),
     }),
     batchsize: flags.number({
@@ -84,7 +87,8 @@ export default class Create extends SfpowerscriptsCommand {
       this.flags.config,
       this.flags.batchsize,
       this.flags.artifactfetchscripts,
-      this.flags.installallpackages
+      this.flags.installallpackages,
+      this.flags.keys
     );
 
     try {

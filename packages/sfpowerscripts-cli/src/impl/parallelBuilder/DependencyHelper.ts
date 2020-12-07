@@ -1,4 +1,4 @@
-import ManifestHelpers from "../manifest/ManifestHelpers";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
 
 export default class DependencyHelper {
   static getParentsToBeFullFilled(

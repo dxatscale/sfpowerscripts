@@ -6,5 +6,6 @@
   "configDescription":"The file path to the definition file for the scratch org shape",
   "artifactfetchscriptsDescription": "The path to the script file that is used to fetch the validated artifacts to be used in the prepare command",
   "batchsize":"Number of parallel executors to be used while creating the pool",
-  "installallpackagesDescription":"Install the dependencies,along with all the packages in the repo as source packages to the org, thus reducing PR times"
+  "installallpackagesDescription":"Install the dependencies,along with all the packages in the repo as source packages to the org, thus reducing PR times",
+  "apiversion": "API version to be used"
 }
