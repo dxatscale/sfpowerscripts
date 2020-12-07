@@ -1,4 +1,10 @@
 {
   "commandDescription": "Prepare a scratch org with all the packages upfront, so that any incoming change can be validated in an optimized manner",
-  "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
+  "tagDescription":"The name/tag of the scratch org pool",
+  "expiryDescription":"Expiry of the scratch org's created in the pool",
+  "maxallocationDescription":"The size of the scratch org pool to be created",
+  "configDescription":"The file path to the definition file for the scratch org shape",
+  "artifactfetchscriptsDescription": "The path to the script file that is used to fetch the validated artifacts to be used in the prepare command",
+  "batchsize":"Number of parallel executors to be used while creating the pool",
+  "installallpackagesDescription":"Install the dependencies,along with all the packages in the repo as source packages to the org, thus reducing PR times"
 }
