@@ -89,9 +89,9 @@ export default class ArtifactFilePathFetcher {
   private static fetchArtifactFilePathsFromZipFile(
     artifact: string
   ): ArtifactFilePaths {
-    let unzippedArtifactsDirectory: string = ".sfpowerscripts/unzippedArtifacts";
+    let unzippedArtifactsDirectory: string = `.sfpowerscripts/unzippedArtifacts/${this.makefolderid(8)}`;
 
-    fs.mkdirpSync(`.sfpowerscripts/unzippedArtifacts`);
+    fs.mkdirpSync(unzippedArtifactsDirectory);
 
     SFPLogger.log(`Unzipping ${artifact} to ${unzippedArtifactsDirectory}`);
     let zip = new AdmZip(artifact);
@@ -251,6 +251,18 @@ export default class ArtifactFilePathFetcher {
       return true;
     }
   }
+
+  private static makefolderid(length): string {
+    var result = "";
+    var characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
+
 }
 
 

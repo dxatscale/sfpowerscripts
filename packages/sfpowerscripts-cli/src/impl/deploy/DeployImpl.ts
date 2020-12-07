@@ -28,11 +28,14 @@ export default class DeployImpl {
     private tags: any,
     private isValidateMode: boolean,
     private isPrepareMode:boolean,
-    private coverageThreshold?: number
+    private coverageThreshold?: number,
+    private packageLogger?:any
   ){}
 
   public async exec(): Promise<{deployed: string[], skipped: string[], failed: string[]}> {
-    SFPLogger.isSupressLogs = true;
+    if(this.isPrepareMode)
+      SFPLogger.isSupressLogs = true;
+
     let deployed: string[] = [];
     let skipped: string[] = [];
     let failed: string[] = [];
@@ -46,11 +49,13 @@ export default class DeployImpl {
         this.tags
       );
 
-      console.log(`Packages to be deployed:`, queue.map( (pkg) => pkg.package));
+    SFPLogger.log(`Packages to be deployed:`, queue.map( (pkg) => pkg.package),this.packageLogger);
 
       await this.validateArtifacts();
 
       for (let i = 0 ; i < queue.length ; i++) {
+
+        
         let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
           this.artifactDir,
           queue[i].package
@@ -63,19 +68,19 @@ export default class DeployImpl {
         let packageType: string = packageMetadata.package_type;
 
         if (this.logsGroupSymbol?.[0])
-          console.log(this.logsGroupSymbol[0], "Installing", queue[i].package);
+        SFPLogger.log(this.logsGroupSymbol[0], "Installing", queue[i].package);
 
         let isApexFoundMessage: string =
           packageMetadata.package_type === "unlocked" ? "" : `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}`
 
-        console.log(
+      SFPLogger.log(
           `-------------------------Installing Package------------------------------------${EOL}` +
             `Name: ${queue[i].package}${EOL}` +
             `Type: ${packageMetadata.package_type}${EOL}` +
             `Version Number: ${packageMetadata.package_version_number}${EOL}` +
             `Metadata Count: ${packageMetadata.metadataCount}${EOL}` +
             isApexFoundMessage +
-          `-------------------------------------------------------------------------------${EOL}`
+          `-------------------------------------------------------------------------------${EOL}`,null,this.packageLogger
         );
 
 
@@ -124,14 +129,14 @@ export default class DeployImpl {
 
               throw new Error(testResult.message);
             } else
-              console.log(testResult.message);
+            SFPLogger.log(testResult.message,null,this.packageLogger);
           } else
-            console.log(`Skipping testing of ${queue[i].package}\n`);
+          SFPLogger.log(`Skipping testing of ${queue[i].package}\n`,null,this.packageLogger);
         }
       }
 
       if (this.logsGroupSymbol?.[1])
-      console.log(this.logsGroupSymbol[1]);
+    SFPLogger.log(this.logsGroupSymbol[1],null,this.packageLogger);
 
       return {
         deployed: deployed,
@@ -139,7 +144,7 @@ export default class DeployImpl {
         failed: failed
       };
     } catch (err) {
-      console.log(err);
+    SFPLogger.log(err,null,this.packageLogger);
 
       return {
         deployed: deployed,
@@ -285,7 +290,8 @@ export default class DeployImpl {
       wait_time,
       skip_if_package_installed,
       packageMetadata,
-      false
+      false,
+      this.packageLogger
     );
 
     return installSourcePackageImpl.exec();

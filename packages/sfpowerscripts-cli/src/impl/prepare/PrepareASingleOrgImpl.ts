@@ -1,15 +1,15 @@
 import { Org } from "@salesforce/core";
-import { sfdx } from "./pool/sfdxnode/parallel";
 import { SfdxApi } from "./pool/sfdxnode/types";
 import { ScratchOrg } from "./pool/utils/ScratchOrgUtils";
 import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
-import child_process = require("child_process");
 import * as fs from "fs-extra";
 import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
 import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import path = require("path");
 import DeployImpl from "../deploy/DeployImpl";
+import { EOL } from "os";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
 export default class PrepareASingleOrgImpl {
@@ -17,7 +17,6 @@ export default class PrepareASingleOrgImpl {
     private sfdx: SfdxApi,
     private scratchOrg: ScratchOrg,
     private hubOrg: Org,
-    private fetchArtifactScript: string,
     private isAllPackagesToBeInstalled: boolean,
     private keys: string
   ) {}
@@ -26,7 +25,19 @@ export default class PrepareASingleOrgImpl {
     //Install sfpowerscripts Artifact
 
     try {
-      await sfdx.force.package.install({
+
+
+       //Create file logger
+       fs.outputFileSync(
+        `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`,
+        `sfpowerscripts--log${EOL}`
+      );
+      SFPLogger.isSupressLogs=true;
+      let packageLogger:any = `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}`;
+      SFPLogger.log(`Installing sfpowerscripts_artifact package to the ${this.scratchOrg.alias}`,null,packageLogger);
+
+      await this.sfdx.force.package.install({
+        quiet:true,
         targetusername: this.scratchOrg.username,
         package: SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
         apexcompile: "package",
@@ -41,30 +52,18 @@ export default class PrepareASingleOrgImpl {
         60,
         null,
         this.keys,
-        true
+        true,
+        packageLogger
       );
       let installationResult = await installDependencies.exec();
       if (installationResult.result == PackageInstallationStatus.Failed) {
         throw new Error(installationResult.message);
       }
 
-      //Create Artifact Directory
-      fs.mkdirpSync("artifacts");
-
-      //Fetch Latest Artifacts to Artifact Directory
       if (this.isAllPackagesToBeInstalled) {
-        let packages = ManifestHelpers.getSFDXPackageManifest(null)[
-          "packageDirectories"
-        ];
 
-        packages.forEach((pkg) => {
-          this.fetchArtifactFromRepositoryUsingProvidedScript(
-            pkg.package,
-            "artifacts",
-            this.fetchArtifactScript
-          );
-        });
-
+       
+        //Deploy the fetched artifacts to the org
         let deployImpl: DeployImpl = new DeployImpl(
           this.scratchOrg.username,
           "artifacts",
@@ -72,7 +71,8 @@ export default class PrepareASingleOrgImpl {
           null,
           "pool",
           true,
-          true
+          true,
+          packageLogger
         );
 
         let deploymentResult = await deployImpl.exec();
@@ -98,46 +98,6 @@ export default class PrepareASingleOrgImpl {
         scratchOrgUsername: this.scratchOrg.username,
       };
     }
-  }
-
-  private fetchArtifactFromRepositoryUsingProvidedScript(
-    packageName: string,
-    artifactDirectory: string,
-    scriptPath: string
-  ) {
-    console.log(`Fetching ${packageName} ...`);
-
-    let cmd: string;
-    if (process.platform !== "win32") {
-      cmd = `bash -e ${scriptPath} ${packageName} ${artifactDirectory}`;
-    } else {
-      cmd = `cmd.exe /c ${scriptPath} ${packageName}  ${artifactDirectory}`;
-    }
-
-    child_process.execSync(cmd, {
-      cwd: process.cwd(),
-      stdio: ["ignore", "ignore", "inherit"],
-    });
-  }
-
-  private getPackagesToDeploy(): any[] {
-    let packagesToDeploy: any[];
-
-    let packages = ManifestHelpers.getSFDXPackageManifest(null)[
-      "packageDirectories"
-    ];
-    let artifacts = ArtifactFilePathFetcher.findArtifacts("artifacts");
-
-    packagesToDeploy = packages.filter((pkg) => {
-      let pattern = RegExp(`^${pkg.package}_sfpowerscripts_artifact.*`);
-      return artifacts.find((artifact) =>
-        pattern.test(path.basename(artifact))
-      );
-    });
-
-    if (packagesToDeploy == null || packagesToDeploy.length === 0)
-      throw new Error(`No artifacts from project config to be deployed`);
-    else return packagesToDeploy;
   }
 }
 

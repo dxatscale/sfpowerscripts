@@ -3,7 +3,7 @@ import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand";
 import { flags } from "@salesforce/command";
 import * as path from "path";
 import { registerNamespace, sfdx } from "../../../../impl/prepare/pool/sfdxnode/parallel";
-import PoolCreateImpl from "../../../../impl/prepare/pool/poolCreateImpl";
+import PrepareScratchOrgPoolImpl from "../../../../impl/prepare/pool/PrepareScratchOrgPoolImpl";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
@@ -77,7 +77,7 @@ export default class Create extends SfpowerscriptsCommand {
 
     loadSFDX();
 
-    let scratchOrgPoolImpl = new PoolCreateImpl(
+    let scratchOrgPoolImpl = new PrepareScratchOrgPoolImpl(
       this.hubOrg,
       this.flags.apiversion,
       sfdx,

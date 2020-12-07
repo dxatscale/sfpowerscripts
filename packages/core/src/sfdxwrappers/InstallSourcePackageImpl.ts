@@ -32,7 +32,8 @@ export default class InstallSourcePackageImpl {
     private wait_time: string,
     private skip_if_package_installed: boolean,
     private packageMetadata: PackageMetadata,
-    private isPackageCheckHandledByCaller?: boolean
+    private isPackageCheckHandledByCaller?: boolean,
+    private packageLogger?:any
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -45,7 +46,7 @@ export default class InstallSourcePackageImpl {
         this.isPackageCheckHandledByCaller
       );
       if (isPackageInstalled) {
-        console.log("Skipping Package Installation");
+        SFPLogger.log("Skipping Package Installation",null,this.packageLogger);
         return { result: PackageInstallationStatus.Skipped };
       }
     }
@@ -87,7 +88,7 @@ export default class InstallSourcePackageImpl {
 
         //Reconcile Failed, Bring back the original profiles
         if (isReconcileErrored && profileFolders.length > 0) {
-          console.log("Restoring original profiles as preprocessing failed");
+          SFPLogger.log("Restoring original profiles as preprocessing failed",null,this.packageLogger);
           profileFolders.forEach((folder) => {
             fs.copySync(
               path.join(tempDir, folder),
@@ -132,8 +133,8 @@ export default class InstallSourcePackageImpl {
             );
           }
         } catch (error) {
-          console.log(
-            "Failed to apply reconcile the second time, Partial Metadata applied"
+          SFPLogger.log(
+            "Failed to apply reconcile the second time, Partial Metadata applied",null,this.packageLogger
           );
         }
 
@@ -170,7 +171,7 @@ export default class InstallSourcePackageImpl {
         deploy_id: result.deploy_id,
       };
     } catch (error) {
-      console.log(error);
+      SFPLogger.log(error,null,this.packageLogger);
       SFPStatsSender.logCount("package.installation.failure", {
         package: this.sfdx_package,
         type: "source",
@@ -200,18 +201,18 @@ export default class InstallSourcePackageImpl {
           this.sourceDirectory
         );
 
-        console.log("Executing post-deployment step: AssignPermissionSets");
+        SFPLogger.log("Executing post-deployment step: AssignPermissionSets",null,this.packageLogger);
         assignPermissionSetsImpl.exec();
       }
     } catch (error) {
-      console.log("Unable to apply permsets, skipping");
+      SFPLogger.log("Unable to apply permsets, skipping",null,this.packageLogger);
     }
   }
 
   private async applyDestructiveChanges() {
     try {
-      console.log(
-        "Attempt to delete components mentioned in destructive manifest"
+      SFPLogger.log(
+        "Attempt to delete components mentioned in destructive manifest",null,this.packageLogger
       );
       let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
         this.targetusername,
@@ -220,8 +221,10 @@ export default class InstallSourcePackageImpl {
 
       await deployDestructiveManifestToOrg.exec();
     } catch (error) {
-      console.log(
-        "We attempted a deletion of components, However were are not succesfull. Either the components are already deleted or there are components which have dependency to components in the manifest, Please check whether this manifest works!"
+      SFPLogger.log(
+        "We attempted a deletion of components, However were are not succesfull. Either the components are already deleted or there are components which have dependency to components in the manifest, Please check whether this manifest works!",
+        null,
+        this.packageLogger
       );
     }
   }
@@ -266,7 +269,9 @@ export default class InstallSourcePackageImpl {
           `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
           `75% test coverage, However being a dynamically generated delta package, we will deploying via triggering all local tests${EOL}` +
           `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}` +
-          `-------------------------------------------------------------------------------------------------------------`
+          `-------------------------------------------------------------------------------------------------------------`,
+          null,
+          this.packageLogger
       );
       return true;
     } else if (
@@ -280,7 +285,9 @@ export default class InstallSourcePackageImpl {
           `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying ${EOL}` +
           `via triggering all local tests,This definitely is not optimal approach on large orgs` +
           `Please consider adding test classes for the classes in the package ${EOL}` +
-          `-------------------------------------------------------------------------------------------------------------`
+          `-------------------------------------------------------------------------------------------------------------`,
+          null,
+          this.packageLogger
       );
       return true;
     } else return false;
@@ -295,7 +302,7 @@ export default class InstallSourcePackageImpl {
     let isReconcileActivated: boolean = false;
     let isReconcileErrored: boolean = false;
     try {
-      console.log("Attempting reconcile to profiles");
+      SFPLogger.log("Attempting reconcile to profiles",null,this.packageLogger);
       //copy the original profiles to temporary location
       profileFolders = glob.sync("**/profiles", {
         cwd: path.join(sourceDirectoryPath),
@@ -316,7 +323,7 @@ export default class InstallSourcePackageImpl {
       await reconcileProfileAgainstOrg.exec();
       isReconcileActivated = true;
     } catch (err) {
-      console.log("Failed to reconcile profiles:" + err);
+      SFPLogger.log("Failed to reconcile profiles:" + err,null,this.packageLogger);
       isReconcileErrored = true;
     }
     return { profileFolders, isReconcileActivated, isReconcileErrored };
@@ -377,7 +384,7 @@ export default class InstallSourcePackageImpl {
       let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
 
       if (!profileReconcile.result) {
-        console.log("Unable to deploy reconciled  profiles");
+        SFPLogger.log("Unable to deploy reconciled  profiles",null,this.packageLogger);
       }
     }
   }

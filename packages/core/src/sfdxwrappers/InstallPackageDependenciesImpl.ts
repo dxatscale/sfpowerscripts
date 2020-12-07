@@ -1,9 +1,11 @@
 import child_process = require("child_process");
+
 import {
   PackageInstallationResult,
   PackageInstallationStatus,
 } from "../package/PackageInstallationResult";
 import { onExit } from "../utils/OnExit";
+import SFPLogger from "../utils/SFPLogger";
 
 export default class InstallPackageDepenciesImpl {
   public constructor(
@@ -12,7 +14,8 @@ export default class InstallPackageDepenciesImpl {
     private wait_time: number,
     private working_directory: string,
     private keys: string,
-    private apexcompileonlypackage?: boolean
+    private apexcompileonlypackage?: boolean,
+    private packageLogger?:any
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -23,7 +26,7 @@ export default class InstallPackageDepenciesImpl {
     if (this.keys != null && this.keys.length > 0)
       command += ` -k ${this.keys}`;
 
-    console.debug("Executiong Command", command);
+    SFPLogger.log("Executiong Command", command,this.packageLogger);
 
     let child = child_process.exec(command, {
       cwd: this.working_directory,
@@ -31,11 +34,11 @@ export default class InstallPackageDepenciesImpl {
     });
 
     child.stderr.on("data", (data) => {
-      console.log(data.toString());
+      SFPLogger.log(data.toString(),null,this.packageLogger);
     });
 
     child.stdout.on("data", (data) => {
-      console.log(data.toString());
+      SFPLogger.log(data.toString(),null,this.packageLogger);
     });
 
     await onExit(child);
