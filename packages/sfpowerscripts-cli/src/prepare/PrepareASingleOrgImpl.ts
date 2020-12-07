@@ -5,10 +5,10 @@ export default class PrepareASingleOrgImpl {
 
 
   public constructor(
-    scratchOrg:ScratchOrg,
-    hubOrg: Org,
-    fetchArtifactScript: string
-    isAllPackagesToBeInstalled:boolean;
+    private scratchOrg:ScratchOrg,
+    private hubOrg: Org,
+    private fetchArtifactScript: string,
+    private isAllPackagesToBeInstalled:boolean
   ) {
 
   }
