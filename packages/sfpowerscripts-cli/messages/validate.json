@@ -1,4 +1,8 @@
 {
   "commandDescription": "Validate the incoming change against an earlier prepared scratchorg",
-  "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
+  "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task",
+  "poolsFlagDescription": "Fetch scratch-org validation environment from one of listed pools, sequentially",
+  "jwtKeyFileFlagDescription": "Path to a file containing the private key",
+  "clientIdFlagDescription": "OAuth client ID, also known as the consumer key",
+  "shapeFileFlagDescription": "Path to .zip file of scratch org shape / metadata to deploy"
 }

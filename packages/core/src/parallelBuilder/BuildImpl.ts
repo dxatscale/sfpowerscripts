@@ -51,7 +51,8 @@ export default class BuildImpl {
     private buildNumber: number,
     private executorcount: number,
     private isValidateMode: boolean,
-    private branch:string
+    private branch:string,
+    private packagesToTags?: {[p: string]: string}
   ) {
     this.limiter = new Bottleneck({
       maxConcurrent: this.executorcount,
@@ -90,11 +91,6 @@ export default class BuildImpl {
     if (this.isDiffCheckEnabled) {
       let packageToBeBuilt = [];
 
-      let override: boolean;
-      if (this.isValidateMode) {
-        override = true;
-      }
-
       for await (const pkg of this.packagesToBeBuilt) {
         let { priority, type } = this.getPriorityandTypeOfAPackage(
           this.projectConfig,
@@ -105,7 +101,7 @@ export default class BuildImpl {
           pkg,
           this.project_directory,
           type == "Data" || type == "Source" ? null : this.config_file_path,
-          override
+          this.packagesToTags
         );
         let isToBeBuilt = await diffImpl.exec();
         if (isToBeBuilt) {

@@ -10,7 +10,7 @@ export default class PackageDiffImpl {
     private sfdx_package: string,
     private project_directory: string,
     private config_file_path?: string,
-    private override?: boolean,
+    private packagesToTags?: {[p: string]: string},
   ) {}
 
   public async exec(): Promise<boolean> {
@@ -41,10 +41,10 @@ export default class PackageDiffImpl {
         );
 
         let tag: string;
-        if ( this.override != null ) {
-          tag = this.getLatestTagFromFile();
+        if ( this.packagesToTags != null ) {
+          tag = this.getLatestTagFromMap(this.sfdx_package, this.packagesToTags);
         } else {
-          tag = await this.getLatestTag(git, this.sfdx_package);
+          tag = await this.getLatestTagFromGit(git, this.sfdx_package);
         }
 
         if (tag) {
@@ -116,7 +116,7 @@ export default class PackageDiffImpl {
     );
   }
 
-  private async getLatestTag(git: any, sfdx_package: string): Promise<string> {
+  private async getLatestTagFromGit(git: any, sfdx_package: string): Promise<string> {
     let gitTagResult: string = await git.tag([
       `-l`,
       `${sfdx_package}_v*`,
@@ -164,16 +164,14 @@ export default class PackageDiffImpl {
     }
   }
 
-  private getLatestTagFromFile(): string {
-    if (fs.existsSync(`packageDiffTags.json`)) {
-      let latestTags = JSON.parse(fs.readFileSync(`packageDiffTags.json`, 'utf8'));
-      if (latestTags[this.sfdx_package] != null) {
-        return latestTags[this.sfdx_package];
-      } else {
-        return null;
-      }
+  private getLatestTagFromMap(
+    sfdx_package: string,
+    packagesToTags: {[p: string]: string}
+  ): string {
+    if (packagesToTags[sfdx_package] != null) {
+      return packagesToTags[sfdx_package];
     } else {
-      throw new Error(`packageDiffTags.json does not exist`);
+      return null;
     }
   }
 }
