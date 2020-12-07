@@ -1,5 +1,5 @@
 import { flags } from "@salesforce/command";
-import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import DeployImpl from "@dxatscale/sfpowerscripts.core/lib/deploy/DeployImpl";
@@ -15,7 +15,7 @@ export default class Deploy extends SfpowerscriptsCommand {
   public static description = messages.getMessage("commandDescription");
 
   public static examples = [
-    `$ sfdx sfpowerscripts:Deploy -u <username>`
+    `$ sfdx sfpowerscripts:orchestrator:deploy -u <username>`
   ];
 
   protected static requiresUsername = false;

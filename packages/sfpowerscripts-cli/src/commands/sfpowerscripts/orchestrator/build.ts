@@ -3,7 +3,7 @@ import BuildImpl from "@dxatscale/sfpowerscripts.core/lib/parallelBuilder/BuildI
 import { EOL } from "os";
 
 import { flags } from "@salesforce/command";
-import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
 import fs = require("fs");
@@ -20,8 +20,8 @@ export default class Build extends SfpowerscriptsCommand {
   public static description = messages.getMessage("commandDescription");
 
   public static examples = [
-    `$ sfdx sfpowerscripts:Build -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
-    `$ sfdx sfpowerscripts:Build -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
+    `$ sfdx sfpowerscripts:orchestrator:build -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
+    `$ sfdx sfpowerscripts:orchestrator:build -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
   ];
 
   protected static requiresUsername = false;

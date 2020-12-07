@@ -1,5 +1,5 @@
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import fs = require("fs-extra");
 import path = require("path");
@@ -17,8 +17,8 @@ export default class Promote extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:Publish -f path/to/script`,
-    `$ sfdx sfpowerscripts:Publish -p -v HubOrg`
+    `$ sfdx sfpowerscripts:orchestrator:publish -f path/to/script`,
+    `$ sfdx sfpowerscripts:orchestrator:publish -p -v HubOrg`
   ];
 
   protected static requiresUsername = false;

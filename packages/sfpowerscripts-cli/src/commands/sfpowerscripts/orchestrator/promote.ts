@@ -1,5 +1,5 @@
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import fs = require("fs-extra");
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl"
@@ -14,7 +14,7 @@ export default class Promote extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:Promote -d path/to/artifacts -v <org>`
+    `$ sfdx sfpowerscripts:orchestrator:promote -d path/to/artifacts -v <org>`
   ];
 
   protected static requiresUsername = false;
