@@ -4,6 +4,7 @@ import { flags } from "@salesforce/command";
 import * as path from "path";
 import { registerNamespace, sfdx } from "../../../impl/pool/sfdxnode/parallel";
 import PrepareImpl from "../../../impl/prepare/PrepareImpl";
+import { loadSFDX } from "../../../impl/pool/sfdxnode/GetNodeWrapper";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
@@ -98,17 +99,4 @@ export default class Prepare extends SfpowerscriptsCommand {
   }
 }
 
-export function loadSFDX() {
-  let salesforce_alm_path = "";
-  try {
-    salesforce_alm_path = path.dirname(require.resolve("salesforce-alm"));
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
 
-  registerNamespace({
-    commandsDir: path.join(salesforce_alm_path, "commands"),
-    namespace: "force",
-  });
-}

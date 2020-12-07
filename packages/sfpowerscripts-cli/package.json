@@ -16,6 +16,8 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",
+    "hook-std": "^2.0.0",
+    "ts-node": "^9.0.0",
     "@salesforce/command": "^2",
     "@salesforce/core": "^2",
     "adm-zip": "^0.4.16",

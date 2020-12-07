@@ -3,7 +3,7 @@ import { AnyJson } from "@salesforce/ts-types";
 import poolListImpl from "../../../impl/pool/PoolListImpl";
 import { isNullOrUndefined } from "util";
 import { ScratchOrg } from "../../../impl/pool/utils/ScratchOrgUtils";
-i
+
 
 
 // Initialize Messages with the current plugin directory
@@ -22,10 +22,10 @@ export default class List extends SfdxCommand {
   protected static requiresDevhubUsername = true;
 
   public static examples = [
-    `$ sfdx sfpowerkit:pool:list -t core `,
-    `$ sfdx sfpowerkit:pool:list -t core -v devhub`,
-    `$ sfdx sfpowerkit:pool:list -t core -v devhub -m`,
-    `$ sfdx sfpowerkit:pool:list -t core -v devhub -m -a`,
+    `$ sfdx sfpowerscripts:pool:list -t core `,
+    `$ sfdx sfpowerscripts:pool:list -t core -v devhub`,
+    `$ sfdx sfpowerscripts:pool:list -t core -v devhub -m`,
+    `$ sfdx sfpowerscripts:pool:list -t core -v devhub -m -a`,
   ];
 
   protected static flagsConfig = {

@@ -144,7 +144,7 @@ export default class PrepareImpl {
     }
     return true;
   }
-  
+
   private async getPackageArtifacts() {
     let packages = ManifestHelpers.getSFDXPackageManifest(null)[
       "packageDirectories"
@@ -160,6 +160,8 @@ export default class PrepareImpl {
       });
     } else {
       //Build All Artifacts
+      console.log("Build packages, as script to fetch artifacts where not provided, This is not ideal, as its built from the current head");
+      console.log("Pools should be prepared with previously validated packages");
       let buildImpl = new BuildImpl(
         this.configFilePath,
         null,
@@ -174,6 +176,10 @@ export default class PrepareImpl {
         null
       );
       let { generatedPackages, failedPackages } = await buildImpl.exec();
+
+
+      if(failedPackages.length>0)
+       throw new Error("Unable to build packages, Following packages failed to build"+failedPackages);
 
       for (let generatedPackage of generatedPackages) {
         await ArtifactGenerator.generateArtifact(
@@ -362,7 +368,7 @@ export default class PrepareImpl {
 
   private async scriptExecutor(
     scratchOrg: ScratchOrg,
-    hubOrgUserName
+    hubOrgUserName:string
   ): Promise<ScriptExecutionResult> {
     //Need to call PrepareAnOrgImpl
 

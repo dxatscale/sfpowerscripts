@@ -1,4 +1,3 @@
-import { Org } from "@salesforce/core";
 import { SfdxApi } from "../pool/sfdxnode/types";
 import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
 import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
@@ -14,7 +13,7 @@ export default class PrepareASingleOrgImpl {
   public constructor(
     private sfdx: SfdxApi,
     private scratchOrg: ScratchOrg,
-    private hubOrg: Org,
+    private hubOrg: string,
     private isAllPackagesToBeInstalled: boolean,
     private keys: string
   ) {}
@@ -31,7 +30,7 @@ export default class PrepareASingleOrgImpl {
         `sfpowerscripts--log${EOL}`
       );
       SFPLogger.isSupressLogs=true;
-      let packageLogger:any = `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}`;
+      let packageLogger:any = `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`;
       SFPLogger.log(`Installing sfpowerscripts_artifact package to the ${this.scratchOrg.alias}`,null,packageLogger);
 
       await this.sfdx.force.package.install({
@@ -43,10 +42,13 @@ export default class PrepareASingleOrgImpl {
         wait: 60,
       });
 
+      SFPLogger.log(`Installing package depedencies to the ${this.scratchOrg.alias}`,null,packageLogger);
+
+      SFPLogger.isSupressLogs=true;
       // Install Dependencies
       let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
         this.scratchOrg.username,
-        this.hubOrg.getUsername(),
+        this.hubOrg,
         60,
         null,
         this.keys,
@@ -59,6 +61,8 @@ export default class PrepareASingleOrgImpl {
       }
 
       if (this.isAllPackagesToBeInstalled) {
+
+        SFPLogger.log(`Deploying all packages to  ${this.scratchOrg.alias}`,null,packageLogger);
 
        
         //Deploy the fetched artifacts to the org
