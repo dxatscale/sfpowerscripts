@@ -3,7 +3,7 @@ import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from "@salesforce/command";
 import * as path from "path";
 import { registerNamespace, sfdx } from "../../../impl/pool/sfdxnode/parallel";
-import PrepareScratchOrgPoolImpl from "../../../impl/prepare/PrepareImpl";
+import PrepareImpl from "../../../impl/prepare/PrepareImpl";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
@@ -43,7 +43,6 @@ export default class Prepare extends SfpowerscriptsCommand {
     }),
     artifactfetchscripts: flags.filepath({
       required: false,
-      dependsOn: ["installallpackages"],
       char: "s",
       description: messages.getMessage("artifactfetchscriptsDescription"),
     }),
@@ -77,7 +76,7 @@ export default class Prepare extends SfpowerscriptsCommand {
 
     loadSFDX();
 
-    let scratchOrgPoolImpl = new PrepareScratchOrgPoolImpl(
+    let prepareImpl = new PrepareImpl(
       this.hubOrg,
       this.flags.apiversion,
       sfdx,
@@ -92,7 +91,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     );
 
     try {
-      return !(await scratchOrgPoolImpl.poolScratchOrgs());
+      return !(await prepareImpl.poolScratchOrgs());
     } catch (err) {
       throw new SfdxError("Unable to execute command .. " + err);
     }

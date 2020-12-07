@@ -1,5 +1,6 @@
 import ScratchOrgUtils, { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
-import { LoggerLevel, Org } from "@salesforce/core";
+import { Org } from "@salesforce/core";
+import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import * as fs from "fs-extra";
 import Bottleneck from "bottleneck";
 import * as rimraf from "rimraf";
@@ -9,6 +10,7 @@ import PrepareASingleOrgImpl, {
 } from "./PrepareASingleOrgImpl";
 import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
 import child_process = require("child_process");
+import BuildImpl from "../parallelBuilder/BuildImpl";
 
 export default class PrepareImpl {
   private poolConfig: PoolConfig;
@@ -28,8 +30,8 @@ export default class PrepareImpl {
     private configFilePath: string,
     private batchSize: number,
     private fetchArtifactScript: string,
-    private installAll:boolean,
-    private keys:string,
+    private installAll: boolean,
+    private keys: string
   ) {
     this.limiter = new Bottleneck({
       maxConcurrent: this.batchSize,
@@ -43,7 +45,6 @@ export default class PrepareImpl {
   public async poolScratchOrgs(): Promise<boolean> {
     await ScratchOrgUtils.checkForNewVersionCompatible(this.hubOrg);
     let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
-   
 
     await this.hubOrg.refreshAuth();
 
@@ -52,7 +53,7 @@ export default class PrepareImpl {
     );
 
     if (!preRequisiteCheck) {
-     console.log(
+      console.log(
         "Required Prerequisite fields are missing in the DevHub, Please look into the wiki to getting the fields deployed in DevHub"
       );
       return false;
@@ -80,11 +81,11 @@ export default class PrepareImpl {
 
     if (this.totalToBeAllocated === 0) {
       if (this.limits.ActiveScratchOrgs.Remaining > 0)
-       console.log(
+        console.log(
           `The tag provided ${this.poolConfig.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`
         );
       else
-       console.log(
+        console.log(
           `There is no capacity to create a pool at this time, Please try again later`
         );
       return;
@@ -97,34 +98,20 @@ export default class PrepareImpl {
     rimraf.sync("script_exec_outputs");
     fs.mkdirpSync("script_exec_outputs");
 
-    
-     //Create Artifact Directory
-     rimraf.sync("artifacts");
-     fs.mkdirpSync("artifacts");
+    //Create Artifact Directory
+    rimraf.sync("artifacts");
+    fs.mkdirpSync("artifacts");
 
-     //Fetch Latest Artifacts to Artifact Directory
-     if (this.installAll) {
-       let packages = ManifestHelpers.getSFDXPackageManifest(null)[
-         "packageDirectories"
-       ];
-
-       packages.forEach((pkg) => {
-         this.fetchArtifactFromRepositoryUsingProvidedScript(
-           pkg.package,
-           "artifacts",
-           this.fetchArtifactScript
-         );
-       });
-
-      }
-
-
+    //Fetch Latest Artifacts to Artifact Directory
+    if (this.installAll) {
+       await this.getPackageArtifacts();
+    }
 
     // Assign workers to executed scripts
     let ts = Math.floor(Date.now() / 1000);
     for (let poolUser of this.poolConfig.poolUsers) {
       for (let scratchOrg of poolUser.scratchOrgs) {
-       console.log(JSON.stringify(scratchOrg));
+        console.log(JSON.stringify(scratchOrg));
 
         let result = this.scriptExecutorWrappedForBottleneck(
           scratchOrg,
@@ -136,9 +123,9 @@ export default class PrepareImpl {
 
     let scriptExecResults = await Promise.all(scriptExecPromises);
 
-   console.log(JSON.stringify(scriptExecResults));
+    console.log(JSON.stringify(scriptExecResults));
     ts = Math.floor(Date.now() / 1000) - ts;
-   console.log(`Pool Execution completed in ${ts} Seconds`);
+    console.log(`Pool Execution completed in ${ts} Seconds`);
 
     //Commit Succesfull Scratch Orgs
     let commit_result: {
@@ -147,15 +134,56 @@ export default class PrepareImpl {
     } = await this.finalizeGeneratedScratchOrgs();
 
     if (this.totalAllocated > 0) {
-     console.log(
+      console.log(
         `Request for provisioning ${this.totalToBeAllocated} scratchOrgs of which ${this.totalAllocated} were allocated with ${commit_result.success} success and ${commit_result.failed} failures`
       );
     } else {
-     console.log(
+      console.log(
         `Request for provisioning ${this.totalToBeAllocated} scratchOrgs not successfull.`
       );
     }
     return true;
+  }
+  
+  private async getPackageArtifacts() {
+    let packages = ManifestHelpers.getSFDXPackageManifest(null)[
+      "packageDirectories"
+    ];
+
+    if (fs.existsSync(this.fetchArtifactScript)) {
+      packages.forEach((pkg) => {
+        this.fetchArtifactFromRepositoryUsingProvidedScript(
+          pkg.package,
+          "artifacts",
+          this.fetchArtifactScript
+        );
+      });
+    } else {
+      //Build All Artifacts
+      let buildImpl = new BuildImpl(
+        this.configFilePath,
+        null,
+        this.hubOrg.getUsername(),
+        null,
+        "120",
+        true,
+        false,
+        1,
+        10,
+        true,
+        null
+      );
+      let { generatedPackages, failedPackages } = await buildImpl.exec();
+
+      for (let generatedPackage of generatedPackages) {
+        await ArtifactGenerator.generateArtifact(
+          generatedPackage.package_name,
+          process.cwd(),
+          "artifacts",
+          generatedPackage
+        );
+      }
+    }
   }
 
   private setASingleUserForTagOnlyMode() {
@@ -182,7 +210,7 @@ export default class PrepareImpl {
         this.apiversion
       );
     } catch (error) {
-     console.log("Unable to connect to DevHub");
+      console.log("Unable to connect to DevHub");
       return;
     }
   }
@@ -208,7 +236,7 @@ export default class PrepareImpl {
       let count = 1;
       poolUser.scratchOrgs = new Array<ScratchOrg>();
       for (let i = 0; i < poolUser.to_allocate; i++) {
-       console.log(
+        console.log(
           `Creating Scratch  Org  ${count} of ${this.totalToBeAllocated}..`
         );
         try {
@@ -223,7 +251,7 @@ export default class PrepareImpl {
           poolUser.scratchOrgs.push(scratchOrg);
           this.totalAllocated++;
         } catch (error) {
-         console.log(`Unable to provision scratch org  ${count} ..   `);
+          console.log(`Unable to provision scratch org  ${count} ..   `);
         }
         count++;
       }
@@ -270,7 +298,7 @@ export default class PrepareImpl {
           continue;
         }
 
-       console.log(
+        console.log(
           `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias}.. Returning to Pool`
         );
 
@@ -288,11 +316,9 @@ export default class PrepareImpl {
             this.apiversion,
             activeScratchOrgRecordId
           );
-         console.log(
-            `Succesfully deleted scratchorg  ${scratchOrg.username}`
-          );
+          console.log(`Succesfully deleted scratchorg  ${scratchOrg.username}`);
         } catch (error) {
-         console.log(
+          console.log(
             `Unable to delete the scratchorg ${scratchOrg.username}..`
           );
         }
@@ -310,7 +336,7 @@ export default class PrepareImpl {
     tag: string,
     poolUser: PoolUser
   ) {
-   console.log("Remaining ScratchOrgs" + remainingScratchOrgs);
+    console.log("Remaining ScratchOrgs" + remainingScratchOrgs);
     poolUser.current_allocation = countOfActiveScratchOrgs;
     poolUser.to_allocate = 0;
     poolUser.to_satisfy_max =
@@ -330,7 +356,7 @@ export default class PrepareImpl {
       poolUser.to_allocate = remainingScratchOrgs;
     }
 
-   console.log("Computed Allocation" + JSON.stringify(poolUser));
+    console.log("Computed Allocation" + JSON.stringify(poolUser));
     return poolUser.to_allocate;
   }
 
@@ -340,11 +366,11 @@ export default class PrepareImpl {
   ): Promise<ScriptExecutionResult> {
     //Need to call PrepareAnOrgImpl
 
-   console.log(
+    console.log(
       `Executing script for ${scratchOrg.alias} with username: ${scratchOrg.username}`
     );
 
-   console.log(
+    console.log(
       `Script Execution result is being written to .sfpowerscripts/prepare_logs/${scratchOrg.alias}.log, Please note this will take a significant time depending on the  script being executed`
     );
 
