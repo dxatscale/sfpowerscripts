@@ -2,6 +2,7 @@ import { Messages } from "@salesforce/core";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from '@salesforce/command';
 import ValidateImpl from "../../../impl/validate/ValidateImpl";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
@@ -43,23 +44,31 @@ export default class Validate extends SfpowerscriptsCommand {
     coveragepercent: flags.integer({
       description: messages.getMessage('coveragePercentFlagDescription'),
       default: 75
+    }),
+    logsgroupsymbol: flags.array({
+      char: "g",
+      description: messages.getMessage("logsGroupSymbolFlagDescription")
     })
   };
 
-  async execute(): Promise<any> {
+  async execute(): Promise<void> {
+    let executionStartTime = Date.now();
+    let validateResult: boolean;
     try {
+
     let validateImpl: ValidateImpl = new ValidateImpl(
       this.flags.devhubalias,
       this.flags.pools,
       this.flags.jwtkeyfile,
       this.flags.clientid,
       this.flags.shapefile,
-      this.flags.coveragepercent
+      this.flags.coveragepercent,
+      this.flags.logsgroupsymbol
     );
 
-    let result: boolean = await validateImpl.exec();
+    let validateResult  = await validateImpl.exec();
 
-    if (result)
+    if (validateResult)
       process.exitCode=0;
     else
       process.exitCode=1;
@@ -67,6 +76,18 @@ export default class Validate extends SfpowerscriptsCommand {
     } catch (error) {
       console.log(error.message);
       process.exitCode=1;
+    } finally {
+      let totalElapsedTime: number = Date.now() - executionStartTime;
+
+      SFPStatsSender.logGauge(
+        "validate.duration",
+        totalElapsedTime
+      );
+
+      if (validateResult)
+        SFPStatsSender.logCount("validate.succeeded");
+      else
+        SFPStatsSender.logCount("validate.failed");
     }
   }
 }

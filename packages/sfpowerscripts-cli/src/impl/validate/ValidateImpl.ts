@@ -1,8 +1,11 @@
 import child_process = require("child_process");
 import BuildImpl from "../parallelBuilder/BuildImpl";
-import DeployImpl from "../deploy/DeployImpl";
+import DeployImpl, { DeploymentMode } from "../deploy/DeployImpl";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
+import { Stage } from "../Stage";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
+
 
 export default class ValidateImpl {
 
@@ -12,7 +15,8 @@ export default class ValidateImpl {
     private jwt_key_file: string,
     private client_id: string,
     private shapeFile: string,
-    private coverageThreshold: number
+    private coverageThreshold: number,
+    private logsGroupSymbol: string[]
   ){}
 
   public async exec(): Promise<boolean>{
@@ -24,12 +28,19 @@ export default class ValidateImpl {
 
     this.authenticateToScratchOrg(targetusername);
 
+    if (this.shapeFile) {
+      this.deployShapeFile(this.shapeFile, targetusername);
+    }
+
     let packagesToTags = this.getPackagesToTags();
 
     await this.buildChangedSourcePackages(packagesToTags);
 
+    // Un-suppress logs for deployment
+    SFPLogger.isSupressLogs = false;
+    SFPLogger.logLevel = LoggerLevel.ERROR;
 
-    let deploymentResult = await this.deploySourcePackages();
+    let deploymentResult = await this.deploySourcePackages(targetusername);
 
     if (deploymentResult.failed.length > 0)
       return false;
@@ -37,19 +48,32 @@ export default class ValidateImpl {
       return true;
   }
 
-  private async deploySourcePackages() {
+  private deployShapeFile(shapeFile: string, targetusername: string) {
+    child_process.execSync(
+      `sfdx force:mdapi:deploy -f ${shapeFile} -u ${targetusername} -w 30 --ignorewarnings`,
+      {
+        stdio: 'inherit',
+        encoding: 'utf8'
+      }
+    );
+  }
+
+  private async deploySourcePackages(targetusername: string) {
     let deployStartTime: number = Date.now();
 
     let deployImpl: DeployImpl = new DeployImpl(
-      "scratchorg",
+      targetusername,
       "artifacts",
       "120",
-      null,
-      null,
-      true,
-      false,
-      this.coverageThreshold
+      Stage.VALIDATE,
+      null
     );
+
+    deployImpl.setDeploymentMode(DeploymentMode.SOURCEPACKAGES);
+    deployImpl.activateApexUnitTests(true);
+    deployImpl.skipIfPackageExistsInTheOrg(false);
+    deployImpl.setCoverageThreshold(this.coverageThreshold);
+    deployImpl.setLogSymbols(this.logsGroupSymbol);
 
     let deploymentResult = await deployImpl.exec();
 
@@ -214,6 +238,9 @@ export default class ValidateImpl {
     deploymentResult: {deployed: string[], skipped: string[], failed: string[]},
     totalElapsedTime: number
   ) {
+    if (this.logsGroupSymbol?.[0])
+      console.log(this.logsGroupSymbol[0], "Deployment Summary");
+
     console.log(
       `----------------------------------------------------------------------------------------------------`
     );
