@@ -15,7 +15,6 @@ import {
 } from "@dxatscale/sfpowerscripts.core/src/package/PackageInstallationResult";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
 import { EOL } from "os";
-import { off } from "process";
 import { Stage } from "../Stage";
 
 export enum DeploymentMode {
@@ -25,9 +24,9 @@ export enum DeploymentMode {
 
 export default class DeployImpl {
   private logsGroupSymbol: string[];
-  private deploymentMode: DeploymentMode;
-  private coverageThreshold: number;
-  private isTestsToBeTriggered: boolean;
+  private deploymentMode: DeploymentMode=DeploymentMode.NORMAL;
+  private coverageThreshold: number=75;
+  private isTestsToBeTriggered: boolean=false;
   private skip_if_package_installed: boolean = true;
 
   constructor(
