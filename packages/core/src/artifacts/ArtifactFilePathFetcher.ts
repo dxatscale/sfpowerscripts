@@ -1,6 +1,6 @@
 import path = require("path");
 import * as fs from "fs-extra";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
 const glob = require("glob");
 import AdmZip = require("adm-zip");
 import semver = require("semver");
@@ -29,7 +29,7 @@ export default class ArtifactFilePathFetcher {
       artifacts = ArtifactFilePathFetcher.findArtifactMetadata(artifactDirectory, sfdx_package);
     }
 
-    SFPLogger.log("Artifacts", artifacts);
+    SFPLogger.log("Artifacts", artifacts, null, LoggerLevel.INFO);
 
     for(let artifact of artifacts) {
       let artifactFilePaths: ArtifactFilePaths
@@ -47,7 +47,7 @@ export default class ArtifactFilePathFetcher {
       result.push(artifactFilePaths);
     }
 
-    SFPLogger.log("Artifact File Paths",JSON.stringify(result));
+    SFPLogger.log("Artifact File Paths",JSON.stringify(result), null, LoggerLevel.INFO);
 
     return result;
   }
@@ -93,7 +93,7 @@ export default class ArtifactFilePathFetcher {
 
     fs.mkdirpSync(unzippedArtifactsDirectory);
 
-    SFPLogger.log(`Unzipping ${artifact} to ${unzippedArtifactsDirectory}`);
+    SFPLogger.log(`Unzipping ${artifact} to ${unzippedArtifactsDirectory}`, null, null, LoggerLevel.INFO);
     let zip = new AdmZip(artifact);
 
     // Overwrite existing files
@@ -160,9 +160,9 @@ export default class ArtifactFilePathFetcher {
     );
 
     if (sfdx_package && artifacts.length > 1) {
-      SFPLogger.log(`Found more than one artifact for ${sfdx_package}`);
+      SFPLogger.log(`Found more than one artifact for ${sfdx_package}`, null, null, LoggerLevel.INFO);
       let latestArtifact: string = ArtifactFilePathFetcher.getLatestArtifact(artifacts);
-      SFPLogger.log(`Using latest artifact ${latestArtifact}`);
+      SFPLogger.log(`Using latest artifact ${latestArtifact}`, null, null, LoggerLevel.INFO);
       return [latestArtifact];
     } else
       return artifacts;
@@ -246,7 +246,10 @@ export default class ArtifactFilePathFetcher {
       artifacts.length === 0 && isToSkipOnMissingArtifact
     ) {
       SFPLogger.log(
-        `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${isToSkipOnMissingArtifact}`
+        `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${isToSkipOnMissingArtifact}`,
+        null,
+        null,
+        LoggerLevel.INFO
       );
       return true;
     }

@@ -8,7 +8,7 @@ export type MDAPIPackageArtifact = {
 };
 import { readdirSync, readFileSync, existsSync } from "fs";
 import ignore from "ignore";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
 const glob = require("glob");
 
 export default class MDAPIPackageGenerator {
@@ -62,11 +62,17 @@ export default class MDAPIPackageGenerator {
 
       if (!isNullOrUndefined(projectDir))
         SFPLogger.log(
-          `Converting to MDAPI Format ${sourceDirectory} in project directory ${projectDir}`
+          `Converting to MDAPI Format ${sourceDirectory} in project directory ${projectDir}`,
+          null,
+          null,
+          LoggerLevel.INFO
         );
       else
         SFPLogger.log(
-          `Converting to MDAPI Format ${sourceDirectory} in project directory`
+          `Converting to MDAPI Format ${sourceDirectory} in project directory`,
+          null,
+          null,
+          LoggerLevel.INFO
         );
       child_process.execSync(
         `npx sfdx force:source:convert -r ${sourceDirectory}  -d ${mdapiDir}`,
@@ -77,7 +83,7 @@ export default class MDAPIPackageGenerator {
       if (!isNullOrUndefined(projectDir))
         mdapiDirPath = path.resolve(projectDir, mdapiDir);
       else mdapiDirPath = path.resolve(mdapiDir);
-      SFPLogger.log(`Converting to MDAPI  Format Completed at ${mdapiDirPath}`);
+      SFPLogger.log(`Converting to MDAPI  Format Completed at ${mdapiDirPath}`, null, null, LoggerLevel.INFO);
       return mdapiDirPath;
     } catch (error) {
       SFPLogger.log(

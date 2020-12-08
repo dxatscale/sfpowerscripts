@@ -6,7 +6,7 @@ import {
 } from "fs";
 import { onExit } from "../utils/OnExit";
 import ManifestHelpers from "../manifest/ManifestHelpers";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
 const path = require("path");
 
 
@@ -43,7 +43,7 @@ export default class DeploySourceToOrgImpl {
         return deploySourceResult;
       }
 
-      SFPLogger.log("Converting source to mdapi");
+      SFPLogger.log("Converting source to mdapi", null, null, LoggerLevel.INFO);
       let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
         this.project_directory,
         this.source_directory

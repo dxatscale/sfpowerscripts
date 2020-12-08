@@ -10,7 +10,7 @@ import {
   PackageInstallationResult,
   PackageInstallationStatus,
 } from "../package/PackageInstallationResult";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, {LoggerLevel} from "../utils/SFPLogger";
 
 import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
 import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
@@ -46,7 +46,7 @@ export default class InstallSourcePackageImpl {
         this.isPackageCheckHandledByCaller
       );
       if (isPackageInstalled) {
-        SFPLogger.log("Skipping Package Installation",null,this.packageLogger);
+        SFPLogger.log("Skipping Package Installation",null,this.packageLogger, LoggerLevel.INFO);
         return { result: PackageInstallationStatus.Skipped };
       }
     }
@@ -88,7 +88,7 @@ export default class InstallSourcePackageImpl {
 
         //Reconcile Failed, Bring back the original profiles
         if (isReconcileErrored && profileFolders.length > 0) {
-          SFPLogger.log("Restoring original profiles as preprocessing failed",null,this.packageLogger);
+          SFPLogger.log("Restoring original profiles as preprocessing failed",null,this.packageLogger, LoggerLevel.INFO);
           profileFolders.forEach((folder) => {
             fs.copySync(
               path.join(tempDir, folder),
@@ -134,7 +134,7 @@ export default class InstallSourcePackageImpl {
           }
         } catch (error) {
           SFPLogger.log(
-            "Failed to apply reconcile the second time, Partial Metadata applied",null,this.packageLogger
+            "Failed to apply reconcile the second time, Partial Metadata applied",null,this.packageLogger, LoggerLevel.INFO
           );
         }
 
@@ -200,18 +200,18 @@ export default class InstallSourcePackageImpl {
           this.sourceDirectory
         );
 
-        SFPLogger.log("Executing post-deployment step: AssignPermissionSets",null,this.packageLogger);
+        SFPLogger.log("Executing post-deployment step: AssignPermissionSets",null,this.packageLogger, LoggerLevel.INFO);
         assignPermissionSetsImpl.exec();
       }
     } catch (error) {
-      SFPLogger.log("Unable to apply permsets, skipping",null,this.packageLogger);
+      SFPLogger.log("Unable to apply permsets, skipping",null,this.packageLogger, LoggerLevel.INFO);
     }
   }
 
   private async applyDestructiveChanges() {
     try {
       SFPLogger.log(
-        "Attempt to delete components mentioned in destructive manifest",null,this.packageLogger
+        "Attempt to delete components mentioned in destructive manifest",null,this.packageLogger, LoggerLevel.INFO
       );
       let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
         this.targetusername,
@@ -223,7 +223,8 @@ export default class InstallSourcePackageImpl {
       SFPLogger.log(
         "We attempted a deletion of components, However were are not succesfull. Either the components are already deleted or there are components which have dependency to components in the manifest, Please check whether this manifest works!",
         null,
-        this.packageLogger
+        this.packageLogger,
+        LoggerLevel.INFO
       );
     }
   }
@@ -270,7 +271,8 @@ export default class InstallSourcePackageImpl {
           `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}` +
           `-------------------------------------------------------------------------------------------------------------`,
           null,
-          this.packageLogger
+          this.packageLogger,
+          LoggerLevel.WARN
       );
       return true;
     } else if (
@@ -286,7 +288,8 @@ export default class InstallSourcePackageImpl {
           `Please consider adding test classes for the classes in the package ${EOL}` +
           `-------------------------------------------------------------------------------------------------------------`,
           null,
-          this.packageLogger
+          this.packageLogger,
+          LoggerLevel.WARN
       );
       return true;
     } else return false;
@@ -301,7 +304,7 @@ export default class InstallSourcePackageImpl {
     let isReconcileActivated: boolean = false;
     let isReconcileErrored: boolean = false;
     try {
-      SFPLogger.log("Attempting reconcile to profiles",null,this.packageLogger);
+      SFPLogger.log("Attempting reconcile to profiles",null,this.packageLogger, LoggerLevel.INFO);
       //copy the original profiles to temporary location
       profileFolders = glob.sync("**/profiles", {
         cwd: path.join(sourceDirectoryPath),
@@ -322,7 +325,7 @@ export default class InstallSourcePackageImpl {
       await reconcileProfileAgainstOrg.exec();
       isReconcileActivated = true;
     } catch (err) {
-      SFPLogger.log("Failed to reconcile profiles:" + err,null,this.packageLogger);
+      SFPLogger.log("Failed to reconcile profiles:" + err,null,this.packageLogger, LoggerLevel.INFO);
       isReconcileErrored = true;
     }
     return { profileFolders, isReconcileActivated, isReconcileErrored };
@@ -383,7 +386,7 @@ export default class InstallSourcePackageImpl {
       let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
 
       if (!profileReconcile.result) {
-        SFPLogger.log("Unable to deploy reconciled  profiles",null,this.packageLogger);
+        SFPLogger.log("Unable to deploy reconciled  profiles",null,this.packageLogger, LoggerLevel.INFO);
       }
     }
   }
@@ -409,7 +412,10 @@ export default class InstallSourcePackageImpl {
           ` -------------------------WARNING! SKIPPING TESTS AS ORG TYPE CANNOT BE DETERMINED! ------------------------------------${EOL}` +
             `Tests are mandatory for deployments to production and cannot be skipped. This deployment might fail as org${EOL}` +
             `type cannot be determined` +
-            `-------------------------------------------------------------------------------------------------------------${EOL}`
+            `-------------------------------------------------------------------------------------------------------------${EOL}`,
+            null,
+            null,
+            LoggerLevel.WARN
         );
 
         mdapi_options["testlevel"] = "NoTestRun";
@@ -420,14 +426,20 @@ export default class InstallSourcePackageImpl {
         SFPLogger.log(
           ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
             `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
-            `-------------------------------------------------------------------------------------------------------------`
+            `-------------------------------------------------------------------------------------------------------------`,
+            null,
+            null,
+            LoggerLevel.WARN
         );
         mdapi_options["testlevel"] = "NoTestRun";
       } else {
         SFPLogger.log(
           ` -------------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
             `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
-            `-------------------------------------------------------------------------------------------------------------`
+            `-------------------------------------------------------------------------------------------------------------`,
+            null,
+            null,
+            LoggerLevel.WARN
         );
         mdapi_options["testlevel"] = "RunLocalTests";
       }

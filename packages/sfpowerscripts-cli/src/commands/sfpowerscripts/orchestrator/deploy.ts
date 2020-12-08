@@ -3,7 +3,6 @@ import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import DeployImpl, { DeploymentMode } from "../../../impl/deploy/DeployImpl";
-import { Stage } from "../../../impl/Stage";
 
 
 // Initialize Messages with the current plugin directory
@@ -73,7 +72,7 @@ export default class Deploy extends SfpowerscriptsCommand {
         this.flags.waittime,
         tags,
       );
- 
+
       deployImpl.activateApexUnitTests(false);
       deployImpl.setDeploymentMode(DeploymentMode.NORMAL)
       deployImpl.skipIfPackageExistsInTheOrg(this.flags.skipifalreadyinstalled);

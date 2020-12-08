@@ -8,7 +8,7 @@
   "batchsize": "Number of parallel executors to be used while creating the pool",
   "installallDescription": "Install the dependencies,along with all the packages in the repo as source packages to the org, thus reducing  time spent on validation",
   "installationModeDescription": "By default, all the packages(excluding data) are installed as source packages, override this flag to install the packages as it is",
-  "keyDescription": "Keys to be used while installing any managed package dependent",
+  "keysDescription": "Keys to be used while installing any managed package dependent",
   "succeedondeploymenterrorsDescription": "Do not fail the scratch orgs, if a package failed to deploy, return the scratch org with packages till the last failure",
   "apiversion": "API version to be used"
 }
