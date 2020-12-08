@@ -1,5 +1,5 @@
 import path = require("path");
-import fs from "fs-extra";
+import * as fs from "fs-extra";
 import SFPLogger from "../utils/SFPLogger";
 const glob = require("glob");
 import AdmZip = require("adm-zip");
