@@ -17,11 +17,15 @@ const createParallelCommand: CreateCommandFunc = (
 ) => (flags: Flags, opts: Opts) =>
   new Promise((resolve, reject) => {
     let child_path = __dirname.toString();
-    if (path.basename(path.dirname(child_path)) == "src") {
+
+    
+    if (path.basename(path.dirname(child_path)) == "pool") {
       //Linked
       child_path = path.join(
-        path.dirname(path.dirname(child_path)),
+        path.dirname(path.dirname(path.dirname(path.dirname(child_path)))),
         "lib",
+        "impl",
+        "pool",
         "sfdxnode"
       );
     }

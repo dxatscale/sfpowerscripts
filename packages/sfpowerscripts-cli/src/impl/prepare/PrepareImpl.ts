@@ -1,21 +1,30 @@
-import ScratchOrgUtils, { ScratchOrg } from "./utils/ScratchOrgUtils";
-import { LoggerLevel, Org } from "@salesforce/core";
+import ScratchOrgUtils, { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
+import { Org } from "@salesforce/core";
+import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import * as fs from "fs-extra";
 import Bottleneck from "bottleneck";
 import * as rimraf from "rimraf";
-import { SfdxApi } from "./sfdxnode/types";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import { SfdxApi } from "../pool/sfdxnode/types";
 import PrepareASingleOrgImpl, {
   ScriptExecutionResult,
-} from "../PrepareASingleOrgImpl";
+} from "./PrepareASingleOrgImpl";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
+import child_process = require("child_process");
+import BuildImpl from "../parallelBuilder/BuildImpl";
 
-export default class PoolCreateImpl {
+export default class PrepareImpl {
   private poolConfig: PoolConfig;
   private totalToBeAllocated: number;
   private limits;
   private totalAllocated: number = 0;
   private limiter;
   private scriptExecutorWrappedForBottleneck;
+  private fetchArtifactScript: string;
+  private keys: string
+  private installAll:boolean;
+  private installAsSourcePackages: boolean;
+  private succeedOnDeploymentErrors: boolean;
+
 
   public constructor(
     private hubOrg: Org,
@@ -25,10 +34,7 @@ export default class PoolCreateImpl {
     private expiry: number,
     private max_allocation: number,
     private configFilePath: string,
-    private batchSize: number,
-    private fetchArtifactScript: string,
-    private installAll:boolean,
-    private keys:string,
+    private batchSize: number
   ) {
     this.limiter = new Bottleneck({
       maxConcurrent: this.batchSize,
@@ -39,10 +45,28 @@ export default class PoolCreateImpl {
     );
   }
 
+  public setArtifactFetchScript(fetchArtifactScript:string)
+  {
+      this.fetchArtifactScript=fetchArtifactScript;
+  }
+
+  public setInstallationBehaviour(installAll:boolean,installAsSourcePackages:boolean,succeedOnDeploymentErrors:boolean)
+  {
+    this.installAll =installAll;
+    this.installAsSourcePackages=installAsSourcePackages;
+    this.succeedOnDeploymentErrors=succeedOnDeploymentErrors;
+  }
+
+  public setPackageKeys(keys:string)
+  {
+    this.keys=keys;
+  }
+
+  
+
   public async poolScratchOrgs(): Promise<boolean> {
     await ScratchOrgUtils.checkForNewVersionCompatible(this.hubOrg);
     let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
-   
 
     await this.hubOrg.refreshAuth();
 
@@ -51,7 +75,7 @@ export default class PoolCreateImpl {
     );
 
     if (!preRequisiteCheck) {
-      SFPLogger.log(
+      console.log(
         "Required Prerequisite fields are missing in the DevHub, Please look into the wiki to getting the fields deployed in DevHub"
       );
       return false;
@@ -79,11 +103,11 @@ export default class PoolCreateImpl {
 
     if (this.totalToBeAllocated === 0) {
       if (this.limits.ActiveScratchOrgs.Remaining > 0)
-        SFPLogger.log(
+        console.log(
           `The tag provided ${this.poolConfig.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`
         );
       else
-        SFPLogger.log(
+        console.log(
           `There is no capacity to create a pool at this time, Please try again later`
         );
       return;
@@ -96,11 +120,20 @@ export default class PoolCreateImpl {
     rimraf.sync("script_exec_outputs");
     fs.mkdirpSync("script_exec_outputs");
 
+    //Create Artifact Directory
+    rimraf.sync("artifacts");
+    fs.mkdirpSync("artifacts");
+
+    //Fetch Latest Artifacts to Artifact Directory
+    if (this.installAll) {
+       await this.getPackageArtifacts();
+    }
+
     // Assign workers to executed scripts
     let ts = Math.floor(Date.now() / 1000);
     for (let poolUser of this.poolConfig.poolUsers) {
       for (let scratchOrg of poolUser.scratchOrgs) {
-        SFPLogger.log(JSON.stringify(scratchOrg));
+        console.log(JSON.stringify(scratchOrg));
 
         let result = this.scriptExecutorWrappedForBottleneck(
           scratchOrg,
@@ -112,9 +145,9 @@ export default class PoolCreateImpl {
 
     let scriptExecResults = await Promise.all(scriptExecPromises);
 
-    SFPLogger.log(JSON.stringify(scriptExecResults), LoggerLevel.TRACE);
+    console.log(JSON.stringify(scriptExecResults));
     ts = Math.floor(Date.now() / 1000) - ts;
-    SFPLogger.log(`Pool Execution completed in ${ts} Seconds`);
+    console.log(`Pool Execution completed in ${ts} Seconds`);
 
     //Commit Succesfull Scratch Orgs
     let commit_result: {
@@ -123,15 +156,62 @@ export default class PoolCreateImpl {
     } = await this.finalizeGeneratedScratchOrgs();
 
     if (this.totalAllocated > 0) {
-      SFPLogger.log(
+      console.log(
         `Request for provisioning ${this.totalToBeAllocated} scratchOrgs of which ${this.totalAllocated} were allocated with ${commit_result.success} success and ${commit_result.failed} failures`
       );
     } else {
-      SFPLogger.log(
+      console.log(
         `Request for provisioning ${this.totalToBeAllocated} scratchOrgs not successfull.`
       );
     }
     return true;
+  }
+
+  private async getPackageArtifacts() {
+    let packages = ManifestHelpers.getSFDXPackageManifest(null)[
+      "packageDirectories"
+    ];
+
+    if (fs.existsSync(this.fetchArtifactScript)) {
+      packages.forEach((pkg) => {
+        this.fetchArtifactFromRepositoryUsingProvidedScript(
+          pkg.package,
+          "artifacts",
+          this.fetchArtifactScript
+        );
+      });
+    } else {
+      //Build All Artifacts
+      console.log("Build packages, as script to fetch artifacts where not provided, This is not ideal, as its built from the current head");
+      console.log("Pools should be prepared with previously validated packages");
+      let buildImpl = new BuildImpl(
+        this.configFilePath,
+        null,
+        this.hubOrg.getUsername(),
+        null,
+        "120",
+        true,
+        false,
+        1,
+        10,
+        true,
+        null
+      );
+      let { generatedPackages, failedPackages } = await buildImpl.exec();
+
+
+      if(failedPackages.length>0)
+       throw new Error("Unable to build packages, Following packages failed to build"+failedPackages);
+
+      for (let generatedPackage of generatedPackages) {
+        await ArtifactGenerator.generateArtifact(
+          generatedPackage.package_name,
+          process.cwd(),
+          "artifacts",
+          generatedPackage
+        );
+      }
+    }
   }
 
   private setASingleUserForTagOnlyMode() {
@@ -158,7 +238,7 @@ export default class PoolCreateImpl {
         this.apiversion
       );
     } catch (error) {
-      SFPLogger.log("Unable to connect to DevHub");
+      console.log("Unable to connect to DevHub");
       return;
     }
   }
@@ -184,7 +264,7 @@ export default class PoolCreateImpl {
       let count = 1;
       poolUser.scratchOrgs = new Array<ScratchOrg>();
       for (let i = 0; i < poolUser.to_allocate; i++) {
-        SFPLogger.log(
+        console.log(
           `Creating Scratch  Org  ${count} of ${this.totalToBeAllocated}..`
         );
         try {
@@ -199,7 +279,7 @@ export default class PoolCreateImpl {
           poolUser.scratchOrgs.push(scratchOrg);
           this.totalAllocated++;
         } catch (error) {
-          SFPLogger.log(`Unable to provision scratch org  ${count} ..   `);
+          console.log(`Unable to provision scratch org  ${count} ..   `);
         }
         count++;
       }
@@ -246,7 +326,7 @@ export default class PoolCreateImpl {
           continue;
         }
 
-        SFPLogger.log(
+        console.log(
           `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias}.. Returning to Pool`
         );
 
@@ -264,11 +344,9 @@ export default class PoolCreateImpl {
             this.apiversion,
             activeScratchOrgRecordId
           );
-          SFPLogger.log(
-            `Succesfully deleted scratchorg  ${scratchOrg.username}`
-          );
+          console.log(`Succesfully deleted scratchorg  ${scratchOrg.username}`);
         } catch (error) {
-          SFPLogger.log(
+          console.log(
             `Unable to delete the scratchorg ${scratchOrg.username}..`
           );
         }
@@ -286,7 +364,7 @@ export default class PoolCreateImpl {
     tag: string,
     poolUser: PoolUser
   ) {
-    SFPLogger.log("Remaining ScratchOrgs" + remainingScratchOrgs);
+    console.log("Remaining ScratchOrgs" + remainingScratchOrgs);
     poolUser.current_allocation = countOfActiveScratchOrgs;
     poolUser.to_allocate = 0;
     poolUser.to_satisfy_max =
@@ -306,32 +384,33 @@ export default class PoolCreateImpl {
       poolUser.to_allocate = remainingScratchOrgs;
     }
 
-    SFPLogger.log("Computed Allocation" + JSON.stringify(poolUser));
+    console.log("Computed Allocation" + JSON.stringify(poolUser));
     return poolUser.to_allocate;
   }
 
   private async scriptExecutor(
     scratchOrg: ScratchOrg,
-    hubOrgUserName
+    hubOrgUserName:string
   ): Promise<ScriptExecutionResult> {
     //Need to call PrepareAnOrgImpl
 
-    SFPLogger.log(
+    console.log(
       `Executing script for ${scratchOrg.alias} with username: ${scratchOrg.username}`
     );
 
-    SFPLogger.log(
-      `Script Execution result is being written to script_exec_outputs/${scratchOrg.alias}.log, Please note this will take a significant time depending on the  script being executed`
+    console.log(
+      `Script Execution result is being written to .sfpowerscripts/prepare_logs/${scratchOrg.alias}.log, Please note this will take a significant time depending on the  script being executed`
     );
 
     let prepareASingleOrgImpl: PrepareASingleOrgImpl = new PrepareASingleOrgImpl(
       this.sfdx,
       scratchOrg,
-      hubOrgUserName,
-      this.fetchArtifactScript,
-      this.installAll,
-      this.keys
+      hubOrgUserName
     );
+
+    prepareASingleOrgImpl.setInstallationBehaviour(this.installAll,this.installAsSourcePackages,this.succeedOnDeploymentErrors);
+    prepareASingleOrgImpl.setPackageKeys(this.keys);
+
     let result = await prepareASingleOrgImpl.prepare();
 
     if (result.isSuccess) {
@@ -354,6 +433,26 @@ export default class PoolCreateImpl {
     }
 
     return result;
+  }
+
+  private fetchArtifactFromRepositoryUsingProvidedScript(
+    packageName: string,
+    artifactDirectory: string,
+    scriptPath: string
+  ) {
+    console.log(`Fetching ${packageName} ...`);
+
+    let cmd: string;
+    if (process.platform !== "win32") {
+      cmd = `bash -e ${scriptPath} ${packageName} ${artifactDirectory}`;
+    } else {
+      cmd = `cmd.exe /c ${scriptPath} ${packageName}  ${artifactDirectory}`;
+    }
+
+    child_process.execSync(cmd, {
+      cwd: process.cwd(),
+      stdio: ["ignore", "ignore", "inherit"],
+    });
   }
 }
 

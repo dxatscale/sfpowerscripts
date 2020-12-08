@@ -16,6 +16,8 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",
+    "hook-std": "^2.0.0",
+    "ts-node": "^9.0.0",
     "@salesforce/command": "^2",
     "@salesforce/core": "^2",
     "adm-zip": "^0.4.16",
@@ -50,8 +52,8 @@
       "sfpowerscripts:orchestrator": {
         "description": "Orchestrate packages from a monorepo through its lifecycle, driven by descriptors in your sfdx-project.json"
       },
-      "sfpowerscripts:orchestrator:prepare": {
-        "description": "Prepare a pool of scratch org's to be used as ephemeral CI environments"
+      "sfpowerscripts:pool": {
+        "description": "Manage the pools crated by the orchestrator"
       }
     },
     "devPlugins": [

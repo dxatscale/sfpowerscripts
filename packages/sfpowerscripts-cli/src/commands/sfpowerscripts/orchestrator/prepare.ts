@@ -1,14 +1,14 @@
 import { Messages, SfdxError } from "@salesforce/core";
-import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from "@salesforce/command";
-import * as path from "path";
-import { registerNamespace, sfdx } from "../../../../impl/prepare/pool/sfdxnode/parallel";
-import PoolCreateImpl from "../../../../impl/prepare/pool/poolCreateImpl";
+import { sfdx } from "../../../impl/pool/sfdxnode/parallel";
+import PrepareImpl from "../../../impl/prepare/PrepareImpl";
+import { loadSFDX } from "../../../impl/pool/sfdxnode/GetNodeWrapper";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
 
-export default class Create extends SfpowerscriptsCommand {
+export default class Prepare extends SfpowerscriptsCommand {
   protected static requiresDevhubUsername = true;
   protected static requiresProject = true;
 
@@ -36,20 +36,31 @@ export default class Create extends SfpowerscriptsCommand {
       char: "f",
       description: messages.getMessage("configDescription"),
     }),
-    installallpackages: flags.boolean({
+    installall: flags.boolean({
       required: false,
       default: false,
-      description: messages.getMessage("installallpackagesDescription"),
+      description: messages.getMessage("installallDescription"),
     }),
-    artifactfetchscripts: flags.filepath({
+    installassourcepackages: flags.boolean({
       required: false,
-      dependsOn: ["installallpackages"],
+      default:true,
+      dependsOn:["installall"],
+      description: messages.getMessage("installationModeDescription"),
+    }),
+    artifactfetchscript: flags.filepath({
+      required: false,
       char: "s",
-      description: messages.getMessage("artifactfetchscriptsDescription"),
+      description: messages.getMessage("artifactfetchscriptDescription"),
+    }),
+     succeedondeploymenterrors:flags.boolean({
+      required: false,
+      default:true,
+      dependsOn:["installall"],
+      description: messages.getMessage("succeedondeploymenterrorsDescription"),
     }),
     keys: flags.string({
       required: false,
-      description: messages.getMessage("artifactfetchscriptsDescription"),
+      description: messages.getMessage("keysDescription"),
     }),
     batchsize: flags.number({
       required: false,
@@ -77,7 +88,7 @@ export default class Create extends SfpowerscriptsCommand {
 
     loadSFDX();
 
-    let scratchOrgPoolImpl = new PoolCreateImpl(
+    let prepareImpl = new PrepareImpl(
       this.hubOrg,
       this.flags.apiversion,
       sfdx,
@@ -85,31 +96,16 @@ export default class Create extends SfpowerscriptsCommand {
       this.flags.expiry,
       this.flags.maxallocation,
       this.flags.config,
-      this.flags.batchsize,
-      this.flags.artifactfetchscripts,
-      this.flags.installallpackages,
-      this.flags.keys
+      this.flags.batchsize
     );
+    prepareImpl.setArtifactFetchScript(this.flags.artifactfetchscripts);
+    prepareImpl.setInstallationBehaviour(this.flags.installall,this.flags.installassourcepackages,this.flags.succeedondeploymenterrors);
+    prepareImpl.setPackageKeys(this.flags.keys);
 
     try {
-      return !(await scratchOrgPoolImpl.poolScratchOrgs());
+      return !(await prepareImpl.poolScratchOrgs());
     } catch (err) {
       throw new SfdxError("Unable to execute command .. " + err);
     }
   }
-}
-
-export function loadSFDX() {
-  let salesforce_alm_path = "";
-  try {
-    salesforce_alm_path = path.dirname(require.resolve("salesforce-alm"));
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-
-  registerNamespace({
-    commandsDir: path.join(salesforce_alm_path, "commands"),
-    namespace: "force",
-  });
 }

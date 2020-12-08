@@ -5,18 +5,15 @@ export default class PoolListImpl {
   private hubOrg: Org;
 
   private tag: string;
-  private mypool: boolean;
   private allScratchOrgs: boolean;
 
   public constructor(
     hubOrg: Org,
     tag: string,
-    mypool: boolean,
     allScratchOrgs: boolean
   ) {
     this.hubOrg = hubOrg;
     this.tag = tag;
-    this.mypool = mypool;
     this.allScratchOrgs = allScratchOrgs;
   }
 
@@ -25,7 +22,7 @@ export default class PoolListImpl {
     const results = (await ScratchOrgUtils.getScratchOrgsByTag(
       this.tag,
       this.hubOrg,
-      this.mypool,
+      null,
       !this.allScratchOrgs
     )) as any;
 
