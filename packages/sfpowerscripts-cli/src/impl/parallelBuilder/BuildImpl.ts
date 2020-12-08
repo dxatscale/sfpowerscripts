@@ -211,14 +211,14 @@ export default class BuildImpl {
 
 
   private getAllPackages(projectDirectory: string): string[] {
-  
+
       let projectConfig = ManifestHelpers.getSFDXPackageManifest(projectDirectory);
       let sfdxpackages=[];
 
       for (const pkg of projectConfig["packageDirectories"]) {
-        if(pkg .ignoreOnStage.includes(Stage.BUILD) ||
-        pkg.ignoreOnStage.includes(Stage.PREPARE) || 
-        pkg.ignoreOnStage.includes(Stage.VALIDATE) )
+        if(pkg .ignoreOnStage?.includes(Stage.BUILD) ||
+        pkg.ignoreOnStage?.includes(Stage.PREPARE) ||
+        pkg.ignoreOnStage?.includes(Stage.VALIDATE) )
         {
         continue;
         }

@@ -15,7 +15,6 @@ import {
 } from "@dxatscale/sfpowerscripts.core/src/package/PackageInstallationResult";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
 import { EOL } from "os";
-import { off } from "process";
 import { Stage } from "../Stage";
 
 export enum DeploymentMode {
@@ -84,9 +83,9 @@ export default class DeployImpl {
       for (let i = 0; i < queue.length; i++) {
 
 
-      if( queue[i].ignoreOnStage.includes(Stage.DEPLOY) ||
-          queue[i].ignoreOnStage.includes(Stage.PREPARE) || 
-          queue[i].ignoreOnStage.includes(Stage.VALIDATE) )
+      if( queue[i].ignoreOnStage?.includes(Stage.DEPLOY) ||
+          queue[i].ignoreOnStage?.includes(Stage.PREPARE) ||
+          queue[i].ignoreOnStage?.includes(Stage.VALIDATE) )
         {
           continue;
         }
@@ -115,7 +114,7 @@ export default class DeployImpl {
             : `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}`;
 
 
-        
+
 
         SFPLogger.log(
           `-------------------------Installing Package------------------------------------${EOL}` +
@@ -135,7 +134,7 @@ export default class DeployImpl {
           this.targetusername,
           artifacts[0].sourceDirectoryPath,
           packageMetadata,
-          this.isSkipTesting(queue[i]),
+          queue[i].skipTesting,
           queue[i].aliasfy,
           this.wait_time
         );
@@ -161,16 +160,28 @@ export default class DeployImpl {
           );
 
         if (this.isTestsToBeTriggered) {
-          let testResult = await this.readPackageTypeAndTriggerTests(
-            packageType,
-            packageMetadata,
-            queue[i]
-          );
-          if (!testResult.result) {
-            if (i !== queue.length - 1)
-              failed = queue.slice(i + 1).map((pkg) => pkg.package);
-            throw new Error(testResult.message);
-          } else SFPLogger.log(testResult.message, null, this.packageLogger);
+          if (packageMetadata.isApexFound) {
+            if (!queue[i].skipTesting) {
+              let testResult = await this.triggerApexTests(
+                queue[i].package,
+                this.targetusername,
+                queue[i].skipCoverageValidation,
+                this.coverageThreshold
+              );
+
+              if (!testResult.result) {
+                if (i !== queue.length - 1)
+                  failed = queue.slice(i + 1).map((pkg) => pkg.package);
+                throw new Error(testResult.message);
+              } else SFPLogger.log(testResult.message, null, this.packageLogger);
+            } else {
+              SFPLogger.log(
+                `Skipping testing of ${queue[i].package}\n`,
+                null,
+                this.packageLogger
+              );
+            }
+          }
         }
       }
 
@@ -190,34 +201,6 @@ export default class DeployImpl {
         skipped: skipped,
         failed: failed,
       };
-    }
-  }
-
-  private async readPackageTypeAndTriggerTests(
-    packageType: string,
-    packageMetadata: PackageMetadata,
-    pkgDescriptor: any
-  ) {
-    if (
-      (packageType === "unlocked" || packageType === "source") &&
-      packageMetadata.isApexFound
-    ) {
-      if (!this.isSkipTesting(pkgDescriptor)) {
-        let testResult = await this.triggerApexTests(
-          pkgDescriptor.package,
-          this.targetusername,
-          pkgDescriptor.skipCoverageValidation,
-          this.coverageThreshold
-        );
-
-        return testResult;
-      } else {
-        SFPLogger.log(
-          `Skipping testing of ${pkgDescriptor.package}\n`,
-          null,
-          this.packageLogger
-        );
-      }
     }
   }
 
@@ -274,8 +257,8 @@ export default class DeployImpl {
         throw new Error(`Unhandled package type ${packageType}`);
       }
     } else if (this.deploymentMode == DeploymentMode.SOURCEPACKAGES) {
-     
-      if (packageType === "source" || packageType === "unlocked") {
+
+      if (packageType === "source") {
         let options = {
           optimizeDeployment: false,
           skipTesting: true,
@@ -435,9 +418,6 @@ export default class DeployImpl {
     } else return false;
   }
 
-  private isSkipTesting(packageDescriptor: any): boolean {
-    return packageDescriptor.skipTesting ? true : false;
-  }
 
   /**
    * Verify that artifacts are on the same source version as HEAD
