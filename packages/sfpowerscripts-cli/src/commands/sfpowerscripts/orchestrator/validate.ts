@@ -39,18 +39,34 @@ export default class Validate extends SfpowerscriptsCommand {
     }),
     shapefile: flags.string({
       description: messages.getMessage('shapeFileFlagDescription')
+    }),
+    coveragepercent: flags.integer({
+      description: messages.getMessage('coveragePercentFlagDescription'),
+      default: 75
     })
   };
 
   async execute(): Promise<any> {
+    try {
     let validateImpl: ValidateImpl = new ValidateImpl(
       this.flags.devhubalias,
       this.flags.pools,
       this.flags.jwtkeyfile,
       this.flags.clientid,
-      this.flags.shapefile
+      this.flags.shapefile,
+      this.flags.coveragepercent
     );
 
-    await validateImpl.exec();
+    let result: boolean = await validateImpl.exec();
+
+    if (result)
+      process.exitCode=0;
+    else
+      process.exitCode=1;
+
+    } catch (error) {
+      console.log(error.message);
+      process.exitCode=1;
+    }
   }
 }
