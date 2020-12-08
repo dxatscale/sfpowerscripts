@@ -1,12 +1,12 @@
 import { Messages, SfdxError } from "@salesforce/core";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from "@salesforce/command";
-import * as path from "path";
-import { registerNamespace, sfdx } from "../../../impl/pool/sfdxnode/parallel";
+import { sfdx } from "../../../impl/pool/sfdxnode/parallel";
 import PrepareImpl from "../../../impl/prepare/PrepareImpl";
 import { loadSFDX } from "../../../impl/pool/sfdxnode/GetNodeWrapper";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import { Stage } from "../../../impl/Stage";
+
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
@@ -47,7 +47,6 @@ export default class Prepare extends SfpowerscriptsCommand {
     installassourcepackages: flags.boolean({
       required: false,
       default:true,
-      dependsOn:["installall"],
       description: messages.getMessage("installationModeDescription"),
     }),
     artifactfetchscript: flags.filepath({
@@ -57,8 +56,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     }),
      succeedondeploymenterrors:flags.boolean({
       required: false,
-      default:true,
-      dependsOn:["installall"],
+      default:false,
       description: messages.getMessage("succeedondeploymenterrorsDescription"),
     }),
     keys: flags.string({
@@ -85,6 +83,15 @@ export default class Prepare extends SfpowerscriptsCommand {
   public async execute(): Promise<any> {
 
     let executionStartTime = Date.now();
+
+
+    console.log("-----------sfpowerscripts orchestrator ------------------");
+    console.log("Stage: prepare");
+    console.log(`Requested Count of Orgs: ${this.flags.maxallocation}`);
+    console.log(`All packages in the repo to be preinstalled: ${this.flags.installall}`);
+    console.log("---------------------------------------------------------");
+
+
     let tags = {
       stage: Stage.PREPARE,
       poolName:this.flags.tag
