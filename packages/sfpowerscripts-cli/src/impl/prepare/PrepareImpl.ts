@@ -113,7 +113,7 @@ export default class PrepareImpl {
         console.log(
           `There is no capacity to create a pool at this time, Please try again later`
         );
-      return;
+      return {success:0,failed:0};
     }
 
     //Generate Scratch Orgs
