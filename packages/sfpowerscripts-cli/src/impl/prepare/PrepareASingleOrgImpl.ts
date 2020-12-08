@@ -58,7 +58,8 @@ export default class PrepareASingleOrgImpl {
         wait: 60,
       });
 
-   
+
+      SFPLogger.isSupressLogs=true;
       SFPLogger.log(`Installing package depedencies to the ${this.scratchOrg.alias}`,null,packageLogger);
 
       // Install Dependencies

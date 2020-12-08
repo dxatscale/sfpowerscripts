@@ -88,6 +88,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("Stage: prepare");
     console.log(`Requested Count of Orgs: ${this.flags.maxallocation}`);
+    console.log(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`);
     console.log(`All packages in the repo to be preinstalled: ${this.flags.installall}`);
     console.log("---------------------------------------------------------");
 
@@ -121,9 +122,21 @@ export default class Prepare extends SfpowerscriptsCommand {
 
     try {
       let results= await prepareImpl.poolScratchOrgs();
+
+      let totalElapsedTime=Date.now()-executionStartTime;      
+      console.log(
+        `-----------------------------------------------------------------------------------------------------------`
+      );
+      console.log(`Provisioned {${results.success}}  scratchorgs out of ${results.totalallocated} requested with  ${results.failed} in ${this.getFormattedTime(
+      totalElapsedTime
+      )} `)
+      console.log(
+        `----------------------------------------------------------------------------------------------------------`
+      );
+
+
       if(results.success==0)
       {
-        console.log("Unable to create atleast one scratch org in the pool");
         SFPStatsSender.logGauge(
           "prepare.failedorgs",
           results.failed,
@@ -141,6 +154,8 @@ export default class Prepare extends SfpowerscriptsCommand {
         );
       }
 
+
+
       SFPStatsSender.logGauge(
         "prepare.duration",
         (Date.now() - executionStartTime),
@@ -152,6 +167,12 @@ export default class Prepare extends SfpowerscriptsCommand {
     }
   }
 
+  private getFormattedTime(milliseconds: number): string {
+    let date = new Date(0);
+    date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
+    let timeString = date.toISOString().substr(11, 8);
+    return timeString;
+  }
  
 }
 

@@ -16,6 +16,7 @@ export default class SFPLogger {
       fs.appendFileSync(logger, `${key}${EOL}`, 'utf8')
     }
 
+
     if (!this.isSupressLogs) {
       if (value) console.log(key, value);
       else console.log(key);

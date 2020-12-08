@@ -65,6 +65,7 @@ export default class PrepareImpl {
   
 
   public async poolScratchOrgs(): Promise< {
+    totalallocated:number
     success: number;
     failed: number;
   }> {
@@ -81,7 +82,7 @@ export default class PrepareImpl {
       console.log(
         "Required Prerequisite fields are missing in the DevHub, Please look into the wiki to getting the fields deployed in DevHub"
       );
-      return {success:0,failed:this.totalToBeAllocated};
+      return {totalallocated:this.totalAllocated,success:0,failed:this.totalToBeAllocated};
     }
 
     //Set Pool Config Option
@@ -113,7 +114,7 @@ export default class PrepareImpl {
         console.log(
           `There is no capacity to create a pool at this time, Please try again later`
         );
-      return {success:0,failed:0};
+      return {totalallocated:this.totalAllocated,success:0,failed:0};
     }
 
     //Generate Scratch Orgs
@@ -133,7 +134,7 @@ export default class PrepareImpl {
     }
 
     // Assign workers to executed scripts
-    let ts = Math.floor(Date.now() / 1000);
+
     for (let poolUser of this.poolConfig.poolUsers) {
       for (let scratchOrg of poolUser.scratchOrgs) {
      
@@ -146,28 +147,12 @@ export default class PrepareImpl {
       }
     }
 
-    let scriptExecResults = await Promise.all(scriptExecPromises);
+     await Promise.all(scriptExecPromises);
 
-  
-    ts = Math.floor(Date.now() / 1000) - ts;
-    console.log(`Pool Execution completed in ${ts} Seconds`);
 
-    //Commit Succesfull Scratch Orgs
-    let commit_result: {
-      success: number;
-      failed: number;
-    } = await this.finalizeGeneratedScratchOrgs();
+    let finalizedResults = await this.finalizeGeneratedScratchOrgs();
 
-    if (this.totalAllocated > 0) {
-      console.log(
-        `Request for provisioning ${this.totalToBeAllocated} scratchOrgs of which ${this.totalAllocated} were allocated with ${commit_result.success} success and ${commit_result.failed} failures`
-      );
-    } else {
-      console.log(
-        `Request for provisioning ${this.totalToBeAllocated} scratchOrgs not successfull.`
-      );
-    }
-    return commit_result;
+    return {totalallocated:this.totalAllocated,success:finalizedResults.success,failed:finalizedResults.failed};
   }
 
   private async getPackageArtifacts() {
