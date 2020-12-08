@@ -5,6 +5,8 @@ import * as path from "path";
 import { registerNamespace, sfdx } from "../../../impl/pool/sfdxnode/parallel";
 import PrepareImpl from "../../../impl/prepare/PrepareImpl";
 import { loadSFDX } from "../../../impl/pool/sfdxnode/GetNodeWrapper";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import { Stage } from "../../../impl/Stage";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
@@ -81,6 +83,13 @@ export default class Prepare extends SfpowerscriptsCommand {
   ];
 
   public async execute(): Promise<any> {
+
+    let executionStartTime = Date.now();
+    let tags = {
+      stage: Stage.PREPARE,
+      poolName:this.flags.tag
+    }
+
     await this.hubOrg.refreshAuth();
     const hubConn = this.hubOrg.getConnection();
 
@@ -104,11 +113,39 @@ export default class Prepare extends SfpowerscriptsCommand {
     prepareImpl.setPackageKeys(this.flags.keys);
 
     try {
-      return !(await prepareImpl.poolScratchOrgs());
+      let results= await prepareImpl.poolScratchOrgs();
+      if(results.success==0)
+      {
+        console.log("Unable to create atleast one scratch org in the pool");
+        SFPStatsSender.logGauge(
+          "prepare.failedorgs",
+          results.failed,
+          tags
+        );
+    
+        process.exitCode=1;
+      }
+      else
+      {
+        SFPStatsSender.logGauge(
+          "prepare.succeededorgs",
+          results.success,
+          tags
+        );
+      }
+
+      SFPStatsSender.logGauge(
+        "prepare.duration",
+        (Date.now() - executionStartTime),
+        tags
+      );
+
     } catch (err) {
       throw new SfdxError("Unable to execute command .. " + err);
     }
   }
+
+ 
 }
 
 
