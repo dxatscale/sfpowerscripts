@@ -13,6 +13,7 @@ import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
 import { EOL } from "os";
 import * as rimraf from "rimraf";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/src/utils/SFPStatsSender";
+import { Stage } from "../Stage";
 const fs = require("fs-extra");
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
@@ -67,7 +68,7 @@ export default class BuildImpl {
     generatedPackages: PackageMetadata[];
     failedPackages: string[];
   }> {
-    this.packagesToBeBuilt = ManifestHelpers.getAllPackages(
+    this.packagesToBeBuilt = this.getAllPackages(
       this.project_directory
     );
 
@@ -210,6 +211,24 @@ export default class BuildImpl {
       generatedPackages: this.generatedPackages,
       failedPackages: this.failedPackages,
     };
+  }
+
+
+  private getAllPackages(projectDirectory: string): string[] {
+  
+      let projectConfig = ManifestHelpers.getSFDXPackageManifest(projectDirectory);
+      let sfdxpackages=[];
+
+      for (const pkg of projectConfig["packageDirectories"]) {
+        if(pkg .ignoreOnStage.includes(Stage.BUILD) ||
+        pkg.ignoreOnStage.includes(Stage.PREPARE) || 
+        pkg.ignoreOnStage.includes(Stage.VALIDATE) )
+        {
+        continue;
+        }
+      sfdxpackages.push(pkg["package"]);
+    }
+    return sfdxpackages;
   }
 
   private printQueueDetails() {

@@ -37,19 +37,31 @@ export default class Prepare extends SfpowerscriptsCommand {
       char: "f",
       description: messages.getMessage("configDescription"),
     }),
-    installallpackages: flags.boolean({
+    installall: flags.boolean({
       required: false,
       default: false,
-      description: messages.getMessage("installallpackagesDescription"),
+      description: messages.getMessage("installallDescription"),
     }),
-    artifactfetchscripts: flags.filepath({
+    installassourcepackages: flags.boolean({
+      required: false,
+      default:true,
+      dependsOn:["installall"],
+      description: messages.getMessage("installationModeDescription"),
+    }),
+    artifactfetchscript: flags.filepath({
       required: false,
       char: "s",
-      description: messages.getMessage("artifactfetchscriptsDescription"),
+      description: messages.getMessage("artifactfetchscriptDescription"),
+    }),
+     succeedondeploymenterrors:flags.boolean({
+      required: false,
+      default:true,
+      dependsOn:["installall"],
+      description: messages.getMessage("succeedondeploymenterrorsDescription"),
     }),
     keys: flags.string({
       required: false,
-      description: messages.getMessage("artifactfetchscriptsDescription"),
+      description: messages.getMessage("keysDescription"),
     }),
     batchsize: flags.number({
       required: false,
@@ -85,11 +97,11 @@ export default class Prepare extends SfpowerscriptsCommand {
       this.flags.expiry,
       this.flags.maxallocation,
       this.flags.config,
-      this.flags.batchsize,
-      this.flags.artifactfetchscripts,
-      this.flags.installallpackages,
-      this.flags.keys
+      this.flags.batchsize
     );
+    prepareImpl.setArtifactFetchScript(this.flags.artifactfetchscripts);
+    prepareImpl.setInstallationBehaviour(this.flags.installall,this.flags.installassourcepackages,this.flags.succeedondeploymenterrors);
+    prepareImpl.setPackageKeys(this.flags.keys);
 
     try {
       return !(await prepareImpl.poolScratchOrgs());

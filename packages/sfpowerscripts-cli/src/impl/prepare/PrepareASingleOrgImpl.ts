@@ -4,19 +4,34 @@ import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdx
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import * as fs from "fs-extra";
 import path = require("path");
-import DeployImpl from "../deploy/DeployImpl";
+import DeployImpl, { DeploymentMode } from "../deploy/DeployImpl";
 import { EOL } from "os";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
 export default class PrepareASingleOrgImpl {
+
+  private keys;
+  private installAll: boolean;
+  private installAsSourcePackages: boolean;
+  succeedOnDeploymentErrors: boolean;
+
   public constructor(
     private sfdx: SfdxApi,
     private scratchOrg: ScratchOrg,
-    private hubOrg: string,
-    private isAllPackagesToBeInstalled: boolean,
-    private keys: string
+    private hubOrg: string
   ) {}
+
+
+  public setPackageKeys(keys: string) {
+   this.keys=keys;
+  }
+  public setInstallationBehaviour(installAll: boolean, installAsSourcePackages: boolean, succeedOnDeploymentErrors: boolean) {
+   this.installAll = installAll;
+   this.installAsSourcePackages=installAsSourcePackages;
+   this.succeedOnDeploymentErrors=succeedOnDeploymentErrors;
+  }
+
 
   public async prepare(): Promise<ScriptExecutionResult> {
     //Install sfpowerscripts Artifact
@@ -44,6 +59,7 @@ export default class PrepareASingleOrgImpl {
 
       SFPLogger.log(`Installing package depedencies to the ${this.scratchOrg.alias}`,null,packageLogger);
 
+      //Suppress logs for installing dep
       SFPLogger.isSupressLogs=true;
       // Install Dependencies
       let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
@@ -60,7 +76,7 @@ export default class PrepareASingleOrgImpl {
         throw new Error(installationResult.message);
       }
 
-      if (this.isAllPackagesToBeInstalled) {
+      if (this.installAll) {
 
         SFPLogger.log(`Deploying all packages to  ${this.scratchOrg.alias}`,null,packageLogger);
 
@@ -70,16 +86,21 @@ export default class PrepareASingleOrgImpl {
           this.scratchOrg.username,
           "artifacts",
           "120",
-          null,
           "pool",
-          true,
-          true,
           packageLogger
         );
 
+        deployImpl.activateApexUnitTests(false);
+        deployImpl.skipIfPackageExistsInTheOrg(true);
+        if(this.installAsSourcePackages)
+         deployImpl.setDeploymentMode(DeploymentMode.SOURCEPACKAGES)
+        else
+         deployImpl.setDeploymentMode(DeploymentMode.NORMAL)
+    
+
         let deploymentResult = await deployImpl.exec();
 
-        if (deploymentResult.failed.length > 0) {
+        if (this.succeedOnDeploymentErrors==false && deploymentResult.failed.length > 0) {
           throw new Error(
             "Following Packages failed to deploy:" + deploymentResult.failed
           );

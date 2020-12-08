@@ -19,6 +19,12 @@ export default class PrepareImpl {
   private totalAllocated: number = 0;
   private limiter;
   private scriptExecutorWrappedForBottleneck;
+  private fetchArtifactScript: string;
+  private keys: string
+  private installAll:boolean;
+  private installAsSourcePackages: boolean;
+  private succeedOnDeploymentErrors: boolean;
+
 
   public constructor(
     private hubOrg: Org,
@@ -28,10 +34,7 @@ export default class PrepareImpl {
     private expiry: number,
     private max_allocation: number,
     private configFilePath: string,
-    private batchSize: number,
-    private fetchArtifactScript: string,
-    private installAll: boolean,
-    private keys: string
+    private batchSize: number
   ) {
     this.limiter = new Bottleneck({
       maxConcurrent: this.batchSize,
@@ -41,6 +44,25 @@ export default class PrepareImpl {
       this.scriptExecutor
     );
   }
+
+  public setArtifactFetchScript(fetchArtifactScript:string)
+  {
+      this.fetchArtifactScript=fetchArtifactScript;
+  }
+
+  public setInstallationBehaviour(installAll:boolean,installAsSourcePackages:boolean,succeedOnDeploymentErrors:boolean)
+  {
+    this.installAll =installAll;
+    this.installAsSourcePackages=installAsSourcePackages;
+    this.succeedOnDeploymentErrors=succeedOnDeploymentErrors;
+  }
+
+  public setPackageKeys(keys:string)
+  {
+    this.keys=keys;
+  }
+
+  
 
   public async poolScratchOrgs(): Promise<boolean> {
     await ScratchOrgUtils.checkForNewVersionCompatible(this.hubOrg);
@@ -383,10 +405,12 @@ export default class PrepareImpl {
     let prepareASingleOrgImpl: PrepareASingleOrgImpl = new PrepareASingleOrgImpl(
       this.sfdx,
       scratchOrg,
-      hubOrgUserName,
-      this.installAll,
-      this.keys
+      hubOrgUserName
     );
+
+    prepareASingleOrgImpl.setInstallationBehaviour(this.installAll,this.installAsSourcePackages,this.succeedOnDeploymentErrors);
+    prepareASingleOrgImpl.setPackageKeys(this.keys);
+
     let result = await prepareASingleOrgImpl.prepare();
 
     if (result.isSuccess) {
