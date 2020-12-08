@@ -170,7 +170,6 @@ export default class InstallSourcePackageImpl {
         deploy_id: result.deploy_id,
       };
     } catch (error) {
-      console.log(error);
       SFPStatsSender.logCount("package.installation.failure", {
         package: this.sfdx_package,
         type: "source",
