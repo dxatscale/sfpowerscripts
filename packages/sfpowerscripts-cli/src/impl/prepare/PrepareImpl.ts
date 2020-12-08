@@ -64,7 +64,10 @@ export default class PrepareImpl {
 
   
 
-  public async poolScratchOrgs(): Promise<boolean> {
+  public async poolScratchOrgs(): Promise< {
+    success: number;
+    failed: number;
+  }> {
     await ScratchOrgUtils.checkForNewVersionCompatible(this.hubOrg);
     let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
 
@@ -78,7 +81,7 @@ export default class PrepareImpl {
       console.log(
         "Required Prerequisite fields are missing in the DevHub, Please look into the wiki to getting the fields deployed in DevHub"
       );
-      return false;
+      return {success:0,failed:this.totalToBeAllocated};
     }
 
     //Set Pool Config Option
@@ -164,7 +167,7 @@ export default class PrepareImpl {
         `Request for provisioning ${this.totalToBeAllocated} scratchOrgs not successfull.`
       );
     }
-    return true;
+    return commit_result;
   }
 
   private async getPackageArtifacts() {

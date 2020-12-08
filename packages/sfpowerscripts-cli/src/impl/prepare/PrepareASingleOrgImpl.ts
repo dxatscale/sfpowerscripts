@@ -86,7 +86,7 @@ export default class PrepareASingleOrgImpl {
           this.scratchOrg.username,
           "artifacts",
           "120",
-          "pool",
+          "prepare",
           packageLogger
         );
 
