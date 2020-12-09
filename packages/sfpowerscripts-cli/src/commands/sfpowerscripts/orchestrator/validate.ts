@@ -53,6 +53,16 @@ export default class Validate extends SfpowerscriptsCommand {
 
   async execute(): Promise<void> {
     let executionStartTime = Date.now();
+
+
+    console.log("-----------sfpowerscripts orchestrator ------------------");
+    console.log("command: validate");
+    console.log(`Coverage Percentage: ${this.flags.coveragepercent}`);
+    console.log(`Using shapefile: ${this.flags.shapefile?'true':'false'}`);
+    console.log(`Pools being used: ${this.flags.pools}`);
+    console.log("---------------------------------------------------------");
+
+
     let validateResult: boolean;
     try {
 

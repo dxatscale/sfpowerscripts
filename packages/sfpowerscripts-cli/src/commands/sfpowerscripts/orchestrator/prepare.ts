@@ -86,7 +86,7 @@ export default class Prepare extends SfpowerscriptsCommand {
 
 
     console.log("-----------sfpowerscripts orchestrator ------------------");
-    console.log("Stage: prepare");
+    console.log("command: prepare");
     console.log(`Requested Count of Orgs: ${this.flags.maxallocation}`);
     console.log(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`);
     console.log(`All packages in the repo to be preinstalled: ${this.flags.installall}`);

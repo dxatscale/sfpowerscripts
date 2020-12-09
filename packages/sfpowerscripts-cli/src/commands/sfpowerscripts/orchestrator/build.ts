@@ -105,11 +105,15 @@ export default class Build extends SfpowerscriptsCommand {
       if(isValidateMode)
         isSkipValidation=true;
 
-      console.log(
-        "-----------sfpowerscripts package builder------------------"
-      );
-
-
+      console.log("-----------sfpowerscripts orchestrator ------------------");
+      console.log("command: build");
+      console.log(`Build Packages Only Changed: ${this.flags.diffcheck}`);
+      console.log(`Is Dependencies to be validated (unlocked): ${this.flags.isvalidationtobeskipped}`);
+      console.log(`Config File Path: ${this.flags.configfilepath}`);
+      console.log(`Artifact Directory: ${this.flags.artifactdir}`);
+      console.log("---------------------------------------------------------");
+  
+  
 
 
       let executionStartTime = Date.now();
