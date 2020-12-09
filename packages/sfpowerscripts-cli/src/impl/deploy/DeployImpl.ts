@@ -262,7 +262,7 @@ export default class DeployImpl {
       }
     } else if (this.deploymentMode == DeploymentMode.SOURCEPACKAGES) {
 
-      if (packageType === "source") {
+      if (packageType === "source" || packageType === "unlocked") {
         let options = {
           optimizeDeployment: false,
           skipTesting: true,
