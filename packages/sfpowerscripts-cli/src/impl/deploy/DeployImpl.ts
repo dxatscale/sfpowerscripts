@@ -366,7 +366,7 @@ export default class DeployImpl {
     return installDataPackageImpl.exec();
   }
 
-  private async triggerApexTests(
+  private triggerApexTests(
     sfdx_package: string,
     targetUsername: string,
     skipCoverageValidation: boolean,
@@ -393,7 +393,7 @@ export default class DeployImpl {
       null
     );
 
-    return await triggerApexTestImpl.exec();
+    return triggerApexTestImpl.exec();
   }
 
   /**
