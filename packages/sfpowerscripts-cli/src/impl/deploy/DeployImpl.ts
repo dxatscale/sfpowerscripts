@@ -472,17 +472,15 @@ export default class DeployImpl {
     //Ignore packages based on stage
     packagesToDeploy = packagesToDeploy.filter(
       (pkg) => {
-        if(pkg.ignoreOnStage)
-        {
-             if (pkg.ignoreOnStage?.toLowerCase()==Stage.DEPLOY ||
-                 pkg.ignoreOnStage?.toLowerCase()==Stage.PREPARE ||
-                 pkg.ignoreOnStage?.toLowerCase()==Stage.VALIDATE )
-                   return false;
-              else
-                   return true
-        }
+        if (
+          pkg.ignoreOnStage?.find( (stage) => {
+            stage = stage.toLowerCase();
+            return stage === Stage.DEPLOY || stage === Stage.VALIDATE || stage === Stage.PREPARE;
+          })
+        )
+          return false;
         else
-           return true;
+          return true;
       }
     );
 

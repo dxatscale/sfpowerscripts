@@ -217,18 +217,16 @@ export default class BuildImpl {
 
 
       let packageDescriptors =projectConfig["packageDirectories"].filter((pkg)=>{
-        if(pkg.ignoreOnStage)
-        {
-             if (pkg.ignoreOnStage?.toLowerCase()==Stage.BUILD ||
-                 pkg.ignoreOnStage?.toLowerCase()==Stage.PREPARE ||
-                 pkg.ignoreOnStage?.toLowerCase()==Stage.VALIDATE )
-                   return false;
-              else
-                   return true
-        }
+        if (
+          pkg.ignoreOnStage?.find( (stage) => {
+            stage = stage.toLowerCase();
+            return stage === Stage.BUILD || stage === Stage.VALIDATE || stage === Stage.PREPARE;
+          })
+        )
+          return false;
         else
-           return true;
-       });
+          return true;
+      });
 
       for (const pkg of packageDescriptors) {
       sfdxpackages.push(pkg["package"]);
