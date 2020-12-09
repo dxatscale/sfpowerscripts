@@ -81,7 +81,7 @@ export default class PrepareASingleOrgImpl {
 
         SFPLogger.log(`Deploying all packages to  ${this.scratchOrg.alias}`,null,packageLogger);
 
-       
+
         //Deploy the fetched artifacts to the org
         let deployImpl: DeployImpl = new DeployImpl(
           this.scratchOrg.username,
@@ -93,11 +93,12 @@ export default class PrepareASingleOrgImpl {
 
         deployImpl.activateApexUnitTests(false);
         deployImpl.skipIfPackageExistsInTheOrg(true);
+        deployImpl.setIsValidateArtifactsOnHead(false);
         if(this.installAsSourcePackages)
          deployImpl.setDeploymentMode(DeploymentMode.SOURCEPACKAGES)
         else
          deployImpl.setDeploymentMode(DeploymentMode.NORMAL)
-    
+
 
         let deploymentResult = await deployImpl.exec();
 

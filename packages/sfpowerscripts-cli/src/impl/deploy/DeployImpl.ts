@@ -28,6 +28,7 @@ export default class DeployImpl {
   private coverageThreshold: number=75;
   private isTestsToBeTriggered: boolean=false;
   private skip_if_package_installed: boolean = true;
+  private isValidateArtifactsOnHead: boolean = true;
 
   constructor(
     private targetusername: string,
@@ -58,6 +59,10 @@ export default class DeployImpl {
     this.skip_if_package_installed = skip_if_package_installed;
   }
 
+  public setIsValidateArtifactsOnHead(isValidateArtifactsOnHead: boolean) {
+    this.isValidateArtifactsOnHead = isValidateArtifactsOnHead;
+  }
+
   public async exec(): Promise<{
     deployed: string[];
     skipped: string[];
@@ -79,7 +84,8 @@ export default class DeployImpl {
         LoggerLevel.INFO
       );
 
-      await this.validateArtifacts();
+      if (this.isValidateArtifactsOnHead)
+        await this.validateArtifacts();
 
       for (let i = 0; i < queue.length; i++) {
 
