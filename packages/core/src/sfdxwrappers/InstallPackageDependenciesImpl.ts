@@ -14,7 +14,7 @@ export default class InstallPackageDepenciesImpl {
     private wait_time: number,
     private working_directory: string,
     private keys: string,
-    private apexcompileonlypackage?: boolean,
+    private apexcompileonlypackage: boolean,
     private packageLogger?:any
   ) {}
 
@@ -26,7 +26,7 @@ export default class InstallPackageDepenciesImpl {
     if (this.keys != null && this.keys.length > 0)
       command += ` -k ${this.keys}`;
 
-    SFPLogger.log("Executiong Command", command,this.packageLogger);
+    SFPLogger.log("Executing Command:", command,this.packageLogger);
 
     let child = child_process.exec(command, {
       cwd: this.working_directory,

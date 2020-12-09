@@ -112,7 +112,8 @@ export default class InstallSourcePackageImpl {
         this.sourceDirectory,
         packageDirectory,
         deploymentOptions,
-        false
+        false,
+        this.packageLogger
       );
 
       let result: DeploySourceResult = await deploySourceToOrgImpl.exec();
@@ -381,7 +382,8 @@ export default class InstallSourcePackageImpl {
         sourceDirectoryPath,
         sourceDirectory,
         deploymentOptions,
-        false
+        false,
+        this.packageLogger
       );
       let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
 

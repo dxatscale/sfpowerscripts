@@ -1,11 +1,20 @@
 import * as fs from "fs-extra";
 import { EOL } from "os";
 
+export enum LoggerLevel {
+  TRACE = 10,
+  DEBUG = 20,
+  INFO = 30,
+  WARN = 40,
+  ERROR = 50,
+  FATAL = 60
+}
+
 export default class SFPLogger {
   public static isSupressLogs = false;
-  public static logLevel: LoggerLevel;
+  public static logLevel: LoggerLevel = LoggerLevel.INFO;
 
-  static log(key: any, value?: any, logger?:any, logLevel?: LoggerLevel) {
+  static log(key: any, value?: any, logger?:any, logLevel: LoggerLevel = LoggerLevel.INFO) {
     if (logger) {
       if (value)
         try {
@@ -17,21 +26,9 @@ export default class SFPLogger {
       fs.appendFileSync(logger, `${key}${EOL}`, 'utf8')
     }
 
-    if (
-      !SFPLogger.isSupressLogs &&
-      (logLevel == null || SFPLogger.logLevel == null || SFPLogger.logLevel <= logLevel)
-    ) {
+    if (!SFPLogger.isSupressLogs && SFPLogger.logLevel <= logLevel) {
       if (value) console.log(key, value);
       else console.log(key);
     }
   }
-}
-
-export enum LoggerLevel {
-  TRACE = 10,
-  DEBUG = 20,
-  INFO = 30,
-  WARN = 40,
-  ERROR = 50,
-  FATAL = 60
 }

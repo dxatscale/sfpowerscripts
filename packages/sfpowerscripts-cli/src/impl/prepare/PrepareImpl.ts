@@ -11,7 +11,7 @@ import PrepareASingleOrgImpl, {
 import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
 import child_process = require("child_process");
 import BuildImpl from "../parallelBuilder/BuildImpl";
-
+import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
 export default class PrepareImpl {
   private poolConfig: PoolConfig;
   private totalToBeAllocated: number;
@@ -64,7 +64,11 @@ export default class PrepareImpl {
 
   
 
-  public async poolScratchOrgs(): Promise<boolean> {
+  public async poolScratchOrgs(): Promise< {
+    totalallocated:number
+    success: number;
+    failed: number;
+  }> {
     await ScratchOrgUtils.checkForNewVersionCompatible(this.hubOrg);
     let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
 
@@ -78,7 +82,7 @@ export default class PrepareImpl {
       console.log(
         "Required Prerequisite fields are missing in the DevHub, Please look into the wiki to getting the fields deployed in DevHub"
       );
-      return false;
+      return {totalallocated:this.totalAllocated,success:0,failed:this.totalToBeAllocated};
     }
 
     //Set Pool Config Option
@@ -110,7 +114,7 @@ export default class PrepareImpl {
         console.log(
           `There is no capacity to create a pool at this time, Please try again later`
         );
-      return;
+      return {totalallocated:this.totalAllocated,success:0,failed:0};
     }
 
     //Generate Scratch Orgs
@@ -130,10 +134,10 @@ export default class PrepareImpl {
     }
 
     // Assign workers to executed scripts
-    let ts = Math.floor(Date.now() / 1000);
+
     for (let poolUser of this.poolConfig.poolUsers) {
       for (let scratchOrg of poolUser.scratchOrgs) {
-        console.log(JSON.stringify(scratchOrg));
+     
 
         let result = this.scriptExecutorWrappedForBottleneck(
           scratchOrg,
@@ -143,28 +147,12 @@ export default class PrepareImpl {
       }
     }
 
-    let scriptExecResults = await Promise.all(scriptExecPromises);
+     await Promise.all(scriptExecPromises);
 
-    console.log(JSON.stringify(scriptExecResults));
-    ts = Math.floor(Date.now() / 1000) - ts;
-    console.log(`Pool Execution completed in ${ts} Seconds`);
 
-    //Commit Succesfull Scratch Orgs
-    let commit_result: {
-      success: number;
-      failed: number;
-    } = await this.finalizeGeneratedScratchOrgs();
+    let finalizedResults = await this.finalizeGeneratedScratchOrgs();
 
-    if (this.totalAllocated > 0) {
-      console.log(
-        `Request for provisioning ${this.totalToBeAllocated} scratchOrgs of which ${this.totalAllocated} were allocated with ${commit_result.success} success and ${commit_result.failed} failures`
-      );
-    } else {
-      console.log(
-        `Request for provisioning ${this.totalToBeAllocated} scratchOrgs not successfull.`
-      );
-    }
-    return true;
+    return {totalallocated:this.totalAllocated,success:finalizedResults.success,failed:finalizedResults.failed};
   }
 
   private async getPackageArtifacts() {
@@ -182,8 +170,12 @@ export default class PrepareImpl {
       });
     } else {
       //Build All Artifacts
-      console.log("Build packages, as script to fetch artifacts where not provided, This is not ideal, as its built from the current head");
+      console.log("\n");
+      console.log("---------------------------------------------------------------------------------------------")
+      console.log("Building packages, as script to fetch artifacts was not provided");
+      console.log("This is not ideal, as the artifacts are  built from the current head of the provided branch" );
       console.log("Pools should be prepared with previously validated packages");
+      console.log("---------------------------------------------------------------------------------------------")
       let buildImpl = new BuildImpl(
         this.configFilePath,
         null,
@@ -364,7 +356,7 @@ export default class PrepareImpl {
     tag: string,
     poolUser: PoolUser
   ) {
-    console.log("Remaining ScratchOrgs" + remainingScratchOrgs);
+    console.log("Remaining ScratchOrgs in the org:" + remainingScratchOrgs);
     poolUser.current_allocation = countOfActiveScratchOrgs;
     poolUser.to_allocate = 0;
     poolUser.to_satisfy_max =
@@ -384,7 +376,7 @@ export default class PrepareImpl {
       poolUser.to_allocate = remainingScratchOrgs;
     }
 
-    console.log("Computed Allocation" + JSON.stringify(poolUser));
+    console.log("Computed Allocation:" + JSON.stringify(poolUser));
     return poolUser.to_allocate;
   }
 
@@ -402,6 +394,8 @@ export default class PrepareImpl {
       `Script Execution result is being written to .sfpowerscripts/prepare_logs/${scratchOrg.alias}.log, Please note this will take a significant time depending on the  script being executed`
     );
 
+    SFPLogger.isSupressLogs=true;
+
     let prepareASingleOrgImpl: PrepareASingleOrgImpl = new PrepareASingleOrgImpl(
       this.sfdx,
       scratchOrg,
@@ -414,6 +408,7 @@ export default class PrepareImpl {
     let result = await prepareASingleOrgImpl.prepare();
 
     if (result.isSuccess) {
+      scratchOrg.isScriptExecuted=true;
       let submitInfoToPool = await ScratchOrgUtils.setScratchOrgInfo(
         {
           Id: scratchOrg.recordId,

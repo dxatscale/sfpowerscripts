@@ -215,13 +215,22 @@ export default class BuildImpl {
       let projectConfig = ManifestHelpers.getSFDXPackageManifest(projectDirectory);
       let sfdxpackages=[];
 
-      for (const pkg of projectConfig["packageDirectories"]) {
-        if(pkg .ignoreOnStage?.includes(Stage.BUILD) ||
-        pkg.ignoreOnStage?.includes(Stage.PREPARE) ||
-        pkg.ignoreOnStage?.includes(Stage.VALIDATE) )
+
+      let packageDescriptors =projectConfig["packageDirectories"].filter((pkg)=>{
+        if(pkg.ignoreOnStage)
         {
-        continue;
+             if (pkg.ignoreOnStage.toLowerCase()==Stage.BUILD ||
+                 pkg.ignoreOnStage.toLowerCase()==Stage.PREPARE ||
+                 pkg.ignoreOnStage.toLowerCase()==Stage.VALIDATE )
+                   return false;
+              else
+                   return true
         }
+        else
+           return true;
+       });
+
+      for (const pkg of packageDescriptors) {
       sfdxpackages.push(pkg["package"]);
     }
     return sfdxpackages;

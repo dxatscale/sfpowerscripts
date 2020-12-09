@@ -1,10 +1,10 @@
 export enum Stage
 {
-  ANALYZE="Analyze",
-  PREPARE="Prepare",
-  VALIDATE="Validate",
-  BUILD="Build",
-  DEPLOY="Deploy",
-  PROMOTE="Promote",
-  PUBLISH="Publish"
+  ANALYZE="analyze",
+  PREPARE="prepare",
+  VALIDATE="validate",
+  BUILD="build",
+  DEPLOY="deploy",
+  PROMOTE="promote",
+  PUBLISH="publish"
 }

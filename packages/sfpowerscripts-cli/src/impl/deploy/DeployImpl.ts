@@ -24,9 +24,9 @@ export enum DeploymentMode {
 
 export default class DeployImpl {
   private logsGroupSymbol: string[];
-  private deploymentMode: DeploymentMode;
-  private coverageThreshold: number;
-  private isTestsToBeTriggered: boolean;
+  private deploymentMode: DeploymentMode=DeploymentMode.NORMAL;
+  private coverageThreshold: number=75;
+  private isTestsToBeTriggered: boolean=false;
   private skip_if_package_installed: boolean = true;
 
   constructor(
@@ -83,12 +83,6 @@ export default class DeployImpl {
       for (let i = 0; i < queue.length; i++) {
 
 
-      if( queue[i].ignoreOnStage?.includes(Stage.DEPLOY) ||
-          queue[i].ignoreOnStage?.includes(Stage.PREPARE) ||
-          queue[i].ignoreOnStage?.includes(Stage.VALIDATE) )
-        {
-          continue;
-        }
 
         let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
           this.artifactDir,
@@ -470,6 +464,24 @@ export default class DeployImpl {
     packagesToDeploy = packagesToDeploy.filter(
       (pkg) => !this.isSkipDeployment(pkg, this.targetusername)
     );
+
+    //Ignore packages based on stage
+    packagesToDeploy = packagesToDeploy.filter(
+      (pkg) => {
+        if(pkg.ignoreOnStage)
+        {
+             if (pkg.ignoreOnStage.toLowerCase()==Stage.DEPLOY ||
+                 pkg.ignoreOnStage.toLowerCase()==Stage.PREPARE ||
+                 pkg.ignoreOnStage.toLowerCase()==Stage.VALIDATE )
+                   return false;
+              else
+                   return true
+        }
+        else
+           return true;
+      }
+    );
+
 
     if (packagesToDeploy == null || packagesToDeploy.length === 0)
       throw new Error(`No artifacts from project config to be deployed`);

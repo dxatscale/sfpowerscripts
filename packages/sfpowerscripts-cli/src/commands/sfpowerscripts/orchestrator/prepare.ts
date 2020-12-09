@@ -4,6 +4,9 @@ import { flags } from "@salesforce/command";
 import { sfdx } from "../../../impl/pool/sfdxnode/parallel";
 import PrepareImpl from "../../../impl/prepare/PrepareImpl";
 import { loadSFDX } from "../../../impl/pool/sfdxnode/GetNodeWrapper";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import { Stage } from "../../../impl/Stage";
+
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
@@ -44,7 +47,6 @@ export default class Prepare extends SfpowerscriptsCommand {
     installassourcepackages: flags.boolean({
       required: false,
       default:true,
-      dependsOn:["installall"],
       description: messages.getMessage("installationModeDescription"),
     }),
     artifactfetchscript: flags.filepath({
@@ -54,8 +56,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     }),
      succeedondeploymenterrors:flags.boolean({
       required: false,
-      default:true,
-      dependsOn:["installall"],
+      default:false,
       description: messages.getMessage("succeedondeploymenterrorsDescription"),
     }),
     keys: flags.string({
@@ -80,6 +81,23 @@ export default class Prepare extends SfpowerscriptsCommand {
   ];
 
   public async execute(): Promise<any> {
+
+    let executionStartTime = Date.now();
+
+
+    console.log("-----------sfpowerscripts orchestrator ------------------");
+    console.log("Stage: prepare");
+    console.log(`Requested Count of Orgs: ${this.flags.maxallocation}`);
+    console.log(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`);
+    console.log(`All packages in the repo to be preinstalled: ${this.flags.installall}`);
+    console.log("---------------------------------------------------------");
+
+
+    let tags = {
+      stage: Stage.PREPARE,
+      poolName:this.flags.tag
+    }
+
     await this.hubOrg.refreshAuth();
     const hubConn = this.hubOrg.getConnection();
 
@@ -103,9 +121,57 @@ export default class Prepare extends SfpowerscriptsCommand {
     prepareImpl.setPackageKeys(this.flags.keys);
 
     try {
-      return !(await prepareImpl.poolScratchOrgs());
+      let results= await prepareImpl.poolScratchOrgs();
+
+      let totalElapsedTime=Date.now()-executionStartTime;      
+      console.log(
+        `-----------------------------------------------------------------------------------------------------------`
+      );
+      console.log(`Provisioned {${results.success}}  scratchorgs out of ${results.totalallocated} requested with  ${results.failed} in ${this.getFormattedTime(
+      totalElapsedTime
+      )} `)
+      console.log(
+        `----------------------------------------------------------------------------------------------------------`
+      );
+
+
+      if(results.success==0)
+      {
+        SFPStatsSender.logGauge(
+          "prepare.failedorgs",
+          results.failed,
+          tags
+        );
+    
+        process.exitCode=1;
+      }
+      else
+      {
+        SFPStatsSender.logGauge(
+          "prepare.succeededorgs",
+          results.success,
+          tags
+        );
+      }
+
+
+
+      SFPStatsSender.logGauge(
+        "prepare.duration",
+        (Date.now() - executionStartTime),
+        tags
+      );
+
     } catch (err) {
       throw new SfdxError("Unable to execute command .. " + err);
     }
   }
+
+  private getFormattedTime(milliseconds: number): string {
+    let date = new Date(0);
+    date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
+    let timeString = date.toISOString().substr(11, 8);
+    return timeString;
+  }
+ 
 }

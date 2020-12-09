@@ -8,6 +8,7 @@ import DeployImpl, { DeploymentMode } from "../deploy/DeployImpl";
 import { EOL } from "os";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
 
+
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
 export default class PrepareASingleOrgImpl {
 
@@ -44,7 +45,7 @@ export default class PrepareASingleOrgImpl {
         `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`,
         `sfpowerscripts--log${EOL}`
       );
-      SFPLogger.isSupressLogs=true;
+
       let packageLogger:any = `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`;
       SFPLogger.log(`Installing sfpowerscripts_artifact package to the ${this.scratchOrg.alias}`,null,packageLogger);
 
@@ -57,10 +58,10 @@ export default class PrepareASingleOrgImpl {
         wait: 60,
       });
 
+
+      SFPLogger.isSupressLogs=true;
       SFPLogger.log(`Installing package depedencies to the ${this.scratchOrg.alias}`,null,packageLogger);
 
-      //Suppress logs for installing dep
-      SFPLogger.isSupressLogs=true;
       // Install Dependencies
       let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
         this.scratchOrg.username,
@@ -86,7 +87,7 @@ export default class PrepareASingleOrgImpl {
           this.scratchOrg.username,
           "artifacts",
           "120",
-          "pool",
+          "prepare",
           packageLogger
         );
 
