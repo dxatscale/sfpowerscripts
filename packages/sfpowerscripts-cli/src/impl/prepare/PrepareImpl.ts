@@ -62,7 +62,7 @@ export default class PrepareImpl {
     this.keys=keys;
   }
 
-  
+
 
   public async poolScratchOrgs(): Promise< {
     totalallocated:number
@@ -117,8 +117,6 @@ export default class PrepareImpl {
       return {totalallocated:this.totalAllocated,success:0,failed:0};
     }
 
-    //Generate Scratch Orgs
-    await this.generateScratchOrgs();
 
     // Setup Logging Directory
     rimraf.sync("script_exec_outputs");
@@ -133,11 +131,14 @@ export default class PrepareImpl {
        await this.getPackageArtifacts();
     }
 
+    //Generate Scratch Orgs
+    await this.generateScratchOrgs();
+
     // Assign workers to executed scripts
 
     for (let poolUser of this.poolConfig.poolUsers) {
       for (let scratchOrg of poolUser.scratchOrgs) {
-     
+
 
         let result = this.scriptExecutorWrappedForBottleneck(
           scratchOrg,
@@ -446,7 +447,7 @@ export default class PrepareImpl {
 
     child_process.execSync(cmd, {
       cwd: process.cwd(),
-      stdio: ["ignore", "ignore", "inherit"],
+      stdio: ["ignore", "inherit", "inherit"],
     });
   }
 }
