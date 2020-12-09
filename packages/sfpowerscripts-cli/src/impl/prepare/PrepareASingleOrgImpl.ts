@@ -3,7 +3,6 @@ import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
 import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import * as fs from "fs-extra";
-import path = require("path");
 import DeployImpl, { DeploymentMode } from "../deploy/DeployImpl";
 import { EOL } from "os";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";

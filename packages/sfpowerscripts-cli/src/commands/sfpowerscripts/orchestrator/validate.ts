@@ -63,7 +63,7 @@ export default class Validate extends SfpowerscriptsCommand {
     console.log("---------------------------------------------------------");
 
 
-    let validateResult: boolean;
+    let validateResult: boolean = false;
     try {
 
     let validateImpl: ValidateImpl = new ValidateImpl(
