@@ -219,9 +219,9 @@ export default class BuildImpl {
       let packageDescriptors =projectConfig["packageDirectories"].filter((pkg)=>{
         if(pkg.ignoreOnStage)
         {
-             if (pkg.ignoreOnStage.toLowerCase()==Stage.BUILD ||
-                 pkg.ignoreOnStage.toLowerCase()==Stage.PREPARE ||
-                 pkg.ignoreOnStage.toLowerCase()==Stage.VALIDATE )
+             if (pkg.ignoreOnStage?.toLowerCase()==Stage.BUILD ||
+                 pkg.ignoreOnStage?.toLowerCase()==Stage.PREPARE ||
+                 pkg.ignoreOnStage?.toLowerCase()==Stage.VALIDATE )
                    return false;
               else
                    return true

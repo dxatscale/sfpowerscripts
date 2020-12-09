@@ -474,9 +474,9 @@ export default class DeployImpl {
       (pkg) => {
         if(pkg.ignoreOnStage)
         {
-             if (pkg.ignoreOnStage.toLowerCase()==Stage.DEPLOY ||
-                 pkg.ignoreOnStage.toLowerCase()==Stage.PREPARE ||
-                 pkg.ignoreOnStage.toLowerCase()==Stage.VALIDATE )
+             if (pkg.ignoreOnStage?.toLowerCase()==Stage.DEPLOY ||
+                 pkg.ignoreOnStage?.toLowerCase()==Stage.PREPARE ||
+                 pkg.ignoreOnStage?.toLowerCase()==Stage.VALIDATE )
                    return false;
               else
                    return true
