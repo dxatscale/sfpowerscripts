@@ -116,7 +116,7 @@ export default class Prepare extends SfpowerscriptsCommand {
       this.flags.config,
       this.flags.batchsize
     );
-    prepareImpl.setArtifactFetchScript(this.flags.artifactfetchscripts);
+    prepareImpl.setArtifactFetchScript(this.flags.artifactfetchscript);
     prepareImpl.setInstallationBehaviour(this.flags.installall,this.flags.installassourcepackages,this.flags.succeedondeploymenterrors);
     prepareImpl.setPackageKeys(this.flags.keys);
 
