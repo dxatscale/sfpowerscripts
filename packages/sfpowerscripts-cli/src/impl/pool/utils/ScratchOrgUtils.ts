@@ -1,4 +1,4 @@
-import { Connection, LoggerLevel, Org } from "@salesforce/core";
+import { Org } from "@salesforce/core";
 let request = require("request-promise-native");
 import { SfdxApi } from "../sfdxnode/types";
 let retry = require("async-retry");
@@ -109,7 +109,7 @@ export default class ScratchOrgUtils {
     expiry: number,
     hubOrg: Org
   ): Promise<ScratchOrg> {
-    
+
 
     let result;
 
@@ -140,7 +140,7 @@ export default class ScratchOrgUtils {
       throw new error("Unable to create scratch org");
     }
 
-   
+
     let scratchOrg: ScratchOrg = {
       alias: `SO${id}`,
       orgId: result.orgId,
@@ -162,7 +162,7 @@ export default class ScratchOrgUtils {
     });
     scratchOrg.password = passwordResult.password;
 
-  
+
     return scratchOrg;
   }
 
@@ -223,14 +223,14 @@ export default class ScratchOrgUtils {
       .join(",");
 
     let query = `SELECT Id, ScratchOrg FROM ScratchOrgInfo WHERE ScratchOrg IN ( ${scratchOrgIds} )`;
-    
+
 
     return await retry(
       async (bail) => {
         const results = (await hubConn.query(query)) as any;
         let resultAsObject = this.arrayToObject(results.records, "ScratchOrg");
 
-       
+
 
         scratchOrgs.forEach((scratchOrg) => {
           scratchOrg.recordId = resultAsObject[scratchOrg.orgId]["Id"];
@@ -247,7 +247,7 @@ export default class ScratchOrgUtils {
     hubOrg: Org
   ): Promise<boolean> {
     let hubConn = hubOrg.getConnection();
-    
+
     return await retry(
       async (bail) => {
         try {
@@ -305,7 +305,7 @@ export default class ScratchOrgUtils {
       async (bail) => {
         let query = `SELECT Id, SignupUsername FROM ActiveScratchOrg WHERE ScratchOrgInfoId IN (${scrathOrgIds}) `;
 
-      
+
         const results = (await hubConn.query(query)) as any;
         return results;
       },
@@ -380,7 +380,7 @@ export default class ScratchOrgUtils {
     await retry(
       async (bail) => {
         var query_uri = `${hubConn.instanceUrl}/services/data/v${apiversion}/sobjects/ActiveScratchOrg/${id}`;
-        const info = await request({
+        await request({
           method: "delete",
           url: query_uri,
           headers: {

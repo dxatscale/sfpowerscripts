@@ -27,13 +27,12 @@ export default class PoolFetchImpl {
       true
     )) as any;
 
-    let emaiId;
 
 
     let soDetail: ScratchOrg;
 
     if (results.records.length > 0) {
-  
+
 
       for (let element of results.records) {
         let allocateSO = await ScratchOrgUtils.setScratchOrgInfo(

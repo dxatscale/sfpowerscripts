@@ -93,10 +93,10 @@ export default class BuildImpl {
       let packageToBeBuilt = [];
 
       for await (const pkg of this.packagesToBeBuilt) {
-        let { priority, type } = this.getPriorityandTypeOfAPackage(
+        let type = this.getPriorityandTypeOfAPackage(
           this.projectConfig,
           pkg
-        );
+        ).type;
 
         let diffImpl: PackageDiffImpl = new PackageDiffImpl(
           pkg,
@@ -117,10 +117,10 @@ export default class BuildImpl {
 
     //Log Packages to be built
     for await (const pkg of this.packagesToBeBuilt) {
-      let { priority, type } = this.getPriorityandTypeOfAPackage(
+      let type = this.getPriorityandTypeOfAPackage(
         this.projectConfig,
         pkg
-      );
+      ).type;
       SFPStatsSender.logCount("build.scheduled.packages", {
         package: pkg,
         type: type,
