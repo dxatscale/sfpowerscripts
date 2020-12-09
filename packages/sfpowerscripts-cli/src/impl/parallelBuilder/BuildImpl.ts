@@ -14,7 +14,7 @@ import { EOL } from "os";
 import * as rimraf from "rimraf";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/src/utils/SFPStatsSender";
 import { Stage } from "../Stage";
-const fs = require("fs-extra");
+import * as fs from "fs-extra"
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;

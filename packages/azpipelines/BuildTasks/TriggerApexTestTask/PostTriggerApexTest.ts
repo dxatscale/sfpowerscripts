@@ -1,6 +1,6 @@
 import tl = require("azure-pipelines-task-lib/task");
 import path = require("path");
-import fs = require("fs-extra");
+import * as fs from "fs-extra"
 
 async function run() {
   let taskType = tl.getVariable("Release.ReleaseId") ? "Release" : "Build";
@@ -59,8 +59,8 @@ function publishTestResults(resultsDir: string): void {
       const testRunTitle = "Apex Test Run";
 
       const tp: tl.TestPublisher = new tl.TestPublisher("JUnit");
-      
-      
+
+
       tp.publish(
         matchingTestResultsFiles,
         "true",

@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from "util";
-let fs = require("fs-extra");
+import * as fs from "fs-extra";
 let path = require("path");
 const Table = require("cli-table");
 

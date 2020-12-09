@@ -6,7 +6,7 @@ import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrap
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import { exec } from "shelljs";
-const fs = require("fs-extra");
+import * as fs from "fs-extra"
 import path = require("path");
 
 Messages.importMessagesDirectory(__dirname);

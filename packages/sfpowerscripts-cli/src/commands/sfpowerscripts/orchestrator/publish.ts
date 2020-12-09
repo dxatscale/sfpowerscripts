@@ -1,7 +1,7 @@
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import fs = require("fs-extra");
+import * as fs from "fs-extra"
 import path = require("path");
 import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";

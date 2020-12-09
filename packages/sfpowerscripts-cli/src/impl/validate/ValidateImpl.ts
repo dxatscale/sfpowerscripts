@@ -49,6 +49,7 @@ export default class ValidateImpl {
   }
 
   private deployShapeFile(shapeFile: string, targetusername: string) {
+    console.log(`Deploying scratch org shape`, shapeFile);
     child_process.execSync(
       `sfdx force:mdapi:deploy -f ${shapeFile} -u ${targetusername} -w 30 --ignorewarnings`,
       {

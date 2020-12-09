@@ -15,7 +15,7 @@ import SFPLogger, {LoggerLevel} from "../utils/SFPLogger";
 import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
 import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
 
-const fs = require("fs-extra");
+import * as fs from "fs-extra";
 const path = require("path");
 const glob = require("glob");
 const os = require("os");

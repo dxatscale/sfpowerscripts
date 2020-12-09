@@ -1,5 +1,5 @@
 import path = require("path");
-import fs = require("fs-extra");
+import * as fs from "fs-extra";
 import PackageMetadata from "../PackageMetadata";
 import GeneratePackageChangelog from "../changelog/GeneratePackageChangelog";
 import { Changelog } from "../changelog/interfaces/GenericChangelogInterfaces";

@@ -3,7 +3,7 @@ import ManifestHelpers from "../manifest/ManifestHelpers";
 import * as rimraf from "rimraf";
 import SFPLogger from "../utils/SFPLogger";
 import { mkdirpSync } from "fs-extra";
-let fs = require("fs-extra");
+import * as fs from "fs-extra";
 let path = require("path");
 
 
@@ -11,7 +11,7 @@ let path = require("path");
 
 export default class SourcePackageGenerator {
 
-  
+
   public static generateSourcePackageArtifact(
     projectDirectory: string,
     sfdx_package: string,
@@ -19,7 +19,7 @@ export default class SourcePackageGenerator {
     destructiveManifestFilePath?: string,
     configFilePath?:string
   ): string {
-    
+
     let artifactDirectory=`.sfpowerscripts/${this.makefolderid(5)}_source`, rootDirectory;
     if (!isNullOrUndefined(projectDirectory)) {
       rootDirectory = projectDirectory;
@@ -31,7 +31,7 @@ export default class SourcePackageGenerator {
        packageDirectory="";
 
     mkdirpSync(artifactDirectory);
-       
+
     //Ensure the directory is clean
     rimraf.sync(path.join(artifactDirectory, packageDirectory))
 
@@ -44,7 +44,7 @@ export default class SourcePackageGenerator {
       )
     );
 
-    
+
     fs.copySync(
       path.join(rootDirectory, ".forceignore"),
       path.join(artifactDirectory, ".forceignore")
@@ -52,13 +52,13 @@ export default class SourcePackageGenerator {
 
     if (!isNullOrUndefined(destructiveManifestFilePath)) {
       SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory);
-    } 
-  
+    }
+
     if(configFilePath)
     {
       SourcePackageGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory);
     }
-  
+
     fs.copySync(
       path.join(rootDirectory,packageDirectory),
       path.join(artifactDirectory, packageDirectory)

@@ -15,7 +15,7 @@ import {
 } from "../Common/PackageExtensionStorageHelper";
 import ArtifactHelper from "../Common/ArtifactHelper";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
-const fs = require("fs-extra");
+import * as fs from "fs-extra"
 
 
 async function run() {

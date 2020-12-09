@@ -1,4 +1,4 @@
-const fs = require("fs-extra");
+import * as fs from "fs-extra";
 import { EOL } from "os";
 
 export default class SFPLogger {
