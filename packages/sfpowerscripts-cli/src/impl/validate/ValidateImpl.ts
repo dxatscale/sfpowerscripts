@@ -38,7 +38,7 @@ export default class ValidateImpl {
 
     // Un-suppress logs for deployment
     SFPLogger.isSupressLogs = false;
-    SFPLogger.logLevel = LoggerLevel.ERROR;
+    SFPLogger.logLevel = LoggerLevel.INFO;
 
     let deploymentResult = await this.deploySourcePackages(targetusername);
 

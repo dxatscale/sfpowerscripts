@@ -65,14 +65,14 @@ export default class MDAPIPackageGenerator {
           `Converting to MDAPI Format ${sourceDirectory} in project directory ${projectDir}`,
           null,
           null,
-          LoggerLevel.INFO
+          LoggerLevel.DEBUG
         );
       else
         SFPLogger.log(
           `Converting to MDAPI Format ${sourceDirectory} in project directory`,
           null,
           null,
-          LoggerLevel.INFO
+          LoggerLevel.DEBUG
         );
       child_process.execSync(
         `npx sfdx force:source:convert -r ${sourceDirectory}  -d ${mdapiDir}`,
@@ -83,7 +83,7 @@ export default class MDAPIPackageGenerator {
       if (!isNullOrUndefined(projectDir))
         mdapiDirPath = path.resolve(projectDir, mdapiDir);
       else mdapiDirPath = path.resolve(mdapiDir);
-      SFPLogger.log(`Converting to MDAPI  Format Completed at ${mdapiDirPath}`, null, null, LoggerLevel.INFO);
+      SFPLogger.log(`Converting to MDAPI  Format Completed at ${mdapiDirPath}`, null, null, LoggerLevel.DEBUG);
       return mdapiDirPath;
     } catch (error) {
       SFPLogger.log(

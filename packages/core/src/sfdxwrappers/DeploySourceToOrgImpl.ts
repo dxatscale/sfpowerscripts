@@ -44,7 +44,7 @@ export default class DeploySourceToOrgImpl {
         return deploySourceResult;
       }
 
-      SFPLogger.log("Converting source to mdapi",null,this.packageLogger, LoggerLevel.INFO);
+      SFPLogger.log("Converting source to mdapi",null,this.packageLogger, LoggerLevel.DEBUG);
       let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
         this.project_directory,
         this.source_directory

@@ -26,7 +26,7 @@ export default class ArtifactInstallationStatusUpdater {
 
         let cmdOutput;
         let packageName= packageMetadata.package_name+(subdirectory?"_"+subdirectory:"");
-        SFPLogger.log("Updating Org with new Artifacts "+packageName+" "+packageMetadata.package_version_number+" "+(artifactId?artifactId:""), null, null, LoggerLevel.INFO);
+        SFPLogger.log("Updating Org with new Artifacts "+packageName+" "+packageMetadata.package_version_number+" "+(artifactId?artifactId:""), null, null, LoggerLevel.DEBUG);
         if (artifactId == null) {
           cmdOutput = child_process.execSync(
             `sfdx force:data:record:create --json -s SfpowerscriptsArtifact__c -u ${username}  -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}"`,

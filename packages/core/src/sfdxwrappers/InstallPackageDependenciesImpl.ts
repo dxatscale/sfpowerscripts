@@ -19,7 +19,7 @@ export default class InstallPackageDepenciesImpl {
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
-    
+
     let command = `sfdx sfpowerkit:package:dependencies:install -u ${this.target_org} -v ${this.devhub_alias} -r -w ${this.wait_time}`;
 
     if (this.apexcompileonlypackage) command += ` -a`;
@@ -30,7 +30,7 @@ export default class InstallPackageDepenciesImpl {
 
     let child = child_process.exec(command, {
       cwd: this.working_directory,
-      encoding: "utf8",
+      encoding: "utf8"
     });
 
     child.stderr.on("data", (data) => {

@@ -12,7 +12,7 @@ export enum LoggerLevel {
 
 export default class SFPLogger {
   public static isSupressLogs = false;
-  public static logLevel: LoggerLevel = LoggerLevel.INFO;
+  public static logLevel: LoggerLevel = LoggerLevel.DEBUG;
 
   static log(key: any, value?: any, logger?:any, logLevel: LoggerLevel = LoggerLevel.INFO) {
     if (logger) {

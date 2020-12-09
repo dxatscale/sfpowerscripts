@@ -13,7 +13,7 @@ import {
   PackageInstallationResult,
   PackageInstallationStatus,
 } from "@dxatscale/sfpowerscripts.core/src/package/PackageInstallationResult";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
 import { EOL } from "os";
 import { Stage } from "../Stage";
 
@@ -75,7 +75,8 @@ export default class DeployImpl {
       SFPLogger.log(
         `Packages to be deployed:`,
         queue.map((pkg) => pkg.package),
-        this.packageLogger
+        this.packageLogger,
+        LoggerLevel.INFO
       );
 
       await this.validateArtifacts();
@@ -99,7 +100,8 @@ export default class DeployImpl {
           SFPLogger.log(
             this.logsGroupSymbol[0],
             "Installing",
-            queue[i].package
+            queue[i].package,
+            LoggerLevel.INFO
           );
 
         let isApexFoundMessage: string =
@@ -119,7 +121,8 @@ export default class DeployImpl {
             isApexFoundMessage +
             `-------------------------------------------------------------------------------${EOL}`,
           null,
-          this.packageLogger
+          this.packageLogger,
+          LoggerLevel.INFO
         );
 
         let packageInstallationResult = await this.installPackage(
@@ -167,12 +170,13 @@ export default class DeployImpl {
                 if (i !== queue.length - 1)
                   failed = queue.slice(i + 1).map((pkg) => pkg.package);
                 throw new Error(testResult.message);
-              } else SFPLogger.log(testResult.message, null, this.packageLogger);
+              } else SFPLogger.log(testResult.message, null, this.packageLogger, LoggerLevel.INFO);
             } else {
               SFPLogger.log(
                 `Skipping testing of ${queue[i].package}\n`,
                 null,
-                this.packageLogger
+                this.packageLogger,
+                LoggerLevel.INFO
               );
             }
           }
@@ -180,7 +184,7 @@ export default class DeployImpl {
       }
 
       if (this.logsGroupSymbol?.[1])
-        SFPLogger.log(this.logsGroupSymbol[1], null, this.packageLogger);
+        SFPLogger.log(this.logsGroupSymbol[1], null, this.packageLogger, LoggerLevel.INFO);
 
       return {
         deployed: deployed,
@@ -188,7 +192,7 @@ export default class DeployImpl {
         failed: failed,
       };
     } catch (err) {
-      SFPLogger.log(err, null, this.packageLogger);
+      SFPLogger.log(err, null, this.packageLogger, LoggerLevel.INFO);
 
       return {
         deployed: deployed,

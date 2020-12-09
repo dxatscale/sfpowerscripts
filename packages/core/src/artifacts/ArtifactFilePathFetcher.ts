@@ -47,7 +47,7 @@ export default class ArtifactFilePathFetcher {
       result.push(artifactFilePaths);
     }
 
-    SFPLogger.log("Artifact File Paths",JSON.stringify(result), null, LoggerLevel.INFO);
+    SFPLogger.log("Artifact File Paths",JSON.stringify(result), null, LoggerLevel.DEBUG);
 
     return result;
   }
@@ -93,7 +93,7 @@ export default class ArtifactFilePathFetcher {
 
     fs.mkdirpSync(unzippedArtifactsDirectory);
 
-    SFPLogger.log(`Unzipping ${artifact} to ${unzippedArtifactsDirectory}`, null, null, LoggerLevel.INFO);
+    SFPLogger.log(`Unzipping ${artifact} to ${unzippedArtifactsDirectory}`, null, null, LoggerLevel.DEBUG);
     let zip = new AdmZip(artifact);
 
     // Overwrite existing files
@@ -160,9 +160,9 @@ export default class ArtifactFilePathFetcher {
     );
 
     if (sfdx_package && artifacts.length > 1) {
-      SFPLogger.log(`Found more than one artifact for ${sfdx_package}`, null, null, LoggerLevel.INFO);
+      SFPLogger.log(`Found more than one artifact for ${sfdx_package}`, null, null, LoggerLevel.DEBUG);
       let latestArtifact: string = ArtifactFilePathFetcher.getLatestArtifact(artifacts);
-      SFPLogger.log(`Using latest artifact ${latestArtifact}`, null, null, LoggerLevel.INFO);
+      SFPLogger.log(`Using latest artifact ${latestArtifact}`, null, null, LoggerLevel.DEBUG);
       return [latestArtifact];
     } else
       return artifacts;
@@ -249,7 +249,7 @@ export default class ArtifactFilePathFetcher {
         `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${isToSkipOnMissingArtifact}`,
         null,
         null,
-        LoggerLevel.INFO
+        LoggerLevel.DEBUG
       );
       return true;
     }

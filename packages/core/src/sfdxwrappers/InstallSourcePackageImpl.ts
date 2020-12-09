@@ -46,7 +46,7 @@ export default class InstallSourcePackageImpl {
         this.isPackageCheckHandledByCaller
       );
       if (isPackageInstalled) {
-        SFPLogger.log("Skipping Package Installation",null,this.packageLogger, LoggerLevel.INFO);
+        SFPLogger.log("Skipping Package Installation",null,this.packageLogger, LoggerLevel.DEBUG);
         return { result: PackageInstallationStatus.Skipped };
       }
     }
@@ -88,7 +88,7 @@ export default class InstallSourcePackageImpl {
 
         //Reconcile Failed, Bring back the original profiles
         if (isReconcileErrored && profileFolders.length > 0) {
-          SFPLogger.log("Restoring original profiles as preprocessing failed",null,this.packageLogger, LoggerLevel.INFO);
+          SFPLogger.log("Restoring original profiles as preprocessing failed",null,this.packageLogger, LoggerLevel.DEBUG);
           profileFolders.forEach((folder) => {
             fs.copySync(
               path.join(tempDir, folder),
@@ -135,7 +135,7 @@ export default class InstallSourcePackageImpl {
           }
         } catch (error) {
           SFPLogger.log(
-            "Failed to apply reconcile the second time, Partial Metadata applied",null,this.packageLogger, LoggerLevel.INFO
+            "Failed to apply reconcile the second time, Partial Metadata applied",null,this.packageLogger, LoggerLevel.DEBUG
           );
         }
 
@@ -201,18 +201,18 @@ export default class InstallSourcePackageImpl {
           this.sourceDirectory
         );
 
-        SFPLogger.log("Executing post-deployment step: AssignPermissionSets",null,this.packageLogger, LoggerLevel.INFO);
+        SFPLogger.log("Executing post-deployment step: AssignPermissionSets",null,this.packageLogger, LoggerLevel.DEBUG);
         assignPermissionSetsImpl.exec();
       }
     } catch (error) {
-      SFPLogger.log("Unable to apply permsets, skipping",null,this.packageLogger, LoggerLevel.INFO);
+      SFPLogger.log("Unable to apply permsets, skipping",null,this.packageLogger, LoggerLevel.DEBUG);
     }
   }
 
   private async applyDestructiveChanges() {
     try {
       SFPLogger.log(
-        "Attempt to delete components mentioned in destructive manifest",null,this.packageLogger, LoggerLevel.INFO
+        "Attempt to delete components mentioned in destructive manifest",null,this.packageLogger, LoggerLevel.DEBUG
       );
       let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
         this.targetusername,
@@ -225,7 +225,7 @@ export default class InstallSourcePackageImpl {
         "We attempted a deletion of components, However were are not succesfull. Either the components are already deleted or there are components which have dependency to components in the manifest, Please check whether this manifest works!",
         null,
         this.packageLogger,
-        LoggerLevel.INFO
+        LoggerLevel.DEBUG
       );
     }
   }
@@ -273,7 +273,7 @@ export default class InstallSourcePackageImpl {
           `-------------------------------------------------------------------------------------------------------------`,
           null,
           this.packageLogger,
-          LoggerLevel.WARN
+          LoggerLevel.DEBUG
       );
       return true;
     } else if (
@@ -290,7 +290,7 @@ export default class InstallSourcePackageImpl {
           `-------------------------------------------------------------------------------------------------------------`,
           null,
           this.packageLogger,
-          LoggerLevel.WARN
+          LoggerLevel.DEBUG
       );
       return true;
     } else return false;
@@ -305,7 +305,7 @@ export default class InstallSourcePackageImpl {
     let isReconcileActivated: boolean = false;
     let isReconcileErrored: boolean = false;
     try {
-      SFPLogger.log("Attempting reconcile to profiles",null,this.packageLogger, LoggerLevel.INFO);
+      SFPLogger.log("Attempting reconcile to profiles",null,this.packageLogger, LoggerLevel.DEBUG);
       //copy the original profiles to temporary location
       profileFolders = glob.sync("**/profiles", {
         cwd: path.join(sourceDirectoryPath),
@@ -326,7 +326,7 @@ export default class InstallSourcePackageImpl {
       await reconcileProfileAgainstOrg.exec();
       isReconcileActivated = true;
     } catch (err) {
-      SFPLogger.log("Failed to reconcile profiles:" + err,null,this.packageLogger, LoggerLevel.INFO);
+      SFPLogger.log("Failed to reconcile profiles:" + err,null,this.packageLogger, LoggerLevel.DEBUG);
       isReconcileErrored = true;
     }
     return { profileFolders, isReconcileActivated, isReconcileErrored };
@@ -388,7 +388,7 @@ export default class InstallSourcePackageImpl {
       let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
 
       if (!profileReconcile.result) {
-        SFPLogger.log("Unable to deploy reconciled  profiles",null,this.packageLogger, LoggerLevel.INFO);
+        SFPLogger.log("Unable to deploy reconciled  profiles",null,this.packageLogger, LoggerLevel.DEBUG);
       }
     }
   }
@@ -417,7 +417,7 @@ export default class InstallSourcePackageImpl {
             `-------------------------------------------------------------------------------------------------------------${EOL}`,
             null,
             null,
-            LoggerLevel.WARN
+            LoggerLevel.DEBUG
         );
 
         mdapi_options["testlevel"] = "NoTestRun";
@@ -431,7 +431,7 @@ export default class InstallSourcePackageImpl {
             `-------------------------------------------------------------------------------------------------------------`,
             null,
             null,
-            LoggerLevel.WARN
+            LoggerLevel.DEBUG
         );
         mdapi_options["testlevel"] = "NoTestRun";
       } else {
@@ -441,7 +441,7 @@ export default class InstallSourcePackageImpl {
             `-------------------------------------------------------------------------------------------------------------`,
             null,
             null,
-            LoggerLevel.WARN
+            LoggerLevel.DEBUG
         );
         mdapi_options["testlevel"] = "RunLocalTests";
       }
