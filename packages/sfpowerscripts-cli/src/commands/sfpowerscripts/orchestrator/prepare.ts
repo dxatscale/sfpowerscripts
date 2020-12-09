@@ -6,6 +6,7 @@ import PrepareImpl from "../../../impl/prepare/PrepareImpl";
 import { loadSFDX } from "../../../impl/pool/sfdxnode/GetNodeWrapper";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import { Stage } from "../../../impl/Stage";
+import * as fs from "fs-extra"
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -91,6 +92,11 @@ export default class Prepare extends SfpowerscriptsCommand {
     console.log(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`);
     console.log(`All packages in the repo to be preinstalled: ${this.flags.installall}`);
     console.log("---------------------------------------------------------");
+
+
+    
+    if (this.flags.artifactfetchscript && !fs.existsSync(this.flags.artifactfetchscript))
+      throw new Error(`Script path ${this.flags.scriptpath} does not exist`);
 
 
     let tags = {
