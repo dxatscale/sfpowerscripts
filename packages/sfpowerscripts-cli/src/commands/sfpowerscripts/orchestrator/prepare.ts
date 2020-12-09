@@ -46,8 +46,8 @@ export default class Prepare extends SfpowerscriptsCommand {
     }),
     installassourcepackages: flags.boolean({
       required: false,
-      default:true,
       description: messages.getMessage("installationModeDescription"),
+      dependsOn: ["installall"]
     }),
     artifactfetchscript: flags.filepath({
       required: false,
@@ -123,7 +123,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     try {
       let results= await prepareImpl.poolScratchOrgs();
 
-      let totalElapsedTime=Date.now()-executionStartTime;      
+      let totalElapsedTime=Date.now()-executionStartTime;
       console.log(
         `-----------------------------------------------------------------------------------------------------------`
       );
@@ -142,7 +142,7 @@ export default class Prepare extends SfpowerscriptsCommand {
           results.failed,
           tags
         );
-    
+
         process.exitCode=1;
       }
       else
@@ -173,5 +173,5 @@ export default class Prepare extends SfpowerscriptsCommand {
     let timeString = date.toISOString().substr(11, 8);
     return timeString;
   }
- 
+
 }
