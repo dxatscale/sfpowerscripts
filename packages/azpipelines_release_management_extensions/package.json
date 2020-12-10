@@ -1,7 +1,7 @@
 {
   "name": "@dxatscale/sfpowerscripts.azpipelines.releasemanagement",
   "private": true,
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "Additonal capability for Release Orchestration when used with sfpowerscripts",
   "repository": {
     "type": "git",
@@ -28,7 +28,7 @@
     "azure-devops-node-api": "7.2.0",
     "azure-devops-ui": "^1.160.4",
     "azure-pipelines-task-lib": "^2.9.3",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "^9.0.1",
     "glob": "^7.1.6",
     "nanoid": "^2.1.11",
     "sfpowerscripts-generatechangelog-task": "file:BuildTasks\\GenerateChangelogTask",

@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-authenticateorg-task",
   "description": "sfpowerscripts-authenticateorg-task",
-  "version": "9.0.51",
+  "version": "9.0.52",
   "private": true,
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
   "dependencies": {
     "azure-devops-node-api": "7.2.0",
     "azure-pipelines-task-lib": "^2.8.0",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "^9.0.1",
     "nanoid": "^2.1.8"
   }
 }
