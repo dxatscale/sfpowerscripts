@@ -1,19 +1,19 @@
-import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/src/artifacts/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import simplegit, { SimpleGit } from "simple-git/promise";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/src/PackageMetadata";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
-import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/InstallSourcePackageImpl";
-import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/InstallDataPackageImpl";
-import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/InstallUnlockedPackageImpl";
-import TriggerApexTestImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/TriggerApexTestImpl";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/src/utils/SFPStatsSender";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
+import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallSourcePackageImpl";
+import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallDataPackageImpl";
+import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
+import TriggerApexTestImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TriggerApexTestImpl";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import fs = require("fs");
 import path = require("path");
 import {
   PackageInstallationResult,
   PackageInstallationStatus,
-} from "@dxatscale/sfpowerscripts.core/src/package/PackageInstallationResult";
-import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
+} from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { EOL } from "os";
 import { Stage } from "../Stage";
 

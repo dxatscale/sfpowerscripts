@@ -1,18 +1,18 @@
 import BatchingTopoSort from "./BatchingTopoSort";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/src/PackageMetadata";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import DependencyHelper from "./DependencyHelper";
 import Bottleneck from "bottleneck";
-import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/src/package/PackageDiffImpl";
+import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import { exec } from "shelljs";
-import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/CreateUnlockedPackageImpl";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
-import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/CreateSourcePackageImpl";
-import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/CreateDataPackageImpl";
-import IncrementProjectBuildNumberImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/IncrementProjectBuildNumberImpl";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
+import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
+import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
+import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDataPackageImpl";
+import IncrementProjectBuildNumberImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { EOL } from "os";
 import * as rimraf from "rimraf";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/src/utils/SFPStatsSender";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import { Stage } from "../Stage";
 import * as fs from "fs-extra"
 

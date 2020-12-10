@@ -5,7 +5,7 @@ import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/pa
 import * as fs from "fs-extra";
 import DeployImpl, { DeploymentMode } from "../deploy/DeployImpl";
 import { EOL } from "os";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";

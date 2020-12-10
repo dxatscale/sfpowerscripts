@@ -8,10 +8,10 @@ import { SfdxApi } from "../pool/sfdxnode/types";
 import PrepareASingleOrgImpl, {
   ScriptExecutionResult,
 } from "./PrepareASingleOrgImpl";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import child_process = require("child_process");
 import BuildImpl from "../parallelBuilder/BuildImpl";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 export default class PrepareImpl {
   private poolConfig: PoolConfig;
   private totalToBeAllocated: number;
