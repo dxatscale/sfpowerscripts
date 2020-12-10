@@ -172,7 +172,7 @@ export default class PrepareImpl {
     } else {
       //Build All Artifacts
       console.log("\n");
-      console.log("---------------------------------------------------------------------------------------------")
+      console.log("-------------------------------WARNING!!!!------------------------------------------------")
       console.log("Building packages, as script to fetch artifacts was not provided");
       console.log("This is not ideal, as the artifacts are  built from the current head of the provided branch" );
       console.log("Pools should be prepared with previously validated packages");
@@ -436,8 +436,7 @@ export default class PrepareImpl {
     artifactDirectory: string,
     scriptPath: string
   ) {
-    console.log(`Fetching ${packageName} ...`);
-
+ 
     let cmd: string;
     if (process.platform !== "win32") {
       cmd = `bash -e ${scriptPath} ${packageName} ${artifactDirectory}`;

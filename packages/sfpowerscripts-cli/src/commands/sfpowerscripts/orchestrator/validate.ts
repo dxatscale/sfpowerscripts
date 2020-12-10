@@ -57,9 +57,9 @@ export default class Validate extends SfpowerscriptsCommand {
 
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: validate");
-    console.log(`Coverage Percentage: ${this.flags.coveragepercent}`);
-    console.log(`Using shapefile: ${this.flags.shapefile?'true':'false'}`);
     console.log(`Pools being used: ${this.flags.pools}`);
+    console.log(`Coverage Percentage: ${this.flags.coveragepercent}`);
+    console.log(`Using shapefile to override existing shape of the org: ${this.flags.shapefile?'true':'false'}`);
     console.log("---------------------------------------------------------");
 
 

@@ -59,7 +59,9 @@ export default class PrepareASingleOrgImpl {
 
 
       SFPLogger.isSupressLogs=true;
+      let startTime=Date.now();
       SFPLogger.log(`Installing package depedencies to the ${this.scratchOrg.alias}`,null,packageLogger);
+      console.log(`Beginning Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`)
 
       // Install Dependencies
       let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
@@ -76,8 +78,11 @@ export default class PrepareASingleOrgImpl {
         throw new Error(installationResult.message);
       }
 
+      console.log(`Successfully completed Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`)
+
       if (this.installAll) {
 
+        console.log(`Deploying all packages in the repo to  ${this.scratchOrg.alias}`);
         SFPLogger.log(`Deploying all packages to  ${this.scratchOrg.alias}`,null,packageLogger);
 
 
@@ -105,6 +110,10 @@ export default class PrepareASingleOrgImpl {
           throw new Error(
             "Following Packages failed to deploy:" + deploymentResult.failed
           );
+        }
+        else
+        {
+          console.log(`Deploying all packages in the repo completed in  ${this.scratchOrg.alias}`);
         }
       }
 

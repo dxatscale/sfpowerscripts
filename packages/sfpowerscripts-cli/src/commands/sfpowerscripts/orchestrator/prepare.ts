@@ -88,16 +88,21 @@ export default class Prepare extends SfpowerscriptsCommand {
 
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: prepare");
+    console.log(`Pool Name: ${this.flags.tag}`);
     console.log(`Requested Count of Orgs: ${this.flags.maxallocation}`);
     console.log(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`);
     console.log(`All packages in the repo to be preinstalled: ${this.flags.installall}`);
+    console.log(`Pool enabled with partially deployed packages in case of errors: ${this.flags.succeedondeploymenterrors}`)
     console.log("---------------------------------------------------------");
 
 
     
     if (this.flags.artifactfetchscript && !fs.existsSync(this.flags.artifactfetchscript))
-      throw new Error(`Script path ${this.flags.scriptpath} does not exist`);
-
+    {     
+       console.log(`Script path ${this.flags.scriptpath} does not exist, Please provide a valid path to the script file`);
+       process.exitcode=1;
+       return;
+    }
 
     let tags = {
       stage: Stage.PREPARE,
@@ -133,7 +138,7 @@ export default class Prepare extends SfpowerscriptsCommand {
       console.log(
         `-----------------------------------------------------------------------------------------------------------`
       );
-      console.log(`Provisioned {${results.success}}  scratchorgs out of ${results.totalallocated} requested with  ${results.failed} in ${this.getFormattedTime(
+      console.log(`Provisioned {${results.success}}  scratchorgs out of ${this.flags.maxallocation} requested with  ${results.failed} in ${this.getFormattedTime(
       totalElapsedTime
       )} `)
       console.log(
