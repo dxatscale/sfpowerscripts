@@ -6,7 +6,7 @@ import fs = require("fs");
 import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
 import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
 import ManifestHelpers from "../manifest/ManifestHelpers";
-
+import SFPLogger from "../utils/SFPLogger";
 const path = require("path");
 
 export default class InstallDataPackageImpl {
@@ -17,7 +17,8 @@ export default class InstallDataPackageImpl {
     private subDirectory:string,
     private packageMetadata: PackageMetadata,
     private skip_if_package_installed: boolean,
-    private isPackageCheckHandledByCaller?:boolean
+    private isPackageCheckHandledByCaller?:boolean,
+    private packageLogger?:any
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -49,7 +50,7 @@ export default class InstallDataPackageImpl {
         isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(this.targetusername,this.packageMetadata,this.subDirectory, this.isPackageCheckHandledByCaller);
         if(isPackageInstalled)
           {
-           console.log("Skipping Package Installation")
+           SFPLogger.log("Skipping Package Installation",null,this.packageLogger)
            return { result: PackageInstallationStatus.Skipped }
           }
       }
@@ -66,7 +67,7 @@ export default class InstallDataPackageImpl {
           this.sourceDirectory
         )
 
-        console.log("Executing pre-deployment step: AssignPermissionSets");
+        SFPLogger.log("Executing pre-deployment step: AssignPermissionSets",null,this.packageLogger);
         assignPermissionSetsImpl.exec();
       }
 
@@ -77,11 +78,11 @@ export default class InstallDataPackageImpl {
       );
 
       child.stdout.on("data", (data) => {
-        console.log(data.toString());
+        SFPLogger.log(data.toString(),null,this.packageLogger);
       });
 
       child.stderr.on("data", (data) => {
-        console.log(data.toString());
+        SFPLogger.log(data.toString(),null,this.packageLogger);
       });
 
       await onExit(child);
@@ -97,8 +98,8 @@ export default class InstallDataPackageImpl {
     } finally {
       let csvIssuesReportFilepath: string = path.join(this.sourceDirectory, packageDirectory, `CSVIssuesReport.csv`)
       if (fs.existsSync(csvIssuesReportFilepath)) {
-        console.log(`\n---------------------WARNING: SFDMU detected CSV issues, verify the following files -------------------------------`);
-        console.log(fs.readFileSync(csvIssuesReportFilepath, 'utf8'));
+        SFPLogger.log(`\n---------------------WARNING: SFDMU detected CSV issues, verify the following files -------------------------------`,null,this.packageLogger);
+        SFPLogger.log(fs.readFileSync(csvIssuesReportFilepath, 'utf8'),null,this.packageLogger);
       }
     }
   }
@@ -106,7 +107,7 @@ export default class InstallDataPackageImpl {
   private buildExecCommand(packageDirectory:string): string {
     let command = `sfdx sfdmu:run --path ${packageDirectory} -s csvfile -u ${this.targetusername} --noprompt`;
 
-    console.log(`Generated Command ${command}`);
+    SFPLogger.log(`Generated Command ${command}`,null,this.packageLogger);
     return command;
   }
 }

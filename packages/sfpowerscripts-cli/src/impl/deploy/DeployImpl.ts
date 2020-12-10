@@ -231,7 +231,8 @@ export default class DeployImpl {
           targetUsername,
           packageMetadata,
           skip_if_package_installed,
-          wait_time
+          wait_time,
+          sourceDirectoryPath
         );
       } else if (packageType === "source") {
         let options = {
@@ -299,7 +300,8 @@ export default class DeployImpl {
     targetUsername: string,
     packageMetadata: PackageMetadata,
     skip_if_package_installed: boolean,
-    wait_time: string
+    wait_time: string,
+    sourceDirectoryPath: string
   ): Promise<PackageInstallationResult> {
     let options = {
       installationkey: null,
@@ -315,7 +317,9 @@ export default class DeployImpl {
       wait_time,
       "10",
       skip_if_package_installed,
-      packageMetadata
+      packageMetadata,
+      sourceDirectoryPath,
+      this.packageLogger
     );
 
     return installUnlockedPackageImpl.exec();
@@ -361,7 +365,8 @@ export default class DeployImpl {
       null,
       packageMetadata,
       skip_if_package_installed,
-      false
+      false,
+      this.packageLogger
     );
     return installDataPackageImpl.exec();
   }
