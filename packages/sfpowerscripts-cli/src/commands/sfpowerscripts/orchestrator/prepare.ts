@@ -100,7 +100,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     if (this.flags.artifactfetchscript && !fs.existsSync(this.flags.artifactfetchscript))
     {     
        console.log(`Script path ${this.flags.scriptpath} does not exist, Please provide a valid path to the script file`);
-       process.exitcode=1;
+       process.exitCode=1;
        return;
     }
 
