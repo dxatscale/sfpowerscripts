@@ -5,5 +5,6 @@
     "waitTimeFlagDescription": "Wait time for command to finish in minutes",
     "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.",
     "tagFlagDescription":"Tag the deploy with a label, useful for identification in metrics",
-    "validateModeFlagDescription": "Enable for validation deployments"
+    "validateModeFlagDescription": "Enable for validation deployments",
+    "skipIfAlreadyInstalled":"Skip the package installation if the package is already installed in the org"
 }

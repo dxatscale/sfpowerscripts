@@ -1,7 +1,7 @@
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import fs = require("fs-extra");
+import * as fs from "fs-extra"
 import path = require("path");
 import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
@@ -60,6 +60,16 @@ export default class Promote extends SfpowerscriptsCommand {
     let executionStartTime = Date.now();
 
     try {
+    
+    console.log("-----------sfpowerscripts orchestrator ------------------");
+    console.log("command: publish");
+    console.log(`Publish promoted artifacts only: ${this.flags.publishpromotedonly}`);
+    console.log("---------------------------------------------------------");
+  
+  
+
+
+
       if (!fs.existsSync(this.flags.scriptpath))
         throw new Error(`Script path ${this.flags.scriptpath} does not exist`);
 

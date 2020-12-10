@@ -6,7 +6,7 @@ import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
-const fs = require("fs-extra");
+import * as fs from "fs-extra"
 import path = require("path");
 
 // Initialize Messages with the current plugin directory

@@ -2,7 +2,7 @@ import tl = require("azure-pipelines-task-lib/task");
 import child_process = require("child_process");
 import * as secureFilesCommon from "../Common/SecureFileHelpers";
 import { isNullOrUndefined } from "util";
-import fs = require("fs-extra");
+import * as fs from "fs-extra"
 import path = require("path");
 const nanoid = require('nanoid')
 
@@ -16,7 +16,7 @@ async function run() {
 
 
     if (tl.getVariable("Agent.OS") == "Windows_NT") {
-    
+
       tl.debug("Writing key.json");
       let keyFilePath=path.join(process.env.USERPROFILE,'.sfdx','key.json');
       let keyObj={};
@@ -52,7 +52,7 @@ async function run() {
      const password: string = tl.getEndpointAuthorizationParameter(connection,"password", true);
      const securitytoken: string = tl.getEndpointAuthorizationParameter(connection,"securitytoken", false);
      const isDevHub: boolean = tl.getEndpointAuthorizationParameter(connection,"environment", false)=='Production'?true:false;
-    
+
      authUsingCreds(isDevHub, alias, username, password, securitytoken);
 
     }

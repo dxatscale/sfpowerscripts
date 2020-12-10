@@ -5,6 +5,7 @@ import PackageMetadata from "../PackageMetadata";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
 import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
+import SFPLogger from "../utils/SFPLogger";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -15,7 +16,8 @@ export default class InstallUnlockedPackageImpl {
     private publish_wait_time: string,
     private skip_if_package_installed: boolean,
     private packageMetadata:PackageMetadata,
-    private sourceDirectory?:string
+    private sourceDirectory?:string,
+    private packageLogger?:any
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -34,11 +36,11 @@ export default class InstallUnlockedPackageImpl {
         let child = child_process.exec(command);
 
         child.stderr.on("data", (data) => {
-          console.log(data.toString());
+          SFPLogger.log(data.toString(),null,this.packageLogger);
         });
 
         child.stdout.on("data", (data) => {
-          console.log(data.toString());
+          SFPLogger.log(data.toString(),null,this.packageLogger);
         });
 
 
@@ -51,7 +53,7 @@ export default class InstallUnlockedPackageImpl {
 
         return { result: PackageInstallationStatus.Succeeded}
       } else {
-        console.log("Skipping Package Installation")
+        SFPLogger.log("Skipping Package Installation",null,this.packageLogger)
         return { result: PackageInstallationStatus.Skipped }
       }
     } catch (err) {
@@ -77,11 +79,11 @@ export default class InstallUnlockedPackageImpl {
           this.sourceDirectory
         );
 
-        console.log("Executing post-deployment step: AssignPermissionSets");
+        SFPLogger.log("Executing post-deployment step: AssignPermissionSets",null,this.packageLogger);
         assignPermissionSetsImpl.exec();
       }
     } catch (error) {
-      console.log("Unable to apply permsets, skipping");
+      SFPLogger.log("Unable to apply permsets, skipping",null,this.packageLogger);
     }
   }
 
@@ -97,13 +99,13 @@ export default class InstallUnlockedPackageImpl {
     if (!isNullOrUndefined(this.options["installationkey"]))
       command += ` --installationkey=${this.options["installationkey"]}`;
 
-    console.log(`Generated Command ${command}`);
+    SFPLogger.log(`Generated Command ${command}`,null,this.packageLogger);
     return command;
   }
 
   private checkWhetherPackageIsIntalledInOrg(): boolean {
     try {
-      console.log(`Checking Whether Package with ID ${this.package_version_id} is installed in  ${this.targetusername}`)
+      SFPLogger.log(`Checking Whether Package with ID ${this.package_version_id} is installed in  ${this.targetusername}`,null,this.packageLogger);
       let command = `sfdx sfpowerkit:package:version:info  -u ${this.targetusername} --json`;
       let result = JSON.parse(child_process.execSync(command).toString());
       if (result.status == 0) {
@@ -113,16 +115,17 @@ export default class InstallUnlockedPackageImpl {
           return true;
         });
         if (packageFound) {
-          console.log(
+          SFPLogger.log(
             "Package To be installed was found in the target org",
-            packageFound
+            packageFound,
+            this.packageLogger
           );
           return true;
         }
       }
     } catch (error) {
-      console.log(
-        "Unable to check whether this package is installed in the target org"
+      SFPLogger.log(
+        "Unable to check whether this package is installed in the target org",null,this.packageLogger
       );
       return false;
     }

@@ -3,7 +3,7 @@ import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import SFPLogger from "../utils/SFPLogger";
-const fs = require("fs-extra");
+import * as fs from "fs-extra";
 import { EOL } from "os";
 import SFPStatsSender from "../utils/SFPStatsSender";
 

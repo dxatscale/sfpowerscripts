@@ -1,19 +1,20 @@
 import BatchingTopoSort from "./BatchingTopoSort";
-import PackageMetadata from "../PackageMetadata";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/src/PackageMetadata";
 import DependencyHelper from "./DependencyHelper";
 import Bottleneck from "bottleneck";
-import PackageDiffImpl from "../package/PackageDiffImpl";
+import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/src/package/PackageDiffImpl";
 import { exec } from "shelljs";
-import CreateUnlockedPackageImpl from "../sfdxwrappers/CreateUnlockedPackageImpl";
-import ManifestHelpers from "../manifest/ManifestHelpers";
-import CreateSourcePackageImpl from "../sfdxwrappers/CreateSourcePackageImpl";
-import CreateDataPackageImpl from "../sfdxwrappers/CreateDataPackageImpl";
-import IncrementProjectBuildNumberImpl from "../sfdxwrappers/IncrementProjectBuildNumberImpl";
-import SFPLogger from "../utils/SFPLogger";
+import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/CreateUnlockedPackageImpl";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
+import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/CreateSourcePackageImpl";
+import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/CreateDataPackageImpl";
+import IncrementProjectBuildNumberImpl from "@dxatscale/sfpowerscripts.core/src/sfdxwrappers/IncrementProjectBuildNumberImpl";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
 import { EOL } from "os";
 import * as rimraf from "rimraf";
-import SFPStatsSender from "../utils/SFPStatsSender";
-const fs = require("fs-extra");
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/src/utils/SFPStatsSender";
+import { Stage } from "../Stage";
+import * as fs from "fs-extra"
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -51,7 +52,8 @@ export default class BuildImpl {
     private buildNumber: number,
     private executorcount: number,
     private isValidateMode: boolean,
-    private branch:string
+    private branch:string,
+    private packagesToTags?: {[p: string]: string}
   ) {
     this.limiter = new Bottleneck({
       maxConcurrent: this.executorcount,
@@ -67,7 +69,7 @@ export default class BuildImpl {
     generatedPackages: PackageMetadata[];
     failedPackages: string[];
   }> {
-    this.packagesToBeBuilt = ManifestHelpers.getAllPackages(
+    this.packagesToBeBuilt = this.getAllPackages(
       this.project_directory
     );
 
@@ -90,22 +92,17 @@ export default class BuildImpl {
     if (this.isDiffCheckEnabled) {
       let packageToBeBuilt = [];
 
-      let override: boolean;
-      if (this.isValidateMode) {
-        override = true;
-      }
-
       for await (const pkg of this.packagesToBeBuilt) {
-        let { priority, type } = this.getPriorityandTypeOfAPackage(
+        let type = this.getPriorityandTypeOfAPackage(
           this.projectConfig,
           pkg
-        );
+        ).type;
 
         let diffImpl: PackageDiffImpl = new PackageDiffImpl(
           pkg,
           this.project_directory,
           type == "Data" || type == "Source" ? null : this.config_file_path,
-          override
+          this.packagesToTags
         );
         let isToBeBuilt = await diffImpl.exec();
         if (isToBeBuilt) {
@@ -120,10 +117,10 @@ export default class BuildImpl {
 
     //Log Packages to be built
     for await (const pkg of this.packagesToBeBuilt) {
-      let { priority, type } = this.getPriorityandTypeOfAPackage(
+      let type = this.getPriorityandTypeOfAPackage(
         this.projectConfig,
         pkg
-      );
+      ).type;
       SFPStatsSender.logCount("build.scheduled.packages", {
         package: pkg,
         type: type,
@@ -210,6 +207,31 @@ export default class BuildImpl {
       generatedPackages: this.generatedPackages,
       failedPackages: this.failedPackages,
     };
+  }
+
+
+  private getAllPackages(projectDirectory: string): string[] {
+
+      let projectConfig = ManifestHelpers.getSFDXPackageManifest(projectDirectory);
+      let sfdxpackages=[];
+
+
+      let packageDescriptors =projectConfig["packageDirectories"].filter((pkg)=>{
+        if (
+          pkg.ignoreOnStage?.find( (stage) => {
+            stage = stage.toLowerCase();
+            return stage === Stage.BUILD || stage === Stage.VALIDATE || stage === Stage.PREPARE;
+          })
+        )
+          return false;
+        else
+          return true;
+      });
+
+      for (const pkg of packageDescriptors) {
+      sfdxpackages.push(pkg["package"]);
+    }
+    return sfdxpackages;
   }
 
   private printQueueDetails() {

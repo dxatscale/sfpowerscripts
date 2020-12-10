@@ -6,7 +6,7 @@ import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import { isNullOrUndefined } from "util";
 import { EOL } from "os";
 
-const fs = require("fs-extra");
+import * as fs from "fs-extra";
 import path = require("path");
 import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
 import SFPStatsSender from "../utils/SFPStatsSender";
@@ -147,7 +147,7 @@ export default class CreateSourcePackageImpl {
       timestamp: Date.now(),
     };
 
-    
+
     SFPStatsSender.logGauge(
       "package.metadatacount",
       this.packageArtifactMetadata.metadataCount,

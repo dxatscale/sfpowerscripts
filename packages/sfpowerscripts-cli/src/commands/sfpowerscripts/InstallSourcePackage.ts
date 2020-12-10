@@ -5,7 +5,7 @@ import InstallPackageCommand from "../../InstallPackageCommand";
 import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallSourcePackageImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 
-const fs = require("fs-extra");
+import * as fs from "fs-extra"
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);

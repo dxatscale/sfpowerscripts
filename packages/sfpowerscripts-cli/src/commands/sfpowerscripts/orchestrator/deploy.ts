@@ -2,7 +2,8 @@ import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
-import DeployImpl from "@dxatscale/sfpowerscripts.core/lib/deploy/DeployImpl";
+import DeployImpl, { DeploymentMode } from "../../../impl/deploy/DeployImpl";
+
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -45,11 +46,11 @@ export default class Deploy extends SfpowerscriptsCommand {
       char: 't',
       description: messages.getMessage('tagFlagDescription')
     }),
-    validatemode: flags.boolean({
-      description: messages.getMessage("validateModeFlagDescription"),
-      hidden: true,
-      default: false,
-    })
+    skipifalreadyinstalled: flags.boolean({
+      required:false,
+      default:true,
+      description: messages.getMessage("skipIfAlreadyInstalled"),
+    }),
   };
 
   public async execute() {
@@ -69,10 +70,13 @@ export default class Deploy extends SfpowerscriptsCommand {
         this.flags.targetorg,
         this.flags.artifactdir,
         this.flags.waittime,
-        this.flags.logsgroupsymbol,
         tags,
-        this.flags.validatemode
       );
+
+      deployImpl.activateApexUnitTests(false);
+      deployImpl.setDeploymentMode(DeploymentMode.NORMAL)
+      deployImpl.skipIfPackageExistsInTheOrg(this.flags.skipifalreadyinstalled);
+      deployImpl.setLogSymbols(this.flags.logsgroupsymbol);
 
       deploymentResult = await deployImpl.exec();
 
