@@ -7,9 +7,9 @@
     "category": "Deploy",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 10,
+        "Major": 11,
         "Minor": 0,
-        "Patch": 57
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -130,7 +130,7 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/DeploySourceToOrg.js"
         }
     }

@@ -7,9 +7,9 @@
     "category": "Utility",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 1,
+        "Major": 2,
         "Minor": 0,
-        "Patch": 49
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -79,7 +79,7 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/PostPackageCreateTask/PostPackageCreate.js"
         }
     }

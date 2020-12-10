@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 4,
+        "Major": 5,
         "Minor": 0,
-        "Patch": 65
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -34,7 +34,7 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/ValidateApexCoverage.js"
         }
     }

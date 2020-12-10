@@ -7,9 +7,9 @@
     "category": "Utility",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 9,
+        "Major": 10,
         "Minor": 0,
-        "Patch": 52
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -102,7 +102,7 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/AuthenticateOrgTaskCurrent/AuthenticateOrg.js"
         }
     }

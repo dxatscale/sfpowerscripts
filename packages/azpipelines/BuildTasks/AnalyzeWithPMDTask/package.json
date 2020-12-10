@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-analyzewithpmd-task",
   "description": "sfpowerscripts-analyzewithpmd-task",
-  "version": "7.0.58",
+  "version": "8.0.0",
   "private": true,
   "repository": {
     "type": "git",

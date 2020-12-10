@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 9,
+        "Major": 10,
         "Minor": 0,
-        "Patch": 65
+        "Patch": 0
     },
     "runsOn": [
         "Agent"
@@ -163,12 +163,12 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/IncrementProjectBuildNumber.js"
         }
     },
     "postjobexecution": {
-        "Node": {
+        "Node10": {
             "target": "lib/PostIncrementProjectBuildNumber.js",
             "argumentFormat": ""
         }
