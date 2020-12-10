@@ -8,13 +8,13 @@ async function run() {
     const action: string = tl.getInput("action", true);
     const maintainorg: string = tl.getInput("maintainorg", true);
     const devhub_alias: string = tl.getInput("devhub_alias", true);
-    const target_org: string = tl.getInput("target_org", true);
+    const alias: string = tl.getInput("alias", true);
 
     if (action == "Create" && maintainorg == "delete") {
       console.log("SFPowerScript.. Delete the created scratch org");
 
       let deleteScratchOrgImpl: DeleteScratchOrgImpl = new DeleteScratchOrgImpl(
-        target_org,
+        alias,
         devhub_alias
       );
       console.log("Generating Delete Scratch Org command");
