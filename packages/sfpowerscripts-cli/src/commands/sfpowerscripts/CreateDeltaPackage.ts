@@ -7,7 +7,7 @@ import { exec } from "shelljs";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import simplegit, { SimpleGit } from "simple-git/promise";
-const fs = require("fs-extra");
+import * as fs from "fs-extra";
 import path = require("path");
 
 // Initialize Messages with the current plugin directory

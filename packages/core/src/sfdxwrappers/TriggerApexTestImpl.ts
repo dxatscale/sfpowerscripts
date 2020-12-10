@@ -1,6 +1,6 @@
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
-import fs = require("fs-extra");
+import * as fs from "fs-extra";
 import path = require("path");
 import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
 import ApexTypeFetcher, { ApexSortedByType } from "../parser/ApexTypeFetcher";

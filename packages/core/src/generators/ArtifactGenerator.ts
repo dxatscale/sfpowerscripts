@@ -1,10 +1,10 @@
 import path = require("path");
-import fs = require("fs-extra");
+import * as fs from "fs-extra";
 import PackageMetadata from "../PackageMetadata";
 import GeneratePackageChangelog from "../changelog/GeneratePackageChangelog";
 import { Changelog } from "../changelog/interfaces/GenericChangelogInterfaces";
 import * as rimraf from "rimraf";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
 import AdmZip = require('adm-zip');
 
 export default class ArtifactGenerator {
@@ -82,11 +82,11 @@ export default class ArtifactGenerator {
         JSON.stringify(packageChangelog, null, 4)
       );
 
-      SFPLogger.log("Artifact Copy Completed");
+      SFPLogger.log("Artifact Copy Completed", null, null, LoggerLevel.DEBUG);
 
       let zip = new AdmZip();
       zip.addLocalFolder(artifactFilepath, artifactFolder);
-      SFPLogger.log(`Zipping ${artifactFolder}`);
+      SFPLogger.log(`Zipping ${artifactFolder}`, null, null, LoggerLevel.DEBUG);
 
       let packageVersionNumber: string = ArtifactGenerator.substituteBuildNumberWithPreRelease(
         packageArtifactMetadata.package_version_number

@@ -5,7 +5,7 @@ import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifact
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactHelper from "../Common/ArtifactHelper";
 
-const fs = require("fs-extra");
+import * as fs from "fs-extra"
 const path = require("path");
 
 async function run() {

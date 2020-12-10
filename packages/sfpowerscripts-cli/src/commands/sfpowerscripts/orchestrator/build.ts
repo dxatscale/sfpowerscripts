@@ -1,13 +1,14 @@
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
-import BuildImpl from "@dxatscale/sfpowerscripts.core/lib/parallelBuilder/BuildImpl";
+
 import { EOL } from "os";
 
 import { flags } from "@salesforce/command";
-import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
 import fs = require("fs");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import BuildImpl from "../../../impl/parallelBuilder/BuildImpl";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -20,8 +21,8 @@ export default class Build extends SfpowerscriptsCommand {
   public static description = messages.getMessage("commandDescription");
 
   public static examples = [
-    `$ sfdx sfpowerscripts:Build -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
-    `$ sfdx sfpowerscripts:Build -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
+    `$ sfdx sfpowerscripts:orchestrator:build -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
+    `$ sfdx sfpowerscripts:orchestrator:build -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
   ];
 
   protected static requiresUsername = false;
@@ -104,11 +105,15 @@ export default class Build extends SfpowerscriptsCommand {
       if(isValidateMode)
         isSkipValidation=true;
 
-      console.log(
-        "-----------sfpowerscripts package builder------------------"
-      );
-
-
+      console.log("-----------sfpowerscripts orchestrator ------------------");
+      console.log("command: build");
+      console.log(`Build Packages Only Changed: ${this.flags.diffcheck}`);
+      console.log(`Is Dependencies to be validated (unlocked): ${this.flags.isvalidationtobeskipped}`);
+      console.log(`Config File Path: ${this.flags.configfilepath}`);
+      console.log(`Artifact Directory: ${this.flags.artifactdir}`);
+      console.log("---------------------------------------------------------");
+  
+  
 
 
       let executionStartTime = Date.now();

@@ -1,5 +1,6 @@
 import { isNullOrUndefined } from "util";
-let fs = require("fs-extra");
+import SFPLogger from "../utils/SFPLogger";
+import * as fs from "fs-extra";
 let path = require("path");
 const Table = require("cli-table");
 
@@ -180,7 +181,7 @@ export default class ManifestHelpers {
     return isProfilesFound;
   }
 
-  public static printMetadataToDeploy(mdapiPackageManifest) {
+  public static printMetadataToDeploy(mdapiPackageManifest,packageLogger?:any) {
     //If Manifest is null, just return
     if (mdapiPackageManifest === null || mdapiPackageManifest === undefined)
       return;
@@ -209,7 +210,7 @@ export default class ManifestHelpers {
       let type = mdapiPackageManifest["Package"]["types"];
       pushTypeMembersIntoTable(type);
     }
-    console.log("The following metadata will be deployed:");
-    console.log(table.toString());
+    SFPLogger.log("The following metadata will be deployed:",null,packageLogger);
+    SFPLogger.log(table.toString(),null,packageLogger);
   }
 }

@@ -1,7 +1,7 @@
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import fs = require("fs-extra");
+import * as fs from "fs-extra"
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl"
 import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
@@ -14,7 +14,7 @@ export default class Promote extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:Promote -d path/to/artifacts -v <org>`
+    `$ sfdx sfpowerscripts:orchestrator:promote -d path/to/artifacts -v <org>`
   ];
 
   protected static requiresUsername = false;
@@ -27,6 +27,15 @@ export default class Promote extends SfpowerscriptsCommand {
 
 
   public async execute(){
+
+    
+    console.log("-----------sfpowerscripts orchestrator ------------------");
+    console.log("command: promote");
+    console.log("---------------------------------------------------------");
+
+
+
+
     let unpromotedPackages: {name: string, error: string}[] = [];
     try {
       let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);

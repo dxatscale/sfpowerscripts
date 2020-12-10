@@ -4,7 +4,7 @@ import { isNullOrUndefined } from "util";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import SFPLogger from "../utils/SFPLogger";
 const path = require("path");
-const fs = require("fs-extra");
+import * as fs from "fs-extra";
 
 export type DeltaPackage = {
   deltaDirectory: string;

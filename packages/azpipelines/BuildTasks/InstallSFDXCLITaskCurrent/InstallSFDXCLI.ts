@@ -1,6 +1,6 @@
 import tl = require("azure-pipelines-task-lib/task");
 import child_process = require("child_process");
-import fs = require("fs-extra");
+import * as fs from "fs-extra"
 import { isNullOrUndefined } from "util";
 import path = require("path");
 

@@ -6,7 +6,7 @@ import {
 } from "fs";
 import { onExit } from "../utils/OnExit";
 import ManifestHelpers from "../manifest/ManifestHelpers";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
 const path = require("path");
 
 
@@ -24,7 +24,8 @@ export default class DeploySourceToOrgImpl {
     private project_directory: string,
     private source_directory: string,
     private deployment_options: any,
-    private isToBreakBuildIfEmpty: boolean
+    private isToBreakBuildIfEmpty: boolean,
+    private packageLogger?:any
   ) {}
 
   public async exec(): Promise<DeploySourceResult> {
@@ -43,13 +44,13 @@ export default class DeploySourceToOrgImpl {
         return deploySourceResult;
       }
 
-      SFPLogger.log("Converting source to mdapi");
+      SFPLogger.log("Converting source to mdapi",null,this.packageLogger, LoggerLevel.DEBUG);
       let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
         this.project_directory,
         this.source_directory
       );
       this.mdapiDir = mdapiPackage.mdapiDir;
-      ManifestHelpers.printMetadataToDeploy(mdapiPackage.manifest);
+      ManifestHelpers.printMetadataToDeploy(mdapiPackage.manifest,this.packageLogger);
 
     try {
       if (this.deployment_options["checkonly"])
@@ -59,7 +60,7 @@ export default class DeploySourceToOrgImpl {
         );
     } catch (err) {
       //Do something here
-      SFPLogger.log("Validation Ignore not found, using .forceignore");
+      SFPLogger.log("Validation Ignore not found, using .forceignore",null,this.packageLogger);
     }
 
 
@@ -70,7 +71,7 @@ export default class DeploySourceToOrgImpl {
     let deploy_id = "";
     try {
       let command = this.buildExecCommand();
-      console.log(command);
+      SFPLogger.log("Executing Command"+command,null,this.packageLogger);
       let result = child_process.execSync(command, {
         cwd: this.project_directory,
         encoding: "utf8",
@@ -85,12 +86,12 @@ export default class DeploySourceToOrgImpl {
     }
 
     if (this.deployment_options["checkonly"])
-      console.log(
-        `Validation only deployment  is in progress....  Unleashing the power of your code!`
+      SFPLogger.log(
+        `Validation only deployment  is in progress....  Unleashing the power of your code!`,null,this.packageLogger
       );
     else
-      console.log(
-        `Deployment is in progress....  Unleashing the power of your code!`
+      SFPLogger.log(
+        `Deployment is in progress....  Unleashing the power of your code!`,null,this.packageLogger
       );
 
     // Loop till deployment completes to show status
@@ -107,25 +108,25 @@ export default class DeploySourceToOrgImpl {
         );
       } catch (err) {
         if (this.deployment_options["checkonly"])
-          console.log(`Validation Failed`);
-        else console.log(`Deployment Failed`);
+          SFPLogger.log(`Validation Failed`,null,this.packageLogger);
+        else SFPLogger.log(`Deployment Failed`,null,this.packageLogger);
         break;
       }
       let resultAsJSON = JSON.parse(result);
 
       if (resultAsJSON["status"] == 1) {
-        console.log("Validation/Deployment Failed");
+        SFPLogger.log("Validation/Deployment Failed",null,this.packageLogger);
         commandExecStatus = false;
         break;
       } else if (
         resultAsJSON["result"]["status"] == "InProgress" ||
         resultAsJSON["result"]["status"] == "Pending"
       ) {
-        console.log(
-          `Processing ${resultAsJSON.result.numberComponentsDeployed} out of ${resultAsJSON.result.numberComponentsTotal}`
+        SFPLogger.log(
+          `Processing ${resultAsJSON.result.numberComponentsDeployed} out of ${resultAsJSON.result.numberComponentsTotal}`,null,this.packageLogger
         );
       } else if (resultAsJSON["result"]["status"] == "Succeeded") {
-        console.log("Validation/Deployment Succeeded");
+        SFPLogger.log("Validation/Deployment Succeeded",null,this.packageLogger);
         commandExecStatus = true;
         break;
       }
@@ -206,8 +207,8 @@ export default class DeploySourceToOrgImpl {
   private convertApexTestSuiteToListOfApexClasses(
     apextestsuite: string
   ): Promise<string> {
-    console.log(
-      `Converting an apex test suite  ${apextestsuite} to its consituent apex test classes`
+    SFPLogger.log(
+      `Converting an apex test suite  ${apextestsuite} to its consituent apex test classes`,null,this.packageLogger
     );
 
     let result = child_process.execSync(

@@ -1,0 +1,14 @@
+{
+  "commandDescription": "Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner",
+  "tagDescription": "The name/tag of the scratch org pool",
+  "expiryDescription": "Expiry of the scratch org's created in the pool",
+  "maxallocationDescription": "The size of the scratch org pool to be created",
+  "configDescription": "The file path to the definition file for the scratch org shape",
+  "artifactfetchscriptDescription": "The path to the script file that is used to fetch the validated artifacts to be used in the prepare command",
+  "batchsize": "Number of parallel executors to be used while creating the pool",
+  "installallDescription": "Install the dependencies,along with all the packages in the repo as source packages to the org, thus reducing  time spent on validation",
+  "installationModeDescription": "By default, all the packages(excluding data) are installed as source packages, override this flag to install the packages as it is",
+  "keysDescription": "Keys to be used while installing any managed package dependent",
+  "succeedondeploymenterrorsDescription": "Do not fail the scratch orgs, if a package failed to deploy, return the scratch org with packages till the last failure",
+  "apiversion": "API version to be used"
+}
