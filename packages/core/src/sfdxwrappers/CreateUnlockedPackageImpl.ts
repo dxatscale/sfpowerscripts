@@ -251,6 +251,14 @@ export default class CreateUnlockedPackageImpl {
     delete packageDescriptorInWorkingDirectory["skipDeployOnOrgs"];
     delete packageDescriptorInWorkingDirectory["skipTesting"];
     delete packageDescriptorInWorkingDirectory["skipCoverageValidation"];
+    delete packageDescriptorInWorkingDirectory["ignoreOnStages"];
+    delete packageDescriptorInWorkingDirectory["ignoreDeploymentErrors"];
+    delete packageDescriptorInWorkingDirectory["preDeploymentScript"];
+    delete packageDescriptorInWorkingDirectory["postDeploymentScript"];
+    delete packageDescriptorInWorkingDirectory["aliasfy"];
+    
+    
+    
 
     fs.writeJsonSync(
       path.join(workingDirectory, "sfdx-project.json"),
