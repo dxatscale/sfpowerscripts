@@ -437,7 +437,7 @@ export default class DeployImpl {
     let pkgDescriptor = ManifestHelpers.getSFDXPackageManifest(null)[
       "packageDirectories"
     ][sfdx_package];
-    if(pkgDescriptor["isOptimizedDeployment"]==null||pkgDescriptor["isOptimizedDeployment"]==undefined)
+    if(pkgDescriptor["isOptimizedDeployment"]==null)
       return true;
     else
       return pkgDescriptor["isOptimizedDeployment"];
