@@ -99,6 +99,16 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
         );
         packageMetadata = await createSourcePackageImpl.exec();
 
+        if (this.flags.gittag) {
+          exec(`git config --global user.email "sfpowerscripts@dxscale"`);
+          exec(`git config --global user.name "sfpowerscripts"`);
+          let tagname = `${sfdx_package}_v${version_number}`;
+          console.log(`Creating tag ${tagname}`);
+          exec(`git tag -a -m "${sfdx_package} Source Package ${version_number}" ${tagname} HEAD`, {silent:false});
+
+          packageMetadata.tag = tagname;
+        }
+
         console.log(JSON.stringify(packageMetadata, function(key, val) {
           if (key !== "payload")
               return val;
@@ -106,17 +116,15 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
 
 
        //Generate Artifact
-        let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,process.cwd(),artifactDirectory,packageMetadata);
+        let artifactFilepath: string = await ArtifactGenerator.generateArtifact(
+          sfdx_package,
+          process.cwd(),
+          artifactDirectory,
+          packageMetadata
+        );
 
         console.log(`Created source package ${path.basename(artifactFilepath)}`);
 
-        if (this.flags.gittag) {
-          exec(`git config --global user.email "sfpowerscripts@dxscale"`);
-          exec(`git config --global user.name "sfpowerscripts"`);
-          let tagname = `${sfdx_package}_v${version_number}`;
-          console.log(`Creating tag ${tagname}`);
-          exec(`git tag -a -m "${sfdx_package} Source Package ${version_number}" ${tagname} HEAD`, {silent:false});
-        }
 
         console.log("\nOutput variables:");
         if (refname != null) {

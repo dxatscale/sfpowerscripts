@@ -53,7 +53,7 @@ export default class BuildImpl {
     private executorcount: number,
     private isValidateMode: boolean,
     private branch:string,
-    private packagesToTags?: {[p: string]: string}
+    private packagesToCommits?: {[p: string]: string}
   ) {
     this.limiter = new Bottleneck({
       maxConcurrent: this.executorcount,
@@ -102,7 +102,7 @@ export default class BuildImpl {
           pkg,
           this.project_directory,
           type == "Data" || type == "Source" ? null : this.config_file_path,
-          this.packagesToTags
+          this.packagesToCommits
         );
         let isToBeBuilt = await diffImpl.exec();
         if (isToBeBuilt) {

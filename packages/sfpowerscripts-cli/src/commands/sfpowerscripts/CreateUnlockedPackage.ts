@@ -200,6 +200,8 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
             `git tag -a -m "${sfdx_package} Unlocked Package ${result.package_version_number}" ${tagname} HEAD`,
             { silent: false }
           );
+
+          packageMetadata.tag = tagname;
         }
 
         console.log(
