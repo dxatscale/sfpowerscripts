@@ -235,8 +235,9 @@ export default class DeployImpl {
           sourceDirectoryPath
         );
       } else if (packageType === "source") {
+
         let options = {
-          optimizeDeployment: true,
+          optimizeDeployment: this.isOptimizedDeploymentForSourcePackages(sfdx_package),
           skipTesting: skipTesting,
         };
 
@@ -425,6 +426,21 @@ export default class DeployImpl {
           .map((org) => org.trim())
           .includes(targetUsername);
     } else return false;
+  }
+
+
+  //Allow individual packages to use non optimized path
+  private isOptimizedDeploymentForSourcePackages(
+    sfdx_package:string
+  ): boolean {
+
+    let pkgDescriptor = ManifestHelpers.getSFDXPackageManifest(null)[
+      "packageDirectories"
+    ][sfdx_package];
+    if(pkgDescriptor["isOptimizedDeployment"]==null)
+      return true;
+    else
+      return pkgDescriptor["isOptimizedDeployment"];
   }
 
 
