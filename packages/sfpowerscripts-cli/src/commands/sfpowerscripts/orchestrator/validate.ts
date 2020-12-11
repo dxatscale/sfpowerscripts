@@ -13,7 +13,7 @@ export default class Validate extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:orchestrator:validate -p <pool> -u <username>`
+    `$ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -u <devHubUsername> -i <clientId> -f <jwt_file>`
   ];
 
   protected static flagsConfig = {
