@@ -10,7 +10,7 @@ export default class PackageDiffImpl {
     private sfdx_package: string,
     private project_directory: string,
     private config_file_path?: string,
-    private packagesToTags?: {[p: string]: string},
+    private packagesToCommits?: {[p: string]: string},
   ) {}
 
   public async exec(): Promise<boolean> {
@@ -41,8 +41,8 @@ export default class PackageDiffImpl {
         );
 
         let tag: string;
-        if ( this.packagesToTags != null ) {
-          tag = this.getLatestTagFromMap(this.sfdx_package, this.packagesToTags);
+        if ( this.packagesToCommits != null ) {
+          tag = this.getLatestCommitFromMap(this.sfdx_package, this.packagesToCommits);
         } else {
           tag = await this.getLatestTagFromGit(git, this.sfdx_package);
         }
@@ -164,12 +164,12 @@ export default class PackageDiffImpl {
     }
   }
 
-  private getLatestTagFromMap(
+  private getLatestCommitFromMap(
     sfdx_package: string,
-    packagesToTags: {[p: string]: string}
+    packagesToCommits: {[p: string]: string}
   ): string {
-    if (packagesToTags[sfdx_package] != null) {
-      return packagesToTags[sfdx_package];
+    if (packagesToCommits[sfdx_package] != null) {
+      return packagesToCommits[sfdx_package];
     } else {
       return null;
     }
