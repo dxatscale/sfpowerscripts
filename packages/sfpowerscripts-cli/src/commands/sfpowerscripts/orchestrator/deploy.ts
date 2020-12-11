@@ -48,7 +48,7 @@ export default class Deploy extends SfpowerscriptsCommand {
     }),
     skipifalreadyinstalled: flags.boolean({
       required:false,
-      default:true,
+      default:false,
       description: messages.getMessage("skipIfAlreadyInstalled"),
     }),
   };
