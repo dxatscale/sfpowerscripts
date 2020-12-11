@@ -105,16 +105,23 @@ export default class PrepareASingleOrgImpl {
 
 
         let deploymentResult = await deployImpl.exec();
-
-        if (this.succeedOnDeploymentErrors==false && deploymentResult.failed.length > 0) {
-          throw new Error(
-            "Following Packages failed to deploy:" + deploymentResult.failed
-          );
-        }
-        else
+     
+        if(deploymentResult.failed.length>0)
         {
-          console.log(`Deploying all packages in the repo completed in  ${this.scratchOrg.alias}`);
+          console.log("Following Packages failed to deploy:" + deploymentResult.failed);
+          if(this.succeedOnDeploymentErrors)
+          {
+            console.log("Cancelling any further packages to be deployed, Adding the scratchorg to the pool")
+          }
+          else
+          {
+            console.log("Deployment of packages failed, this scratch org will be deleted")
+            throw new Error(
+              "Following Packages failed to deploy:" + deploymentResult.failed
+            );
+          }
         }
+      
       }
 
       return {
