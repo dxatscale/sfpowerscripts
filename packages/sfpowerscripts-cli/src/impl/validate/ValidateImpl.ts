@@ -32,9 +32,9 @@ export default class ValidateImpl {
       this.deployShapeFile(this.shapeFile, targetusername);
     }
 
-    let packagesToTags = this.getPackagesToTags();
+    let packagesToCommits = this.getPackagesToCommits();
 
-    await this.buildChangedSourcePackages(packagesToTags);
+    await this.buildChangedSourcePackages(packagesToCommits);
 
     // Un-suppress logs for deployment
     SFPLogger.isSupressLogs = false;
@@ -84,7 +84,7 @@ export default class ValidateImpl {
     return deploymentResult;
   }
 
-  private async buildChangedSourcePackages(packagesToTags: { [p: string]: string; }) {
+  private async buildChangedSourcePackages(packagesToCommits: { [p: string]: string; }) {
     let buildStartTime: number = Date.now();
 
 
@@ -100,7 +100,7 @@ export default class ValidateImpl {
       10,
       true,
       null,
-      packagesToTags
+      packagesToCommits
     );
 
     let { generatedPackages, failedPackages } = await buildImpl.exec();
@@ -129,8 +129,8 @@ export default class ValidateImpl {
     this.printBuildSummary(generatedPackages, failedPackages, buildElapsedTime);
   }
 
-  private getPackagesToTags(): {[p: string]: string} {
-    let packagesToTags: {[p: string]: string} = {};
+  private getPackagesToCommits(): {[p: string]: string} {
+    let packagesToCommits: {[p: string]: string} = {};
 
     let queryResult = this.querySfpowerscriptsArtifacts();
 
@@ -138,16 +138,16 @@ export default class ValidateImpl {
       if (queryResult.status === 0) {
         // Construct map of artifact and associated latest tag
         queryResult.result.records.forEach((artifact) => {
-          packagesToTags[artifact.Name] = artifact.Tag__c;
+          packagesToCommits[artifact.Name] = artifact.CommitId__c;
         });
 
-        console.log(`Artifacts installed in scratch org: ${JSON.stringify(packagesToTags, null, 4)}`);
+        console.log(`Artifacts installed in scratch org: ${JSON.stringify(packagesToCommits, null, 4)}`);
       }
       else
         console.log("Failed to query org for Sfpowerscripts Artifacts");
     }
 
-    return packagesToTags;
+    return packagesToCommits;
   }
 
   private querySfpowerscriptsArtifacts(): any {
