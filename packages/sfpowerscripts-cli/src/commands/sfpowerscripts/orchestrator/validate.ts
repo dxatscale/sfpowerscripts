@@ -13,14 +13,13 @@ export default class Validate extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:orchestrator:validate -u <scratchorg> -v <devhub>`
+    `$ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -u <devHubUsername> -i <clientId> -f <jwt_file>`
   ];
 
   protected static flagsConfig = {
-    devhubalias: flags.string({
-      char: 'v',
-      description: messages.getMessage('devhubAliasFlagDescription'),
-      default: 'HubOrg',
+    devhubusername: flags.string({
+      char: 'u',
+      description: messages.getMessage('devhubUsernameFlagDescription'),
       required: true
     }),
     pools: flags.array({
@@ -48,12 +47,16 @@ export default class Validate extends SfpowerscriptsCommand {
     logsgroupsymbol: flags.array({
       char: "g",
       description: messages.getMessage("logsGroupSymbolFlagDescription")
+    }),
+    deletescratchorg: flags.boolean({
+      char: 'x',
+      description: messages.getMessage("deleteScratchOrgFlagDescription"),
+      default: false
     })
   };
 
   async execute(): Promise<void> {
     let executionStartTime = Date.now();
-
 
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: validate");
@@ -67,13 +70,14 @@ export default class Validate extends SfpowerscriptsCommand {
     try {
 
     let validateImpl: ValidateImpl = new ValidateImpl(
-      this.flags.devhubalias,
+      this.flags.devhubusername,
       this.flags.pools,
       this.flags.jwtkeyfile,
       this.flags.clientid,
       this.flags.shapefile,
       this.flags.coveragepercent,
-      this.flags.logsgroupsymbol
+      this.flags.logsgroupsymbol,
+      this.flags.deletescratchorg
     );
 
     let validateResult  = await validateImpl.exec();
