@@ -7,6 +7,7 @@ import {
 import { onExit } from "../utils/OnExit";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
+import { PackageXMLManifestHelpers } from "../manifest/PackageXMLManifestHelpers";
 const path = require("path");
 
 
@@ -50,7 +51,7 @@ export default class DeploySourceToOrgImpl {
         this.source_directory
       );
       this.mdapiDir = mdapiPackage.mdapiDir;
-      ManifestHelpers.printMetadataToDeploy(mdapiPackage.manifest,this.packageLogger);
+      PackageXMLManifestHelpers.printMetadataToDeploy(mdapiPackage.manifest,this.packageLogger);
 
     try {
       if (this.deployment_options["checkonly"])

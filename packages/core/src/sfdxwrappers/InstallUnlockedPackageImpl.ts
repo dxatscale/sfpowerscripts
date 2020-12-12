@@ -2,10 +2,10 @@ import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
 import { onExit } from "../utils/OnExit";
 import PackageMetadata from "../PackageMetadata";
-import ManifestHelpers from "../manifest/ManifestHelpers";
 import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
 import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
 import SFPLogger from "../utils/SFPLogger";
+import { PackageXMLManifestHelpers } from "../manifest/PackageXMLManifestHelpers";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -30,7 +30,7 @@ export default class InstallUnlockedPackageImpl {
       if (!isPackageInstalled) {
 
        //Print Metadata carried in the package
-       ManifestHelpers.printMetadataToDeploy(this.packageMetadata?.payload);
+       PackageXMLManifestHelpers.printMetadataToDeploy(this.packageMetadata?.payload);
 
         let command = this.buildPackageInstallCommand();
         let child = child_process.exec(command);
