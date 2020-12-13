@@ -5,7 +5,6 @@ import {
   copyFileSync,
 } from "fs";
 import { onExit } from "../utils/OnExit";
-import ManifestHelpers from "../manifest/ManifestHelpers";
 import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
 import { PackageXMLManifestHelpers } from "../manifest/PackageXMLManifestHelpers";
 const path = require("path");
