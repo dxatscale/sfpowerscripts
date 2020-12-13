@@ -491,7 +491,7 @@ export default class DeployImpl {
         if (
           pkg.ignoreOnStage?.find( (stage) => {
             stage = stage.toLowerCase();
-            return stage === Stage.DEPLOY || stage === Stage.VALIDATE || stage === Stage.PREPARE;
+            return stage === this.props.currentStage;
           })
         )
           return false;
