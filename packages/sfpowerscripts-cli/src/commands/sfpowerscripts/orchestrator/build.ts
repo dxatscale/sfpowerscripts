@@ -8,7 +8,7 @@ import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
 import fs = require("fs");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
-import BuildImpl from "../../../impl/parallelBuilder/BuildImpl";
+import BuildImpl, { BuildProps } from "../../../impl/parallelBuilder/BuildImpl";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -62,9 +62,9 @@ export default class Build extends SfpowerscriptsCommand {
         "isValidationToBeSkippedFlagDescription"
       ),
     }),
-    waittime: flags.string({
+    waittime: flags.number({
       description: messages.getMessage("waitTimeFlagDescription"),
-      default: "120",
+      default: 120,
     }),
     buildnumber: flags.number({
       description: messages.getMessage("buildNumberFlagDescription"),
@@ -118,19 +118,21 @@ export default class Build extends SfpowerscriptsCommand {
 
       let executionStartTime = Date.now();
 
-      let buildImpl = new BuildImpl(
-        config_file_path,
-        null,
-        devhub_alias,
-        repourl,
-        wait_time,
-        isSkipValidation,
-        diffcheck,
-        buildNumber,
-        executorcount,
-        isValidateMode,
-        branch
-      );
+      let buildProps:BuildProps = {
+
+          configFilePath:config_file_path,
+          devhubAlias:devhub_alias,
+          repourl:repourl,
+          waitTime:wait_time,
+          isQuickBuild:isSkipValidation,
+          isDiffCheckEnabled:diffcheck,
+          buildNumber:buildNumber,
+          executorcount:executorcount,
+          isBuildAllAsSourcePackages:isValidateMode,
+          branch:branch
+      }
+
+      let buildImpl = new BuildImpl(buildProps);
       let { generatedPackages, failedPackages } = await buildImpl.exec();
 
       if (
