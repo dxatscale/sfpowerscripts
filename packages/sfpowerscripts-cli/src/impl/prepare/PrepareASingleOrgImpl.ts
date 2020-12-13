@@ -3,9 +3,10 @@ import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
 import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import * as fs from "fs-extra";
-import DeployImpl, { DeploymentMode } from "../deploy/DeployImpl";
+import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
 import { EOL } from "os";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import { Stage } from "../Stage";
 
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
@@ -86,24 +87,24 @@ export default class PrepareASingleOrgImpl {
         SFPLogger.log(`Deploying all packages to  ${this.scratchOrg.alias}`,null,packageLogger);
 
 
+        let deployProps:DeployProps = {
+          targetUsername: this.scratchOrg.username,
+          artifactDir:"artifacts",
+          waitTime:120,
+          currentStage:Stage.PREPARE,
+          packageLogger:packageLogger,
+          isTestsToBeTriggered:false,
+          skipIfPackageInstalled:false,
+          isValidateArtifactsOnHead:false,
+          deploymentMode: this.installAsSourcePackages? DeploymentMode.SOURCEPACKAGES:DeploymentMode.NORMAL
+        }
+
         //Deploy the fetched artifacts to the org
         let deployImpl: DeployImpl = new DeployImpl(
-          this.scratchOrg.username,
-          "artifacts",
-          "120",
-          "prepare",
-          packageLogger
+          deployProps
         );
 
-        deployImpl.activateApexUnitTests(false);
-        deployImpl.skipIfPackageExistsInTheOrg(true);
-        deployImpl.setIsValidateArtifactsOnHead(false);
-        if(this.installAsSourcePackages)
-         deployImpl.setDeploymentMode(DeploymentMode.SOURCEPACKAGES)
-        else
-         deployImpl.setDeploymentMode(DeploymentMode.NORMAL)
-
-
+    
         let deploymentResult = await deployImpl.exec();
      
         if(deploymentResult.failed.length>0)
