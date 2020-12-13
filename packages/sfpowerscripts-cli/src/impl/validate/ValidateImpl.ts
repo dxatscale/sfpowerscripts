@@ -132,7 +132,8 @@ export default class ValidateImpl {
        isDiffCheckEnabled:true,
        isQuickBuild:true,
        isBuildAllAsSourcePackages:true,
-       packagesToCommits:packagesToCommits
+       packagesToCommits:packagesToCommits,
+       currentStage:Stage.VALIDATE
      }
 
 

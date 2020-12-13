@@ -33,7 +33,8 @@ export interface BuildProps {
   executorcount: number,
   isBuildAllAsSourcePackages: boolean,
   branch?:string,
-  packagesToCommits?: {[p: string]: string}
+  packagesToCommits?: {[p: string]: string},
+  currentStage:Stage
 }
 export default class BuildImpl {
   private limiter: Bottleneck;
@@ -224,7 +225,7 @@ export default class BuildImpl {
         if (
           pkg.ignoreOnStage?.find( (stage) => {
             stage = stage.toLowerCase();
-            return stage === Stage.BUILD || stage === Stage.VALIDATE || stage === Stage.PREPARE;
+            return stage === this.props.currentStage;
           })
         )
           return false;

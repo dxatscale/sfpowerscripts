@@ -13,6 +13,7 @@ import child_process = require("child_process");
 import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { build } from "@oclif/command/lib/flags";
+import { Stage } from "../Stage";
 export default class PrepareImpl {
   private poolConfig: PoolConfig;
   private totalToBeAllocated: number;
@@ -189,7 +190,8 @@ export default class PrepareImpl {
         buildNumber:1,
         executorcount:10,
         isBuildAllAsSourcePackages:true,
-        branch:null
+        branch:null,
+        currentStage:Stage.PREPARE
     }
 
 

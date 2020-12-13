@@ -9,6 +9,7 @@ import { exec } from "shelljs";
 import fs = require("fs");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import BuildImpl, { BuildProps } from "../../../impl/parallelBuilder/BuildImpl";
+import { Stage } from "../../../impl/Stage";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -129,7 +130,8 @@ export default class Build extends SfpowerscriptsCommand {
           buildNumber:buildNumber,
           executorcount:executorcount,
           isBuildAllAsSourcePackages:isValidateMode,
-          branch:branch
+          branch:branch,
+          currentStage:Stage.BUILD
       }
 
       let buildImpl = new BuildImpl(buildProps);
