@@ -32,7 +32,7 @@ export default class ValidateImpl {
 
       this.authenticateToScratchOrg(scratchOrgUsername);
 
-  
+
 
       if (this.shapeFile) {
         this.deployShapeFile(this.shapeFile, scratchOrgUsername);
@@ -62,13 +62,17 @@ export default class ValidateImpl {
   }
 
   private deleteScratchOrg(scratchOrgUsername: string): void {
-    child_process.execSync(
-      `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.devHubUsername}`,
-      {
-        stdio: 'inherit',
-        encoding: 'utf8'
-      }
-    );
+    try {
+      child_process.execSync(
+        `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.devHubUsername}`,
+        {
+          stdio: 'inherit',
+          encoding: 'utf8'
+        }
+      );
+    } catch (error) {
+      console.log(error.message);
+    }
   }
 
   private authenticateDevHub(devHubUsername: string): void {
