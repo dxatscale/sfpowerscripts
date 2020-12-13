@@ -12,7 +12,6 @@ import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/Manifes
 import child_process = require("child_process");
 import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
-import { build } from "@oclif/command/lib/flags";
 import { Stage } from "../Stage";
 export default class PrepareImpl {
   private poolConfig: PoolConfig;
