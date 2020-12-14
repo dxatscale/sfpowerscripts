@@ -10,6 +10,7 @@ import * as fs from "fs-extra";
 import path = require("path");
 import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
 import SFPStatsSender from "../utils/SFPStatsSender";
+import { PackageXMLManifestHelpers } from "../manifest/PackageXMLManifestHelpers";
 const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl {
@@ -108,10 +109,10 @@ export default class CreateSourcePackageImpl {
 
         this.packageArtifactMetadata.payload = mdapiPackage.manifest;
         this.packageArtifactMetadata.metadataCount = mdapiPackage.metadataCount;
-        this.packageArtifactMetadata.isApexFound = ManifestHelpers.checkApexInPayload(
+        this.packageArtifactMetadata.isApexFound = PackageXMLManifestHelpers.checkApexInPayload(
           mdapiPackage.manifest
         );
-        this.packageArtifactMetadata.isProfilesFound = ManifestHelpers.checkProfilesinPayload(
+        this.packageArtifactMetadata.isProfilesFound = PackageXMLManifestHelpers.checkProfilesinPayload(
           mdapiPackage.manifest
         );
 
