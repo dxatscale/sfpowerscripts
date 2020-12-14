@@ -1,5 +1,5 @@
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import { Messages } from '@salesforce/core';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
@@ -17,8 +17,8 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:CreateSourcePackage -n mypackage -v <version>`,
-    `$ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --diffcheck --gittag`,
+    `$ sfdx sfpowerscripts:package:source:create -n mypackage -v <version>`,
+    `$ sfdx sfpowerscripts:package:source:create -n <mypackage> -v <version> --diffcheck --gittag`,
     `Output variable:`,
     `sfpowerscripts_artifact_metadata_directory`,
     `<refname>_sfpowerscripts_artifact_metadata_directory`,
@@ -30,6 +30,7 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
 
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
+  protected static requiresProject = true;
 
   protected static flagsConfig = {
     package: flags.string({required: true, char: 'n', description: messages.getMessage('packageFlagDescription')}),

@@ -27,6 +27,9 @@
     "simple-git": "^2.20.1",
     "ts-node": "^9.0.0"
   },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1.26.0"
+  },
   "engines": {
     "node": ">=8.0.0"
   },
@@ -47,16 +50,40 @@
     "bin": "sfdx",
     "topics": {
       "sfpowerscripts": {
-        "description": "Simple wrappers around sfdx commands to help set up CI/CD quickly"
+        "description": "An opinionated salesforce build system (statsd metrics enabled) as a sfdx plugin that can be implemented in any CI/CD system of choice"
       },
       "sfpowerscripts:orchestrator": {
         "description": "Orchestrate packages from a monorepo through its lifecycle, driven by descriptors in your sfdx-project.json"
       },
       "sfpowerscripts:pool": {
-        "description": "Manage the pools created by the orchestrator"
+        "description": "Manage the pooled orgs created by the sfpowerscripts orchestrator in prepare stage"
       },
       "sfpowerscripts:changelog": {
         "description": "Track your artifacts & user stories as they progress through different environments, with release changelogs"
+      },
+      "sfpowerscripts:package": {
+        "description": "Work with various types of packages such as unlocked/source/data/delta individually"
+      },
+      "sfpowerscripts:source": {
+        "description": "Commands to work directly on the source folder, such as deploy a source folder and deploy destructive manifest"
+      },
+      "sfpowerscripts:package:data": {
+        "description": "Commands to create and install data packages (sfdmu)"
+      },
+      "sfpowerscripts:package:delta": {
+        "description": "Commands to create delta packages based on two different commit ids"
+      },
+      "sfpowerscripts:package:unlocked": {
+        "description": "Commands to create and install unlocked packages"
+      },
+      "sfpowerscripts:package:source": {
+        "description": "Commands to create and install sfpowerscripts source packages"
+      },
+      "sfpowerscripts:analyze": {
+        "description": "Analyze your projects using static analysis tools such as PMD"
+      },
+      "sfpowerscripts:apextests": {
+        "description": "Trigger Apex Tests and validate apex tests in a package"
       }
     },
     "devPlugins": [
@@ -66,6 +93,7 @@
   "repository": "Accenture/sfpowerscripts",
   "scripts": {
     "build": "npm run clean && npm run compile",
+    "prepare": "oclif-dev manifest",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json"
   }
