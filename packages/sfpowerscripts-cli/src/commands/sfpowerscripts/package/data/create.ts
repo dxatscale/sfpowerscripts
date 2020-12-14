@@ -1,5 +1,5 @@
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import { Messages } from '@salesforce/core';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
 import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDataPackageImpl";
@@ -18,8 +18,8 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:CreateDataPackage -n mypackage -v <version>`,
-    `$ sfdx sfpowerscripts:CreateDataPackage -n <mypackage> -v <version> --diffcheck --gittag`,
+    `$ sfdx sfpowerscripts:package:data:create -n mypackage -v <version>`,
+    `$ sfdx sfpowerscripts:package:data:create -n <mypackage> -v <version> --diffcheck --gittag`,
     `Output variable:`,
     `sfpowerscripts_artifact_directory`,
     `<refname>_sfpowerscripts_artifact_directory`,

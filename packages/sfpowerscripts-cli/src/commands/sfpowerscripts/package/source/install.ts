@@ -1,7 +1,7 @@
 import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
 
-import InstallPackageCommand from "../../InstallPackageCommand";
+import InstallPackageCommand from "../../../../InstallPackageCommand";
 import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallSourcePackageImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 
@@ -21,7 +21,7 @@ export default class InstallSourcePackage extends InstallPackageCommand {
   public static description = messages.getMessage("commandDescription");
 
   public static examples = [
-    `$ sfdx sfpowerscripts:InstallSourcePackage -n mypackage -u <org>`,
+    `$ sfdx sfpowerscripts:package:source:install -n mypackage -u <org>`,
   ];
 
   protected static flagsConfig = {

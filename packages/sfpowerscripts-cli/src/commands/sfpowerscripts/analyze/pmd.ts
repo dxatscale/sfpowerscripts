@@ -1,5 +1,5 @@
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages, SfdxError } from '@salesforce/core';
 import AnalyzeWithPMDImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/AnalyzeWithPMDImpl';
 import xml2js = require('xml2js');
@@ -20,7 +20,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:AnalyzeWithPMD -b\n`,
+    `$ sfdx sfpowerscripts:analyze:pmd -b\n`,
     `Output variable:`,
     `sfpowerscripts_pmd_output_path`,
     `<refname>_sfpowerscripts_pmd_output_path`

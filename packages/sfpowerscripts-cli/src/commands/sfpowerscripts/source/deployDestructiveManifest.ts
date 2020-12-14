@@ -1,6 +1,6 @@
 import DeployDestructiveManifestToOrgImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeployDestructiveManifestToOrgImpl';
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages, SfdxError } from '@salesforce/core';
 const fs = require("fs");
 const path = require("path");
@@ -17,7 +17,7 @@ export default class DeployDestructiveManifest extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfdx sfpowerscripts:DeployDestructiveManifest -u scratchorg -m Text -t "<?xml version=\"1.0\" encoding=\"UTF-8\"?>`,
+        `$ sfdx sfpowerscripts:source:deployDestructiveManifest -u scratchorg -m Text -t "<?xml version=\"1.0\" encoding=\"UTF-8\"?>`,
         `<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\"><types><members>myobject__c</members><name>CustomObject</name></types></Package>"`
     ];
 

@@ -3,7 +3,7 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/Art
 import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl";
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import { flags } from "@salesforce/command";
-import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
+import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
 import * as fs from "fs-extra"
@@ -23,8 +23,8 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
   public static description = messages.getMessage("commandDescription");
 
   public static examples = [
-    `$ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
-    `$ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
+    `$ sfdx sfpowerscripts:package:unlocked:create -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
+    `$ sfdx sfpowerscripts:package:unlocked:create -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
     `Output variable:`,
     `sfpowerscripts_package_version_id`,
     `<refname>_sfpowerscripts_package_version_id`,

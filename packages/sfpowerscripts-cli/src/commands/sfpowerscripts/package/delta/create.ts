@@ -5,7 +5,7 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata"
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import { exec } from "shelljs";
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import simplegit, { SimpleGit } from "simple-git/promise";
 import * as fs from "fs-extra";
 import path = require("path");
@@ -25,7 +25,7 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:CreateDeltaPackage -n <packagename> -r <61635fb> -t <3cf01b9> -v <version>\n`,
+    `$ sfdx sfpowerscripts:package:delta:create -n <packagename> -r <61635fb> -t <3cf01b9> -v <version>\n`,
     `Output variable:`,
     `sfpowerscripts_delta_package_path`,
     `<refname>_sfpowerscripts_delta_package_path`,
