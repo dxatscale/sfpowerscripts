@@ -138,9 +138,8 @@ export default class Prepare extends SfpowerscriptsCommand {
       console.log(
         `-----------------------------------------------------------------------------------------------------------`
       );
-      console.log(`Provisioned {${results.success}}  scratchorgs out of ${this.flags.maxallocation} requested with  ${results.failed} in ${this.getFormattedTime(
-      totalElapsedTime
-      )} `)
+      console.log(`Provisioned {${results.success}}  scratchorgs out of ${this.flags.maxallocation} requested with
+      ${results.failed} failed in ${this.getFormattedTime(totalElapsedTime)} `)
       console.log(
         `----------------------------------------------------------------------------------------------------------`
       );
