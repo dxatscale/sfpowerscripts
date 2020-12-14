@@ -1,7 +1,7 @@
 import { Messages } from "@salesforce/core";
 import BuildImpl, { BuildProps } from "../../../impl/parallelBuilder/BuildImpl";
 import { Stage } from "../../../impl/Stage";
-import BuildBase from "../../../BuildBase";
+import BuildBase from "../../../buildBase";
 
 
 
