@@ -1,5 +1,5 @@
 {
-    "commandDescription": "Build all packages (unlocked/source/data) in a repo in parallel, respecting the dependency of each packages and generate artifacts to a provided directory without validating individual dependencies",
+    "commandDescription": "Build packages (unlocked/source/data) in a repo in parallel, without validating depenencies or coverage in the case of unlocked packages",
     "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task",
     "diffCheckFlagDescription": "Only build the packages which have changed by analyzing previous tags",
     "gitTagFlagDescription": "Tag the current commit ID with an annotated tag containing the package name and version - does not push tag",

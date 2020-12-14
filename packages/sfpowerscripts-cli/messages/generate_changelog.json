@@ -1,5 +1,5 @@
 {
-    "commandDescription": "[BETA] Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository",
+    "commandDescription": "Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository",
     "limitFlagDescription": "limit the number of releases to display in changelog markdown",
     "artifactDirectoryFlagDescription": "Directory containing sfpowerscripts artifacts",
     "releaseNameFlagDescription": "Name of the release for which to generate changelog",
