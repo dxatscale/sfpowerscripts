@@ -63,7 +63,7 @@ export default class CreateUnlockedPackageImpl {
 
     // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
     if (this.forceignorePath) {
-      if (fs.existsSync(this.forceignorePath))
+      if (fs.existsSync(path.join(workingDirectory, this.forceignorePath)))
         fs.copySync(
           path.join(workingDirectory, this.forceignorePath),
           path.join(workingDirectory, ".forceignore")
