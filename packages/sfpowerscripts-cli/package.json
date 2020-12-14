@@ -54,6 +54,9 @@
       },
       "sfpowerscripts:pool": {
         "description": "Manage the pools created by the orchestrator"
+      },
+      "sfpowerscripts:changelog": {
+        "description": "Track your artifacts & user stories as they progress through different environments, with release changelogs"
       }
     },
     "devPlugins": [
