@@ -2,7 +2,7 @@ import { flags } from '@salesforce/command';
 import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallDataPackageImpl';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
-import InstallPackageCommand from '../../InstallPackageCommand';
+import InstallPackageCommand from '../../../../InstallPackageCommand';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult';
 const fs = require("fs");
 
@@ -18,7 +18,7 @@ export default class InstallDataPackage extends InstallPackageCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:InstallDataPackage -n mypackage -u <org>`
+    `$ sfdx sfpowerscripts:package:data:install -n mypackage -u <org>`
   ];
 
 

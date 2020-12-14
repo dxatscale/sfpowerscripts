@@ -2,7 +2,7 @@ import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxw
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
-import InstallPackageCommand from '../../InstallPackageCommand';
+import InstallPackageCommand from '../../../../InstallPackageCommand';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult';
 const fs = require("fs");
 
@@ -18,7 +18,7 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:InstallUnlockedPackage -n packagename -u sandboxalias -i`
+    `$ sfdx sfpowerscripts:package:unlocked:install -n packagename -u sandboxalias -i`
   ];
 
 

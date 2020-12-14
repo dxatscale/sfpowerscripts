@@ -1,6 +1,6 @@
 import TriggerApexTestImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TriggerApexTestImpl';
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 const path = require("path");
 
@@ -16,8 +16,8 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunLocalTests -s`,
-    `$ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c`
+    `$ sfdx sfpowerscripts:apextests:trigger -u scratchorg -l RunLocalTests -s`,
+    `$ sfdx sfpowerscripts:apextests:trigger -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c`
   ];
 
 

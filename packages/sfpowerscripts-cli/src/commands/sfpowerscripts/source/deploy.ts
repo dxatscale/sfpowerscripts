@@ -1,7 +1,7 @@
 import DeploySourceToOrgImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceToOrgImpl';
 import DeploySourceResult from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceResult'
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages, SfdxError } from '@salesforce/core';
 import { isNullOrUndefined } from 'util';
 const fs = require('fs');
@@ -18,7 +18,7 @@ export default class DeploySource extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:DeploySource -u scratchorg --sourcedir force-app -c\n`,
+    `$ sfdx sfpowerscripts:source:deploy -u scratchorg --sourcedir force-app -c\n`,
     `Output variable:`,
     `sfpowerkit_deploysource_id`,
     `<refname_sfpowerkit_deploysource_id`
