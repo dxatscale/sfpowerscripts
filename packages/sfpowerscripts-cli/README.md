@@ -3,8 +3,10 @@
 An opinionated Salesforce build system (statsd metrics enabled) as a sfdx plugin that can be implemented in any CI/CD system of choice
 
 - Features
-  - Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance when building programs with multiple number of packages
-  - Builds Unlocked Packages in parallel by respecting dependencies
+  - Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance on programs often dealing with multiple number of packages
+  - Builds packages in parallel by respecting dependencies
+  - Ability to selectively build changed packages in a mono repo
+  - Ability to deploy only packages that are changed in repo
   - Pooling commands to prepare a pool of scratch org's with pacakges pre installed for optimized Pull/Merge Request validation 
   - Artifacts Driven,  all create commands produce an artifact or operate on an artifact 
   - Integrate with any CI/CD system of choice
