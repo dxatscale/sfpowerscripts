@@ -62,11 +62,17 @@ export default class CreateUnlockedPackageImpl {
     );
 
     // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
-    if (this.forceignorePath)
-      fs.copySync(
-        path.join(workingDirectory, this.forceignorePath),
-        path.join(workingDirectory, ".forceignore")
-      );
+    if (this.forceignorePath) {
+      if (fs.existsSync(this.forceignorePath))
+        fs.copySync(
+          path.join(workingDirectory, this.forceignorePath),
+          path.join(workingDirectory, ".forceignore")
+        );
+      else {
+        console.log(`${this.forceignorePath} does not exist`);
+        console.log("Package creation will continue using the unchanged forceignore in the root directory");
+      }
+    }
 
     //Get the one in working directory
     this.config_file_path = path.join("config", "project-scratch-def.json");

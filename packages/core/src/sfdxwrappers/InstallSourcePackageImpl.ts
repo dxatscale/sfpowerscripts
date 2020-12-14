@@ -67,9 +67,17 @@ export default class InstallSourcePackageImpl {
         await this.applyDestructiveChanges();
       }
 
-      if (this.forceignorePath)
-        fs.copySync(this.forceignorePath, path.join(this.sourceDirectory, ".forceignore"));
-
+      if (this.forceignorePath) {
+        if (fs.existsSync(this.forceignorePath))
+          fs.copySync(
+            this.forceignorePath,
+            path.join(this.sourceDirectory, ".forceignore")
+          );
+        else {
+          console.log(`${this.forceignorePath} does not exist`);
+          console.log("Package installtion will proceed using the unchanged forceignore in the source directory");
+        }
+      }
 
       //Apply Reconcile if Profiles are found
       //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata
