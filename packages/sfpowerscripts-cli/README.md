@@ -41,7 +41,47 @@ USAGE
 <!-- usagestop -->
 
 
-## Output variables
+## Using sfpowerscripts
+
+### Modifiers used by Orchestrator
+
+sfpowerscripts:orchestrator commands allow controlling attributes of a package in its stage by adding additional properties to each package as described in sfdx-project.json. This allows one to change the behaviour of the pipeline without changing any pipeline scripts
+ 
+```
+  {
+    "path": "path--to--package",
+    "package": "name--of-the-package", //mandatory, when used with sfpowerscripts
+    "versionNumber": "X.Y.Z.[NEXT/BUILDNUMBER]",
+    "type":"data" //Mention the type of package, only to be used for source and data packages
+    "aliasfy": <boolean>, // Only for source packages, allows to deploy a subfolder whose name matches the alias of the org when using deploy command
+    "skipDeployOnOrgs": "<string>,<string>", // Comma seperated values of org's to mention this package should not be deployed in this org
+    "isOptimizedDeployment": <boolean>  // default:true for source packages, Utilizes the apex classes in the package for deployment,
+    "skipTesting":<boolean> //default:false, skip apex testing during validation phase
+    "skipCoverageValidation":<boolean> //default:false, skip apex coverage validation during validation phase,
+    "preDeploymentSteps":"<string>,<string>" //Available values reconcile,applyDestructiveManifest
+    "postDeploymentSteps":"<string>,<string>" //Available values reconcile,applyDestructiveManifest
+    "ignoreOnStage": [ //Skip this package during the below orchestrator commands
+         "prepare",
+          "validate"
+        ] 
+  }
+``` 
+### Enabling StatsD Metrics
+Almost all the CLI commands have StatsD metrics capture enabled. This means you can setup deployment dashboards in a tool like
+Graphite or DataDog and capture your deployment statistics
+
+To enable stasd, add the following environment variable, in the format below
+
+```
+ # Set STATSD Environment Variables for logging metrics about this build
+ export SFPOWERSCRIPTS_STATSD=true
+ export SFPOWERSCRIPTS_STATSD_HOST=172.23.95.52 
+ export SFPOWERSCRIPTS_STATSD_PORT=8125     // Optional, defaults to 8125 
+ export SFPOWERSCRIPTS_STATSD_PROTOCOL=UDP  // Optional, defualts to UDP, Supports UDP/TCP
+
+```
+
+### Output Variables
 
 Many of the commands listed below will output variables which may be consumed as flag inputs in subsequent commands. Simply pass the **variable name** to the command, and it will be substituted with the corresponding value, at runtime.
 
@@ -87,45 +127,7 @@ Output variables:
 utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 ```
 
-### Modifiers used by Orchestrator
 
-sfpowerscripts:orchestrator commands allow controlling attributes of a package in its stage by adding additional properties to each package as described in sfdx-project.json
- 
-```
-  {
-    "path": "path--to--package",
-    "package": "name--of-the-package", //mandatory, when used with sfpowerscripts
-    "versionNumber": "X.Y.Z.[NEXT/BUILDNUMBER]",
-    "type":"data" //Mention the type of package, only to be used for source and data packages
-    "aliasfy": true, // Only for source packages, allows to deploy a subfolder whose name matches the alias of the org when using deploy command
-    "skipDeployOnOrgs": "scratchorg", // Comma seperated values of org's to mention this package should not be deployed in this org
-    "isOptimizedDeployment": <boolean>  // default:true for source packages, Utilizes the apex classes in the package for deployment
-    "skipTesting":<boolean> //default:false, skip apex testing during validation phase
-    "skipCoverageValidation":<boolean> //default:false, skip apex coverage validation during validation phase,
-    "preDeploymentSteps":"reconcile,applyDestructiveManifest,executeScripts" //PreDeploymentOptions for this package
-    "postDeploymentSteps":"reconcile,applyDestructiveManifest,executeScripts" //PreDeploymentOptions for this package
-    "preExecuteScripts":<string> //Path to script file
-    "postExecuteScripts":<string>   //Path to script file,
-    "ignoreOnStage": [ //Skip this package during the below orchestrator commands
-         "prepare",
-          "validate"
-        ] 
-  }
-``` 
-### Enabling StatsD Metrics
-Almost all the CLI commands have StatsD metrics capture enabled. This means you can setup deployment dashboards in a tool like
-Graphite or DataDog and capture your deployment statistics
-
-To enable stasd, add the following environment variable, in the format below
-
-```
- # Set STATSD Environment Variables for logging metrics about this build
- export SFPOWERSCRIPTS_STATSD=true
- export SFPOWERSCRIPTS_STATSD_HOST=172.23.95.52 
- export SFPOWERSCRIPTS_STATSD_PORT=8125     // Optional, defaults to 8125 
- export SFPOWERSCRIPTS_STATSD_PROTOCOL=UDP  // Optional, defualts to UDP, Supports UDP/TCP
-
-```
 
 <!-- usagestop -->
   ## Commands
