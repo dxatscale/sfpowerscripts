@@ -29,7 +29,8 @@ export default class CreateUnlockedPackageImpl {
     private wait_time: string,
     private isCoverageEnabled: boolean,
     private isSkipValidation: boolean,
-    private packageArtifactMetadata: PackageMetadata
+    private packageArtifactMetadata: PackageMetadata,
+    private forceignorePath?: string
   ) {
     fs.outputFileSync(
       `.sfpowerscripts/logs/${sfdx_package}`,
@@ -47,6 +48,7 @@ export default class CreateUnlockedPackageImpl {
       this.project_directory
     );
 
+
     //Create a working directory
     let workingDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
       this.project_directory,
@@ -58,6 +60,13 @@ export default class CreateUnlockedPackageImpl {
       null,
       this.config_file_path
     );
+
+    // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
+    if (this.forceignorePath)
+      fs.copySync(
+        path.join(workingDirectory, this.forceignorePath),
+        path.join(workingDirectory, ".forceignore")
+      );
 
     //Get the one in working directory
     this.config_file_path = path.join("config", "project-scratch-def.json");
@@ -256,9 +265,9 @@ export default class CreateUnlockedPackageImpl {
     delete packageDescriptorInWorkingDirectory["preDeploymentScript"];
     delete packageDescriptorInWorkingDirectory["postDeploymentScript"];
     delete packageDescriptorInWorkingDirectory["aliasfy"];
-    
-    
-    
+
+
+
 
     fs.writeJsonSync(
       path.join(workingDirectory, "sfdx-project.json"),

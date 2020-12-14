@@ -15,6 +15,7 @@ import * as rimraf from "rimraf";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import { Stage } from "../Stage";
 import * as fs from "fs-extra"
+import path = require("path");
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -49,13 +50,13 @@ export default class BuildImpl {
   private failedPackages: string[];
   private generatedPackages: PackageMetadata[];
 
- 
+
 
   private recursiveAll = (a) =>
     Promise.all(a).then((r) =>
       r.length == a.length ? r : this.recursiveAll(a)
     );
-  
+
 
   public constructor(
     private props:BuildProps
@@ -63,7 +64,7 @@ export default class BuildImpl {
     this.limiter = new Bottleneck({
       maxConcurrent: this.props.executorcount,
     });
-    
+
     this.packagesBuilt = [];
     this.failedPackages = [];
     this.generatedPackages = [];
@@ -515,7 +516,8 @@ export default class BuildImpl {
       wait_time,
       !isSkipValidation,
       isSkipValidation,
-      packageMetadata
+      packageMetadata,
+      path.join("forceignores", "." + this.props.currentStage + "ignore")
     );
 
     let result = createUnlockedPackageImpl.exec();
