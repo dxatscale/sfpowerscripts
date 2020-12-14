@@ -119,9 +119,10 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 	 - [`sfdx sfpowerscripts:pool:fetch`](#sfdx-sfpowerscriptspoolfetch--t-string--v-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 	 - [`sfdx sfpowerscripts:pool:list`](#sfdx-sfpowerscriptspoollist--t-string--m--a--v-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
- - analyze
+ - Static Analysis
 	 - [`sfdx sfpowerscripts:analyze:pmd`](#sfdx-sfpowerscriptsanalyzepmd---sourcedir-string---ruleset-string---rulesetpath-string---format-string--o-string---version-string--b---refname-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-- apex tests
+	 
+- Apex tests
   - [`sfdx sfpowerscripts:apextests:trigger`](#sfdx-sfpowerscriptsapexteststrigger--u-string--l-string--n-string--c---validatepackagecoverage--s---specifiedtests-string---apextestsuite-string--p-integer---waittime-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
   - [`sfdx sfpowerscripts:apextests:validate`](#sfdx-sfpowerscriptsapextestsvalidate--t-string--u-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
