@@ -85,13 +85,51 @@ Output variables:
 utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 ```
 
+### Modifiers used by Orchestrator
+
+sfpowerscripts:orchestrator commands allow controlling attributes of a package in its stage by adding additional properties to each package as described in sfdx-project.json
+ 
+```
+  {
+    "path": "path--to--package",
+    "package": "name--of-the-package", //mandatory, when used with sfpowerscripts
+    "versionNumber": "X.Y.Z.[NEXT/BUILDNUMBER]",
+    "type":"data" //Mention the type of package, only to be used for source and data packages
+    "aliasfy": true, // Only for source packages, allows to deploy a subfolder whose name matches the alias of the org when using deploy command
+    "skipDeployOnOrgs": "scratchorg", // Comma seperated values of org's to mention this package should not be deployed in this org
+    "isOptimizedDeployment": <boolean>  // default:true for source packages, Utilizes the apex classes in the package for deployment
+    "skipTesting":<boolean> //default:false, skip apex testing during validation phase
+    "skipCoverageValidation":<boolean> //default:false, skip apex coverage validation during validation phase,
+    "preDeploymentSteps":"reconcile,applyDestructiveManifest,executeScripts" //PreDeploymentOptions for this package
+    "postDeploymentSteps":"reconcile,applyDestructiveManifest,executeScripts" //PreDeploymentOptions for this package
+    "preExecuteScripts":<string> //Path to script file
+    "postExecuteScripts":<string>   //Path to script file,
+    "ignoreOnStage": [ //Skip this package during the below orchestrator commands
+         "prepare",
+          "validate"
+        ] 
+  }
+``` 
+### Enabling StatsD Metrics
+Almost all the CLI commands have StatsD metrics capture enabled. This means you can setup deployment dashboards in a tool like
+Graphite or DataDog and capture your deployment statistics
+
+To enable stasd, add the following environment variable, in the format below
+
+```
+ # Set STATSD Environment Variables for logging metrics about this build
+ export SFPOWERSCRIPTS_STATSD=true
+ export SFPOWERSCRIPTS_STATSD_HOST=172.23.95.52 
+ export SFPOWERSCRIPTS_STATSD_PORT=8125     // Optional, defaults to 8125 
+ export SFPOWERSCRIPTS_STATSD_PROTOCOL=UDP  // Optional, defualts to UDP, Supports UDP/TCP
+
+```
 
 <!-- usagestop -->
   ## Commands
   <!-- commands -->
  - Orchestrator Commands 
    - [`sfdx sfpowerscripts:orchestrator:prepare`](#sfdx-sfpowerscriptsorchestratorprepare)
-   - [`sfdx sfpowerscripts:orchestrator:analyze`](#sfdx-sfpowerscriptsorchestratoranalyze)
    - [`sfdx sfpowerscripts:orchestrator:validate`](#sfdx-sfpowerscriptsorchestratorvalidate)
    - [`sfdx sfpowerscripts:orchestrator:quickbuild`](#sfdx-sfpowerscriptsorchestratorquickbuild)
    - [`sfdx sfpowerscripts:orchestrator:build`](#sfdx-sfpowerscriptsorchestratorbuild)
@@ -129,15 +167,21 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 
 ## `sfdx sfpowerscripts:orchestrator:prepare`
 
-Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner
+Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner,
+Please note for this feature to work the devhub should be enabled and scratchorgpool (additional fields to ScratchOrgInfo object)
+should be deployed to devhub. Please see the instructions [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling#1-install-the-supporting-fields-and-validation-rule-to-devhub). This command also
+install an unlocked package to the scratch org 'sfpowerscripts-artifact' (04t1P000000ka0fQAA) for skipping unchanged packages during
+a validation phase. This particular package can be prebuilt against your org and the ID could be overriden by setting up the
+environment variable SFPOWERSCRIPTS_ARTIFACT_UNLOCKED_PACKAGE
 
 ```
-Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner
+Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner,
+
 
 USAGE
   $ sfdx sfpowerscripts:orchestrator:prepare -t <string> [-e <number>] [-m <number>] [-f <filepath>] 
   [--installassourcepackages --installall] [-s <filepath>] [--succeedondeploymenterrors] [--keys <string>] [-v <string>] 
-  [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  [--apiversion <string>]
 
 OPTIONS
   -e, --expiry=expiry                                                               [default: 2] Expiry of the scratch
@@ -165,23 +209,15 @@ OPTIONS
   --apiversion=apiversion                                                           API version to be used
 
   --installall                                                                      Install the dependencies,along with
-                                                                                    all the packages in the repo as
-                                                                                    source packages to the org, thus
-                                                                                    reducing  time spent on validation
+                                                                                    all the packages in the repo 
 
-  --installassourcepackages                                                         By default, all the
-                                                                                    packages(excluding data) are
-                                                                                    installed as source packages,
-                                                                                    override this flag to install the
-                                                                                    packages as it is
+  --installassourcepackages                                                         Install all packages as Source
+                                                                                    packages
 
-  --json                                                                            format output as json
 
   --keys=keys                                                                       Keys to be used while installing any
                                                                                     managed package dependent
 
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
 
   --succeedondeploymenterrors                                                       Do not fail the scratch orgs, if a
                                                                                     package failed to deploy, return the
@@ -193,40 +229,18 @@ EXAMPLE
 ```
 
 _See code: [lib/commands/sfpowerscripts/orchestrator/prepare.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/orchestrator/prepare.js)_
-## `sfdx sfpowerscripts:orchestrator:analyze`
-
-Runs static analysis on the code/config based on configurable rules
-
-```
-Runs static analysis on the code/config based on configurable rules
-
-USAGE
-  $ sfdx sfpowerscripts:orchestrator:analyze [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-EXAMPLE
-  $ sfdx sfpowerscripts:orchestrator:validate -u <scratchorg> -v <devhub>
-```
-
-_See code: [lib/commands/sfpowerscripts/orchestrator/analyze.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/orchestrator/analyze.js)_
 
 ## `sfdx sfpowerscripts:orchestrator:validate`
 
-Validate the incoming change against an earlier prepared scratchorg
+Validate the incoming change against a prepared scratch org fetched from the provided pools (created using the prepare command). Please note
+it will only deploy the changed packages in the repo by comparing against the package version installed in the fetched scratchorg
 
 ```
-Validate the incoming change against an earlier prepared scratchorg
+Validate the incoming change against a prepared scratch org fetched from the provided pools.
 
 USAGE
   $ sfdx sfpowerscripts:orchestrator:validate -u <string> -p <array> -f <filepath> -i <string> [--shapefile <string>] 
-  [--coveragepercent <integer>] [-g <array>] [-x] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  [--coveragepercent <integer>] [-g <array>] [-x]
 
 OPTIONS
   -f, --jwtkeyfile=jwtkeyfile                                                       (required) Path to a file containing
@@ -256,10 +270,6 @@ OPTIONS
                                                                                     code coverage of packages with Apex
                                                                                     classes
 
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
 
   --shapefile=shapefile                                                             Path to .zip file of scratch org
                                                                                     shape / metadata to deploy
@@ -271,16 +281,17 @@ EXAMPLE
 _See code: [lib/commands/sfpowerscripts/orchestrator/validate.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/orchestrator/validate.js)_
 ## `sfdx sfpowerscripts:orchestrator:quickbuild`
 
-Build all packages (unlocked/source/data) in a repo in parallel, respecting the dependency of each packages and generate artifacts to a provided directory without validating individual dependencies
+Build packages (unlocked/source/data) in a repo in parallel, without validating depenencies or coverage in the case of unlocked packages.
+For diffcheck to work(build packages that are changed), it compares against the last know git tags, so make sure that you strategically place
+the tags push at the required state in your pipeline.
 
 ```
-Build all packages (unlocked/source/data) in a repo in parallel, respecting the dependency of each packages and generate artifacts to a provided directory without validating individual dependencies
+Build packages (unlocked/source/data) in a repo in parallel, without validating depenencies or coverage in the case of unlocked packages
 
 USAGE
   $ sfdx sfpowerscripts:orchestrator:quickbuild [--diffcheck] [--gittag] [-r <string>] [-f <filepath>] [--artifactdir 
   <directory>] [--waittime <number>] [--buildnumber <number>] [--executorcount <number>] [--branch <string>] [--tag 
-  <string>] [-v <string>] [--apiversion <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  <string>] [-v <string>] [--apiversion <string>]
 
 OPTIONS
   -f, --configfilepath=configfilepath                                               [default:
@@ -322,11 +333,6 @@ OPTIONS
   --gittag                                                                          Tag the current commit ID with an
                                                                                     annotated tag containing the package
                                                                                     name and version - does not push tag
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
 
   --tag=tag                                                                         Tag the build with a label, useful
                                                                                     to identify in metrics
@@ -340,7 +346,7 @@ _See code: [lib/commands/sfpowerscripts/orchestrator/quickbuild.js](https://gith
 
 ## `sfdx sfpowerscripts:orchestrator:build`
 
-Build all packages (unlocked/source/data) in a repo in parallel, respecting the dependency of each packages and generate artifacts to a provided directory
+Build all packages (unlocked/source/data) in a repo in parallel, respecting the dependency of each packages and generate artifacts to a provided directory.For diffcheck to work(build packages that are changed), it compares against the last know git tags, so make sure that you strategically place the tags push at the required state in your pipeline.
 
 ```
 Build all packages (unlocked/source/data) in a repo in parallel, respecting the dependency of each packages and generate artifacts to a provided directory
@@ -348,8 +354,7 @@ Build all packages (unlocked/source/data) in a repo in parallel, respecting the 
 USAGE
   $ sfdx sfpowerscripts:orchestrator:build [--diffcheck] [--gittag] [-r <string>] [-f <filepath>] [--artifactdir 
   <directory>] [--waittime <number>] [--buildnumber <number>] [--executorcount <number>] [--branch <string>] [--tag 
-  <string>] [-v <string>] [--apiversion <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  <string>] [-v <string>] [--apiversion <string>] 
 
 OPTIONS
   -f, --configfilepath=configfilepath                                               [default:
@@ -392,11 +397,6 @@ OPTIONS
                                                                                     annotated tag containing the package
                                                                                     name and version - does not push tag
 
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
   --tag=tag                                                                         Tag the build with a label, useful
                                                                                     to identify in metrics
 
@@ -409,14 +409,15 @@ _See code: [lib/commands/sfpowerscripts/orchestrator/build.js](https://github.co
 ## `sfdx sfpowerscripts:orchestrator:deploy`
 
 Deploy packages from the provided aritfact directory, to a given org, using the order and configurable flags provided in sfdx-project.json
+`skipifalreadyinstalled` only works provide the target org has sfpowerscripts-artifact' (04t1P000000ka0fQAA) installed. Please note you can 
+deploy your own instance of 'sfpowerscripts-artifact' by building it from the repo and overriding using the environment variable SFPOWERSCRIPTS_ARTIFACT_UNLOCKED_PACKAGE
 
 ```
 Deploy packages from the provided aritfact directory, to a given org, using the order and configurable flags provided in sfdx-project.json
 
 USAGE
   $ sfdx sfpowerscripts:orchestrator:deploy -u <string> [--artifactdir <directory>] [--waittime <number>] [-g <array>] 
-  [-t <string>] [--skipifalreadyinstalled] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  [-t <string>] [--skipifalreadyinstalled] 
 
 OPTIONS
   -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to
@@ -434,10 +435,6 @@ OPTIONS
   --artifactdir=artifactdir                                                         [default: artifacts] The directory
                                                                                     containing artifacts to be deployed
 
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
 
   --skipifalreadyinstalled                                                          Skip the package installation if the
                                                                                     package is already installed in the
@@ -461,9 +458,7 @@ Promotes validated unlocked packages with code coverage greater than 75%
 Promotes validated unlocked packages with code coverage greater than 75%
 
 USAGE
-  $ sfdx sfpowerscripts:orchestrator:promote -d <directory> [-v <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
+  $ sfdx sfpowerscripts:orchestrator:promote -d <directory> [-v <string>] 
 OPTIONS
   -d, --artifactdir=artifactdir                                                     (required) [default: artifacts] The
                                                                                     directory where artifacts are
@@ -475,10 +470,6 @@ OPTIONS
                                                                                     HubOrg if using the Authenticate
                                                                                     Devhub task
 
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
 
 EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:promote -d path/to/artifacts -v <org>
@@ -494,9 +485,7 @@ Publish packages to an artifact registry, using a user-provided script that is r
 Publish packages to an artifact registry, using a user-provided script that is responsible for authenticating & uploading to the registry.
 
 USAGE
-  $ sfdx sfpowerscripts:orchestrator:publish -d <directory> -f <filepath> [-p -v <string>] [-t <string>] [--json] 
-  [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
+  $ sfdx sfpowerscripts:orchestrator:publish -d <directory> -f <filepath> [-p -v <string>] [-t <string>] 
 OPTIONS
   -d, --artifactdir=artifactdir                                                     (required) [default: artifacts] The
                                                                                     directory containing artifacts to be
@@ -515,10 +504,6 @@ OPTIONS
   -v, --devhubalias=devhubalias                                                     Provide the alias of the devhub
                                                                                     previously authenticated
 
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
 
 EXAMPLES
   $ sfdx sfpowerscripts:orchestrator:publish -f path/to/script
@@ -532,13 +517,11 @@ _See code: [lib/commands/sfpowerscripts/orchestrator/publish.js](https://github.
 Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository
 
 ```
-[BETA] Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository
+Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository
 
 USAGE
   $ sfdx sfpowerscripts:changelog:generate -d <directory> -n <string> -w <string> -r <string> -b <string> [--limit 
-  <integer>] [--workitemurl <string>] [--showallartifacts] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
+  <integer>] [--workitemurl <string>] [--showallartifacts] 
 OPTIONS
   -b, --branchname=branchname                                                       (required) Repository branch in
                                                                                     which the changelog files are
@@ -584,61 +567,6 @@ EXAMPLE
 _See code: [lib/commands/sfpowerscripts/changelog/generate.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/changelog/generate.js)_
 
 
-## `sfdx sfpowerscripts:package:data:create`
-
-Creates a versioned artifact from a source directory containing SFDMU-based data (in csv format and export json). The artifact can be consumed by release pipelines, to deploy the data to orgs
-
-```
-Creates a versioned artifact from a source directory containing SFDMU-based data (in csv format and export json). The artifact can be consumed by release pipelines, to deploy the data to orgs
-
-USAGE
-  $ sfdx sfpowerscripts:package:data:create -n <string> -v <string> [--artifactdir <directory>] [--diffcheck] [--branch 
-  <string>] [--gittag] [-r <string>] [--refname <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -n, --package=package
-      (required) The name of the package
-
-  -r, --repourl=repourl
-      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
-
-  -v, --versionnumber=versionnumber
-      (required) The format is major.minor.patch.buildnumber . This will override the build number mentioned in the 
-      sfdx-project.json, Try considering the use of Increment Version Number task before this task
-
-  --artifactdir=artifactdir
-      [default: artifacts] The directory where the artifact is to be written
-
-  --branch=branch
-      The git branch that this build is triggered on, Useful for metrics and general identification purposes
-
-  --diffcheck
-      Only build when the package has changed
-
-  --gittag
-      Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
-
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
-  --refname=refname
-      Reference name to be prefixed to output variables
-
-EXAMPLES
-  $ sfdx sfpowerscripts:package:data:create -n mypackage -v <version>
-  $ sfdx sfpowerscripts:package:data:create -n <mypackage> -v <version> --diffcheck --gittag
-  Output variable:
-  sfpowerscripts_artifact_directory
-  <refname>_sfpowerscripts_artifact_directory
-  sfpowerscripts_package_version_number
-  <refname>_sfpowerscripts_package_version_number
-```
-
-_See code: [lib/commands/sfpowerscripts/package/data/create.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/package/data/create.js)_
 
 ## `sfdx sfpowerscripts:analyze:pmd`
 
@@ -790,6 +718,57 @@ EXAMPLE
 
 _See code: [lib/commands/sfpowerscripts/apextests/validate.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/apextests/validate.js)_
 
+
+## `sfdx sfpowerscripts:package:data:create`
+
+Creates a versioned artifact from a source directory containing SFDMU-based data (in csv format and export json). The artifact can be consumed by release pipelines, to deploy the data to orgs
+
+```
+Creates a versioned artifact from a source directory containing SFDMU-based data (in csv format and export json). The artifact can be consumed by release pipelines, to deploy the data to orgs
+
+USAGE
+  $ sfdx sfpowerscripts:package:data:create -n <string> -v <string> [--artifactdir <directory>] [--diffcheck] [--branch 
+  <string>] [--gittag] [-r <string>] [--refname <string>]
+
+OPTIONS
+  -n, --package=package
+      (required) The name of the package
+
+  -r, --repourl=repourl
+      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
+
+  -v, --versionnumber=versionnumber
+      (required) The format is major.minor.patch.buildnumber . This will override the build number mentioned in the 
+      sfdx-project.json, Try considering the use of Increment Version Number task before this task
+
+  --artifactdir=artifactdir
+      [default: artifacts] The directory where the artifact is to be written
+
+  --branch=branch
+      The git branch that this build is triggered on, Useful for metrics and general identification purposes
+
+  --diffcheck
+      Only build when the package has changed
+
+  --gittag
+      Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
+
+  --refname=refname
+      Reference name to be prefixed to output variables
+
+EXAMPLES
+  $ sfdx sfpowerscripts:package:data:create -n mypackage -v <version>
+  $ sfdx sfpowerscripts:package:data:create -n <mypackage> -v <version> --diffcheck --gittag
+  Output variable:
+  sfpowerscripts_artifact_directory
+  <refname>_sfpowerscripts_artifact_directory
+  sfpowerscripts_package_version_number
+  <refname>_sfpowerscripts_package_version_number
+```
+
+_See code: [lib/commands/sfpowerscripts/package/data/create.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/package/data/create.js)_
+
+
 ## `sfdx sfpowerscripts:package:data:install`
 
 Installs a SFDMU-based data package consisting of csvfiles and export.json to a target org
@@ -799,8 +778,7 @@ Installs a SFDMU-based data package consisting of csvfiles and export.json to a 
 
 USAGE
   $ sfdx sfpowerscripts:package:data:install -n <string> -u <string> [--artifactdir <directory>] [-s] 
-  [--skipifalreadyinstalled] [--subdirectory <directory>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  [--skipifalreadyinstalled] [--subdirectory <directory>] 
 
 OPTIONS
   -n, --package=package                                                             (required) Name of the package to be
@@ -816,11 +794,6 @@ OPTIONS
 
   --artifactdir=artifactdir                                                         [default: artifacts] The directory
                                                                                     where the artifact is located
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
 
   --skipifalreadyinstalled                                                          Skip the package installation if the
                                                                                     package is already installed in the
@@ -846,9 +819,7 @@ This task is used to create a delta package between two commits and bundle the c
 
 USAGE
   $ sfdx sfpowerscripts:package:delta:create -r <string> -v <string> [-n <string>] [-t <string>] [--repourl <string>] 
-  [--branch <string>] [--artifactdir <directory>] [-x] [--refname <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
+  [--branch <string>] [--artifactdir <directory>] [-x] [--refname <string>] 
 OPTIONS
   -n, --package=package                                                             The name of the package
 
@@ -874,11 +845,6 @@ OPTIONS
   --branch=branch                                                                   The git branch that this build is
                                                                                     triggered on, Useful for metrics and
                                                                                     general identification purposes
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
 
   --refname=refname                                                                 Reference name to be prefixed to
                                                                                     output variables
@@ -910,7 +876,7 @@ Increment the selected version counter by one and optionally commit changes to s
 
 USAGE
   $ sfdx sfpowerscripts:package:incrementBuildNumber [--segment <string>] [-a -r <string>] [-n <string>] [-d <string>] 
-  [-c] [--refname <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  [-c] [--refname <string>] 
 
 OPTIONS
   -a, --appendbuildnumber
@@ -930,12 +896,6 @@ OPTIONS
   -r, --runnumber=runnumber
       The build number of the CI pipeline, usually available through an environment variable
 
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
   --refname=refname
       Reference name to be prefixed to output variables
 
@@ -954,15 +914,14 @@ _See code: [lib/commands/sfpowerscripts/package/incrementBuildNumber.js](https:/
 
 ## `sfdx sfpowerscripts:package:source:create`
 
-This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata (e.g. commit Id), source code & an optional destructive manifest. The artifact can then be consumed by release pipelines, to deploy the package
+This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata wrapped into an artifact. The artifact can then be consumed by release tasks, to deploy the package
 
 ```
 This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata (e.g. commit Id), source code & an optional destructive manifest. The artifact can then be consumed by release pipelines, to deploy the package
 
 USAGE
   $ sfdx sfpowerscripts:package:source:create -n <string> -v <string> [--artifactdir <directory>] [--diffcheck] 
-  [--branch <string>] [--gittag] [-r <string>] [--refname <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  [--branch <string>] [--gittag] [-r <string>] [--refname <string>] 
 
 OPTIONS
   -n, --package=package
@@ -987,12 +946,6 @@ OPTIONS
   --gittag
       Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
 
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
   --refname=refname
       Reference name to be prefixed to output variables
 
@@ -1012,7 +965,7 @@ _See code: [lib/commands/sfpowerscripts/package/source/create.js](https://github
 
 ## `sfdx sfpowerscripts:package:source:install`
 
-Installs a sfpowerscripts source package to the target org
+Installs a sfpowerscripts source package to the target org. skipifalreadyinstalled` only works provide the target org has sfpowerscripts-artifact' (04t1P000000ka0fQAA) installed. Please note you can deploy your own instance of 'sfpowerscripts-artifact' by building it from the repo and overriding using the environment variable SFPOWERSCRIPTS_ARTIFACT_UNLOCKED_PACKAGE
 
 ```
 Installs a sfpowerscripts source package to the target org
@@ -1020,8 +973,7 @@ Installs a sfpowerscripts source package to the target org
 USAGE
   $ sfdx sfpowerscripts:package:source:install -n <string> -u <string> [--artifactdir <directory>] 
   [--skipifalreadyinstalled] [-s] [--subdirectory <directory>] [-o] [-t] [--waittime <string>] [--refname <string>] 
-  [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
+ 
 OPTIONS
   -n, --package=package                                                             (required) Name of the package to be
                                                                                     installed
@@ -1045,10 +997,6 @@ OPTIONS
   --artifactdir=artifactdir                                                         [default: artifacts] The directory
                                                                                     where the artifact is located
 
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
 
   --refname=refname                                                                 Reference name to be prefixed to
                                                                                     output variables
@@ -1081,8 +1029,7 @@ Creates a new package version, and generates an artifact that consists of the me
 USAGE
   $ sfdx sfpowerscripts:package:unlocked:create -n <string> [-b] [-k <string> | -x] [--diffcheck] [--gittag] [-r 
   <string>] [--versionnumber <string>] [-f <filepath>] [--artifactdir <directory>] [--enablecoverage] [-s] [--branch 
-  <string>] [--tag <string>] [--waittime <string>] [--refname <string>] [-v <string>] [--apiversion <string>] [--json] 
-  [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  <string>] [--tag <string>] [--waittime <string>] [--refname <string>] [-v <string>] [--apiversion <string>] 
 
 OPTIONS
   -b, --buildartifactenabled
@@ -1132,11 +1079,6 @@ OPTIONS
   --gittag
       Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
 
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
 
   --refname=refname
       Reference name to be prefixed to output variables
@@ -1213,11 +1155,6 @@ OPTIONS
   --artifactdir=artifactdir                                                         [default: artifacts] The directory
                                                                                     where the artifact is located
 
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
   --publishwaittime=publishwaittime                                                 [default: 10] number of minutes to
                                                                                     wait for subscriber package version
                                                                                     ID to become available in the target
@@ -1269,11 +1206,6 @@ OPTIONS
   --apiversion=apiversion                                                           override the api version used for
                                                                                     api requests made by this command
 
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
 EXAMPLES
   $ sfdx sfpowerscripts:pool:delete -t core 
   $ sfdx sfpowerscripts:pool:delete -t core -v devhub
@@ -1289,9 +1221,7 @@ Gets an active/unused scratch org from the scratch org pool
 Gets an active/unused scratch org from the scratch org pool
 
 USAGE
-  $ sfdx sfpowerscripts:pool:fetch -t <string> [-v <string>] [--apiversion <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
+  $ sfdx sfpowerscripts:pool:fetch -t <string> [-v <string>] [--apiversion <string>] 
 OPTIONS
   -t, --tag=tag                                                                     (required) (required) tag used to
                                                                                     identify the scratch org pool
@@ -1302,10 +1232,7 @@ OPTIONS
   --apiversion=apiversion                                                           override the api version used for
                                                                                     api requests made by this command
 
-  --json                                                                            format output as json
 
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: info] logging level for
-                                                                                    this command invocation
 
 EXAMPLES
   $ sfdx sfpowerkit:pool:fetch -t core 
@@ -1324,9 +1251,7 @@ Retrieves a list of active scratch org and details from any pool. If this comman
 Retrieves a list of active scratch org and details from any pool. If this command is run with -m|--mypool, the command will retrieve the passwords for the pool created by the user who is executing the command.
 
 USAGE
-  $ sfdx sfpowerscripts:pool:list [-t <string>] [-m] [-a] [-v <string>] [--apiversion <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
+  $ sfdx sfpowerscripts:pool:list [-t <string>] [-m] [-a] [-v <string>] [--apiversion <string>] 
 OPTIONS
   -a, --allscratchorgs                                                              Gets all used and unused Scratch
                                                                                     orgs from pool
@@ -1343,11 +1268,6 @@ OPTIONS
 
   --apiversion=apiversion                                                           override the api version used for
                                                                                     api requests made by this command
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
 
 EXAMPLES
   $ sfdx sfpowerscripts:pool:list -t core 
@@ -1368,7 +1288,7 @@ Deploy source to org using mdapi based deploy (converts source to mdapi and use 
 USAGE
   $ sfdx sfpowerscripts:source:deploy [-u <string>] [--sourcedir <string>] [--waittime <string>] [-c] [-f <string>] [-l 
   <string>] [--specifiedtests <string>] [--apextestsuite <string>] [--ignorewarnings] [--ignoreerrors] [-b] [--refname 
-  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  <string>] 
 
 OPTIONS
   -b, --istobreakbuildifempty
@@ -1397,11 +1317,6 @@ OPTIONS
   --ignorewarnings
       Ignores any warnings generated during metadata deployment
 
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
 
   --refname=refname
       Reference name to be prefixed to output variables
@@ -1451,11 +1366,6 @@ OPTIONS
   -u, --targetorg=targetorg
       [default: scratchorg] Alias or username of the target org where the code should be deployed
 
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
 
   --skiponmissingmanifest
       Skip if unable to find destructive manfiest file
