@@ -10,8 +10,9 @@ import PrepareASingleOrgImpl, {
 } from "./PrepareASingleOrgImpl";
 import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import child_process = require("child_process");
-import BuildImpl from "../parallelBuilder/BuildImpl";
+import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import { Stage } from "../Stage";
 export default class PrepareImpl {
   private poolConfig: PoolConfig;
   private totalToBeAllocated: number;
@@ -177,19 +178,24 @@ export default class PrepareImpl {
       console.log("This is not ideal, as the artifacts are  built from the current head of the provided branch" );
       console.log("Pools should be prepared with previously validated packages");
       console.log("---------------------------------------------------------------------------------------------")
-      let buildImpl = new BuildImpl(
-        this.configFilePath,
-        null,
-        this.hubOrg.getUsername(),
-        null,
-        "120",
-        true,
-        false,
-        1,
-        10,
-        true,
-        null
-      );
+
+      let buildProps:BuildProps = {
+
+        configFilePath:this.configFilePath,
+        devhubAlias:this.hubOrg.getUsername(),
+        waitTime:120,
+        isQuickBuild:true,
+        isDiffCheckEnabled:false,
+        buildNumber:1,
+        executorcount:10,
+        isBuildAllAsSourcePackages:true,
+        branch:null,
+        currentStage:Stage.PREPARE
+    }
+
+
+
+      let buildImpl = new BuildImpl(buildProps);
       let { generatedPackages, failedPackages } = await buildImpl.exec();
 
 
