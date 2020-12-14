@@ -27,6 +27,9 @@
     "simple-git": "^2.20.1",
     "ts-node": "^9.0.0"
   },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1.26.0"
+  },
   "engines": {
     "node": ">=8.0.0"
   },
@@ -90,6 +93,7 @@
   "repository": "Accenture/sfpowerscripts",
   "scripts": {
     "build": "npm run clean && npm run compile",
+    "prepare": "oclif-dev manifest",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json"
   }
