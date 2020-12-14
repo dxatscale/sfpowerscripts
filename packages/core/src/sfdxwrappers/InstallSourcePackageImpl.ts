@@ -33,7 +33,8 @@ export default class InstallSourcePackageImpl {
     private skip_if_package_installed: boolean,
     private packageMetadata: PackageMetadata,
     private isPackageCheckHandledByCaller?: boolean,
-    private packageLogger?:any
+    private packageLogger?:any,
+    private forceignorePath?: string
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -65,6 +66,10 @@ export default class InstallSourcePackageImpl {
       if (this.packageMetadata.isDestructiveChangesFound) {
         await this.applyDestructiveChanges();
       }
+
+      if (this.forceignorePath)
+        fs.copySync(this.forceignorePath, path.join(this.sourceDirectory, ".forceignore"));
+
 
       //Apply Reconcile if Profiles are found
       //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata

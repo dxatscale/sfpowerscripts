@@ -27,7 +27,7 @@ export default class ManifestHelpers {
   }
 
 
-  public static getSFDXPackageManifest(projectDirectory: string): { any } {
+  public static getSFDXPackageManifest(projectDirectory: string): any {
     let projectConfigJSON: string;
     if (!isNullOrUndefined(projectDirectory)) {
       projectConfigJSON = path.join(projectDirectory, "sfdx-project.json");
