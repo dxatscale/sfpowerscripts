@@ -187,6 +187,14 @@ export default class CreateUnlockedPackageImpl {
       null
     );
 
+    if (this.forceignorePath) {
+      if (fs.existsSync(this.forceignorePath))
+        fs.copySync(
+          path.join(mdapiPackageArtifactDir, this.forceignorePath),
+          path.join(mdapiPackageArtifactDir, ".forceignore")
+        );
+    }
+
     this.packageArtifactMetadata.sourceDir = mdapiPackageArtifactDir;
 
     //Add Timestamps
