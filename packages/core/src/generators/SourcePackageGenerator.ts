@@ -4,7 +4,6 @@ import * as rimraf from "rimraf";
 import SFPLogger from "../utils/SFPLogger";
 import { mkdirpSync } from "fs-extra";
 import * as fs from "fs-extra";
-import ignore from "ignore";
 let path = require("path");
 
 
