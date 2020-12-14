@@ -1,13 +1,14 @@
 # sfpowerscripts
 
 An opinionated Salesforce build system (statsd metrics enabled) as a sfdx plugin that can be implemented in any CI/CD system of choice
-Features
- - Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance when building programs with multiple number of packages
- - Builds Unlocked Packages in parallel by respecting dependencies
- - Pooling commands to prepare a pool of scratch org's with pacakges pre installed for optimized Pull/Merge Request validation 
- - Artifacts Driven,  all create commands produce an artifact or operate on an artifact 
- - Integrate with any CI/CD system of choice
- - Support for external scripts, as hooks making integration easy 
+
+- Features
+  - Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance when building programs with multiple number of packages
+  - Builds Unlocked Packages in parallel by respecting dependencies
+  - Pooling commands to prepare a pool of scratch org's with pacakges pre installed for optimized Pull/Merge Request validation 
+  - Artifacts Driven,  all create commands produce an artifact or operate on an artifact 
+  - Integrate with any CI/CD system of choice
+  - Support for external scripts, as hooks making integration easy 
 
 ## Installation
 
