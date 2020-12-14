@@ -73,7 +73,7 @@ export default class SourcePackageGenerator {
     let ignoreFiles = projectConfig.plugins?.sfpowerscripts?.ignoreFiles;
 
     let copyForceIgnoreForStage = (stage) => {
-      if (ignoreFiles[stage])
+      if (ignoreFiles?.[stage])
         if (fs.existsSync(ignoreFiles[stage]))
           fs.copySync(
             ignoreFiles[stage],
