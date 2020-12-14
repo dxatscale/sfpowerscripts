@@ -20,6 +20,22 @@ const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
 const PRIORITY_SOURCE_PKG = 5;
 const PRIORITY_DATA_PKG = 5;
+
+export interface BuildProps {
+  configFilePath?: string,
+  projectDirectory?: string,
+  devhubAlias?: string,
+  repourl?: string,
+  waitTime: number,
+  isQuickBuild: boolean,
+  isDiffCheckEnabled: boolean,
+  buildNumber: number,
+  executorcount: number,
+  isBuildAllAsSourcePackages: boolean,
+  branch?:string,
+  packagesToCommits?: {[p: string]: string},
+  currentStage:Stage
+}
 export default class BuildImpl {
   private limiter: Bottleneck;
   private parentsToBeFulfilled;
@@ -33,32 +49,21 @@ export default class BuildImpl {
   private failedPackages: string[];
   private generatedPackages: PackageMetadata[];
 
-  private packageInfo: any[];
+ 
 
   private recursiveAll = (a) =>
     Promise.all(a).then((r) =>
       r.length == a.length ? r : this.recursiveAll(a)
     );
-  private unlockedPackages: any[];
+  
 
   public constructor(
-    private config_file_path: string,
-    private project_directory: string,
-    private devhub_alias: string,
-    private repourl: string,
-    private wait_time: string,
-    private isSkipValidation: boolean,
-    private isDiffCheckEnabled: boolean,
-    private buildNumber: number,
-    private executorcount: number,
-    private isValidateMode: boolean,
-    private branch:string,
-    private packagesToCommits?: {[p: string]: string}
+    private props:BuildProps
   ) {
     this.limiter = new Bottleneck({
-      maxConcurrent: this.executorcount,
+      maxConcurrent: this.props.executorcount,
     });
-
+    
     this.packagesBuilt = [];
     this.failedPackages = [];
     this.generatedPackages = [];
@@ -70,7 +75,7 @@ export default class BuildImpl {
     failedPackages: string[];
   }> {
     this.packagesToBeBuilt = this.getAllPackages(
-      this.project_directory
+      this.props.projectDirectory
     );
 
     rimraf.sync(".sfpowerscripts");
@@ -80,16 +85,16 @@ export default class BuildImpl {
 
     // Read Manifest
     this.projectConfig = ManifestHelpers.getSFDXPackageManifest(
-      this.project_directory
+      this.props.projectDirectory
     );
 
     SFPStatsSender.logCount("build.scheduled", {
-      isDiffCheckEnabled: this.isDiffCheckEnabled ? "true" : "false",
-      prMode: this.isValidateMode ? "true" : "false",
+      isDiffCheckEnabled: this.props.isDiffCheckEnabled ? "true" : "false",
+      prMode: this.props.isBuildAllAsSourcePackages ? "true" : "false",
     });
 
     //Do a diff Impl
-    if (this.isDiffCheckEnabled) {
+    if (this.props.isDiffCheckEnabled) {
       let packageToBeBuilt = [];
 
       for await (const pkg of this.packagesToBeBuilt) {
@@ -100,9 +105,9 @@ export default class BuildImpl {
 
         let diffImpl: PackageDiffImpl = new PackageDiffImpl(
           pkg,
-          this.project_directory,
-          type == "Data" || type == "Source" ? null : this.config_file_path,
-          this.packagesToCommits
+          this.props.projectDirectory,
+          type == "Data" || type == "Source" ? null : this.props.configFilePath,
+          this.props.packagesToCommits
         );
         let isToBeBuilt = await diffImpl.exec();
         if (isToBeBuilt) {
@@ -124,9 +129,9 @@ export default class BuildImpl {
       SFPStatsSender.logCount("build.scheduled.packages", {
         package: pkg,
         type: type,
-        is_diffcheck_enabled: String(this.isDiffCheckEnabled),
-        is_dependency_validated: this.isSkipValidation ? "false" : "true",
-        pr_mode: String(this.isValidateMode),
+        is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
+        is_dependency_validated: this.props.isQuickBuild ? "false" : "true",
+        pr_mode: String(this.props.isBuildAllAsSourcePackages),
       });
     }
 
@@ -137,12 +142,12 @@ export default class BuildImpl {
       };
 
     this.childs = DependencyHelper.getChildsOfAllPackages(
-      this.project_directory,
+      this.props.projectDirectory,
       this.packagesToBeBuilt
     );
 
     this.parents = DependencyHelper.getParentsOfAllPackages(
-      this.project_directory,
+      this.props.projectDirectory,
       this.packagesToBeBuilt
     );
 
@@ -165,11 +170,11 @@ export default class BuildImpl {
           this.createPackage(
             type,
             pkg,
-            this.config_file_path,
-            this.devhub_alias,
-            this.wait_time,
-            this.isSkipValidation,
-            this.isValidateMode
+            this.props.configFilePath,
+            this.props.devhubAlias,
+            this.props.waitTime.toString(),
+            this.props.isQuickBuild,
+            this.props.isBuildAllAsSourcePackages
           )
         )
         .then(
@@ -178,9 +183,9 @@ export default class BuildImpl {
             SFPStatsSender.logCount("build.succeeded.packages", {
               package: pkg,
               type: type,
-              is_diffcheck_enabled: String(this.isDiffCheckEnabled),
-              is_dependency_validated: this.isSkipValidation ? "false" : "true",
-              pr_mode: String(this.isValidateMode),
+              is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
+              is_dependency_validated: this.props.isQuickBuild ? "false" : "true",
+              pr_mode: String(this.props.isBuildAllAsSourcePackages),
             });
             this.queueChildPackages(packageMetadata);
           },
@@ -220,7 +225,7 @@ export default class BuildImpl {
         if (
           pkg.ignoreOnStage?.find( (stage) => {
             stage = stage.toLowerCase();
-            return stage === Stage.BUILD || stage === Stage.VALIDATE || stage === Stage.PREPARE;
+            return stage === this.props.currentStage;
           })
         )
           return false;
@@ -308,11 +313,11 @@ export default class BuildImpl {
             this.createPackage(
               type,
               pkg,
-              this.config_file_path,
-              this.devhub_alias,
-              this.wait_time,
-              this.isSkipValidation,
-              this.isValidateMode
+              this.props.configFilePath,
+              this.props.devhubAlias,
+              this.props.waitTime.toString(),
+              this.props.isQuickBuild,
+              this.props.isBuildAllAsSourcePackages
             )
           )
           .then(
@@ -320,9 +325,9 @@ export default class BuildImpl {
               SFPStatsSender.logCount("build.succeeded.packages", {
                 package: pkg,
                 type: type,
-                is_diffcheck_enabled: String(this.isDiffCheckEnabled),
-                is_dependency_validated: this.isSkipValidation ? "false" : "true",
-                pr_mode: String(this.isValidateMode),
+                is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
+                is_dependency_validated: this.props.isQuickBuild ? "false" : "true",
+                pr_mode: String(this.props.isBuildAllAsSourcePackages),
               });
               this.generatedPackages.push(packageMetadata);
               this.queueChildPackages(packageMetadata);
@@ -355,7 +360,7 @@ export default class BuildImpl {
   private getPriorityandTypeOfAPackage(projectConfig: any, pkg: string) {
     let priority = 0;
     let childs = DependencyHelper.getChildsOfAllPackages(
-      this.project_directory,
+      this.props.projectDirectory,
       this.packagesToBeBuilt
     );
     let type = ManifestHelpers.getPackageType(projectConfig, pkg);
@@ -422,13 +427,13 @@ export default class BuildImpl {
     isValidateMode: boolean
   ): Promise<PackageMetadata> {
     let repository_url: string;
-    if (this.repourl == null) {
+    if (this.props.repourl == null) {
       repository_url = exec("git config --get remote.origin.url", {
         silent: true,
       });
       // Remove new line '\n' from end of url
       repository_url = repository_url.slice(0, repository_url.length - 1);
-    } else repository_url = this.repourl;
+    } else repository_url = this.props.repourl;
 
     let commit_id = exec("git log --pretty=format:%H -n 1", {
       silent: true,
@@ -496,16 +501,16 @@ export default class BuildImpl {
       package_type: "unlocked",
       sourceVersion: commit_id,
       repository_url: repository_url,
-      branch:this.branch
+      branch:this.props.branch
     };
 
     let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
       sfdx_package,
       null,
-      this.config_file_path,
+      this.props.configFilePath,
       true,
       null,
-      this.project_directory,
+      this.props.projectDirectory,
       devhub_alias,
       wait_time,
       !isSkipValidation,
@@ -523,13 +528,13 @@ export default class BuildImpl {
     repository_url: string
   ): Promise<PackageMetadata> {
     let incrementedVersionNumber;
-    if (this.buildNumber) {
+    if (this.props.buildNumber) {
       let incrementBuildNumber = new IncrementProjectBuildNumberImpl(
-        this.project_directory,
+        this.props.projectDirectory,
         sfdx_package,
         "BuildNumber",
         true,
-        this.buildNumber.toString()
+        this.props.buildNumber.toString()
       );
       incrementedVersionNumber = incrementBuildNumber.exec();
     }
@@ -541,11 +546,11 @@ export default class BuildImpl {
       repository_url: repository_url,
       package_type: "source",
       apextestsuite: null,
-      branch:this.branch
+      branch:this.props.branch
     };
 
     let createSourcePackageImpl = new CreateSourcePackageImpl(
-      this.project_directory,
+      this.props.projectDirectory,
       sfdx_package,
       null,
       packageMetadata
@@ -561,13 +566,13 @@ export default class BuildImpl {
     repository_url: string
   ): Promise<PackageMetadata> {
     let incrementedVersionNumber;
-    if (this.buildNumber) {
+    if (this.props.buildNumber) {
       let incrementBuildNumber = new IncrementProjectBuildNumberImpl(
-        this.project_directory,
+        this.props.projectDirectory,
         sfdx_package,
         "BuildNumber",
         true,
-        this.buildNumber.toString()
+        this.props.buildNumber.toString()
       );
       incrementedVersionNumber = incrementBuildNumber.exec();
     }
@@ -578,11 +583,11 @@ export default class BuildImpl {
       package_version_number: incrementedVersionNumber?.versionNumber,
       repository_url: repository_url,
       package_type: "data",
-      branch:this.branch
+      branch:this.props.branch
     };
 
     let createDataPackageImpl = new CreateDataPackageImpl(
-      this.project_directory,
+      this.props.projectDirectory,
       sfdx_package,
       packageMetadata
     );

@@ -1,6 +1,6 @@
 import child_process = require("child_process");
-import BuildImpl from "../parallelBuilder/BuildImpl";
-import DeployImpl, { DeploymentMode } from "../deploy/DeployImpl";
+import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
+import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { Stage } from "../Stage";
@@ -23,7 +23,7 @@ export default class ValidateImpl {
   public async exec(): Promise<boolean>{
     let scratchOrgUsername: string;
     try {
-      this.authenticateDevHub(this.devHubUsername);
+     this.authenticateDevHub(this.devHubUsername);
 
       scratchOrgUsername = this.fetchScratchOrgFromPool(
         this.pools,
@@ -31,6 +31,8 @@ export default class ValidateImpl {
       );
 
       this.authenticateToScratchOrg(scratchOrgUsername);
+
+
 
       if (this.shapeFile) {
         this.deployShapeFile(this.shapeFile, scratchOrgUsername);
@@ -97,19 +99,23 @@ export default class ValidateImpl {
   }> {
     let deployStartTime: number = Date.now();
 
-    let deployImpl: DeployImpl = new DeployImpl(
-      scratchOrgUsername,
-      "artifacts",
-      "120",
-      Stage.VALIDATE,
-      null
-    );
+    let deployProps: DeployProps = {
+       targetUsername : scratchOrgUsername,
+       artifactDir : "artifacts",
+       waitTime:120,
+       deploymentMode:DeploymentMode.SOURCEPACKAGES,
+       isTestsToBeTriggered:true,
+       skipIfPackageInstalled:false,
+       isValidateArtifactsOnHead:false,
+       coverageThreshold:this.coverageThreshold,
+       logsGroupSymbol:this.logsGroupSymbol,
+       currentStage:Stage.VALIDATE,
+    }
 
-    deployImpl.setDeploymentMode(DeploymentMode.SOURCEPACKAGES);
-    deployImpl.activateApexUnitTests(true);
-    deployImpl.skipIfPackageExistsInTheOrg(false);
-    deployImpl.setCoverageThreshold(this.coverageThreshold);
-    deployImpl.setLogSymbols(this.logsGroupSymbol);
+
+    let deployImpl: DeployImpl = new DeployImpl(
+     deployProps
+    );
 
     let deploymentResult = await deployImpl.exec();
 
@@ -123,20 +129,20 @@ export default class ValidateImpl {
     let buildStartTime: number = Date.now();
 
 
-    let buildImpl: BuildImpl = new BuildImpl(
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      true,
-      1,
-      10,
-      true,
-      null,
-      packagesToCommits
-    );
+     let buildProps:BuildProps = {
+       buildNumber:1,
+       executorcount:10,
+       waitTime:120,
+       isDiffCheckEnabled:true,
+       isQuickBuild:true,
+       isBuildAllAsSourcePackages:true,
+       packagesToCommits:packagesToCommits,
+       currentStage:Stage.VALIDATE
+     }
+
+
+
+    let buildImpl: BuildImpl = new BuildImpl(buildProps);
 
     let { generatedPackages, failedPackages } = await buildImpl.exec();
 
