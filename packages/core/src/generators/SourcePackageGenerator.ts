@@ -44,11 +44,9 @@ export default class SourcePackageGenerator {
       )
     );
 
+    let rootForceIgnore = path.join(rootDirectory, ".forceignore");
+    SourcePackageGenerator.createForceIgnores(artifactDirectory, projectDirectory, rootForceIgnore);
 
-    fs.copySync(
-      path.join(rootDirectory, ".forceignore"),
-      path.join(artifactDirectory, ".forceignore")
-    );
 
     if (!isNullOrUndefined(destructiveManifestFilePath)) {
       SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory);
@@ -65,6 +63,39 @@ export default class SourcePackageGenerator {
     );
 
     return artifactDirectory;
+  }
+
+  private static createForceIgnores(artifactDirectory: string, projectDirectory: string, rootForceIgnore: any) {
+    let forceIgnoresDir: string = path.join(artifactDirectory, `forceignores`);
+    mkdirpSync(forceIgnoresDir);
+
+    let projectConfig = ManifestHelpers.getSFDXPackageManifest(projectDirectory);
+    let ignoreFiles = projectConfig.plugins?.sfpowerscripts?.ignoreFiles;
+
+    let copyForceIgnoreForStage = (stage) => {
+      if (ignoreFiles?.[stage])
+        if (fs.existsSync(ignoreFiles[stage]))
+          fs.copySync(
+            ignoreFiles[stage],
+            path.join(forceIgnoresDir, "." + stage + "ignore")
+          );
+        else
+          throw new Error(`${ignoreFiles[stage]} does not exist`);
+      else
+        fs.copySync(
+          rootForceIgnore,
+          path.join(forceIgnoresDir, "." + stage + "ignore")
+        );
+    };
+
+    let stages: string[] = ["prepare", "validate", "quickbuild", "build"];
+    stages.forEach((stage) => copyForceIgnoreForStage(stage));
+
+
+    fs.copySync(
+      rootForceIgnore,
+      path.join(artifactDirectory, ".forceignore")
+    );
   }
 
   private static copyDestructiveManifests(destructiveManifestFilePath: string, artifactDirectory: string, projectDirectory: any) {

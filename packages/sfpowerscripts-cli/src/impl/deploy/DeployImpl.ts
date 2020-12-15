@@ -15,6 +15,7 @@ import {
 } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { EOL } from "os";
+import { Stage } from "../Stage";
 
 
 export enum DeploymentMode {
@@ -35,19 +36,19 @@ export interface DeployProps
   waitTime:number,
   tags?:any,
   packageLogger?:any
-  currentStage?:any,
-  
+  currentStage?: Stage,
+
 }
 
 export default class DeployImpl {
- 
- 
+
+
 
   constructor(
     private props:DeployProps
   ) {}
 
-  
+
 
   public async exec(): Promise<{
     deployed: string[];
@@ -332,7 +333,8 @@ export default class DeployImpl {
       skip_if_package_installed,
       packageMetadata,
       false,
-      this.props.packageLogger
+      this.props.packageLogger,
+      path.join(sourceDirectoryPath, "forceignores", "." + this.props.currentStage + "ignore")
     );
 
     return installSourcePackageImpl.exec();

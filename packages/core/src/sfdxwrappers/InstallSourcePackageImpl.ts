@@ -33,7 +33,8 @@ export default class InstallSourcePackageImpl {
     private skip_if_package_installed: boolean,
     private packageMetadata: PackageMetadata,
     private isPackageCheckHandledByCaller?: boolean,
-    private packageLogger?:any
+    private packageLogger?:any,
+    private forceignorePath?: string
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -64,6 +65,18 @@ export default class InstallSourcePackageImpl {
       // Apply Destructive Manifest
       if (this.packageMetadata.isDestructiveChangesFound) {
         await this.applyDestructiveChanges();
+      }
+
+      if (this.forceignorePath) {
+        if (fs.existsSync(this.forceignorePath))
+          fs.copySync(
+            this.forceignorePath,
+            path.join(this.sourceDirectory, ".forceignore")
+          );
+        else {
+          console.log(`${this.forceignorePath} does not exist`);
+          console.log("Package installtion will proceed using the unchanged forceignore in the source directory");
+        }
       }
 
       //Apply Reconcile if Profiles are found
