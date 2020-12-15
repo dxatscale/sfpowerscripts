@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-incrementprojectbuildnumber-task",
   "description": "sfpowerscripts-incrementprojectbuildnumber-task",
-  "version": "10.0.1",
+  "version": "10.0.2",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^4.0.1",
+    "@dxatscale/sfpowerscripts.core": "^5.0.0",
     "azure-pipelines-task-lib": "^2.8.0",
     "simple-git": "^1.126.0"
   }
