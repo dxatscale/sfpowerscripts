@@ -188,7 +188,7 @@ export default class CreateUnlockedPackageImpl {
     );
 
     if (this.forceignorePath) {
-      if (fs.existsSync(this.forceignorePath))
+      if (fs.existsSync(path.join(mdapiPackageArtifactDir, this.forceignorePath)))
         fs.copySync(
           path.join(mdapiPackageArtifactDir, this.forceignorePath),
           path.join(mdapiPackageArtifactDir, ".forceignore")
