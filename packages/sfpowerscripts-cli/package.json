@@ -93,7 +93,6 @@
   "repository": "Accenture/sfpowerscripts",
   "scripts": {
     "build": "npm run clean && npm run compile",
-    "prepare": "oclif-dev manifest",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json"
   }
