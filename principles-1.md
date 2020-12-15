@@ -18,27 +18,26 @@ The native extensions provided by the project will integrate with CI/CD platform
 
 ## Everything is a package
 
-sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts for package creation tasks, unlocked or not, which then could be versioned, uploaded into an artifact provider or utilized in subsequent stages for deployment. 
+sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts for package creation tasks, unlocked or not, which then could be versioned, uploaded into an artifact provider or utilized in subsequent stages for deployment into various environments 
 
 The following package creation commands shows this in action
 
 * Create Source Package
 * Create Unlocked Package
 * Create Delta Package
+* Create Data Package \(for Records Based Configuration\)
 
-These tasks should be invoked on a build stage when a feature branch merges into an integration branch.  We also provide tasks such as '_Create Source Package'_  for projects which do not use an unlocked package to produce these artifacts.
+
 
 ![Use of artifacts across different stages](.gitbook/assets/build-deploy.png)
 
-These commands create an artifact named`<package_name>_sfpowerscripts_artifact`. This directory contains the following items
+These commands create an artifact named`<package_name>_sfpowerscripts_artifact_<ver>.zip`. This zip file contains the following items
 
 | Item | Description |
 | :--- | :--- |
 | artifact\_metatadata.json | A JSON based manifest that contains information about the package |
 | changelog.json | A JSON based schema that carries all commit description about the package |
 | source | A directory containing the metadata in source format  |
-
-The artifact could be packaged as a zip file and uploaded to any artifact provider and could be used in any subsequent pipelines. 
 
 ## Optimized for Speed without hampering traceability
 
@@ -50,11 +49,9 @@ Features currently enabling this principle include
 
 * ,All sfpowerscripts package creation commands feature a diff check, which builds the package only if it detects a change. 
 * Packages will only be installed in the org, if the given package is not installed in the org
-* Support for mono repository with multiple packages reducing overhead
+* Support for mono repository, while working with multiple packages reduces overhead
 
 Of course the onus is on developers to granularize packages, so that this could be achieved, but be assured the tooling is available.
-
-
 
 
 

@@ -8,6 +8,11 @@
 * [Source Packages](concepts/source-packages.md)
 * [Data Packages](concepts/data-packages.md)
 * [Orchestrator](concepts/orchestrator.md)
+* [Metrics and Dashboards](concepts/metrics-and-dashboards.md)
+
+## CLI
+
+* [Using sfpowerscripts-cli sfdx extension](cli/getting-started.md)
 
 ## Azure Pipelines
 
@@ -46,10 +51,6 @@
     * [Validate Code Coverage of a Package](azure-pipelines/task-specifications/testing-tasks/validate-code-coverage-of-a-package.md)
     * [Run a static analysis of apex classes with PMD](azure-pipelines/task-specifications/testing-tasks/run-a-static-analysis-of-apex-classes-with-pmd.md)
 * [Troubleshooting](azure-pipelines/troubleshooting.md)
-
-## CLI
-
-* [Using sfpowerscripts-cli sfdx extension](cli/getting-started.md)
 
 ---
 
