@@ -3,6 +3,12 @@
 * [Overview](README.md)
 * [Principles](principles-1.md)
 
+## FAQ <a id="concepts"></a>
+
+* [Source Packages](concepts/source-packages.md)
+* [Data Packages](concepts/data-packages.md)
+* [Orchestrator](concepts/orchestrator.md)
+
 ## Azure Pipelines
 
 * [Getting Started](azure-pipelines/getting-started.md)
@@ -47,7 +53,6 @@
 
 ---
 
-* [FAQ's](faqs.md)
 * [Change Log](change-log.md)
 * [Maintainers](maintainers.md)
 * [Contributors](contributors.md)
