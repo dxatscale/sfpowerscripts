@@ -92,8 +92,8 @@ export default class DeployImpl {
         if (this.props.logsGroupSymbol?.[0])
           SFPLogger.log(
             this.props.logsGroupSymbol[0],
-            "Installing",
-            queue[i].package,
+            `Installing ${queue[i].package}`,
+            this.props.packageLogger,
             LoggerLevel.INFO
           );
 
