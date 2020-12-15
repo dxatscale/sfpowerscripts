@@ -69,8 +69,8 @@ export default class CreateUnlockedPackageImpl {
           path.join(workingDirectory, ".forceignore")
         );
       else {
-        console.log(`${path.join(workingDirectory, this.forceignorePath)} does not exist`);
-        console.log("Package creation will continue using the unchanged forceignore in the root directory");
+        SFPLogger.log(`${path.join(workingDirectory, this.forceignorePath)} does not exist`, null, this.packageLogger);
+        SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory", null, this.packageLogger);
       }
     }
 
