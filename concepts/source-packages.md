@@ -4,11 +4,11 @@ description: All the details about Source Packages
 
 # Source Packages
 
-## What is Source Packages?
+## What is Source Package?
 
 Source Packages is an sfpowerscripts construct which wrap the salesforce metadata \( in source format\), along with sfdx-project.json, some metadata information \(such as commit id, branch, tag\) etc in a versioned zip file, which can be deployed to a Salesforce Org using sfpowerscripts package installation command.
 
-## How is Source Packages different from deploying a folder using source:deploy ?
+## How are Source Packages different from deploying a folder using source:deploy ?
 
 Well, No difference, internally sfpowerscripts is using the same command to deploy it in to the Salesforce org.
 
@@ -19,7 +19,7 @@ We have some added some additional enhancements that makes it worth taking a loo
    - **Optimized Deployment Mode:**  sfpowerscripts package installation commands can auto detect apex unit tests provided in the package, thus a package can be deployed to an Org by utilizing only the apex test classes provided in the package \(provided each class is having a code coverage of 75% or more by the apex classes in the package\) thus saving time spend on triggering local tests of all the apex classes in an org for every source packages in your repo  
 -  **Versioned Artifact:**  Aligned with sfpowerscripts principle of traceability, every deployment is traceable to a versioned artifact, which is difficult to achieve when you are using a folder to deploy
 
-## How do Source Package compare against Unlocked Packages?
+## How do Source Packages compare against Unlocked Packages?
 
 Source Packages are metadata deployments from a Salesforce perspective, it is a group of components that gets deployed into an org. Unlocked packages are first class Salesforce deployment construct, where the lifecycle is governed by the org, such as deleting/deprecating metadata, validating versions and lifecycle of the page.
 
