@@ -91,8 +91,8 @@ export default class Prepare extends SfpowerscriptsCommand {
     console.log(`Pool Name: ${this.flags.tag}`);
     console.log(`Requested Count of Orgs: ${this.flags.maxallocation}`);
     console.log(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`);
-    console.log(`All packages in the repo to be preinstalled: ${this.flags.installall}`);
-    console.log(`Pool enabled with partially deployed packages in case of errors: ${this.flags.succeedondeploymenterrors}`)
+    console.log(`All packages in the repo to be installed: ${this.flags.installall}`);
+    console.log(`Scratch Orgs to be submitted to pool in case of failures: ${this.flags.succeedondeploymenterrors}`)
     console.log("---------------------------------------------------------");
 
 
@@ -138,14 +138,24 @@ export default class Prepare extends SfpowerscriptsCommand {
       console.log(
         `-----------------------------------------------------------------------------------------------------------`
       );
-      console.log(`Provisioned {${results.success}}  scratchorgs out of ${this.flags.maxallocation} requested with
-      ${results.failed} failed in ${this.getFormattedTime(totalElapsedTime)} `)
+      console.log(`Provisioned {${results.success}}  scratchorgs out of ${results.totalallocated} requested with ${results.failed} failed in ${this.getFormattedTime(totalElapsedTime)} `)
       console.log(
         `----------------------------------------------------------------------------------------------------------`
       );
 
-
-      if(results.success==0)
+      if(results.errorCode)
+      {
+        switch(results.errorCode)
+        {
+          case "Max_Capacity": process.exitCode=0;
+                              break;
+          case "No_Capacity" : process.exitCode=0;
+                               break;
+          case "Fields_Missing": process.exitCode=1;
+                                break;
+        }
+      }
+      else if(results.success==0)
       {
         SFPStatsSender.logGauge(
           "prepare.failedorgs",
