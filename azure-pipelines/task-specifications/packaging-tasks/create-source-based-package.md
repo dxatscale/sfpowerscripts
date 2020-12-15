@@ -76,6 +76,24 @@ steps:
 {% endtab %}
 {% endtabs %}
 
+**SFDX Project Configuration**
+
+The following properties can be added to the SFDX project configuration.
+
+| Property | Type | Value/s | Required |
+| :--- | :--- | :--- | :--- |
+| preDeploymentSteps | String | reconcile | false |
+
+_preDeploymentSteps_
+
+| Value | Description |
+| :--- | :--- |
+| reconcile | Reconcile profiles with the target org before installing the source package. |
+
+{% hint style="info" %}
+Properties defined in the SFDX project configuration are case sensitive.
+{% endhint %}
+
 **Changelog**
 
 * 12.0.6 Refactor artifact structure [\#131](https://github.com/Accenture/sfpowerscripts/pull/131),
