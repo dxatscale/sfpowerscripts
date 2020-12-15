@@ -34,7 +34,6 @@
     "/lib",
     "/messages",
     "/npm-shrinkwrap.json",
-    "/oclif.manifest.json",
     "/scripts"
   ],
   "homepage": "https://github.com/Accenture/sfpowerscripts",
