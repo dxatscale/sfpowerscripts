@@ -47,7 +47,7 @@ export default class InstallSourcePackageImpl {
         this.isPackageCheckHandledByCaller
       );
       if (isPackageInstalled) {
-        SFPLogger.log("Skipping Package Installation",null,this.packageLogger, LoggerLevel.DEBUG);
+        SFPLogger.log("Skipping Package Installation",null,this.packageLogger, LoggerLevel.INFO);
         return { result: PackageInstallationStatus.Skipped };
       }
     }
@@ -74,8 +74,8 @@ export default class InstallSourcePackageImpl {
             path.join(this.sourceDirectory, ".forceignore")
           );
         else {
-          console.log(`${this.forceignorePath} does not exist`);
-          console.log("Package installtion will proceed using the unchanged forceignore in the source directory");
+          SFPLogger.log(`${this.forceignorePath} does not exist`, null, this.packageLogger);
+          SFPLogger.log("Package installtion will proceed using the unchanged forceignore in the source directory", null, this.packageLogger);
         }
       }
 

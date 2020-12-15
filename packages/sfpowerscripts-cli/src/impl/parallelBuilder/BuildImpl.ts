@@ -555,7 +555,8 @@ export default class BuildImpl {
       this.props.projectDirectory,
       sfdx_package,
       null,
-      packageMetadata
+      packageMetadata,
+      path.join("forceignores", "." + this.props.currentStage + "ignore")
     );
     let result = createSourcePackageImpl.exec();
 
