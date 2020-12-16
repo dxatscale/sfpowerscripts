@@ -228,13 +228,15 @@ export default class DeployImpl {
           skipTesting: skipTesting,
         };
 
+        let subdirectory: string = aliasfy ? targetUsername : null;
+
         packageInstallationResult = await this.installSourcePackage(
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
           packageMetadata,
           options,
-          null,
+          subdirectory,
           skip_if_package_installed,
           wait_time
         );
