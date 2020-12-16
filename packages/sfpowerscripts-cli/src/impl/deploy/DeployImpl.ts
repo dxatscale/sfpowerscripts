@@ -411,11 +411,9 @@ export default class DeployImpl {
   private isOptimizedDeploymentForSourcePackages(
     sfdx_package:string
   ): boolean {
+    let pkgDescriptor = ManifestHelpers.getSFDXPackageDescriptor(null, sfdx_package);
 
-    let pkgDescriptor = ManifestHelpers.getSFDXPackageManifest(null)[
-      "packageDirectories"
-    ][sfdx_package];
-    if(pkgDescriptor["isOptimizedDeployment"]==null)
+    if(pkgDescriptor["isOptimizedDeployment"] == null)
       return true;
     else
       return pkgDescriptor["isOptimizedDeployment"];
