@@ -13,6 +13,7 @@ import ArtifactHelper from "../Common/ArtifactHelper";
 const fs = require("fs");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 
 async function run() {
   try {
@@ -25,7 +26,6 @@ async function run() {
       "skip_on_missing_artifact",
       false
     );
-    const subdirectory: string = tl.getInput("subdirectory", false);
     const skip_if_package_installed: boolean = tl.getBoolInput(
       "skip_if_package_installed",
       false
@@ -72,6 +72,11 @@ async function run() {
       JSON.stringify(packageMetadataFromArtifact)
     );
 
+
+    let subdirectory: string;
+    if (isAliasfy(artifacts_filepaths[0].sourceDirectoryPath, sfdx_package))
+      subdirectory = target_org;
+
     if (
       skip_if_package_installed &&
       checkPackageIsInstalled(
@@ -92,7 +97,6 @@ async function run() {
       sfdx_package,
       target_org,
       artifacts_filepaths[0].sourceDirectoryPath,
-      subdirectory,
       packageMetadataFromStorage,
       skip_if_package_installed,
       true
@@ -151,6 +155,20 @@ async function run() {
   }
 }
 
+function isAliasfy(sourceDirectory: string, sfdx_package: string): boolean {
+  let packageDescriptor;
+  if (sfdx_package) {
+    packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      sourceDirectory,
+      sfdx_package
+    );
+  } else {
+    packageDescriptor = ManifestHelpers.getDefaultSFDXPackageDescriptor(
+      sourceDirectory
+    );
+  }
+  return packageDescriptor.aliasfy;
+}
 
 function checkPackageIsInstalled(
   packageMetadata: PackageMetadata,

@@ -82,7 +82,7 @@ export default class Deploy extends SfpowerscriptsCommand {
     let deployProps:DeployProps = {
       targetUsername:this.flags.targetorg,
       artifactDir:this.flags.artifactdir,
-      waitTime:this.flags.waitTime,
+      waitTime:this.flags.waittime,
       tags:tags,
       isTestsToBeTriggered:false,
       deploymentMode:DeploymentMode.NORMAL,
