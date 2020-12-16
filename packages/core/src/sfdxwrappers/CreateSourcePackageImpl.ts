@@ -20,7 +20,8 @@ export default class CreateSourcePackageImpl {
     private projectDirectory: string,
     private sfdx_package: string,
     private destructiveManifestFilePath: string,
-    private packageArtifactMetadata: PackageMetadata
+    private packageArtifactMetadata: PackageMetadata,
+    private forceignorePath?: string
   ) {
     fs.outputFileSync(
       `.sfpowerscripts/logs/${sfdx_package}`,
@@ -137,6 +138,19 @@ export default class CreateSourcePackageImpl {
         ? undefined
         : destructiveChanges.destructiveChangesPath
     );
+
+    // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
+    if (this.forceignorePath) {
+      if (fs.existsSync(path.join(sourcePackageArtifactDir, this.forceignorePath)))
+        fs.copySync(
+          path.join(sourcePackageArtifactDir, this.forceignorePath),
+          path.join(sourcePackageArtifactDir, ".forceignore")
+        );
+      else {
+        SFPLogger.log(`${path.join(sourcePackageArtifactDir, this.forceignorePath)} does not exist`, null, this.packageLogger);
+        SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory", null, this.packageLogger);
+      }
+    }
 
     this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;
 
