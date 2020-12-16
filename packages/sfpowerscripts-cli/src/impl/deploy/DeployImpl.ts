@@ -211,13 +211,12 @@ export default class DeployImpl {
     let packageInstallationResult: PackageInstallationResult;
 
     if (this.props.deploymentMode==DeploymentMode.NORMAL) {
-      let skip_if_package_installed: boolean = true;
 
       if (packageType === "unlocked") {
         packageInstallationResult = await this.installUnlockedPackage(
           targetUsername,
           packageMetadata,
-          skip_if_package_installed,
+          this.props.skipIfPackageInstalled,
           wait_time,
           sourceDirectoryPath
         );
@@ -237,7 +236,7 @@ export default class DeployImpl {
           packageMetadata,
           options,
           subdirectory,
-          skip_if_package_installed,
+          this.props.skipIfPackageInstalled,
           wait_time
         );
       } else if (packageType === "data") {
@@ -245,7 +244,7 @@ export default class DeployImpl {
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
-          skip_if_package_installed,
+          this.props.skipIfPackageInstalled,
           packageMetadata
         );
       } else {
