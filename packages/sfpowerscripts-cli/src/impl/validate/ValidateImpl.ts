@@ -99,7 +99,8 @@ export default class ValidateImpl {
   private async deploySourcePackages(scratchOrgUsername: string): Promise<{
     deployed: string[],
     skipped: string[],
-    failed: string[]
+    failed: string[],
+    testFailure: string
   }> {
     let deployStartTime: number = Date.now();
 
@@ -281,7 +282,7 @@ export default class ValidateImpl {
   }
 
   private printDeploySummary(
-    deploymentResult: {deployed: string[], skipped: string[], failed: string[]},
+    deploymentResult: {deployed: string[], skipped: string[], failed: string[], testFailure: string},
     totalElapsedTime: number
   ): void {
     if (this.logsGroupSymbol?.[0])
@@ -292,9 +293,11 @@ export default class ValidateImpl {
     );
     console.log(
       `${deploymentResult.deployed.length} packages deployed in ${new Date(totalElapsedTime).toISOString().substr(11,8)
-      } with {${deploymentResult.failed.length}} errors and {${deploymentResult.skipped.length}} skipped`
+      } with {${deploymentResult.failed.length}} failed deployments and {${deploymentResult.skipped.length}} skipped`
     );
 
+    if (deploymentResult.testFailure)
+      console.log(`\nTests failed for`, deploymentResult.testFailure);
 
     if (deploymentResult.skipped.length > 0) {
       console.log(`\nPackages Skipped`, deploymentResult.skipped);
