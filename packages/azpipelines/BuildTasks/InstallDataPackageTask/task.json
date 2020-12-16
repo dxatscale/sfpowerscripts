@@ -40,13 +40,6 @@
             "helpMarkDown": "Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used"
         },
         {
-            "name": "subdirectory",
-            "type": "string",
-            "label": "Install only a specific folder in the package",
-            "required": false,
-            "helpMarkDown": "Install only a specific folder in the package"
-        },
-        {
             "name": "skip_if_package_installed",
             "type": "boolean",
             "label": "Skip If the package is already installed in the org",

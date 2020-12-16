@@ -43,13 +43,6 @@
             "helpMarkDown": "Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used"
         },
         {
-            "name": "subdirectory",
-            "type": "string",
-            "label": "Install only a specific folder in the package",
-            "required": false,
-            "helpMarkDown": "Install only a specific folder in the package"
-        },
-        {
             "name": "wait_time",
             "type": "string",
             "label": "Wait Time",
