@@ -74,7 +74,7 @@ async function run() {
 
 
     let subdirectory: string;
-    if (isAliasfy())
+    if (isAliasfy(artifacts_filepaths[0].sourceDirectoryPath, sfdx_package))
       subdirectory = target_org;
 
     if (
@@ -155,16 +155,16 @@ async function run() {
   }
 }
 
-function isAliasfy(): boolean {
+function isAliasfy(sourceDirectory: string, sfdx_package: string): boolean {
   let packageDescriptor;
-  if (this.sfdx_package) {
+  if (sfdx_package) {
     packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
-      this.sourceDirectory,
-      this.sfdx_package
+      sourceDirectory,
+      sfdx_package
     );
   } else {
     packageDescriptor = ManifestHelpers.getDefaultSFDXPackageDescriptor(
-      this.sourceDirectory
+      sourceDirectory
     );
   }
   return packageDescriptor.aliasfy;
