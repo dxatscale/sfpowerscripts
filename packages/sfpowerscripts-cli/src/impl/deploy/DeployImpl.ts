@@ -125,7 +125,6 @@ export default class DeployImpl {
           artifacts[0].sourceDirectoryPath,
           packageMetadata,
           queue[i].skipTesting,
-          queue[i].aliasfy,
           this.props.waitTime.toString()
         );
 
@@ -205,7 +204,6 @@ export default class DeployImpl {
     sourceDirectoryPath: string,
     packageMetadata: PackageMetadata,
     skipTesting: boolean,
-    aliasfy: boolean,
     wait_time: string
   ): Promise<PackageInstallationResult> {
     let packageInstallationResult: PackageInstallationResult;
