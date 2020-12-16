@@ -56,14 +56,14 @@ sfpowerscripts:orchestrator commands allow controlling attributes of a package i
     "aliasfy": <boolean>, // Only for source packages, allows to deploy a subfolder whose name matches the alias of the org when using deploy command
     "skipDeployOnOrgs": "<string>,<string>", // Comma seperated values of org's to mention this package should not be deployed in this org
     "isOptimizedDeployment": <boolean>  // default:true for source packages, Utilizes the apex classes in the package for deployment,
-    "skipTesting":<boolean> //default:false, skip apex testing during validation phase
+    "skipTesting":<boolean> //default:false, skip apex testing installation of source package
     "skipCoverageValidation":<boolean> //default:false, skip apex coverage validation during validation phase,
     "destructiveChangePath:<path> // only for source, if enabled, this will be applied before the package is deployed
     "assignPermSetsPreDeployment: ["","",]
     "assignPermSetsPostDeployment: ["","",]
     "preDeploymentScript":<path> //All Packages
     "postDeploymentScript:<path> // All packages
-    "reconcileProfiles:<boolean> // Source Packages
+    "reconcileProfiles:<boolean> //default:true Source Packages
     "ignoreOnStage": [ //Skip this package during the below orchestrator commands
          "prepare",
           "validate"
