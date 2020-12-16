@@ -83,7 +83,7 @@ export default class PrepareImpl {
       console.log(
         "Required Prerequisite fields are missing in the DevHub, Please look into the wiki to getting the fields deployed in DevHub"
       );
-      return {totalallocated:this.totalAllocated,success:0,failed:this.totalToBeAllocated};
+      return {totalallocated:this.totalAllocated,success:0,failed:this.totalToBeAllocated, errorCode:"Fields_Missing"};
     }
 
     //Set Pool Config Option
@@ -108,14 +108,18 @@ export default class PrepareImpl {
 
     if (this.totalToBeAllocated === 0) {
       if (this.limits.ActiveScratchOrgs.Remaining > 0)
+      {
         console.log(
           `The tag provided ${this.poolConfig.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`
         );
+         return {totalallocated:this.totalToBeAllocated,success:0,failed:0, errorCode:"Max_Capacity"};
+      }
       else
-        console.log(
+      {  console.log(
           `There is no capacity to create a pool at this time, Please try again later`
         );
-      return {totalallocated:this.totalAllocated,success:0,failed:0};
+      return {totalallocated:this.totalToBeAllocated,success:0,failed:0, errorCode:"No_Capacity"};
+      }
     }
 
 
@@ -154,7 +158,7 @@ export default class PrepareImpl {
 
     let finalizedResults = await this.finalizeGeneratedScratchOrgs();
 
-    return {totalallocated:this.totalAllocated,success:finalizedResults.success,failed:finalizedResults.failed};
+    return {totalallocated:this.totalToBeAllocated,success:finalizedResults.success,failed:finalizedResults.failed};
   }
 
   private async getPackageArtifacts() {
