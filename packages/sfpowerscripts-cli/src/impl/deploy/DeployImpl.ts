@@ -344,7 +344,6 @@ export default class DeployImpl {
       sfdx_package,
       targetUsername,
       sourceDirectoryPath,
-      null,
       packageMetadata,
       skip_if_package_installed,
       false,
