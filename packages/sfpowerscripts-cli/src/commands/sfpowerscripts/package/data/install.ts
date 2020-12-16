@@ -28,7 +28,6 @@ export default class InstallDataPackage extends InstallPackageCommand {
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
     skiponmissingartifact: flags.boolean({char: 's', description: messages.getMessage('skipOnMissingArtifactFlagDescription')}),
     skipifalreadyinstalled: flags.boolean({description: messages.getMessage("skipIfAlreadyInstalled")}),
-    subdirectory: flags.directory({description: messages.getMessage('subdirectoryFlagDescription')})
   };
 
   protected static requiresUsername = false;
@@ -40,7 +39,6 @@ export default class InstallDataPackage extends InstallPackageCommand {
       const targetOrg: string = this.flags.targetorg;
       const sfdx_package: string = this.flags.package;
       const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
-      const subdirectory: string = this.flags.subdirectory;
 
       let startTime=Date.now();
 
@@ -59,7 +57,6 @@ export default class InstallDataPackage extends InstallPackageCommand {
         sfdx_package,
         targetOrg,
         sourceDirectory,
-        subdirectory,
         packageMetadata,
         skipIfAlreadyInstalled
       )

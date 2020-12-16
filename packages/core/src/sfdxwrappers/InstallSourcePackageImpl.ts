@@ -27,7 +27,6 @@ export default class InstallSourcePackageImpl {
     private sfdx_package: string,
     private targetusername: string,
     private sourceDirectory: string,
-    private subdirectory: string,
     private options: any,
     private wait_time: string,
     private skip_if_package_installed: boolean,
@@ -38,12 +37,24 @@ export default class InstallSourcePackageImpl {
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
+    let packageDescriptor;
+    if (this.sfdx_package) {
+      packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+        this.sourceDirectory,
+        this.sfdx_package
+      );
+    } else {
+      packageDescriptor = ManifestHelpers.getDefaultSFDXPackageDescriptor(
+        this.sourceDirectory
+      );
+    }
+
     let isPackageInstalled = false;
     if (this.skip_if_package_installed) {
       isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
         this.targetusername,
         this.packageMetadata,
-        this.subdirectory,
+        packageDescriptor.aliasfy ? this.targetusername : null,
         this.isPackageCheckHandledByCaller
       );
       if (isPackageInstalled) {
@@ -60,7 +71,7 @@ export default class InstallSourcePackageImpl {
       this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(
         this.packageMetadata
       );
-      let packageDirectory: string = this.getPackageDirectory();
+      let packageDirectory: string = this.getPackageDirectory(packageDescriptor);
 
       // Apply Destructive Manifest
       if (this.packageMetadata.isDestructiveChangesFound) {
@@ -157,7 +168,7 @@ export default class InstallSourcePackageImpl {
         await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
           this.targetusername,
           this.packageMetadata,
-          this.subdirectory,
+          packageDescriptor.aliasfy ? this.targetusername : null,
           this.isPackageCheckHandledByCaller
         );
       } else if (result.result === false) {
@@ -243,24 +254,13 @@ export default class InstallSourcePackageImpl {
     }
   }
 
-  private getPackageDirectory() {
-    let packageDescriptor;
-    if (this.sfdx_package) {
-      packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
-        this.sourceDirectory,
-        this.sfdx_package
-      );
-    } else {
-      packageDescriptor = ManifestHelpers.getDefaultSFDXPackageDescriptor(
-        this.sourceDirectory
-      );
-    }
-
+  private getPackageDirectory(packageDescriptor: any): string {
     let packageDirectory: string;
-    if (this.subdirectory) {
+
+    if (packageDescriptor.aliasfy) {
       packageDirectory = path.join(
         packageDescriptor["path"],
-        this.subdirectory
+        this.targetusername
       );
     } else {
       packageDirectory = path.join(packageDescriptor["path"]);

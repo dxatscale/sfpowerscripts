@@ -46,9 +46,6 @@ export default class InstallSourcePackage extends InstallPackageCommand {
       char: "s",
       description: messages.getMessage("skipOnMissingArtifactFlagDescription"),
     }),
-    subdirectory: flags.directory({
-      description: messages.getMessage("subdirectoryFlagDescription"),
-    }),
     optimizedeployment: flags.boolean({
       char: "o",
       description: messages.getMessage("optimizedeployment"),
@@ -73,7 +70,6 @@ export default class InstallSourcePackage extends InstallPackageCommand {
   public async install(): Promise<any> {
     const target_org: string = this.flags.targetorg;
     const sfdx_package: string = this.flags.package;
-    const subdirectory: string = this.flags.subdirectory;
     const optimizeDeployment: boolean = this.flags.optimizedeployment;
     const skipTesting: boolean = this.flags.skiptesting;
     const wait_time: string = this.flags.waittime;
@@ -103,7 +99,6 @@ export default class InstallSourcePackage extends InstallPackageCommand {
         sfdx_package,
         target_org,
         sourceDirectory,
-        subdirectory,
         options,
         wait_time,
         skipIfAlreadyInstalled,

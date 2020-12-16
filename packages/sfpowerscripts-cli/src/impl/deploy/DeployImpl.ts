@@ -227,15 +227,12 @@ export default class DeployImpl {
           skipTesting: skipTesting,
         };
 
-        let subdirectory: string = aliasfy ? targetUsername : null;
-
         packageInstallationResult = await this.installSourcePackage(
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
           packageMetadata,
           options,
-          subdirectory,
           this.props.skipIfPackageInstalled,
           wait_time
         );
@@ -258,15 +255,12 @@ export default class DeployImpl {
           skipTesting: true,
         };
 
-        let subdirectory: string = aliasfy ? targetUsername : null;
-
         packageInstallationResult = await this.installSourcePackage(
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
           packageMetadata,
           options,
-          subdirectory,
           this.props.skipIfPackageInstalled,
           wait_time
         );
@@ -320,7 +314,6 @@ export default class DeployImpl {
     sourceDirectoryPath: string,
     packageMetadata: PackageMetadata,
     options: any,
-    subdirectory: string,
     skip_if_package_installed: boolean,
     wait_time: string
   ): Promise<PackageInstallationResult> {
@@ -328,7 +321,6 @@ export default class DeployImpl {
       sfdx_package,
       targetUsername,
       sourceDirectoryPath,
-      subdirectory,
       options,
       wait_time,
       skip_if_package_installed,
