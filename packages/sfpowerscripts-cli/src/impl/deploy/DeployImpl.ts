@@ -54,11 +54,13 @@ export default class DeployImpl {
     deployed: string[];
     skipped: string[];
     failed: string[];
+    testFailure: string
   }> {
     let deployed: string[] = [];
     let skipped: string[] = [];
     let failed: string[] = [];
 
+    let testFailure: string;
     try {
       let queue: any[] = this.getPackagesToDeploy();
 
@@ -160,8 +162,11 @@ export default class DeployImpl {
               );
 
               if (!testResult.result) {
+                testFailure = queue[i].package;
+
                 if (i !== queue.length - 1)
                   failed = queue.slice(i + 1).map((pkg) => pkg.package);
+
                 throw new Error(testResult.message);
               } else SFPLogger.log(testResult.message, null, this.props.packageLogger, LoggerLevel.INFO);
             } else {
@@ -183,6 +188,7 @@ export default class DeployImpl {
         deployed: deployed,
         skipped: skipped,
         failed: failed,
+        testFailure: testFailure
       };
     } catch (err) {
       SFPLogger.log(err, null, this.props.packageLogger, LoggerLevel.INFO);
@@ -191,6 +197,7 @@ export default class DeployImpl {
         deployed: deployed,
         skipped: skipped,
         failed: failed,
+        testFailure: testFailure
       };
     }
   }
