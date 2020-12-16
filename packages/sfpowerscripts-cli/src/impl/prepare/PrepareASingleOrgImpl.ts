@@ -52,7 +52,7 @@ export default class PrepareASingleOrgImpl {
       await this.sfdx.force.package.install({
         quiet:true,
         targetusername: this.scratchOrg.username,
-        package: SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
+        package: process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE ? process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE : SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
         apexcompile: "package",
         noprompt: true,
         wait: 60,
@@ -104,9 +104,9 @@ export default class PrepareASingleOrgImpl {
           deployProps
         );
 
-    
+
         let deploymentResult = await deployImpl.exec();
-     
+
         if(deploymentResult.failed.length>0)
         {
           console.log("Following Packages failed to deploy:" + deploymentResult.failed);
@@ -122,7 +122,7 @@ export default class PrepareASingleOrgImpl {
             );
           }
         }
-      
+
       }
 
       return {
