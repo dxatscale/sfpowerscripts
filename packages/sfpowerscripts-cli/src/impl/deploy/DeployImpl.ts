@@ -395,21 +395,12 @@ export default class DeployImpl {
     packageDescriptor: any,
     targetUsername: string
   ): boolean {
-    let skipDeployOnOrgs = packageDescriptor.skipDeployOnOrgs;
+    let skipDeployOnOrgs: string[] = packageDescriptor.skipDeployOnOrgs;
     if (skipDeployOnOrgs) {
-      if (typeof skipDeployOnOrgs !== "string")
-        throw new Error(
-          `Expected comma-separated string for "skipDeployOnOrgs". Received ${JSON.stringify(
-            packageDescriptor,
-            null,
-            4
-          )}`
-        );
+      if (!(skipDeployOnOrgs instanceof Array))
+        throw new Error(`Property 'skipDeployOnOrgs' must be of type Array`);
       else
-        return skipDeployOnOrgs
-          .split(",")
-          .map((org) => org.trim())
-          .includes(targetUsername);
+        return skipDeployOnOrgs.includes(targetUsername);
     } else return false;
   }
 
