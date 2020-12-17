@@ -2,7 +2,7 @@ import { isNullOrUndefined } from "util";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import * as rimraf from "rimraf";
 import SFPLogger from "../utils/SFPLogger";
-import { existsSync, mkdirpSync } from "fs-extra";
+import { mkdirpSync } from "fs-extra";
 import * as fs from "fs-extra";
 let path = require("path");
 
