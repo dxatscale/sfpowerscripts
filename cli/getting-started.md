@@ -129,23 +129,25 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
   * `sfdx sfpowerscripts:orchestrator:publish`
 * Changelog \(Track Releases\)
   * `sfdx sfpowerscripts:changelog:generate`
-  * Package Commands \( Build your own workflow\)
-    * `sfdx sfpowerscripts:package:data:create`
-    * `sfdx sfpowerscripts:package:data:install`
-    * `sfdx sfpowerscripts:package:delta:create`
-    * `sfdx sfpowerscripts:package:incrementBuildNumber`
-    * `sfdx sfpowerscripts:package:source:create`
-    * `sfdx sfpowerscripts:package:source:install`
-    * `sfdx sfpowerscripts:package:unlocked:create`
-    * `sfdx sfpowerscripts:package:unlocked:install`
-    * `sfdx sfpowerscripts:source:deploy`
-    * `sfdx sfpowerscripts:source:deployDestructiveManifest`
-  * Pool Management
-    * `sfdx sfpowerscripts:pool:delete`
-    * `sfdx sfpowerscripts:pool:fetch`
-    * `sfdx sfpowerscripts:pool:list`
-  * Static Analysis
-    * `sfdx sfpowerscripts:analyze:pmd`
+* Package Commands \( Build your own workflow\)
+  * `sfdx sfpowerscripts:package:data:create`
+  * `sfdx sfpowerscripts:package:data:install`
+  * `sfdx sfpowerscripts:package:delta:create`
+  * `sfdx sfpowerscripts:package:incrementBuildNumber`
+  * `sfdx sfpowerscripts:package:source:create`
+  * `sfdx sfpowerscripts:package:source:install`
+  * `sfdx sfpowerscripts:package:unlocked:create`
+  * `sfdx sfpowerscripts:package:unlocked:install`
+  * `sfdx sfpowerscripts:source:deploy`
+  * `sfdx sfpowerscripts:source:deployDestructiveManifest`
+* Pool Management
+
+  * `sfdx sfpowerscripts:pool:delete`
+  * `sfdx sfpowerscripts:pool:fetch`
+  * `sfdx sfpowerscripts:pool:list`
+
+* Static Analysis
+  * `sfdx sfpowerscripts:analyze:pmd`
 * Apex tests
   * `sfdx sfpowerscripts:apextests:trigger`
   * `sfdx sfpowerscripts:apextests:validate`
