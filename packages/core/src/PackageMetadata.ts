@@ -14,8 +14,8 @@ export default interface PackageMetadata {
     apextestsuite?: string;
     isApexFound?:boolean;
     permissionSetsToAssign?: string[],
-    assignPermSetsPreDeployment?: string[],
-    assignPermSetsPostDeployment?: string[],
+    assignPermSetsPreDeployment?: string[];
+    assignPermSetsPostDeployment?: string[];
     apexTestClassses?:string[];
     isTriggerAllTests?:boolean;
     isProfilesFound?:boolean;
@@ -29,6 +29,7 @@ export default interface PackageMetadata {
     dependencies?:any;
     preDeploymentSteps?:string[];
     postDeploymentSteps?:string[];
+    reconcileProfiles: boolean;
     creation_details?:{creation_time?:number,timestamp?:number}
     deployments?:{target_org:string,sub_directory?:string,installation_time?:number,timestamp?:number}[];
   }

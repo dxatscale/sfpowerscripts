@@ -100,7 +100,7 @@ export default class InstallSourcePackageImpl {
       let profileFolders;
       if (
         this.packageMetadata.isProfilesFound &&
-        this.packageMetadata.preDeploymentSteps?.includes("reconcile")
+        this.packageMetadata.reconcileProfiles !== false
       ) {
         ({
           profileFolders,
