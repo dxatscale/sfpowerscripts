@@ -13,7 +13,6 @@ export default interface PackageMetadata {
     branch?:string;
     apextestsuite?: string;
     isApexFound?:boolean;
-    permissionSetsToAssign?: string[],
     assignPermSetsPreDeployment?: string[];
     assignPermSetsPostDeployment?: string[];
     apexTestClassses?:string[];
