@@ -115,8 +115,7 @@ export default class CreateUnlockedPackageImpl {
     SFPLogger.log("-------------------------", null, this.packageLogger);
 
 
-    //Fetch Post Deployment Steps
-    this.fetchPostDeploymentSteps(packageDescriptor);
+    this.writeDeploymentStepsToArtifact(packageDescriptor);
 
     //cleanup sfpowerscripts constructs in working directory
     this.deleteSFPowerscriptsAdditionsToManifest(workingDirectory);
@@ -247,11 +246,25 @@ export default class CreateUnlockedPackageImpl {
     return this.packageArtifactMetadata;
   }
 
-  private fetchPostDeploymentSteps(packageDescriptor: any) {
+  private writeDeploymentStepsToArtifact(packageDescriptor: any) {
     this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor["postDeploymentSteps"]?.split(",");
 
-    this.packageArtifactMetadata.permissionSetsToAssign = packageDescriptor
-      .permissionSetsToAssign?.split(",");
+    if (packageDescriptor.assignPermSetsPreDeployment) {
+      if (packageDescriptor.assignPermSetsPreDeployment instanceof Array)
+        this.packageArtifactMetadata.assignPermSetsPreDeployment = packageDescriptor
+            .assignPermSetsPreDeployment;
+      else
+        throw new Error("Property 'assignPermSetsPreDeployment' must be of type array");
+    }
+
+
+    if (packageDescriptor.assignPermSetsPostDeployment) {
+      if (packageDescriptor.assignPermSetsPostDeployment instanceof Array)
+        this.packageArtifactMetadata.assignPermSetsPostDeployment = packageDescriptor
+        .assignPermSetsPostDeployment;
+      else
+        throw new Error("Property 'assignPermSetsPostDeployment' must be of type array");
+    }
   }
 
   private deleteSFPowerscriptsAdditionsToManifest(workingDirectory: string) {
@@ -270,7 +283,8 @@ export default class CreateUnlockedPackageImpl {
     delete packageDescriptorInWorkingDirectory["type"];
     delete packageDescriptorInWorkingDirectory["preDeploymentSteps"];
     delete packageDescriptorInWorkingDirectory["postDeploymentSteps"];
-    delete packageDescriptorInWorkingDirectory["permissionSetsToAssign"];
+    delete packageDescriptorInWorkingDirectory["assignPermSetsPreDeployment"];
+    delete packageDescriptorInWorkingDirectory["assignPermSetsPostDeployment"];
     delete packageDescriptorInWorkingDirectory["skipDeployOnOrgs"];
     delete packageDescriptorInWorkingDirectory["skipTesting"];
     delete packageDescriptorInWorkingDirectory["skipCoverageValidation"];

@@ -90,6 +90,9 @@ export default class InstallSourcePackageImpl {
         }
       }
 
+      SFPLogger.log("Assigning permission sets before deployment:",null,this.packageLogger, LoggerLevel.DEBUG);
+      this.applyPermsets(this.packageMetadata.assignPermSetsPreDeployment);
+
       //Apply Reconcile if Profiles are found
       //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata
       let isReconcileActivated = false,
@@ -163,7 +166,8 @@ export default class InstallSourcePackageImpl {
           );
         }
 
-        this.applyPermsets();
+        SFPLogger.log("Assigning permission sets after deployment:",null,this.packageLogger, LoggerLevel.DEBUG);
+        this.applyPermsets(this.packageMetadata.assignPermSetsPostDeployment);
 
         await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
           this.targetusername,
@@ -211,21 +215,15 @@ export default class InstallSourcePackageImpl {
     }
   }
 
-  private applyPermsets() {
+  private applyPermsets(permsets: string[]) {
     try {
-      if (
-        new RegExp("AssignPermissionSets", "i").test(
-          this.packageMetadata.postDeploymentSteps?.toString()
-        ) &&
-        this.packageMetadata.permissionSetsToAssign
-      ) {
+      if (permsets) {
         let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
           this.targetusername,
-          this.packageMetadata.permissionSetsToAssign,
+          permsets,
           this.sourceDirectory
         );
 
-        SFPLogger.log("Executing post-deployment step: AssignPermissionSets",null,this.packageLogger, LoggerLevel.DEBUG);
         assignPermissionSetsImpl.exec();
       }
     } catch (error) {

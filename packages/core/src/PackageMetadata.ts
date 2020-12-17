@@ -14,6 +14,8 @@ export default interface PackageMetadata {
     apextestsuite?: string;
     isApexFound?:boolean;
     permissionSetsToAssign?: string[],
+    assignPermSetsPreDeployment?: string[],
+    assignPermSetsPostDeployment?: string[],
     apexTestClassses?:string[];
     isTriggerAllTests?:boolean;
     isProfilesFound?:boolean;
