@@ -16,22 +16,13 @@ You should use the orchestrator when you have two or more packages \( source/unl
 
 ## Hmm, these orchestrator is a pretty powerful one line commands, will I lose my flexibility in the pipeline?
 
-No, orchestrator is built around our experience when dealing with a very large org with multiple packages.  We have added lot of  "**modifiers**" that can be added as  to each individual package which can be used to control the  test/build/deploy behavior of a package declaratively.   If these options are not sufficient, we are happy to help by adding additional options or you could script yourselves using the standalone sfpowerscripts commands
+No, orchestrator is built around our experience when dealing with a very large org with multiple packages.  We have added lot of  "**modifiers**" that can be added as  to each individual package which can be used to control the  test/build/deploy behavior of a package declaratively.   If these options are not sufficient, we are happy to help by adding additional options or you could script yourselves using the standalone sfpowerscripts commands. The current **"modifiers"** for orchestrator as follows, however each individual packages supports more modifiers, which is detailed **here.**
 
 ```text
   {
-    "type":"data" //Mention the type of package, only to be used for source and data packages
-    "aliasfy": <boolean>, // Only for source packages, allows to deploy a subfolder whose name matches the alias of the org when using deploy command
+    
     "skipDeployOnOrgs": ["org1","org2"], // List of org's that this package should be skipped during deployment
-    "isOptimizedDeployment": <boolean>  // default:true for source packages, Utilizes the apex classes in the package for deployment,
-    "skipTesting":<boolean> //default:false, skip apex testing installation of source package
     "skipCoverageValidation":<boolean> //default:false, skip apex coverage validation during validation phase,
-    "destructiveChangePath:<path> // only for source, if enabled, this will be applied before the package is deployed
-    "assignPermSetsPreDeployment: ["","",]
-    "assignPermSetsPostDeployment: ["","",]
-    "preDeploymentScript":<path> //All Packages
-    "postDeploymentScript:<path> // All packages
-    "reconcileProfiles:<boolean> //default:true Source Packages
     "ignoreOnStage": [ //Skip this package during the below orchestrator commands
          "prepare",
           "validate"
