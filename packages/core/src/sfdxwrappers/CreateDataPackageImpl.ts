@@ -52,15 +52,8 @@ export default class CreateDataPackageImpl {
 
     let packageDirectory: string = packageDescriptor["path"];
 
-    this.packageArtifactMetadata.preDeploymentSteps = packageDescriptor[
-      "preDeploymentSteps"
-    ]?.split(",");
-    this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor[
-      "postDeploymentSteps"
-    ]?.split(",");
+    this.writeDeploymentStepsToArtifact(packageDescriptor);
 
-    this.packageArtifactMetadata.permissionSetsToAssign = packageDescriptor
-        .permissionSetsToAssign?.split(",");
 
     if (
       MDAPIPackageGenerator.isEmptyFolder(
@@ -104,6 +97,28 @@ export default class CreateDataPackageImpl {
     });
 
     return this.packageArtifactMetadata;
+  }
+
+  private writeDeploymentStepsToArtifact(packageDescriptor: any) {
+
+    if (packageDescriptor.assignPermSetsPreDeployment) {
+      if (packageDescriptor.assignPermSetsPreDeployment instanceof Array)
+        this.packageArtifactMetadata.assignPermSetsPreDeployment = packageDescriptor
+          .assignPermSetsPreDeployment;
+
+      else
+        throw new Error("Property 'assignPermSetsPreDeployment' must be of type array");
+    }
+
+
+    if (packageDescriptor.assignPermSetsPostDeployment) {
+      if (packageDescriptor.assignPermSetsPostDeployment instanceof Array)
+        this.packageArtifactMetadata.assignPermSetsPostDeployment = packageDescriptor
+          .assignPermSetsPostDeployment;
+
+      else
+        throw new Error("Property 'assignPermSetsPostDeployment' must be of type array");
+    }
   }
 
   private printEmptyArtifactWarning() {

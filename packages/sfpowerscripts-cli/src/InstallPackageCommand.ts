@@ -3,6 +3,9 @@ import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
 import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import * as rimraf from "rimraf";
+import child_process = require("child_process");
+import path = require("path");
+import fs = require("fs");
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_package_command');
@@ -64,8 +67,19 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
         );
         process.exit(0);
       }
-    } else
-      this.artifactFilePaths = artifacts[0];
+    } else this.artifactFilePaths = artifacts[0];
+
+
+      let preDeploymentScript: string = path.join(
+        this.artifactFilePaths.sourceDirectoryPath,
+        `scripts`,
+        `preDeployment`
+      );
+
+      if (fs.existsSync(preDeploymentScript)) {
+        console.log("Executing preDeployment script");
+        this.executeScript(preDeploymentScript);
+      }
   }
 
   /**
@@ -73,7 +87,36 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
    * the primary install
    */
   private postInstall(): void {
+    let postDeploymentScript: string = path.join(
+      this.artifactFilePaths.sourceDirectoryPath,
+      `scripts`,
+      `postDeployment`
+    );
+
+    if (fs.existsSync(postDeploymentScript)) {
+      console.log("Executing postDeployment script");
+      this.executeScript(postDeploymentScript);
+    }
+
     // Delete temp directory containing unzipped artifacts
     rimraf.sync(".sfpowerscripts/unzippedArtifacts");
   }
+
+  private executeScript(script: string) {
+    let cmd: string;
+    if (process.platform !== 'win32') {
+      cmd = `bash -e ${script} ${this.flags.package} ${this.flags.targetorg}`;
+    } else {
+      cmd = `cmd.exe /c ${script} ${this.flags.package} ${this.flags.targetorg}`;
+    }
+
+    child_process.execSync(
+      cmd,
+      {
+        cwd: process.cwd(),
+        stdio: ['ignore', 'inherit', 'inherit']
+      }
+    );
+  }
+
 }

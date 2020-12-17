@@ -27,6 +27,11 @@ export default class InstallUnlockedPackageImpl {
         isPackageInstalled = this.checkWhetherPackageIsIntalledInOrg();
       }
 
+      if(this.sourceDirectory) {
+        SFPLogger.log("Assigning permission sets before deployment:",null,this.packageLogger);
+        this.applyPermsets(this.packageMetadata.assignPermSetsPreDeployment);
+      }
+
       if (!isPackageInstalled) {
 
        //Print Metadata carried in the package
@@ -47,9 +52,10 @@ export default class InstallUnlockedPackageImpl {
         await onExit(child);
 
 
-        //apply post deployment steps
-        if(this.sourceDirectory)
-         this.applyPermsets();
+        if(this.sourceDirectory) {
+          SFPLogger.log("Assigning permission sets after deployment:",null,this.packageLogger);
+          this.applyPermsets(this.packageMetadata.assignPermSetsPostDeployment);
+        }
 
         return { result: PackageInstallationStatus.Succeeded}
       } else {
@@ -65,21 +71,15 @@ export default class InstallUnlockedPackageImpl {
   }
 
 
-  private applyPermsets() {
+  private applyPermsets(permsets: string[]) {
     try {
-      if (
-        new RegExp("AssignPermissionSets", "i").test(
-          this.packageMetadata.postDeploymentSteps?.toString()
-        ) &&
-        this.packageMetadata.permissionSetsToAssign
-      ) {
+      if (permsets) {
         let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
           this.targetusername,
-          this.packageMetadata.permissionSetsToAssign,
+          permsets,
           this.sourceDirectory
         );
 
-        SFPLogger.log("Executing post-deployment step: AssignPermissionSets",null,this.packageLogger);
         assignPermissionSetsImpl.exec();
       }
     } catch (error) {
