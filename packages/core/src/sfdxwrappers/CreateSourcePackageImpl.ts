@@ -182,8 +182,6 @@ export default class CreateSourcePackageImpl {
   }
 
   private writeDeploymentStepsToArtifact(packageDescriptor: any) {
-    this.packageArtifactMetadata.preDeploymentSteps = packageDescriptor["preDeploymentSteps"]?.split(",");
-    this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor["postDeploymentSteps"]?.split(",");
 
     this.packageArtifactMetadata.reconcileProfiles = packageDescriptor.reconcileProfiles;
 

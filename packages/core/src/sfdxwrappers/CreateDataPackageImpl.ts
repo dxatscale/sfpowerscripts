@@ -100,8 +100,6 @@ export default class CreateDataPackageImpl {
   }
 
   private writeDeploymentStepsToArtifact(packageDescriptor: any) {
-    this.packageArtifactMetadata.preDeploymentSteps = packageDescriptor["preDeploymentSteps"]?.split(",");
-    this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor["postDeploymentSteps"]?.split(",");
 
     if (packageDescriptor.assignPermSetsPreDeployment) {
       if (packageDescriptor.assignPermSetsPreDeployment instanceof Array)

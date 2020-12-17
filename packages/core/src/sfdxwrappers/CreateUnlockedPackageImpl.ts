@@ -247,7 +247,6 @@ export default class CreateUnlockedPackageImpl {
   }
 
   private writeDeploymentStepsToArtifact(packageDescriptor: any) {
-    this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor["postDeploymentSteps"]?.split(",");
 
     if (packageDescriptor.assignPermSetsPreDeployment) {
       if (packageDescriptor.assignPermSetsPreDeployment instanceof Array)
@@ -281,8 +280,6 @@ export default class CreateUnlockedPackageImpl {
       delete packageDescriptorInWorkingDirectory["dependencies"];
 
     delete packageDescriptorInWorkingDirectory["type"];
-    delete packageDescriptorInWorkingDirectory["preDeploymentSteps"];
-    delete packageDescriptorInWorkingDirectory["postDeploymentSteps"];
     delete packageDescriptorInWorkingDirectory["assignPermSetsPreDeployment"];
     delete packageDescriptorInWorkingDirectory["assignPermSetsPostDeployment"];
     delete packageDescriptorInWorkingDirectory["skipDeployOnOrgs"];
