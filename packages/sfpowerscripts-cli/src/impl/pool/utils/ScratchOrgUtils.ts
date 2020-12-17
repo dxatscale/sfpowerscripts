@@ -225,7 +225,7 @@ export default class ScratchOrgUtils {
     let query = `SELECT Id, ScratchOrg FROM ScratchOrgInfo WHERE ScratchOrg IN ( ${scratchOrgIds} )`;
 
 
-    return await retry(
+    return retry(
       async (bail) => {
         const results = (await hubConn.query(query)) as any;
         let resultAsObject = this.arrayToObject(results.records, "ScratchOrg");
@@ -248,7 +248,7 @@ export default class ScratchOrgUtils {
   ): Promise<boolean> {
     let hubConn = hubOrg.getConnection();
 
-    return await retry(
+    return retry(
       async (bail) => {
         try {
           let result = await hubConn.sobject("ScratchOrgInfo").update(soInfo);
@@ -269,7 +269,7 @@ export default class ScratchOrgUtils {
   ) {
     let hubConn = hubOrg.getConnection();
 
-    return await retry(
+    return retry(
       async (bail) => {
         let query;
 
@@ -301,7 +301,7 @@ export default class ScratchOrgUtils {
   ) {
     let hubConn = hubOrg.getConnection();
 
-    return await retry(
+    return retry(
       async (bail) => {
         let query = `SELECT Id, SignupUsername FROM ActiveScratchOrg WHERE ScratchOrgInfoId IN (${scrathOrgIds}) `;
 
@@ -318,7 +318,7 @@ export default class ScratchOrgUtils {
   ): Promise<number> {
     let hubConn = hubOrg.getConnection();
 
-    return await retry(
+    return retry(
       async (bail) => {
         let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
         const results = (await hubConn.query(query)) as any;
@@ -334,7 +334,7 @@ export default class ScratchOrgUtils {
   ): Promise<number> {
     let hubConn = hubOrg.getConnection();
 
-    return await retry(
+    return retry(
       async (bail) => {
         let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
         const results = (await hubConn.query(query)) as any;
@@ -351,7 +351,7 @@ export default class ScratchOrgUtils {
   ): Promise<any> {
     let hubConn = hubOrg.getConnection();
 
-    return await retry(
+    return retry(
       async (bail) => {
         var query_uri = `${hubConn.instanceUrl}/services/data/v${apiversion}/query?q=SELECT+Id+FROM+ActiveScratchOrg+WHERE+ScratchOrg+=+'${scratchOrgId}'`;
 
@@ -402,7 +402,7 @@ export default class ScratchOrgUtils {
   public static async checkForPreRequisite(hubOrg: Org) {
     let hubConn = hubOrg.getConnection();
 
-    return await retry(
+    return retry(
       async (bail) => {
         const results: any = await hubConn.metadata.read(
           "CustomObject",
