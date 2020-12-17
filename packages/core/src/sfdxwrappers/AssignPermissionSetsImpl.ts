@@ -1,10 +1,13 @@
 import child_process = require("child_process");
+import SFPLogger from "../utils/SFPLogger";
+const Table = require("cli-table");
 
 export default class AssignPermissionSetsImpl {
   constructor(
     private target_org: string,
     private permSets: string[],
-    private project_directory: string
+    private project_directory: string,
+    private packageLogger?: string
   ){}
 
   public exec() {
@@ -61,21 +64,48 @@ export default class AssignPermissionSetsImpl {
           );
         if ( permSetAssignmentMatch !== undefined) {
           // Skip assignment of permission set
-          console.log(`${permSet} is already assigned to ${username}`);
+          SFPLogger.log(`${permSet} is already assigned to ${username}`, null, this.packageLogger);
           continue;
         }
       } else {
         throw new Error(`Failed to query permission set assignments for ${username}`);
       }
 
-      child_process.execSync(
-        `npx sfdx force:user:permset:assign -n ${permSet} -u ${username}`,
+      let permsetAssignmentJson: string = child_process.execSync(
+        `npx sfdx force:user:permset:assign -n ${permSet} -u ${username} --json`,
         {
           cwd: this.project_directory,
           encoding: "utf8",
-          stdio: ['pipe', 'inherit', 'inherit']
+          stdio: ['pipe', 'pipe', 'inherit']
         }
       );
+
+      let permsetAssignment = JSON.parse(permsetAssignmentJson);
+
+      if (permsetAssignment.status === 0) {
+        SFPLogger.log(`Permsets Assigned`);
+        this.printPermsetAssignments(permsetAssignment.result.successes);
+      } else {
+        SFPLogger.log(`Failures`);
+        this.printPermsetAssignments(permsetAssignment.result.failures);
+      }
     }
+  }
+
+  private printPermsetAssignments(
+    assignments: { name: string; value: string }[]
+  ) {
+    let table = new Table({
+      head: ["Username", "Permission Set Assignment"]
+    });
+
+    assignments.forEach((assignment) => {
+      table.push([
+        assignment.name,
+        assignment.value
+      ]);
+    });
+
+    SFPLogger.log(table.toString(), null, this.packageLogger);
   }
 }
