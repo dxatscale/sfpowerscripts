@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 7,
+        "Major": 8,
         "Minor": 0,
-        "Patch": 57
+        "Patch": 4
     },
     "instanceNameFormat": "Analyze $(directory) using PMD",
     "inputs": [
@@ -97,7 +97,7 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/AnalyzeWithPMDTask/AnalyzeWithPMD.js"
         }
     }

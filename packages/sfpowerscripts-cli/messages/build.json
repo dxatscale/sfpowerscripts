@@ -7,7 +7,7 @@
     "buildNumberFlagDescription": "The build number to be used for source packages, Unlocked Packages will be assigned the buildnumber from Saleforce directly if using .NEXT",
     "configFilePathFlagDescription": "Path in the current project directory containing  config file for the packaging org",
     "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
-    "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
+    "artifactDirectoryFlagDescription": "The directory where the generated artifact is to be written",
     "isValidationToBeSkippedFlagDescription": "Skips validation of dependencies, package ancestors, and metadata during package version creation. Skipping validation reduces the time it takes to create a new package version, but package versions created without validation can’t be promoted.",
     "waitTimeFlagDescription": "Wait time for command to finish in minutes",
     "executorCountFlagDescription": "Number of parallel package task schedulors",

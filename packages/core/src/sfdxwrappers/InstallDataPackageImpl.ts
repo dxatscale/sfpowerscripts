@@ -14,7 +14,6 @@ export default class InstallDataPackageImpl {
     private sfdx_package: string,
     private targetusername: string,
     private sourceDirectory: string,
-    private subDirectory:string,
     private packageMetadata: PackageMetadata,
     private skip_if_package_installed: boolean,
     private isPackageCheckHandledByCaller?:boolean,
@@ -28,10 +27,10 @@ export default class InstallDataPackageImpl {
     try {
       let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(this.sourceDirectory, this.sfdx_package);
 
-      if (this.subDirectory) {
+      if (packageDescriptor.aliasfy) {
         packageDirectory = path.join(
           packageDescriptor["path"],
-          this.subDirectory
+          this.targetusername
         );
       } else {
         packageDirectory = path.join(
@@ -47,7 +46,12 @@ export default class InstallDataPackageImpl {
 
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
-        isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(this.targetusername,this.packageMetadata,this.subDirectory, this.isPackageCheckHandledByCaller);
+        isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+          this.targetusername,
+          this.packageMetadata,
+          packageDescriptor.aliasfy ? this.targetusername : null,
+          this.isPackageCheckHandledByCaller
+        );
         if(isPackageInstalled)
           {
            SFPLogger.log("Skipping Package Installation",null,this.packageLogger)
@@ -56,20 +60,9 @@ export default class InstallDataPackageImpl {
       }
 
 
+      SFPLogger.log("Assigning permission sets before deployment:",null,this.packageLogger);
+      this.applyPermsets(this.packageMetadata.assignPermSetsPreDeployment);
 
-      if (
-        new RegExp("AssignPermissionSets", "i").test(this.packageMetadata.preDeploymentSteps?.toString()) &&
-        this.packageMetadata.permissionSetsToAssign
-      ) {
-        let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-          this.targetusername,
-          this.packageMetadata.permissionSetsToAssign,
-          this.sourceDirectory
-        )
-
-        SFPLogger.log("Executing pre-deployment step: AssignPermissionSets",null,this.packageLogger);
-        assignPermissionSetsImpl.exec();
-      }
 
       let command = this.buildExecCommand(packageDirectory);
       let child = child_process.exec(
@@ -87,8 +80,15 @@ export default class InstallDataPackageImpl {
 
       await onExit(child);
 
+      SFPLogger.log("Assigning permission sets after deployment:",null,this.packageLogger);
+      this.applyPermsets(this.packageMetadata.assignPermSetsPostDeployment);
 
-      await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(this.targetusername,this.packageMetadata,this.subDirectory,this.isPackageCheckHandledByCaller);
+      await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
+        this.targetusername,
+        this.packageMetadata,
+        packageDescriptor.aliasfy ? this.targetusername : null,
+        this.isPackageCheckHandledByCaller
+      );
 
       return {result: PackageInstallationStatus.Succeeded};
 
@@ -109,5 +109,17 @@ export default class InstallDataPackageImpl {
 
     SFPLogger.log(`Generated Command ${command}`,null,this.packageLogger);
     return command;
+  }
+
+  private applyPermsets(permsets: string[]) {
+    if (permsets) {
+      let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
+        this.targetusername,
+        permsets,
+        this.sourceDirectory
+      );
+
+      assignPermissionSetsImpl.exec();
+    }
   }
 }

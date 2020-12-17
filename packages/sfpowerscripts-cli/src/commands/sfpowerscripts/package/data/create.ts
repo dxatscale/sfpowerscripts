@@ -1,27 +1,26 @@
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import { Messages } from '@salesforce/core';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
-import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
+import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDataPackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import { exec } from "shelljs";
-import * as fs from "fs-extra"
+import * as fs from "fs-extra";
 import path = require("path");
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_source_package');
+const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_data_package');
 
-export default class CreateSourcePackage extends SfpowerscriptsCommand {
+export default class CreateDataPackage extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:CreateSourcePackage -n mypackage -v <version>`,
-    `$ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --diffcheck --gittag`,
+    `$ sfdx sfpowerscripts:package:data:create -n mypackage -v <version>`,
+    `$ sfdx sfpowerscripts:package:data:create -n <mypackage> -v <version> --diffcheck --gittag`,
     `Output variable:`,
-    `sfpowerscripts_artifact_metadata_directory`,
-    `<refname>_sfpowerscripts_artifact_metadata_directory`,
     `sfpowerscripts_artifact_directory`,
     `<refname>_sfpowerscripts_artifact_directory`,
     `sfpowerscripts_package_version_number`,
@@ -30,6 +29,7 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
 
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
+  protected static requiresProject = true;
 
   protected static flagsConfig = {
     package: flags.string({required: true, char: 'n', description: messages.getMessage('packageFlagDescription')}),
@@ -54,6 +54,10 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
       const refname: string = this.flags.refname;
       const branch:string=this.flags.branch;
 
+      let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(null, sfdx_package);
+      if (packageDescriptor.type?.toLowerCase() !== "data") {
+        throw new Error("Data packages must have 'type' property of 'data' defined in sfdx-project.json");
+      }
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
@@ -69,7 +73,7 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
       } else runBuild = true;
 
       if (runBuild) {
-        let commit_id = exec('git log --pretty=format:%H -n 1', {silent:true});
+        let commit_id = exec('git log --pretty=format:%H -n 1', {silent:true}).stdout;
 
         let repository_url: string;
         if (this.flags.repourl == null) {
@@ -86,37 +90,42 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
           package_version_number: version_number,
           sourceVersion: commit_id,
           repository_url:repository_url,
-          package_type:"source",
           branch:branch
         };
 
-        //Convert to MDAPI
-        let createSourcePackageImpl = new CreateSourcePackageImpl(
+
+        let createDataPackageImpl = new CreateDataPackageImpl(
           null,
           sfdx_package,
-          null,
           packageMetadata
         );
-        packageMetadata = await createSourcePackageImpl.exec();
-
-        console.log(JSON.stringify(packageMetadata, function(key, val) {
-          if (key !== "payload")
-              return val;
-         }));
-
-
-       //Generate Artifact
-        let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,process.cwd(),artifactDirectory,packageMetadata);
-
-        console.log(`Created source package ${path.basename(artifactFilepath)}`);
+        packageMetadata = await createDataPackageImpl.exec();
 
         if (this.flags.gittag) {
           exec(`git config --global user.email "sfpowerscripts@dxscale"`);
           exec(`git config --global user.name "sfpowerscripts"`);
           let tagname = `${sfdx_package}_v${version_number}`;
+
           console.log(`Creating tag ${tagname}`);
-          exec(`git tag -a -m "${sfdx_package} Source Package ${version_number}" ${tagname} HEAD`, {silent:false});
+          exec(`git tag -a -m "${sfdx_package} Data Package ${version_number}" ${tagname} HEAD`, {silent:false});
+
+          packageMetadata.tag = tagname;
         }
+
+        console.log(JSON.stringify(packageMetadata));
+
+
+       //Generate Artifact
+        let artifactFilepath: string = await ArtifactGenerator.generateArtifact(
+          sfdx_package,
+          process.cwd(),
+          artifactDirectory,
+          packageMetadata
+        );
+
+        console.log(`Created data package ${path.basename(artifactFilepath)}`);
+
+
 
         console.log("\nOutput variables:");
         if (refname != null) {
@@ -132,7 +141,7 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
         }
       }
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
       // Fail the task when an error occurs
       process.exit(1);
     }

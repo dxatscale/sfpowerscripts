@@ -8,10 +8,11 @@ import { SfdxApi } from "../pool/sfdxnode/types";
 import PrepareASingleOrgImpl, {
   ScriptExecutionResult,
 } from "./PrepareASingleOrgImpl";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/src/manifest/ManifestHelpers";
+import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import child_process = require("child_process");
-import BuildImpl from "../parallelBuilder/BuildImpl";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
+import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import { Stage } from "../Stage";
 export default class PrepareImpl {
   private poolConfig: PoolConfig;
   private totalToBeAllocated: number;
@@ -65,9 +66,10 @@ export default class PrepareImpl {
 
 
   public async poolScratchOrgs(): Promise< {
-    totalallocated:number
-    success: number;
-    failed: number;
+    totalallocated:number,
+    success: number,
+    failed: number,
+    errorCode?: string
   }> {
     await ScratchOrgUtils.checkForNewVersionCompatible(this.hubOrg);
     let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
@@ -82,7 +84,7 @@ export default class PrepareImpl {
       console.log(
         "Required Prerequisite fields are missing in the DevHub, Please look into the wiki to getting the fields deployed in DevHub"
       );
-      return {totalallocated:this.totalAllocated,success:0,failed:this.totalToBeAllocated};
+      return {totalallocated:this.totalAllocated,success:0,failed:this.totalToBeAllocated, errorCode:"Fields_Missing"};
     }
 
     //Set Pool Config Option
@@ -107,14 +109,18 @@ export default class PrepareImpl {
 
     if (this.totalToBeAllocated === 0) {
       if (this.limits.ActiveScratchOrgs.Remaining > 0)
+      {
         console.log(
           `The tag provided ${this.poolConfig.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`
         );
+         return {totalallocated:this.totalToBeAllocated,success:0,failed:0, errorCode:"Max_Capacity"};
+      }
       else
-        console.log(
+      {  console.log(
           `There is no capacity to create a pool at this time, Please try again later`
         );
-      return {totalallocated:this.totalAllocated,success:0,failed:0};
+      return {totalallocated:this.totalToBeAllocated,success:0,failed:0, errorCode:"No_Capacity"};
+      }
     }
 
 
@@ -153,7 +159,7 @@ export default class PrepareImpl {
 
     let finalizedResults = await this.finalizeGeneratedScratchOrgs();
 
-    return {totalallocated:this.totalAllocated,success:finalizedResults.success,failed:finalizedResults.failed};
+    return {totalallocated:this.totalToBeAllocated,success:finalizedResults.success,failed:finalizedResults.failed};
   }
 
   private async getPackageArtifacts() {
@@ -172,24 +178,29 @@ export default class PrepareImpl {
     } else {
       //Build All Artifacts
       console.log("\n");
-      console.log("---------------------------------------------------------------------------------------------")
+      console.log("-------------------------------WARNING!!!!------------------------------------------------")
       console.log("Building packages, as script to fetch artifacts was not provided");
       console.log("This is not ideal, as the artifacts are  built from the current head of the provided branch" );
       console.log("Pools should be prepared with previously validated packages");
       console.log("---------------------------------------------------------------------------------------------")
-      let buildImpl = new BuildImpl(
-        this.configFilePath,
-        null,
-        this.hubOrg.getUsername(),
-        null,
-        "120",
-        true,
-        false,
-        1,
-        10,
-        true,
-        null
-      );
+
+      let buildProps:BuildProps = {
+
+        configFilePath:this.configFilePath,
+        devhubAlias:this.hubOrg.getUsername(),
+        waitTime:120,
+        isQuickBuild:true,
+        isDiffCheckEnabled:false,
+        buildNumber:1,
+        executorcount:10,
+        isBuildAllAsSourcePackages:true,
+        branch:null,
+        currentStage:Stage.PREPARE
+    }
+
+
+
+      let buildImpl = new BuildImpl(buildProps);
       let { generatedPackages, failedPackages } = await buildImpl.exec();
 
 
@@ -436,7 +447,6 @@ export default class PrepareImpl {
     artifactDirectory: string,
     scriptPath: string
   ) {
-    console.log(`Fetching ${packageName} ...`);
 
     let cmd: string;
     if (process.platform !== "win32") {

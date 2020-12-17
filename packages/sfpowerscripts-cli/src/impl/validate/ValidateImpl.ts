@@ -1,57 +1,94 @@
 import child_process = require("child_process");
-import BuildImpl from "../parallelBuilder/BuildImpl";
-import DeployImpl, { DeploymentMode } from "../deploy/DeployImpl";
+import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
+import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { Stage } from "../Stage";
-import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 
 
 export default class ValidateImpl {
 
   constructor (
-    private devhub_alias: string,
+    private devHubUsername: string,
     private pools: string[],
     private jwt_key_file: string,
     private client_id: string,
     private shapeFile: string,
     private coverageThreshold: number,
-    private logsGroupSymbol: string[]
+    private logsGroupSymbol: string[],
+    private isDeleteScratchOrg: boolean
   ){}
 
   public async exec(): Promise<boolean>{
+    let scratchOrgUsername: string;
+    try {
+     this.authenticateDevHub(this.devHubUsername);
 
-    let targetusername: string = this.fetchScratchOrgFromPool(
-      this.pools,
-      this.devhub_alias
-    );
+      scratchOrgUsername = this.fetchScratchOrgFromPool(
+        this.pools,
+        this.devHubUsername
+      );
 
-    this.authenticateToScratchOrg(targetusername);
+      this.authenticateToScratchOrg(scratchOrgUsername);
 
-    if (this.shapeFile) {
-      this.deployShapeFile(this.shapeFile, targetusername);
+
+
+      if (this.shapeFile) {
+        this.deployShapeFile(this.shapeFile, scratchOrgUsername);
+      }
+
+      let packagesToCommits = this.getPackagesToCommits(scratchOrgUsername);
+
+      await this.buildChangedSourcePackages(packagesToCommits);
+
+      // Un-suppress logs for deployment
+      SFPLogger.isSupressLogs = false;
+      SFPLogger.logLevel = LoggerLevel.INFO;
+
+      let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
+
+      if (deploymentResult.failed.length > 0)
+        return false;
+      else
+        return true;
+    } finally {
+      if (this.isDeleteScratchOrg) {
+        console.log(`Deleting scratch org`, scratchOrgUsername);
+        this.deleteScratchOrg(scratchOrgUsername);
+      }
     }
 
-    let packagesToTags = this.getPackagesToTags();
-
-    await this.buildChangedSourcePackages(packagesToTags);
-
-    // Un-suppress logs for deployment
-    SFPLogger.isSupressLogs = false;
-    SFPLogger.logLevel = LoggerLevel.INFO;
-
-    let deploymentResult = await this.deploySourcePackages(targetusername);
-
-    if (deploymentResult.failed.length > 0)
-      return false;
-    else
-      return true;
   }
 
-  private deployShapeFile(shapeFile: string, targetusername: string) {
+  private deleteScratchOrg(scratchOrgUsername: string): void {
+    try {
+      child_process.execSync(
+        `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.devHubUsername}`,
+        {
+          stdio: 'inherit',
+          encoding: 'utf8'
+        }
+      );
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  private authenticateDevHub(devHubUsername: string): void {
+    child_process.execSync(
+      `sfdx force:auth:jwt:grant -u ${devHubUsername} -i ${this.client_id} -f ${this.jwt_key_file} -r https://login.salesforce.com`,
+      {
+        stdio: "inherit",
+        encoding: "utf8"
+      }
+    );
+  }
+
+  private deployShapeFile(shapeFile: string, scratchOrgUsername: string): void {
     console.log(`Deploying scratch org shape`, shapeFile);
     child_process.execSync(
-      `sfdx force:mdapi:deploy -f ${shapeFile} -u ${targetusername} -w 30 --ignorewarnings`,
+      `sfdx force:mdapi:deploy -f ${shapeFile} -u ${scratchOrgUsername} -w 30 --ignorewarnings`,
       {
         stdio: 'inherit',
         encoding: 'utf8'
@@ -59,22 +96,31 @@ export default class ValidateImpl {
     );
   }
 
-  private async deploySourcePackages(targetusername: string) {
+  private async deploySourcePackages(scratchOrgUsername: string): Promise<{
+    deployed: string[],
+    skipped: string[],
+    failed: string[],
+    testFailure: string
+  }> {
     let deployStartTime: number = Date.now();
 
-    let deployImpl: DeployImpl = new DeployImpl(
-      targetusername,
-      "artifacts",
-      "120",
-      Stage.VALIDATE,
-      null
-    );
+    let deployProps: DeployProps = {
+       targetUsername : scratchOrgUsername,
+       artifactDir : "artifacts",
+       waitTime:120,
+       deploymentMode:DeploymentMode.SOURCEPACKAGES,
+       isTestsToBeTriggered:true,
+       skipIfPackageInstalled:false,
+       isValidateArtifactsOnHead:false,
+       coverageThreshold:this.coverageThreshold,
+       logsGroupSymbol:this.logsGroupSymbol,
+       currentStage:Stage.VALIDATE,
+    }
 
-    deployImpl.setDeploymentMode(DeploymentMode.SOURCEPACKAGES);
-    deployImpl.activateApexUnitTests(true);
-    deployImpl.skipIfPackageExistsInTheOrg(false);
-    deployImpl.setCoverageThreshold(this.coverageThreshold);
-    deployImpl.setLogSymbols(this.logsGroupSymbol);
+
+    let deployImpl: DeployImpl = new DeployImpl(
+     deployProps
+    );
 
     let deploymentResult = await deployImpl.exec();
 
@@ -84,24 +130,24 @@ export default class ValidateImpl {
     return deploymentResult;
   }
 
-  private async buildChangedSourcePackages(packagesToTags: { [p: string]: string; }) {
+  private async buildChangedSourcePackages(packagesToCommits: { [p: string]: string; }): Promise<void> {
     let buildStartTime: number = Date.now();
 
 
-    let buildImpl: BuildImpl = new BuildImpl(
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      true,
-      1,
-      10,
-      true,
-      null,
-      packagesToTags
-    );
+     let buildProps:BuildProps = {
+       buildNumber:1,
+       executorcount:10,
+       waitTime:120,
+       isDiffCheckEnabled:true,
+       isQuickBuild:true,
+       isBuildAllAsSourcePackages:true,
+       packagesToCommits:packagesToCommits,
+       currentStage:Stage.VALIDATE
+     }
+
+
+
+    let buildImpl: BuildImpl = new BuildImpl(buildProps);
 
     let { generatedPackages, failedPackages } = await buildImpl.exec();
 
@@ -129,33 +175,33 @@ export default class ValidateImpl {
     this.printBuildSummary(generatedPackages, failedPackages, buildElapsedTime);
   }
 
-  private getPackagesToTags(): {[p: string]: string} {
-    let packagesToTags: {[p: string]: string} = {};
+  private getPackagesToCommits(scratchOrgUsername: string): {[p: string]: string} {
+    let packagesToCommits: {[p: string]: string} = {};
 
-    let queryResult = this.querySfpowerscriptsArtifacts();
+    let queryResult = this.querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername);
 
     if (queryResult) {
       if (queryResult.status === 0) {
         // Construct map of artifact and associated latest tag
         queryResult.result.records.forEach((artifact) => {
-          packagesToTags[artifact.Name] = artifact.Tag__c;
+          packagesToCommits[artifact.Name] = artifact.CommitId__c;
         });
 
-        console.log(`Artifacts installed in scratch org: ${JSON.stringify(packagesToTags, null, 4)}`);
+        console.log(`Artifacts installed in scratch org: ${JSON.stringify(packagesToCommits, null, 4)}`);
       }
       else
         console.log("Failed to query org for Sfpowerscripts Artifacts");
     }
 
-    return packagesToTags;
+    return packagesToCommits;
   }
 
-  private querySfpowerscriptsArtifacts(): any {
+  private querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername): any {
     let queryResultJson: string;
     try {
       console.log("Querying scratch org for Sfpowerscripts Artifacts");
       queryResultJson = child_process.execSync(
-        `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c" -r json -u scratchorg`,
+        `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c" -r json -u ${scratchOrgUsername}`,
         {
           stdio: "pipe",
           encoding: "utf8"
@@ -170,23 +216,23 @@ export default class ValidateImpl {
       return null;
   }
 
-  private authenticateToScratchOrg(targetusername: string): void {
+  private authenticateToScratchOrg(scratchOrgUsername: string): void {
     child_process.execSync(
-      `sfdx force:auth:jwt:grant -u ${targetusername} -i ${this.client_id} -f ${this.jwt_key_file} -a scratchorg -r https://test.salesforce.com`,
+      `sfdx force:auth:jwt:grant -u ${scratchOrgUsername} -i ${this.client_id} -f ${this.jwt_key_file} -r https://test.salesforce.com`,
       {
         stdio: ['ignore', 'inherit', 'inherit']
       }
     );
   }
 
-  private fetchScratchOrgFromPool(pools: string[], devhub_alias: string): string {
-    let targetusername: string;
+  private fetchScratchOrgFromPool(pools: string[], devHubUsername: string): string {
+    let scratchOrgUsername: string;
 
     for (let pool of pools) {
       let fetchResultJson: string;
       try {
         fetchResultJson = child_process.execSync(
-          `sfdx sfpowerkit:pool:fetch -t ${pool.trim()} -v ${devhub_alias} --json`,
+          `sfdx sfpowerkit:pool:fetch -t ${pool.trim()} -v ${devHubUsername} --json`,
           {
             stdio: 'pipe',
             encoding: 'utf8'
@@ -197,15 +243,15 @@ export default class ValidateImpl {
       if (fetchResultJson) {
         let fetchResult = JSON.parse(fetchResultJson);
         if (fetchResult.status === 0) {
-          targetusername = fetchResult.result.username;
-          console.log(`Fetched scratch org ${targetusername} from ${pool}`);
+          scratchOrgUsername = fetchResult.result.username;
+          console.log(`Fetched scratch org ${scratchOrgUsername} from ${pool}`);
           break;
         }
       }
     }
 
-    if (targetusername)
-      return targetusername;
+    if (scratchOrgUsername)
+      return scratchOrgUsername;
     else
       throw new Error(`Failed to fetch scratch org from ${pools}`);
   }
@@ -214,7 +260,7 @@ export default class ValidateImpl {
     generatedPackages: PackageMetadata[],
     failedPackages: string[],
     totalElapsedTime: number
-  ) {
+  ): void {
     console.log(
       `----------------------------------------------------------------------------------------------------`
     );
@@ -236,9 +282,9 @@ export default class ValidateImpl {
   }
 
   private printDeploySummary(
-    deploymentResult: {deployed: string[], skipped: string[], failed: string[]},
+    deploymentResult: {deployed: string[], skipped: string[], failed: string[], testFailure: string},
     totalElapsedTime: number
-  ) {
+  ): void {
     if (this.logsGroupSymbol?.[0])
       console.log(this.logsGroupSymbol[0], "Deployment Summary");
 
@@ -247,9 +293,11 @@ export default class ValidateImpl {
     );
     console.log(
       `${deploymentResult.deployed.length} packages deployed in ${new Date(totalElapsedTime).toISOString().substr(11,8)
-      } with {${deploymentResult.failed.length}} errors and {${deploymentResult.skipped.length}} skipped`
+      } with {${deploymentResult.failed.length}} failed deployments and {${deploymentResult.skipped.length}} skipped`
     );
 
+    if (deploymentResult.testFailure)
+      console.log(`\nTests failed for`, deploymentResult.testFailure);
 
     if (deploymentResult.skipped.length > 0) {
       console.log(`\nPackages Skipped`, deploymentResult.skipped);

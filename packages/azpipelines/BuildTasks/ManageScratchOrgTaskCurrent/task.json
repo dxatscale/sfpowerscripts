@@ -7,9 +7,9 @@
     "category": "Utility",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 8,
+        "Major": 9,
         "Minor": 0,
-        "Patch": 65
+        "Patch": 4
     },
     "runsOn": [
         "Agent"
@@ -107,12 +107,12 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/ManageScratchOrgTaskCurrent/ManageScratchOrg.js"
         }
     },
     "postjobexecution": {
-        "Node": {
+        "Node10": {
             "target": "lib/ManageScratchOrgTaskCurrent/PostManageScratchOrg.js",
             "argumentFormat": ""
         }

@@ -44,11 +44,10 @@ export default class SourcePackageGenerator {
       )
     );
 
+    SourcePackageGenerator.createScripts(artifactDirectory, projectDirectory, sfdx_package);
 
-    fs.copySync(
-      path.join(rootDirectory, ".forceignore"),
-      path.join(artifactDirectory, ".forceignore")
-    );
+    SourcePackageGenerator.createForceIgnores(artifactDirectory, projectDirectory, rootDirectory);
+
 
     if (!isNullOrUndefined(destructiveManifestFilePath)) {
       SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory);
@@ -65,6 +64,92 @@ export default class SourcePackageGenerator {
     );
 
     return artifactDirectory;
+  }
+
+  /**
+   * Create scripts directory containing preDeploy & postDeploy
+   * @param artifactDirectory
+   * @param projectDirectory
+   * @param sfdx_package
+   */
+  private static createScripts(
+    artifactDirectory: string,
+    projectDirectory: string,
+    sfdx_package
+  ): void {
+    let scriptsDir: string = path.join(artifactDirectory, `scripts`)
+    mkdirpSync(scriptsDir);
+
+    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      projectDirectory,
+      sfdx_package
+    );
+
+    if (packageDescriptor.preDeploymentScript) {
+      if (fs.existsSync(packageDescriptor.preDeploymentScript)) {
+        fs.copySync(
+          packageDescriptor.preDeploymentScript,
+          path.join(scriptsDir, `preDeployment`)
+        );
+      } else {
+        throw new Error(`preDeploymentScript ${packageDescriptor.preDeploymentScript} does not exist`);
+      }
+    }
+
+    if (packageDescriptor.postDeploymentScript) {
+      if (fs.existsSync(packageDescriptor.postDeploymentScript)) {
+        fs.copySync(
+          packageDescriptor.postDeploymentScript,
+          path.join(scriptsDir, `postDeployment`)
+        );
+      } else {
+        throw new Error(`postDeploymentScript ${packageDescriptor.postDeploymentScript} does not exist`);
+      }
+    }
+  }
+
+  /**
+   * Create root forceignore and forceignores directory containing ignore files for different stages
+   * @param artifactDirectory
+   * @param projectDirectory
+   * @param rootDirectory
+   */
+  private static createForceIgnores(
+    artifactDirectory: string,
+    projectDirectory: string,
+    rootDirectory: string
+  ): void {
+    let forceIgnoresDir: string = path.join(artifactDirectory, `forceignores`);
+    mkdirpSync(forceIgnoresDir);
+
+    let projectConfig = ManifestHelpers.getSFDXPackageManifest(projectDirectory);
+    let ignoreFiles = projectConfig.plugins?.sfpowerscripts?.ignoreFiles;
+
+    let rootForceIgnore: string = path.join(rootDirectory, ".forceignore");
+    let copyForceIgnoreForStage = (stage) => {
+      if (ignoreFiles?.[stage])
+        if (fs.existsSync(ignoreFiles[stage]))
+          fs.copySync(
+            ignoreFiles[stage],
+            path.join(forceIgnoresDir, "." + stage + "ignore")
+          );
+        else
+          throw new Error(`${ignoreFiles[stage]} does not exist`);
+      else
+        fs.copySync(
+          rootForceIgnore,
+          path.join(forceIgnoresDir, "." + stage + "ignore")
+        );
+    };
+
+    let stages: string[] = ["prepare", "validate", "quickbuild", "build"];
+    stages.forEach((stage) => copyForceIgnoreForStage(stage));
+
+
+    fs.copySync(
+      rootForceIgnore,
+      path.join(artifactDirectory, ".forceignore")
+    );
   }
 
   private static copyDestructiveManifests(destructiveManifestFilePath: string, artifactDirectory: string, projectDirectory: any) {

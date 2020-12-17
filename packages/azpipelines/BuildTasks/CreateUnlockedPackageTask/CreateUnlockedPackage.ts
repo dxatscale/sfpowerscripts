@@ -87,6 +87,8 @@ async function run() {
 
       if (isGitTagActive) {
         let tagname = `${sfdx_package}_v${packageMetadata.package_version_number}`;
+        packageMetadata.tag = tagname;
+
         tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`, tagname);
         if (projectDirectory == null)
           tl.setVariable(
@@ -119,7 +121,11 @@ async function run() {
      }));
 
 
-      let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
+      let artifactFilepath: string = await ArtifactGenerator.generateArtifact(
+        sfdx_package,projectDirectory,
+        tl.getVariable("agent.tempDirectory"),
+        packageMetadata
+      );
 
       tl.uploadArtifact(`sfpowerscripts_artifacts`, artifactFilepath, `sfpowerscripts_artifacts`);
     }

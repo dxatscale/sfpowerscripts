@@ -2,10 +2,10 @@ import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
 import { onExit } from "../utils/OnExit";
 import PackageMetadata from "../PackageMetadata";
-import ManifestHelpers from "../manifest/ManifestHelpers";
 import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
 import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
 import SFPLogger from "../utils/SFPLogger";
+import { PackageXMLManifestHelpers } from "../manifest/PackageXMLManifestHelpers";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -27,10 +27,15 @@ export default class InstallUnlockedPackageImpl {
         isPackageInstalled = this.checkWhetherPackageIsIntalledInOrg();
       }
 
+      if(this.sourceDirectory) {
+        SFPLogger.log("Assigning permission sets before deployment:",null,this.packageLogger);
+        this.applyPermsets(this.packageMetadata.assignPermSetsPreDeployment);
+      }
+
       if (!isPackageInstalled) {
 
        //Print Metadata carried in the package
-       ManifestHelpers.printMetadataToDeploy(this.packageMetadata?.payload);
+       PackageXMLManifestHelpers.printMetadataToDeploy(this.packageMetadata?.payload);
 
         let command = this.buildPackageInstallCommand();
         let child = child_process.exec(command);
@@ -47,9 +52,10 @@ export default class InstallUnlockedPackageImpl {
         await onExit(child);
 
 
-        //apply post deployment steps
-        if(this.sourceDirectory)
-         this.applyPermsets();
+        if(this.sourceDirectory) {
+          SFPLogger.log("Assigning permission sets after deployment:",null,this.packageLogger);
+          this.applyPermsets(this.packageMetadata.assignPermSetsPostDeployment);
+        }
 
         return { result: PackageInstallationStatus.Succeeded}
       } else {
@@ -65,21 +71,15 @@ export default class InstallUnlockedPackageImpl {
   }
 
 
-  private applyPermsets() {
+  private applyPermsets(permsets: string[]) {
     try {
-      if (
-        new RegExp("AssignPermissionSets", "i").test(
-          this.packageMetadata.postDeploymentSteps?.toString()
-        ) &&
-        this.packageMetadata.permissionSetsToAssign
-      ) {
+      if (permsets) {
         let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
           this.targetusername,
-          this.packageMetadata.permissionSetsToAssign,
+          permsets,
           this.sourceDirectory
         );
 
-        SFPLogger.log("Executing post-deployment step: AssignPermissionSets",null,this.packageLogger);
         assignPermissionSetsImpl.exec();
       }
     } catch (error) {

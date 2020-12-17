@@ -1,7 +1,7 @@
 import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
 
-import InstallPackageCommand from "../../InstallPackageCommand";
+import InstallPackageCommand from "../../../../InstallPackageCommand";
 import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallSourcePackageImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 
@@ -21,7 +21,7 @@ export default class InstallSourcePackage extends InstallPackageCommand {
   public static description = messages.getMessage("commandDescription");
 
   public static examples = [
-    `$ sfdx sfpowerscripts:InstallSourcePackage -n mypackage -u <org>`,
+    `$ sfdx sfpowerscripts:package:source:install -n mypackage -u <org>`,
   ];
 
   protected static flagsConfig = {
@@ -45,9 +45,6 @@ export default class InstallSourcePackage extends InstallPackageCommand {
     skiponmissingartifact: flags.boolean({
       char: "s",
       description: messages.getMessage("skipOnMissingArtifactFlagDescription"),
-    }),
-    subdirectory: flags.directory({
-      description: messages.getMessage("subdirectoryFlagDescription"),
     }),
     optimizedeployment: flags.boolean({
       char: "o",
@@ -73,7 +70,6 @@ export default class InstallSourcePackage extends InstallPackageCommand {
   public async install(): Promise<any> {
     const target_org: string = this.flags.targetorg;
     const sfdx_package: string = this.flags.package;
-    const subdirectory: string = this.flags.subdirectory;
     const optimizeDeployment: boolean = this.flags.optimizedeployment;
     const skipTesting: boolean = this.flags.skiptesting;
     const wait_time: string = this.flags.waittime;
@@ -103,7 +99,6 @@ export default class InstallSourcePackage extends InstallPackageCommand {
         sfdx_package,
         target_org,
         sourceDirectory,
-        subdirectory,
         options,
         wait_time,
         skipIfAlreadyInstalled,

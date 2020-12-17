@@ -2,7 +2,8 @@ import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
-import DeployImpl, { DeploymentMode } from "../../../impl/deploy/DeployImpl";
+import DeployImpl, { DeploymentMode, DeployProps } from "../../../impl/deploy/DeployImpl";
+import { Stage } from "../../../impl/Stage";
 
 
 // Initialize Messages with the current plugin directory
@@ -34,9 +35,9 @@ export default class Deploy extends SfpowerscriptsCommand {
       description: messages.getMessage("artifactDirectoryFlagDescription"),
       default: "artifacts",
     }),
-    waittime: flags.string({
+    waittime: flags.number({
       description: messages.getMessage("waitTimeFlagDescription"),
-      default: "120",
+      default: 120,
     }),
     logsgroupsymbol: flags.array({
       char: "g",
@@ -48,13 +49,25 @@ export default class Deploy extends SfpowerscriptsCommand {
     }),
     skipifalreadyinstalled: flags.boolean({
       required:false,
-      default:true,
+      default:false,
       description: messages.getMessage("skipIfAlreadyInstalled"),
     }),
   };
 
   public async execute() {
     let executionStartTime = Date.now();
+
+    console.log("-----------sfpowerscripts orchestrator ------------------");
+    console.log("command: deploy");
+    console.log(`Skip Packages If Already Installed: ${this.flags.skipifalreadyinstalled}`);
+    console.log(`Is Dependencies to be validated (unlocked): ${this.flags.isvalidationtobeskipped}`);
+    console.log(`Config File Path: ${this.flags.configfilepath}`);
+    console.log(`Artifact Directory: ${this.flags.artifactdir}`);
+    console.log("---------------------------------------------------------");
+
+
+
+
     let deploymentResult: {deployed: string[], skipped: string[], failed: string[]};
 
     let tags = {
@@ -65,18 +78,24 @@ export default class Deploy extends SfpowerscriptsCommand {
       tags["tag"] = this.flags.tag;
     }
 
+
+    let deployProps:DeployProps = {
+      targetUsername:this.flags.targetorg,
+      artifactDir:this.flags.artifactdir,
+      waitTime:this.flags.waittime,
+      tags:tags,
+      isTestsToBeTriggered:false,
+      deploymentMode:DeploymentMode.NORMAL,
+      skipIfPackageInstalled:this.flags.skipifalreadyinstalled,
+      logsGroupSymbol:this.flags.logsgroupsymbol,
+      currentStage:Stage.DEPLOY,
+      isValidateArtifactsOnHead:true
+    }
+
     try {
       let deployImpl: DeployImpl = new DeployImpl(
-        this.flags.targetorg,
-        this.flags.artifactdir,
-        this.flags.waittime,
-        tags,
+        deployProps
       );
-
-      deployImpl.activateApexUnitTests(false);
-      deployImpl.setDeploymentMode(DeploymentMode.NORMAL)
-      deployImpl.skipIfPackageExistsInTheOrg(this.flags.skipifalreadyinstalled);
-      deployImpl.setLogSymbols(this.flags.logsgroupsymbol);
 
       deploymentResult = await deployImpl.exec();
 

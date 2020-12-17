@@ -1,6 +1,6 @@
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
-import { Messages, SfdxError } from '@salesforce/core';
+import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
+import { Messages } from '@salesforce/core';
 import ValidateApexCoverageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/ValidateApexCoverageImpl';
 
 // Initialize Messages with the current plugin directory
@@ -15,7 +15,7 @@ export default class ValidateApexCoverage extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:ValidateApexCoverage -u scratchorg -t 80`
+    `$ sfdx sfpowerscripts:apextests:validate -u scratchorg -t 80`
   ];
 
   protected static requiresProject = true;

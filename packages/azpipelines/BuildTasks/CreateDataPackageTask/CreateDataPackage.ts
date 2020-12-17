@@ -57,27 +57,11 @@ async function run() {
       );
       packageMetadata = await createDataPackageImpl.exec();
 
-
-      console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata));
-
-
-      let artifactFilepath: string = await ArtifactGenerator.generateArtifact(sfdx_package,projectDirectory,tl.getVariable("agent.tempDirectory"),packageMetadata);
-
-      tl.uploadArtifact(`sfpowerscripts_artifacts`, artifactFilepath, `sfpowerscripts_artifacts`);
-
-
-
-
-      tl.setVariable("sfpowerscripts_package_version_number", version_number);
-      tl.setVariable(
-        "sfpowerscripts_artifact_path",
-        artifactFilepath
-      );
-
-
       //Create Git Tag
       if (isGitTag) {
         let tagname: string = `${sfdx_package}_v${version_number}`;
+        packageMetadata.tag = tagname;
+
         tl.setVariable(`${sfdx_package}_sfpowerscripts_git_tag`, tagname);
         if (projectDirectory == null)
           tl.setVariable(
@@ -90,6 +74,25 @@ async function run() {
             projectDirectory
           );
       }
+
+      console.log("##[command]Package Metadata:"+JSON.stringify(packageMetadata));
+
+
+      let artifactFilepath: string = await ArtifactGenerator.generateArtifact(
+        sfdx_package,
+        projectDirectory,
+        tl.getVariable("agent.tempDirectory"),
+        packageMetadata
+      );
+
+      tl.uploadArtifact(`sfpowerscripts_artifacts`, artifactFilepath, `sfpowerscripts_artifacts`);
+
+
+      tl.setVariable("sfpowerscripts_package_version_number", version_number);
+      tl.setVariable(
+        "sfpowerscripts_artifact_path",
+        artifactFilepath
+      );
     }
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);

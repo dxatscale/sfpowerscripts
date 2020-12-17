@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-createsourcepackage-task",
   "description": "sfpowerscripts-createsourcepackage-task",
-  "version": "14.0.12",
+  "version": "14.0.17",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,8 +13,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^3.3.6",
+    "@dxatscale/sfpowerscripts.core": "^6.0.0",
     "azure-pipelines-task-lib": "^2.8.0",
-    "fs-extra": "^8.1.0"
+    "fs-extra": "^9.0.1"
   }
 }

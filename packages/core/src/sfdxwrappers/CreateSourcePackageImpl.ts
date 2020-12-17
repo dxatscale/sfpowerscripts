@@ -10,6 +10,7 @@ import * as fs from "fs-extra";
 import path = require("path");
 import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
 import SFPStatsSender from "../utils/SFPStatsSender";
+import { PackageXMLManifestHelpers } from "../manifest/PackageXMLManifestHelpers";
 const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl {
@@ -19,7 +20,8 @@ export default class CreateSourcePackageImpl {
     private projectDirectory: string,
     private sfdx_package: string,
     private destructiveManifestFilePath: string,
-    private packageArtifactMetadata: PackageMetadata
+    private packageArtifactMetadata: PackageMetadata,
+    private forceignorePath?: string
   ) {
     fs.outputFileSync(
       `.sfpowerscripts/logs/${sfdx_package}`,
@@ -68,15 +70,7 @@ export default class CreateSourcePackageImpl {
         this.sfdx_package
       );
       packageDirectory = packageDescriptor["path"];
-      this.packageArtifactMetadata.preDeploymentSteps = packageDescriptor[
-        "preDeploymentSteps"
-      ]?.split(",");
-      this.packageArtifactMetadata.postDeploymentSteps = packageDescriptor[
-        "postDeploymentSteps"
-      ]?.split(",");
-
-      this.packageArtifactMetadata.permissionSetsToAssign = packageDescriptor
-          .permissionSetsToAssign?.split(",");
+      this.writeDeploymentStepsToArtifact(packageDescriptor);
     }
 
     //Generate Destructive Manifest
@@ -108,10 +102,10 @@ export default class CreateSourcePackageImpl {
 
         this.packageArtifactMetadata.payload = mdapiPackage.manifest;
         this.packageArtifactMetadata.metadataCount = mdapiPackage.metadataCount;
-        this.packageArtifactMetadata.isApexFound = ManifestHelpers.checkApexInPayload(
+        this.packageArtifactMetadata.isApexFound = PackageXMLManifestHelpers.checkApexInPayload(
           mdapiPackage.manifest
         );
-        this.packageArtifactMetadata.isProfilesFound = ManifestHelpers.checkProfilesinPayload(
+        this.packageArtifactMetadata.isProfilesFound = PackageXMLManifestHelpers.checkProfilesinPayload(
           mdapiPackage.manifest
         );
 
@@ -136,6 +130,19 @@ export default class CreateSourcePackageImpl {
         ? undefined
         : destructiveChanges.destructiveChangesPath
     );
+
+    // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
+    if (this.forceignorePath) {
+      if (fs.existsSync(path.join(sourcePackageArtifactDir, this.forceignorePath)))
+        fs.copySync(
+          path.join(sourcePackageArtifactDir, this.forceignorePath),
+          path.join(sourcePackageArtifactDir, ".forceignore")
+        );
+      else {
+        SFPLogger.log(`${path.join(sourcePackageArtifactDir, this.forceignorePath)} does not exist`, null, this.packageLogger);
+        SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory", null, this.packageLogger);
+      }
+    }
 
     this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;
 
@@ -172,6 +179,30 @@ export default class CreateSourcePackageImpl {
     });
 
     return this.packageArtifactMetadata;
+  }
+
+  private writeDeploymentStepsToArtifact(packageDescriptor: any) {
+
+    this.packageArtifactMetadata.reconcileProfiles = packageDescriptor.reconcileProfiles;
+
+    if (packageDescriptor.assignPermSetsPreDeployment) {
+      if (packageDescriptor.assignPermSetsPreDeployment instanceof Array)
+        this.packageArtifactMetadata.assignPermSetsPreDeployment = packageDescriptor
+          .assignPermSetsPreDeployment;
+
+      else
+        throw new Error("Property 'assignPermSetsPreDeployment' must be of type array");
+    }
+
+
+    if (packageDescriptor.assignPermSetsPostDeployment) {
+      if (packageDescriptor.assignPermSetsPostDeployment instanceof Array)
+        this.packageArtifactMetadata.assignPermSetsPostDeployment = packageDescriptor
+          .assignPermSetsPostDeployment;
+
+      else
+        throw new Error("Property 'assignPermSetsPostDeployment' must be of type array");
+    }
   }
 
   private handleApexTestClasses(mdapiPackage: any) {

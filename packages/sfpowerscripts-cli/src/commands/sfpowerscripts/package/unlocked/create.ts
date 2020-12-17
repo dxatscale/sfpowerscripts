@@ -3,7 +3,7 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/Art
 import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl";
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import { flags } from "@salesforce/command";
-import SfpowerscriptsCommand from "../../SfpowerscriptsCommand";
+import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
 import * as fs from "fs-extra"
@@ -23,8 +23,8 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
   public static description = messages.getMessage("commandDescription");
 
   public static examples = [
-    `$ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
-    `$ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
+    `$ sfdx sfpowerscripts:package:unlocked:create -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
+    `$ sfdx sfpowerscripts:package:unlocked:create -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
     `Output variable:`,
     `sfpowerscripts_package_version_id`,
     `<refname>_sfpowerscripts_package_version_id`,
@@ -37,7 +37,8 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
   ];
 
   protected static requiresUsername = false;
-  protected static requiresDevhubUsername = false;
+  protected static requiresDevhubUsername = true;
+  protected static requiresProject = true;
 
   protected static flagsConfig = {
     package: flags.string({
@@ -59,11 +60,6 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
       char: "x",
       description: messages.getMessage("installationKeyBypassFlagDescription"),
       exclusive: ["installationkey"],
-    }),
-    devhubalias: flags.string({
-      char: "v",
-      description: messages.getMessage("devhubAliasFlagDescription"),
-      default: "HubOrg",
     }),
     diffcheck: flags.boolean({
       description: messages.getMessage("diffCheckFlagDescription"),
@@ -126,8 +122,11 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
       let isCoverageEnabled: boolean = this.flags.enablecoverage;
       let isSkipValidation: boolean = this.flags.isvalidationtobeskipped;
       let installationkey = this.flags.installationkey;
-      let devhub_alias = this.flags.devhubalias;
       let wait_time = this.flags.waittime;
+
+
+
+      await this.hubOrg.refreshAuth();
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
@@ -181,7 +180,7 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           installationkeybypass,
           installationkey,
           null,
-          devhub_alias,
+          this.hubOrg.getUsername(),
           wait_time,
           isCoverageEnabled,
           isSkipValidation,
@@ -200,6 +199,8 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
             `git tag -a -m "${sfdx_package} Unlocked Package ${result.package_version_number}" ${tagname} HEAD`,
             { silent: false }
           );
+
+          packageMetadata.tag = tagname;
         }
 
         console.log(

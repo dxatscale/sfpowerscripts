@@ -3,9 +3,10 @@ import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
 import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import * as fs from "fs-extra";
-import DeployImpl, { DeploymentMode } from "../deploy/DeployImpl";
+import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
 import { EOL } from "os";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/src/utils/SFPLogger";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import { Stage } from "../Stage";
 
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
@@ -51,7 +52,7 @@ export default class PrepareASingleOrgImpl {
       await this.sfdx.force.package.install({
         quiet:true,
         targetusername: this.scratchOrg.username,
-        package: SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
+        package: process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE ? process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE : SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
         apexcompile: "package",
         noprompt: true,
         wait: 60,
@@ -59,7 +60,9 @@ export default class PrepareASingleOrgImpl {
 
 
       SFPLogger.isSupressLogs=true;
+      let startTime=Date.now();
       SFPLogger.log(`Installing package depedencies to the ${this.scratchOrg.alias}`,null,packageLogger);
+      console.log(`Beginning Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`)
 
       // Install Dependencies
       let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
@@ -76,36 +79,50 @@ export default class PrepareASingleOrgImpl {
         throw new Error(installationResult.message);
       }
 
+      console.log(`Successfully completed Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`)
+
       if (this.installAll) {
 
+        console.log(`Deploying all packages in the repo to  ${this.scratchOrg.alias}`);
         SFPLogger.log(`Deploying all packages to  ${this.scratchOrg.alias}`,null,packageLogger);
 
 
+        let deployProps:DeployProps = {
+          targetUsername: this.scratchOrg.username,
+          artifactDir:"artifacts",
+          waitTime:120,
+          currentStage:Stage.PREPARE,
+          packageLogger:packageLogger,
+          isTestsToBeTriggered:false,
+          skipIfPackageInstalled:false,
+          isValidateArtifactsOnHead:false,
+          deploymentMode: this.installAsSourcePackages? DeploymentMode.SOURCEPACKAGES:DeploymentMode.NORMAL
+        }
+
         //Deploy the fetched artifacts to the org
         let deployImpl: DeployImpl = new DeployImpl(
-          this.scratchOrg.username,
-          "artifacts",
-          "120",
-          "prepare",
-          packageLogger
+          deployProps
         );
-
-        deployImpl.activateApexUnitTests(false);
-        deployImpl.skipIfPackageExistsInTheOrg(true);
-        deployImpl.setIsValidateArtifactsOnHead(false);
-        if(this.installAsSourcePackages)
-         deployImpl.setDeploymentMode(DeploymentMode.SOURCEPACKAGES)
-        else
-         deployImpl.setDeploymentMode(DeploymentMode.NORMAL)
 
 
         let deploymentResult = await deployImpl.exec();
 
-        if (this.succeedOnDeploymentErrors==false && deploymentResult.failed.length > 0) {
-          throw new Error(
-            "Following Packages failed to deploy:" + deploymentResult.failed
-          );
+        if(deploymentResult.failed.length>0)
+        {
+          console.log("Following Packages failed to deploy:" + deploymentResult.failed);
+          if(this.succeedOnDeploymentErrors)
+          {
+            console.log("Cancelling any further packages to be deployed, Adding the scratchorg to the pool")
+          }
+          else
+          {
+            console.log("Deployment of packages failed, this scratch org will be deleted")
+            throw new Error(
+              "Following Packages failed to deploy:" + deploymentResult.failed
+            );
+          }
         }
+
       }
 
       return {

@@ -2,7 +2,7 @@ import { flags } from '@salesforce/command';
 import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallDataPackageImpl';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
-import InstallPackageCommand from '../../InstallPackageCommand';
+import InstallPackageCommand from '../../../../InstallPackageCommand';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult';
 const fs = require("fs");
 
@@ -18,7 +18,7 @@ export default class InstallDataPackage extends InstallPackageCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:InstallDataPackage -n mypackage -u <org>`
+    `$ sfdx sfpowerscripts:package:data:install -n mypackage -u <org>`
   ];
 
 
@@ -28,7 +28,6 @@ export default class InstallDataPackage extends InstallPackageCommand {
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
     skiponmissingartifact: flags.boolean({char: 's', description: messages.getMessage('skipOnMissingArtifactFlagDescription')}),
     skipifalreadyinstalled: flags.boolean({description: messages.getMessage("skipIfAlreadyInstalled")}),
-    subdirectory: flags.directory({description: messages.getMessage('subdirectoryFlagDescription')})
   };
 
   protected static requiresUsername = false;
@@ -40,7 +39,6 @@ export default class InstallDataPackage extends InstallPackageCommand {
       const targetOrg: string = this.flags.targetorg;
       const sfdx_package: string = this.flags.package;
       const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
-      const subdirectory: string = this.flags.subdirectory;
 
       let startTime=Date.now();
 
@@ -59,7 +57,6 @@ export default class InstallDataPackage extends InstallPackageCommand {
         sfdx_package,
         targetOrg,
         sourceDirectory,
-        subdirectory,
         packageMetadata,
         skipIfAlreadyInstalled
       )

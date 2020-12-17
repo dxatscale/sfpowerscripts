@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 4,
+        "Major": 5,
         "Minor": 0,
-        "Patch": 64
+        "Patch": 4
     },
     "instanceNameFormat": "Validates $(package) for MetadataCoverage",
     "inputs": [
@@ -39,7 +39,7 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/ValidateDXUnlockedPackage.js"
         }
     }

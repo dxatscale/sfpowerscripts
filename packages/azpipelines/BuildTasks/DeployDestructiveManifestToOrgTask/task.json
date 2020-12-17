@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 5,
+        "Major": 6,
         "Minor": 0,
-        "Patch": 62
+        "Patch": 4
     },
     "runsOn": [
         "Agent"
@@ -64,7 +64,7 @@
     ],
     "OutputVariables": [],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/DeployDestructiveManifestToOrg.js"
         }
     }

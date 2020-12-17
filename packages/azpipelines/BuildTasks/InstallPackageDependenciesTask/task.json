@@ -7,9 +7,9 @@
     "category": "Build",
     "author": "dxatscale@accenture.com",
     "version": {
-        "Major": 5,
+        "Major": 6,
         "Minor": 0,
-        "Patch": 55
+        "Patch": 4
     },
     "runsOn": [
         "Agent"
@@ -74,7 +74,7 @@
         }
     ],
     "execution": {
-        "Node": {
+        "Node10": {
             "target": "lib/InstallPackageDependencies.js"
         }
     }
