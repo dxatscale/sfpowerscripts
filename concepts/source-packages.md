@@ -47,6 +47,24 @@ sfpowerscripts source packages support the following exclusive options in additi
 * **Reconcile Profiles \(  `reconcileProfiles:<boolean>` \) :**  By default, true, automatically  reconcile a profile existing in the source package against the target org. Read more about reconcile option [here](https://github.com/Accenture/sfpowerkit/discussions/410).
 * **Apply Destructive Changes \( `destructiveChangePath:<path>)`**:Allows you to deploy a destructive manifest that need to be applied before deploying the package.
 
+```text
+  {
+    "path": "path--to--package",
+    "package": "name--of-the-package", //mandatory, when used with sfpowerscripts
+    "versionNumber": "X.Y.Z.[NEXT/BUILDNUMBER]",
+    "aliasfy": <boolean>, // Only for source packages, allows to deploy a subfolder whose name matches the alias of the org when using deploy command
+    "isOptimizedDeployment": <boolean>  // default:true for source packages, Utilizes the apex classes in the package for deployment,
+    "skipTesting":<boolean> //default:false, skip apex testing during installation of source package to a sandbox
+    "skipCoverageValidation":<boolean> //default:false, skip apex coverage validation during validation phase,
+    "destructiveChangePath:<path> // only for source, if enabled, this will be applied before the package is deployed
+    "assignPermSetsPreDeployment: ["","",]
+    "assignPermSetsPostDeployment: ["","",]
+    "preDeploymentScript":<path> //All Packages
+    "postDeploymentScript:<path> // All packages
+    "reconcileProfiles:<boolean> //default:true Source Packages 
+  }
+```
+
 ## **Can I have an entire org composed of Source Packages?**
 
 Of course, you can, you would get traceability in terms of packages in your CI/CD pipelines, and some nice functionality, however the benefits of validating dependencies and modular development would not be fully realized. There is also associated danger, as there is no locks associated with source packages, so another source package with same metadata component can overwrite a metadata component deployed by another package. For these, reasons, we always prefer unlocked packages.
