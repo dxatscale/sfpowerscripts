@@ -26,7 +26,7 @@ export default interface PackageMetadata {
     metadataCount?:number;
     sourceDir?:string;
     dependencies?:any;
-    reconcileProfiles: boolean;
+    reconcileProfiles?: boolean;
     creation_details?:{creation_time?:number,timestamp?:number}
     deployments?:{target_org:string,sub_directory?:string,installation_time?:number,timestamp?:number}[];
   }
