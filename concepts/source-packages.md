@@ -44,7 +44,7 @@ sfpowerscripts source packages support the following exclusive options in additi
 ![Source Packages with env-specific-folders](../.gitbook/assets/image%20%285%29.png)
 
 * **Skip Testing \(  `skipTesting:<boolean>`  \)** :  Allows you to deploy a source package without triggering test to an Org. Please note, this is applicable only during  deployments to sandboxes,  apex tests are mandatory \(if your package contains apex classes/triggers\) during deployment to production
-* **Reconcile Profiles \(  `preDeploymentSteps:"reconcile"` \) :** Allows you to reconcile a profile existing in the source package against the target org. Read more about reconcile option [here](https://github.com/Accenture/sfpowerkit/discussions/410).
+* **Reconcile Profiles \(  `reconcileProfiles:<boolean>` \) :**  By default, true, automatically  reconcile a profile existing in the source package against the target org. Read more about reconcile option [here](https://github.com/Accenture/sfpowerkit/discussions/410).
 * **Apply Destructive Changes \( `destructiveChangePath:<path>)`**:Allows you to deploy a destructive manifest that need to be applied before deploying the package.
 
 ## **Can I have an entire org composed of Source Packages?**
