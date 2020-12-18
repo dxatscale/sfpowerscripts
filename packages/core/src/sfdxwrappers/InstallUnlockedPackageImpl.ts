@@ -77,7 +77,8 @@ export default class InstallUnlockedPackageImpl {
         let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
           this.targetusername,
           permsets,
-          this.sourceDirectory
+          this.sourceDirectory,
+          this.packageLogger
         );
 
         assignPermissionSetsImpl.exec();
