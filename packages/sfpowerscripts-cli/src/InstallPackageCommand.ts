@@ -3,8 +3,6 @@ import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
 import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import * as rimraf from "rimraf";
-import path = require("path");
-import fs = require("fs");
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_package_command');
