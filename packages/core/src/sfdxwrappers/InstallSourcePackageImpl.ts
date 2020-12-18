@@ -13,7 +13,7 @@ import {
 import SFPLogger, {LoggerLevel} from "../utils/SFPLogger";
 
 import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
-import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
+import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
 
 import * as fs from "fs-extra";
 const path = require("path");
@@ -73,9 +73,19 @@ export default class InstallSourcePackageImpl {
       );
       let packageDirectory: string = this.getPackageDirectory(packageDescriptor);
 
-      // Apply Destructive Manifest
-      if (this.packageMetadata.isDestructiveChangesFound) {
-        await this.applyDestructiveChanges();
+      let preDeploymentScript: string = path.join(
+        this.sourceDirectory,
+        `scripts`,
+        `preDeployment`
+      );
+
+      if (fs.existsSync(preDeploymentScript)) {
+        console.log("Executing preDeployment script");
+        PackageInstallationHelpers.executeScript(
+          preDeploymentScript,
+          this.sfdx_package,
+          this.targetusername
+        );
       }
 
       if (this.forceignorePath) {
@@ -90,8 +100,26 @@ export default class InstallSourcePackageImpl {
         }
       }
 
-      SFPLogger.log("Assigning permission sets before deployment:",null,this.packageLogger, LoggerLevel.DEBUG);
-      this.applyPermsets(this.packageMetadata.assignPermSetsPreDeployment);
+      if (this.packageMetadata.assignPermSetsPreDeployment) {
+        SFPLogger.log(
+          "Assigning permission sets before deployment:",
+          null,
+          this.packageLogger,
+          LoggerLevel.DEBUG
+        );
+
+        PackageInstallationHelpers.applyPermsets(
+          this.packageMetadata.assignPermSetsPreDeployment,
+          this.targetusername,
+          this.sourceDirectory
+        );
+      }
+
+      // Apply Destructive Manifest
+      if (this.packageMetadata.isDestructiveChangesFound) {
+        await this.applyDestructiveChanges();
+      }
+
 
       //Apply Reconcile if Profiles are found
       //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata
@@ -166,9 +194,6 @@ export default class InstallSourcePackageImpl {
           );
         }
 
-        SFPLogger.log("Assigning permission sets after deployment:",null,this.packageLogger, LoggerLevel.DEBUG);
-        this.applyPermsets(this.packageMetadata.assignPermSetsPostDeployment);
-
         await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
           this.targetusername,
           this.packageMetadata,
@@ -195,6 +220,36 @@ export default class InstallSourcePackageImpl {
         target_org: this.targetusername,
       });
 
+      let postDeploymentScript: string = path.join(
+        this.sourceDirectory,
+        `scripts`,
+        `postDeployment`
+      );
+
+      if (fs.existsSync(postDeploymentScript)) {
+        console.log("Executing postDeployment script");
+        PackageInstallationHelpers.executeScript(
+          postDeploymentScript,
+          this.sfdx_package,
+          this.targetusername
+        );
+      }
+
+      if (this.packageMetadata.assignPermSetsPostDeployment) {
+        SFPLogger.log(
+          "Assigning permission sets after deployment:",
+          null,
+          this.packageLogger,
+          LoggerLevel.DEBUG
+        );
+
+        PackageInstallationHelpers.applyPermsets(
+          this.packageMetadata.assignPermSetsPostDeployment,
+          this.targetusername,
+          this.sourceDirectory
+        );
+      }
+
       return {
         result: PackageInstallationStatus.Succeeded,
         deploy_id: result.deploy_id,
@@ -212,23 +267,6 @@ export default class InstallSourcePackageImpl {
     } finally {
       // Cleanup temp directories
       tmpDirObj.removeCallback();
-    }
-  }
-
-  private applyPermsets(permsets: string[]) {
-    try {
-      if (permsets) {
-        let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-          this.targetusername,
-          permsets,
-          this.sourceDirectory,
-          this.packageLogger
-        );
-
-        assignPermissionSetsImpl.exec();
-      }
-    } catch (error) {
-      SFPLogger.log("Unable to apply permsets, skipping",null,this.packageLogger, LoggerLevel.DEBUG);
     }
   }
 
