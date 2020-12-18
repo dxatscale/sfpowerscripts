@@ -1,9 +1,13 @@
-import { sfdx } from "../../../sfpowerscripts-cli/lib/impl/pool/sfdxnode/parallel";
 import child_process = require("child_process");
+import AssignPermissionSetsImpl from "../sfdxwrappers/AssignPermissionSetsImpl";
 
 export default class PackageInstallationHelpers {
 
-  static executeScript(script: string, sfdx_package: string, targetOrg: string) {
+  static executeScript(
+    script: string,
+    sfdx_package: string,
+    targetOrg: string
+  ) {
     let cmd: string;
     if (process.platform !== 'win32') {
       cmd = `bash -e ${script} ${sfdx_package} ${targetOrg}`;
@@ -18,5 +22,19 @@ export default class PackageInstallationHelpers {
         stdio: ['ignore', 'inherit', 'inherit']
       }
     );
+  }
+
+  static applyPermsets(
+    permsets: string[],
+    targetusername: string,
+    sourceDirectory: string
+  ) {
+    let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
+      targetusername,
+      permsets,
+      sourceDirectory
+    );
+
+    assignPermissionSetsImpl.exec();
   }
 }

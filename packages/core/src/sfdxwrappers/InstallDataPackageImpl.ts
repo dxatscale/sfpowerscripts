@@ -1,5 +1,4 @@
 import PackageMetadata from "../PackageMetadata";
-import AssignPermissionSetsImpl from "../sfdxwrappers/AssignPermissionSetsImpl";
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 import fs = require("fs");
@@ -75,8 +74,19 @@ export default class InstallDataPackageImpl {
         );
       }
 
-      SFPLogger.log("Assigning permission sets before deployment:",null,this.packageLogger);
-      this.applyPermsets(this.packageMetadata.assignPermSetsPreDeployment);
+      if (this.packageMetadata.assignPermSetsPreDeployment) {
+        SFPLogger.log(
+          "Assigning permission sets before deployment:",
+          null,
+          this.packageLogger
+        );
+
+        PackageInstallationHelpers.applyPermsets(
+          this.packageMetadata.assignPermSetsPreDeployment,
+          this.targetusername,
+          this.sourceDirectory
+        );
+      }
 
 
       let command = this.buildExecCommand(packageDirectory);
@@ -110,8 +120,19 @@ export default class InstallDataPackageImpl {
         );
       }
 
-      SFPLogger.log("Assigning permission sets after deployment:",null,this.packageLogger);
-      this.applyPermsets(this.packageMetadata.assignPermSetsPostDeployment);
+      if (this.packageMetadata.assignPermSetsPostDeployment) {
+        SFPLogger.log(
+          "Assigning permission sets after deployment:",
+          null,
+          this.packageLogger
+        );
+
+        PackageInstallationHelpers.applyPermsets(
+          this.packageMetadata.assignPermSetsPostDeployment,
+          this.targetusername,
+          this.sourceDirectory
+        );
+      }
 
       await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
         this.targetusername,
@@ -139,17 +160,5 @@ export default class InstallDataPackageImpl {
 
     SFPLogger.log(`Generated Command ${command}`,null,this.packageLogger);
     return command;
-  }
-
-  private applyPermsets(permsets: string[]) {
-    if (permsets) {
-      let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-        this.targetusername,
-        permsets,
-        this.sourceDirectory
-      );
-
-      assignPermissionSetsImpl.exec();
-    }
   }
 }

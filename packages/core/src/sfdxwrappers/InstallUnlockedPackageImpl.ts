@@ -3,7 +3,6 @@ import { isNullOrUndefined } from "util";
 import { onExit } from "../utils/OnExit";
 import PackageMetadata from "../PackageMetadata";
 import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
-import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
 import SFPLogger from "../utils/SFPLogger";
 import { PackageXMLManifestHelpers } from "../manifest/PackageXMLManifestHelpers";
 import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
@@ -47,8 +46,19 @@ export default class InstallUnlockedPackageImpl {
             );
           }
 
-          SFPLogger.log("Assigning permission sets before deployment:",null,this.packageLogger);
-          this.applyPermsets(this.packageMetadata.assignPermSetsPreDeployment);
+          if (this.packageMetadata.assignPermSetsPreDeployment) {
+            SFPLogger.log(
+              "Assigning permission sets before deployment:",
+              null,
+              this.packageLogger
+            );
+
+            PackageInstallationHelpers.applyPermsets(
+              this.packageMetadata.assignPermSetsPreDeployment,
+              this.targetusername,
+              this.sourceDirectory
+            );
+          }
         }
 
 
@@ -86,8 +96,19 @@ export default class InstallUnlockedPackageImpl {
             );
           }
 
-          SFPLogger.log("Assigning permission sets after deployment:",null,this.packageLogger);
-          this.applyPermsets(this.packageMetadata.assignPermSetsPostDeployment);
+          if (this.packageMetadata.assignPermSetsPostDeployment) {
+            SFPLogger.log(
+              "Assigning permission sets after deployment:",
+              null,
+              this.packageLogger
+            );
+
+            PackageInstallationHelpers.applyPermsets(
+              this.packageMetadata.assignPermSetsPostDeployment,
+              this.targetusername,
+              this.sourceDirectory
+            )
+          }
         }
 
         return { result: PackageInstallationStatus.Succeeded}
@@ -103,22 +124,6 @@ export default class InstallUnlockedPackageImpl {
     }
   }
 
-
-  private applyPermsets(permsets: string[]) {
-    try {
-      if (permsets) {
-        let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-          this.targetusername,
-          permsets,
-          this.sourceDirectory
-        );
-
-        assignPermissionSetsImpl.exec();
-      }
-    } catch (error) {
-      SFPLogger.log("Unable to apply permsets, skipping",null,this.packageLogger);
-    }
-  }
 
   private buildPackageInstallCommand(): string {
     let command = `sfdx force:package:install --package ${this.package_version_id} -u ${this.targetusername} --noprompt`;
