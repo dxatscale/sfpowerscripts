@@ -14,6 +14,7 @@ import SFPLogger, {LoggerLevel} from "../utils/SFPLogger";
 
 import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
 import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
+import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
 
 import * as fs from "fs-extra";
 const path = require("path");
@@ -73,9 +74,19 @@ export default class InstallSourcePackageImpl {
       );
       let packageDirectory: string = this.getPackageDirectory(packageDescriptor);
 
-      // Apply Destructive Manifest
-      if (this.packageMetadata.isDestructiveChangesFound) {
-        await this.applyDestructiveChanges();
+      let preDeploymentScript: string = path.join(
+        this.sourceDirectory,
+        `scripts`,
+        `preDeployment`
+      );
+
+      if (fs.existsSync(preDeploymentScript)) {
+        console.log("Executing preDeployment script");
+        PackageInstallationHelpers.executeScript(
+          preDeploymentScript,
+          this.sfdx_package,
+          this.targetusername
+        );
       }
 
       if (this.forceignorePath) {
@@ -92,6 +103,12 @@ export default class InstallSourcePackageImpl {
 
       SFPLogger.log("Assigning permission sets before deployment:",null,this.packageLogger, LoggerLevel.DEBUG);
       this.applyPermsets(this.packageMetadata.assignPermSetsPreDeployment);
+
+      // Apply Destructive Manifest
+      if (this.packageMetadata.isDestructiveChangesFound) {
+        await this.applyDestructiveChanges();
+      }
+
 
       //Apply Reconcile if Profiles are found
       //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata
@@ -166,9 +183,6 @@ export default class InstallSourcePackageImpl {
           );
         }
 
-        SFPLogger.log("Assigning permission sets after deployment:",null,this.packageLogger, LoggerLevel.DEBUG);
-        this.applyPermsets(this.packageMetadata.assignPermSetsPostDeployment);
-
         await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
           this.targetusername,
           this.packageMetadata,
@@ -194,6 +208,24 @@ export default class InstallSourcePackageImpl {
         type: "source",
         target_org: this.targetusername,
       });
+
+      let postDeploymentScript: string = path.join(
+        this.sourceDirectory,
+        `scripts`,
+        `postDeployment`
+      );
+
+      if (fs.existsSync(postDeploymentScript)) {
+        console.log("Executing postDeployment script");
+        PackageInstallationHelpers.executeScript(
+          postDeploymentScript,
+          this.sfdx_package,
+          this.targetusername
+        );
+      }
+
+      SFPLogger.log("Assigning permission sets after deployment:",null,this.packageLogger, LoggerLevel.DEBUG);
+      this.applyPermsets(this.packageMetadata.assignPermSetsPostDeployment);
 
       return {
         result: PackageInstallationStatus.Succeeded,

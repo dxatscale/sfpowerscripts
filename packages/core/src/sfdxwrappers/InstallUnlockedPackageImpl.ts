@@ -6,6 +6,9 @@ import { PackageInstallationResult, PackageInstallationStatus } from "../package
 import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
 import SFPLogger from "../utils/SFPLogger";
 import { PackageXMLManifestHelpers } from "../manifest/PackageXMLManifestHelpers";
+import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
+import path = require("path");
+import fs = require("fs");
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -27,12 +30,27 @@ export default class InstallUnlockedPackageImpl {
         isPackageInstalled = this.checkWhetherPackageIsIntalledInOrg();
       }
 
-      if(this.sourceDirectory) {
-        SFPLogger.log("Assigning permission sets before deployment:",null,this.packageLogger);
-        this.applyPermsets(this.packageMetadata.assignPermSetsPreDeployment);
-      }
-
       if (!isPackageInstalled) {
+        if (this.sourceDirectory) {
+          let preDeploymentScript: string = path.join(
+            this.sourceDirectory,
+            `scripts`,
+            `preDeployment`
+          );
+
+          if (fs.existsSync(preDeploymentScript)) {
+            console.log("Executing preDeployment script");
+            PackageInstallationHelpers.executeScript(
+              preDeploymentScript,
+              this.packageMetadata.package_name,
+              this.targetusername
+            );
+          }
+
+          SFPLogger.log("Assigning permission sets before deployment:",null,this.packageLogger);
+          this.applyPermsets(this.packageMetadata.assignPermSetsPreDeployment);
+        }
+
 
        //Print Metadata carried in the package
        PackageXMLManifestHelpers.printMetadataToDeploy(this.packageMetadata?.payload);
@@ -53,6 +71,21 @@ export default class InstallUnlockedPackageImpl {
 
 
         if(this.sourceDirectory) {
+          let postDeploymentScript: string = path.join(
+            this.sourceDirectory,
+            `scripts`,
+            `postDeployment`
+          );
+
+          if (fs.existsSync(postDeploymentScript)) {
+            console.log("Executing postDeployment script");
+            PackageInstallationHelpers.executeScript(
+              postDeploymentScript,
+              this.packageMetadata.package_name,
+              this.targetusername
+            );
+          }
+
           SFPLogger.log("Assigning permission sets after deployment:",null,this.packageLogger);
           this.applyPermsets(this.packageMetadata.assignPermSetsPostDeployment);
         }
