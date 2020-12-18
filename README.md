@@ -4,7 +4,7 @@ An opinionated Salesforce build system  as a sfdx plugin that can be implemented
 
 ## **Features**
 
-* Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance on programs often dealing with multiple number of packages
+* Features an Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance on programs often dealing with multiple number of packages
 * Builds packages in parallel by respecting dependencies
 * Ability to selectively build changed packages in a mono repo
 * Ability to deploy only packages that are changed in repo
