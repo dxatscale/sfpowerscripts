@@ -4,7 +4,7 @@ sfpowerscripts azure pipelines extension features a service connection which wou
 
 {% tabs %}
 {% tab title="Creating a Service Connection" %}
-![Select the Salesforce Service Connection](../../../.gitbook/assets/selecting-service-connection.png)
+![Select the Salesforce Service Connection](../../../.gitbook/assets/Selecting%20Service%20Connection.PNG)
 
 1. Open the **Service connections** page from the [project settings page](https://docs.microsoft.com/en-us/azure/devops/project/navigation/go-to-service-page?view=azure-devops#open-project-settings). 
 2. Choose **+ New service connection** and select **Salesforce** type of service connection.
@@ -13,7 +13,7 @@ sfpowerscripts azure pipelines extension features a service connection which wou
 {% endtab %}
 
 {% tab title="Configuring the Service Connection" %}
-![Configure the service connection](../../../.gitbook/assets/salesforce-service-connection.png)
+![Configure the service connection](../../../.gitbook/assets/Salesforce%20Service%20Connection.PNG)
 
 
 

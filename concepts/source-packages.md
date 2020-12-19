@@ -41,7 +41,7 @@ sfpowerscripts source packages support the following exclusive options in additi
 * **Optimized Deployment  \(`isOptimizedDeployment:<boolean>)` :** Control the behavior of testing of source packages during deployment, utilize the org 's coverage or better have apex unit tests that have 75% or more coverage for each class carried in the source package. Any source packages that do not have apex classes/triggers will be deployed without triggering tests  
 * **Aliasfy \(  `aliasfy:<boolean>`  \)** :  Aliasfy  enables to deploy a subfolder in source package that matches the target org. For eg: you have a source package as listed below. During Installation, only the metadata contents of the folder that matches the alias gets deployed
 
-![Source Packages with env-specific-folders](../.gitbook/assets/image%20%285%29.png)
+![Source Packages with env-specific-folders](../.gitbook/assets/image%20%285%29%20%281%29.png)
 
 * **Skip Testing \(  `skipTesting:<boolean>`  \)** :  Allows you to deploy a source package without triggering test to an Org. Please note, this is applicable only during  deployments to sandboxes,  apex tests are mandatory \(if your package contains apex classes/triggers\) during deployment to production
 * **Reconcile Profiles \(  `reconcileProfiles:<boolean>` \) :**  By default, true, automatically  reconcile a profile existing in the source package against the target org. Read more about reconcile option [here](https://github.com/Accenture/sfpowerkit/discussions/410).

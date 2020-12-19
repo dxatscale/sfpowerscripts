@@ -7,7 +7,8 @@
 
 * [Source Packages](concepts/source-packages.md)
 * [Data Packages](concepts/data-packages.md)
-* [Orchestrator](concepts/orchestrator.md)
+* [Orchestrator](concepts/orchestrator/README.md)
+  * [Prepare](concepts/orchestrator/prepare.md)
 * [Metrics and Dashboards](concepts/metrics-and-dashboards.md)
 
 ## CLI
