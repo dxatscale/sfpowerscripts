@@ -1,0 +1,16 @@
+{
+    "packageDirectories": [
+        {
+            "path": "force-app",
+            "package": "sfpowerscripts-artifact",
+            "versionNumber": "1.0.0.NEXT",
+            "default": true
+        }
+    ],
+    "namespace": "",
+    "sfdcLoginUrl": "https://login.salesforce.com",
+    "sourceApiVersion": "50.0",
+    "packageAliases": {
+
+    }
+}

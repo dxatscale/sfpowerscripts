@@ -1,5 +1,4 @@
 import PackageMetadata from "../PackageMetadata";
-import AssignPermissionSetsImpl from "../sfdxwrappers/AssignPermissionSetsImpl";
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
 import fs = require("fs");
@@ -7,6 +6,7 @@ import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallation
 import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import SFPLogger from "../utils/SFPLogger";
+import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
 const path = require("path");
 
 export default class InstallDataPackageImpl {
@@ -14,7 +14,6 @@ export default class InstallDataPackageImpl {
     private sfdx_package: string,
     private targetusername: string,
     private sourceDirectory: string,
-    private subDirectory:string,
     private packageMetadata: PackageMetadata,
     private skip_if_package_installed: boolean,
     private isPackageCheckHandledByCaller?:boolean,
@@ -28,10 +27,10 @@ export default class InstallDataPackageImpl {
     try {
       let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(this.sourceDirectory, this.sfdx_package);
 
-      if (this.subDirectory) {
+      if (packageDescriptor.aliasfy) {
         packageDirectory = path.join(
           packageDescriptor["path"],
-          this.subDirectory
+          this.targetusername
         );
       } else {
         packageDirectory = path.join(
@@ -47,7 +46,12 @@ export default class InstallDataPackageImpl {
 
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
-        isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(this.targetusername,this.packageMetadata,this.subDirectory, this.isPackageCheckHandledByCaller);
+        isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+          this.targetusername,
+          this.packageMetadata,
+          packageDescriptor.aliasfy ? this.targetusername : null,
+          this.isPackageCheckHandledByCaller
+        );
         if(isPackageInstalled)
           {
            SFPLogger.log("Skipping Package Installation",null,this.packageLogger)
@@ -55,21 +59,35 @@ export default class InstallDataPackageImpl {
           }
       }
 
+      let preDeploymentScript: string = path.join(
+        this.sourceDirectory,
+        `scripts`,
+        `preDeployment`
+      );
 
-
-      if (
-        new RegExp("AssignPermissionSets", "i").test(this.packageMetadata.preDeploymentSteps?.toString()) &&
-        this.packageMetadata.permissionSetsToAssign
-      ) {
-        let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-          this.targetusername,
-          this.packageMetadata.permissionSetsToAssign,
-          this.sourceDirectory
-        )
-
-        SFPLogger.log("Executing pre-deployment step: AssignPermissionSets",null,this.packageLogger);
-        assignPermissionSetsImpl.exec();
+      if (fs.existsSync(preDeploymentScript)) {
+        console.log("Executing preDeployment script");
+        PackageInstallationHelpers.executeScript(
+          preDeploymentScript,
+          this.sfdx_package,
+          this.targetusername
+        );
       }
+
+      if (this.packageMetadata.assignPermSetsPreDeployment) {
+        SFPLogger.log(
+          "Assigning permission sets before deployment:",
+          null,
+          this.packageLogger
+        );
+
+        PackageInstallationHelpers.applyPermsets(
+          this.packageMetadata.assignPermSetsPreDeployment,
+          this.targetusername,
+          this.sourceDirectory
+        );
+      }
+
 
       let command = this.buildExecCommand(packageDirectory);
       let child = child_process.exec(
@@ -87,8 +105,41 @@ export default class InstallDataPackageImpl {
 
       await onExit(child);
 
+      let postDeploymentScript: string = path.join(
+        this.sourceDirectory,
+        `scripts`,
+        `postDeployment`
+      );
 
-      await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(this.targetusername,this.packageMetadata,this.subDirectory,this.isPackageCheckHandledByCaller);
+      if (fs.existsSync(postDeploymentScript)) {
+        console.log("Executing postDeployment script");
+        PackageInstallationHelpers.executeScript(
+          postDeploymentScript,
+          this.sfdx_package,
+          this.targetusername
+        );
+      }
+
+      if (this.packageMetadata.assignPermSetsPostDeployment) {
+        SFPLogger.log(
+          "Assigning permission sets after deployment:",
+          null,
+          this.packageLogger
+        );
+
+        PackageInstallationHelpers.applyPermsets(
+          this.packageMetadata.assignPermSetsPostDeployment,
+          this.targetusername,
+          this.sourceDirectory
+        );
+      }
+
+      await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
+        this.targetusername,
+        this.packageMetadata,
+        packageDescriptor.aliasfy ? this.targetusername : null,
+        this.isPackageCheckHandledByCaller
+      );
 
       return {result: PackageInstallationStatus.Succeeded};
 

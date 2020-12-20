@@ -64,8 +64,7 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
         );
         process.exit(0);
       }
-    } else
-      this.artifactFilePaths = artifacts[0];
+    } else this.artifactFilePaths = artifacts[0];
   }
 
   /**

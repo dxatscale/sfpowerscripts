@@ -1,6 +1,6 @@
 import IncrementProjectBuildNumberImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl';
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
+import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import { isNullOrUndefined } from 'util';
 const fs = require("fs");
@@ -18,7 +18,7 @@ export default class IncrementBuildNumber extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-  `$ sfdx sfpowerscripts:package:incrementBuildNumber --segment BuildNumber -n packagename -c\n`,
+  `$ sfdx sfpowerscripts:package:version:increment --segment BuildNumber -n packagename -c\n`,
   `Output variable:`,
   `sfpowerscripts_incremented_project_version`,
   `<refname>_sfpowerscripts_incremented_project_version`

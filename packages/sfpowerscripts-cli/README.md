@@ -54,12 +54,16 @@ sfpowerscripts:orchestrator commands allow controlling attributes of a package i
     "versionNumber": "X.Y.Z.[NEXT/BUILDNUMBER]",
     "type":"data" //Mention the type of package, only to be used for source and data packages
     "aliasfy": <boolean>, // Only for source packages, allows to deploy a subfolder whose name matches the alias of the org when using deploy command
-    "skipDeployOnOrgs": "<string>,<string>", // Comma seperated values of org's to mention this package should not be deployed in this org
+    "skipDeployOnOrgs": ["org1","org2"], // Comma seperated values of org's to mention this package should not be deployed in this org
     "isOptimizedDeployment": <boolean>  // default:true for source packages, Utilizes the apex classes in the package for deployment,
-    "skipTesting":<boolean> //default:false, skip apex testing during validation phase
+    "skipTesting":<boolean> //default:false, skip apex testing installation of source package
     "skipCoverageValidation":<boolean> //default:false, skip apex coverage validation during validation phase,
-    "preDeploymentSteps":"<string>,<string>" //Available values reconcile,applyDestructiveManifest
-    "postDeploymentSteps":"<string>,<string>" //Available values reconcile,applyDestructiveManifest
+    "destructiveChangePath:<path> // only for source, if enabled, this will be applied before the package is deployed
+    "assignPermSetsPreDeployment: ["","",]
+    "assignPermSetsPostDeployment: ["","",]
+    "preDeploymentScript":<path> //All Packages
+    "postDeploymentScript:<path> // All packages
+    "reconcileProfiles:<boolean> //default:true Source Packages
     "ignoreOnStage": [ //Skip this package during the below orchestrator commands
          "prepare",
           "validate"
@@ -87,7 +91,7 @@ Many of the commands listed below will output variables which may be consumed as
 
 Eg.
 ```
-  $ sfdx sfpowerscripts:package:incrementBuildNumber -n <mypackage>
+  $ sfdx sfpowerscripts:package:version:increment -n <mypackage>
 
     ...
 
@@ -148,11 +152,11 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 	 - [`sfdx sfpowerscripts:package:data:create`](#sfdx-sfpowerscriptspackagedatacreate)
 	 - [`sfdx sfpowerscripts:package:data:install`](#sfdx-sfpowerscriptspackagedatainstall)
 	 - [`sfdx sfpowerscripts:package:delta:create`](#sfdx-sfpowerscriptspackagedeltacreate)
-	 - [`sfdx sfpowerscripts:package:incrementBuildNumber`](#sfdx-sfpowerscriptspackageincrementbuildnumber)
 	 - [`sfdx sfpowerscripts:package:source:create`](#sfdx-sfpowerscriptspackagesourcecreate)
 	 - [`sfdx sfpowerscripts:package:source:install`](#sfdx-sfpowerscriptspackagesourceinstall)
 	 - [`sfdx sfpowerscripts:package:unlocked:create`](#sfdx-sfpowerscriptspackageunlockedcreate)
 	 - [`sfdx sfpowerscripts:package:unlocked:install`](#sfdx-sfpowerscriptspackageunlockedinstall)
+   - [`sfdx sfpowerscripts:package:version:increment`](#sfdx-sfpowerscriptspackageversionincrement)
 	 - [`sfdx sfpowerscripts:source:deploy`](#sfdx-sfpowerscriptssourcedeploy)
 	 - [`sfdx sfpowerscripts:source:deployDestructiveManifest`](#sfdx-sfpowerscriptssourcedeploydestructivemanifest-)
 
@@ -232,7 +236,7 @@ EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:prepare -t CI_1  -v <devhub>
 ```
 
-_See code: [lib/commands/sfpowerscripts/orchestrator/prepare.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/orchestrator/prepare.js)_
+_See code: [commands/sfpowerscripts/orchestrator/prepare.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/prepare.ts)_
 
 ## `sfdx sfpowerscripts:orchestrator:validate`
 
@@ -282,7 +286,7 @@ EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -u <devHubUsername> -i <clientId> -f <jwt_file>
 ```
 
-_See code: [lib/commands/sfpowerscripts/orchestrator/validate.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/orchestrator/validate.js)_
+_See code: [commands/sfpowerscripts/orchestrator/validate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/validate.ts)_
 ## `sfdx sfpowerscripts:orchestrator:quickbuild`
 
 Build packages (unlocked/source/data) in a repo in parallel, without validating depenencies or coverage in the case of unlocked packages.
@@ -345,7 +349,7 @@ OPTIONS
                                                                                     to finish in minutes
 ```
 
-_See code: [lib/commands/sfpowerscripts/orchestrator/quickbuild.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/orchestrator/quickbuild.js)_
+_See code: [commands/sfpowerscripts/orchestrator/quickbuild.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/quickbuild.ts)_
 
 
 ## `sfdx sfpowerscripts:orchestrator:build`
@@ -408,7 +412,7 @@ OPTIONS
                                                                                     to finish in minutes
 ```
 
-_See code: [lib/commands/sfpowerscripts/orchestrator/build.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/orchestrator/build.js)_
+_See code: [commands/sfpowerscripts/orchestrator/build.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/build.ts)_
 
 ## `sfdx sfpowerscripts:orchestrator:deploy`
 
@@ -451,7 +455,7 @@ EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:deploy -u <username>
 ```
 
-_See code: [lib/commands/sfpowerscripts/orchestrator/deploy.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/orchestrator/deploy.js)_
+_See code: [commands/sfpowerscripts/orchestrator/deploy.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/deploy.ts)_
 
 
 ## `sfdx sfpowerscripts:orchestrator:promote`
@@ -479,7 +483,7 @@ EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:promote -d path/to/artifacts -v <org>
 ```
 
-_See code: [lib/commands/sfpowerscripts/orchestrator/promote.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/orchestrator/promote.js)_
+_See code: [commands/sfpowerscripts/orchestrator/promote.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/promote.ts)_
 
 ## `sfdx sfpowerscripts:orchestrator:publish`
 
@@ -514,7 +518,7 @@ EXAMPLES
   $ sfdx sfpowerscripts:orchestrator:publish -p -v HubOrg
 ```
 
-_See code: [lib/commands/sfpowerscripts/orchestrator/publish.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/orchestrator/publish.js)_
+_See code: [commands/sfpowerscripts/orchestrator/publish.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/publish.ts)_
 
 ## `sfdx sfpowerscripts:changelog:generate`
 
@@ -568,7 +572,7 @@ EXAMPLE
   <branchName>
 ```
 
-_See code: [lib/commands/sfpowerscripts/changelog/generate.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/changelog/generate.js)_
+_See code: [commands/sfpowerscripts/changelog/generate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/changelog/generate.ts)_
 
 
 
@@ -631,7 +635,7 @@ EXAMPLES
   <refname>_sfpowerscripts_pmd_output_path
 ```
 
-_See code: [lib/commands/sfpowerscripts/analyze/pmd.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/analyze/pmd.js)_
+_See code: [commands/sfpowerscripts/analyze/pmd.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/analyze/pmd.ts)_
 
 ## `sfdx sfpowerscripts:apextests:trigger`
 
@@ -689,7 +693,7 @@ EXAMPLES
   $ sfdx sfpowerscripts:apextests:trigger -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c
 ```
 
-_See code: [lib/commands/sfpowerscripts/apextests/trigger.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/apextests/trigger.js)_
+_See code: [commands/sfpowerscripts/apextests/trigger.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/apextests/trigger.ts)_
 
 ## `sfdx sfpowerscripts:apextests:validate`
 
@@ -720,7 +724,7 @@ EXAMPLE
   $ sfdx sfpowerscripts:apextests:validate -u scratchorg -t 80
 ```
 
-_See code: [lib/commands/sfpowerscripts/apextests/validate.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/apextests/validate.js)_
+_See code: [commands/sfpowerscripts/apextests/validate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/apextests/validate.ts)_
 
 
 ## `sfdx sfpowerscripts:package:data:create`
@@ -770,7 +774,7 @@ EXAMPLES
   <refname>_sfpowerscripts_package_version_number
 ```
 
-_See code: [lib/commands/sfpowerscripts/package/data/create.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/package/data/create.js)_
+_See code: [commands/sfpowerscripts/package/data/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/data/create.ts)_
 
 
 ## `sfdx sfpowerscripts:package:data:install`
@@ -812,7 +816,7 @@ EXAMPLE
   $ sfdx sfpowerscripts:package:data:install -n mypackage -u <org>
 ```
 
-_See code: [lib/commands/sfpowerscripts/package/data/install.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/package/data/install.js)_
+_See code: [commands/sfpowerscripts/package/data/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/data/install.ts)_
 
 ## `sfdx sfpowerscripts:package:delta:create`
 
@@ -869,52 +873,8 @@ EXAMPLES
   <refname>_sfpowerscripts_artifact_directory
 ```
 
-_See code: [lib/commands/sfpowerscripts/package/delta/create.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/package/delta/create.js)_
+_See code: [commands/sfpowerscripts/package/delta/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/delta/create.ts)_
 
-## `sfdx sfpowerscripts:package:incrementBuildNumber`
-
-Increment the selected version counter by one and optionally commit changes to sfdx-project.json. This command does not push changes to the source repository
-
-```
-Increment the selected version counter by one and optionally commit changes to sfdx-project.json. This command does not push changes to the source repository
-
-USAGE
-  $ sfdx sfpowerscripts:package:incrementBuildNumber [--segment <string>] [-a -r <string>] [-n <string>] [-d <string>] 
-  [-c] [--refname <string>] 
-
-OPTIONS
-  -a, --appendbuildnumber
-      Set the build segment of the version number to the build number rather than incremenenting
-
-  -c, --commitchanges
-      Mark this if you want to commit the modified sfdx-project json, Please note this will not push to the repo only 
-      commits in the local checked out repo, You would need to have a push to the repo at the end of the packaging task if 
-      everything is successfull
-
-  -d, --projectdir=projectdir
-      The directory should contain a sfdx-project.json for this command to succeed
-
-  -n, --package=package
-      The name of the package of which the version need to be incremented,If not specified the default package is utilized
-
-  -r, --runnumber=runnumber
-      The build number of the CI pipeline, usually available through an environment variable
-
-  --refname=refname
-      Reference name to be prefixed to output variables
-
-  --segment=Major|Minor|Patch|BuildNumber
-      [default: BuildNumber] Select the segment of the version
-
-EXAMPLES
-  $ sfdx sfpowerscripts:package:incrementBuildNumber --segment BuildNumber -n packagename -c
-
-  Output variable:
-  sfpowerscripts_incremented_project_version
-  <refname>_sfpowerscripts_incremented_project_version
-```
-
-_See code: [lib/commands/sfpowerscripts/package/incrementBuildNumber.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/package/incrementBuildNumber.js)_
 
 ## `sfdx sfpowerscripts:package:source:create`
 
@@ -965,7 +925,7 @@ EXAMPLES
   <refname>_sfpowerscripts_package_version_number
 ```
 
-_See code: [lib/commands/sfpowerscripts/package/source/create.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/package/source/create.js)_
+_See code: [commands/sfpowerscripts/package/source/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/source/create.ts)_
 
 ## `sfdx sfpowerscripts:package:source:install`
 
@@ -1021,7 +981,7 @@ EXAMPLE
   $ sfdx sfpowerscripts:package:source:install -n mypackage -u <org>
 ```
 
-_See code: [lib/commands/sfpowerscripts/package/source/install.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/package/source/install.js)_
+_See code: [commands/sfpowerscripts/package/source/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/source/install.ts)_
 
 ## `sfdx sfpowerscripts:package:unlocked:create`
 
@@ -1112,7 +1072,7 @@ EXAMPLES
   <refname>_sfpowerscripts_package_version_number
 ```
 
-_See code: [lib/commands/sfpowerscripts/package/unlocked/create.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/package/unlocked/create.js)_
+_See code: [commands/sfpowerscripts/package/unlocked/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/unlocked/create.ts)_
 
 ## `sfdx sfpowerscripts:package:unlocked:install`
 
@@ -1178,7 +1138,53 @@ EXAMPLE
   $ sfdx sfpowerscripts:package:unlocked:install -n packagename -u sandboxalias -i
 ```
 
-_See code: [lib/commands/sfpowerscripts/package/unlocked/install.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/package/unlocked/install.js)_
+_See code: [commands/sfpowerscripts/package/unlocked/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/unlocked/install.ts)_
+
+
+## `sfdx sfpowerscripts:package:version:increment`
+
+Increment the selected version counter by one and optionally commit changes to sfdx-project.json. This command does not push changes to the source repository
+
+```
+Increment the selected version counter by one and optionally commit changes to sfdx-project.json. This command does not push changes to the source repository
+
+USAGE
+  $ sfdx sfpowerscripts:package:version:increment [--segment <string>] [-a -r <string>] [-n <string>] [-d <string>] 
+  [-c] [--refname <string>] 
+
+OPTIONS
+  -a, --appendbuildnumber
+      Set the build segment of the version number to the build number rather than incremenenting
+
+  -c, --commitchanges
+      Mark this if you want to commit the modified sfdx-project json, Please note this will not push to the repo only 
+      commits in the local checked out repo, You would need to have a push to the repo at the end of the packaging task if 
+      everything is successfull
+
+  -d, --projectdir=projectdir
+      The directory should contain a sfdx-project.json for this command to succeed
+
+  -n, --package=package
+      The name of the package of which the version need to be incremented,If not specified the default package is utilized
+
+  -r, --runnumber=runnumber
+      The build number of the CI pipeline, usually available through an environment variable
+
+  --refname=refname
+      Reference name to be prefixed to output variables
+
+  --segment=Major|Minor|Patch|BuildNumber
+      [default: BuildNumber] Select the segment of the version
+
+EXAMPLES
+  $ sfdx sfpowerscripts:package:version:increment --segment BuildNumber -n packagename -c
+
+  Output variable:
+  sfpowerscripts_incremented_project_version
+  <refname>_sfpowerscripts_incremented_project_version
+```
+
+_See code: [commands/sfpowerscripts/package/version/increment.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/version/increment.ts)_
 
 ## `sfdx sfpowerscripts:pool:delete`
 
@@ -1215,7 +1221,7 @@ EXAMPLES
   $ sfdx sfpowerscripts:pool:delete -t core -v devhub
 ```
 
-_See code: [lib/commands/sfpowerscripts/pool/delete.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/pool/delete.js)_
+_See code: [commands/sfpowerscripts/pool/delete.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/delete.ts)_
 
 ## `sfdx sfpowerscripts:pool:fetch`
 
@@ -1245,7 +1251,7 @@ EXAMPLES
   $ sfdx sfpowerkit:pool:fetch -t core -v devhub -s testuser@test.com
 ```
 
-_See code: [lib/commands/sfpowerscripts/pool/fetch.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/pool/fetch.js)_
+_See code: [commands/sfpowerscripts/pool/fetch.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/fetch.ts)_
 
 ## `sfdx sfpowerscripts:pool:list`
 
@@ -1280,7 +1286,7 @@ EXAMPLES
   $ sfdx sfpowerscripts:pool:list -t core -v devhub -m -a
 ```
 
-_See code: [lib/commands/sfpowerscripts/pool/list.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/pool/list.js)_
+_See code: [commands/sfpowerscripts/pool/list.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/list.ts)_
 
 ## `sfdx sfpowerscripts:source:deploy`
 
@@ -1342,7 +1348,7 @@ EXAMPLES
   <refname_sfpowerkit_deploysource_id
 ```
 
-_See code: [lib/commands/sfpowerscripts/source/deploy.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/source/deploy.js)_
+_See code: [commands/sfpowerscripts/source/deploy.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/source/deploy.ts)_
 
 ## `sfdx sfpowerscripts:source:deployDestructiveManifest`
 
@@ -1382,5 +1388,5 @@ EXAMPLES
   </Package>"
 ```
 
-_See code: [lib/commands/sfpowerscripts/source/deployDestructiveManifest.js](https://github.com/Accenture/sfpowerscripts/blob/v1.4.5/lib/commands/sfpowerscripts/source/deployDestructiveManifest.js)_
+_See code: [commands/sfpowerscripts/source/deployDestructiveManifest.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/source/deployDestructiveManifest.ts)_
 <!-- commandsstop -->

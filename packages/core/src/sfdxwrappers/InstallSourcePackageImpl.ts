@@ -13,7 +13,7 @@ import {
 import SFPLogger, {LoggerLevel} from "../utils/SFPLogger";
 
 import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
-import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
+import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
 
 import * as fs from "fs-extra";
 const path = require("path");
@@ -27,7 +27,6 @@ export default class InstallSourcePackageImpl {
     private sfdx_package: string,
     private targetusername: string,
     private sourceDirectory: string,
-    private subdirectory: string,
     private options: any,
     private wait_time: string,
     private skip_if_package_installed: boolean,
@@ -38,12 +37,24 @@ export default class InstallSourcePackageImpl {
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
+    let packageDescriptor;
+    if (this.sfdx_package) {
+      packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+        this.sourceDirectory,
+        this.sfdx_package
+      );
+    } else {
+      packageDescriptor = ManifestHelpers.getDefaultSFDXPackageDescriptor(
+        this.sourceDirectory
+      );
+    }
+
     let isPackageInstalled = false;
     if (this.skip_if_package_installed) {
       isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
         this.targetusername,
         this.packageMetadata,
-        this.subdirectory,
+        packageDescriptor.aliasfy ? this.targetusername : null,
         this.isPackageCheckHandledByCaller
       );
       if (isPackageInstalled) {
@@ -60,11 +71,21 @@ export default class InstallSourcePackageImpl {
       this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(
         this.packageMetadata
       );
-      let packageDirectory: string = this.getPackageDirectory();
+      let packageDirectory: string = this.getPackageDirectory(packageDescriptor);
 
-      // Apply Destructive Manifest
-      if (this.packageMetadata.isDestructiveChangesFound) {
-        await this.applyDestructiveChanges();
+      let preDeploymentScript: string = path.join(
+        this.sourceDirectory,
+        `scripts`,
+        `preDeployment`
+      );
+
+      if (fs.existsSync(preDeploymentScript)) {
+        console.log("Executing preDeployment script");
+        PackageInstallationHelpers.executeScript(
+          preDeploymentScript,
+          this.sfdx_package,
+          this.targetusername
+        );
       }
 
       if (this.forceignorePath) {
@@ -79,6 +100,27 @@ export default class InstallSourcePackageImpl {
         }
       }
 
+      if (this.packageMetadata.assignPermSetsPreDeployment) {
+        SFPLogger.log(
+          "Assigning permission sets before deployment:",
+          null,
+          this.packageLogger,
+          LoggerLevel.DEBUG
+        );
+
+        PackageInstallationHelpers.applyPermsets(
+          this.packageMetadata.assignPermSetsPreDeployment,
+          this.targetusername,
+          this.sourceDirectory
+        );
+      }
+
+      // Apply Destructive Manifest
+      if (this.packageMetadata.isDestructiveChangesFound) {
+        await this.applyDestructiveChanges();
+      }
+
+
       //Apply Reconcile if Profiles are found
       //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata
       let isReconcileActivated = false,
@@ -86,7 +128,7 @@ export default class InstallSourcePackageImpl {
       let profileFolders;
       if (
         this.packageMetadata.isProfilesFound &&
-        this.packageMetadata.preDeploymentSteps?.includes("reconcile")
+        this.packageMetadata.reconcileProfiles !== false
       ) {
         ({
           profileFolders,
@@ -152,12 +194,10 @@ export default class InstallSourcePackageImpl {
           );
         }
 
-        this.applyPermsets();
-
         await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
           this.targetusername,
           this.packageMetadata,
-          this.subdirectory,
+          packageDescriptor.aliasfy ? this.targetusername : null,
           this.isPackageCheckHandledByCaller
         );
       } else if (result.result === false) {
@@ -180,6 +220,36 @@ export default class InstallSourcePackageImpl {
         target_org: this.targetusername,
       });
 
+      let postDeploymentScript: string = path.join(
+        this.sourceDirectory,
+        `scripts`,
+        `postDeployment`
+      );
+
+      if (fs.existsSync(postDeploymentScript)) {
+        console.log("Executing postDeployment script");
+        PackageInstallationHelpers.executeScript(
+          postDeploymentScript,
+          this.sfdx_package,
+          this.targetusername
+        );
+      }
+
+      if (this.packageMetadata.assignPermSetsPostDeployment) {
+        SFPLogger.log(
+          "Assigning permission sets after deployment:",
+          null,
+          this.packageLogger,
+          LoggerLevel.DEBUG
+        );
+
+        PackageInstallationHelpers.applyPermsets(
+          this.packageMetadata.assignPermSetsPostDeployment,
+          this.targetusername,
+          this.sourceDirectory
+        );
+      }
+
       return {
         result: PackageInstallationStatus.Succeeded,
         deploy_id: result.deploy_id,
@@ -197,28 +267,6 @@ export default class InstallSourcePackageImpl {
     } finally {
       // Cleanup temp directories
       tmpDirObj.removeCallback();
-    }
-  }
-
-  private applyPermsets() {
-    try {
-      if (
-        new RegExp("AssignPermissionSets", "i").test(
-          this.packageMetadata.postDeploymentSteps?.toString()
-        ) &&
-        this.packageMetadata.permissionSetsToAssign
-      ) {
-        let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-          this.targetusername,
-          this.packageMetadata.permissionSetsToAssign,
-          this.sourceDirectory
-        );
-
-        SFPLogger.log("Executing post-deployment step: AssignPermissionSets",null,this.packageLogger, LoggerLevel.DEBUG);
-        assignPermissionSetsImpl.exec();
-      }
-    } catch (error) {
-      SFPLogger.log("Unable to apply permsets, skipping",null,this.packageLogger, LoggerLevel.DEBUG);
     }
   }
 
@@ -243,24 +291,13 @@ export default class InstallSourcePackageImpl {
     }
   }
 
-  private getPackageDirectory() {
-    let packageDescriptor;
-    if (this.sfdx_package) {
-      packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
-        this.sourceDirectory,
-        this.sfdx_package
-      );
-    } else {
-      packageDescriptor = ManifestHelpers.getDefaultSFDXPackageDescriptor(
-        this.sourceDirectory
-      );
-    }
-
+  private getPackageDirectory(packageDescriptor: any): string {
     let packageDirectory: string;
-    if (this.subdirectory) {
+
+    if (packageDescriptor.aliasfy) {
       packageDirectory = path.join(
         packageDescriptor["path"],
-        this.subdirectory
+        this.targetusername
       );
     } else {
       packageDirectory = path.join(packageDescriptor["path"]);

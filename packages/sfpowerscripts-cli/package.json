@@ -1,14 +1,14 @@
 {
   "name": "@dxatscale/sfpowerscripts",
   "description": "Simple wrappers around sfdx commands to help set up CI/CD quickly",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "author": "dxatscale",
   "bin": {
     "readVars": "./scripts/readVars.sh"
   },
   "bugs": "https://github.com/Accenture/sfpowerscripts/issues",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^5.0.1",
+    "@dxatscale/sfpowerscripts.core": "^6.0.0",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",
@@ -74,6 +74,9 @@
       },
       "sfpowerscripts:package:source": {
         "description": "Commands to create and install sfpowerscripts source packages"
+      },
+      "sfpowerscripts:package:version": {
+        "description": "Commands to increment version numbers of a package"
       },
       "sfpowerscripts:analyze": {
         "description": "Analyze your projects using static analysis tools such as PMD"

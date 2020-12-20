@@ -54,11 +54,13 @@ export default class DeployImpl {
     deployed: string[];
     skipped: string[];
     failed: string[];
+    testFailure: string
   }> {
     let deployed: string[] = [];
     let skipped: string[] = [];
     let failed: string[] = [];
 
+    let testFailure: string;
     try {
       let queue: any[] = this.getPackagesToDeploy();
 
@@ -92,8 +94,8 @@ export default class DeployImpl {
         if (this.props.logsGroupSymbol?.[0])
           SFPLogger.log(
             this.props.logsGroupSymbol[0],
-            "Installing",
-            queue[i].package,
+            `Installing ${queue[i].package}`,
+            this.props.packageLogger,
             LoggerLevel.INFO
           );
 
@@ -125,7 +127,6 @@ export default class DeployImpl {
           artifacts[0].sourceDirectoryPath,
           packageMetadata,
           queue[i].skipTesting,
-          queue[i].aliasfy,
           this.props.waitTime.toString()
         );
 
@@ -160,8 +161,11 @@ export default class DeployImpl {
               );
 
               if (!testResult.result) {
+                testFailure = queue[i].package;
+
                 if (i !== queue.length - 1)
                   failed = queue.slice(i + 1).map((pkg) => pkg.package);
+
                 throw new Error(testResult.message);
               } else SFPLogger.log(testResult.message, null, this.props.packageLogger, LoggerLevel.INFO);
             } else {
@@ -183,6 +187,7 @@ export default class DeployImpl {
         deployed: deployed,
         skipped: skipped,
         failed: failed,
+        testFailure: testFailure
       };
     } catch (err) {
       SFPLogger.log(err, null, this.props.packageLogger, LoggerLevel.INFO);
@@ -191,6 +196,7 @@ export default class DeployImpl {
         deployed: deployed,
         skipped: skipped,
         failed: failed,
+        testFailure: testFailure
       };
     }
   }
@@ -205,19 +211,17 @@ export default class DeployImpl {
     sourceDirectoryPath: string,
     packageMetadata: PackageMetadata,
     skipTesting: boolean,
-    aliasfy: boolean,
     wait_time: string
   ): Promise<PackageInstallationResult> {
     let packageInstallationResult: PackageInstallationResult;
 
     if (this.props.deploymentMode==DeploymentMode.NORMAL) {
-      let skip_if_package_installed: boolean = true;
 
       if (packageType === "unlocked") {
         packageInstallationResult = await this.installUnlockedPackage(
           targetUsername,
           packageMetadata,
-          skip_if_package_installed,
+          this.props.skipIfPackageInstalled,
           wait_time,
           sourceDirectoryPath
         );
@@ -234,8 +238,7 @@ export default class DeployImpl {
           sourceDirectoryPath,
           packageMetadata,
           options,
-          null,
-          skip_if_package_installed,
+          this.props.skipIfPackageInstalled,
           wait_time
         );
       } else if (packageType === "data") {
@@ -243,7 +246,7 @@ export default class DeployImpl {
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
-          skip_if_package_installed,
+          this.props.skipIfPackageInstalled,
           packageMetadata
         );
       } else {
@@ -257,15 +260,12 @@ export default class DeployImpl {
           skipTesting: true,
         };
 
-        let subdirectory: string = aliasfy ? targetUsername : null;
-
         packageInstallationResult = await this.installSourcePackage(
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
           packageMetadata,
           options,
-          subdirectory,
           this.props.skipIfPackageInstalled,
           wait_time
         );
@@ -319,7 +319,6 @@ export default class DeployImpl {
     sourceDirectoryPath: string,
     packageMetadata: PackageMetadata,
     options: any,
-    subdirectory: string,
     skip_if_package_installed: boolean,
     wait_time: string
   ): Promise<PackageInstallationResult> {
@@ -327,7 +326,6 @@ export default class DeployImpl {
       sfdx_package,
       targetUsername,
       sourceDirectoryPath,
-      subdirectory,
       options,
       wait_time,
       skip_if_package_installed,
@@ -351,7 +349,6 @@ export default class DeployImpl {
       sfdx_package,
       targetUsername,
       sourceDirectoryPath,
-      null,
       packageMetadata,
       skip_if_package_installed,
       false,
@@ -398,21 +395,12 @@ export default class DeployImpl {
     packageDescriptor: any,
     targetUsername: string
   ): boolean {
-    let skipDeployOnOrgs = packageDescriptor.skipDeployOnOrgs;
+    let skipDeployOnOrgs: string[] = packageDescriptor.skipDeployOnOrgs;
     if (skipDeployOnOrgs) {
-      if (typeof skipDeployOnOrgs !== "string")
-        throw new Error(
-          `Expected comma-separated string for "skipDeployOnOrgs". Received ${JSON.stringify(
-            packageDescriptor,
-            null,
-            4
-          )}`
-        );
+      if (!(skipDeployOnOrgs instanceof Array))
+        throw new Error(`Property 'skipDeployOnOrgs' must be of type Array`);
       else
-        return skipDeployOnOrgs
-          .split(",")
-          .map((org) => org.trim())
-          .includes(targetUsername);
+        return skipDeployOnOrgs.includes(targetUsername);
     } else return false;
   }
 
@@ -421,11 +409,9 @@ export default class DeployImpl {
   private isOptimizedDeploymentForSourcePackages(
     sfdx_package:string
   ): boolean {
+    let pkgDescriptor = ManifestHelpers.getSFDXPackageDescriptor(null, sfdx_package);
 
-    let pkgDescriptor = ManifestHelpers.getSFDXPackageManifest(null)[
-      "packageDirectories"
-    ][sfdx_package];
-    if(pkgDescriptor["isOptimizedDeployment"]==null)
+    if(pkgDescriptor["isOptimizedDeployment"] == null)
       return true;
     else
       return pkgDescriptor["isOptimizedDeployment"];

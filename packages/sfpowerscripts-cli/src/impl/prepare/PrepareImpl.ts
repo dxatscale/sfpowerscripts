@@ -66,9 +66,10 @@ export default class PrepareImpl {
 
 
   public async poolScratchOrgs(): Promise< {
-    totalallocated:number
-    success: number;
-    failed: number;
+    totalallocated:number,
+    success: number,
+    failed: number,
+    errorCode?: string
   }> {
     await ScratchOrgUtils.checkForNewVersionCompatible(this.hubOrg);
     let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
@@ -446,7 +447,7 @@ export default class PrepareImpl {
     artifactDirectory: string,
     scriptPath: string
   ) {
- 
+
     let cmd: string;
     if (process.platform !== "win32") {
       cmd = `bash -e ${scriptPath} ${packageName} ${artifactDirectory}`;

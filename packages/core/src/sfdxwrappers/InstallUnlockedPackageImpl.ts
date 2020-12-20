@@ -3,9 +3,11 @@ import { isNullOrUndefined } from "util";
 import { onExit } from "../utils/OnExit";
 import PackageMetadata from "../PackageMetadata";
 import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
-import AssignPermissionSetsImpl from "./AssignPermissionSetsImpl";
 import SFPLogger from "../utils/SFPLogger";
 import { PackageXMLManifestHelpers } from "../manifest/PackageXMLManifestHelpers";
+import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
+import path = require("path");
+import fs = require("fs");
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -28,6 +30,37 @@ export default class InstallUnlockedPackageImpl {
       }
 
       if (!isPackageInstalled) {
+        if (this.sourceDirectory) {
+          let preDeploymentScript: string = path.join(
+            this.sourceDirectory,
+            `scripts`,
+            `preDeployment`
+          );
+
+          if (fs.existsSync(preDeploymentScript)) {
+            console.log("Executing preDeployment script");
+            PackageInstallationHelpers.executeScript(
+              preDeploymentScript,
+              this.packageMetadata.package_name,
+              this.targetusername
+            );
+          }
+
+          if (this.packageMetadata.assignPermSetsPreDeployment) {
+            SFPLogger.log(
+              "Assigning permission sets before deployment:",
+              null,
+              this.packageLogger
+            );
+
+            PackageInstallationHelpers.applyPermsets(
+              this.packageMetadata.assignPermSetsPreDeployment,
+              this.targetusername,
+              this.sourceDirectory
+            );
+          }
+        }
+
 
        //Print Metadata carried in the package
        PackageXMLManifestHelpers.printMetadataToDeploy(this.packageMetadata?.payload);
@@ -47,9 +80,36 @@ export default class InstallUnlockedPackageImpl {
         await onExit(child);
 
 
-        //apply post deployment steps
-        if(this.sourceDirectory)
-         this.applyPermsets();
+        if(this.sourceDirectory) {
+          let postDeploymentScript: string = path.join(
+            this.sourceDirectory,
+            `scripts`,
+            `postDeployment`
+          );
+
+          if (fs.existsSync(postDeploymentScript)) {
+            console.log("Executing postDeployment script");
+            PackageInstallationHelpers.executeScript(
+              postDeploymentScript,
+              this.packageMetadata.package_name,
+              this.targetusername
+            );
+          }
+
+          if (this.packageMetadata.assignPermSetsPostDeployment) {
+            SFPLogger.log(
+              "Assigning permission sets after deployment:",
+              null,
+              this.packageLogger
+            );
+
+            PackageInstallationHelpers.applyPermsets(
+              this.packageMetadata.assignPermSetsPostDeployment,
+              this.targetusername,
+              this.sourceDirectory
+            )
+          }
+        }
 
         return { result: PackageInstallationStatus.Succeeded}
       } else {
@@ -64,28 +124,6 @@ export default class InstallUnlockedPackageImpl {
     }
   }
 
-
-  private applyPermsets() {
-    try {
-      if (
-        new RegExp("AssignPermissionSets", "i").test(
-          this.packageMetadata.postDeploymentSteps?.toString()
-        ) &&
-        this.packageMetadata.permissionSetsToAssign
-      ) {
-        let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-          this.targetusername,
-          this.packageMetadata.permissionSetsToAssign,
-          this.sourceDirectory
-        );
-
-        SFPLogger.log("Executing post-deployment step: AssignPermissionSets",null,this.packageLogger);
-        assignPermissionSetsImpl.exec();
-      }
-    } catch (error) {
-      SFPLogger.log("Unable to apply permsets, skipping",null,this.packageLogger);
-    }
-  }
 
   private buildPackageInstallCommand(): string {
     let command = `sfdx force:package:install --package ${this.package_version_id} -u ${this.targetusername} --noprompt`;
