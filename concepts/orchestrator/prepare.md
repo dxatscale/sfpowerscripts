@@ -17,7 +17,7 @@ The Just in Time aspect of creation and  an org completely built from your sourc
 
 ## I get the benefits of using Scratch Org, Why should I be building a pool of Scratch Orgs?
 
-As you add more and more features into your Salesforce Org, you cannot avoid adding third party managed packages and also your own repository will be growing. The time taken to spin up the scratch org will be increasing day by day, hence the need to prepare a pool of scratch org's with your managed packages along with metadata in your repository. 
+As you try to automate more kf your business process in  Salesforce, you cannot avoid adding third party managed packages, along with further config/code added to your repo. The time taken to spin up a just in time scratch org would increase and the value of having quick feedback dimnishes, hence the need to prepare a pool of scratch org's with your managed packages along with metadata/code in your repository earlier, so you do not waste time recreating the org duing a PR check process. 
 
 ## How is different from the upcoming snaphsot feature?
 
@@ -25,11 +25,27 @@ Prepare command was built  in, as Salesforce is taking its sweet time to enable 
 
 ## How should I be using this command?
 
-We expect you to build a pool of scratch org's using a scheduled pipeline, that ensures the pools are always replenished with scratch org's ready for consumption
+We expect you to build a pool of scratch org's using a scheduled pipeline, that ensures the pools are always replenished with scratch org's ready for consumption. Please note before installing you need to install the prerequisite fields to the devhub org which help the validate/fetch commands to fetch a  scratchorg from the pool. Instructions on how to jnstall the prerequisite materials are available [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling)
+
+## Is the pools created in prepare same as **sfpowerkit:pool** commands?
+
+No, the commands are identical and share thr same code base, however the sfpowerscripts is an orchestration command, as in it installs dependent packages, as well as code in the repository.  sfpowerkit commands are more general purpose and can be termed as 'build your own way'.
 
 ## What is "artifactfetchScript" and how do I go about using it?
 
 Its a hook to run a script that would be used to fetch sfpowerscripts artifact from an artifact repository when used with install all command.  The script will be provided with artifact_name  \(name of the package\) and arifact_\_directory \( the directory where the artifact should be placed\) . It is the responsibility of the script to provide with the right version of the artifact. We usually recommend using the latest test and validate version of the artifacts installed as source packages to the scratch org.
+
+## What if I do not provide a script for fetching artifact?
+
+We would attempt to do a build of all packages in the repository and install it to the scratchorg. This is only applicable when using **installall** flag
+
+## What is meant by **installassourcepackages** ?
+
+If this flag is used, we would attempt installing all packages as source packages, overriding the default package type. We typically recommend this option.
+
+## What happens if my shape of the org changes?
+
+If it settings, check out the validate command's faq, where we will explain you how to update settings of a scratchorg from the pool. Otherwise you will have to delete the existing pool and recreate again.
 
 ## How do I manage these Scratch Org\(s\) created by the pool command, such as deleting a pool?
 
