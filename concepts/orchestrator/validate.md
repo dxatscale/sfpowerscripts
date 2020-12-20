@@ -6,6 +6,8 @@ description: Run checks before accepting incoming changes
 
 ## What does validate command do?
 
+
+
 ## What checks do validate run?
 
 ## Why do validate need JWT based authentication?
