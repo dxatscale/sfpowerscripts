@@ -6,6 +6,8 @@ description: >-
 
 # Prepare
 
+## What does Prepare Command do?
+
 ## Why do I need to use Scratch Orgs for running tests?
 
 Scratch Org's are one of the best features that Salesforce released, when they re-imagined the Developer Experience with the platform. Scratch Org's are ephemeral org's that can be provisioned as a just-in-time environment, which can be populated with metadata and data from your source control repository.

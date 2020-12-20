@@ -9,6 +9,9 @@
 * [Data Packages](concepts/data-packages.md)
 * [Orchestrator](concepts/orchestrator/README.md)
   * [Prepare](concepts/orchestrator/prepare.md)
+  * [Validate](concepts/orchestrator/validate.md)
+  * [Build & QuickBuild](concepts/orchestrator/build-and-quickbuild.md)
+  * [Deploy](concepts/orchestrator/deploy.md)
 * [Metrics and Dashboards](concepts/metrics-and-dashboards.md)
 
 ## CLI
