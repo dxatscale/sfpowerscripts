@@ -8,7 +8,7 @@ description: 'Ask us anything about orchestrator, the shiny new kid on the block
 
 **sfpowerscripts:orchestrator** is a group of commands \(or topic in the CLI parlance\) that enables one to work with multiple packages in a mono-repo through the development lifecycle or stages. The current version of the orchestrator features these commands
 
-![Snapshot for orchestrator](../../.gitbook/assets/image%20%287%29.png)
+![Snapshot for orchestrator](../../.gitbook/assets/image%20%287%29%20%281%29.png)
 
 ## When should I use orchestrator?
 
