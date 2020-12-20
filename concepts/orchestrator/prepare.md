@@ -8,6 +8,8 @@ description: >-
 
 ## What does Prepare Command do?
 
+Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during PR process
+
 ## Why do I need to use Scratch Orgs for running tests?
 
 Scratch Org's are one of the best features that Salesforce released, when they re-imagined the Developer Experience with the platform. Scratch Org's are ephemeral org's that can be provisioned as a just-in-time environment, which can be populated with metadata and data from your source control repository.
@@ -68,4 +70,8 @@ If it settings, check out the validate command's faq, where we will explain you 
 ## How do I manage these Scratch Org\(s\) created by the pool command, such as deleting a pool?
 
 You can use the **sfpowerscripts:pool** topic to manage the scratch org pools created by prepare command
+
+## Can I use these pools for providing a development environment to developers?
+
+No, these pools are only to be used as a CI environment, as the scratch org's fetched from this pool cannot be used by a user other than the user who created. Use **"sfpowerkit"** to create developer pools
 
