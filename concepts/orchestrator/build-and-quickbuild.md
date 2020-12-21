@@ -22,19 +22,33 @@ We recommend using quickbuild, to generate packages upon every merge and then de
 
 ## How does Build & QuickBuild  know what to build when using "diffcheck" flag?
 
-TBD
+A comparison \(using git diff\) is made between the latest source code and previous version of the package, defined by a tag that follows semantic versioning. If any difference is detected in the **package directory**, **package version** or **scratch org definition file** \(applies to unlocked packages only\), then the package will be created - otherwise it is skipped.     
 
 ## How does these commands know the order to build?
 
 These commands follow the order of the the packages as ordered in your sfdx-project.json. The commands also read your dependencies property, and then when triggered, will wait till all its dependencies are resolved, before triggering the package creation command. For eg:  provided the followings packages  
-                                                                                 
+                                         
 
-![](../../.gitbook/assets/packagedep.png)
+**Scenario 1  : Build All**                                      
+
+![](../../.gitbook/assets/image%20%284%29.png)
 
 where B and C is dependent on A, D is dependent on C.  The build commands creates packages in the following order  
  - Trigger creation of package A  
  - Once A is completed, trigger creation of package B & C \(using the version of A, created in step 1\)  
 -  Once C is completed, trigger creation of package D
+
+**Scenario 2 :  Build with diffCheck enabled on a package with no dependencies**
+
+![](../../.gitbook/assets/image%20%286%29.png)
+
+In this scenario, where only a single package has changed and **diffCheck** is enabled, the build command will only trigger the creation of Package B
+
+**Scenario 3 :  Build with diffCheck enabled on changes in multiple packages**
+
+![](../../.gitbook/assets/image%20%282%29.png)
+
+In this scenario,  where there are changes in multiple packages, say B & C, the build command will trigger these packages in parallel, as their dependent package A has not changed \(hence fulfilled\). Please note even though there is a change in C, package D will not be triggered, unless there is an explicit version change of version number \(major.minor.patch\) of package D
 
 ## Does build commands work only for unlocked packages?
 
