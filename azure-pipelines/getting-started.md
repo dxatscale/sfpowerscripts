@@ -13,7 +13,7 @@ Directly import the sample pipelines once the extension is installed or compose 
 2. Install the sfpowerscripts extension into your Azure Pipelines org from [here](https://marketplace.visualstudio.com/items?itemName=AzlamSalam.sfpowerscripts) 
 3.  Navigate to Azure DevOps Demo Generator at [https://azuredevopsdemogenerator.azurewebsites.net](https://azuredevopsdemogenerator.azurewebsites.net/)
 
-![](../.gitbook/assets/azure-devops-demo-generator.png)
+![](../.gitbook/assets/Azure%20Devops%20Demo%20generator.png)
 
   4. Select your organization
 

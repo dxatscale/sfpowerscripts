@@ -20,11 +20,11 @@ This task is used to authenticate against a salesforce org to do further actions
 {% endtab %}
 
 {% tab title="JWT" %}
-![Authenticate a Salesforce Org using JWT](../../../.gitbook/assets/authenticate-a-salesforce-org-using-jwt.png)
+![Authenticate a Salesforce Org using JWT](../../../.gitbook/assets/Authenticate%20a%20Salesforce%20Org%20using%20JWT.png)
 {% endtab %}
 
 {% tab title="Credentials" %}
-![Authenticate a Salesforce Org using credentials](../../../.gitbook/assets/authenticate-a-salesforce-org-using-credentials.png)
+![Authenticate a Salesforce Org using credentials](../../../.gitbook/assets/Authenticate%20a%20Salesforce%20Org%20using%20Credentials.png)
 {% endtab %}
 {% endtabs %}
 

@@ -17,7 +17,7 @@ This task installs a source package created by [Create a new version of Source b
 
 **Task Snapshot**
 
-![Install a Source Package to an Org](../../../.gitbook/assets/image%20%282%29.png)
+![Install a Source Package to an Org](../../../.gitbook/assets/image%20%283%29.png)
 
 #### Parameters
 
