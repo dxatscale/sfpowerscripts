@@ -58,6 +58,7 @@ If this flag is used, we would attempt installing all packages as source package
   * Install all the dependencies of your packages, such as managed packages that are marked as dependencies in your sfdx-project.json
   * Install all the artifacts that is either built/fetched
 * **Mark each completed scratch org as "Available"**
+* **Delete all the failed scratch orgs**
 
 ## When I am preparing a pool of scratch org\(s\), what type of packages should I be deploying to it?
 
