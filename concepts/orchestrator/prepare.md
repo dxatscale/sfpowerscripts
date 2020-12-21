@@ -8,7 +8,7 @@ description: >-
 
 ## What does Prepare Command do?
 
-Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during PR process
+Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during validation process when a scratch org is used as Just-in-time CI environment
 
 ## Why do I need to use Scratch Orgs for running tests?
 
