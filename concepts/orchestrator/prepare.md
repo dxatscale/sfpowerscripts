@@ -80,3 +80,7 @@ You can use the **sfpowerscripts:pool** topic to manage the scratch org pools cr
 
 No, these pools are only to be used as a CI environment, as the scratch org's fetched from this pool cannot be used by a user other than the user who created. Use **"sfpowerkit"** to create developer pools
 
+## I do not want a particular package to be deployed to pooled scratch org's, Is there a way to do it?
+
+Yes, you could use the `ignoreOnStage:[ "prepare" ]` property to mark which packages should be skipped by the prepare command
+
