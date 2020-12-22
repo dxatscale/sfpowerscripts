@@ -1,7 +1,7 @@
 # Troubleshooting
 
-{% hint style="error" %}
-InvalidPackageDirectory during validation and deployment tasks
+{% hint style="info" %}
+**Error:** InvalidPackageDirectory during validation and deployment tasks
 {% endhint %}
 
 <br>
