@@ -4,7 +4,7 @@
 **Error:** InvalidPackageDirectory during validation and deployment tasks
 {% endhint %}
 
-**Stage:** Validation, Build<br>
+**Stage:** Validation, Deployment<br>
 **Build Task:** Deploy a Source Directory (Source Format) to an Org<br>
 
 ```
