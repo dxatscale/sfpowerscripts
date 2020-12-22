@@ -26,7 +26,7 @@ export default class QuickBuild extends BuildBase {
      let buildProps:BuildProps = {
 
           configFilePath:this.flags.configfilepath,
-          devhubAlias:this.hubOrg.getUsername(),
+          devhubAlias:this.hubOrg?.getUsername(),
           repourl:this.flags.repourl,
           waitTime: this.flags.waittime,
           isQuickBuild:true,

@@ -24,7 +24,7 @@ export default class Build extends BuildBase {
   getBuildImplementer(): BuildImpl {
     let buildProps: BuildProps = {
       configFilePath: this.flags.configfilepath,
-      devhubAlias: this.hubOrg.getUsername(),
+      devhubAlias: this.hubOrg?.getUsername(),
       repourl: this.flags.repourl,
       waitTime: this.flags.waittime,
       isQuickBuild: false,
