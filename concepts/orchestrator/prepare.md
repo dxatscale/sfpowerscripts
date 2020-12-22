@@ -30,7 +30,9 @@ The Prepare command was built primarily due to the delays from Salesforce to ena
 
 ## How should I be using this command?
 
-We expect you to build a pool of scratch org's using a scheduled pipeline, that ensures the pools are always replenished with scratch org's ready for consumption. Please note before installing you need to install the prerequisite fields to the DevHub Org which help the validate/fetch commands to fetch a scratch org from the pool. Instructions on how to install the prerequisite materials are available [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling)
+We expect you to build a pool of scratch org's using a scheduled pipeline, that ensures the pools are always replenished with scratch org's ready for consumption. Please note before installing you need to install the prerequisite fields to the DevHub Org which help the validate/fetch commands to fetch a scratch org from the pool. Instructions on how to install the prerequisite materials are available [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling).
+
+Also ensure  your DevHub is authenticated using [JWT based authentication](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_jwt_flow.htm)
 
 ## Is the pools created in prepare same as **sfpowerkit:pool** commands?
 
@@ -70,7 +72,7 @@ The time taken by this command depends on how many managed packages and your pac
 
 ## What happens if my shape of the org changes?
 
-If it settings, check out the validate command's faq, where we will explain you how to update settings of a scratch org from the pool. Otherwise you will have to delete the existing pool and recreate again.
+If it settings, check out the [validate command's faq](validate.md), where we will explain you how to update settings of a scratch org from the pool. Otherwise you will have to delete the existing pool and recreate again.
 
 ## How do I manage these Scratch Org\(s\) created by the pool command, such as deleting a pool?
 

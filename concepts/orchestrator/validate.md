@@ -14,13 +14,16 @@ The following are the list of steps that are orchestrated by the validate comman
 
 * Authenticate to the DevHub using the provided JWT Key / Client ID
 * Fetch a scratch org from the provided pools in a sequential manner
+* Authenticate to the Scratch org using the provided JWT Key / Client ID
 * Build packages that are changed by comparing the tags in your repo
 * For each of the packages
-  * Deploy all the built packages as [source packages](https://dxatscale.gitbook.io/sfpowerscripts/v/alpha/concepts/source-packages) / [data package](https://dxatscale.gitbook.io/sfpowerscripts/v/alpha/concepts/data-packages)  \(unlocked packages are installed as source package\)
+  * Deploy all the built packages as [source packages](../source-packages.md) / [data package](../data-packages.md)  \(unlocked packages are installed as source package\)
   * Trigger Apex Tests if there are any apex test in the package
   * Validate test coverage of the package depending on the type of the package \( source packages: each class needs to have 75% or more, unlocked packages: packages as  whole need to have 75% or more\)
 
-## Why do validate need JWT based authentication?
+## Why do validate command asks for JWT based authentication?
+
+The command needs JWT based authentication to authenticate to the DevHub and utilize the same credentials to authenticate to the fetched scratch org from the pool.
 
 ## What if there are no scratch org's left in the pool?
 
