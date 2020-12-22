@@ -5,6 +5,7 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/Art
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { Stage } from "../Stage";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import fs = require("fs");
 const Table = require("cli-table");
 
 
@@ -64,7 +65,16 @@ export default class ValidateImpl {
       if (this.isDeleteScratchOrg) {
         console.log(`Deleting scratch org`, scratchOrgUsername);
         this.deleteScratchOrg(scratchOrgUsername);
-      }
+      } else {
+          fs.writeFileSync(
+            ".env",
+            `sfpowerscripts_scratchorg_username=${scratchOrgUsername}\n`,
+            { flag: "a" }
+          );
+          console.log(
+            `sfpowerscripts_scratchorg_username=${scratchOrgUsername}`
+          );
+        }
     }
 
   }
