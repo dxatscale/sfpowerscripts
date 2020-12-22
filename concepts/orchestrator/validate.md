@@ -31,7 +31,22 @@ The command needs JWT based authentication to authenticate to the DevHub and uti
 
 ## What is a shapefile and why should I provide one?
 
-## How do I get hold of the shapefile?
+## How do I get hold of the shape file?
+
+The scratch org shape file is a zip that gets created when you perform a `$ sfdx force:org:create` . To retrieve the file, go to your system's TEMP directory and copy the `shape.zip` file.
+
+**MacOS**
+
+1. Open up the terminal
+
+```text
+$ cd $TMPDIR
+$ cp shape.zip [dest]
+```
+
+**Windows**
+
+Start &gt; Run &gt; %TEMP%
 
 ## My metadata looks intact, but validate is failing? Why is that and what should be done?
 
