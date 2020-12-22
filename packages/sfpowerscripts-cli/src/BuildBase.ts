@@ -65,7 +65,8 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
     }),
     tag:flags.string({
       description:messages.getMessage("tagFlagDescription"),
-    })
+    }),
+    devhubalias: flags.string({char: 'v', description: messages.getMessage('devhubAliasFlagDescription'), default: 'HubOrg'}),
   };
 
   
