@@ -1,4 +1,5 @@
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import { Org, SfdxError } from "@salesforce/core";
 import ScratchOrgUtils, { ScratchOrg } from "./utils/ScratchOrgUtils";
 
@@ -28,6 +29,7 @@ export default class PoolFetchImpl {
     )) as any;
 
 
+    SFPStatsSender.logGauge("pool.remaining",results.records.length,{poolName:this.tag});
 
     let soDetail: ScratchOrg;
 
