@@ -1,5 +1,9 @@
 # Troubleshooting
 
+---
+
+> InvalidPackageDirectory during validation and deployment tasks
+<br>
 **Stage:** Validation, Build<br>
 **Build Task:** Deploy a Source Directory (Source Format) to an Org<br>
 **Error Message:** 
@@ -19,3 +23,5 @@ ERROR running force:source:convert:  InvalidPackageDirectory
 **Possible Resolution:** <br>
 Check that all your defined packages in `sfdx-project.json` has at least 1 file in the package directory so that the ``sfdx cli`` detects that the package exists and is valid.  During the mdapi conversion process, it will reference the `sfdx-project.json` file before starting to convert the specified package.  
 {% endhint %}
+
+---
