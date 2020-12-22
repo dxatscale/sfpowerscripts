@@ -8,6 +8,16 @@ description: Run checks before accepting incoming changes
 
 ## What checks do validate run?
 
+## What is the sequence of activities that happen in validate command?
+
+* Authenticate to the DevHub using the provided JWT Key / Client ID
+* Fetch a scratch org from the provided pools in a sequential manner
+* Build packages that are changed by comparing the tags in your repo
+* For each of the packages
+  * Deploy all the built packages as [source packages](https://dxatscale.gitbook.io/sfpowerscripts/v/alpha/concepts/source-packages) / [data package](https://dxatscale.gitbook.io/sfpowerscripts/v/alpha/concepts/data-packages)  \(unlocked packages are installed as source package\)
+  * Trigger Apex Tests if there are any apex test in the package
+  * Validate test coverage of the package depending on the type of the package \( source packages: each class needs to have 75% or more, unlocked packages: packages as  whole need to have 75% or more\)
+
 ## Why do validate need JWT based authentication?
 
 ## What if there are no scratch org's left in the pool?
