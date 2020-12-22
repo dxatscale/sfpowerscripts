@@ -10,6 +10,8 @@ description: Run checks before accepting incoming changes
 
 ## What is the sequence of activities that happen in validate command?
 
+The following are the list of steps that are orchestrated by the validate command
+
 * Authenticate to the DevHub using the provided JWT Key / Client ID
 * Fetch a scratch org from the provided pools in a sequential manner
 * Build packages that are changed by comparing the tags in your repo
