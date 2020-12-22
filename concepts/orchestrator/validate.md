@@ -43,7 +43,11 @@ The **validate** command will fail to execute, as it would not be able to fetch 
 
 It uses the same functionality as in QuickBuild Command  and is explained in [How does Build & QuickBuild  know what to build when using "diffcheck" flag?](build-and-quickbuild.md#how-does-build-and-quickbuild-know-what-to-build-when-using-diffcheck-flag)
 
-## What is a shapefile and why should I provide one?
+## What is a shape file and why should I provide one?
+
+The shape file is a zip containing scratch org definition in MDAPI format. It can be deployed to a scratch org to configure its available features and settings.
+
+Providing a shape file allows ad-hoc changes to the scratch org definition of pre-existing scratch org pools, without having to re-create the pool from scratch.
 
 ## How do I get hold of the shape file?
 
