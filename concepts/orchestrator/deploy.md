@@ -6,6 +6,14 @@ description: Deploy your packages to an org
 
 ## What does deploy command do?
 
+Given a directory of artifacts and a target org, the **deploy** command will deploy the packages to the target org according to the sequence defined in the project configuration file. 
+
+The **deploy** command removes the overhead of scripting individual package deployments. The packages to deploy and order of deployment is automatically decoded from the project configuration file.  
+
+{% hint style="info" %}
+For the deploy command to work, it requires the current working directory to contain the project configuration file. Additionally, the artifacts must be created from the same source version.
+{% endhint %}
+
 ## What are the sequence of steps the deploy command does?
 
 ## How do I skip a package from being deployed to an org?
