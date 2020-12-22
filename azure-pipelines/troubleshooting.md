@@ -16,10 +16,6 @@ ERROR running force:source:convert:  InvalidPackageDirectory
 ```
 
 {% hint style="info" %}
-**Possible Resolution:** Check that all your defined packages in `sfdx-project.json` has at least 1 file in the package directory so that the ``sfdx cli`` detects that the package exists and is valid.  During the mdapi conversion process, it will reference the `sfdx-project.json` file before starting to convert the specified package.  
+**Possible Resolution:** <br>
+Check that all your defined packages in `sfdx-project.json` has at least 1 file in the package directory so that the ``sfdx cli`` detects that the package exists and is valid.  During the mdapi conversion process, it will reference the `sfdx-project.json` file before starting to convert the specified package.  
 {% endhint %}
-
-<div class="text-red mb-2">
-  .text-red on white
-</div>
-
