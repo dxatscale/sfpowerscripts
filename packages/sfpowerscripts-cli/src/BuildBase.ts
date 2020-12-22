@@ -83,7 +83,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
       console.log(`Artifact Directory: ${this.flags.artifactdir}`);
       console.log("---------------------------------------------------------");
 
-      if (this.hubOrg) await this.hubOrg.refreshAuth();
+     
 
       let executionStartTime = Date.now();
 
