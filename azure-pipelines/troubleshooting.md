@@ -1,8 +1,9 @@
 # Troubleshooting
 
----
+{% hint style="error" %}
+InvalidPackageDirectory during validation and deployment tasks
+{% endhint %}
 
-> InvalidPackageDirectory during validation and deployment tasks
 <br>
 **Stage:** Validation, Build<br>
 **Build Task:** Deploy a Source Directory (Source Format) to an Org<br>
