@@ -22,7 +22,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
 
   protected static requiresUsername = false;
-  protected static requiresDevhubUsername = true;
+  protected static requiresDevhubUsername = false;
   protected static requiresProject = true;
   
 
@@ -86,7 +86,8 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
   
   
 
-      await this.hubOrg.refreshAuth();
+      if(this.hubOrg)
+        await this.hubOrg.refreshAuth();
      
 
 
