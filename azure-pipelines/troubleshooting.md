@@ -4,10 +4,8 @@
 **Error:** InvalidPackageDirectory during validation and deployment tasks
 {% endhint %}
 
-<br>
 **Stage:** Validation, Build<br>
 **Build Task:** Deploy a Source Directory (Source Format) to an Org<br>
-**Error Message:** 
 
 ```
 sfpowerscripts... Deploy Source to Org
