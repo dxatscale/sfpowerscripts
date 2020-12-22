@@ -1,7 +1,7 @@
 # Troubleshooting
 
 **Stage:** Validation, Build
-**Build Task:** Deploy a Source Directory (Source Format) to an Org<br>
+**Build Task:** Deploy a Source Directory (Source Format) to an Org
 **Error Message:** 
 ```
 sfpowerscripts... Deploy Source to Org
@@ -15,8 +15,6 @@ ERROR running force:source:convert:  InvalidPackageDirectory
 ```
 
 {% hint style="info" %}
-Possible Resolution: Check that all your defined packages in `sfdx-project.json` has at least 1 file in the package directory so that the ``sfdx cli`` detects that the package exists and is valid.  During the mdapi conversion process, it will reference the `sfdx-project.json` file before starting to convert the specified package.  
+**Possible Resolution:** Check that all your defined packages in `sfdx-project.json` has at least 1 file in the package directory so that the ``sfdx cli`` detects that the package exists and is valid.  During the mdapi conversion process, it will reference the `sfdx-project.json` file before starting to convert the specified package.  
 {% endhint %}
-
-<h3 style="color:#ff0000">Test</h3>
 
