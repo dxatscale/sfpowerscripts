@@ -25,7 +25,7 @@ The following are the list of steps that are orchestrated by the **validate** co
 * Authenticate to the DevHub using the provided JWT Key / Client ID
 * Fetch a scratch org from the provided pools in a sequential manner
 * Authenticate to the Scratch org using the provided JWT Key / Client ID
-* Build packages that are changed by comparing the tags in your repo
+* Build packages that are changed by comparing the tags in your repo against the packages installed in scratch org
 * For each of the packages \(internally calls the Deploy Command\)
   * Deploy all the built packages as [source packages](../source-packages.md) / [data package](../data-packages.md)  \(unlocked packages are installed as source package\)
   * Trigger Apex Tests if there are any apex test in the package
@@ -69,6 +69,18 @@ Start &gt; Run &gt; %TEMP%
 ## My metadata looks intact, but validate is failing on deployment of some packages? Why is that and what should be done?
 
 We have noticed specific instances where a change is not compatible with a scratch org fetched with the pool. Most notorious are changes to picklists, causing checks to fail. We recommend you always create a pool, with out **installall** flag, and design your pipelines in a way \(through an environment variable / or through a commit message hook\) to switch to a pool which only has the dependent packages for your repo to validate your changes. 
+
+## I am getting "bad object:xxxyyy" error during validate command, What am I doing wrong?
+
+Validate commands compare the incoming commit, with what is installed in the scratch org, and what is in the repos to figure out which packages are to be built and validated in the scratch org. CI Build systems especially like **Github Actions** by default only do a fetch of the tip of the Pull Request branch, and hence validate command will not be able to reach out the ancestors to do a diff.  We recommend you to check the CI/CD platform docs to do a more deeper fetch of the repo. Here is how is it in Github
+
+```text
+            # Checkout the code in the pull request
+            - name: 'Checkout source code'
+              uses: actions/checkout@v2
+              with:
+                fetch-depth: 0
+```
 
 
 
