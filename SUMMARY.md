@@ -3,16 +3,17 @@
 * [Overview](README.md)
 * [Principles](principles-1.md)
 
-## FAQ <a id="concepts"></a>
+## FAQ
 
-* [Source Packages](concepts/source-packages.md)
-* [Data Packages](concepts/data-packages.md)
-* [Orchestrator](concepts/orchestrator/README.md)
-  * [Prepare](concepts/orchestrator/prepare.md)
-  * [Validate](concepts/orchestrator/validate.md)
-  * [Build & QuickBuild](concepts/orchestrator/build-and-quickbuild.md)
-  * [Deploy](concepts/orchestrator/deploy.md)
-* [Metrics and Dashboards](concepts/metrics-and-dashboards.md)
+* [General Questions](faq/general-questions.md)
+* [Source Packages](faq/source-packages.md)
+* [Orchestrator](faq/orchestrator/README.md)
+  * [Prepare](faq/orchestrator/prepare.md)
+  * [Validate](faq/orchestrator/validate.md)
+  * [Build & QuickBuild](faq/orchestrator/build-and-quickbuild.md)
+  * [Deploy](faq/orchestrator/deploy.md)
+* [Metrics and Dashboards](faq/metrics-and-dashboards.md)
+* [Troubleshooting](faq/troubleshooting.md)
 
 ## Azure Pipelines
 
@@ -53,7 +54,6 @@
     * [Validate Apex Test Coverage](azure-pipelines/task-specifications/testing-tasks/validate-apex-test-coverage.md)
     * [Validate Code Coverage of a Package](azure-pipelines/task-specifications/testing-tasks/validate-code-coverage-of-a-package.md)
     * [Run a static analysis of apex classes with PMD](azure-pipelines/task-specifications/testing-tasks/run-a-static-analysis-of-apex-classes-with-pmd.md)
-* [Troubleshooting](azure-pipelines/troubleshooting.md)
 
 ## CLI
 
@@ -61,7 +61,6 @@
 
 ---
 
-* [FAQ's](faqs.md)
 * [Change Log](change-log.md)
 * [Maintainers](maintainers.md)
 * [Contributors](contributors.md)
