@@ -24,7 +24,7 @@
     "hot-shots": "^8.2.1",
     "ignore": "^5.1.6",
     "rimraf": "^3.0.2",
-    "semver": "^7.3.2",
+    "semver": "^7.3.4",
     "shelljs": "^0.8.4",
     "simple-git": "^2.24.0",
     "tmp": "^0.2.1",
