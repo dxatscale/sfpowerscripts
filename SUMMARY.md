@@ -17,7 +17,6 @@
 
 ## Azure Pipelines
 
-* [Getting Started](azure-pipelines/getting-started.md)
 * [Build your pipelines](azure-pipelines/pipelines/README.md)
   * [Pull Request Validation using Scratch Org](azure-pipelines/pipelines/pull-request-validation-using-scratch-org.md)
   * [Build Pipeline - Org Based Deployment](azure-pipelines/pipelines/continous-integration-pipeline-org-based.md)
