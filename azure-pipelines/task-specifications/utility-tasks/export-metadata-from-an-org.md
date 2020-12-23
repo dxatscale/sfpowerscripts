@@ -8,7 +8,7 @@ This task is used to export the complete metadata \(in source format\) from a gi
 
 **Prerequisites**
 
-[Install SFDX CLI with sfpowerkit](install-sfdx-cli-with-sfpowerkit.md)  task must be added to the pipeline before utilizing this task
+[Install SFDX CLI with sfpowerkit](install-sfdx-cli-with-sfpowerkit.md) task must be added to the pipeline before utilizing this task
 
 **Task Snapshot**
 
@@ -18,7 +18,7 @@ This task is used to export the complete metadata \(in source format\) from a gi
 
 {% tabs %}
 {% tab title="Input Parameters" %}
-Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+Classic Designer Labels are in **Bold,** YAML Variables are in _italics_
 
 * **Alias or username of the target\_org**  The alias or username of the target org  on which the source directory is to be deployed 
 * **Directory to which the source should be exported** The path to the directory, where the metadata from the org should be exported. The path will be created if it doesn't exist.  **Note:** The export from the org is in a zip format, Check the ‘Unzip the exported metadata/source from the zip into the provided folder’ 

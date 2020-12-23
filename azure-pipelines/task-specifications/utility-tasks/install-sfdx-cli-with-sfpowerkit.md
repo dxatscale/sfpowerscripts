@@ -8,29 +8,29 @@ This task is usually the first task of any pipeline you build using sfpowerscrip
 
 Please note this task is not supported in Hosted Mac Agents as of now
 
-#### **Task Snapshot**
+## **Task Snapshot**
 
 **Parameters**
 
 {% tabs %}
 {% tab title="Input Parameters" %}
-Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+Classic Designer Labels are in **Bold,** YAML Variables are in _italics_
 
 * **Override Default Salesforce API Version used by the CLI and Plugins /** _salesforce\_api\_version_
 
-  Provide an API version which the CLI commands should utilize, if ignored, the latest GA version used by the sfdx cli is used  
+  Provide an API version which the CLI commands should utilize, if ignored, the latest GA version used by the sfdx cli is used
 
 * **SFDX CLI Version /** _sfdx\_cli\_version_
 
-  By default, the latest SFDX CLI version will be installed. You can override this by providing the version number found in [Salesforce CLI Release Notes](https://developer.salesforce.com/media/salesforce-cli/releasenotes.html)  
+  By default, the latest SFDX CLI version will be installed. You can override this by providing the version number found in [Salesforce CLI Release Notes](https://developer.salesforce.com/media/salesforce-cli/releasenotes.html)
 
 * **SFPowerkit Version /** _sfpowerkit\_version_
 
-  By default, the latest SFPowerkit version will be installed. You can override this by providing the version number found in [SFPowerkit Release Notes](https://github.com/Accenture/sfpowerkit/releases)  
+  By default, the latest SFPowerkit version will be installed. You can override this by providing the version number found in [SFPowerkit Release Notes](https://github.com/Accenture/sfpowerkit/releases)
 
 * **Additional Plugins to be installed /** _plugins_
 
-  Provide additional sfdx plugins to be installed, when this task is run. The format to be followed is **pluginame1@version,pluginname2@version** and so forth.  
+  Provide additional sfdx plugins to be installed, when this task is run. The format to be followed is **pluginame1@version,pluginname2@version** and so forth.
 {% endtab %}
 
 {% tab title="Output Parameters" %}

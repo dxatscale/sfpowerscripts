@@ -8,7 +8,7 @@ This task is used to trigger Apex unit tests, and also captures the results as a
 
 **Prerequisites**
 
-[Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md)  task must be added to the pipeline before utilizing this task
+[Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task must be added to the pipeline before utilizing this task
 
 **Task Snapshot**
 
@@ -16,23 +16,27 @@ This task is used to trigger Apex unit tests, and also captures the results as a
 
 {% tabs %}
 {% tab title="Input Parameters" %}
-Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+Classic Designer Labels are in **Bold,** YAML Variables are in _italics_
 
 * **Alias or username of the target org** / _targetOrg_ The alias or username of the target org 
 * **Test Level** / _testlevel_  
-  Select the testlevel for this task for the list of possible values:   
-   -  **Run only specified tests /** _RunSpecifiedTests   
-   -_  **Run an apex test suite** / _RunApexTestSuite_  
-   -  **Run Local Tests** / _RunLocalTests_  
-   -  **Run All Tests in the org** / _RunAllTestsInOrg_      
-   _-  ****_**Run All Tests in package** / _RunAllTestsInPackage_
+  Select the testlevel for this task for the list of possible values:
+
+  * **Run only specified tests /** \_RunSpecifiedTests   
+
+    -  _**Run an apex test suite** / \_RunApexTestSuite_  
+
+  * **Run Local Tests** / _RunLocalTests_  
+  * **Run All Tests in the org** / _RunAllTestsInOrg_      
+
+    _-  \*\*_**Run All Tests in package** / _RunAllTestsInPackage_
 
   \_\_
 
 * **Tests to be executed** / _specified\_tests_ A list of apex test classes to be executed, separated by a comma
 
 {% hint style="info" %}
-This field is only visible/valid  if the Test Level is "RunSpecifiedTests"
+This field is only visible/valid if the Test Level is "RunSpecifiedTests"
 {% endhint %}
 
 * **Package Name /** _package_
@@ -46,12 +50,12 @@ This field is only visible/valid if the Test Level is "RunAllTestsInPackage"
 * **Apex Test Suite** / _apextestsuite_ The name of the apex test suite to be executed
 
 {% hint style="info" %}
-This field is only visible/valid  if the Test Level is "RunApexTestSuite"
+This field is only visible/valid if the Test Level is "RunApexTestSuite"
 {% endhint %}
 
 * **Run tests from a single class synchronously /** _synchronous_
 
-  _Run tests synchronously_ 
+  _Run tests synchronously_
 
   \_\_
 
@@ -68,14 +72,14 @@ This field is only visible/valid if the Test Level is "RunAllTestsInPackage"
   Minimum coverage required per class, in order for the task to succeed
 
 {% hint style="info" %}
-This field is only visible/valid if "isValidateCoverage" 
+This field is only visible/valid if "isValidateCoverage"
 {% endhint %}
 
 * **Project directory /** _project\_directory_
 
   The project directory should contain a sfdx-project.json
 
-* **Wait Time** / _wait\_time_ The time this task should wait for the result to be generated. 
+* **Wait Time** / _wait\_time_ The time this task should wait for the result to be generated.
 {% endtab %}
 
 {% tab title="Output Parameters" %}

@@ -12,13 +12,13 @@ To retain scratch org’s for review purposes, the maintain org has to be select
 
 [Install SFDX with Sfpowerkit](install-sfdx-cli-with-sfpowerkit.md) task must be added to the pipeline before utilizing this task
 
-**Task Snapshot** 
+**Task Snapshot**
 
 **Parameters**
 
 {% tabs %}
 {% tab title="Input Paramters" %}
-Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+Classic Designer Labels are in **Bold,** YAML Variables are in _italics_
 
 * **Action /** _action_  Select the action that this task should do, either create or delete an existing scratch or delete an existing scratch org. The options 
 
@@ -29,13 +29,13 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 * **Config File Path** / _action_ The path to the file containing the configurations of the scratch org to be created. This field is only visible when Create mode is selected. 
 * **Alias /** _alias_ Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated 
-* **Alias or username of the target org /** _alias_ 
+* **Alias or username of the target org /** _alias_
 
-  Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated  
+  Provide the alias for the scratch org, that is to be created. This field is visible only when create is activated
 
 * **Alias/username of the DevHub /** _devhub\_alias_
 
-  Provide the alias of the devhub previously authenticated.  
+  Provide the alias of the devhub previously authenticated.
 
 * **Select an option for deleting this scratch org /** _maintain_
 
@@ -47,7 +47,7 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
   "donothing": "Do Nothing, Deletion of the scratch org will be handled explicitly"
 ```
 
-* **Number of days this scratch org has to be maintained /** _daystomaintain_ ****This option is only activated if the value for maintain is set to “Maintain this org for x number of days \(maintain\)”. Provide the number of days for which the scratch org has to be maintained for reviewing the Pull Request 
+* **Number of days this scratch org has to be maintained /** _daystomaintain_ _\*\*_This option is only activated if the value for maintain is set to “Maintain this org for x number of days \(maintain\)”. Provide the number of days for which the scratch org has to be maintained for reviewing the Pull Request 
 * **Project Directory /** _working\_directory_ The root directory that contains the sfdx-project.json. In build pipelines you can create this blank, however when used in release pipelines mention the repo directory 
 {% endtab %}
 
@@ -73,10 +73,8 @@ Please note to add a reference name before using this in any of the tasks
 {% endtab %}
 {% endtabs %}
 
-
-
 {% hint style="warning" %}
-If for some reason, you are using this task in a release pipeline,  Project Directory has to be mentioned and has to match the directory \(the artifact\) is checked out to. You can read more about release artifacts here [https://docs.microsoft.com/en-us/azure/devops/pipelines/release/artifacts?view=azure-devops](https://docs.microsoft.com/en-us/azure/devops/pipelines/release/artifacts?view=azure-devops)
+If for some reason, you are using this task in a release pipeline, Project Directory has to be mentioned and has to match the directory \(the artifact\) is checked out to. You can read more about release artifacts here [https://docs.microsoft.com/en-us/azure/devops/pipelines/release/artifacts?view=azure-devops](https://docs.microsoft.com/en-us/azure/devops/pipelines/release/artifacts?view=azure-devops)
 {% endhint %}
 
 **Changelog**

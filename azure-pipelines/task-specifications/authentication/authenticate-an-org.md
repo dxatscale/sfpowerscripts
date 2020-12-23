@@ -12,7 +12,7 @@ This task is used to authenticate against a salesforce org to do further actions
 
 [Install sfdx with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task must be added to the pipeline before utilizing this task
 
-#### **Task Snapshot**
+## **Task Snapshot**
 
 {% tabs %}
 {% tab title="Service Connection" %}
@@ -28,44 +28,43 @@ This task is used to authenticate against a salesforce org to do further actions
 {% endtab %}
 {% endtabs %}
 
-#### Parameters
+## Parameters
 
 {% tabs %}
 {% tab title="Input Parameters " %}
-Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+Classic Designer Labels are in **Bold,** YAML Variables are in _italics_
 
-* **Authentication Method  /** _method_
+* **Authentication Method /** _method_
 
-  The method to authenticate this org. Available methods are either using Service Connection, JWT or using Credentials \(Username/Password/Security Token\)  
+  The method to authenticate this org. Available methods are either using Service Connection, JWT or using Credentials \(Username/Password/Security Token\)
 
-* **Salesforce Connection /**  _salesforce\_connection_
+* **Salesforce Connection /** _salesforce\_connection_
 
-  
-  This option is required only if the method of authentication is using the service connection. Provide the name of the service connection in this field  
+This option is required only if the method of authentication is using the service connection. Provide the name of the service connection in this field
 
 * **Secure File /** _jwt\_key\_file_
 
-  Secure file containing the private key, used only if the authentication method is JWT based. Instructions to store the private key as a secure file are available [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/secure-files?view=azure-devops)  
+  Secure file containing the private key, used only if the authentication method is JWT based. Instructions to store the private key as a secure file are available [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/secure-files?view=azure-devops)
 
-* **Username /**  _username_
+* **Username /** _username_
 
-  Username for the authenticated user \(available in both JWT and Credentials based authentication mode\)  
+  Username for the authenticated user \(available in both JWT and Credentials based authentication mode\)
 
 * **clientid /** _clientid_
 
-  OAuth client ID \(sometimes called the consumer key\) \(available only in JWT based authentication mode\)  
+  OAuth client ID \(sometimes called the consumer key\) \(available only in JWT based authentication mode\)
 
 * **Password /** _password_
 
-  Password for the authenticated user \(available only in Credentials based authentication mode\)  
+  Password for the authenticated user \(available only in Credentials based authentication mode\)
 
-* **Security Token /**  _securitytoken_
+* **Security Token /** _securitytoken_
 
-  Security Token for this particular user, Security Token requirement can be removed by ensuring the particular user is allowed to connect to Salesforce from whitelisted IP ranges that include the IP ranges where Azure hosted agents will be executed. \(available only in Credentials based authentication mode\)  
+  Security Token for this particular user, Security Token requirement can be removed by ensuring the particular user is allowed to connect to Salesforce from whitelisted IP ranges that include the IP ranges where Azure hosted agents will be executed. \(available only in Credentials based authentication mode\)
 
 * **Alias /** _alias_
 
-  Alias of the org to be used in subsequent tasks \(available in both JWT and Credentials based authentication mode\)  
+  Alias of the org to be used in subsequent tasks \(available in both JWT and Credentials based authentication mode\)
 
 * **Authenticate this org as a DevHub/Production /** _isDevhub_
 
@@ -99,14 +98,12 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 {% endhint %}
 
 {% hint style="warning" %}
- **A newly established JWT Connection will take a few minutes to establish. Please wait a few minutes before you trigger the execution** 
+**A newly established JWT Connection will take a few minutes to establish. Please wait a few minutes before you trigger the execution**
 {% endhint %}
 
 {% hint style="warning" %}
-**Both Service Connection and Credential based authentication  utlilizes**`sfpowerkit:auth:login` **for authentication and is quite unstable when utilized for creating ScratchOrg. Utilize this only for login to the sandboxes for a short running task**
+**Both Service Connection and Credential based authentication utlilizes**`sfpowerkit:auth:login` **for authentication and is quite unstable when utilized for creating ScratchOrg. Utilize this only for login to the sandboxes for a short running task**
 {% endhint %}
-
-
 
 **Changelog**
 

@@ -36,7 +36,13 @@ Excluding **prepare** and **validate**, the other orchestrator commands such as 
 
 ## Is there a lifecycle diagram that I can follow to understand how to model the process using the orchestrator?
 
-TBD
+Here is a sample model that you could use on simple programs
+
+![](../../.gitbook/assets/image%20%287%29.png)
+
+## Is there an example repo, where all these commands are being used?
+
+Yes, head to the repo [https://github.com/dxatscale/easy-spaces-lwc](https://github.com/dxatscale/easy-spaces-lwc/tree/develop/.github) for examples on how to use these commands with GitHub actions
 
 ## Can I ignore any package during any stage/lifecycle/command? For eg: I do not want this package to be processed by the prepare command
 

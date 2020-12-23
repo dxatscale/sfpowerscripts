@@ -14,7 +14,7 @@ This task is used to promote an unlocked package to ‘released’ state before 
 
 ![](../../../.gitbook/assets/promoteunlockedpackage.png)
 
-#### Parameters
+## Parameters
 
 {% tabs %}
 {% tab title="Input" %}
@@ -28,7 +28,7 @@ This task is used to promote an unlocked package to ‘released’ state before 
 
 * **Project directory** / _project\_directory_
 
-  The directory containing the `sfdx-project.json.`  
+  The directory containing the `sfdx-project.json.`
 
 * **Alias/username of the DevHub /** _devhub\_alias_
 
