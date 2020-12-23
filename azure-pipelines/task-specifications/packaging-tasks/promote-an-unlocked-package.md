@@ -2,7 +2,7 @@
 
 | Task ID | Latest Version |
 | :--- | :--- |
-| sfpwowerscript-promoteunlocked-task | 6.0.3 |
+| sfpwowerscript-promoteunlocked-task | 8.0.5 |
 
 This task is used to promote an unlocked package to ‘released’ state before deploying it into a production org. You can read more about promoting a package to released status [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_dev2gp_create_pkg_ver_promote.htm). It is recommended to utilize this taks in the ‘Prod’ stage in a release pipeline in most normal scenarios, where a tested package in the lower environment is ready to be deployed to production and the version number has to be frozen.
 
@@ -12,7 +12,7 @@ This task is used to promote an unlocked package to ‘released’ state before 
 
 **Task Snapshot**
 
-![](../../../.gitbook/assets/promoteunlockedpackagesnapshot.png)
+![](../../../.gitbook/assets/promoteunlockedpackage.png)
 
 #### Parameters
 
@@ -22,18 +22,9 @@ This task is used to promote an unlocked package to ‘released’ state before 
 
   The name of the package that is to be promoted to the released state. This name does not have any significant value addition other than being just displayed in the task execution.
 
-* **Package to be promoted from /** _packagepromotedfrom_
+* **Path to the directory where artifacts are downloaded** / _artifactDir_
 
-  This task has three options, ‘**BuildArtifact/** _****BuildArtifact_,’ '**AzureArtifact** / _AzureArtifact_' or ‘**Custom/**_Custom_ ****’.   
-  Choose BuildArtifact if the package artifact was created as part of an Azure Build pipeline, and provide the name of the artifact. The AzureArtifact option is intended for attached artifacts from the Azure Artifacts registry \(e.g. Universal packages\); it also requires the name of the artifact to be passed. Finally, the Custom option allows the package version ID to be passed in as an identifier for the package to be promoted.
-
-* **Package Version ID** / _package\_version\_id_
-
-  When the 'Custom' option is selected for the 'package to be promoted from' field, provide the package version ID of the package to be promoted. 
-
-* **Name of the artifact that is attached to this release pipeline** / _artifact_
-
-  Provide the name of the attached artifact \(Build Artifact or Azure Artifact\).
+  Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used
 
 * **Project directory** / _project\_directory_
 
@@ -72,6 +63,8 @@ Please note for this task to succeeded, the task needs access to the project dir
 
 **Changelog**
 
+* 8.0.5 Remove "packagepromotedfrom" input parameter [\#151](https://github.com/Accenture/sfpowerscripts/pull/151/files)
+* 7.0.4 Update Core dependency
 * 7.0.0 
   * Removed Telemetry Collection
   * Add support for Azure Artifacts

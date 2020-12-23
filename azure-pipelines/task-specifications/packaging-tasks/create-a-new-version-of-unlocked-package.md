@@ -2,7 +2,7 @@
 
 | Task ID | Latest Version |
 | :--- | :--- |
-| sfpwowerscripts-createunlockedpackage-task | 11.0.1 |
+| sfpwowerscripts-createunlockedpackage-task | 12.0.5 |
 
 This task is used to create a new version of an Unlocked Package. The task can optionally generate a build artifact, containing metadata such as the package ID, name, version, repository URL and the commit ID from which it was generated. The build artifact can then be used in release pipelines to install the associated unlocked package in a Salesforce org. You can read more about unlocked packages [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_dev2gp.htm). 
 
@@ -12,7 +12,7 @@ This task is used to create a new version of an Unlocked Package. The task can o
 
 **Task Snapshot**
 
-![](../../../.gitbook/assets/createunlockedpackagesnapshot.png)
+![](../../../.gitbook/assets/create_new_version_unlocked_package.png)
 
 ### Parameters
 
@@ -64,10 +64,6 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
   Time to wait for this execution to complete,after this set wait time  the next task in the pipeline will be executed. It is recommended to provide sufficient wait time so that the command can be made into a synchronous execution  
 
-* **Create a build artifact with the package id if the package creation is successful” /** _build\_artifact\_enabled_
-
-  Check this flag to associate this version along with metadata details like package\_version\_id , sourceVersion and repository\_url as a build artifact associated with this build pipeline, which allows the build pipeline to be associated with a release pipeline.  
-
 * **Only run task if package has changed /** _isDiffCheck_
 
   Enable this option to conditionally build the source package only if there has been a change to the package. To determine whether a package has changed, also enable 'Tag latest commit ID with package name and version'.  
@@ -106,14 +102,14 @@ steps:
 {% endtab %}
 {% endtabs %}
 
-
-
 {% hint style="danger" %}
 Please ensure a package is already created before utilizing this task and the package alias is available in the sfdx-project.json, as this task is all about creating a new version of the package
 {% endhint %}
 
 **Changelog**
 
+* 12.0.5 Refactor artifact structure [\#131](https://github.com/Accenture/sfpowerscripts/pull/131), resolve package dependencies to exact version [\#155](https://github.com/Accenture/sfpowerscripts/pull/155)
+* 11.0.6 Update Core dependency
 * 8.0.9 Refactored to use revamped folder structure
 * 7.0.2 Support for creation of multiple packages in a single build such as in a MonoRepo
 * 6.0.1 Skip Validation
