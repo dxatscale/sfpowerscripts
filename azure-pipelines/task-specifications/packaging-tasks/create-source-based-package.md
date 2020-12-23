@@ -2,7 +2,7 @@
 
 | Task ID | Latest version |
 | :--- | :--- |
-| sfpwowerscripts-createsourcepackage-task | 12.0.6 |
+| sfpwowerscripts-createsourcepackage-task | 14.0.18 |
 
 At present, Salesforce unlocked package doesn't support packaging of all metadata types, also some metadata are not meant to be deployed using unlocked package \(such as org specific entities\). However to deploy such metadata across multiple org's, one has to resort to deploying metadata directly from a source repo using 'metadata api'. Source based packages is a 'sfpowerscripts' construct that allows one to have the primary advantage of packaging \(mainly traceability, and cohesiveness\) to non packaging supported metadata components.
 
@@ -30,17 +30,23 @@ Please note this can considerably delay deployments considering how the test cla
 
 {% tabs %}
 {% tab title="Input" %}
-Classic Designer Labels are in **Bold,** YAML Variables are in _italics_
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
-* **Name of the package /** _package_ _\*\*_Provide the name of the package.
-* **The version number of the package to be created” /** _version\_number_ The format is `major.minor.patch.buildnumber` . This will override the build number mentioned in the `sfdx-project.json`. Consider running the [Increment Version Number task](../utility-tasks/increment-version-number-of-a-package.md) before this task and passing the `sfpowerscripts_incremented_project_version` variable as an input to this field.
+* **Name of the package /** _package_  
+  ****Provide the name of the package.
+
+* **The version number of the package to be created” /** _version\_number_  
+  The format is `major.minor.patch.buildnumber` . This will override the build number mentioned in the `sfdx-project.json`. Consider running the [Increment Version Number task](../utility-tasks/increment-version-number-of-a-package.md) before this task and passing the `sfpowerscripts_incremented_project_version` variable as an input to this field.
+
+ 
+
 * **Only run task if package has changed /** _isDiffCheck_  
   Enable this option to conditionally build the source package only if there has been a change to the package. To determine whether a package has changed, also enable 'Tag latest commit ID with package name and version'.
 
   \*\*\*\*
 
 * **Tag latest commit ID with package name and version /** _isGitTag_  
-  Enable this option to tag the latest commit ID with an annotated Git tag that shows the package name and version. To push the tag to your repository, please refer to [Execute Post Steps after Creating a Package](execute-post-steps-after-creating-a-package.md).
+  Enable this option to tag the latest commit ID with an annotated Git tag that shows the package name and version. To push the tag to your repository, please refer to [Execute Post Steps after Creating a Package](execute-post-steps-after-creating-a-package.md). 
 
   \*\*\*\*
 
@@ -48,9 +54,15 @@ Classic Designer Labels are in **Bold,** YAML Variables are in _italics_
 {% endtab %}
 
 {% tab title="Output" %}
-**sfpowerscripts\_package\_version\_number**
+* **sfpowerscripts\_package\_version\_number**
 
-The version number of the package that was created**.**
+  The version number of the package that was created**.**
+
+* **sfpowerscripts\_artifact\_path**
+
+  The path to the source package zip artifact
+
+\*\*\*\*
 {% endtab %}
 
 {% tab title="YAML" %}
@@ -72,15 +84,11 @@ steps:
 
 The following properties can be added to the SFDX project configuration.
 
-| Property | Type | Value/s | Required |
+| Property | Type | Required | Default |
 | :--- | :--- | :--- | :--- |
-| preDeploymentSteps | String | reconcile | false |
-
-_preDeploymentSteps_
-
-| Value | Description |
-| :--- | :--- |
-| reconcile | Reconcile profiles with the target org before installing the source package. |
+| assignPermSetsPreDeployment | String\[\] | false | N/A |
+| assignPermSetsPostDeployment | String\[\] | false | N/A |
+| reconcileProfiles | boolean | false | true |
 
 {% hint style="info" %}
 Properties defined in the SFDX project configuration are case sensitive.
@@ -88,6 +96,9 @@ Properties defined in the SFDX project configuration are case sensitive.
 
 **Changelog**
 
+* 14.0.18 
+  * Change artifact format to zip file
+  * Upgrade to Node 10
 * 12.0.6 Refactor artifact structure [\#131](https://github.com/Accenture/sfpowerscripts/pull/131),
 
   Automatically identify test classes and include in artifact metadata [\#160](https://github.com/Accenture/sfpowerscripts/pull/160)

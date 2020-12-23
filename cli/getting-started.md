@@ -1,4 +1,4 @@
-# Using sfpowerscripts-cli sfdx extension
+# Using sfpowerscripts-cli sfdx plugin
 
 ### Installation
 

@@ -2,7 +2,7 @@
 
 | Task ID | Latest Version |
 | :--- | :--- |
-| sfpwowerscripts-createdeltapackage-task | 6.0.6 |
+| sfpwowerscripts-createdeltapackage-task | 8.0.18 |
 
 This task is used to build a changeset \(Delta/Diff between two git commits\) based artifact based on the changes between two commits, which can then be associated with a release pipeline. It is only recommended you utilise a changeset based build process when working on an existing org in the process of refactoring, to eventually utilize modular \(source based/unlocked packaging\) repositories.
 
@@ -91,8 +91,10 @@ steps:
 
 **Changelog**
 
+* 8.0.18
+  * Change artifact format to zip file
+  * Upgrade to Node 10
 * 6.0.6 Refactor artifact structure [\#131](https://github.com/Accenture/sfpowerscripts/pull/131)
-* 5.0.9 Update Core dependency
 * 5.0.4 Remove Telemetry Collection
 * 4.0.9 Refactored to use revamped folder structure
 * 3.0.0 Support for this task in release pipelines

@@ -2,7 +2,7 @@
 
 | Task ID | Latest Version |
 | :--- | :--- |
-| sfpwowerscript-promoteunlocked-task | 8.0.5 |
+| sfpwowerscript-promoteunlocked-task | 10.0.10 |
 
 This task is used to promote an unlocked package to ‘released’ state before deploying it into a production org. You can read more about promoting a package to released status [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_dev2gp_create_pkg_ver_promote.htm). It is recommended to utilize this taks in the ‘Prod’ stage in a release pipeline in most normal scenarios, where a tested package in the lower environment is ready to be deployed to production and the version number has to be frozen.
 
@@ -12,7 +12,7 @@ This task is used to promote an unlocked package to ‘released’ state before 
 
 **Task Snapshot**
 
-![](../../../.gitbook/assets/promoteunlockedpackage.png)
+![](../../../.gitbook/assets/promoteunlockedpackage%20%281%29.png)
 
 ## Parameters
 
@@ -24,11 +24,19 @@ This task is used to promote an unlocked package to ‘released’ state before 
 
 * **Path to the directory where artifacts are downloaded** / _artifactDir_
 
-  Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used
+  Path to the artifact directory where the artifacts are downloaded, If not provided, the default values will be automatically used.
+
+* **Provide custom package version ID** / _isCustomPackageVersionId_
+
+  Check this option to specify a custom package version ID to promote
+
+* **Package Version Id** / _packageVersionId_
+
+  Package version ID \(starts with 04t\) to promote
 
 * **Project directory** / _project\_directory_
 
-  The directory containing the `sfdx-project.json.`
+  The directory containing the `sfdx-project.json.`  
 
 * **Alias/username of the DevHub /** _devhub\_alias_
 
@@ -46,13 +54,10 @@ None
 {% tab title="YAML" %}
 ```text
 steps:
-- task: sfpwowerscript-promoteunlockedpackage-task@7
-  displayName: 'Promote version of package <mypackage> '
-  inputs:
-    package: <mypackage>
-    artifact: '_mypackage'
-    project_directory: '$(sfpowerscripts_checked_out_path)'
-    skip_on_missing_artifact: false
+  - task: sfpwowerscript-promoteunlockedpackage-task@10
+    displayName: 'Promote version of package mypackage '
+    inputs:
+      package: mypackage
 ```
 {% endtab %}
 {% endtabs %}
@@ -63,8 +68,8 @@ Please note for this task to succeeded, the task needs access to the project dir
 
 **Changelog**
 
+* 10.0.10 Upgrade to Node 10
 * 8.0.5 Remove "packagepromotedfrom" input parameter [\#151](https://github.com/Accenture/sfpowerscripts/pull/151/files)
-* 7.0.4 Update Core dependency
 * 7.0.0 
   * Removed Telemetry Collection
   * Add support for Azure Artifacts

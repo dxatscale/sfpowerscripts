@@ -2,7 +2,7 @@
 
 | Task ID | Latest Version |
 | :--- | :--- |
-| sfpowerscripts-postcreatepackage-task | 1.0.12 |
+| sfpowerscripts-postcreatepackage-task | 2.0.5 |
 
 This task is typically appended to the end of a pipeline if tagging is enabled in the Create Source or Unlocked Package tasks. The Execute Post Steps task will persist the Git tag by pushing it to the source code repository. A reminder to add this task to the pipeline is provided if a Create Package command exists in the pipeline with the tagging option enabled.
 
@@ -62,6 +62,7 @@ When using the option Git which is already authenticate at the agent level, the 
 
 **Changelog**
 
+* 2.0.5 Upgrade to Node 10
 * 1.0.6 Update Core dependency
 * 1.0.1 Initial Version
 

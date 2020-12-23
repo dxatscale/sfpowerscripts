@@ -107,6 +107,7 @@ This option is required only if the method of authentication is using the servic
 
 **Changelog**
 
+* 10.0.0 Upgrade to Node 10
 * 9.0.8 Update Core dependency
 * 9.0.5 Updated major versions to remove telemetry collection
 * 8.0.5 Refactored to use revamped folder structure

@@ -14,23 +14,30 @@ Please note this task is not supported in Hosted Mac Agents as of now
 
 {% tabs %}
 {% tab title="Input Parameters" %}
-Classic Designer Labels are in **Bold,** YAML Variables are in _italics_
+Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 * **Override Default Salesforce API Version used by the CLI and Plugins /** _salesforce\_api\_version_
 
-  Provide an API version which the CLI commands should utilize, if ignored, the latest GA version used by the sfdx cli is used
+  Provide an API version which the CLI commands should utilize, if ignored, the latest GA version used by the sfdx cli is used  
 
 * **SFDX CLI Version /** _sfdx\_cli\_version_
 
-  By default, the latest SFDX CLI version will be installed. You can override this by providing the version number found in [Salesforce CLI Release Notes](https://developer.salesforce.com/media/salesforce-cli/releasenotes.html)
+  By default, the latest SFDX CLI version will be installed. You can override this by providing the version number found in [Salesforce CLI Release Notes](https://developer.salesforce.com/media/salesforce-cli/releasenotes.html)  
 
 * **SFPowerkit Version /** _sfpowerkit\_version_
 
-  By default, the latest SFPowerkit version will be installed. You can override this by providing the version number found in [SFPowerkit Release Notes](https://github.com/Accenture/sfpowerkit/releases)
+  By default, the latest SFPowerkit version will be installed. You can override this by providing the version number found in [SFPowerkit Release Notes](https://github.com/Accenture/sfpowerkit/releases)  
 
 * **Additional Plugins to be installed /** _plugins_
 
   Provide additional sfdx plugins to be installed, when this task is run. The format to be followed is **pluginame1@version,pluginname2@version** and so forth.
+
+* **Enable sending metrics about build to a statsd daemon** / _enableStatsd_  
+  Send sfpowerscripts metrics \(e.g. build times,  package installation\) to StatsD daemon
+
+* **URI to StatsD server, format &lt;HOST&gt;:&lt;PORT&gt;:&lt;PROTOCOL&gt;** / _statsd\_config_
+
+  Host address, port number and transport layer protocol of the StatsD daemon 
 {% endtab %}
 
 {% tab title="Output Parameters" %}
@@ -50,6 +57,7 @@ None
 
 **Changelog**
 
+* 9.0.5 Configure StatsD daemon 
 * 7.0.8 Update Core dependency
 * 7.0.4 Updated major versions to remove telemetry collection
 * 6.0.5 Refactored to use revamped folder structure
