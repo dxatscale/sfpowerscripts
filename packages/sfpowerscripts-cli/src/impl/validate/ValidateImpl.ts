@@ -63,7 +63,6 @@ export default class ValidateImpl {
         return true;
     } finally {
       if (this.isDeleteScratchOrg) {
-        console.log(`Deleting scratch org`, scratchOrgUsername);
         this.deleteScratchOrg(scratchOrgUsername);
       } else {
           fs.writeFileSync(
@@ -81,13 +80,16 @@ export default class ValidateImpl {
 
   private deleteScratchOrg(scratchOrgUsername: string): void {
     try {
-      child_process.execSync(
-        `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.devHubUsername}`,
-        {
-          stdio: 'inherit',
-          encoding: 'utf8'
-        }
-      );
+      if (scratchOrgUsername && this.devHubUsername ) {
+          console.log(`Deleting scratch org`, scratchOrgUsername);
+          child_process.execSync(
+            `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.devHubUsername}`,
+            {
+              stdio: 'inherit',
+              encoding: 'utf8'
+            }
+          );
+      }
     } catch (error) {
       console.log(error.message);
     }
