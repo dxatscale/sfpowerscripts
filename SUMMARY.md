@@ -60,7 +60,6 @@
 
 ---
 
-* [Change Log](change-log.md)
 * [Maintainers](maintainers.md)
 * [Contributors](contributors.md)
 * [Contributing to sfpowerscripts](contributing-to-sfpowerscripts.md)
