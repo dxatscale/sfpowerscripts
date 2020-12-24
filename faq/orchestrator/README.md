@@ -49,6 +49,24 @@ No, the above are the modifiers for the orchestrator commands, irrespective if y
   }
 ```
 
+## Is there an option to change forceIgnore files depending upon the stage?
+
+Sometimes, due to certain platform errors, some metadata components need to be ignored during **quickbuild** or **validate**  or any other stages. sfpowerscripts offer you an easy mechanism, which allows to switch .forceignore files depending on the stage. 
+
+Add this entry to your sfdx-project.json and as in the example below, mention the path to different files that need to be used for different stages
+
+```text
+ "plugins": {
+        "sfpowerscripts": {
+            "ignoreFiles": {
+                "prepare": ".forceignore",
+                "validate": ".forceignore",
+                "quickbuild": "forceignores/.buildignore",
+                "build": "forceignores/.validationignore"
+            }
+        }
+```
+
 ## Can I combine orchestrator with standalone install commands.. such as build from orchestrator and script out install package commands?
 
 Excluding **prepare** and **validate**, the other orchestrator commands such as **quickbuild, build** and **deploy** operate on a given artifact directory \(that contains sfpowerscripts artifacts\) and a sfdx-project.json
