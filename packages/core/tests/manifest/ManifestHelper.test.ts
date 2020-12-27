@@ -57,9 +57,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
      
   }
 
-  afterEach(()=>{
-    jest.restoreAllMocks();
-  });
+
 
 
   beforeEach(()=>{

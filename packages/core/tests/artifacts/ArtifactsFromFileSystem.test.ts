@@ -6,10 +6,7 @@ import ArtifactFilePathFetcher from "../../src/artifacts/ArtifactFilePathFetcher
 
 describe("Provided a path to the artifacts folder containing sfpowerscripts artifact", () => {
 
-  afterEach(()=>{
-    jest.restoreAllMocks();
-  });
-
+ 
 
   it("should return all the artifacts, if a package name is not provided", () => {
     const globMock = jest.spyOn(glob, "sync");

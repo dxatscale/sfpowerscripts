@@ -8,7 +8,6 @@ describe("Fetch a list of sfpowerscripts artifacts from an org", () => {
 
 
   beforeEach(() => {
-    jest.restoreAllMocks();
     InstalledAritfactsFetcher.resetFetchedArtifacts();
   });
 
