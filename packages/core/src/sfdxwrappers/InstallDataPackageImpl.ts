@@ -7,6 +7,7 @@ import { PackageInstallationResult, PackageInstallationStatus } from "../package
 import ManifestHelpers from "../manifest/ManifestHelpers";
 import SFPLogger from "../utils/SFPLogger";
 import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
+import ArtifactInstallationStatusUpdater from "../artifacts/ArtifactInstallationStatusUpdater";
 const path = require("path");
 
 export default class InstallDataPackageImpl {
@@ -134,7 +135,7 @@ export default class InstallDataPackageImpl {
         );
       }
 
-      await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
+      await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
         this.targetusername,
         this.packageMetadata,
         packageDescriptor.aliasfy ? this.targetusername : null,

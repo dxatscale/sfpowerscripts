@@ -4,7 +4,7 @@ import SFPLogger from "../utils/SFPLogger";
 
 export class PackageXMLManifestHelpers
 {
-  public static checkApexInPayload(manifest: any) {
+  public static checkApexInPayload(manifest: any):boolean {
     let isApexFound = false;
     if (Array.isArray(manifest["Package"]["types"])) {
       for (let type of manifest["Package"]["types"]) {
@@ -22,7 +22,7 @@ export class PackageXMLManifestHelpers
     return isApexFound;
   }
 
-  public static checkProfilesinPayload(manifest: any) {
+  public static checkProfilesinPayload(manifest: any):boolean {
     let isProfilesFound = false;
     if (Array.isArray(manifest["Package"]["types"])) {
       for (let type of manifest["Package"]["types"]) {
