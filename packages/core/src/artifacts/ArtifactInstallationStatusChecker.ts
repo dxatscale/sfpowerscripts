@@ -33,23 +33,4 @@ export default class ArtifactInstallationStatusChecker {
     }
     return false;
   }
-
-  public static async updatePackageInstalledInOrg(
-    target_org: string,
-    packageMetadata: PackageMetadata,
-    subdirectory:string,
-    isHandledByCaller: boolean
-  ):Promise<boolean> {
-    if (isHandledByCaller) return true; //This is to be handled by the caller, in that case if it reached here, we should 
-                                        //just ignore
-
-    try {
-      await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata,subdirectory);
-    } catch (error) {
-      SFPLogger.log(
-        "Unable to update details about artifacts to the org"
-      );
-    }
-    return false;
-  }
 }

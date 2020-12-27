@@ -6,7 +6,30 @@ const retry = require("async-retry");
 
 //Update sfpowerscripts Artifats installed in an Org
 export default class ArtifactInstallationStatusUpdater {
-  public static async updateArtifact(
+
+
+
+  
+  public static async updatePackageInstalledInOrg(
+    target_org: string,
+    packageMetadata: PackageMetadata,
+    subdirectory:string,
+    isHandledByCaller: boolean
+  ):Promise<boolean> {
+    if (isHandledByCaller) return true; //This is to be handled by the caller, in that case if it reached here, we should 
+                                        //just ignore
+
+    try {
+      return  ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata,subdirectory);
+    } catch (error) {
+      SFPLogger.log(
+        "Unable to update details about artifacts to the org"
+      );
+    }
+  }
+
+
+  private static async updateArtifact(
     username: string,
     packageMetadata: PackageMetadata,
     subdirectory?:string
@@ -21,7 +44,7 @@ export default class ArtifactInstallationStatusUpdater {
 
 
 
-    return await retry(
+    return  retry(
       async (bail) => {
 
         let cmdOutput;
@@ -39,7 +62,9 @@ export default class ArtifactInstallationStatusUpdater {
           );
         }
 
+        
         let result = JSON.parse(cmdOutput);
+        
         if (result["status"] == 0 && result["result"]["success"]) {
           return true;
         } else {

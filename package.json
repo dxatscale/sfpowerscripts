@@ -2,6 +2,7 @@
   "name": "sfpowerscripts",
   "private": true,
   "devDependencies": {
+    "@types/async-retry": "^1.4.2",
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
     "@oclif/dev-cli": "^1",

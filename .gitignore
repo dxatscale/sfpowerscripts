@@ -8,3 +8,5 @@ packages/azpipelines/.taskkey
 lerna-debug.log
 
  packages/azpipelines_release_management_extensions/BuildTasks/ManageReleaseTask/*
+
+packages/core/coverage
