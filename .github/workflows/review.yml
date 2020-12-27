@@ -1,5 +1,5 @@
 # Unique name for this workflow
-name: review
+name: Validate PR and Run Tests
 
 # Definition when the workflow should run
 on:

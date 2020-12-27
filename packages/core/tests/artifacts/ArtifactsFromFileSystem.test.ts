@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 const glob = require("glob");
-import AdmZip = require("adm-zip");
+
 
 import ArtifactFilePathFetcher from "../../src/artifacts/ArtifactFilePathFetcher";
 

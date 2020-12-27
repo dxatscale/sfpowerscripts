@@ -1,4 +1,3 @@
-import ArtifactInstallationStatusUpdater from "./ArtifactInstallationStatusUpdater";
 import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
 import PackageMetadata from "../PackageMetadata";
 import SFPLogger from "../utils/SFPLogger";
