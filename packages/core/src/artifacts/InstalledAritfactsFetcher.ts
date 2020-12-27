@@ -23,7 +23,7 @@ export default class InstalledAritfactsFetcher {
             bail(
               new Error(
                 "Unable to fetch any sfpowerscripts artifacts in the org\n" +
-                  "1. sfpowercripts package is notinstalled in the org\n" +
+                  "1. sfpowerscripts package is notinstalled in the org\n" +
                   "2. The required prerequisite object is not deployed to this org\n"
               )
             );
@@ -34,5 +34,10 @@ export default class InstalledAritfactsFetcher {
     } else {
       return InstalledAritfactsFetcher.artifacts;
     }
+  }
+
+  public static resetFetchedArtifacts()
+  {
+    this.artifacts=null;
   }
 }

@@ -16,6 +16,7 @@ import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallation
 import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
 
 import * as fs from "fs-extra";
+import ArtifactInstallationStatusUpdater from "../artifacts/ArtifactInstallationStatusUpdater";
 const path = require("path");
 const glob = require("glob");
 const os = require("os");
@@ -194,7 +195,7 @@ export default class InstallSourcePackageImpl {
           );
         }
 
-        await ArtifactInstallationStatusChecker.updatePackageInstalledInOrg(
+        await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
           this.targetusername,
           this.packageMetadata,
           packageDescriptor.aliasfy ? this.targetusername : null,

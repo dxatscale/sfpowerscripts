@@ -27,8 +27,9 @@ export default class SFPLogger {
     }
 
     if (!SFPLogger.isSupressLogs && SFPLogger.logLevel <= logLevel) {
-      if (value) console.log(key, value);
-      else console.log(key);
+      if (value && (typeof jest == 'undefined'))  console.log(key, value);
+      else 
+       if(typeof jest == 'undefined') console.log(key);
     }
   }
 }
