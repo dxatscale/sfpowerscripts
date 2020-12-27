@@ -27,7 +27,7 @@ stages:
 
 #Pull Request Review : Triggered for any PRs
 - stage: Review
-  condition:  eq(variables['build.Reason'], 'PullRequest')
+  condition:  or(eq(variables['build.Reason'], 'PullRequest'), eq(variables['build.Reason'], 'Manual'))
   dependsOn: []
   jobs:
 

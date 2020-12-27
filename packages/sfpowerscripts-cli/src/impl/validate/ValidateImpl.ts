@@ -5,6 +5,8 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/Art
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { Stage } from "../Stage";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import fs = require("fs");
+const Table = require("cli-table");
 
 
 export default class ValidateImpl {
@@ -38,7 +40,14 @@ export default class ValidateImpl {
         this.deployShapeFile(this.shapeFile, scratchOrgUsername);
       }
 
-      let packagesToCommits = this.getPackagesToCommits(scratchOrgUsername);
+      let packagesToCommits: {[p: string]: string} = {};
+      let queryResult = this.querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername);
+      if (queryResult) {
+        if (queryResult.status === 0) {
+          packagesToCommits = this.getPackagesToCommits(queryResult);
+          this.printArtifactVersions(queryResult);
+        } else console.log("Failed to query org for Sfpowerscripts Artifacts");
+      }
 
       await this.buildChangedSourcePackages(packagesToCommits);
 
@@ -54,22 +63,33 @@ export default class ValidateImpl {
         return true;
     } finally {
       if (this.isDeleteScratchOrg) {
-        console.log(`Deleting scratch org`, scratchOrgUsername);
         this.deleteScratchOrg(scratchOrgUsername);
-      }
+      } else {
+          fs.writeFileSync(
+            ".env",
+            `sfpowerscripts_scratchorg_username=${scratchOrgUsername}\n`,
+            { flag: "a" }
+          );
+          console.log(
+            `sfpowerscripts_scratchorg_username=${scratchOrgUsername}`
+          );
+        }
     }
 
   }
 
   private deleteScratchOrg(scratchOrgUsername: string): void {
     try {
-      child_process.execSync(
-        `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.devHubUsername}`,
-        {
-          stdio: 'inherit',
-          encoding: 'utf8'
-        }
-      );
+      if (scratchOrgUsername && this.devHubUsername ) {
+          console.log(`Deleting scratch org`, scratchOrgUsername);
+          child_process.execSync(
+            `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.devHubUsername}`,
+            {
+              stdio: 'inherit',
+              encoding: 'utf8'
+            }
+          );
+      }
     } catch (error) {
       console.log(error.message);
     }
@@ -175,27 +195,35 @@ export default class ValidateImpl {
     this.printBuildSummary(generatedPackages, failedPackages, buildElapsedTime);
   }
 
-  private getPackagesToCommits(scratchOrgUsername: string): {[p: string]: string} {
+  private getPackagesToCommits(queryResult: any): {[p: string]: string} {
     let packagesToCommits: {[p: string]: string} = {};
 
-    let queryResult = this.querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername);
-
-    if (queryResult) {
-      if (queryResult.status === 0) {
-        // Construct map of artifact and associated latest tag
-        queryResult.result.records.forEach((artifact) => {
-          packagesToCommits[artifact.Name] = artifact.CommitId__c;
-        });
-
-        console.log(`Artifacts installed in scratch org: ${JSON.stringify(packagesToCommits, null, 4)}`);
-      }
-      else
-        console.log("Failed to query org for Sfpowerscripts Artifacts");
-    }
+    // Construct map of artifact and associated commit Id
+    queryResult.result.records.forEach((artifact) => {
+      packagesToCommits[artifact.Name] = artifact.CommitId__c;
+    });
 
     return packagesToCommits;
   }
 
+  private printArtifactVersions(queryResult: any) {
+    let table = new Table({
+      head: ["Artifact", "Version"],
+    });
+
+    queryResult.result.records.forEach((artifact) => {
+      table.push([artifact.Name, artifact.Version__c]);
+    });
+
+    console.log(`Artifacts installed in scratch org:`);
+    console.log(table.toString());
+  }
+
+  /**
+   * Query SfpowerscriptsArtifact__c records in scratch org. Returns query result as JSON if records are found,
+   * otherwise returns null.
+   * @param scratchOrgUsername
+   */
   private querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername): any {
     let queryResultJson: string;
     try {
