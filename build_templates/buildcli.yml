@@ -114,6 +114,15 @@ steps:
             displayName: 'Build  All  Packages'
             condition: or( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}', 'review') )
 
+
+          - task: CmdLine@2
+            displayName: 'Run Unit Tests'
+            inputs:
+                 script: 'npm run test'
+                 workingDirectory: '$(System.DefaultWorkingDirectory)/packages/core'
+
+
+
           - task: CmdLine@2
             displayName: 'Publish CLI/Core'
             condition: eq( ${{ parameters.publish }},true)
