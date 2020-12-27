@@ -8,7 +8,7 @@
     "lib"
   ],
   "scripts": {
-    "build": "npm run clean && npm run compile",
+    "build": "npm run clean && npm run compile && npm run test",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json",
     "test": "jest --coverage"
