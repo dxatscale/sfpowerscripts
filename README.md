@@ -6,15 +6,24 @@
 
 
 
-sfpowerscripts is a lightweight orchestrator built on top of sfdx-cli and open source sfdx plugin [sfpowerkit]( 
-https://github.com/Accenture/sfpowerkit) aimed at eliminating wasted efforts in writing boiler plate code (often written using bash scripts) while setting up a  Continous Build system for Salesforce.
+An opinionated Salesforce build system  as a sfdx plugin that can be implemented in any CI/CD system of choice
+
+
+#### Features
+
+- Features an Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance on programs often dealing with multiple number of packages
+- Builds packages in parallel by respecting dependencies
+- Ability to selectively build changed packages in a mono repo
+- Ability to deploy only packages that are changed in repo
+- Pooling commands to prepare a pool of scratch org's with packages pre installed for optimized Pull/Merge Request validation
+- Artifacts Driven, all create commands produce an artifact or operate on an artifact
+- Integrate with any CI/CD system of choice
+- All commands are enabled with statsD, for collecting metrics about your pipeline
+
 
 The project supports the following targets at the moment
+- <b>SFDX CLI Plugin</b> that can be deployed in any CI/CD system, The plugin is available [here](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)
 - <b>Azure Pipelines</b> through a native extension. More details on the extension is available [here](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/azpipelines)
-- For other <b>Continous Build platforms</b>, through a sfdx-plugin. Details on the command and usage is available [here](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)
-
-The project intends to add native extension to other CI/CD platforms (which supports an extension based model) or provide sample pipelines to get started with minimal efforts.
-
 
 
 #### Motivation
@@ -35,9 +44,9 @@ The project was then migrated to Accenture Open Source Program and a key compone
 
 #### Maintainers
 
-List of Maintainers are available in the [link](https://sfpowerscripts.com/maintainers/) 
+List of Maintainers are available in the [link](https://dxatscale.gitbook.io/sfpowerscripts/maintainers) 
 
 
 #### Where do I reach for queries?
 
-Please create an issue using the methods listed [here](https://sfpowerscripts.com/support/).
+Please create an issue using the methods listed [here](https://dxatscale.gitbook.io/sfpowerscripts/support).
