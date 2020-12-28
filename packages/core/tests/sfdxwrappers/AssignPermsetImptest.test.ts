@@ -1,12 +1,14 @@
 import child_process = require("child_process");
 import AssignPermissionSetsImpl from "../../src/sfdxwrappers/AssignPermissionSetsImpl";
 
+let mockAliasExec=() => {
+  return "test-sfvulqawd2w0@example.com";
+}
+
 jest.mock("../../src/sfdxwrappers/AliasListImpl", () => {
   class AliasListImpl {
     constructor(alias: string) {}
-    exec(): string {
-      return "test-sfvulqawd2w0@example.com";
-    }
+    exec=mockAliasExec;
   }
   return AliasListImpl;
 });
@@ -184,6 +186,20 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
   });
  
 
+  it("should throw an error, if any dependent commands are not able to be excuted",()=>{
+
+    mockAliasExec=() => {
+      throw new Error("Failed to fetch alias");
+    }
+    let alias = "S05";
+    let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
+      alias,
+      ["test1", "test2"],
+      null
+    );
+    expect(()=>{assignPermSetImpl.exec()}).toThrow();
+
+  });
 
 
 });
