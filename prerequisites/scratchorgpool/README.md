@@ -1,6 +1,6 @@
 # Support Fields for ScratchOrg Pooling
 
-Deploy the following fields along with validation rule to a DevHub to get the associated scratch org commands working.
+Deploy the following custom object "ScratchOrgInfo", custom fields, validation rule, and workflow to a DevHub as prerequisites to enable the associated scratch org commands to work.
 
 ### How to deploy!
 
