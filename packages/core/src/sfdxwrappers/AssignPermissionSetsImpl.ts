@@ -1,5 +1,7 @@
 import child_process = require("child_process");
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
+import AliasListImpl from "./AliasListImpl";
+import PermsetListImpl from "./PermsetListImpl";
 const Table = require("cli-table");
 
 export default class AssignPermissionSetsImpl {
@@ -8,102 +10,82 @@ export default class AssignPermissionSetsImpl {
     private permSets: string[],
     private project_directory: string,
     private packageLogger?: string
-  ){}
+  ) {}
 
-  public exec() {
+  public exec(): {
+    successfullAssignments: {
+      username: string;
+      permset: string;
+    }[];
+    failedAssignments: {
+      username: string;
+      permset: string;
+    }[];
+  } {
+    // Fetch username if alias is provied
+    let username: string = new AliasListImpl(this.target_org).exec();
+    let assignedPermSets = new PermsetListImpl(
+      username,
+      this.target_org
+    ).exec();
 
-    // Expand alias into full username
-    let username: string = this.target_org;
-    let aliasList: string = child_process.execSync(
-      `sfdx alias:list --json`,
-      {
-        cwd: this.project_directory,
-        encoding: "utf8",
-        stdio: ['pipe', 'pipe', 'inherit']
+    let failedAssignments: {
+      username: string;
+      permset: string;
+    }[] = new Array();
+    let successfullAssignments: {
+      username: string;
+      permset: string;
+    }[] = new Array();
+
+    for (let permSet of this.permSets) {
+      let permSetAssignmentMatch = assignedPermSets.find((record) => {
+        return record.PermissionSet.Name === permSet;
+      });
+
+      if (permSetAssignmentMatch !== undefined) {
+        continue;
       }
-    );
 
-    let aliasListObj = JSON.parse(aliasList);
-    if (aliasListObj.status === 0) {
-      let aliasMatch = aliasListObj
-        .result
-        .find(
-          (elem) => {
-            return elem.alias === username;
+      try {
+        let permsetAssignmentJson: string = child_process.execSync(
+          `npx sfdx force:user:permset:assign -n ${permSet} -u ${username} --json`,
+          {
+            cwd: this.project_directory,
+            encoding: "utf8",
+            stdio: ["pipe", "pipe", "inherit"],
           }
         );
 
-      if (aliasMatch !== undefined) {
-        username = aliasMatch.value;
-      }
-    } else {
-      throw new Error(`Failed to retrieve list of username aliases`);
-    }
-
-    for (let permSet of this.permSets) {
-
-      // Check whether permission set is assigned to username
-      let queryResult: string = child_process.execSync(
-        `sfdx force:data:soql:query -q "SELECT Id, PermissionSet.Name, Assignee.Username FROM PermissionSetAssignment WHERE Assignee.Username = '${username}'" -u ${username} --json`,
-        {
-          cwd: this.project_directory,
-          encoding: "utf8",
-          stdio: ['pipe', 'pipe', 'inherit']
-        }
-      );
-
-      let queryResultObj = JSON.parse(queryResult);
-      if (queryResultObj.status === 0) {
-        let permSetAssignmentMatch = queryResultObj
-          .result
-          .records
-          .find(
-            (record) => {
-              return record.PermissionSet.Name === permSet;
-            }
-          );
-        if ( permSetAssignmentMatch !== undefined) {
-          // Skip assignment of permission set
-          SFPLogger.log(`${permSet} is already assigned to ${username}`, null, this.packageLogger);
-          continue;
-        }
-      } else {
-        throw new Error(`Failed to query permission set assignments for ${username}`);
-      }
-
-      let permsetAssignmentJson: string = child_process.execSync(
-        `npx sfdx force:user:permset:assign -n ${permSet} -u ${username} --json`,
-        {
-          cwd: this.project_directory,
-          encoding: "utf8",
-          stdio: ['pipe', 'pipe', 'inherit']
-        }
-      );
-
-      let permsetAssignment = JSON.parse(permsetAssignmentJson);
-
-      if (permsetAssignment.status === 0) {
-        SFPLogger.log(`Permsets Assigned`);
-        this.printPermsetAssignments(permsetAssignment.result.successes);
-      } else {
-        SFPLogger.log(`Failures`);
-        this.printPermsetAssignments(permsetAssignment.result.failures);
+        let permsetAssignment = JSON.parse(permsetAssignmentJson);
+        if (permsetAssignment.status === 0)
+          successfullAssignments.push({ username: username, permset: permSet });
+        else failedAssignments.push({ username: username, permset: permSet });
+      } catch (err) {
+        failedAssignments.push({ username: username, permset: permSet });
       }
     }
+
+    SFPLogger.log("Succeeded PermSet Assignments", null, this.packageLogger);
+    this.printPermsetAssignments(successfullAssignments);
+
+    if (failedAssignments.length > 0) {
+      SFPLogger.log("Failed PermSet Assignments", null, this.packageLogger);
+      this.printPermsetAssignments(failedAssignments);
+    }
+
+    return { successfullAssignments, failedAssignments };
   }
 
   private printPermsetAssignments(
-    assignments: { name: string; value: string }[]
+    assignments: { username: string; permset: string }[]
   ) {
     let table = new Table({
-      head: ["Username", "Permission Set Assignment"]
+      head: ["Username", "Permission Set Assignment"],
     });
 
     assignments.forEach((assignment) => {
-      table.push([
-        assignment.name,
-        assignment.value
-      ]);
+      table.push([assignment.username, assignment.permset]);
     });
 
     SFPLogger.log(table.toString(), null, this.packageLogger);

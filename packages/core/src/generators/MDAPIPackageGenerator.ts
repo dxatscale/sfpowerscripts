@@ -3,15 +3,13 @@ import * as fs from "fs-extra";
 let path = require("path");
 import { isNullOrUndefined } from "util";
 const xmlParser = require("xml2js").Parser({ explicitArray: false });
-export type MDAPIPackageArtifact = {
-  mdapiDir: string;
-};
 import { readdirSync, readFileSync, existsSync } from "fs";
 import ignore from "ignore";
 import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
 const glob = require("glob");
 
 export default class MDAPIPackageGenerator {
+
   public static async getMDAPIPackageFromSourceDirectory(
     projectDirectory: string,
     sourceDirectory?: string
