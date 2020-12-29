@@ -1,11 +1,13 @@
 # Support Fields for ScratchOrg Pooling
 
-Deploy the following fields along with validation rule to a DevHub to get the associated scratch org commands working.
+Deploy the following additions to standard object "ScratchOrgInfo" such as a custom fields, validation rule, and workflow to a DevHub as prerequisites to enable the associated scratch org commands to work.
 
 ### How to deploy!
 
-Install the supporting fields and validation rule to DevHub
+- Clone sfpowerscripts repo
 
-`cd src_salesforce_packages/scratchorgpool`
+- Install the supporting fields and validation rule to DevHub
+
+`cd prerequisites/scratchorgpool`
 
 `sfdx force:source:deploy -p force-app -u Devhub -w 30`
