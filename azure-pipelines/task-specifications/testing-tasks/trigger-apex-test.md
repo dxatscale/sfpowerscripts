@@ -2,7 +2,7 @@
 
 | **Task Id** | Version |
 | :--- | :--- |
-| sfpwowerscript-triggerapextest-task | 9.0.3 |
+| sfpwowerscript-triggerapextest-task | 11.0.9 |
 
 This task is used to trigger Apex unit tests, and also captures the results as an artifact and publishes the result in the "tests" tab. Supports "RunAllTestsInPackage" test level, which gives option to validate the code coverage of individual classes in the package.
 
@@ -59,20 +59,24 @@ This field is only visible/valid if the Test Level is "RunApexTestSuite"
 
   \_\_
 
-* **Validate code coverage of individual classes** / _isValidateCoverage_
+* **Validate code coverage of individual classes** / validateIndividualClassCoverage
 
-  Verifies whether individual classes meet the minimum code coverage requirement
+  Validates individual classes meet the minimum required percentage coverage
+
+* **Validate code coverage of package** / _validatePackageCoverage_
+
+  Validates whether package coverage is greater than the minimum required percentage coverage
 
 {% hint style="info" %}
-This field is only visible/valid if the Test Level is "RunAllTestsInPackage"
+_validateIndividualClassCoverage & validatePackageCoverage_ fields are only visible/valid if the Test Level is "RunAllTestsInPackage"
 {% endhint %}
 
-* **Minimum percentage coverage required per class** / _coverageThreshold_
+* **Minimum required percentage coverage** / _coverageThreshold_
 
-  Minimum coverage required per class, in order for the task to succeed
+  Minimum required percentage coverage, when validating code coverage
 
 {% hint style="info" %}
-This field is only visible/valid if "isValidateCoverage"
+This field is only visible/valid if _validatePackageCoverage_ or _validateIndividualClassCoverage_ is true
 {% endhint %}
 
 * **Project directory /** _project\_directory_
@@ -94,13 +98,13 @@ None
              target_org: 'scratchorg'
              testlevel: 'RunLocalTests'
              wait_time: '60'
-             isTelemetryEnabled: true
 ```
 {% endtab %}
 {% endtabs %}
 
 **Changelog**
 
+* 11.0.9 Validate code coverage of unlocked packages
 * 9.0.3 Add RunAllTestsInPackage test level [\#159](https://github.com/Accenture/sfpowerscripts/pull/159)
 * 8.0.2 Validate code coverage of individual classes for Apex test suite
 * 6.0.4 Refactored to use revamped folder structure

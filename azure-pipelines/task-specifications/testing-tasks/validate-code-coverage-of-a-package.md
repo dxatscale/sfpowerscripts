@@ -2,7 +2,7 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-validatetestcoveragepackage-task | 4.0.15 |
+| sfpwowerscript-validatetestcoveragepackage-task | 5.0.5 |
 
 This task is used to validate the code coverage of a second generation package.
 
@@ -40,6 +40,7 @@ If you are using this task after 'Create Unlocked Package', utilize the output v
 
 **Changelog**
 
+* 5.0.5 Upgrade to Node 10
 * 4.0.9 Update Core dependency
 * 4.0.5
   * Remove Telemetry Collection

@@ -2,7 +2,7 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscripts-analyzewithpmd-task | 7.0.6 |
+| sfpwowerscripts-analyzewithpmd-task | 8.0.5 |
 
 This task is used to run a static analysis of the apex classes in a project directory using PMD. This is a task execution wrapper around the command sfpowerkit:source:pmd which you can read [here](https://github.com/Accenture/sfpowerkit)
 
@@ -54,6 +54,7 @@ None
 
 **Changelog**
 
+* 8.0.5 Upgrade to Node 10
 * 7.0.0 [\#113](https://github.com/Accenture/sfpowerscripts/pull/113) Fix PMD Apex Analysis dashboard
 * 6.0.4 Remove Telemetry collection
 * 5.0.9 Refactored to use revamped folder structure
