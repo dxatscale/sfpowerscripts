@@ -2,7 +2,7 @@ import  SFPPackage  from "../../src/package/SFPPackage";
 import PackageTestCoverage from "../../src/package/PackageTestCoverage"
 
 import { jest, expect } from "@jest/globals";
-import fs from 'fs-extra';
+
 
 let packageType="Unlocked";
 jest.mock("../../src/package/SFPPackage",()=>{
@@ -37,14 +37,14 @@ describe("Given a sfpowerscripts package andcode coverage report, a package cove
 
   it("should be able to provide the coverage of a provided unlocked package",async ()=>{  
          let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-         let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,testCoverage);
+         let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
          expect (packageTestCoverage.getCurrentPackageTestCoverage()).toBe(88);
   });
 
 
   it("should able to validate whether the coverage of unlocked  package is above a certain threshold",async ()=>{  
     let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-    let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,testCoverage);
+    let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
     let requiredCoverage=80;
     let result=packageTestCoverage.validateTestCoverage(requiredCoverage);
     expect (result.result).toBe(true);
@@ -59,7 +59,7 @@ describe("Given a sfpowerscripts package andcode coverage report, a package cove
 
 it("should able to validate whether the coverage of unlocked  package is above mandatory threshold",async ()=>{  
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,testCoverage);
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
   let requiredCoverage=75;
   let result=packageTestCoverage.validateTestCoverage();
   expect (result.result).toBe(true);
@@ -76,7 +76,7 @@ it("should able to validate whether the coverage of unlocked  package is above m
 it("should be able to provide the coverage of a provided source package",async ()=>{  
   packageType="Source";
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,testCoverage);
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
   expect (packageTestCoverage.getCurrentPackageTestCoverage()).toBe(88);
 });
 
@@ -84,7 +84,7 @@ it("should be able to provide the coverage of a provided source package",async (
 it("should able to validate whether the coverage of source  package is above a certain threshold",async ()=>{  
   packageType="Source";
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,testCoverage);
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
   let requiredCoverage=80;
   let result=packageTestCoverage.validateTestCoverage(requiredCoverage);
   expect (result.result).toBe(true);
@@ -101,7 +101,7 @@ it("should able to validate whether the coverage of source  package is above a c
 it("should able to validate whether the coverage of source  package is above mandatory threshold",async ()=>{  
   packageType="Source";
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,testCoverage);
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
   let requiredCoverage=75;
   let result=packageTestCoverage.validateTestCoverage();
   expect (result.result).toBe(true);
@@ -117,7 +117,7 @@ it("should able to validate whether the coverage of source  package is above man
 });
 
 
-let testCoverage=[
+let succesfulTestCoverage=[
   {
       "id": "01p0w000001n1SdAAI",
       "name": "CustomerServices",
