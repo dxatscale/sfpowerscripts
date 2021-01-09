@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import path = require("path");
-import SFPPackage,{ ApexClasses}   from "../../package/SFPPackage";
+import SFPPackage, { ApexClasses } from "../../package/SFPPackage";
 import TriggerApexTestImpl, {
   RunSpecifiedTestsOption,
   TestOptions,
@@ -10,13 +10,15 @@ import IndividualClassCoverage, {
 } from "../../package/IndividualClassCoverage";
 import { TestReportDisplayer } from "./TestReportDisplayer";
 import PackageTestCoverage from "../../package/PackageTestCoverage";
+import SFPLogger from "../../utils/SFPLogger";
 
 export default class TriggerApexTests {
   public constructor(
     private target_org: string,
     private testOptions: TestOptions,
     private coverageOptions: CoverageOptions,
-    private project_directory: string
+    private project_directory: string,
+    private fileLogger?: any
   ) {}
 
   public async exec(): Promise<{
@@ -29,13 +31,19 @@ export default class TriggerApexTests {
       this.project_directory,
       this.testOptions
     );
+
+    SFPLogger.log(
+      "Executing Command",
+      triggerApexTestImpl.getGeneratedSFDXCommandWithParams(),this.fileLogger
+    );
     await triggerApexTestImpl.exec(true);
 
     let id = this.getTestId();
     let testReport = this.getTestReport(id);
     let testReportDisplayer = new TestReportDisplayer(
       testReport,
-      this.testOptions
+      this.testOptions,
+      this.fileLogger
     );
 
     if (testReport.summary.outcome == "Failed") {
@@ -43,7 +51,7 @@ export default class TriggerApexTests {
       return {
         result: false,
         id: id,
-        message: "Failed",
+        message: "Test execution failed",
       };
     } else {
       let coverageResults = await this.validateForApexCoverage();
@@ -54,39 +62,72 @@ export default class TriggerApexTests {
         coverageResults.classesWithInvalidCoverage
       );
       testReportDisplayer.printTestSummary(coverageResults.packageTestCoverage);
+
+      if (
+        this.coverageOptions.isIndividualClassCoverageToBeValidated ||
+        this.coverageOptions.isPackageCoverageToBeValidated
+      ) {
+        return {
+          result: coverageResults.result,
+          id: id,
+          message: coverageResults.message,
+        };
+      } else {
+        return {
+          result: coverageResults.result,
+          id: id,
+          message: `Test execution succesfully completed`,
+        };
+      }
     }
   }
 
-  private async validateForApexCoverage() {
-    let coverageValidationResult;
-
+  private async validateForApexCoverage(): Promise<{
+    result: boolean;
+    message?: string;
+    packageTestCoverage?: number;
+    classesCovered?: {
+      name: string;
+      coveredPercent: number;
+    }[];
+    classesWithInvalidCoverage?: {
+      name: string;
+      coveredPercent: number;
+    }[];
+  }> {
     if (this.testOptions instanceof RunAllTestsInPackageOptions) {
       let sfppackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
         this.project_directory,
         this.testOptions.pkg
       );
-      if (this.coverageOptions.isPackageCoverageToBeValidated) {
+     
         let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
           sfppackage,
-          this.getCoverageReport
+          this.getCoverageReport()
         );
         let coveragePercent = packageTestCoverage.getCurrentPackageTestCoverage();
-        coverageValidationResult = packageTestCoverage.validateTestCoverage(
+        return packageTestCoverage.validateTestCoverage(
           this.coverageOptions.coverageThreshold
         );
-      }
+      
     } else {
       if (this.coverageOptions.isIndividualClassCoverageToBeValidated) {
         let coverageValidator: IndividualClassCoverage = new IndividualClassCoverage(
-          this.getCoverageReport
+          this.getCoverageReport()
         );
-        coverageValidationResult = coverageValidator.validateIndividualClassCoverage(
+        return coverageValidator.validateIndividualClassCoverage(
+          coverageValidator.getIndividualClassCoverage(),
+          this.coverageOptions.coverageThreshold
+        );
+      } else {
+        let coverageValidator: IndividualClassCoverage = new IndividualClassCoverage(
+          this.getCoverageReport()
+        );
+        return coverageValidator.validateIndividualClassCoverage(
           coverageValidator.getIndividualClassCoverage()
         );
       }
     }
-
-    return coverageValidationResult;
   }
 
   private getTestReport(testId: string) {
@@ -104,7 +145,7 @@ export default class TriggerApexTests {
       .readFileSync(path.join(this.testOptions.outputdir, "test-run-id.txt"))
       .toString();
 
-    console.log("test_id", test_id);
+    SFPLogger.log("test_id", test_id);
     return test_id;
   }
 

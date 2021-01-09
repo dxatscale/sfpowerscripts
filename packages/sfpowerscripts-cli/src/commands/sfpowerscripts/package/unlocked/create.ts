@@ -1,6 +1,5 @@
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
-import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl";
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
@@ -8,6 +7,7 @@ import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
 import * as fs from "fs-extra"
 import path = require("path");
+import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateUnlockedPackageImpl";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);

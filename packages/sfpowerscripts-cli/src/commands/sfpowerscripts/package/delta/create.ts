@@ -1,14 +1,14 @@
 import { flags } from "@salesforce/command";
 import { Messages } from "@salesforce/core";
-import CreateDeltaPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDeltaPackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
+import CreateDeltaPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateDeltaPackageImpl"
 import { exec } from "shelljs";
-import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import simplegit, { SimpleGit } from "simple-git/promise";
 import * as fs from "fs-extra";
 import path = require("path");
+import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateSourcePackageImpl";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -167,7 +167,6 @@ export default class CreateDeltaPackage extends SfpowerscriptsCommand {
       let createSourcePackageImpl = new CreateSourcePackageImpl(
         deltaPackage.deltaDirectory,
         sfdx_package,
-        deltaPackage.destructiveChangesPath,
         packageMetadata
       );
       packageMetadata = await createSourcePackageImpl.exec();

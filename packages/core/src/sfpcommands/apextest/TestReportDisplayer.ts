@@ -2,16 +2,17 @@ import {
   RunApexTestSuitesOption,
   TestOptions,
 } from "../../sfdxwrappers/TriggerApexTestImpl";
-import { RunAllTestsInPackageOptions } from "./TriggerApexTest";
+import SFPLogger from "../../utils/SFPLogger";
+import { RunAllTestsInPackageOptions } from "./TriggerApexTests";
 
 const Table = require("cli-table");
 
 export class TestReportDisplayer {
-  constructor(private apexTestReport: any, private testOptions: TestOptions) {}
+  constructor(private apexTestReport: any, private testOptions: TestOptions, private fileLogger?:any) {}
 
   public printTestSummary(packageCoverage?: number): string {
     let apexTestReport = { ...this.apexTestReport };
-    console.log("\n\n\n=== Test Summary");
+    SFPLogger.log("\n\n\n=== Test Summary");
     let table = new Table({
       head: ["Name", "Value"],
     });
@@ -21,8 +22,8 @@ export class TestReportDisplayer {
       this.testOptions instanceof RunApexTestSuitesOption ||
       this.testOptions instanceof RunAllTestsInPackageOptions
     ) {
-      delete apexTestReport.summary.summary.testRunCoverage;
-      delete apexTestReport.summary.summary.orgWideCoverage;
+      delete apexTestReport.summary.testRunCoverage;
+      delete apexTestReport.summary.orgWideCoverage;
 
       if (this.testOptions instanceof RunAllTestsInPackageOptions)
         apexTestReport.summary.packageCoverage = packageCoverage;
@@ -35,12 +36,12 @@ export class TestReportDisplayer {
       }
     );
 
-    console.log(table.toString());
+    SFPLogger.log(table.toString(),this.fileLogger);
     return table.toString();
   }
 
   public printTestResults(): string {
-    console.log("=== Test Results");
+    SFPLogger.log("=== Test Results");
 
     let table = new Table({
       head: ["Test Name", "Outcome", "Message", "Runtime (ms)"],
@@ -55,16 +56,19 @@ export class TestReportDisplayer {
       ]);
     });
 
-    console.log(table.toString());
+    SFPLogger.log(table.toString(),this.fileLogger);
     return table.toString();
   }
 
   public printCoverageReport(
     coverageThreshold: number,
-    classesCovered: { name: string; coveredPercent: number }[],
+    classesCovered?: { name: string; coveredPercent: number }[],
     classesWithInvalidCoverage?: { name: string; coveredPercent: number }[]
   ): { classesCoveredTable: string; classInvalidCoverageTable?: string } {
-    let classesCoveredTable = this.printIndividualClassCoverage(classesCovered);
+    SFPLogger.log("\n\n=== Test Coverage",this.fileLogger);
+    let classesCoveredTable
+    if(classesCovered) {
+     classesCoveredTable = this.printIndividualClassCoverage(classesCovered); }
     if (classesWithInvalidCoverage) {
       let classInvalidCoverageTable = this.printClassesWithInvalidCoverage(
         classesWithInvalidCoverage,
@@ -78,8 +82,9 @@ export class TestReportDisplayer {
     classesWithInvalidCoverage: { name: string; coveredPercent: number }[],
     coverageThreshold: number
   ): string {
-    console.log(
-      `The following classes do not satisfy the ${coverageThreshold}% code coverage requirement:`
+    SFPLogger.log(
+      `The following classes do not satisfy the ${coverageThreshold}% code coverage requirement:`,
+      SFPLogger
     );
 
     return this.printIndividualClassCoverage(classesWithInvalidCoverage);
@@ -96,7 +101,7 @@ export class TestReportDisplayer {
       table.push([cls.name || "", cls.coveredPercent || ""]);
     });
 
-    console.log(table.toString());
+    SFPLogger.log(table.toString(),this.fileLogger);
     return table.toString();
   }
 }

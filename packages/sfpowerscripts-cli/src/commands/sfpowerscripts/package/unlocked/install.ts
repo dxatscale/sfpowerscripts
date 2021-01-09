@@ -1,9 +1,9 @@
-import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl';
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult';
+import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl';
 const fs = require("fs");
 
 // Initialize Messages with the current plugin directory

@@ -1,12 +1,12 @@
 import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import simplegit, { SimpleGit } from "simple-git/promise";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
-import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallSourcePackageImpl";
-import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallDataPackageImpl";
-import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
-import TriggerApexTestImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TriggerApexTestImpl";
+import TriggerApexTestImpl, { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TriggerApexTestImpl";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl";
+import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallSourcePackageImpl";
+import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl";
+
 import fs = require("fs");
 import path = require("path");
 import {
@@ -16,6 +16,11 @@ import {
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { EOL } from "os";
 import { Stage } from "../Stage";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import TriggerApexTests, { RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/TriggerApexTests";
+import SFPPackage from "@dxatscale/sfpowerscripts.core/lib/package/SFPPackage";
+import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/package/IndividualClassCoverage";
+import TriggerApexTest from "../../commands/sfpowerscripts/apextests/trigger";
 
 
 export enum DeploymentMode {
@@ -357,7 +362,7 @@ export default class DeployImpl {
     return installDataPackageImpl.exec();
   }
 
-  private triggerApexTests(
+  private  async triggerApexTests(
     sfdx_package: string,
     targetUsername: string,
     skipCoverageValidation: boolean,
@@ -367,24 +372,25 @@ export default class DeployImpl {
     result: boolean;
     message: string;
   }> {
-    let test_options = {
-      wait_time: "60",
-      testlevel: "RunAllTestsInPackage",
-      package: sfdx_package,
-      synchronous: false,
-      validateIndividualClassCoverage: false,
-      validatePackageCoverage: !skipCoverageValidation,
-      coverageThreshold: coverageThreshold || 75,
-      outputdir: ".testresults",
-    };
+   
+    let sfPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,sfdx_package,null,this.props.packageLogger);
+    let testOptions:TestOptions = new RunAllTestsInPackageOptions(sfdx_package,60,".testresults",sfPackage.apexTestClassses);
+    let testCoverageOptions:CoverageOptions ={
+      isIndividualClassCoverageToBeValidated:false,
+      isPackageCoverageToBeValidated:!skipCoverageValidation,
+      coverageThreshold:coverageThreshold || 75
+    }
 
-    let triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
+
+
+    let triggerApexTests: TriggerApexTests = new TriggerApexTests(
       targetUsername,
-      test_options,
+      testOptions,
+      testCoverageOptions,
       null
     );
 
-    return triggerApexTestImpl.exec();
+    return triggerApexTests.exec();
   }
 
   /**
@@ -409,7 +415,7 @@ export default class DeployImpl {
   private isOptimizedDeploymentForSourcePackages(
     sfdx_package:string
   ): boolean {
-    let pkgDescriptor = ManifestHelpers.getSFDXPackageDescriptor(null, sfdx_package);
+    let pkgDescriptor = ProjectConfig.getSFDXPackageDescriptor(null, sfdx_package);
 
     if(pkgDescriptor["isOptimizedDeployment"] == null)
       return true;
@@ -453,7 +459,7 @@ export default class DeployImpl {
   private getPackagesToDeploy(): any[] {
     let packagesToDeploy: any[];
 
-    let packages = ManifestHelpers.getSFDXPackageManifest(null)[
+    let packages = ProjectConfig.getSFDXPackageManifest(null)[
       "packageDirectories"
     ];
     let artifacts = ArtifactFilePathFetcher.findArtifacts(this.props.artifactDir);

@@ -2,12 +2,12 @@ import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import { Messages } from '@salesforce/core';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
-import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import { exec } from "shelljs";
 import * as fs from "fs-extra"
 import path = require("path");
+import CreateSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateSourcePackageImpl';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_source_package');
@@ -95,7 +95,6 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
         let createSourcePackageImpl = new CreateSourcePackageImpl(
           null,
           sfdx_package,
-          null,
           packageMetadata
         );
         packageMetadata = await createSourcePackageImpl.exec();

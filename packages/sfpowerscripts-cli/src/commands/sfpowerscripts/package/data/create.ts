@@ -2,13 +2,13 @@ import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import { Messages } from '@salesforce/core';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
-import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDataPackageImpl";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
 import { exec } from "shelljs";
 import * as fs from "fs-extra";
 import path = require("path");
+import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import CreateDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateDataPackageImpl';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_data_package');
@@ -54,7 +54,7 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
       const refname: string = this.flags.refname;
       const branch:string=this.flags.branch;
 
-      let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(null, sfdx_package);
+      let packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(null, sfdx_package);
       if (packageDescriptor.type?.toLowerCase() !== "data") {
         throw new Error("Data packages must have 'type' property of 'data' defined in sfdx-project.json");
       }

@@ -2,10 +2,10 @@ import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
 
 import InstallPackageCommand from "../../../../InstallPackageCommand";
-import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallSourcePackageImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 
 import * as fs from "fs-extra"
+import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallSourcePackageImpl";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
