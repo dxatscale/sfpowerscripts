@@ -1,4 +1,4 @@
-import SFPLogger from "../../lib/utils/SFPLogger";
+import SFPLogger from "../../src/utils/SFPLogger";
 
 export default class IndividualClassCoverage {
   public constructor(private codeCoverage: any) {}

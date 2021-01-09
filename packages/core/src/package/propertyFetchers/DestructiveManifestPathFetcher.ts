@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import SFPLogger from "../../utils/SFPLogger";
-import { SFPPackage } from "../SFPPackage";
+import SFPPackage  from "../SFPPackage";
 import { PropertyFetcher } from "./PropertyFetcher";
 
 

@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import path = require("path");
-import { ApexClasses, SFPPackage } from "../../package/SFPPackage";
+import SFPPackage,{ ApexClasses}   from "../../package/SFPPackage";
 import TriggerApexTestImpl, {
   RunSpecifiedTestsOption,
   TestOptions,

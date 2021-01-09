@@ -8,7 +8,7 @@ import path = require("path");
 import ApexTypeFetcher, { FileDescriptor } from "../../parser/ApexTypeFetcher";
 import SFPStatsSender from "../../utils/SFPStatsSender";
 import { PackageHelpers } from "../../package/PackageHelpers";
-import { SFPPackage } from "../../package/SFPPackage";
+import SFPPackage  from "../../package/SFPPackage";
 const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl {

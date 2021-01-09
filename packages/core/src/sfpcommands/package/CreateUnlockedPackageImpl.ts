@@ -10,7 +10,7 @@ import { EOL } from "os";
 import { delay } from "../../utils/Delay";
 import PackageVersionListImpl from "../../sfdxwrappers/PackageVersionListImpl";
 import SFPStatsSender from "../../utils/SFPStatsSender";
-import { SFPPackage } from "../../package/SFPPackage";
+import SFPPackage  from "../../package/SFPPackage";
 const path = require("path");
 
 export default class CreateUnlockedPackageImpl {

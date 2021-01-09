@@ -1,4 +1,4 @@
-import { SFPPackage } from "../SFPPackage";
+import SFPPackage  from "../SFPPackage";
 import { PropertyFetcher } from "./PropertyFetcher";
 
 @PropertyFetcher.register
