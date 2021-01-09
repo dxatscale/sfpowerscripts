@@ -1,8 +1,8 @@
 import child_process = require("child_process");
-import { onExit } from "../utils/OnExit";
+import { onExit } from "../../utils/OnExit";
 import { isNullOrUndefined } from "util";
-import ManifestHelpers from "../manifest/ManifestHelpers";
-import SFPLogger from "../utils/SFPLogger";
+import ProjectConfig from "../../project/ProjectConfig";
+import SFPLogger from "../../utils/SFPLogger";
 const path = require("path");
 import * as fs from "fs-extra";
 
@@ -42,14 +42,14 @@ export default class CreateDeltaPackageImpl {
     //If package is provided, do delta only for that package
     if (!isNullOrUndefined(this.sfdx_package)) {
       //Get Package Descriptor
-      let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      let packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
         this.projectDirectory,
         this.sfdx_package
       );
       let packageDirectory: string = packageDescriptor["path"];
       this.options["only_diff_for"] = packageDirectory;
     } else {
-      let sfdxManifest = ManifestHelpers.getSFDXPackageManifest(
+      let sfdxManifest = ProjectConfig.getSFDXPackageManifest(
         this.projectDirectory
       );
       if (sfdxManifest["packageDirectories"].length > 1) {

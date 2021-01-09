@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from "util";
-import ManifestHelpers from "../manifest/ManifestHelpers";
+import ProjectConfig from "../project/ProjectConfig";
 import * as rimraf from "rimraf";
 import SFPLogger from "../utils/SFPLogger";
 import { mkdirpSync } from "fs-extra";
@@ -40,7 +40,7 @@ export default class SourcePackageGenerator {
     fs.writeFileSync(
       path.join(artifactDirectory, "sfdx-project.json"),
       JSON.stringify(
-        ManifestHelpers.cleanupMPDFromManifest(projectDirectory, sfdx_package)
+        ProjectConfig.cleanupMPDFromManifest(projectDirectory, sfdx_package)
       )
     );
 
@@ -80,7 +80,7 @@ export default class SourcePackageGenerator {
     let scriptsDir: string = path.join(artifactDirectory, `scripts`)
     mkdirpSync(scriptsDir);
 
-    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+    let packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
       projectDirectory,
       sfdx_package
     );
@@ -122,7 +122,7 @@ export default class SourcePackageGenerator {
     let forceIgnoresDir: string = path.join(artifactDirectory, `forceignores`);
     mkdirpSync(forceIgnoresDir);
 
-    let projectConfig = ManifestHelpers.getSFDXPackageManifest(projectDirectory);
+    let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
     let ignoreFiles = projectConfig.plugins?.sfpowerscripts?.ignoreFiles;
 
     let rootForceIgnore: string = path.join(rootDirectory, ".forceignore");

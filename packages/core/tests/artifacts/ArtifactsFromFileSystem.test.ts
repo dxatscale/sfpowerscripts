@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { jest,expect } from "@jest/globals";
 const glob = require("glob");
 import ArtifactFilePathFetcher from "../../src/artifacts/ArtifactFilePathFetcher";
 

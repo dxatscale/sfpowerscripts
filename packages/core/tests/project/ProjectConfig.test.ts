@@ -1,5 +1,6 @@
-import ManifestHelpers from "../../src/manifest/ManifestHelpers";
+import ProjectConfig from "../../src/project/ProjectConfig";
 import fs from 'fs-extra';
+import { jest,expect } from "@jest/globals";
 
 
 
@@ -62,38 +63,38 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
 
   beforeEach(()=>{
     const fsextraMock = jest.spyOn(fs, "readFileSync");
-   fsextraMock.mockImplementation((path:string,options:any)=>{return JSON.stringify(sfdx_project);});
+    fsextraMock.mockImplementation((path:any,options:string | { encoding?: string; flag?: string; })=>{return JSON.stringify(sfdx_project);});
   })
 
 
   it("Get the package id of an unlocked package",()=>{
-    expect(ManifestHelpers.getPackageId(sfdx_project,"bi")).toBe("0x002232323232");
+    expect(ProjectConfig.getPackageId(sfdx_project,"bi")).toBe("0x002232323232");
   });
 
   it("Throws an error, if the package id is missing in PackageAlias",()=>{
-    expect(()=>{ManifestHelpers.getPackageId(sfdx_project,"bi2")}).toThrowError("No Package Id found in sfdx-project.json. Please ensure package alias have the package added");
+    expect(()=>{ProjectConfig.getPackageId(sfdx_project,"bi2")}).toThrowError("No Package Id found in sfdx-project.json. Please ensure package alias have the package added");
   });
 
    
  it("Fetches all the package", ()=>{ 
-   const manifestHelperMock = jest.spyOn(ManifestHelpers, "getSFDXPackageManifest");
+   const manifestHelperMock = jest.spyOn(ProjectConfig, "getSFDXPackageManifest");
    manifestHelperMock.mockImplementation((projectDirectory:string)=>{
      return sfdx_project
    });
-    expect(ManifestHelpers.getAllPackages(null)).toStrictEqual(["temp","core","mass-dataload","access-mgmt","bi"]);
+    expect(ProjectConfig.getAllPackages(null)).toStrictEqual(["temp","core","mass-dataload","access-mgmt","bi"]);
  });
 
 
  it("Get manifest, provided a directory",()=>{
   
-  expect(ManifestHelpers.getSFDXPackageManifest(null)).toStrictEqual(sfdx_project);
+  expect(ProjectConfig.getSFDXPackageManifest(null)).toStrictEqual(sfdx_project);
  });
 
 
  it("Gets the type of a package",()=>{
-  expect(ManifestHelpers.getPackageType(sfdx_project,"bi")).toBe("Unlocked");
-  expect(ManifestHelpers.getPackageType(sfdx_project,"core")).toBe("Source");
-  expect(ManifestHelpers.getPackageType(sfdx_project,"mass-dataload")).toBe("Data"); 
+  expect(ProjectConfig.getPackageType(sfdx_project,"bi")).toBe("Unlocked");
+  expect(ProjectConfig.getPackageType(sfdx_project,"core")).toBe("Source");
+  expect(ProjectConfig.getPackageType(sfdx_project,"mass-dataload")).toBe("Data"); 
  });
 
  it("Gets the package descriptor of a provided package,provided directory",()=>{
@@ -104,7 +105,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
     "versionName": "covax",
     "versionNumber": "1.0.0.0"  
   };
-  expect(ManifestHelpers.getSFDXPackageDescriptor(null,"core")).toStrictEqual(corePackage);
+  expect(ProjectConfig.getSFDXPackageDescriptor(null,"core")).toStrictEqual(corePackage);
  });
 
  it("Gets the package descriptor of a provided package",()=>{
@@ -115,7 +116,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
     "versionName": "covax",
     "versionNumber": "1.0.0.0"  
   };
-  expect(ManifestHelpers.getPackageDescriptorFromConfig("core",sfdx_project)).toStrictEqual(corePackage);
+  expect(ProjectConfig.getPackageDescriptorFromConfig("core",sfdx_project)).toStrictEqual(corePackage);
  });
 
  it("Gets the default package, provided directory",()=>{
@@ -128,7 +129,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
     "ignoreOnStage": ["prepare","validate","build"]
   }
 
-  expect(ManifestHelpers.getDefaultSFDXPackageDescriptor(null)).toStrictEqual(defaultPackage);
+  expect(ProjectConfig.getDefaultSFDXPackageDescriptor(null)).toStrictEqual(defaultPackage);
  });
 
 
@@ -152,7 +153,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
        { "bi":"0x002232323232" } 
   }
 
-  expect(ManifestHelpers.cleanupMPDFromManifest(null,"temp")).toStrictEqual(cleaned_sfdx_project);
+  expect(ProjectConfig.cleanupMPDFromManifest(null,"temp")).toStrictEqual(cleaned_sfdx_project);
  });
 
 

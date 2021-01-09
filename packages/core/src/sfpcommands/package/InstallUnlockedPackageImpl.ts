@@ -1,13 +1,13 @@
 import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
-import { onExit } from "../utils/OnExit";
-import PackageMetadata from "../PackageMetadata";
-import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
-import SFPLogger from "../utils/SFPLogger";
-import { PackageXMLManifestHelpers } from "../manifest/PackageXMLManifestHelpers";
-import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
+import { onExit } from "../../utils/OnExit";
+import PackageMetadata from "../../PackageMetadata";
+import { PackageInstallationResult, PackageInstallationStatus } from "../../package/PackageInstallationResult";
+import SFPLogger from "../../utils/SFPLogger";
+import PackageInstallationHelpers from "../../utils/PackageInstallationHelpers";
 import path = require("path");
 import fs = require("fs");
+import PackageMetadataPrinter from "../../package/PackageMetadataPrinter";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -59,12 +59,12 @@ export default class InstallUnlockedPackageImpl {
               this.sourceDirectory
             );
           }
+          
         }
 
-
-       //Print Metadata carried in the package
-       PackageXMLManifestHelpers.printMetadataToDeploy(this.packageMetadata?.payload);
-
+            //Print Metadata carried in the package
+         PackageMetadataPrinter.printMetadataToDeploy(this.packageMetadata?.payload);
+ 
         let command = this.buildPackageInstallCommand();
         let child = child_process.exec(command);
 

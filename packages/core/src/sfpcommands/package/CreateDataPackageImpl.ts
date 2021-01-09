@@ -1,11 +1,11 @@
-import PackageMetadata from "../PackageMetadata";
-import SourcePackageGenerator from "../generators/SourcePackageGenerator";
-import ManifestHelpers from "../manifest/ManifestHelpers";
-import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
-import SFPLogger from "../utils/SFPLogger";
+import PackageMetadata from "../../PackageMetadata";
+import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
+import ProjectConfig from "../../project/ProjectConfig";
+import SFPLogger from "../../utils/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
-import SFPStatsSender from "../utils/SFPStatsSender";
+import SFPStatsSender from "../../utils/SFPStatsSender";
+import { PackageHelpers } from "../../package/PackageHelpers";
 
 export default class CreateDataPackageImpl {
   private packageLogger;
@@ -45,7 +45,7 @@ export default class CreateDataPackageImpl {
     let startTime = Date.now();
 
     //Get Package Descriptor
-    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+    let packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
       this.projectDirectory,
       this.sfdx_package
     );
@@ -56,7 +56,7 @@ export default class CreateDataPackageImpl {
 
 
     if (
-      MDAPIPackageGenerator.isEmptyFolder(
+      PackageHelpers.isEmptyFolder(
         this.projectDirectory,
         packageDirectory
       )

@@ -1,16 +1,14 @@
-import SFPLogger from "../utils/SFPLogger";
-import PackageMetadata from "../PackageMetadata";
-import SourcePackageGenerator from "../generators/SourcePackageGenerator";
-import ManifestHelpers from "../manifest/ManifestHelpers";
-import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
-import { isNullOrUndefined } from "util";
+import SFPLogger from "../../utils/SFPLogger";
+import PackageMetadata from "../../PackageMetadata";
+import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
+import ProjectConfig from "../../project/ProjectConfig";
 import { EOL } from "os";
-
 import * as fs from "fs-extra";
 import path = require("path");
-import ApexTypeFetcher, { FileDescriptor } from "../parser/ApexTypeFetcher";
-import SFPStatsSender from "../utils/SFPStatsSender";
-import { PackageXMLManifestHelpers } from "../manifest/PackageXMLManifestHelpers";
+import ApexTypeFetcher, { FileDescriptor } from "../../parser/ApexTypeFetcher";
+import SFPStatsSender from "../../utils/SFPStatsSender";
+import { PackageHelpers } from "../../package/PackageHelpers";
+import { SFPPackage } from "../../package/SFPPackage";
 const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl {
@@ -19,7 +17,6 @@ export default class CreateSourcePackageImpl {
   public constructor(
     private projectDirectory: string,
     private sfdx_package: string,
-    private destructiveManifestFilePath: string,
     private packageArtifactMetadata: PackageMetadata,
     private forceignorePath?: string
   ) {
@@ -49,11 +46,7 @@ export default class CreateSourcePackageImpl {
       this.packageLogger
     );
     SFPLogger.log("sfdx_package", this.sfdx_package, this.packageLogger);
-    SFPLogger.log(
-      "destructiveManifestFilePath",
-      this.destructiveManifestFilePath,
-      this.packageLogger
-    );
+   
     SFPLogger.log(
       "packageArtifactMetadata",
       this.packageArtifactMetadata,
@@ -64,52 +57,33 @@ export default class CreateSourcePackageImpl {
 
     //Get Package Descriptor
     let packageDescriptor, packageDirectory: string;
-    if (!isNullOrUndefined(this.sfdx_package)) {
-      packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+    if (this.sfdx_package!=null) {
+      packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
         this.projectDirectory,
         this.sfdx_package
       );
       packageDirectory = packageDescriptor["path"];
-      this.writeDeploymentStepsToArtifact(packageDescriptor);
     }
 
-    //Generate Destructive Manifest
-    let destructiveChanges: DestructiveChanges = this.getDestructiveChanges(
-      packageDescriptor,
-      this.destructiveManifestFilePath
-    );
-    if (!isNullOrUndefined(destructiveChanges)) {
-      this.packageArtifactMetadata.isDestructiveChangesFound =
-        destructiveChanges.isDestructiveChangesFound;
-      this.packageArtifactMetadata.destructiveChanges =
-        destructiveChanges.destructiveChanges;
-    }
-
-    //Convert to MDAPI to get PayLoad
-    let mdapiPackage;
-    if (!isNullOrUndefined(packageDirectory)) {
+ 
+    //Get the contents of the package
+    let sfppackage:SFPPackage;
+    if (packageDirectory!=null) {
       //Check whether forceignores will result in empty directory
-      let isEmpty: boolean = MDAPIPackageGenerator.isEmptyFolder(
+      let isEmpty: boolean = PackageHelpers.isEmptyFolder(
         this.projectDirectory,
         packageDirectory
       );
 
       if (!isEmpty) {
-        mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
-          this.projectDirectory,
-          packageDirectory
-        );
+        sfppackage = await SFPPackage.buildPackageFromProjectConfig(this.projectDirectory,this.sfdx_package,null,this.packageLogger);
 
-        this.packageArtifactMetadata.payload = mdapiPackage.manifest;
-        this.packageArtifactMetadata.metadataCount = mdapiPackage.metadataCount;
-        this.packageArtifactMetadata.isApexFound = PackageXMLManifestHelpers.checkApexInPayload(
-          mdapiPackage.manifest
-        );
-        this.packageArtifactMetadata.isProfilesFound = PackageXMLManifestHelpers.checkProfilesinPayload(
-          mdapiPackage.manifest
-        );
+        this.packageArtifactMetadata.payload = sfppackage.payload;
+        this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
+        this.packageArtifactMetadata.isApexFound = sfppackage.isApexInPackage
+        this.packageArtifactMetadata.isProfilesFound = sfppackage.isProfilesInPackage;
 
-        this.handleApexTestClasses(mdapiPackage);
+        this.handleApexTestClasses(sfppackage);
       } else {
         this.printEmptyArtifactWarning();
       }
@@ -126,9 +100,7 @@ export default class CreateSourcePackageImpl {
       this.projectDirectory,
       this.sfdx_package,
       packageDirectory,
-      isNullOrUndefined(destructiveChanges)
-        ? undefined
-        : destructiveChanges.destructiveChangesPath
+      sfppackage.destructiveChangesPath
     );
 
     // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
@@ -181,31 +153,9 @@ export default class CreateSourcePackageImpl {
     return this.packageArtifactMetadata;
   }
 
-  private writeDeploymentStepsToArtifact(packageDescriptor: any) {
+ 
 
-    this.packageArtifactMetadata.reconcileProfiles = packageDescriptor.reconcileProfiles;
-
-    if (packageDescriptor.assignPermSetsPreDeployment) {
-      if (packageDescriptor.assignPermSetsPreDeployment instanceof Array)
-        this.packageArtifactMetadata.assignPermSetsPreDeployment = packageDescriptor
-          .assignPermSetsPreDeployment;
-
-      else
-        throw new Error("Property 'assignPermSetsPreDeployment' must be of type array");
-    }
-
-
-    if (packageDescriptor.assignPermSetsPostDeployment) {
-      if (packageDescriptor.assignPermSetsPostDeployment instanceof Array)
-        this.packageArtifactMetadata.assignPermSetsPostDeployment = packageDescriptor
-          .assignPermSetsPostDeployment;
-
-      else
-        throw new Error("Property 'assignPermSetsPostDeployment' must be of type array");
-    }
-  }
-
-  private handleApexTestClasses(mdapiPackage: any) {
+  private handleApexTestClasses(mdapiPackage: SFPPackage) {
     let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
     let classTypes;
     try {
@@ -316,51 +266,7 @@ export default class CreateSourcePackageImpl {
     );
   }
 
-  private getDestructiveChanges(
-    packageDescriptor: any,
-    destructiveManifestFilePath: string
-  ): DestructiveChanges {
-    let destructiveChanges: any;
-    let isDestructiveChangesFound: boolean = false;
-    let destructiveChangesPath: string;
-
-    if (packageDescriptor === null || packageDescriptor === undefined) {
-      return undefined;
-    }
-
-    //Precedence to Value Passed in Flags
-    if (!isNullOrUndefined(destructiveManifestFilePath)) {
-      destructiveChangesPath = destructiveManifestFilePath;
-    } else {
-      if (packageDescriptor["destructiveChangePath"]) {
-        destructiveChangesPath = packageDescriptor["destructiveChangePath"];
-      }
-    }
-
-    try {
-      if (!isNullOrUndefined(destructiveChangesPath)) {
-        destructiveChanges = JSON.parse(
-          fs.readFileSync(destructiveChangesPath, "utf8")
-        );
-        isDestructiveChangesFound = true;
-      }
-    } catch (error) {
-      SFPLogger.log(
-        "Unable to process destructive Manifest specified in the path or in the project manifest",
-        null,
-        this.packageLogger
-      );
-      destructiveChangesPath = null;
-    }
-
-    return {
-      isDestructiveChangesFound: isDestructiveChangesFound,
-      destructiveChangesPath: destructiveChangesPath,
-      destructiveChanges: destructiveChanges,
-    };
-  }
-
-  private printClassesIdentified(fetchedClasses: FileDescriptor[]) {
+    private printClassesIdentified(fetchedClasses: FileDescriptor[]) {
     if (fetchedClasses === null || fetchedClasses === undefined) return;
 
     let table = new Table({
@@ -383,8 +289,4 @@ export default class CreateSourcePackageImpl {
     SFPLogger.log(table.toString(), null, this.packageLogger);
   }
 }
-type DestructiveChanges = {
-  isDestructiveChangesFound: boolean;
-  destructiveChangesPath: string;
-  destructiveChanges: any;
-};
+

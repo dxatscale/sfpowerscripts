@@ -1,13 +1,13 @@
-import PackageMetadata from "../PackageMetadata";
+import PackageMetadata from "../../PackageMetadata";
 import child_process = require("child_process");
-import { onExit } from "../utils/OnExit";
+import { onExit } from "../../utils/OnExit";
 import fs = require("fs");
-import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
-import { PackageInstallationResult, PackageInstallationStatus } from "../package/PackageInstallationResult";
-import ManifestHelpers from "../manifest/ManifestHelpers";
-import SFPLogger from "../utils/SFPLogger";
-import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
-import ArtifactInstallationStatusUpdater from "../artifacts/ArtifactInstallationStatusUpdater";
+import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
+import { PackageInstallationResult, PackageInstallationStatus } from "../../package/PackageInstallationResult";
+import ProjectConfig from "../../project/ProjectConfig";
+import SFPLogger from "../../utils/SFPLogger";
+import PackageInstallationHelpers from "../../utils/PackageInstallationHelpers";
+import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
 const path = require("path");
 
 export default class InstallDataPackageImpl {
@@ -26,7 +26,7 @@ export default class InstallDataPackageImpl {
     let packageDirectory: string;
 
     try {
-      let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(this.sourceDirectory, this.sfdx_package);
+      let packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(this.sourceDirectory, this.sfdx_package);
 
       if (packageDescriptor.aliasfy) {
         packageDirectory = path.join(

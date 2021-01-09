@@ -1,22 +1,21 @@
-import DeploySourceToOrgImpl from "./DeploySourceToOrgImpl";
-import ReconcileProfileAgainstOrgImpl from "./ReconcileProfileAgainstOrgImpl";
-import DeployDestructiveManifestToOrgImpl from "./DeployDestructiveManifestToOrgImpl";
-import DeploySourceResult from "./DeploySourceResult";
-import PackageMetadata from "../PackageMetadata";
-import ManifestHelpers from "../manifest/ManifestHelpers";
-import OrgDetails from "../org/OrgDetails";
-import SFPStatsSender from "../utils/SFPStatsSender";
+import DeploySourceToOrgImpl, { DeploySourceResult } from "../../sfdxwrappers/DeploySourceToOrgImpl";
+import ReconcileProfileAgainstOrgImpl from "../../sfdxwrappers/ReconcileProfileAgainstOrgImpl";
+import DeployDestructiveManifestToOrgImpl from "../../sfdxwrappers/DeployDestructiveManifestToOrgImpl";
+import PackageMetadata from "../../PackageMetadata";
+import ProjectConfig from "../../project/ProjectConfig";
+import OrgDetails from "../../org/OrgDetails";
+import SFPStatsSender from "../../utils/SFPStatsSender";
 import {
   PackageInstallationResult,
   PackageInstallationStatus,
-} from "../package/PackageInstallationResult";
-import SFPLogger, {LoggerLevel} from "../utils/SFPLogger";
+} from "../../package/PackageInstallationResult";
+import SFPLogger, {LoggerLevel} from "../../utils/SFPLogger";
 
-import ArtifactInstallationStatusChecker from "../artifacts/ArtifactInstallationStatusChecker";
-import PackageInstallationHelpers from "../utils/PackageInstallationHelpers";
+import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
+import PackageInstallationHelpers from "../../utils/PackageInstallationHelpers";
 
 import * as fs from "fs-extra";
-import ArtifactInstallationStatusUpdater from "../artifacts/ArtifactInstallationStatusUpdater";
+import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
 const path = require("path");
 const glob = require("glob");
 const os = require("os");
@@ -40,12 +39,12 @@ export default class InstallSourcePackageImpl {
   public async exec(): Promise<PackageInstallationResult> {
     let packageDescriptor;
     if (this.sfdx_package) {
-      packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
         this.sourceDirectory,
         this.sfdx_package
       );
     } else {
-      packageDescriptor = ManifestHelpers.getDefaultSFDXPackageDescriptor(
+      packageDescriptor = ProjectConfig.getDefaultSFDXPackageDescriptor(
         this.sourceDirectory
       );
     }

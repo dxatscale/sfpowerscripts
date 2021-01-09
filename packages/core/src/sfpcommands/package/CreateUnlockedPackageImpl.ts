@@ -1,16 +1,16 @@
 import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
-import { onExit } from "../utils/OnExit";
-import PackageMetadata from "../PackageMetadata";
-import SourcePackageGenerator from "../generators/SourcePackageGenerator";
-import ManifestHelpers from "../manifest/ManifestHelpers";
-import MDAPIPackageGenerator from "../generators/MDAPIPackageGenerator";
-import SFPLogger from "../utils/SFPLogger";
+import { onExit } from "../../utils/OnExit";
+import PackageMetadata from "../../PackageMetadata";
+import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
+import ProjectConfig from "../../project/ProjectConfig";
+import SFPLogger from "../../utils/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
-import { delay } from "../utils/Delay";
-import PackageVersionListImpl from "./PackageVersionListImpl";
-import SFPStatsSender from "../utils/SFPStatsSender";
+import { delay } from "../../utils/Delay";
+import PackageVersionListImpl from "../../sfdxwrappers/PackageVersionListImpl";
+import SFPStatsSender from "../../utils/SFPStatsSender";
+import { SFPPackage } from "../../package/SFPPackage";
 const path = require("path");
 
 export default class CreateUnlockedPackageImpl {
@@ -44,22 +44,23 @@ export default class CreateUnlockedPackageImpl {
 
     let startTime = Date.now();
 
-    let projectManifest = ManifestHelpers.getSFDXPackageManifest(
+    let projectManifest = ProjectConfig.getSFDXPackageManifest(
       this.project_directory
     );
+    
+
+    let sfppackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(this.project_directory,this.sfdx_package,this.config_file_path,this.packageLogger);
+    let packageDirectory: string =sfppackage.packageDescriptor.path;
+     //Get the revised package Descriptor
+     let packageDescriptor = sfppackage.packageDescriptor;
+     let packageId = ProjectConfig.getPackageId(
+       projectManifest,
+       this.sfdx_package
+     );
 
 
     //Create a working directory
-    let workingDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
-      this.project_directory,
-      this.sfdx_package,
-      ManifestHelpers.getPackageDescriptorFromConfig(
-        this.sfdx_package,
-        projectManifest
-      )["path"],
-      null,
-      this.config_file_path
-    );
+    let workingDirectory = sfppackage.createAWorkingDirectory();
 
     // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
     if (this.forceignorePath) {
@@ -69,26 +70,25 @@ export default class CreateUnlockedPackageImpl {
           path.join(workingDirectory, ".forceignore")
         );
       else {
-        SFPLogger.log(`${path.join(workingDirectory, this.forceignorePath)} does not exist`, null, this.packageLogger);
-        SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory", null, this.packageLogger);
+        SFPLogger.log(
+          `${path.join(workingDirectory, this.forceignorePath)} does not exist`,
+          null,
+          this.packageLogger
+        );
+        SFPLogger.log(
+          "Package creation will continue using the unchanged forceignore in the root directory",
+          null,
+          this.packageLogger
+        );
       }
     }
 
     //Get the one in working directory
     this.config_file_path = path.join("config", "project-scratch-def.json");
 
-    //Get the revised package Descriptor
-    let packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
-      workingDirectory,
-      this.sfdx_package
-    );
+   
 
-    let packageId = ManifestHelpers.getPackageId(
-      projectManifest,
-      this.sfdx_package
-    );
 
-    let packageDirectory: string = packageDescriptor["path"];
     SFPLogger.log("Package Directory", packageDirectory, this.packageLogger);
 
     //Get Type of Package
@@ -115,7 +115,6 @@ export default class CreateUnlockedPackageImpl {
     SFPLogger.log("-------------------------", null, this.packageLogger);
 
 
-    this.writeDeploymentStepsToArtifact(packageDescriptor);
 
     //cleanup sfpowerscripts constructs in working directory
     this.deleteSFPowerscriptsAdditionsToManifest(workingDirectory);
@@ -125,10 +124,11 @@ export default class CreateUnlockedPackageImpl {
       // Store original dependencies to artifact
       this.packageArtifactMetadata.dependencies =
         packageDescriptor["dependencies"];
-    } else if (!this.isOrgDependentPackage && !this.isSkipValidation) { // With dependencies, so fetch it again
+    } else if (!this.isOrgDependentPackage && !this.isSkipValidation) {
+      // With dependencies, so fetch it again
       this.resolvePackageDependencies(packageDescriptor, workingDirectory);
       //Redo the fetch of the descriptor as the above command would have redone the dependencies
-      packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+      packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
         workingDirectory,
         this.sfdx_package
       );
@@ -140,14 +140,8 @@ export default class CreateUnlockedPackageImpl {
         packageDescriptor["dependencies"];
     }
 
-    //Convert to MDAPI to get PayLoad
-    let mdapiPackage = await MDAPIPackageGenerator.getMDAPIPackageFromSourceDirectory(
-      workingDirectory,
-      packageDirectory
-    );
-
-    this.packageArtifactMetadata.payload = mdapiPackage.manifest;
-    this.packageArtifactMetadata.metadataCount = mdapiPackage.metadataCount;
+    this.packageArtifactMetadata.payload = sfppackage.payload;
+    this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
 
     let command = this.buildExecCommand();
     let output = "";
@@ -179,7 +173,7 @@ export default class CreateUnlockedPackageImpl {
     let mdapiPackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
       this.project_directory,
       this.sfdx_package,
-      ManifestHelpers.getSFDXPackageDescriptor(
+      ProjectConfig.getSFDXPackageDescriptor(
         this.project_directory,
         this.sfdx_package
       )["path"],
@@ -187,7 +181,9 @@ export default class CreateUnlockedPackageImpl {
     );
 
     if (this.forceignorePath) {
-      if (fs.existsSync(path.join(mdapiPackageArtifactDir, this.forceignorePath)))
+      if (
+        fs.existsSync(path.join(mdapiPackageArtifactDir, this.forceignorePath))
+      )
         fs.copySync(
           path.join(mdapiPackageArtifactDir, this.forceignorePath),
           path.join(mdapiPackageArtifactDir, ".forceignore")
@@ -246,31 +242,12 @@ export default class CreateUnlockedPackageImpl {
     return this.packageArtifactMetadata;
   }
 
-  private writeDeploymentStepsToArtifact(packageDescriptor: any) {
-
-    if (packageDescriptor.assignPermSetsPreDeployment) {
-      if (packageDescriptor.assignPermSetsPreDeployment instanceof Array)
-        this.packageArtifactMetadata.assignPermSetsPreDeployment = packageDescriptor
-            .assignPermSetsPreDeployment;
-      else
-        throw new Error("Property 'assignPermSetsPreDeployment' must be of type array");
-    }
-
-
-    if (packageDescriptor.assignPermSetsPostDeployment) {
-      if (packageDescriptor.assignPermSetsPostDeployment instanceof Array)
-        this.packageArtifactMetadata.assignPermSetsPostDeployment = packageDescriptor
-        .assignPermSetsPostDeployment;
-      else
-        throw new Error("Property 'assignPermSetsPostDeployment' must be of type array");
-    }
-  }
-
+  
   private deleteSFPowerscriptsAdditionsToManifest(workingDirectory: string) {
-    let projectManifestFromWorkingDirectory = ManifestHelpers.getSFDXPackageManifest(
+    let projectManifestFromWorkingDirectory = ProjectConfig.getSFDXPackageManifest(
       workingDirectory
     );
-    let packageDescriptorInWorkingDirectory = ManifestHelpers.getPackageDescriptorFromConfig(
+    let packageDescriptorInWorkingDirectory = ProjectConfig.getPackageDescriptorFromConfig(
       this.sfdx_package,
       projectManifestFromWorkingDirectory
     );
@@ -290,9 +267,6 @@ export default class CreateUnlockedPackageImpl {
     delete packageDescriptorInWorkingDirectory["preDeploymentScript"];
     delete packageDescriptorInWorkingDirectory["postDeploymentScript"];
     delete packageDescriptorInWorkingDirectory["aliasfy"];
-
-
-
 
     fs.writeJsonSync(
       path.join(workingDirectory, "sfdx-project.json"),

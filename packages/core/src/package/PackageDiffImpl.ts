@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 import simplegit, { SimpleGit } from "simple-git/promise";
 import SFPLogger from "../utils/SFPLogger";
-import ManifestHelpers from "../manifest/ManifestHelpers";
+import ProjectConfig from "../project/ProjectConfig";
 
 export default class PackageDiffImpl {
   public constructor(
@@ -59,7 +59,7 @@ export default class PackageDiffImpl {
           let modified_files: string[] = gitDiffResult.split("\n");
           modified_files.pop(); // Remove last empty element
 
-          let packageType: string = ManifestHelpers.getPackageType(project_json, this.sfdx_package);
+          let packageType: string = ProjectConfig.getPackageType(project_json, this.sfdx_package);
           // Apply forceignore if not data package type
           if (packageType !== "Data") {
             let forceignorePath: string;

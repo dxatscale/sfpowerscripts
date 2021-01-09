@@ -3,7 +3,7 @@ import * as fs from "fs-extra";
 let path = require("path");
 
 
-export default class ManifestHelpers {
+export default class ProjectConfig {
 
 
   public static getPackageId(projectConfig: any, sfdxPackage: string) {
@@ -18,7 +18,7 @@ export default class ManifestHelpers {
 
 
   public static getAllPackages(projectDirectory: string): string[] {
-    let projectConfig = ManifestHelpers.getSFDXPackageManifest(projectDirectory);
+    let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
     let sfdxpackages=[];
     projectConfig["packageDirectories"].forEach((pkg) => {
      sfdxpackages.push(pkg["package"]);
@@ -46,7 +46,7 @@ export default class ManifestHelpers {
 
   public static getPackageType(projectConfig:any, sfdxPackage: string) {
 
-    let packageDescriptor = ManifestHelpers.getPackageDescriptorFromConfig(sfdxPackage,projectConfig);
+    let packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(sfdxPackage,projectConfig);
 
     if (projectConfig["packageAliases"]?.[sfdxPackage]) {
       return "Unlocked";
@@ -63,11 +63,11 @@ export default class ManifestHelpers {
     sfdxPackage: string
   ): any {
 
-    let projectConfig = ManifestHelpers.getSFDXPackageManifest(
+    let projectConfig = ProjectConfig.getSFDXPackageManifest(
       projectDirectory
     );
 
-    let sfdxPackageDescriptor = ManifestHelpers.getPackageDescriptorFromConfig(sfdxPackage, projectConfig);
+    let sfdxPackageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(sfdxPackage, projectConfig);
 
     return sfdxPackageDescriptor;
   }
