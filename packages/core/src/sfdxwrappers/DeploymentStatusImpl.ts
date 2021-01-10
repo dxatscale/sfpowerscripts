@@ -19,8 +19,15 @@ export default class DeploymentStatusImpl extends SFDXCommand {
   }
 
   public async exec(quiet?: boolean): Promise<DeploymentStatus> {
-
-    let result = JSON.parse( await super.exec(quiet));
+    
+    let result;
+    try
+    {
+     result = JSON.parse( await super.exec(quiet));
+    } catch(error)
+    {
+      result=JSON.parse(error.message);
+    }
     let deploymentStatus: DeploymentStatus;
     if (result.status == 1) {
       deploymentStatus = { status: DeploymentCommandStatus.FAILED,

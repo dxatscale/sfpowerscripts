@@ -7,7 +7,7 @@ import SFPLogger from "../../utils/SFPLogger";
 import PackageInstallationHelpers from "../../utils/PackageInstallationHelpers";
 import path = require("path");
 import fs = require("fs");
-import PackageMetadataPrinter from "../../package/PackageMetadataPrinter";
+import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(

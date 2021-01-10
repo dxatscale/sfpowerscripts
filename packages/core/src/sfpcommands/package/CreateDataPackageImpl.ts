@@ -5,7 +5,7 @@ import SFPLogger from "../../utils/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import SFPStatsSender from "../../utils/SFPStatsSender";
-import { PackageHelpers } from "../../package/PackageHelpers";
+import  PackageEmptyChecker from "../../package/PackageEmptyChecker";
 
 export default class CreateDataPackageImpl {
   private packageLogger;
@@ -56,7 +56,7 @@ export default class CreateDataPackageImpl {
 
 
     if (
-      PackageHelpers.isEmptyFolder(
+      PackageEmptyChecker.isEmptyFolder(
         this.projectDirectory,
         packageDirectory
       )

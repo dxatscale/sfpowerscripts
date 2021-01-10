@@ -21,12 +21,12 @@ export default class ExecuteCommand
   
       // collect data written to STDOUT into a string
       childProcess.stdout.on('data', (data) => {
-        stdoutContents += data.toString()
+        stdoutContents += data.toString();
       });
   
       // collect data written to STDERR into a string
       childProcess.stderr.on('data', (data) => {
-        stderrContents += data.toString()
+        stderrContents += data.toString();
       });
   
 
@@ -35,15 +35,17 @@ export default class ExecuteCommand
         if (code === 0 || (code === null && signal === "SIGTERM")) {
           resolve(stdoutContents);
         } else {
-          if(stderrContents)
-          reject(new Error(stderrContents));
+          if(stdoutContents)
+          reject(new Error(stdoutContents));
+          else 
+          reject(new Error(stdoutContents+"\n"+stderrContents));
         }
       });
 
 
       childProcess.once('error', (err: Error) => {
         if(stderrContents)
-        reject(new Error(stderrContents));
+        reject(new Error(stdoutContents+"\n"+stderrContents));
       });
       }
       catch(error)

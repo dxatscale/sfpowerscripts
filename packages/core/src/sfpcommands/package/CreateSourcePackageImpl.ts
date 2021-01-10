@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import path = require("path");
 import ApexTypeFetcher, { FileDescriptor } from "../../parser/ApexTypeFetcher";
 import SFPStatsSender from "../../utils/SFPStatsSender";
-import { PackageHelpers } from "../../package/PackageHelpers";
+import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 import SFPPackage  from "../../package/SFPPackage";
 const Table = require("cli-table");
 
@@ -70,7 +70,7 @@ export default class CreateSourcePackageImpl {
     let sfppackage:SFPPackage;
     if (packageDirectory!=null) {
       //Check whether forceignores will result in empty directory
-      let isEmpty: boolean = PackageHelpers.isEmptyFolder(
+      let isEmpty: boolean = PackageEmptyChecker.isEmptyFolder(
         this.projectDirectory,
         packageDirectory
       );

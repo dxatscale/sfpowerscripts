@@ -2,7 +2,7 @@ import path from "path";
 import { readdirSync, readFileSync, existsSync } from "fs";
 import ignore from "ignore";
 
-export class PackageHelpers
+export default class PackageEmptyChecker
 {
   public static isToBreakBuildForEmptyDirectory(
     projectDir: string,
@@ -34,7 +34,7 @@ export class PackageHelpers
         }
         return status;
       } else if (
-        PackageHelpers.isEmptyFolder(projectDir, sourceDirectory)
+        PackageEmptyChecker.isEmptyFolder(projectDir, sourceDirectory)
       ) {
         if (isToBreakBuildIfEmpty) {
           status.message = `Folder is Empty , Stopping build as isToBreakBuildIfEmpty is ${isToBreakBuildIfEmpty}`;

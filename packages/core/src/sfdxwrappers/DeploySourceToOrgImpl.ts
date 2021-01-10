@@ -2,8 +2,8 @@ import child_process = require("child_process");
 import { delay } from "../utils/Delay";
 import { onExit } from "../utils/OnExit";
 import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
-import { PackageHelpers } from "../package/PackageHelpers";
-import PackageMetadataPrinter from "../package/PackageMetadataPrinter";
+import PackageEmptyChecker from "../package/PackageEmptyChecker";
+import PackageMetadataPrinter from "../display/PackageMetadataPrinter";
 import ConvertSourceToMDAPIImpl from "./ConvertSourceToMDAPIImpl";
 import PackageManifest from "../package/PackageManifest";
 
@@ -31,7 +31,7 @@ export default class DeploySourceToOrgImpl {
     let deploySourceResult = {} as DeploySourceResult;
 
     //Check empty conditions
-    let status = PackageHelpers.isToBreakBuildForEmptyDirectory(
+    let status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(
       this.project_directory,
       this.source_directory,
       this.isToBreakBuildIfEmpty

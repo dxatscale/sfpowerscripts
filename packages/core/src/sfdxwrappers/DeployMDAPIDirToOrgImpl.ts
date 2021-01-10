@@ -31,23 +31,20 @@ export default class DeployMDAPIDirToOrgImpl extends SFDXCommand {
     private pollRate:number=30000
   ) {
     super(targetOrg, projectDirectory, logFile, logLevel);
-    if(deploymentOptions.testLevel==TestLevel.RunAllTestsInPackage)
-    {
-      throw new Error("Unsupported option, callers must use provide apex classes");
-    }
   }
 
   public async exec(quiet?: boolean): Promise<DeployResult> {
     //Get Deploy ID
     let deploymentId = "";
     try {
+      SFPLogger.log("Executing Command",this.getGeneratedSFDXCommandWithParams(),this.logFile,this.loggerLevel)
       let resultAsJSON = await super.exec(quiet);
       let result = JSON.parse(resultAsJSON);
       deploymentId = result.result.id;
     } catch (error) {
       let deployResult: DeployResult = {
         deploy_id: deploymentId,
-        status: 0,
+        status: DeploymentCommandStatus.EXCEPTION,
         result: error,
       };
       return deployResult;
@@ -60,6 +57,8 @@ export default class DeployMDAPIDirToOrgImpl extends SFDXCommand {
       deploymentId
     );
     await this.waitTillDeploymentIsDone(deploymentStatusImpl, quiet);
+
+ 
     let deploymentStatus: DeploymentStatus = await this.getFinalDeploymentStatus(
       deploymentStatusImpl,
       quiet
@@ -69,8 +68,8 @@ export default class DeployMDAPIDirToOrgImpl extends SFDXCommand {
       status: deploymentStatus.status,
       result: deploymentStatus.result,
     };
-
     return deployResult;
+    
   }
 
   private printInitiationHeader() {
@@ -142,7 +141,7 @@ export default class DeployMDAPIDirToOrgImpl extends SFDXCommand {
       );
     else
       SFPLogger.log(
-        `State: ${deploymentStatus.result.stateDetail}`,
+        `Current State: ${deploymentStatus.result.stateDetail?deploymentStatus.result.stateDetail:"Unknown"}`,
         null,
         this.logFile
       );
@@ -174,14 +173,14 @@ export default class DeployMDAPIDirToOrgImpl extends SFDXCommand {
     //add json
     command += ` --json`;
 
-    if (this.deploymentOptions.testLevel == TestLevel.RunSpecifiedTests) {
-      command += ` --testlevel RunSpecifiedTests`;
-      let apexclasses = this.deploymentOptions.specifiedTests.toString();
-      command += ` --runtests ${apexclasses.toString()}`;
-    } else {
+    if(this.deploymentOptions.testLevel)
+    {
       command += ` --testlevel ${this.deploymentOptions.testLevel}`;
-    }
-
+      if (this.deploymentOptions.testLevel == TestLevel.RunSpecifiedTests) {
+        let apexclasses = this.deploymentOptions.specifiedTests.toString();
+        command += ` --runtests ${apexclasses.toString()}`;
+      }
+    }    
     if (this.deploymentOptions.isIgnoreWarnings) {
       command += ` --ignorewarnings`;
     }

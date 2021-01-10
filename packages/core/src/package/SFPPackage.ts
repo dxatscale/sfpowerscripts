@@ -211,6 +211,7 @@ export default class SFPPackage {
       sfdx_package
     );
     sfpPackage._projectDirectory = projectDirectory;
+    
     sfpPackage._mdapiDir = await new ConvertSourceToMDAPIImpl(projectDirectory,sfpPackage._packageDescriptor.path,packageLogger).exec(true);
     sfpPackage._payload = await new PackageManifest(sfpPackage.mdapiDir).getManifest();
     sfpPackage._triggers = sfpPackage.fetchTriggers();
