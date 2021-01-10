@@ -187,39 +187,6 @@ describe("Given a target org and mdapidirectory, it should be deployed to the or
     }
   });
 
-  it("should throw an error, if the test level is set to Run test from package",  () => {
-    jest.setTimeout(100000);
-    let targetUsername = "test@example.com";
-    mockStatus[0] = {
-      status: DeploymentCommandStatus.INPROGRESS,
-      result: inProgressReturnedFromDeploymentStatusImpl,
-    };
-    mockStatus[1] = {
-      status: DeploymentCommandStatus.SUCCEEDED,
-      result: successReturnedFromDeploymentStatusImpl.result,
-    };
-
-    let deploymentOptions: DeploymentOptions = {
-      isCheckOnlyDeployment: false,
-      testLevel: TestLevel.RunAllTestsInPackage,
-      isIgnoreWarnings: true,
-      isIgnoreErrors: false,
-    };
-    
-    
-    expect(()=>{ let deployMDAPIDirToOrgImpl=new DeployMDAPIDirToOrgImpl(
-      targetUsername,
-      null,
-      "mdapi",
-      deploymentOptions,
-      null,
-      null,
-      1000
-    );
-   return deployMDAPIDirToOrgImpl   
-  }).toThrowError("Unsupported option, callers must use provide apex classes");
-    
-  });
 
   });
 

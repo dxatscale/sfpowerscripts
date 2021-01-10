@@ -11,7 +11,7 @@
     "build": "npm run clean && npm run compile",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json",
-    "test": "jest --coverage"
+    "test": "jest --verbose --coverage --detectOpenHandles"
   },
   "dependencies": {
     "adm-zip": "^0.4.16",
