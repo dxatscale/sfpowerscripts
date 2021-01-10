@@ -106,9 +106,11 @@ export default class InstallSourcePackage extends InstallPackageCommand {
       );
 
       let result = await installSourcePackageImpl.exec();
+    
       if (result.result == PackageInstallationStatus.Failed) {
         throw new Error(result.message);
       } else {
+        console.log(`Succesfully Installed source package  ${sfdx_package}`);
         if (result.deploy_id) {
           if (this.flags.refname) {
             fs.writeFileSync(

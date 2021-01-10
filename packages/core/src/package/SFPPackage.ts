@@ -64,26 +64,30 @@ export default class SFPPackage {
 
   private getApexTestClasses(): ApexClasses {
     if (this._apexTestClassses == null) {
-      let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
-      let apexSortedByType = apexTypeFetcher.getApexTypeOfClsFiles(
-        path.join(this.mdapiDir, `classes`)
-      );
+      try {
+        let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
+        let apexSortedByType = apexTypeFetcher.getApexTypeOfClsFiles(
+          path.join(this.mdapiDir, `classes`)
+        );
 
-      if (apexSortedByType["parseError"].length > 0) {
-        for (let parseError of apexSortedByType["parseError"]) {
-          console.log(`Failed to parse ${parseError.name}`);
+        if (apexSortedByType["parseError"].length > 0) {
+          for (let parseError of apexSortedByType["parseError"]) {
+            console.log(`Failed to parse ${parseError.name}`);
+          }
         }
+
+        let testClassNames: string[] = apexSortedByType["testClass"].map(
+          (fileDescriptor) => fileDescriptor.name
+        );
+
+        if (testClassNames.length === 0) {
+          throw new Error("No test classes found in package");
+        }
+
+        this._apexTestClassses = testClassNames;
+      } catch (error) {
+        this._apexTestClassses;
       }
-
-      let testClassNames: string[] = apexSortedByType["testClass"].map(
-        (fileDescriptor) => fileDescriptor.name
-      );
-
-      if (testClassNames.length === 0) {
-        throw new Error("No test classes found in package");
-      }
-
-      this._apexTestClassses = testClassNames;
     }
     return this._apexTestClassses;
   }
@@ -94,72 +98,75 @@ export default class SFPPackage {
 
   private getApexClassExcludingTestClasses(): ApexClasses {
     if (this._apexClassWithOutTestClasses == null) {
-      let packageClasses: string[];
+      try {
+        let packageClasses: string[];
+        let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
+        let apexSortedByType = apexTypeFetcher.getApexTypeOfClsFiles(
+          path.join(this.mdapiDir, `classes`)
+        );
 
-      let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
-      let apexSortedByType = apexTypeFetcher.getApexTypeOfClsFiles(
-        path.join(this.mdapiDir, `classes`)
-      );
-
-      let types;
-      if (this.payload["Package"]["types"] instanceof Array) {
-        types = this.payload["Package"]["types"];
-      } else {
-        // Create array with single type
-        types = [this.payload["Package"]["types"]];
-      }
-
-      for (let type of types) {
-        if (type["name"] === "ApexClass") {
-          if (type["members"] instanceof Array) {
-            packageClasses = type["members"];
-          } else {
-            // Create array with single member
-            packageClasses = [type["members"]];
-          }
-          break;
+        let types;
+        if (this.payload["Package"]["types"] instanceof Array) {
+          types = this.payload["Package"]["types"];
+        } else {
+          // Create array with single type
+          types = [this.payload["Package"]["types"]];
         }
-      }
 
-      if (packageClasses != null) {
-        if (apexSortedByType["testClass"].length > 0) {
-          // Filter out test classes
-          packageClasses = packageClasses.filter((packageClass) => {
-            for (let testClass of apexSortedByType["testClass"]) {
-              if (testClass["name"] === packageClass) {
-                return false;
-              }
+        for (let type of types) {
+          if (type["name"] === "ApexClass") {
+            if (type["members"] instanceof Array) {
+              packageClasses = type["members"];
+            } else {
+              // Create array with single member
+              packageClasses = [type["members"]];
             }
+            break;
+          }
+        }
 
-            if (apexSortedByType["parseError"].length > 0) {
-              // Filter out undetermined classes that failed to parse
-              for (let parseError of apexSortedByType["parseError"]) {
-                if (parseError["name"] === packageClass) {
-                  console.log(
-                    `Skipping  ${packageClass}, unable to determine identity of class`
-                  );
+        if (packageClasses != null) {
+          if (apexSortedByType["testClass"].length > 0) {
+            // Filter out test classes
+            packageClasses = packageClasses.filter((packageClass) => {
+              for (let testClass of apexSortedByType["testClass"]) {
+                if (testClass["name"] === packageClass) {
                   return false;
                 }
               }
-            }
 
-            return true;
-          });
-        }
-
-        if (apexSortedByType["interface"].length > 0) {
-          // Filter out interfaces
-          packageClasses = packageClasses.filter((packageClass) => {
-            for (let interfaceClass of apexSortedByType["interface"]) {
-              if (interfaceClass["name"] === packageClass) {
-                return false;
+              if (apexSortedByType["parseError"].length > 0) {
+                // Filter out undetermined classes that failed to parse
+                for (let parseError of apexSortedByType["parseError"]) {
+                  if (parseError["name"] === packageClass) {
+                    console.log(
+                      `Skipping  ${packageClass}, unable to determine identity of class`
+                    );
+                    return false;
+                  }
+                }
               }
-            }
-            return true;
-          });
+
+              return true;
+            });
+          }
+
+          if (apexSortedByType["interface"].length > 0) {
+            // Filter out interfaces
+            packageClasses = packageClasses.filter((packageClass) => {
+              for (let interfaceClass of apexSortedByType["interface"]) {
+                if (interfaceClass["name"] === packageClass) {
+                  return false;
+                }
+              }
+              return true;
+            });
+          }
         }
+        this._apexClassWithOutTestClasses = packageClasses;
+      } catch (error) {
+        this._apexClassWithOutTestClasses = null;
       }
-      this._apexClassWithOutTestClasses = packageClasses;
     }
     return this._apexClassWithOutTestClasses;
   }
@@ -211,9 +218,18 @@ export default class SFPPackage {
       sfdx_package
     );
     sfpPackage._projectDirectory = projectDirectory;
-    
-    sfpPackage._mdapiDir = await new ConvertSourceToMDAPIImpl(projectDirectory,sfpPackage._packageDescriptor.path,packageLogger).exec(true);
-    sfpPackage._payload = await new PackageManifest(sfpPackage.mdapiDir).getManifest();
+    if(configFilePath==null)
+      sfpPackage._configFilePath="config/project-scratch-def.json";
+    else
+      sfpPackage._configFilePath=configFilePath;
+    sfpPackage._mdapiDir = await new ConvertSourceToMDAPIImpl(
+      projectDirectory,
+      sfpPackage._packageDescriptor.path,
+      packageLogger
+    ).exec(true);
+    sfpPackage._payload = await new PackageManifest(
+      sfpPackage.mdapiDir
+    ).getManifest();
     sfpPackage._triggers = sfpPackage.fetchTriggers();
     sfpPackage._isApexInPackage = sfpPackage.checkForApexInPackage();
     sfpPackage._isProfilesInPackage = sfpPackage.checkForProfilesInPackage();
@@ -243,7 +259,7 @@ export default class SFPPackage {
       this._package_name,
       this._packageDescriptor.path,
       this.destructiveChangesPath,
-      this.configFilePath
+      this._configFilePath
     );
     return workingDirectory;
   }
@@ -266,8 +282,6 @@ export default class SFPPackage {
     }
     return metadataCount;
   }
-
-
 
   private checkForApexInPackage(): boolean {
     let isApexFound = false;

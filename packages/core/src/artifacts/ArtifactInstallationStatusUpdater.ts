@@ -22,6 +22,7 @@ export default class ArtifactInstallationStatusUpdater {
     try {
       return  ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata,subdirectory);
     } catch (error) {
+      console.log("YYYY");
       SFPLogger.log(
         "Unable to update details about artifacts to the org"
       );

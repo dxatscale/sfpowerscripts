@@ -172,6 +172,7 @@ export default class InstallSourcePackageImpl {
       );
 
       let result: DeploySourceResult = await deploySourceToOrgImpl.exec();
+     
 
       if (result.result && !result.message.startsWith("skip:")) {
         //Apply PostDeployment Activities
@@ -194,12 +195,25 @@ export default class InstallSourcePackageImpl {
           );
         }
 
+        
+        try
+        {
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
           this.targetusername,
           this.packageMetadata,
           packageDescriptor.aliasfy ? this.targetusername : null,
           this.isPackageCheckHandledByCaller
         );
+        }
+        catch(error)
+        {
+          SFPLogger.log("Unable to fetch any sfpowerscripts artifacts in the org\n" +
+                  "1. sfpowerscripts package is notinstalled in the org\n" +
+                  "2. The required prerequisite object is not deployed to this org\n");
+        }
+
+
+
       } else if (result.result === false) {
         throw new Error("Deployment failed with error " + result.message);
       }

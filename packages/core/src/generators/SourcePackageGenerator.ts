@@ -53,6 +53,7 @@ export default class SourcePackageGenerator {
       SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory);
     }
 
+  
     if(configFilePath)
     {
       SourcePackageGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory);

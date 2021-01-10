@@ -28,6 +28,7 @@ export default class ArtifactInstallationStatusChecker {
         }
       }
     } catch (error) {
+      console.log("XXXXX");
       SFPLogger.log("Unable to fetch artifacts from the org");
     }
     return false;
