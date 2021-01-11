@@ -1,5 +1,5 @@
 describe("do nothing", () => {
-  it("di no", () => {});
+  it("di nothing.. in progress", () => {});
 });
 
 // import { PackageXMLManifestHelpers } from "../../src/manifest/PackageXMLManifestHelpers";

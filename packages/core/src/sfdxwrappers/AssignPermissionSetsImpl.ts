@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
+import SFPLogger from "../utils/SFPLogger";
 import AliasListImpl from "./AliasListImpl";
 import PermsetListImpl from "./PermsetListImpl";
 const Table = require("cli-table");

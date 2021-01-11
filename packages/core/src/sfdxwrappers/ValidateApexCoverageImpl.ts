@@ -1,6 +1,6 @@
 import child_process = require("child_process");
 import SFPLogger from "../utils/SFPLogger";
-import { SFDXCommand } from "../SFDXCommand";
+
 
 export default class ValidateApexCoverageImpl  {
   public constructor(

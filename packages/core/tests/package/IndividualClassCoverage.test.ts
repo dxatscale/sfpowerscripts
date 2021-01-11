@@ -1,5 +1,5 @@
 import IndividualClassCoverage from "../../src/package/IndividualClassCoverage";
-import { jest,expect } from "@jest/globals";
+import { expect } from "@jest/globals";
 
 
 describe("Given a test coverage report", () => {

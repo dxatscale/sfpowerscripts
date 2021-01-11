@@ -4,7 +4,7 @@ import TriggerApexTestImpl, {
   RunLocalTests,
   RunSpecifiedTestsOption
 } from "../../src/sfdxwrappers/TriggerApexTestImpl";
-import { jest,expect } from "@jest/globals";
+import { expect } from "@jest/globals";
 
 describe("Given a target org, trigger apex tests should generate the correct commands", () => {
   it("if specified tests is used, generate apextestsuite command", () => {

@@ -54,7 +54,7 @@ export default class TriggerApexTestImpl extends SFDXCommand {
   }
 
   async executeCommand() {
-    let output = await super.exec(true);
+    await super.exec(true);
   }
 }
 

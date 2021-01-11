@@ -8,7 +8,7 @@ import  {
 } from "../../src/sfdxwrappers/DeploymentStatusImpl";
 import { DeploymentCommandStatus } from "../../src/sfdxwrappers/DeploymentCommandStatus";
 import { TestLevel } from "../../src/sfdxwrappers/TriggerApexTestImpl";
-import { ApexClasses } from "../../src/package/SFPPackage";
+
 
 
 let commmandOutput = "";
@@ -103,7 +103,7 @@ describe("Given a target org and mdapidirectory, it should be deployed to the or
     };
     mockStatus[1] = {
       status: DeploymentCommandStatus.FAILED,
-      result: successReturnedFromDeploymentStatusImpl.result,
+      result: failureReturnedFromDeploymentStatusImpl.result,
     };
 
     let deploymentOptions: DeploymentOptions = {
@@ -133,7 +133,7 @@ describe("Given a target org and mdapidirectory, it should be deployed to the or
       expect(result.status).toStrictEqual(DeploymentCommandStatus.FAILED);
       expect(result.deploy_id).toStrictEqual(succefulDeployOut.result.id);
       expect(result.result).toStrictEqual(
-        successReturnedFromDeploymentStatusImpl.result
+        failureReturnedFromDeploymentStatusImpl.result
       );
     } catch (error) {
       console.log(error);

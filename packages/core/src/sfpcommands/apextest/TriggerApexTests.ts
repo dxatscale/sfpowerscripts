@@ -105,7 +105,7 @@ export default class TriggerApexTests {
           sfppackage,
           this.getCoverageReport()
         );
-        let coveragePercent = packageTestCoverage.getCurrentPackageTestCoverage();
+        
         return packageTestCoverage.validateTestCoverage(
           this.coverageOptions.coverageThreshold
         );
