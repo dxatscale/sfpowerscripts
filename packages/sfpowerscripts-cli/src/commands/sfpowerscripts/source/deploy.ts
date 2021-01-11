@@ -1,7 +1,7 @@
 
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import { Messages, SfdxError } from '@salesforce/core';
+import { Messages } from '@salesforce/core';
 import { isNullOrUndefined } from 'util';
 import DeployMDAPIDirToOrgImpl, { DeployResult, DeploymentOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeployMDAPIDirToOrgImpl"
 import PackageMetadataPrinter from "@dxatscale/sfpowerscripts.core/lib/display/PackageMetadataPrinter"

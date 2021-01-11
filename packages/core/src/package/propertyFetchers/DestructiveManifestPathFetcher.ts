@@ -12,7 +12,7 @@ export class DestructiveManifestPathFetcher
     let destructiveChangesPath: string;
 
     if (packageContents.packageDescriptor === null || packageContents.packageDescriptor === undefined) {
-      throw ("Project Config (sfdx-project.json) is null")
+      throw (new Error("Project Config (sfdx-project.json) is null"))
     }
 
       if (packageContents.packageDescriptor["destructiveChangePath"]) {

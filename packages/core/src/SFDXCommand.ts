@@ -1,7 +1,7 @@
 
 
 import ExecuteCommand from "./utils/ExecuteCommand";
-import SFPLogger, { LoggerLevel } from "./utils/SFPLogger";
+import { LoggerLevel } from "./utils/SFPLogger";
 
 export abstract class SFDXCommand {
   public constructor(
