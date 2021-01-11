@@ -4,11 +4,11 @@ description: Guiding principles followed by the project
 
 # Principles
 
-## Utilize your Salesforce deployment knowhow
+## Utilize your Salesforce deployment experiences
 
-The tasks or commands should be easy to use.  You don't need to resort to complex scripts to  build a pipeline . A knowledge of what you need to achieve from a pipeline and salesforce development \(such as  Salesforce DX, Unlocked Package/Org Based deployment model or  a hybrid where you combine both\*\) should be enough to get you going.
+The tasks or commands should be easy to use.  You don't need to resort to complex scripts to build a pipeline. A knowledge of what you need to achieve from a pipeline and salesforce development \(such as  [Salesforce DX](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm), [Unlocked Package](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_intro.htm)/[Org Based Deployment Model](https://trailhead.salesforce.com/content/learn/modules/org-development-model) or a Hybrid where you combine both\*\) should be enough to get you going.
 
-We will also strive to provide sample pipelines to quickly get you started. Our azure pipelines extension is built with the classic \(UI based\) configuration in mind.
+We will also strive to provide sample pipelines to quickly get you started. Our [Azure Pipelines Extension](https://marketplace.visualstudio.com/items?itemName=AzlamSalam.sfpowerscripts) is built with the Classic \(UI based\) configuration in mind.
 
 \*If you need a refresher on Salesforce DX, Unlocked Packages or Org Based Deployment, checkout some of the available trailhead modules [here](https://trailhead.salesforce.com/en/users/azlam/trailmixes/salesforce-dx)
 
@@ -18,7 +18,7 @@ The native extensions provided by the project will integrate with CI/CD platform
 
 ## Everything is a package
 
-sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts for package creation tasks, unlocked or not, which then could be versioned, uploaded into an artifact provider or utilized in subsequent stages for deployment into various environments 
+sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts for package creation tasks, unlocked or not, which then could be versioned, uploaded into an artifact provider or utilized in subsequent release stages for deployment across environments.
 
 The following package creation commands shows this in action
 
@@ -39,19 +39,21 @@ These commands create an artifact named`<package_name>_sfpowerscripts_artifact_<
 | changelog.json | A JSON based schema that carries all commit description about the package |
 | source | A directory containing the metadata in source format  |
 
-## Optimized for Speed without hampering traceability
+## Optimized for speed without hampering traceability
 
-One of the common questions that is often asked to us, does deploying packages compared to delta deployments \( deploys only what is changed between two commits or a range of commits\) make the overall deployment slower? 
+One of the common questions that is often asked to us is:  
+  
+_Does deploying packages compared to delta deployments \(deploys only what is changed between two commits or a range of commits\) make the overall deployment slower?_ 
 
-As packages are always deployed in its entirety, this is an understood fact. sfpowerscripts will always be built with features to optimize for speed but still ensuring the org is traceable compared to happy soup
+As packages are always deployed in its entirety, this is an understood fact. sfpowerscripts will always be built with features to optimize for speed but still ensuring the org is traceable compared to the traditional happy soup model most organizations are burdened with today.
 
 Features currently enabling this principle include 
 
-* ,All sfpowerscripts package creation commands feature a diff check, which builds the package only if it detects a change. 
+* All sfpowerscripts package creation commands feature a diff check, which builds the package only if it detects a change 
 * Packages will only be installed in the org, if the given package is not installed in the org
-* Support for mono repository, while working with multiple packages reduces overhead
+* Support for mono repository, while working with multiple packages reduces overhead and overall complexity
 
-Of course the onus is on developers to granularize packages, so that this could be achieved, but be assured the tooling is available.
+Of course the onus is on developers to granulize packages, so that this could be achieved, but be assured the tooling is available.
 
 
 
