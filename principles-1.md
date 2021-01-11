@@ -8,13 +8,9 @@ description: Guiding principles followed by the project
 
 The tasks or commands should be easy to use.  You don't need to resort to complex scripts to build a pipeline. A knowledge of what you need to achieve from a pipeline and salesforce development \(such as  [Salesforce DX](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm), [Unlocked Package](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_intro.htm)/[Org Based Deployment Model](https://trailhead.salesforce.com/content/learn/modules/org-development-model) or a Hybrid where you combine both\*\) should be enough to get you going.
 
-We will also strive to provide sample pipelines to quickly get you started. Our [Azure Pipelines Extension](https://marketplace.visualstudio.com/items?itemName=AzlamSalam.sfpowerscripts) is built with the Classic \(UI based\) configuration in mind.
+We will also strive to provide sample pipelines to quickly get you started. For sample pipelines checkout this [repo](https://github.com/dxatscale/easy-spaces-lwc)
 
 \*If you need a refresher on Salesforce DX, Unlocked Packages or Org Based Deployment, checkout some of the available trailhead modules [here](https://trailhead.salesforce.com/en/users/azlam/trailmixes/salesforce-dx)
-
-## Integrate with CI/CD platform wherever applicable
-
-The native extensions provided by the project will integrate with CI/CD platform features wherever applicable, rather than providing our own dashboards/reports or rolling out features that break the platform conventions.
 
 ## Everything is a package
 
