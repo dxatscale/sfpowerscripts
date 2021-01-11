@@ -111,6 +111,8 @@ export default class InstallSourcePackage extends InstallPackageCommand {
         throw new Error(result.message);
       } else {
         console.log(`Succesfully Installed source package  ${sfdx_package}`);
+        
+        console.log("\n\nOutput variables:");
         if (result.deploy_id) {
           if (this.flags.refname) {
             fs.writeFileSync(
@@ -118,12 +120,14 @@ export default class InstallSourcePackage extends InstallPackageCommand {
               `${this.flags.refname}_sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}\n`,
               { flag: "a" }
             );
+            console.log(`${this.flags.refname}_sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}`);
           } else {
             fs.writeFileSync(
               ".env",
               `sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}\n`,
               { flag: "a" }
             );
+            console.log(`sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}`);
           }
         }
       }
