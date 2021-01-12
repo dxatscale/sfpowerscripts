@@ -1,7 +1,7 @@
-import ignore from "ignore";
 const fs = require("fs");
 const path = require("path");
-import simplegit, { SimpleGit } from "simple-git/promise";
+import Git from "../utils/Git";
+import IgnoreFiles from "../utils/IgnoreFiles";
 import SFPLogger from "../utils/SFPLogger";
 import ProjectConfig from "../project/ProjectConfig";
 
@@ -14,7 +14,7 @@ export default class PackageDiffImpl {
   ) {}
 
   public async exec(): Promise<boolean> {
-    let git: SimpleGit;
+    let git: Git = new Git(this.project_directory);
 
     let config_file_path: string = this.config_file_path;
 
@@ -24,11 +24,9 @@ export default class PackageDiffImpl {
         this.project_directory,
         "sfdx-project.json"
       );
-      git = simplegit(this.project_directory);
       SFPLogger.log(`Project directory being analysed ${this.project_directory}`);
     } else {
       project_config_path = "sfdx-project.json";
-      git = simplegit();
       SFPLogger.log(`Project directory being analysed ${process.cwd()}`);
     }
 
@@ -51,15 +49,12 @@ export default class PackageDiffImpl {
           SFPLogger.log(`\nUtilizing tag ${tag} for ${this.sfdx_package}`);
 
           // Get the list of modified files between the tag and HEAD refs
-          let gitDiffResult: string = await git.diff([
+          let modified_files: string[] = await git.diff([
             `${tag}`,
             `HEAD`,
             `--no-renames`,
             `--name-only`
           ]);
-          let modified_files: string[] = gitDiffResult.split("\n");
-          modified_files.pop(); // Remove last empty element
-
           let packageType: string = ProjectConfig.getPackageType(project_json, this.sfdx_package);
           // Apply forceignore if not data package type
           if (packageType !== "Data") {
@@ -68,10 +63,12 @@ export default class PackageDiffImpl {
               forceignorePath = path.join(this.project_directory, ".forceignore");
             else forceignorePath = ".forceignore";
 
+            let ignoreFiles: IgnoreFiles = new IgnoreFiles(
+              fs.readFileSync(forceignorePath).toString()
+            );
+
             // Filter the list of modified files with .forceignore
-            modified_files = ignore()
-              .add(fs.readFileSync(forceignorePath).toString())
-              .filter(modified_files);
+            modified_files = ignoreFiles.filter(modified_files);
           }
 
 
@@ -117,15 +114,13 @@ export default class PackageDiffImpl {
     );
   }
 
-  private async getLatestTagFromGit(git: any, sfdx_package: string): Promise<string> {
-    let gitTagResult: string = await git.tag([
+  private async getLatestTagFromGit(git: Git, sfdx_package: string): Promise<string> {
+    let tags: string[] = await git.tag([
       `-l`,
       `${sfdx_package}_v*`,
       `--sort=version:refname`,
       `--merged`
     ]);
-    let tags: string[] = gitTagResult.split("\n");
-    tags.pop(); // Remove last empty element
 
     SFPLogger.log("Analysing tags:");
     if (tags.length > 10) {
@@ -134,12 +129,11 @@ export default class PackageDiffImpl {
       SFPLogger.log(tags.toString().replace(/,/g, "\n"));
     }
 
-    let latestTag = tags.pop(); // Select latest tag
-    return latestTag;
+    return tags.pop();
   }
 
   private async isPackageVersionChanged(
-    git: any,
+    git: Git,
     latestTag: string,
     packageVersionHead: string
   ): Promise<boolean> {
