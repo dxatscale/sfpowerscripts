@@ -1,13 +1,16 @@
-import TriggerApexTestImpl, {
+import {
   RunAllTestsInOrg,
   RunApexTestSuitesOption,
   RunLocalTests,
   RunSpecifiedTestsOption
-} from "../../src/sfdxwrappers/TriggerApexTestImpl";
-import { expect } from "@jest/globals";
+} from "../../src/sfdxwrappers/TestOptions";
+import {expect } from "@jest/globals";
+import TriggerApexTestImpl from "../../src/sfdxwrappers/TriggerApexTestImpl";
 
-describe("Given a target org, trigger apex tests should generate the correct commands", () => {
-  it("if specified tests is used, generate apextestsuite command", () => {
+
+
+describe("Given a target org, trigger apex tests should trigger with the correct command", () => {
+  it("if specified tests is used, trigger tests with specified tests", () => {
     let triggerApexTestsImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
       "test_org",
       null,
@@ -15,7 +18,7 @@ describe("Given a target org, trigger apex tests should generate the correct com
     );
     let command = triggerApexTestsImpl.getGeneratedSFDXCommandWithParams();
     expect(command).toStrictEqual("sfdx force:apex:test:run -u test_org --wait=120 --resultformat=json --codecoverage --outputdir=ars --testlevel=RunSpecifiedTests --classnames=test1,test2");
-  });
+    });    
 
   it("if apextest suite option is used, generate apextestsuite command", () => {
     let triggerApexTestsImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
@@ -24,7 +27,7 @@ describe("Given a target org, trigger apex tests should generate the correct com
       new RunApexTestSuitesOption(120, "ars", "testsuite1,testsuite2")
     );
     let command = triggerApexTestsImpl.getGeneratedSFDXCommandWithParams();
-    expect(command).toStrictEqual("sfdx force:apex:test:run -u test_org --wait=120 --resultformat=json --codecoverage --outputdir=ars --testlevel=RunSpecifiedTests --suitenames=testsuite1,testsuite2");
+    expect(command).toStrictEqual("sfdx force:apex:test:run -u test_org --wait=120 --resultformat=json --codecoverage --outputdir=ars --testlevel=RunApexTestSuite --suitenames=testsuite1,testsuite2");
   });
 
 

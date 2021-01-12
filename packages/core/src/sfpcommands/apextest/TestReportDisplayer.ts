@@ -1,9 +1,9 @@
 import {
   RunApexTestSuitesOption,
   TestOptions,
-} from "../../sfdxwrappers/TriggerApexTestImpl";
+} from "../../sfdxwrappers/TestOptions";
 import SFPLogger from "../../utils/SFPLogger";
-import { RunAllTestsInPackageOptions } from "./TriggerApexTests";
+import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
 
 const Table = require("cli-table");
 

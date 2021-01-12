@@ -21,6 +21,7 @@ export default class IndividualClassCoverage {
     coverageThreshold?: number
   ): {
     result: boolean;
+    message:string;
     classesCovered?: ClassCoverage[];
     classesWithInvalidCoverage?: ClassCoverage[];
   } {
@@ -39,10 +40,14 @@ export default class IndividualClassCoverage {
     if (classesWithInvalidCoverage.length > 0) {
       return {
         result: false,
+        message:'There are classes which do not satisfy the individual coverage requirements',
         classesCovered: individualClassCoverage,
         classesWithInvalidCoverage: classesWithInvalidCoverage,
       };
-    } else return { result: true, classesCovered: individualClassCoverage };
+    } else return { 
+      result: true,
+      message:'All classes in this test run meet the required coverage threshold', 
+      classesCovered: individualClassCoverage };
   }
 }
 

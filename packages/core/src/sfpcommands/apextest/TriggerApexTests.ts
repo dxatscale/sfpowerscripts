@@ -1,16 +1,18 @@
 import * as fs from "fs-extra";
 import path = require("path");
 import SFPPackage, { ApexClasses } from "../../package/SFPPackage";
-import TriggerApexTestImpl, {
+import TriggerApexTestImpl from "../../sfdxwrappers/TriggerApexTestImpl";
+import {
   RunSpecifiedTestsOption,
   TestOptions,
-} from "../../sfdxwrappers/TriggerApexTestImpl";
+} from "../../sfdxwrappers/TestOptions";
 import IndividualClassCoverage, {
   CoverageOptions,
 } from "../../package/IndividualClassCoverage";
 import { TestReportDisplayer } from "./TestReportDisplayer";
 import PackageTestCoverage from "../../package/PackageTestCoverage";
 import SFPLogger from "../../utils/SFPLogger";
+import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
 
 export default class TriggerApexTests {
   public constructor(
@@ -34,7 +36,8 @@ export default class TriggerApexTests {
 
     SFPLogger.log(
       "Executing Command",
-      triggerApexTestImpl.getGeneratedSFDXCommandWithParams(),this.fileLogger
+      triggerApexTestImpl.getGeneratedSFDXCommandWithParams(),
+      this.fileLogger
     );
     await triggerApexTestImpl.exec(true);
 
@@ -51,7 +54,7 @@ export default class TriggerApexTests {
       return {
         result: false,
         id: id,
-        message: "Test execution failed",
+        message: "Test Execution failed",
       };
     } else {
       let coverageResults = await this.validateForApexCoverage();
@@ -74,7 +77,7 @@ export default class TriggerApexTests {
         };
       } else {
         return {
-          result: coverageResults.result,
+          result: true,
           id: id,
           message: `Test execution succesfully completed`,
         };
@@ -100,16 +103,15 @@ export default class TriggerApexTests {
         this.project_directory,
         this.testOptions.pkg
       );
-     
-        let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
-          sfppackage,
-          this.getCoverageReport()
-        );
-        
-        return packageTestCoverage.validateTestCoverage(
-          this.coverageOptions.coverageThreshold
-        );
-      
+
+      let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
+        sfppackage,
+        this.getCoverageReport()
+      );
+
+      return packageTestCoverage.validateTestCoverage(
+        this.coverageOptions.coverageThreshold
+      );
     } else {
       if (this.coverageOptions.isIndividualClassCoverageToBeValidated) {
         let coverageValidator: IndividualClassCoverage = new IndividualClassCoverage(
@@ -136,7 +138,6 @@ export default class TriggerApexTests {
         path.join(this.testOptions.outputdir, `test-result-${testId}.json`)
       )
       .toString();
-
     return JSON.parse(test_report_json);
   }
 
@@ -144,7 +145,6 @@ export default class TriggerApexTests {
     let test_id = fs
       .readFileSync(path.join(this.testOptions.outputdir, "test-run-id.txt"))
       .toString();
-
     SFPLogger.log("test_id", test_id);
     return test_id;
   }
@@ -157,16 +157,5 @@ export default class TriggerApexTests {
       .toString();
 
     return JSON.parse(testCoverageJSON);
-  }
-}
-
-export class RunAllTestsInPackageOptions extends RunSpecifiedTestsOption {
-  public constructor(
-    pkg: string,
-    wait_time: number,
-    outputdir: string,
-    specifiedTests: ApexClasses
-  ) {
-    super(wait_time, outputdir, specifiedTests.toString(), pkg, false);
   }
 }

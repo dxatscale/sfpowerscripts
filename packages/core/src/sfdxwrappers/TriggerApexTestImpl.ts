@@ -1,4 +1,5 @@
 import { SFDXCommand } from "../SFDXCommand";
+import { RunAllTestsInOrg, RunApexTestSuitesOption, RunLocalTests, RunSpecifiedTestsOption, TestOptions } from "./TestOptions";
 
 export default class TriggerApexTestImpl extends SFDXCommand {
   public constructor(
@@ -30,125 +31,31 @@ export default class TriggerApexTestImpl extends SFDXCommand {
     else if (this.testOptions instanceof RunApexTestSuitesOption)
       command += this.buildCommandForApexTestSuite(this.testOptions);
     else if (this.testOptions instanceof RunLocalTests)
-      command += this.buildCommandForLocalTestInOrg();
+      command += this.buildCommandForLocalTestInOrg(this.testOptions);
     else if (this.testOptions instanceof RunAllTestsInOrg)
-      command += this.buildCommandForAllTestInOrg();
+      command += this.buildCommandForAllTestInOrg(this.testOptions);
 
     return command;
   }
 
   buildCommandForApexTestSuite(testOptions: RunApexTestSuitesOption) {
-    return `--testlevel=RunSpecifiedTests --suitenames=${testOptions.suiteNames}`;
+    return `--testlevel=${testOptions.testLevel} --suitenames=${testOptions.suiteNames}`;
   }
 
   private buildCommandForSpecifiedTests(
     testOptions: RunSpecifiedTestsOption
   ): string {
-    return `--testlevel=RunSpecifiedTests --classnames=${testOptions.specifiedTests}`;
+    return `--testlevel=${testOptions.testLevel} --classnames=${testOptions.specifiedTests}`;
   }
-  private buildCommandForLocalTestInOrg(): string {
-    return `--testlevel=RunLocalTests`;
+  private buildCommandForLocalTestInOrg(testOptions: RunLocalTests): string {
+    return `--testlevel=${testOptions.testLevel}`;
   }
-  private buildCommandForAllTestInOrg(): string {
-    return `--testlevel=RunAllTestsInOrg`;
+  private buildCommandForAllTestInOrg(testOptions: RunAllTestsInOrg): string {
+    return `--testlevel=${testOptions.testLevel.toString()}`;
   }
 
   async executeCommand() {
-    await super.exec(true);
+    return await super.exec(true);
   }
 }
 
-export interface TestOptions {
-  pkg?: string;
-  synchronous?: boolean;
-  wait_time: number;
-  outputdir: string;
-  testLevel: TestLevel;
-}
-
-export class RunSpecifiedTestsOption implements TestOptions {
-  pkg?: string;
-  validateIndividualClassCoverage?: boolean = false;
-  synchronous?: boolean = false;
-  wait_time: number = 60;
-  outputdir: string;
-  testLevel: TestLevel.RunSpecifiedTests;
-  specifiedTests: string;
-  constructor(
-    wait_time: number,
-    outputdir: string,
-    specifiedTests: string,
-    pkg?: string,
-    synchronous?: boolean
-  ) {
-    this.pkg = pkg;
-    this.synchronous = synchronous;
-    this.wait_time = wait_time;
-    this.outputdir = outputdir;
-    this.specifiedTests = specifiedTests;
-  }
-}
-
-export class RunApexTestSuitesOption implements TestOptions {
-  pkg?: string;
-  synchronous?: boolean = false;
-  wait_time: number = 60;
-  outputdir: string;
-  testLevel: TestLevel.RunSpecifiedTests;
-  suiteNames: string;
-  constructor(
-    wait_time: number,
-    outputdir: string,
-    suiteNames: string,
-    pkg?: string,
-    synchronous?: boolean
-  ) {
-    this.pkg = pkg;
-    this.synchronous = synchronous;
-    this.wait_time = wait_time;
-    this.outputdir = outputdir;
-    this.suiteNames = suiteNames;
-  }
-}
-
-export class RunLocalTests implements TestOptions {
-  synchronous?: boolean = false;
-  wait_time: number = 60;
-  outputdir: string;
-  testLevel: TestLevel.RunLocalTests;
-  suiteNames: string;
-  constructor(
-    wait_time: number,
-    outputdir: string,
-    synchronous?: boolean
-  ) {
-    this.synchronous = synchronous;
-    this.wait_time = wait_time;
-    this.outputdir = outputdir;
-  }
-}
-
-export class RunAllTestsInOrg implements TestOptions {
-  synchronous?: boolean = false;
-  wait_time: number = 60;
-  outputdir: string;
-  testLevel: TestLevel.RunAllTestsInOrg;
-  suiteNames: string;
-  constructor(
-    wait_time: number,
-    outputdir: string,
-    synchronous?: boolean
-  ) {
-    this.synchronous = synchronous;
-    this.wait_time = wait_time;
-    this.outputdir = outputdir;
-  }
-}
-
-export enum TestLevel {
-  RunSpecifiedTests = "RunSpecifiedTests",
-  RunApexTestSuite = "RunApexTestSuite",
-  RunLocalTests = "RunLocalTests",
-  RunAllTestsInOrg = "RunAllTestsInOrg",
-  RunAllTestsInPackage = "RunAllTestsInPackage",
-}

@@ -3,8 +3,8 @@ import { SFDXCommand } from "../SFDXCommand";
 import { delay } from "../utils/Delay";
 import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
 import DeploymentStatusImpl, { DeploymentStatus } from "./DeploymentStatusImpl";
-import { TestLevel } from "./TriggerApexTestImpl";
 import { DeploymentCommandStatus } from "./DeploymentCommandStatus";
+import { TestLevel } from "./TestOptions";
 
 export type DeploymentOptions = {
   isCheckOnlyDeployment: boolean;

@@ -5,10 +5,9 @@ import {
   RunSpecifiedTestsOption,
   TestLevel,
   TestOptions,
-} from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TriggerApexTestImpl";
-import TriggerApexTests, {
-  RunAllTestsInPackageOptions,
-} from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/TriggerApexTests";
+} from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions";
+import { ExtendedTestOptions,RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions"
+import TriggerApexTests from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/TriggerApexTests";
 import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
@@ -103,7 +102,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
           this.flags.synchronous
         );
       } else if (
-        this.flags.testlevel === TestLevel.RunAllTestsInPackage.toString()
+        this.flags.testlevel === ExtendedTestOptions.RunAllTestsInPackage.toString()
       ) {
         if (this.flags.package === null) {
           throw new Error(
@@ -151,7 +150,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       if (
         (this.flags.validateindividualclasscoverage ||
           this.flags.validatepackagecoverage) &&
-        this.flags.testlevel !== TestLevel.RunAllTestsInPackage.toString()
+        this.flags.testlevel !== ExtendedTestOptions.RunAllTestsInPackage.toString()
       ) {
         throw new Error(
           "Code coverage validation is only available for test level RunAllTestsInPackage"

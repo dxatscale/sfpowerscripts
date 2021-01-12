@@ -7,7 +7,7 @@ import  {
   DeploymentStatus,
 } from "../../src/sfdxwrappers/DeploymentStatusImpl";
 import { DeploymentCommandStatus } from "../../src/sfdxwrappers/DeploymentCommandStatus";
-import { TestLevel } from "../../src/sfdxwrappers/TriggerApexTestImpl";
+import { TestLevel } from "../../src/sfdxwrappers/TestOptions";
 
 
 
