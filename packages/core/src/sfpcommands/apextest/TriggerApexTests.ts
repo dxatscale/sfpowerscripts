@@ -1,11 +1,8 @@
 import * as fs from "fs-extra";
 import path = require("path");
-import SFPPackage, { ApexClasses } from "../../package/SFPPackage";
+import SFPPackage from "../../package/SFPPackage";
 import TriggerApexTestImpl from "../../sfdxwrappers/TriggerApexTestImpl";
-import {
-  RunSpecifiedTestsOption,
-  TestOptions,
-} from "../../sfdxwrappers/TestOptions";
+import {TestOptions} from "../../sfdxwrappers/TestOptions";
 import IndividualClassCoverage, {
   CoverageOptions,
 } from "../../package/IndividualClassCoverage";
