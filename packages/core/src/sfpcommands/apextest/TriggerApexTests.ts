@@ -1,6 +1,5 @@
 import * as fs from "fs-extra";
 import path = require("path");
-import SFPPackage from "../../package/SFPPackage";
 import TriggerApexTestImpl from "../../sfdxwrappers/TriggerApexTestImpl";
 import {TestOptions} from "../../sfdxwrappers/TestOptions";
 import IndividualClassCoverage, {
@@ -96,13 +95,9 @@ export default class TriggerApexTests {
     }[];
   }> {
     if (this.testOptions instanceof RunAllTestsInPackageOptions) {
-      let sfppackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
-        this.project_directory,
-        this.testOptions.pkg
-      );
-
+  
       let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
-        sfppackage,
+        this.testOptions.sfppackage,
         this.getCoverageReport()
       );
 

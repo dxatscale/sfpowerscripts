@@ -114,10 +114,9 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
           this.flags.package
         );
         testOptions = new RunAllTestsInPackageOptions(
-          this.flags.package,
+          pkg,
           this.flags.waittime,
-          outputdir,
-          pkg.apexTestClassses
+          outputdir
         );
       } else if (
         this.flags.testlevel === TestLevel.RunApexTestSuite.toString()

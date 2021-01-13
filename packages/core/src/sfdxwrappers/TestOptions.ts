@@ -1,5 +1,4 @@
 export class TestOptions {
-  pkg?: string;
   synchronous?: boolean;
   wait_time: number;
   outputdir: string;
@@ -13,11 +12,9 @@ export class RunSpecifiedTestsOption extends TestOptions {
     wait_time: number,
     outputdir: string,
     specifiedTests: string,
-    pkg?: string,
     synchronous?: boolean
   ) {
     super();
-    this.pkg = pkg;
     this.synchronous = synchronous?synchronous:false;
     this.wait_time = wait_time?wait_time:60;
     this.outputdir = outputdir;
@@ -36,7 +33,6 @@ export class RunApexTestSuitesOption extends TestOptions {
     synchronous?: boolean
   ) {
     super();
-    this.pkg = pkg;
     this.synchronous = synchronous?synchronous:false;
     this.wait_time = wait_time?wait_time:60;
     this.outputdir = outputdir;

@@ -1,4 +1,4 @@
-import { ApexClasses } from "../../package/SFPPackage";
+import SFPPackage, { ApexClasses } from "../../package/SFPPackage";
 import { RunSpecifiedTestsOption } from "../../sfdxwrappers/TestOptions";
 
 export enum ExtendedTestOptions {
@@ -7,11 +7,15 @@ export enum ExtendedTestOptions {
 
 export class RunAllTestsInPackageOptions extends RunSpecifiedTestsOption {
   public constructor(
-    pkg: string,
+    private _sfppackage:SFPPackage,
     wait_time: number,
-    outputdir: string,
-    specifiedTests: ApexClasses
+    outputdir: string
   ) {
-    super(wait_time, outputdir, specifiedTests.toString(), pkg, false);
+    super(wait_time, outputdir, _sfppackage.apexTestClassses.toString(), false);
+  }
+
+  public get sfppackage()
+  {
+    return this._sfppackage;
   }
 }
