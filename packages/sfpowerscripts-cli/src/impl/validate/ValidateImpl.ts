@@ -13,55 +13,60 @@ export enum ValidateMode {
   POOL
 }
 
+export interface ValidateProps {
+  validateMode: ValidateMode,
+  coverageThreshold: number,
+  logsGroupSymbol: string[],
+  targetOrg?: string,
+  devHubUsername?: string,
+  pools?: string[],
+  jwt_key_file?: string,
+  client_id?: string,
+  shapeFile?: string,
+  isDeleteScratchOrg?: boolean,
+}
+
 export default class ValidateImpl {
 
   constructor (
-    private devHubUsername: string,
-    private pools: string[],
-    private jwt_key_file: string,
-    private client_id: string,
-    private shapeFile: string,
-    private coverageThreshold: number,
-    private logsGroupSymbol: string[],
-    private isDeleteScratchOrg: boolean,
-    private validateMode: ValidateMode,
-    private configFilePath?: string
+    private props: ValidateProps
   ){}
 
   public async exec(): Promise<boolean>{
     let scratchOrgUsername: string;
     try {
-      this.authenticateDevHub(this.devHubUsername);
+      if (this.props.validateMode === ValidateMode.ORG) {
+        scratchOrgUsername = this.props.targetOrg;
 
-      let packagesToCommits: {[p: string]: string} = {};
+      } else if (this.props.validateMode === ValidateMode.POOL) {
+        this.authenticateDevHub(this.props.devHubUsername);
 
-      if (this.validateMode === ValidateMode.ORG) {
-        scratchOrgUsername = this.createScratchOrg(this.configFilePath, this.devHubUsername);
-
-        this.installPackageDependencies(scratchOrgUsername, this.devHubUsername);
-      } else if (this.validateMode === ValidateMode.POOL) {
         scratchOrgUsername = this.fetchScratchOrgFromPool(
-          this.pools,
-          this.devHubUsername
+          this.props.pools,
+          this.props.devHubUsername
         );
 
         this.authenticateToScratchOrg(scratchOrgUsername);
 
-        let queryResult = this.querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername);
-        if (queryResult) {
-          if (queryResult.status === 0) {
-            packagesToCommits = this.getPackagesToCommits(queryResult);
-            this.printArtifactVersions(queryResult);
-          } else console.log("Failed to query org for Sfpowerscripts Artifacts");
+        if (this.props.shapeFile) {
+          this.deployShapeFile(this.props.shapeFile, scratchOrgUsername);
         }
+      } else throw new Error(`Unknown mode ${this.props.validateMode}`);
 
-      } else throw new Error(`Unknown mode ${this.validateMode}`);
+      let packagesToCommits: {[p: string]: string} = {};
 
-
-      if (this.shapeFile) {
-        this.deployShapeFile(this.shapeFile, scratchOrgUsername);
+      let queryResult = this.querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername);
+      if (queryResult) {
+        if (queryResult.status === 0) {
+          packagesToCommits = this.getPackagesToCommits(queryResult);
+          this.printArtifactVersions(queryResult);
+        } else {
+          console.log("Failed to query org for Sfpowerscripts Artifacts");
+          console.log("Building all packages...");
+        }
+      } else {
+        console.log("Building all packages...");
       }
-
 
       await this.buildChangedSourcePackages(packagesToCommits);
 
@@ -76,7 +81,7 @@ export default class ValidateImpl {
       else
         return true;
     } finally {
-      if (this.isDeleteScratchOrg) {
+      if (this.props.isDeleteScratchOrg) {
         this.deleteScratchOrg(scratchOrgUsername);
       } else {
           fs.writeFileSync(
@@ -92,22 +97,12 @@ export default class ValidateImpl {
 
   }
 
-  private installPackageDependencies(scratchOrgUsername: string, devHubUsername: string): void {
-    child_process.execSync(
-      `sfdx sfpowerkit:package:dependencies:install -u ${scratchOrgUsername} -v ${devHubUsername} --noprompt -w 120`,
-      {
-        "stdio": 'inherit',
-        "encoding": 'utf8'
-      }
-    );
-  }
-
   private deleteScratchOrg(scratchOrgUsername: string): void {
     try {
-      if (scratchOrgUsername && this.devHubUsername ) {
+      if (scratchOrgUsername && this.props.devHubUsername ) {
           console.log(`Deleting scratch org`, scratchOrgUsername);
           child_process.execSync(
-            `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.devHubUsername}`,
+            `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.props.devHubUsername}`,
             {
               stdio: 'inherit',
               encoding: 'utf8'
@@ -121,7 +116,7 @@ export default class ValidateImpl {
 
   private authenticateDevHub(devHubUsername: string): void {
     child_process.execSync(
-      `sfdx force:auth:jwt:grant -u ${devHubUsername} -i ${this.client_id} -f ${this.jwt_key_file} -r https://login.salesforce.com`,
+      `sfdx force:auth:jwt:grant -u ${devHubUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://login.salesforce.com`,
       {
         stdio: "inherit",
         encoding: "utf8"
@@ -156,8 +151,8 @@ export default class ValidateImpl {
        isTestsToBeTriggered:true,
        skipIfPackageInstalled:false,
        isValidateArtifactsOnHead:false,
-       coverageThreshold:this.coverageThreshold,
-       logsGroupSymbol:this.logsGroupSymbol,
+       coverageThreshold:this.props.coverageThreshold,
+       logsGroupSymbol:this.props.logsGroupSymbol,
        currentStage:Stage.VALIDATE,
     }
 
@@ -263,14 +258,15 @@ export default class ValidateImpl {
 
     if (queryResultJson) {
       return JSON.parse(queryResultJson);
-    } else
+    } else {
       console.log("Failed to query org for Sfpowerscripts Artifacts");
       return null;
+    }
   }
 
   private authenticateToScratchOrg(scratchOrgUsername: string): void {
     child_process.execSync(
-      `sfdx force:auth:jwt:grant -u ${scratchOrgUsername} -i ${this.client_id} -f ${this.jwt_key_file} -r https://test.salesforce.com`,
+      `sfdx force:auth:jwt:grant -u ${scratchOrgUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://test.salesforce.com`,
       {
         stdio: ['ignore', 'inherit', 'inherit']
       }
@@ -308,22 +304,6 @@ export default class ValidateImpl {
       throw new Error(`Failed to fetch scratch org from ${pools}`);
   }
 
-  private createScratchOrg(configFilePath: string, devHubUsername: string): string {
-    let createResultJson: string = child_process.execSync(
-      `sfdx force:org:create -f ${configFilePath} -v ${devHubUsername} -d 1 --json`,
-      {
-        stdio: 'pipe',
-        encoding: 'utf8'
-      }
-    );
-
-    let createResult = JSON.parse(createResultJson);
-    if (createResult.status === 0) {
-      console.log(`Created scratch org`, createResult.result.username);
-      return createResult.result.username;
-    } else throw new Error(`Failed to create scratch org: ${createResult.message}`);
-  }
-
   private printBuildSummary(
     generatedPackages: PackageMetadata[],
     failedPackages: string[],
@@ -353,8 +333,8 @@ export default class ValidateImpl {
     deploymentResult: {deployed: string[], skipped: string[], failed: string[], testFailure: string},
     totalElapsedTime: number
   ): void {
-    if (this.logsGroupSymbol?.[0])
-      console.log(this.logsGroupSymbol[0], "Deployment Summary");
+    if (this.props.logsGroupSymbol?.[0])
+      console.log(this.props.logsGroupSymbol[0], "Deployment Summary");
 
     console.log(
       `----------------------------------------------------------------------------------------------------`

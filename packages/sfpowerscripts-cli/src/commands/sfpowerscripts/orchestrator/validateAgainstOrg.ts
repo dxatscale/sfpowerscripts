@@ -1,7 +1,7 @@
 import { Messages } from "@salesforce/core";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from '@salesforce/command';
-import ValidateImpl, {ValidateMode} from "../../../impl/validate/ValidateImpl";
+import ValidateImpl, {ValidateMode, ValidateProps} from "../../../impl/validate/ValidateImpl";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 
 Messages.importMessagesDirectory(__dirname);
@@ -13,31 +13,14 @@ export default class Validate extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:orchestrator:validateAgainstOrg -u <devHubUsername> -i <clientId> -f <jwt_file> --configfilepath config/project-scratch-def.json`
+    `$ sfdx sfpowerscripts:orchestrator:validateAgainstOrg -u <targetorg>`
   ];
 
   protected static flagsConfig = {
-    devhubusername: flags.string({
-      char: 'u',
-      description: messages.getMessage('devhubUsernameFlagDescription'),
+    targetorg: flags.string({
+      char: "u",
+      description: messages.getMessage("targetOrgFlagDescription"),
       required: true
-    }),
-    jwtkeyfile: flags.filepath({
-      char: 'f',
-      description: messages.getMessage("jwtKeyFileFlagDescription"),
-      required: true
-    }),
-    clientid: flags.string({
-      char: 'i',
-      description: messages.getMessage("clientIdFlagDescription"),
-      required: true
-    }),
-    configfilepath: flags.filepath({
-      description: messages.getMessage("configFilePathFlagDescription"),
-      required: true
-    }),
-    shapefile: flags.string({
-      description: messages.getMessage('shapeFileFlagDescription')
     }),
     coveragepercent: flags.integer({
       description: messages.getMessage('coveragePercentFlagDescription'),
@@ -46,11 +29,6 @@ export default class Validate extends SfpowerscriptsCommand {
     logsgroupsymbol: flags.array({
       char: "g",
       description: messages.getMessage("logsGroupSymbolFlagDescription")
-    }),
-    deletescratchorg: flags.boolean({
-      char: 'x',
-      description: messages.getMessage("deleteScratchOrgFlagDescription"),
-      default: false
     })
   };
 
@@ -67,18 +45,13 @@ export default class Validate extends SfpowerscriptsCommand {
     let validateResult: boolean = false;
     try {
 
-    let validateImpl: ValidateImpl = new ValidateImpl(
-      this.flags.devhubusername,
-      this.flags.pools,
-      this.flags.jwtkeyfile,
-      this.flags.clientid,
-      this.flags.shapefile,
-      this.flags.coveragepercent,
-      this.flags.logsgroupsymbol,
-      this.flags.deletescratchorg,
-      ValidateMode.ORG,
-      this.flags.configfilepath
-    );
+    let validateProps: ValidateProps = {
+      validateMode: ValidateMode.ORG,
+      coverageThreshold: this.flags.coveragepercent,
+      logsGroupSymbol: this.flags.logsgroupsymbol,
+      targetOrg: this.flags.targetorg
+    }
+    let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
 
     let validateResult  = await validateImpl.exec();
 
