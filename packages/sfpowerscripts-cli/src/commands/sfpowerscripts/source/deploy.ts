@@ -58,7 +58,7 @@ export default class DeploySource extends SfpowerscriptsCommand {
       let deploySourceToOrgImpl: DeploySourceToOrgImpl;
       let mdapi_options = {};
 
-      mdapi_options["wait_time"] = this.flags.waititme;
+      mdapi_options["wait_time"] = this.flags.waittime;
       mdapi_options["checkonly"] = this.flags.checkonly;
 
 
