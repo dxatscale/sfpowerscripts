@@ -54,7 +54,8 @@ export default class PackageDiffImpl {
           let gitDiffResult: string = await git.diff([
             `${tag}`,
             `HEAD`,
-            `--name-only`,
+            `--no-renames`,
+            `--name-only`
           ]);
           let modified_files: string[] = gitDiffResult.split("\n");
           modified_files.pop(); // Remove last empty element
