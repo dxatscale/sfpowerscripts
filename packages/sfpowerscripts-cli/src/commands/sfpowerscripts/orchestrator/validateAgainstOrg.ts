@@ -5,7 +5,7 @@ import ValidateImpl, {ValidateMode, ValidateProps} from "../../../impl/validate/
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
+const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validateAgainstOrg');
 
 
 export default class Validate extends SfpowerscriptsCommand {
@@ -13,34 +13,14 @@ export default class Validate extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -u <devHubUsername> -i <clientId> -f <jwt_file>`
+    `$ sfdx sfpowerscripts:orchestrator:validateAgainstOrg -u <targetorg>`
   ];
 
-  static aliases = ["sfpowerscripts:orchestrator:validateAgainstPool"];
-
   protected static flagsConfig = {
-    devhubusername: flags.string({
-      char: 'u',
-      description: messages.getMessage('devhubUsernameFlagDescription'),
+    targetorg: flags.string({
+      char: "u",
+      description: messages.getMessage("targetOrgFlagDescription"),
       required: true
-    }),
-    pools: flags.array({
-      char: 'p',
-      description: messages.getMessage('poolsFlagDescription'),
-      required: true
-    }),
-    jwtkeyfile: flags.filepath({
-      char: 'f',
-      description: messages.getMessage("jwtKeyFileFlagDescription"),
-      required: true
-    }),
-    clientid: flags.string({
-      char: 'i',
-      description: messages.getMessage("clientIdFlagDescription"),
-      required: true
-    }),
-    shapefile: flags.string({
-      description: messages.getMessage('shapeFileFlagDescription')
     }),
     coveragepercent: flags.integer({
       description: messages.getMessage('coveragePercentFlagDescription'),
@@ -49,11 +29,6 @@ export default class Validate extends SfpowerscriptsCommand {
     logsgroupsymbol: flags.array({
       char: "g",
       description: messages.getMessage("logsGroupSymbolFlagDescription")
-    }),
-    deletescratchorg: flags.boolean({
-      char: 'x',
-      description: messages.getMessage("deleteScratchOrgFlagDescription"),
-      default: false
     })
   };
 
@@ -61,8 +36,8 @@ export default class Validate extends SfpowerscriptsCommand {
     let executionStartTime = Date.now();
 
     console.log("-----------sfpowerscripts orchestrator ------------------");
-    console.log("command: validate");
-    console.log(`Pools being used: ${this.flags.pools}`);
+    console.log("command: validateAgainstOrg");
+    console.log(`target org: ${this.flags.targetorg}`);
     console.log(`Coverage Percentage: ${this.flags.coveragepercent}`);
     console.log(`Using shapefile to override existing shape of the org: ${this.flags.shapefile?'true':'false'}`);
     console.log("---------------------------------------------------------");
@@ -72,18 +47,12 @@ export default class Validate extends SfpowerscriptsCommand {
     try {
 
     let validateProps: ValidateProps = {
-      validateMode: ValidateMode.POOL,
+      validateMode: ValidateMode.ORG,
       coverageThreshold: this.flags.coveragepercent,
       logsGroupSymbol: this.flags.logsgroupsymbol,
-      devHubUsername: this.flags.devhubusername,
-      pools: this.flags.pools,
-      jwt_key_file: this.flags.jwtkeyfile,
-      client_id: this.flags.clientid,
-      shapeFile: this.flags.shapefile,
-      isDeleteScratchOrg: this.flags.deletescratchorg
+      targetOrg: this.flags.targetorg
     }
-
-    let validateImpl: ValidateImpl = new ValidateImpl( validateProps);
+    let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
 
     let validateResult  = await validateImpl.exec();
 
