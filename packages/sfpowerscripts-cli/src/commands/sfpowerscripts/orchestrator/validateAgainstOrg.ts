@@ -37,6 +37,7 @@ export default class Validate extends SfpowerscriptsCommand {
 
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: validateAgainstOrg");
+    console.log(`target org: ${this.flags.targetorg}`);
     console.log(`Coverage Percentage: ${this.flags.coveragepercent}`);
     console.log(`Using shapefile to override existing shape of the org: ${this.flags.shapefile?'true':'false'}`);
     console.log("---------------------------------------------------------");
