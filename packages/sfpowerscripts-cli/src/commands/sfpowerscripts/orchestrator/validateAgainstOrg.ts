@@ -5,7 +5,7 @@ import ValidateImpl, {ValidateMode} from "../../../impl/validate/ValidateImpl";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
+const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validateAgainstOrg');
 
 
 export default class Validate extends SfpowerscriptsCommand {
@@ -13,20 +13,13 @@ export default class Validate extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -u <devHubUsername> -i <clientId> -f <jwt_file>`
+    `$ sfdx sfpowerscripts:orchestrator:validateAgainstOrg -u <devHubUsername> -i <clientId> -f <jwt_file> --configfilepath config/project-scratch-def.json`
   ];
-
-  static aliases = ["sfpowerscripts:orchestrator:validateAgainstPool"];
 
   protected static flagsConfig = {
     devhubusername: flags.string({
       char: 'u',
       description: messages.getMessage('devhubUsernameFlagDescription'),
-      required: true
-    }),
-    pools: flags.array({
-      char: 'p',
-      description: messages.getMessage('poolsFlagDescription'),
       required: true
     }),
     jwtkeyfile: flags.filepath({
@@ -37,6 +30,10 @@ export default class Validate extends SfpowerscriptsCommand {
     clientid: flags.string({
       char: 'i',
       description: messages.getMessage("clientIdFlagDescription"),
+      required: true
+    }),
+    configfilepath: flags.filepath({
+      description: messages.getMessage("configFilePathFlagDescription"),
       required: true
     }),
     shapefile: flags.string({
@@ -61,8 +58,7 @@ export default class Validate extends SfpowerscriptsCommand {
     let executionStartTime = Date.now();
 
     console.log("-----------sfpowerscripts orchestrator ------------------");
-    console.log("command: validate");
-    console.log(`Pools being used: ${this.flags.pools}`);
+    console.log("command: validateAgainstOrg");
     console.log(`Coverage Percentage: ${this.flags.coveragepercent}`);
     console.log(`Using shapefile to override existing shape of the org: ${this.flags.shapefile?'true':'false'}`);
     console.log("---------------------------------------------------------");
@@ -80,7 +76,8 @@ export default class Validate extends SfpowerscriptsCommand {
       this.flags.coveragepercent,
       this.flags.logsgroupsymbol,
       this.flags.deletescratchorg,
-      ValidateMode.POOL
+      ValidateMode.ORG,
+      this.flags.configfilepath
     );
 
     let validateResult  = await validateImpl.exec();

@@ -1,0 +1,11 @@
+{
+  "commandDescription": "Validate the incoming change against scratch org that is created as part of this command",
+  "devhubUsernameFlagDescription": "Authentication username for Dev Hub",
+  "jwtKeyFileFlagDescription": "Path to a file containing the private key",
+  "clientIdFlagDescription": "OAuth client ID, also known as the consumer key",
+  "configFilePathFlagDescription": "Path in the current project directory containing config file for the packaging org",
+  "shapeFileFlagDescription": "Path to .zip file of scratch org shape / metadata to deploy",
+  "coveragePercentFlagDescription": "Minimum required percentage coverage for validating code coverage of packages with Apex classes",
+  "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.",
+  "deleteScratchOrgFlagDescription": "Delete scratch-org validation environment, after the command has finished running"
+}

@@ -8,6 +8,10 @@ import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils
 import fs = require("fs");
 const Table = require("cli-table");
 
+export enum ValidateMode {
+  ORG,
+  POOL
+}
 
 export default class ValidateImpl {
 
@@ -19,35 +23,45 @@ export default class ValidateImpl {
     private shapeFile: string,
     private coverageThreshold: number,
     private logsGroupSymbol: string[],
-    private isDeleteScratchOrg: boolean
+    private isDeleteScratchOrg: boolean,
+    private validateMode: ValidateMode,
+    private configFilePath?: string
   ){}
 
   public async exec(): Promise<boolean>{
     let scratchOrgUsername: string;
     try {
-     this.authenticateDevHub(this.devHubUsername);
+      this.authenticateDevHub(this.devHubUsername);
 
-      scratchOrgUsername = this.fetchScratchOrgFromPool(
-        this.pools,
-        this.devHubUsername
-      );
+      let packagesToCommits: {[p: string]: string} = {};
 
-      this.authenticateToScratchOrg(scratchOrgUsername);
+      if (this.validateMode === ValidateMode.ORG) {
+        scratchOrgUsername = this.createScratchOrg(this.configFilePath, this.devHubUsername);
 
+        this.installPackageDependencies(scratchOrgUsername, this.devHubUsername);
+      } else if (this.validateMode === ValidateMode.POOL) {
+        scratchOrgUsername = this.fetchScratchOrgFromPool(
+          this.pools,
+          this.devHubUsername
+        );
+
+        this.authenticateToScratchOrg(scratchOrgUsername);
+
+        let queryResult = this.querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername);
+        if (queryResult) {
+          if (queryResult.status === 0) {
+            packagesToCommits = this.getPackagesToCommits(queryResult);
+            this.printArtifactVersions(queryResult);
+          } else console.log("Failed to query org for Sfpowerscripts Artifacts");
+        }
+
+      } else throw new Error(`Unknown mode ${this.validateMode}`);
 
 
       if (this.shapeFile) {
         this.deployShapeFile(this.shapeFile, scratchOrgUsername);
       }
 
-      let packagesToCommits: {[p: string]: string} = {};
-      let queryResult = this.querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername);
-      if (queryResult) {
-        if (queryResult.status === 0) {
-          packagesToCommits = this.getPackagesToCommits(queryResult);
-          this.printArtifactVersions(queryResult);
-        } else console.log("Failed to query org for Sfpowerscripts Artifacts");
-      }
 
       await this.buildChangedSourcePackages(packagesToCommits);
 
@@ -76,6 +90,16 @@ export default class ValidateImpl {
         }
     }
 
+  }
+
+  private installPackageDependencies(scratchOrgUsername: string, devHubUsername: string): void {
+    child_process.execSync(
+      `sfdx sfpowerkit:package:dependencies:install -u ${scratchOrgUsername} -v ${devHubUsername} --noprompt -w 120`,
+      {
+        "stdio": 'inherit',
+        "encoding": 'utf8'
+      }
+    );
   }
 
   private deleteScratchOrg(scratchOrgUsername: string): void {
@@ -282,6 +306,22 @@ export default class ValidateImpl {
       return scratchOrgUsername;
     else
       throw new Error(`Failed to fetch scratch org from ${pools}`);
+  }
+
+  private createScratchOrg(configFilePath: string, devHubUsername: string): string {
+    let createResultJson: string = child_process.execSync(
+      `sfdx force:org:create -f ${configFilePath} -v ${devHubUsername} -d 1 --json`,
+      {
+        stdio: 'pipe',
+        encoding: 'utf8'
+      }
+    );
+
+    let createResult = JSON.parse(createResultJson);
+    if (createResult.status === 0) {
+      console.log(`Created scratch org`, createResult.result.username);
+      return createResult.result.username;
+    } else throw new Error(`Failed to create scratch org: ${createResult.message}`);
   }
 
   private printBuildSummary(
