@@ -375,7 +375,7 @@ export default class DeployImpl {
   }> {
    
     let sfPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,sfdx_package,null,this.props.packageLogger);
-    let testOptions:TestOptions = new RunAllTestsInPackageOptions(sfdx_package,60,".testresults",sfPackage.apexTestClassses);
+    let testOptions:TestOptions = new RunAllTestsInPackageOptions(sfPackage,60,".testresults");
     let testCoverageOptions:CoverageOptions ={
       isIndividualClassCoverageToBeValidated:false,
       isPackageCoverageToBeValidated:!skipCoverageValidation,
