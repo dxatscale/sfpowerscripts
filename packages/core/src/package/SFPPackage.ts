@@ -8,8 +8,6 @@ import MetadataCount from "./MetadataCount";
 import PropertyFetcher from "./propertyFetchers/PropertyFetcher";
 import AssignPermissionSetFetcher from "./propertyFetchers/AssignPermissionSetFetcher";
 import DestructiveManifestPathFetcher from "./propertyFetchers/DestructiveManifestPathFetcher";
-import PostDeploymentScriptFetcher from "./propertyFetchers/PostDeploymentScriptFetcher";
-import PreDeploymentScriptFetcher from "./propertyFetchers/PreDeploymentScriptFetcher";
 import ReconcilePropertyFetcher from "./propertyFetchers/ReconcileProfilePropertyFetcher";
 
 export type ApexClasses = Array<string>;
@@ -32,8 +30,6 @@ export default class SFPPackage {
   private readonly _propertyFetchers: PropertyFetcher[] = [
     new AssignPermissionSetFetcher(),
     new DestructiveManifestPathFetcher(),
-    new PostDeploymentScriptFetcher(),
-    new PreDeploymentScriptFetcher(),
     new ReconcilePropertyFetcher()
   ]
 
