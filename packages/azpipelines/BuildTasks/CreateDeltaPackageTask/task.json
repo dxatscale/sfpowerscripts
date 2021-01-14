@@ -9,7 +9,7 @@
     "version": {
         "Major": 8,
         "Minor": 0,
-        "Patch": 18
+        "Patch": 19
     },
     "instanceNameFormat": "Create Delta Package based on two commits",
     "inputs": [
