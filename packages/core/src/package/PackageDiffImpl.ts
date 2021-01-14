@@ -4,6 +4,7 @@ import Git from "../utils/Git";
 import IgnoreFiles from "../utils/IgnoreFiles";
 import SFPLogger from "../utils/SFPLogger";
 import ProjectConfig from "../project/ProjectConfig";
+import lodash = require("lodash");
 
 export default class PackageDiffImpl {
   public constructor(
@@ -94,12 +95,12 @@ export default class PackageDiffImpl {
             }
           }
 
-          SFPLogger.log(`Checking for changes to package version number in sfdx-project.json`);
+          SFPLogger.log(`Checking for changes to package descriptor in sfdx-project.json`);
 
-          return await this.isPackageVersionChanged(
+          return await this.isPackageDescriptorChanged(
             git,
             tag,
-            dir.versionNumber
+            dir
           );
         } else {
           SFPLogger.log(
@@ -132,31 +133,29 @@ export default class PackageDiffImpl {
     return tags.pop();
   }
 
-  private async isPackageVersionChanged(
+  private async isPackageDescriptorChanged(
     git: Git,
     latestTag: string,
-    packageVersionHead: string
+    packageDescriptor: any
   ): Promise<boolean> {
     let project_config: string = await git.show([
       `${latestTag}:sfdx-project.json`,
     ]);
     let project_json = JSON.parse(project_config);
 
-    let packageVersionLatestTag: string;
+    let packageDescriptorFromLatestTag: string;
     for (let dir of project_json["packageDirectories"]) {
       if (this.sfdx_package === dir.package) {
-        packageVersionLatestTag = dir.versionNumber;
+        packageDescriptorFromLatestTag = dir;
       }
     }
 
-    if ( packageVersionHead != packageVersionLatestTag) {
-        SFPLogger.log(
-            `Found change in package version number ${packageVersionLatestTag} -> ${packageVersionHead}`
-        );
-        return true;
-    } else {
-        return false;
-    }
+    if(!lodash.isEqual(packageDescriptor, packageDescriptorFromLatestTag)) {
+      SFPLogger.log(
+        `Found change in ${this.sfdx_package} package descriptor`
+      );
+      return true;
+    } else return false;
   }
 
   private getLatestCommitFromMap(

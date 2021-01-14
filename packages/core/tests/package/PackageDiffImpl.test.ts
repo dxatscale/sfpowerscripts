@@ -32,7 +32,6 @@ describe("Determines whether a given package has changed", () => {
     fsMock.mockImplementation( () => {
       return packageConfigJson;
     });
-
   });
 
   it("should throw error if package does not exist", () => {
@@ -51,10 +50,10 @@ describe("Determines whether a given package has changed", () => {
     expect(await packageDiffImpl.exec()).toBe(true);
   });
 
-  it ("should return true if package version has changed", async () => {
+  it ("should return true if package descriptor has changed", async () => {
     gitTags = coreTags;
     gitDiff = ['sfdx-project.json'];
-    gitShow = packageVersionChange;
+    gitShow = packageDescriptorChange;
 
     // Assume passthrough filter for ignore
     ignoreFilterResult = gitDiff;
@@ -102,7 +101,12 @@ const packageConfigJson: string = `
       "package": "core",
       "default": false,
       "versionName": "covax",
-      "versionNumber": "2.0.0.0"
+      "versionNumber": "1.0.0.0",
+      "assignPermSetsPreDeployment": [
+        "PermSetA",
+        "PermSetB",
+        "PermSetC"
+      ]
     },
     {
       "path": "packages/frameworks/mass-dataload",
@@ -139,7 +143,7 @@ const packageConfigJson: string = `
 }
 `;
 
-const packageVersionChange: string = `
+const packageDescriptorChange: string = `
 {
   "packageDirectories": [
     {
@@ -155,7 +159,10 @@ const packageVersionChange: string = `
       "package": "core",
       "default": false,
       "versionName": "covax",
-      "versionNumber": "1.0.0.0"
+      "versionNumber": "1.0.0.0",
+      "assignPermSetsPreDeployment": [
+        "PermSetA"
+      ]
     },
     {
       "path": "packages/frameworks/mass-dataload",
