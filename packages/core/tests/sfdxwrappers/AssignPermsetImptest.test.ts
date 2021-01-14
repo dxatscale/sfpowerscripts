@@ -1,5 +1,6 @@
 import child_process = require("child_process");
 import AssignPermissionSetsImpl from "../../src/sfdxwrappers/AssignPermissionSetsImpl";
+import { jest,expect } from "@jest/globals";
 
 let mockAliasExec=() => {
   return "test-sfvulqawd2w0@example.com";

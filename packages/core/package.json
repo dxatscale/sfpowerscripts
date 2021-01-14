@@ -1,6 +1,6 @@
 {
   "name": "@dxatscale/sfpowerscripts.core",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "Core Module used by sfpowerscripts",
   "main": "lib/index",
   "types": "lib/index",
@@ -11,7 +11,7 @@
     "build": "npm run clean && npm run compile",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json",
-    "test": "jest --coverage"
+    "test": "jest --verbose --coverage --detectOpenHandles"
   },
   "dependencies": {
     "adm-zip": "^0.4.16",

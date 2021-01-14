@@ -9,22 +9,23 @@ export default class ArtifactInstallationStatusUpdater {
 
 
 
-  
+
   public static async updatePackageInstalledInOrg(
     target_org: string,
     packageMetadata: PackageMetadata,
     subdirectory:string,
     isHandledByCaller: boolean
   ):Promise<boolean> {
-    if (isHandledByCaller) return true; //This is to be handled by the caller, in that case if it reached here, we should 
+    if (isHandledByCaller) return true; //This is to be handled by the caller, in that case if it reached here, we should
                                         //just ignore
 
     try {
-      return  ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata,subdirectory);
+      return  await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata,subdirectory);
     } catch (error) {
       SFPLogger.log(
         "Unable to update details about artifacts to the org"
       );
+      return false;
     }
   }
 
@@ -44,7 +45,7 @@ export default class ArtifactInstallationStatusUpdater {
 
 
 
-    return  retry(
+    return await retry(
       async (bail) => {
 
         let cmdOutput;
@@ -62,9 +63,9 @@ export default class ArtifactInstallationStatusUpdater {
           );
         }
 
-        
+
         let result = JSON.parse(cmdOutput);
-        
+
         if (result["status"] == 0 && result["result"]["success"]) {
           return true;
         } else {

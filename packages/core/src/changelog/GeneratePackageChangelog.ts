@@ -1,4 +1,4 @@
-import ManifestHelpers from "../manifest/ManifestHelpers";
+import ProjectConfig from "../project/ProjectConfig";
 import simplegit, { SimpleGit, LogOptions } from "simple-git/promise";
 import { ListLogSummary } from "simple-git/typings/response";
 import { Changelog } from "./interfaces/GenericChangelogInterfaces";
@@ -26,7 +26,7 @@ export default class GeneratePackageChangelog {
 
         let packageDescriptor;
         try {
-          packageDescriptor = ManifestHelpers.getSFDXPackageDescriptor(
+          packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
               this.project_directory,
               this.sfdx_package
           );

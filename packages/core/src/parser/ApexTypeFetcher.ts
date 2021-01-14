@@ -2,7 +2,7 @@ import * as fs from "fs-extra";
 const path = require("path");
 const glob = require("glob");
 
-import { CommonTokenStream } from 'antlr4ts';
+import { CommonTokenStream } from "antlr4ts";
 import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 
 import ApexTypeListener from "./listeners/ApexTypeListener";
@@ -12,59 +12,63 @@ import {
   ApexParser,
   ApexParserListener,
   CaseInsensitiveInputStream,
-  ThrowingErrorListener
+  ThrowingErrorListener,
 } from "apex-parser";
 import SFPLogger from "../utils/SFPLogger";
+import { ApexClasses } from "../package/SFPPackage";
 
+
+/**
+ * Get Apex type of cls files in a search directory.
+ * Sorts files into classes, test classes and interfaces.
+ */
 export default class ApexTypeFetcher {
+  private apexSortedByType: ApexSortedByType = {
+    class: [],
+    testClass: [],
+    interface: [],
+    parseError: [],
+  };
 
+  constructor(private searchDir: string) {}
 
-  /**
-   * Get Apex type of cls files in a search directory.
-   * Sorts files into classes, test classes and interfaces.
-   * @param searchDir
-   */
-  public getApexTypeOfClsFiles(searchDir: string): ApexSortedByType {
-    const apexSortedByType: ApexSortedByType = {
-      class: [],
-      testClass: [],
-      interface: [],
-      parseError: []
-    };
-
+  public getClassesClassifiedByType(): ApexSortedByType {
     let clsFiles: string[];
-    if (fs.existsSync(searchDir)) {
+    if (fs.existsSync(this.searchDir)) {
       clsFiles = glob.sync(`**/*.cls`, {
-        cwd: searchDir,
-        absolute: true
+        cwd: this.searchDir,
+        absolute: true,
       });
     } else {
       throw new Error(`Search directory does not exist`);
     }
 
     for (let clsFile of clsFiles) {
-
-      let clsPayload: string = fs.readFileSync(clsFile, 'utf8');
-      let fileDescriptor: FileDescriptor = {name: path.basename(clsFile, ".cls"), filepath: clsFile};
+      let clsPayload: string = fs.readFileSync(clsFile, "utf8");
+      let fileDescriptor: FileDescriptor = {
+        name: path.basename(clsFile, ".cls"),
+        filepath: clsFile,
+      };
 
       // Parse cls file
       let compilationUnitContext;
       try {
-        let lexer = new ApexLexer(new CaseInsensitiveInputStream(clsFile, clsPayload));
-        let tokens: CommonTokenStream  = new CommonTokenStream(lexer);
+        let lexer = new ApexLexer(
+          new CaseInsensitiveInputStream(clsFile, clsPayload)
+        );
+        let tokens: CommonTokenStream = new CommonTokenStream(lexer);
 
         let parser = new ApexParser(tokens);
-        parser.removeErrorListeners()
+        parser.removeErrorListeners();
         parser.addErrorListener(new ThrowingErrorListener());
 
         compilationUnitContext = parser.compilationUnit();
-
       } catch (err) {
         SFPLogger.log(`Failed to parse ${clsFile}`);
         SFPLogger.log(err);
 
         fileDescriptor["error"] = err;
-        apexSortedByType["parseError"].push(fileDescriptor);
+        this.apexSortedByType["parseError"].push(fileDescriptor);
 
         continue;
       }
@@ -72,35 +76,80 @@ export default class ApexTypeFetcher {
       let apexTypeListener: ApexTypeListener = new ApexTypeListener();
 
       // Walk parse tree to determine Apex type
-      ParseTreeWalker.DEFAULT.walk(apexTypeListener as ApexParserListener, compilationUnitContext);
+      ParseTreeWalker.DEFAULT.walk(
+        apexTypeListener as ApexParserListener,
+        compilationUnitContext
+      );
 
       let apexType = apexTypeListener.getApexType();
 
       if (apexType.class) {
-        apexSortedByType["class"].push(fileDescriptor);
+        this.apexSortedByType["class"].push(fileDescriptor);
         if (apexType.testClass) {
-          apexSortedByType["testClass"].push(fileDescriptor);
+          this.apexSortedByType["testClass"].push(fileDescriptor);
         }
       } else if (apexType.interface) {
-        apexSortedByType["interface"].push(fileDescriptor);
+        this.apexSortedByType["interface"].push(fileDescriptor);
       } else {
-        fileDescriptor["error"] = {message: "Unknown Apex Type"};
-        apexSortedByType["parseError"].push(fileDescriptor);
+        fileDescriptor["error"] = { message: "Unknown Apex Type" };
+        this.apexSortedByType["parseError"].push(fileDescriptor);
       }
     }
-    return apexSortedByType;
+    return this.apexSortedByType;
   }
+
+  public getTestClasses(): ApexClasses {
+    let testClassNames: ApexClasses = this.apexSortedByType.testClass.map(
+      (fileDescriptor) => fileDescriptor.name
+    );
+    return testClassNames;
+  }
+
+  public getClassesOnlyExcludingTestsAndInterfaces(): ApexClasses {
+    let packageClasses: ApexClasses = this.apexSortedByType.class.map(
+      (fileDescriptor) => fileDescriptor.name
+    );
+
+    if (packageClasses != null) {
+      let testClassesInPackage: ApexClasses = this.apexSortedByType.testClass.map(
+        (fileDescriptor) => fileDescriptor.name
+      );
+      if (testClassesInPackage != null && testClassesInPackage.length > 0)
+        packageClasses = packageClasses.filter(
+          (item) => !testClassesInPackage.includes(item)
+        );
+
+      let interfacesInPackage: ApexClasses = this.apexSortedByType.testClass.map(
+        (fileDescriptor) => fileDescriptor.name
+      );
+      if (interfacesInPackage != null && interfacesInPackage.length > 0)
+        packageClasses = packageClasses.filter(
+          (item) => !interfacesInPackage.includes(item)
+        );
+
+      let parseError: ApexClasses = this.apexSortedByType.parseError.map(
+        (fileDescriptor) => fileDescriptor.name
+      );
+      if (parseError != null && parseError.length > 0)
+        packageClasses = packageClasses.filter(
+          (item) => !parseError.includes(item)
+        );
+    }
+    return packageClasses;
+  }
+
+
 }
 
-export type ApexSortedByType= {
-  class: FileDescriptor[],
-  testClass: FileDescriptor[],
-  interface: FileDescriptor[],
-  parseError: FileDescriptor[]
-}
+export type ApexSortedByType = {
+  class: FileDescriptor[];
+  testClass: FileDescriptor[];
+  interface: FileDescriptor[];
+  parseError: FileDescriptor[];
+};
 
-export type FileDescriptor ={
-  name: string
-  filepath: string,
-  error?: any
-}
+export type FileDescriptor = {
+  name: string;
+  filepath: string;
+  error?: any;
+};

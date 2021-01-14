@@ -4,10 +4,6 @@ import DependencyHelper from "./DependencyHelper";
 import Bottleneck from "bottleneck";
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import { exec } from "shelljs";
-import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateUnlockedPackageImpl";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
-import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateSourcePackageImpl";
-import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateDataPackageImpl";
 import IncrementProjectBuildNumberImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { EOL } from "os";
@@ -16,6 +12,11 @@ import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSen
 import { Stage } from "../Stage";
 import * as fs from "fs-extra"
 import path = require("path");
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateUnlockedPackageImpl"
+import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateSourcePackageImpl"
+import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateDataPackageImpl"
+
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -85,7 +86,7 @@ export default class BuildImpl {
     SFPLogger.isSupressLogs = true;
 
     // Read Manifest
-    this.projectConfig = ManifestHelpers.getSFDXPackageManifest(
+    this.projectConfig = ProjectConfig.getSFDXPackageManifest(
       this.props.projectDirectory
     );
 
@@ -218,7 +219,7 @@ export default class BuildImpl {
 
   private getAllPackages(projectDirectory: string): string[] {
 
-      let projectConfig = ManifestHelpers.getSFDXPackageManifest(projectDirectory);
+      let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
       let sfdxpackages=[];
 
 
@@ -364,7 +365,7 @@ export default class BuildImpl {
       this.props.projectDirectory,
       this.packagesToBeBuilt
     );
-    let type = ManifestHelpers.getPackageType(projectConfig, pkg);
+    let type = ProjectConfig.getPackageType(projectConfig, pkg);
     if (type === "Unlocked") {
       if (childs[pkg].length > 0)
         priority = PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY;
@@ -554,7 +555,6 @@ export default class BuildImpl {
     let createSourcePackageImpl = new CreateSourcePackageImpl(
       this.props.projectDirectory,
       sfdx_package,
-      null,
       packageMetadata,
       path.join("forceignores", "." + this.props.currentStage + "ignore")
     );

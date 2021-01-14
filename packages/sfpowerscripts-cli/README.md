@@ -106,7 +106,6 @@ The following output variables are currently supported:
 * sfpowerscripts_incremented_project_version
 * sfpowerscripts_artifact_directory
 * sfpowerscripts_artifact_metadata_directory
-* sfpowerscripts_delta_package_path
 * sfpowerscripts_package_version_id
 * sfpowerscripts_package_version_number
 * sfpowerscripts_pmd_output_path
@@ -151,7 +150,6 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
  - Package Commands ( Build your own workflow)
 	 - [`sfdx sfpowerscripts:package:data:create`](#sfdx-sfpowerscriptspackagedatacreate)
 	 - [`sfdx sfpowerscripts:package:data:install`](#sfdx-sfpowerscriptspackagedatainstall)
-	 - [`sfdx sfpowerscripts:package:delta:create`](#sfdx-sfpowerscriptspackagedeltacreate)
 	 - [`sfdx sfpowerscripts:package:source:create`](#sfdx-sfpowerscriptspackagesourcecreate)
 	 - [`sfdx sfpowerscripts:package:source:install`](#sfdx-sfpowerscriptspackagesourceinstall)
 	 - [`sfdx sfpowerscripts:package:unlocked:create`](#sfdx-sfpowerscriptspackageunlockedcreate)
@@ -817,63 +815,6 @@ EXAMPLE
 ```
 
 _See code: [commands/sfpowerscripts/package/data/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/data/install.ts)_
-
-## `sfdx sfpowerscripts:package:delta:create`
-
-This task is used to create a delta package between two commits and bundle the created delta as as a deployable artifact. Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task
-
-```
-This task is used to create a delta package between two commits and bundle the created delta as as a deployable artifact. Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task
-
-USAGE
-  $ sfdx sfpowerscripts:package:delta:create -r <string> -v <string> [-n <string>] [-t <string>] [--repourl <string>] 
-  [--branch <string>] [--artifactdir <directory>] [-x] [--refname <string>] 
-OPTIONS
-  -n, --package=package                                                             The name of the package
-
-  -r, --revisionfrom=revisionfrom                                                   (required) Provide the full SHA
-                                                                                    Commit ID, from where the diff
-                                                                                    should start generating
-
-  -t, --revisionto=revisionto                                                       [default: HEAD] If not set, the head
-                                                                                    commit ID of the current branch is
-                                                                                    used
-
-  -v, --versionname=versionname                                                     (required) Provide a meaningful name
-                                                                                    such as the default value, so this
-                                                                                    artifact can be identified in the
-                                                                                    release
-
-  -x, --generatedestructivemanifest                                                 Check this option to generate a
-                                                                                    destructive manifest to be deployed
-
-  --artifactdir=artifactdir                                                         [default: artifacts] The directory
-                                                                                    where the artifact is to be written
-
-  --branch=branch                                                                   The git branch that this build is
-                                                                                    triggered on, Useful for metrics and
-                                                                                    general identification purposes
-
-  --refname=refname                                                                 Reference name to be prefixed to
-                                                                                    output variables
-
-  --repourl=repourl                                                                 Custom source repository URL to use
-                                                                                    in artifact metadata, overrides
-                                                                                    origin URL defined in git config
-
-EXAMPLES
-  $ sfdx sfpowerscripts:package:delta:create -n <packagename> -r <61635fb> -t <3cf01b9> -v <version>
-
-  Output variable:
-  sfpowerscripts_delta_package_path
-  <refname>_sfpowerscripts_delta_package_path
-  sfpowerscripts_artifact_metadata_directory
-  <refname>_sfpowerscripts_artifact_metadata_directory
-  sfpowerscripts_artifact_directory
-  <refname>_sfpowerscripts_artifact_directory
-```
-
-_See code: [commands/sfpowerscripts/package/delta/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/delta/create.ts)_
 
 
 ## `sfdx sfpowerscripts:package:source:create`
