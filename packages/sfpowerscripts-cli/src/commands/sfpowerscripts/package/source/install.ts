@@ -2,10 +2,10 @@ import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
 
 import InstallPackageCommand from "../../../../InstallPackageCommand";
-import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallSourcePackageImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 
 import * as fs from "fs-extra"
+import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallSourcePackageImpl";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -106,9 +106,13 @@ export default class InstallSourcePackage extends InstallPackageCommand {
       );
 
       let result = await installSourcePackageImpl.exec();
+    
       if (result.result == PackageInstallationStatus.Failed) {
         throw new Error(result.message);
       } else {
+        console.log(`Succesfully Installed source package  ${sfdx_package}`);
+        
+        console.log("\n\nOutput variables:");
         if (result.deploy_id) {
           if (this.flags.refname) {
             fs.writeFileSync(
@@ -116,12 +120,14 @@ export default class InstallSourcePackage extends InstallPackageCommand {
               `${this.flags.refname}_sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}\n`,
               { flag: "a" }
             );
+            console.log(`${this.flags.refname}_sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}`);
           } else {
             fs.writeFileSync(
               ".env",
               `sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}\n`,
               { flag: "a" }
             );
+            console.log(`sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}`);
           }
         }
       }

@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { jest,expect } from "@jest/globals";
 import child_process = require("child_process");
 import ArtifactInstallationStatusUpdater from "../../src/artifacts/ArtifactInstallationStatusUpdater";
 import InstalledAritfactsFetcher from "../../src/artifacts/InstalledAritfactsFetcher";
@@ -77,7 +77,8 @@ describe("Fetch a list of sfpowerscripts artifacts from an org", () => {
 
   it("When unable to fetch, it should throw an error", () => {
 
-  expect(InstalledAritfactsFetcher.getListofArtifacts("testOrg2")).rejects.toThrow();},90000);
+  expect(InstalledAritfactsFetcher.getListofArtifacts("testOrg2")).rejects.toThrow();
+});
 
 });
 
@@ -175,7 +176,7 @@ describe("Update a sfpowerscripts artifact to  an org",()=>{
   });
 
 
-  it("Update a sfpowerscripts artifact and resulting an error,should throw an error",()=>{
+  it("Update a sfpowerscripts artifact and resulting an error,should return falsy",()=>{
 
     const child_processMock = jest.spyOn(child_process, "execSync");
     child_processMock.mockImplementationOnce(() => {
@@ -212,7 +213,7 @@ describe("Update a sfpowerscripts artifact to  an org",()=>{
    }
 
 
-   expect(ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,null,false)).rejects.toThrow();
+   expect(ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,null,false)).resolves.toBeFalsy;
    
   });
 

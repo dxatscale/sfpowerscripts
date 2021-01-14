@@ -8,11 +8,12 @@ import { SfdxApi } from "../pool/sfdxnode/types";
 import PrepareASingleOrgImpl, {
   ScriptExecutionResult,
 } from "./PrepareASingleOrgImpl";
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
+
 import child_process = require("child_process");
 import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { Stage } from "../Stage";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 export default class PrepareImpl {
   private poolConfig: PoolConfig;
   private totalToBeAllocated: number;
@@ -163,7 +164,7 @@ export default class PrepareImpl {
   }
 
   private async getPackageArtifacts() {
-    let packages = ManifestHelpers.getSFDXPackageManifest(null)[
+    let packages = ProjectConfig.getSFDXPackageManifest(null)[
       "packageDirectories"
     ];
 

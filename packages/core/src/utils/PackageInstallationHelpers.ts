@@ -2,26 +2,22 @@ import child_process = require("child_process");
 import AssignPermissionSetsImpl from "../sfdxwrappers/AssignPermissionSetsImpl";
 
 export default class PackageInstallationHelpers {
-
   static executeScript(
     script: string,
     sfdx_package: string,
     targetOrg: string
   ) {
     let cmd: string;
-    if (process.platform !== 'win32') {
+    if (process.platform !== "win32") {
       cmd = `bash -e ${script} ${sfdx_package} ${targetOrg}`;
     } else {
       cmd = `cmd.exe /c ${script} ${sfdx_package} ${targetOrg}`;
     }
 
-    child_process.execSync(
-      cmd,
-      {
-        cwd: process.cwd(),
-        stdio: ['ignore', 'inherit', 'inherit']
-      }
-    );
+    child_process.execSync(cmd, {
+      cwd: process.cwd(),
+      stdio: ["ignore", "inherit", "inherit"],
+    });
   }
 
   static applyPermsets(
@@ -35,6 +31,8 @@ export default class PackageInstallationHelpers {
       sourceDirectory
     );
 
-    assignPermissionSetsImpl.exec();
+    let results = assignPermissionSetsImpl.exec();
+    if (results.failedAssignments.length > 0)
+      throw new Error("Unable to assign permsets");
   }
 }

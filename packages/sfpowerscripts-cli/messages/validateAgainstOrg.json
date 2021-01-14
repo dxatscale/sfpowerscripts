@@ -1,0 +1,6 @@
+{
+  "commandDescription": "Validate the incoming change against target org",
+  "targetOrgFlagDescription": "Alias/User Name of the target environment",
+  "coveragePercentFlagDescription": "Minimum required percentage coverage for validating code coverage of packages with Apex classes",
+  "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol."
+}

@@ -1,7 +1,7 @@
 import { Messages } from "@salesforce/core";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from '@salesforce/command';
-import ValidateImpl from "../../../impl/validate/ValidateImpl";
+import ValidateImpl, {ValidateMode, ValidateProps} from "../../../impl/validate/ValidateImpl";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 
 Messages.importMessagesDirectory(__dirname);
@@ -15,6 +15,8 @@ export default class Validate extends SfpowerscriptsCommand {
   public static examples = [
     `$ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -u <devHubUsername> -i <clientId> -f <jwt_file>`
   ];
+
+  static aliases = ["sfpowerscripts:orchestrator:validateAgainstPool"];
 
   protected static flagsConfig = {
     devhubusername: flags.string({
@@ -69,16 +71,19 @@ export default class Validate extends SfpowerscriptsCommand {
     let validateResult: boolean = false;
     try {
 
-    let validateImpl: ValidateImpl = new ValidateImpl(
-      this.flags.devhubusername,
-      this.flags.pools,
-      this.flags.jwtkeyfile,
-      this.flags.clientid,
-      this.flags.shapefile,
-      this.flags.coveragepercent,
-      this.flags.logsgroupsymbol,
-      this.flags.deletescratchorg
-    );
+    let validateProps: ValidateProps = {
+      validateMode: ValidateMode.POOL,
+      coverageThreshold: this.flags.coveragepercent,
+      logsGroupSymbol: this.flags.logsgroupsymbol,
+      devHubUsername: this.flags.devhubusername,
+      pools: this.flags.pools,
+      jwt_key_file: this.flags.jwtkeyfile,
+      client_id: this.flags.clientid,
+      shapeFile: this.flags.shapefile,
+      isDeleteScratchOrg: this.flags.deletescratchorg
+    }
+
+    let validateImpl: ValidateImpl = new ValidateImpl( validateProps);
 
     let validateResult  = await validateImpl.exec();
 

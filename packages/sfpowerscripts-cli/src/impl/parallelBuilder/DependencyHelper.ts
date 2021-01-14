@@ -1,5 +1,4 @@
-import ManifestHelpers from "@dxatscale/sfpowerscripts.core/lib/manifest/ManifestHelpers";
-
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig"
 export default class DependencyHelper {
   static getParentsToBeFullFilled(
     packagesWithParents: AdjacentList,
@@ -19,7 +18,7 @@ export default class DependencyHelper {
     projectDirectory: string,
     filterByPackages?: string[]
   ): AdjacentList {
-    let projectConfig = ManifestHelpers.getSFDXPackageManifest(
+    let projectConfig = ProjectConfig.getSFDXPackageManifest(
       projectDirectory
     );
     let dag: AdjacentList = {};
@@ -55,7 +54,7 @@ export default class DependencyHelper {
     projectDirectory: string,
     filterByPackages?: string[]
   ): AdjacentList {
-    let projectConfig = ManifestHelpers.getSFDXPackageManifest(
+    let projectConfig = ProjectConfig.getSFDXPackageManifest(
       projectDirectory
     );
     let dag: AdjacentList = {};

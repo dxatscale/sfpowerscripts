@@ -1,7 +1,5 @@
-import { jest } from "@jest/globals";
+import { jest,expect } from "@jest/globals";
 const glob = require("glob");
-
-
 import ArtifactFilePathFetcher from "../../src/artifacts/ArtifactFilePathFetcher";
 
 describe("Provided a path to the artifacts folder containing sfpowerscripts artifact", () => {
