@@ -1,10 +1,9 @@
 import SFPPackage  from "../SFPPackage";
-import { PropertyFetcher } from "./PropertyFetcher"
+import  PropertyFetcher  from "./PropertyFetcher"
 
 import * as fs from "fs-extra";
 
-@PropertyFetcher.register
-export class PostDeploymentScriptFetcher {
+export default class PostDeploymentScriptFetcher implements PropertyFetcher {
   getSfpowerscriptsProperties(
     packageContents: SFPPackage,
     packageLogger?: any

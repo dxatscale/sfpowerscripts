@@ -1,13 +1,11 @@
 import * as fs from "fs-extra";
 import SFPLogger from "../../utils/SFPLogger";
 import SFPPackage  from "../SFPPackage";
-import { PropertyFetcher } from "./PropertyFetcher";
+import  PropertyFetcher  from "./PropertyFetcher";
 
 
-@PropertyFetcher.register
-export class DestructiveManifestPathFetcher
-{
- 
+export default class DestructiveManifestPathFetcher implements PropertyFetcher {
+
   public getSfpowerscriptsProperties(packageContents:SFPPackage, packageLogger?:any) {
     let destructiveChangesPath: string;
 
@@ -19,7 +17,7 @@ export class DestructiveManifestPathFetcher
         destructiveChangesPath = packageContents.packageDescriptor["destructiveChangePath"];
         packageContents.destructiveChangesPath=destructiveChangesPath;
       }
-    
+
 
     try {
       if (destructiveChangesPath!=null) {
@@ -38,4 +36,3 @@ export class DestructiveManifestPathFetcher
     return packageContents;
   }
 }
-

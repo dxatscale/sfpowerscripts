@@ -1,9 +1,8 @@
 import SFPPackage  from "../SFPPackage";
-import { PropertyFetcher } from "./PropertyFetcher"
+import PropertyFetcher from "./PropertyFetcher"
 
 
-@PropertyFetcher.register
-export class AssignPermissionSetFetcher {
+export default class AssignPermissionSetFetcher implements PropertyFetcher {
 
   public getSfpowerscriptsProperties(
     packageContents: SFPPackage,
@@ -13,9 +12,10 @@ export class AssignPermissionSetFetcher {
       if (
         packageContents.packageDescriptor.assignPermSetsPreDeployment instanceof
         Array
-      )
+      ) {
         packageContents.assignPermSetsPreDeployment =
           packageContents.packageDescriptor.assignPermSetsPreDeployment;
+      }
       else
         throw new Error(
           "Property 'assignPermSetsPreDeployment' must be of type array"
@@ -26,9 +26,10 @@ export class AssignPermissionSetFetcher {
       if (
         packageContents.packageDescriptor
           .assignPermSetsPostDeployment instanceof Array
-      )
-        packageContents.assignPermSetsPreDeployment =
-          packageContents.packageDescriptor.assignPermSetsPreDeployment;
+      ) {
+        packageContents.assignPermSetsPostDeployment =
+          packageContents.packageDescriptor.assignPermSetsPostDeployment;
+      }
       else
         throw new Error(
           "Property 'assignPermSetsPostDeployment' must be of type array"

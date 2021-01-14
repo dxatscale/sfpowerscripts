@@ -1,10 +1,17 @@
 import ApexTypeFetcher, { ApexSortedByType } from "../parser/ApexTypeFetcher";
 import ProjectConfig from "../project/ProjectConfig";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
-import { PropertyFetcher } from "./propertyFetchers/PropertyFetcher";
 import ConvertSourceToMDAPIImpl from "../sfdxwrappers/ConvertSourceToMDAPIImpl";
 import PackageManifest from "./PackageManifest";
 import MetadataCount from "./MetadataCount";
+
+import PropertyFetcher from "./propertyFetchers/PropertyFetcher";
+import AssignPermissionSetFetcher from "./propertyFetchers/AssignPermissionSetFetcher";
+import DestructiveManifestPathFetcher from "./propertyFetchers/DestructiveManifestPathFetcher";
+import PostDeploymentScriptFetcher from "./propertyFetchers/PostDeploymentScriptFetcher";
+import PreDeploymentScriptFetcher from "./propertyFetchers/PreDeploymentScriptFetcher";
+import ReconcilePropertyFetcher from "./propertyFetchers/ReconcileProfilePropertyFetcher";
+
 export type ApexClasses = Array<string>;
 export default class SFPPackage {
   private _package_name: string;
@@ -21,6 +28,14 @@ export default class SFPPackage {
   private _configFilePath: string;
   private _projectDirectory: string;
   private _apexClassesSortedByTypes:ApexSortedByType;
+
+  private readonly _propertyFetchers: PropertyFetcher[] = [
+    new AssignPermissionSetFetcher(),
+    new DestructiveManifestPathFetcher(),
+    new PostDeploymentScriptFetcher(),
+    new PreDeploymentScriptFetcher(),
+    new ReconcilePropertyFetcher()
+  ]
 
   public assignPermSetsPreDeployment?: string[];
   public assignPermSetsPostDeployment?: string[];
@@ -60,12 +75,12 @@ export default class SFPPackage {
     return this._packageDescriptor;
   }
 
- 
+
   public get apexTestClassses(): ApexClasses {
     return this._apexTestClassses;
   }
 
- 
+
 
   public get apexClassWithOutTestClasses(): ApexClasses {
     return this._apexClassWithOutTestClasses;
@@ -74,9 +89,13 @@ export default class SFPPackage {
   public get apexClassesSortedByTypes():ApexSortedByType {
     return this._apexClassesSortedByTypes;
   }
- 
+
   public get triggers(): ApexClasses {
     return this._triggers;
+  }
+
+  public get propertyFetchers(): PropertyFetcher[] {
+    return this._propertyFetchers;
   }
 
   public static async buildPackageFromProjectConfig(
@@ -122,10 +141,8 @@ export default class SFPPackage {
     );
     sfpPackage._apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
 
-   
-    let propertyFetcherRegister = PropertyFetcher.GetImplementations();
-    for (const element in propertyFetcherRegister) {
-      const propertyFetcher = new PropertyFetcher[element]();
+
+    for (const propertyFetcher of sfpPackage.propertyFetchers) {
       propertyFetcher.getSfpowerscriptsProperties(sfpPackage, packageLogger);
     }
 
@@ -143,12 +160,12 @@ export default class SFPPackage {
     return workingDirectory;
   }
 
-  
+
   public get isApexInPackage(): boolean {
     return this._isApexInPackage;
   }
 
- 
+
   public get isProfilesInPackage(): boolean {
     return this._isProfilesInPackage;
   }

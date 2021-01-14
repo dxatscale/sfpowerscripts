@@ -46,7 +46,7 @@ export default class CreateSourcePackageImpl {
       this.packageLogger
     );
     SFPLogger.log("sfdx_package", this.sfdx_package, this.packageLogger);
-   
+
     SFPLogger.log(
       "packageArtifactMetadata",
       this.packageArtifactMetadata,
@@ -65,7 +65,7 @@ export default class CreateSourcePackageImpl {
       packageDirectory = packageDescriptor["path"];
     }
 
- 
+
     //Get the contents of the package
     let sfppackage:SFPPackage;
     if (packageDirectory!=null) {
@@ -82,6 +82,9 @@ export default class CreateSourcePackageImpl {
         this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
         this.packageArtifactMetadata.isApexFound = sfppackage.isApexInPackage
         this.packageArtifactMetadata.isProfilesFound = sfppackage.isProfilesInPackage;
+        this.packageArtifactMetadata.assignPermSetsPreDeployment = sfppackage.assignPermSetsPreDeployment;
+        this.packageArtifactMetadata.assignPermSetsPostDeployment = sfppackage.assignPermSetsPostDeployment;
+        this.packageArtifactMetadata.reconcileProfiles = sfppackage.reconcileProfiles;
 
         this.handleApexTestClasses(sfppackage);
       } else {
@@ -153,12 +156,12 @@ export default class CreateSourcePackageImpl {
     return this.packageArtifactMetadata;
   }
 
- 
+
 
   private handleApexTestClasses(mdapiPackage: SFPPackage) {
-    
+
     let classTypes:ApexSortedByType = mdapiPackage.apexClassesSortedByTypes;
-    
+
     if (!this.packageArtifactMetadata.isTriggerAllTests) {
       if (
         this.packageArtifactMetadata.isApexFound &&
@@ -282,4 +285,3 @@ export default class CreateSourcePackageImpl {
     SFPLogger.log(table.toString(), null, this.packageLogger);
   }
 }
-
