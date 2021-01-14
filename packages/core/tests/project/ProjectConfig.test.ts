@@ -22,7 +22,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
         "path": "packages/domains/core",
         "package": "core",
         "default": false,
-        "versionName": "covax",
+        "versionName": "core",
         "versionNumber": "1.0.0.0"  
       },
       {
@@ -102,7 +102,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
     "path": "packages/domains/core",
     "package": "core",
     "default": false,
-    "versionName": "covax",
+    "versionName": "core",
     "versionNumber": "1.0.0.0"  
   };
   expect(ProjectConfig.getSFDXPackageDescriptor(null,"core")).toStrictEqual(corePackage);
