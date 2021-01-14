@@ -12,6 +12,7 @@ export default class ExecuteCommand
       let childProcess = child_process.exec(command, {
         encoding: "utf8",
         cwd: workingdirectory,
+        maxBuffer: 1024*1024*5
       });
 
      

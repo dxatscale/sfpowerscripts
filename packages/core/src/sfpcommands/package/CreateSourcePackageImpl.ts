@@ -5,7 +5,7 @@ import ProjectConfig from "../../project/ProjectConfig";
 import { EOL } from "os";
 import * as fs from "fs-extra";
 import path = require("path");
-import ApexTypeFetcher, { FileDescriptor } from "../../parser/ApexTypeFetcher";
+import ApexTypeFetcher, { ApexSortedByType, FileDescriptor } from "../../parser/ApexTypeFetcher";
 import SFPStatsSender from "../../utils/SFPStatsSender";
 import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 import SFPPackage  from "../../package/SFPPackage";
@@ -156,16 +156,9 @@ export default class CreateSourcePackageImpl {
  
 
   private handleApexTestClasses(mdapiPackage: SFPPackage) {
-    let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
-    let classTypes;
-    try {
-      classTypes = apexTypeFetcher.getApexTypeOfClsFiles(
-        path.join(mdapiPackage.mdapiDir, `classes`)
-      );
-    } catch (error) {
-      return;
-    }
-
+    
+    let classTypes:ApexSortedByType = mdapiPackage.apexClassesSortedByTypes;
+    
     if (!this.packageArtifactMetadata.isTriggerAllTests) {
       if (
         this.packageArtifactMetadata.isApexFound &&

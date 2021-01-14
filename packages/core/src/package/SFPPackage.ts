@@ -1,13 +1,11 @@
-import ApexTypeFetcher from "../parser/ApexTypeFetcher";
+import ApexTypeFetcher, { ApexSortedByType } from "../parser/ApexTypeFetcher";
 import ProjectConfig from "../project/ProjectConfig";
 import path from "path";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import { PropertyFetcher } from "./propertyFetchers/PropertyFetcher";
 import ConvertSourceToMDAPIImpl from "../sfdxwrappers/ConvertSourceToMDAPIImpl";
 import PackageManifest from "./PackageManifest";
-
-const glob = require("glob");
-
+import MetadataCount from "./MetadataCount";
 export type ApexClasses = Array<string>;
 export default class SFPPackage {
   private _package_name: string;
@@ -23,6 +21,7 @@ export default class SFPPackage {
   private _isProfilesInPackage: boolean;
   private _configFilePath: string;
   private _projectDirectory: string;
+  private _apexClassesSortedByTypes:ApexSortedByType;
 
   public assignPermSetsPreDeployment?: string[];
   public assignPermSetsPostDeployment?: string[];
@@ -62,145 +61,21 @@ export default class SFPPackage {
     return this._packageDescriptor;
   }
 
-  private getApexTestClasses(): ApexClasses {
-    if (this._apexTestClassses == null) {
-      try {
-        let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
-        let apexSortedByType = apexTypeFetcher.getApexTypeOfClsFiles(
-          path.join(this.mdapiDir, `classes`)
-        );
-
-        if (apexSortedByType["parseError"].length > 0) {
-          for (let parseError of apexSortedByType["parseError"]) {
-            console.log(`Failed to parse ${parseError.name}`);
-          }
-        }
-
-        let testClassNames: string[] = apexSortedByType["testClass"].map(
-          (fileDescriptor) => fileDescriptor.name
-        );
-
-        if (testClassNames.length === 0) {
-          throw new Error("No test classes found in package");
-        }
-
-        this._apexTestClassses = testClassNames;
-      } catch (error) {
-        this._apexTestClassses;
-      }
-    }
-    return this._apexTestClassses;
-  }
-
+ 
   public get apexTestClassses(): ApexClasses {
     return this._apexTestClassses;
   }
 
-  private getApexClassExcludingTestClasses(): ApexClasses {
-    if (this._apexClassWithOutTestClasses == null) {
-      try {
-        let packageClasses: string[];
-        let apexTypeFetcher: ApexTypeFetcher = new ApexTypeFetcher();
-        let apexSortedByType = apexTypeFetcher.getApexTypeOfClsFiles(
-          path.join(this.mdapiDir, `classes`)
-        );
-
-        let types;
-        if (this.payload["Package"]["types"] instanceof Array) {
-          types = this.payload["Package"]["types"];
-        } else {
-          // Create array with single type
-          types = [this.payload["Package"]["types"]];
-        }
-
-        for (let type of types) {
-          if (type["name"] === "ApexClass") {
-            if (type["members"] instanceof Array) {
-              packageClasses = type["members"];
-            } else {
-              // Create array with single member
-              packageClasses = [type["members"]];
-            }
-            break;
-          }
-        }
-
-        if (packageClasses != null) {
-          if (apexSortedByType["testClass"].length > 0) {
-            // Filter out test classes
-            packageClasses = packageClasses.filter((packageClass) => {
-              for (let testClass of apexSortedByType["testClass"]) {
-                if (testClass["name"] === packageClass) {
-                  return false;
-                }
-              }
-
-              if (apexSortedByType["parseError"].length > 0) {
-                // Filter out undetermined classes that failed to parse
-                for (let parseError of apexSortedByType["parseError"]) {
-                  if (parseError["name"] === packageClass) {
-                    console.log(
-                      `Skipping  ${packageClass}, unable to determine identity of class`
-                    );
-                    return false;
-                  }
-                }
-              }
-
-              return true;
-            });
-          }
-
-          if (apexSortedByType["interface"].length > 0) {
-            // Filter out interfaces
-            packageClasses = packageClasses.filter((packageClass) => {
-              for (let interfaceClass of apexSortedByType["interface"]) {
-                if (interfaceClass["name"] === packageClass) {
-                  return false;
-                }
-              }
-              return true;
-            });
-          }
-        }
-        this._apexClassWithOutTestClasses = packageClasses;
-      } catch (error) {
-        this._apexClassWithOutTestClasses = null;
-      }
-    }
-    return this._apexClassWithOutTestClasses;
-  }
+ 
 
   public get apexClassWithOutTestClasses(): ApexClasses {
     return this._apexClassWithOutTestClasses;
   }
 
-  private fetchTriggers(): ApexClasses {
-    let triggers: string[];
-
-    let types;
-    if (this.payload["Package"]["types"] instanceof Array) {
-      types = this.payload["Package"]["types"];
-    } else {
-      // Create array with single type
-      types = [this.payload["Package"]["types"]];
-    }
-
-    for (let type of types) {
-      if (type["name"] === "ApexTrigger") {
-        if (type["members"] instanceof Array) {
-          triggers = type["members"];
-        } else {
-          // Create array with single member
-          triggers = [type["members"]];
-        }
-        break;
-      }
-    }
-
-    return triggers;
+  public get apexClassesSortedByTypes():ApexSortedByType {
+    return this._apexClassesSortedByTypes;
   }
-
+ 
   public get triggers(): ApexClasses {
     return this._triggers;
   }
@@ -227,23 +102,28 @@ export default class SFPPackage {
       sfpPackage._packageDescriptor.path,
       packageLogger
     ).exec(true);
-    sfpPackage._payload = await new PackageManifest(
-      sfpPackage.mdapiDir
-    ).getManifest();
-    sfpPackage._triggers = sfpPackage.fetchTriggers();
-    sfpPackage._isApexInPackage = sfpPackage.checkForApexInPackage();
-    sfpPackage._isProfilesInPackage = sfpPackage.checkForProfilesInPackage();
+
+    let packageManifest:PackageManifest = new PackageManifest(sfpPackage.mdapiDir);
+    sfpPackage._payload = await packageManifest.getManifest();
+    sfpPackage._triggers = packageManifest.fetchTriggers();
+    sfpPackage._isApexInPackage = packageManifest.isApexInPackage();
+    sfpPackage._isProfilesInPackage = packageManifest.isProfilesInPackage();
     sfpPackage._packageType = ProjectConfig.getPackageType(
       ProjectConfig.getSFDXPackageManifest(projectDirectory),
       sfdx_package
     );
-    sfpPackage._apexTestClassses = sfpPackage.getApexTestClasses();
-    sfpPackage._metadataCount = sfpPackage.getMetadataCount(
+
+    let apexFetcher:ApexTypeFetcher = new ApexTypeFetcher(sfpPackage._mdapiDir);
+
+    sfpPackage._apexClassesSortedByTypes = apexFetcher.getClassesClassifiedByType();
+    sfpPackage._apexTestClassses = apexFetcher.getTestClasses();
+    sfpPackage._metadataCount = MetadataCount.getMetadataCount(
       projectDirectory,
       sfpPackage._packageDescriptor.path
     );
-    sfpPackage._apexClassWithOutTestClasses = sfpPackage.getApexClassExcludingTestClasses();
+    sfpPackage._apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
 
+   
     let propertyFetcherRegister = PropertyFetcher.GetImplementations();
     for (const element in propertyFetcherRegister) {
       const propertyFetcher = new PropertyFetcher[element]();
@@ -264,62 +144,12 @@ export default class SFPPackage {
     return workingDirectory;
   }
 
-  private getMetadataCount(
-    projectDirectory: string,
-    sourceDirectory: string
-  ): number {
-    let metadataCount;
-    try {
-      let metadataFiles: string[] = glob.sync(`**/*-meta.xml`, {
-        cwd: projectDirectory
-          ? path.join(projectDirectory, sourceDirectory)
-          : sourceDirectory,
-        absolute: true,
-      });
-      metadataCount = metadataFiles.length;
-    } catch (error) {
-      metadataCount = -1;
-    }
-    return metadataCount;
-  }
-
-  private checkForApexInPackage(): boolean {
-    let isApexFound = false;
-    if (Array.isArray(this.payload["Package"]["types"])) {
-      for (let type of this.payload["Package"]["types"]) {
-        if (type["name"] == "ApexClass" || type["name"] == "ApexTrigger") {
-          isApexFound = true;
-          break;
-        }
-      }
-    } else if (
-      this.payload["Package"]["types"]["name"] == "ApexClass" ||
-      this.payload["Package"]["types"]["name"] == "ApexTrigger"
-    ) {
-      isApexFound = true;
-    }
-    return isApexFound;
-  }
-
+  
   public get isApexInPackage(): boolean {
     return this._isApexInPackage;
   }
 
-  private checkForProfilesInPackage(): boolean {
-    let isProfilesFound = false;
-    if (Array.isArray(this.payload["Package"]["types"])) {
-      for (let type of this.payload["Package"]["types"]) {
-        if (type["name"] == "Profile") {
-          isProfilesFound = true;
-          break;
-        }
-      }
-    } else if (this.payload["Package"]["types"]["name"] == "Profile") {
-      isProfilesFound = true;
-    }
-    return isProfilesFound;
-  }
-
+ 
   public get isProfilesInPackage(): boolean {
     return this._isProfilesInPackage;
   }
