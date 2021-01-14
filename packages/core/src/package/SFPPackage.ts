@@ -1,6 +1,5 @@
 import ApexTypeFetcher, { ApexSortedByType } from "../parser/ApexTypeFetcher";
 import ProjectConfig from "../project/ProjectConfig";
-import path from "path";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import { PropertyFetcher } from "./propertyFetchers/PropertyFetcher";
 import ConvertSourceToMDAPIImpl from "../sfdxwrappers/ConvertSourceToMDAPIImpl";

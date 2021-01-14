@@ -1,6 +1,6 @@
 
 import { jest, expect } from "@jest/globals";
-import { RunSpecifiedTestsOption, TestOptions } from "../../src/sfdxwrappers/TestOptions";
+import { TestOptions } from "../../src/sfdxwrappers/TestOptions";
 import fs from "fs-extra";
 import { CoverageOptions } from "../../src/package/IndividualClassCoverage";
 import TriggerApexTests from "../../src/sfpcommands/apextest/TriggerApexTests";
@@ -230,54 +230,6 @@ describe("Given an org, trigger apex tests,along with tests in package options a
 
 
 
-let specifiedTestsFailedOutput={
-    "summary": {
-        "outcome": "Failed",
-        "testsRan": 1,
-        "passing": 0,
-        "failing": 1,
-        "skipped": 0,
-        "passRate": "90%",
-        "failRate": "10%",
-        "testStartTime": "Jan 11, 2021 2:51 PM",
-        "testExecutionTime": "113 ms",
-        "testTotalTime": "113 ms",
-        "commandTime": "14404 ms",
-        "hostname": "https://site-computing-8127-dev-ed.cs75.my.salesforce.com/",
-        "orgId": "00D0w0000000gYQEAY",
-        "username": "test-ibel3stjdggv@example.com",
-        "testRunId": "7070w00000X2jWS",
-        "userId": "0050w000002KhdRAAS",
-        "testRunCoverage": "97%",
-        "orgWideCoverage": "97%"
-    },
-    "tests": [
-        {
-            "attributes": {
-                "type": "ApexTestResult",
-                "url": "/services/data/v50.0/tooling/sobjects/ApexTestResult/07M0w000002irgLEAQ"
-            },
-            "Id": "07M0w000002irgLEAQ",
-            "QueueItemId": "7090w000000Q9w1AAC",
-            "StackTrace": null,
-            "Message": null,
-            "AsyncApexJobId": "7070w00000X2jWSAAZ",
-            "MethodName": "canFetchRelatedSpaces",
-            "Outcome": "Pass",
-            "ApexClass": {
-                "attributes": {
-                    "type": "ApexClass",
-                    "url": "/services/data/v50.0/tooling/sobjects/ApexClass/01p0w000001n1SgAAI"
-                },
-                "Id": "01p0w000001n1SgAAI",
-                "Name": "MarketServicesTest",
-                "NamespacePrefix": null
-            },
-            "RunTime": 113,
-            "FullName": "MarketServicesTest.canFetchRelatedSpaces"
-        }
-    ]
-  };
 
 let specifiedTestsSuccessFulOutput={
   "summary": {

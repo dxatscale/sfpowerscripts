@@ -1,4 +1,4 @@
-import SFPPackage, { ApexClasses } from "../../package/SFPPackage";
+import SFPPackage from "../../package/SFPPackage";
 import { RunSpecifiedTestsOption } from "../../sfdxwrappers/TestOptions";
 
 export enum ExtendedTestOptions {
