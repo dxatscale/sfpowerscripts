@@ -5,11 +5,9 @@ import GeneratePackageChangelog from "../changelog/GeneratePackageChangelog";
 import { Changelog } from "../changelog/interfaces/GenericChangelogInterfaces";
 import * as rimraf from "rimraf";
 import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
-import AdmZip = require('adm-zip');
+import AdmZip = require("adm-zip");
 
 export default class ArtifactGenerator {
-
-
   //Generates the universal artifact used by the CLI and AZP
   public static async generateArtifact(
     sfdx_package: string,
@@ -17,40 +15,32 @@ export default class ArtifactGenerator {
     artifact_directory: string,
     packageArtifactMetadata: PackageMetadata
   ): Promise<string> {
-
     try {
       // Artifact folder consisting of artifact metadata, changelog & source
-      let artifactFolder: string = sfdx_package == null ? "sfpowerscripts_artifact" : `${sfdx_package}_sfpowerscripts_artifact`;
+      let artifactFolder: string =
+        sfdx_package == null
+          ? "sfpowerscripts_artifact"
+          : `${sfdx_package}_sfpowerscripts_artifact`;
 
       // Absolute filepath of artifact
       let artifactFilepath: string;
 
-      if(artifact_directory != null)
-      {
-          artifactFilepath = path.resolve(artifact_directory, artifactFolder);
+      if (artifact_directory != null) {
+        artifactFilepath = path.resolve(artifact_directory, artifactFolder);
+      } else {
+        artifactFilepath = path.resolve(artifactFolder);
       }
-      else
-      {
-          artifactFilepath=path.resolve(artifactFolder);
-
-      }
-
 
       fs.mkdirpSync(artifactFilepath);
 
-      let sourcePackage: string = path.join(
-        artifactFilepath,
-        `source`
-      );
+      let sourcePackage: string = path.join(artifactFilepath, `source`);
       fs.mkdirpSync(sourcePackage);
       fs.copySync(packageArtifactMetadata.sourceDir, sourcePackage);
 
       rimraf.sync(packageArtifactMetadata.sourceDir);
 
-
-
       //Modify Source Directory to the new source directory inside the artifact
-      packageArtifactMetadata.sourceDir=`source`;
+      packageArtifactMetadata.sourceDir = `source`;
 
       let artifactMetadataFilePath: string = path.join(
         artifactFilepath,
@@ -66,7 +56,9 @@ export default class ArtifactGenerator {
       let generatePackageChangelog: GeneratePackageChangelog = new GeneratePackageChangelog(
         sfdx_package,
         packageArtifactMetadata.sourceVersionFrom,
-        packageArtifactMetadata.sourceVersionTo ? packageArtifactMetadata.sourceVersionTo : packageArtifactMetadata.sourceVersion,
+        packageArtifactMetadata.sourceVersionTo
+          ? packageArtifactMetadata.sourceVersionTo
+          : packageArtifactMetadata.sourceVersion,
         project_directory
       );
 
@@ -92,7 +84,8 @@ export default class ArtifactGenerator {
         packageArtifactMetadata.package_version_number
       );
 
-      let zipArtifactFilepath: string = artifactFilepath + `_` + packageVersionNumber + `.zip`;
+      let zipArtifactFilepath: string =
+        artifactFilepath + `_` + packageVersionNumber + `.zip`;
       zip.writeZip(zipArtifactFilepath);
 
       // Cleanup unzipped artifact
@@ -104,16 +97,18 @@ export default class ArtifactGenerator {
     }
   }
 
-  private static substituteBuildNumberWithPreRelease(packageVersionNumber: string) {
+  private static substituteBuildNumberWithPreRelease(
+    packageVersionNumber: string
+  ) {
     let segments = packageVersionNumber.split(".");
 
     if (segments.length === 4) {
-      packageVersionNumber = segments.reduce( (version, segment, segmentsIdx) => {
-        if (segmentsIdx === 3)
-          return version + "-" + segment
-        else
-          return version + "." + segment
-      });
+      packageVersionNumber = segments.reduce(
+        (version, segment, segmentsIdx) => {
+          if (segmentsIdx === 3) return version + "-" + segment;
+          else return version + "." + segment;
+        }
+      );
     }
 
     return packageVersionNumber;

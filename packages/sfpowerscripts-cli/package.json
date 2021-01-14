@@ -67,9 +67,6 @@
       "sfpowerscripts:package:data": {
         "description": "Commands to create and install data packages (sfdmu)"
       },
-      "sfpowerscripts:package:delta": {
-        "description": "Commands to create delta packages based on two different commit ids"
-      },
       "sfpowerscripts:package:unlocked": {
         "description": "Commands to create and install unlocked packages"
       },

@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { jest,expect } from "@jest/globals";
 import child_process = require("child_process");
 import ArtifactInstallationStatusUpdater from "../../src/artifacts/ArtifactInstallationStatusUpdater";
 import InstalledAritfactsFetcher from "../../src/artifacts/InstalledAritfactsFetcher";

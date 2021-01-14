@@ -1,9 +1,15 @@
-import DeploySourceToOrgImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceToOrgImpl';
-import DeploySourceResult from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploySourceResult'
+
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import { Messages, SfdxError } from '@salesforce/core';
+import { Messages } from '@salesforce/core';
 import { isNullOrUndefined } from 'util';
+import DeployMDAPIDirToOrgImpl, { DeployResult, DeploymentOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeployMDAPIDirToOrgImpl"
+import PackageMetadataPrinter from "@dxatscale/sfpowerscripts.core/lib/display/PackageMetadataPrinter"
+import PackageManifest from "@dxatscale/sfpowerscripts.core/lib/package/PackageManifest"
+import ConvertSourceToMDAPIImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/ConvertSourceToMDAPIImpl"
+import { DeploymentCommandStatus } from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/DeploymentCommandStatus';
+import DeployErrorDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/DeployErrorDisplayer"
+import PackageEmptyChecker from "@dxatscale/sfpowerscripts.core/lib/package/PackageEmptyChecker"
 const fs = require('fs');
 
 // Initialize Messages with the current plugin directory
@@ -46,51 +52,49 @@ export default class DeploySource extends SfpowerscriptsCommand {
 
   public async execute(){
     try {
-
-      console.log("SFPowerScript.. Deploy Source to Org");
-
       const target_org: string = this.flags.targetorg;
       const source_directory: string = this.flags.sourcedir;
       let project_directory: string = this.flags.projectdir;
 
 
 
-      let deploySourceToOrgImpl: DeploySourceToOrgImpl;
-      let mdapi_options = {};
+      let deployMDAPIDirToOrgImpl: DeployMDAPIDirToOrgImpl;
+      let mdapiOptions:DeploymentOptions = {
+          isCheckOnlyDeployment:this.flags.checkonly,
+          testLevel:this.flags.testlevel,
+          specifiedTests: this.flags.specifiedtests,
+          isIgnoreErrors:this.flags.ignoreerrors,
+          isIgnoreWarnings: this.flags.ignorewarnings
 
-      mdapi_options["wait_time"] = this.flags.waittime;
-      mdapi_options["checkonly"] = this.flags.checkonly;
+      };
 
-
-
-      if(mdapi_options["checkonly"])
-        mdapi_options["validation_ignore"]= this.flags.validationignore;
-
-      mdapi_options["testlevel"] = this.flags.testlevel;
-
-      if (mdapi_options["testlevel"] == "RunSpecifiedTests")
-        mdapi_options["specified_tests"] = this.flags.specifiedtests;
-      if (mdapi_options["testlevel"] == "RunApexTestSuite")
-        mdapi_options["apextestsuite"] = this.flags.apextestsuite;
-
-      mdapi_options["ignore_warnings"]=this.flags.ignorewarnings;
-      mdapi_options["ignore_errors"]=this.flags.ignoreerrors;
+   
+      let emptyCheckResults=PackageEmptyChecker.isToBreakBuildForEmptyDirectory(project_directory,source_directory,this.flags.istobreakbuildifempty);
+      if(emptyCheckResults.result=="break")
+      {
+        console.log(emptyCheckResults.message)
+        process.exitCode=1;
+        return;
+      }
 
 
-      let isToBreakBuildIfEmpty= this.flags.istobreakbuildifempty;
+      let convertSourceToMDAPIImpl:ConvertSourceToMDAPIImpl = new ConvertSourceToMDAPIImpl(project_directory,source_directory);
+      let mdapiDir = await convertSourceToMDAPIImpl.exec();
 
-
-
-      deploySourceToOrgImpl = new DeploySourceToOrgImpl(
-        target_org,
-        project_directory,
-        source_directory,
-        mdapi_options,
-        isToBreakBuildIfEmpty
+      PackageMetadataPrinter.printMetadataToDeploy(
+        await new PackageManifest(mdapiDir).getManifest()
       );
 
-      let result: DeploySourceResult= await deploySourceToOrgImpl.exec();
-
+      deployMDAPIDirToOrgImpl = new DeployMDAPIDirToOrgImpl(target_org,project_directory,mdapiDir,mdapiOptions)
+      let result: DeployResult = await deployMDAPIDirToOrgImpl.exec();
+      if(result.status==DeploymentCommandStatus.EXCEPTION)
+      {
+       throw new Error(result.result);
+      }
+      else if(result.status==DeploymentCommandStatus.FAILED)
+      {
+        DeployErrorDisplayer.printMetadataFailedToDeploy(result.result.details.componentFailures)
+      }
       if (!isNullOrUndefined(result.deploy_id)) {
         if (!isNullOrUndefined(this.flags.refname)) {
           fs.writeFileSync('.env', `${this.flags.refname}_sfpowerkit_deploysource_id=${result.deploy_id}\n`, {flag:'a'});
@@ -99,12 +103,7 @@ export default class DeploySource extends SfpowerscriptsCommand {
         }
       }
 
-      if (!result.result) {
-        console.error(result.message);
-        throw new SfdxError(`Validation/Deployment with Job ID ${result.deploy_id} failed`);
-      } else {
-        console.log(result.message);
-      }
+     
 
     } catch(err) {
       console.log(err);
