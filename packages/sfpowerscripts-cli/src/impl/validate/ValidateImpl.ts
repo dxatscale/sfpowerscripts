@@ -97,7 +97,7 @@ export default class ValidateImpl {
 
   private authenticateDevHub(devHubUsername: string): void {
     child_process.execSync(
-      `sfdx force:auth:jwt:grant -u ${devHubUsername} -i ${this.client_id} -f ${this.jwt_key_file} -r https://login.salesforce.com`,
+      `sfdx auth:jwt:grant -u ${devHubUsername} -i ${this.client_id} -f ${this.jwt_key_file} -r https://login.salesforce.com`,
       {
         stdio: "inherit",
         encoding: "utf8"

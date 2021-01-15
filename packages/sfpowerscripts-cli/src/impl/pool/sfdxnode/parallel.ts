@@ -52,10 +52,22 @@ const createParallelCommand: CreateCommandFunc = (
 export const sfdx: SfdxApi = new SfdxApi();
 
 export function registerNamespace(sfdxNamespace: SfdxNamespace): void {
-  const { commandsDir, namespace }: SfdxNamespace = sfdxNamespace;
-  sfdx[namespace] = buildCommands(
+  const { commandsDir, namespace, additionalNameSpace }: SfdxNamespace = sfdxNamespace;
+  if(additionalNameSpace)
+  {
+  sfdx[additionalNameSpace] = buildCommands(
     createParallelCommand,
     commandsDir,
-    namespace
+    namespace,
+    additionalNameSpace
   );
+
+ 
+  }
+  else
+   sfdx[namespace] = buildCommands(
+     createParallelCommand,
+     commandsDir,
+     namespace
+   );
 }

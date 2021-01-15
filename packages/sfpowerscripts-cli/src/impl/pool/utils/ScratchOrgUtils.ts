@@ -155,7 +155,7 @@ export default class ScratchOrgUtils {
     );
 
     //Generate Password
-    let passwordResult = await sfdx.force.user.password.generate({
+    let passwordResult = await sfdx.userplugin.user.password.generate({
       quiet: true,
       targetusername: scratchOrg.username,
       targetdevhubusername: hubOrg.getUsername(),
