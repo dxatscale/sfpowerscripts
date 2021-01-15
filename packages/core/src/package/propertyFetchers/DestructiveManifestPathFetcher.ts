@@ -2,11 +2,11 @@ import * as fs from "fs-extra";
 import SFPLogger from "../../utils/SFPLogger";
 import SFPPackage  from "../SFPPackage";
 import  PropertyFetcher  from "./PropertyFetcher";
-
+import xml2json from "../../utils/xml2json";
 
 export default class DestructiveManifestPathFetcher implements PropertyFetcher {
 
-  public getSfpowerscriptsProperties(packageContents:SFPPackage, packageLogger?:any) {
+  public async getSfpowerscriptsProperties(packageContents:SFPPackage, packageLogger?:any) {
     let destructiveChangesPath: string;
 
     if (packageContents.packageDescriptor === null || packageContents.packageDescriptor === undefined) {
@@ -21,9 +21,7 @@ export default class DestructiveManifestPathFetcher implements PropertyFetcher {
 
     try {
       if (destructiveChangesPath!=null) {
-        packageContents.destructiveChanges = JSON.parse(
-          fs.readFileSync(destructiveChangesPath, "utf8")
-        );
+        packageContents.destructiveChanges = await xml2json(fs.readFileSync(destructiveChangesPath, "utf8"));
       }
     } catch (error) {
       SFPLogger.log(

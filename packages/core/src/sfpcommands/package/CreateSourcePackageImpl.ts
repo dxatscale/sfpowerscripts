@@ -86,6 +86,10 @@ export default class CreateSourcePackageImpl {
         this.packageArtifactMetadata.assignPermSetsPostDeployment = sfppackage.assignPermSetsPostDeployment;
         this.packageArtifactMetadata.reconcileProfiles = sfppackage.reconcileProfiles;
 
+        if (sfppackage.destructiveChanges) {
+          this.packageArtifactMetadata.destructiveChanges = sfppackage.destructiveChanges;
+        }
+
         this.handleApexTestClasses(sfppackage);
       } else {
         this.printEmptyArtifactWarning();

@@ -116,7 +116,7 @@ export default class InstallSourcePackageImpl {
       }
 
       // Apply Destructive Manifest
-      if (this.packageMetadata.isDestructiveChangesFound) {
+      if (this.packageMetadata.destructiveChanges) {
         await this.applyDestructiveChanges();
       }
 
@@ -172,7 +172,7 @@ export default class InstallSourcePackageImpl {
       );
 
       let result: DeploySourceResult = await deploySourceToOrgImpl.exec();
-     
+
 
       if (result.result && !result.message.startsWith("skip:")) {
         //Apply PostDeployment Activities
@@ -195,15 +195,15 @@ export default class InstallSourcePackageImpl {
           );
         }
 
-        
-      
+
+
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
           this.targetusername,
           this.packageMetadata,
           packageDescriptor.aliasfy ? this.targetusername : null,
           this.isPackageCheckHandledByCaller
         );
-       
+
 
 
 
