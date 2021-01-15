@@ -6,7 +6,7 @@ export function loadSFDX() {
   let user_plugin_path="";
   try {
     salesforce_alm_path = path.dirname(require.resolve("salesforce-alm"));
-    user_plugin_path=path.dirname(path.join(__dirname,`../../node_modules/@salesforce/plugin-user/lib/package.json`));
+    user_plugin_path=path.dirname(path.join(__dirname,`../../../../node_modules/@salesforce/plugin-user/lib/package.json`));
   } catch (error) {
     console.log(error);
     throw error;
