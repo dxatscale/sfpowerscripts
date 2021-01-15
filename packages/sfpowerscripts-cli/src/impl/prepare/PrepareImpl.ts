@@ -431,8 +431,7 @@ export default class PrepareImpl {
           Pooltag__c: this.poolConfig.pool.tag,
           Allocation_status__c: ScratchOrgUtils.isNewVersionCompatible
             ? "Available"
-            : "",
-          Password__c: scratchOrg.password,
+            : ""
         },
         this.hubOrg
       );
