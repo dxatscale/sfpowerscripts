@@ -139,7 +139,7 @@ export default class SFPPackage {
 
 
     for (const propertyFetcher of sfpPackage.propertyFetchers) {
-      propertyFetcher.getSfpowerscriptsProperties(sfpPackage, packageLogger);
+      await propertyFetcher.getSfpowerscriptsProperties(sfpPackage, packageLogger);
     }
 
     return sfpPackage;

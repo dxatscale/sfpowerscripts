@@ -24,12 +24,7 @@ export default class DestructiveManifestPathFetcher implements PropertyFetcher {
         packageContents.destructiveChanges = await xml2json(fs.readFileSync(destructiveChangesPath, "utf8"));
       }
     } catch (error) {
-      SFPLogger.log(
-        "Unable to process destructive Manifest specified in the path or in the project manifest",
-        null,
-        packageLogger
-      );
-      packageContents.destructiveChanges = null;
+      throw new Error("Unable to process destructive Manifest specified in the path or in the project manifest");
     }
     return packageContents;
   }
