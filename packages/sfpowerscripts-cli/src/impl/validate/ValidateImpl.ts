@@ -246,7 +246,7 @@ export default class ValidateImpl {
 
   private authenticateToScratchOrg(scratchOrgUsername: string): void {
     child_process.execSync(
-      `sfdx force:auth:jwt:grant -u ${scratchOrgUsername} -i ${this.client_id} -f ${this.jwt_key_file} -r https://test.salesforce.com`,
+      `sfdx auth:jwt:grant -u ${scratchOrgUsername} -i ${this.client_id} -f ${this.jwt_key_file} -r https://test.salesforce.com`,
       {
         stdio: ['ignore', 'inherit', 'inherit']
       }
