@@ -1,5 +1,4 @@
 import * as fs from "fs-extra";
-import SFPLogger from "../../utils/SFPLogger";
 import SFPPackage  from "../SFPPackage";
 import  PropertyFetcher  from "./PropertyFetcher";
 import xml2json from "../../utils/xml2json";
