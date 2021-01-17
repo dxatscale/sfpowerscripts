@@ -25,6 +25,7 @@ export default class ArtifactInstallationStatusUpdater {
       SFPLogger.log(
         "Unable to update details about artifacts to the org"
       );
+      return false;
     }
   }
 
