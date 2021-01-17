@@ -1,8 +1,7 @@
 import path from "path";
 import * as fs from "fs-extra";
 import { ApexClasses } from "./SFPPackage";
-const xmlParser = require("xml2js").Parser({ explicitArray: false });
-
+import xml2json from "../utils/xml2json";
 
 export default class PackageManifest
 {
@@ -10,26 +9,15 @@ export default class PackageManifest
   private manifest;
 
   public constructor(private mdapiDir:string){};
-  
+
   public async getManifest() {
     let packageXml: string = fs.readFileSync(
       path.join(this.mdapiDir, "package.xml"),
       "utf8"
     );
-    this.manifest = await this.xml2json(packageXml);
+    this.manifest = await xml2json(packageXml);
     return this.manifest;
   }
-
-  
-  private xml2json(xml) {
-    return new Promise((resolve, reject) => {
-      xmlParser.parseString(xml, function (err, json) {
-        if (err) reject(err);
-        else resolve(json);
-      });
-    });
-  }
-
 
   public isProfilesInPackage(): boolean {
     let isProfilesFound = false;
@@ -90,5 +78,5 @@ export default class PackageManifest
     return triggers;
   }
 
-  
+
 }

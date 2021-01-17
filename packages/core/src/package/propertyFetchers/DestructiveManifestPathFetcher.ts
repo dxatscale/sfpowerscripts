@@ -1,14 +1,11 @@
 import * as fs from "fs-extra";
-import SFPLogger from "../../utils/SFPLogger";
 import SFPPackage  from "../SFPPackage";
-import { PropertyFetcher } from "./PropertyFetcher";
+import  PropertyFetcher  from "./PropertyFetcher";
+import xml2json from "../../utils/xml2json";
 
+export default class DestructiveManifestPathFetcher implements PropertyFetcher {
 
-@PropertyFetcher.register
-export class DestructiveManifestPathFetcher
-{
- 
-  public getSfpowerscriptsProperties(packageContents:SFPPackage, packageLogger?:any) {
+  public async getSfpowerscriptsProperties(packageContents:SFPPackage, packageLogger?:any) {
     let destructiveChangesPath: string;
 
     if (packageContents.packageDescriptor === null || packageContents.packageDescriptor === undefined) {
@@ -19,23 +16,15 @@ export class DestructiveManifestPathFetcher
         destructiveChangesPath = packageContents.packageDescriptor["destructiveChangePath"];
         packageContents.destructiveChangesPath=destructiveChangesPath;
       }
-    
+
 
     try {
       if (destructiveChangesPath!=null) {
-        packageContents.destructiveChanges = JSON.parse(
-          fs.readFileSync(destructiveChangesPath, "utf8")
-        );
+        packageContents.destructiveChanges = await xml2json(fs.readFileSync(destructiveChangesPath, "utf8"));
       }
     } catch (error) {
-      SFPLogger.log(
-        "Unable to process destructive Manifest specified in the path or in the project manifest",
-        null,
-        packageLogger
-      );
-      packageContents.destructiveChanges = null;
+      throw new Error("Unable to process destructive Manifest specified in the path or in the project manifest");
     }
     return packageContents;
   }
 }
-
