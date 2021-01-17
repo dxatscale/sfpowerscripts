@@ -98,7 +98,7 @@ export class TestReportDisplayer {
     });
 
     individualClassCoverage.forEach((cls) => {
-      table.push([cls.name || "", cls.coveredPercent || ""]);
+      table.push([cls.name || "", cls.coveredPercent !== null ? cls.coveredPercent : "N/A"]);
     });
 
     SFPLogger.log(table.toString(),this.fileLogger);
