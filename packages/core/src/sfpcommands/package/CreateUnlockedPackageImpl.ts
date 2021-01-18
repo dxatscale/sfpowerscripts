@@ -47,7 +47,7 @@ export default class CreateUnlockedPackageImpl {
     let projectManifest = ProjectConfig.getSFDXPackageManifest(
       this.project_directory
     );
-    
+
 
     let sfppackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(this.project_directory,this.sfdx_package,this.config_file_path,this.packageLogger);
     let packageDirectory: string =sfppackage.packageDescriptor.path;
@@ -86,7 +86,7 @@ export default class CreateUnlockedPackageImpl {
     //Get the one in working directory
     this.config_file_path = path.join("config", "project-scratch-def.json");
 
-   
+
 
 
     SFPLogger.log("Package Directory", packageDirectory, this.packageLogger);
@@ -142,6 +142,8 @@ export default class CreateUnlockedPackageImpl {
 
     this.packageArtifactMetadata.payload = sfppackage.payload;
     this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
+    this.packageArtifactMetadata.assignPermSetsPreDeployment = sfppackage.assignPermSetsPreDeployment;
+    this.packageArtifactMetadata.assignPermSetsPostDeployment = sfppackage.assignPermSetsPostDeployment;
 
     let command = this.buildExecCommand();
     let output = "";
@@ -242,7 +244,7 @@ export default class CreateUnlockedPackageImpl {
     return this.packageArtifactMetadata;
   }
 
-  
+
   private deleteSFPowerscriptsAdditionsToManifest(workingDirectory: string) {
     let projectManifestFromWorkingDirectory = ProjectConfig.getSFDXPackageManifest(
       workingDirectory
