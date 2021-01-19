@@ -1,7 +1,7 @@
 import child_process = require("child_process");
-import SFPLogger from "../utils/SFPLogger";
-import AliasListImpl from "./AliasListImpl";
-import PermsetListImpl from "./PermsetListImpl";
+import SFPLogger from "../../utils/SFPLogger";
+import AliasListImpl from "../../sfdxwrappers/AliasListImpl";
+import PermsetListImpl from "../../sfdxwrappers/PermsetListImpl";
 const Table = require("cli-table");
 
 export default class AssignPermissionSetsImpl {
@@ -23,7 +23,7 @@ export default class AssignPermissionSetsImpl {
     }[];
   } {
     // Fetch username if alias is provied
-    let username: string = new AliasListImpl(this.target_org).exec();
+    let username: string = this.convertAliasToUsername(this.target_org);
     let assignedPermSets = new PermsetListImpl(
       username,
       this.target_org
@@ -44,6 +44,8 @@ export default class AssignPermissionSetsImpl {
       });
 
       if (permSetAssignmentMatch !== undefined) {
+        // Treat permsets that have already been assigned as successes
+        successfullAssignments.push({ username: username, permset: permSet});
         continue;
       }
 
@@ -66,8 +68,10 @@ export default class AssignPermissionSetsImpl {
       }
     }
 
-    SFPLogger.log("Succeeded PermSet Assignments", null, this.packageLogger);
-    this.printPermsetAssignments(successfullAssignments);
+    if (successfullAssignments.length > 0) {
+      SFPLogger.log("Successful PermSet Assignments:", null, this.packageLogger);
+      this.printPermsetAssignments(successfullAssignments);
+    }
 
     if (failedAssignments.length > 0) {
       SFPLogger.log("Failed PermSet Assignments", null, this.packageLogger);
@@ -75,6 +79,19 @@ export default class AssignPermissionSetsImpl {
     }
 
     return { successfullAssignments, failedAssignments };
+  }
+
+  private convertAliasToUsername(alias: string) {
+    let aliasList = new AliasListImpl().exec();
+
+    let matchedAlias = aliasList.find((elem) => {
+      return elem.alias === alias;
+    });
+
+    if (matchedAlias !== undefined)
+      return matchedAlias.value;
+    else
+      return alias;
   }
 
   private printPermsetAssignments(

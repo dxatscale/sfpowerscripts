@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import AssignPermissionSetsImpl from "../sfdxwrappers/AssignPermissionSetsImpl";
+import AssignPermissionSetsImpl from "../sfpcommands/permsets/AssignPermissionSetsImpl";
 
 export default class PackageInstallationHelpers {
   static executeScript(
