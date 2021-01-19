@@ -25,7 +25,7 @@
     "rimraf": "^3.0.2",
     "salesforce-alm": "^50.6.0",
     "shelljs": "^0.8.3",
-    "simple-git": "^2.23.0",
+    "simple-git": "^2.31.0",
     "ts-node": "^9.0.0"
   },
   "engines": {
