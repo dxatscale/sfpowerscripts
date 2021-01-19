@@ -42,29 +42,8 @@ describe("Determines whether a given package has changed", () => {
   it("should return true if package metadata has changed", async () => {
     gitTags = coreTags;
     gitDiff = [`packages/domains/core/X/Y/Z/A-meta.xml`];
-
-    // Assume passthrough filter for ignore
-    ignoreFilterResult = gitDiff;
-
-    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl("core", null, null, null);
-    expect(await packageDiffImpl.exec()).toBe(true);
-  });
-
-  it ("should return true if package descriptor has changed", async () => {
-    gitTags = coreTags;
-    gitDiff = ['sfdx-project.json'];
-    gitShow = packageDescriptorChange;
-
-    // Assume passthrough filter for ignore
-    ignoreFilterResult = gitDiff;
-
-    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl("core", null, null, null);
-    expect(await packageDiffImpl.exec()).toBe(true);
-  });
-
-  it ("should return true if config file has changed", async () => {
-    gitTags = coreTags;
-    gitDiff = ['config/project-scratch-def.json']
+    // No change in package config
+    gitShow = packageConfigJson;
 
     // Assume passthrough filter for ignore
     ignoreFilterResult = gitDiff;
@@ -72,6 +51,76 @@ describe("Determines whether a given package has changed", () => {
     let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl("core", null, "config/project-scratch-def.json", null);
     expect(await packageDiffImpl.exec()).toBe(true);
   });
+
+  it("should return true if package descriptor has changed", async () => {
+    gitTags = coreTags;
+    gitDiff = ['sfdx-project.json'];
+    gitShow = packageDescriptorChange;
+
+    // Assume passthrough filter for ignore
+    ignoreFilterResult = gitDiff;
+
+    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl("core", null, "config/project-scratch-def.json", null);
+    expect(await packageDiffImpl.exec()).toBe(true);
+  });
+
+  it("should return true if config file has changed", async () => {
+    gitTags = coreTags;
+    gitDiff = ['config/project-scratch-def.json']
+
+    // No change in package config
+    gitShow = packageConfigJson;
+
+    // Assume passthrough filter for ignore
+    ignoreFilterResult = gitDiff;
+
+    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl("core", null, "config/project-scratch-def.json", null);
+    expect(await packageDiffImpl.exec()).toBe(true);
+  });
+
+  it("should return false if config file has changed and not an unlocked package", async () => {
+    gitDiff = ['config/project-scratch-def.json']
+
+    // No change in package config
+    gitShow = packageConfigJson;
+
+    gitTags = ["temp_v1.0.0.0"];
+    let sourcePackageDiffImpl: PackageDiffImpl = new PackageDiffImpl("temp", null, "config/project-scratch-def.json", null);
+    expect(await sourcePackageDiffImpl.exec()).toBe(false);
+
+    gitTags = ["mass-dataload_v1.0.0.0"];
+    let dataPackageDiffImpl: PackageDiffImpl = new PackageDiffImpl("mass-dataload", null, "config/project-scratch-def.json", null);
+    expect(await dataPackageDiffImpl.exec()).toBe(false);
+  });
+
+  it("should return true if package does not have any tags", async () => {
+    gitTags = [];
+
+    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl("core", null, null, null);
+    expect(await packageDiffImpl.exec()).toBe(true);
+  });
+
+  it("should return true if packageToCommits is an empty object", async() => {
+    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl("core", null, null, {});
+    expect(await packageDiffImpl.exec()).toBe(true);
+  });
+
+  it("should return false if package metadata, package config and config file has not changed", async () => {
+    gitTags = coreTags;
+    gitDiff = [
+      `packages/access-mgmt/X/Y/Z/A-meta.xml`,
+      `packages/bi/X/Y/Z/B-meta.xml`
+    ];
+    // No change in package config
+    gitShow = packageConfigJson;
+
+    // Assume passthrough filter for ignore
+    ignoreFilterResult = gitDiff;
+
+    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl("core", null, "config/project-scratch-def.json", null);
+    expect(await packageDiffImpl.exec()).toBe(false);
+  });
+
 });
 
 const coreTags = [
