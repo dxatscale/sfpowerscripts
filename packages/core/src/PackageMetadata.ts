@@ -20,7 +20,6 @@ export default interface PackageMetadata {
     isProfilesFound?:boolean;
     tag?:string;
     isDependencyValidated?:boolean;
-    isDestructiveChangesFound?:boolean;
     destructiveChanges?:any;
     payload?:any;
     metadataCount?:number;
