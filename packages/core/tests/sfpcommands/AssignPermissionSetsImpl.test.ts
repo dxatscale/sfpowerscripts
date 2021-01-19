@@ -1,15 +1,12 @@
 import child_process = require("child_process");
-import AssignPermissionSetsImpl from "../../src/sfdxwrappers/AssignPermissionSetsImpl";
+import AssignPermissionSetsImpl from "../../src/sfpcommands/permsets/AssignPermissionSetsImpl";
 import { jest,expect } from "@jest/globals";
-
-let mockAliasExec=() => {
-  return "test-sfvulqawd2w0@example.com";
-}
 
 jest.mock("../../src/sfdxwrappers/AliasListImpl", () => {
   class AliasListImpl {
-    constructor(alias: string) {}
-    exec=mockAliasExec;
+    exec() {
+      return aliasList;
+    }
   }
   return AliasListImpl;
 });
@@ -107,7 +104,7 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
     let results = assignPermSetImpl.exec();
     expect(results.successfullAssignments).toHaveLength(2);
     expect(results.failedAssignments).toHaveLength(0);
-    
+
   });
 
 
@@ -126,7 +123,7 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
           "result": {
             "successes": [{
               "name": "test-sfvulqawd2w0@example.com",
-              "message": "Permset Already assigned"
+              "message": "Permset cannot be applied"
             }]
           }
         }`);
@@ -164,7 +161,7 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
           "result": {
             "successes": [{
               "name": "test-sfvulqawd2w0@example.com",
-              "message": "Permset Already assigned"
+              "message": "Permset cannot be applied"
             }]
           }
         }`);
@@ -175,7 +172,7 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
           "result": {
             "successes": [{
               "name": "test-sfvulqawd2w0@example.com",
-              "message": "Permset Already assigned"
+              "message": "Permset cannot be applied"
             }]
           }
         }`);
@@ -185,22 +182,24 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
     expect(results.successfullAssignments).toHaveLength(0);
     expect(results.failedAssignments).toHaveLength(2);
   });
- 
-
-  it("should throw an error, if any dependent commands are not able to be excuted",()=>{
-
-    mockAliasExec=() => {
-      throw new Error("Failed to fetch alias");
-    }
-    let alias = "S05";
-    let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-      alias,
-      ["test1", "test2"],
-      null
-    );
-    expect(()=>{assignPermSetImpl.exec()}).toThrow();
-
-  });
-
-
 });
+
+
+const aliasList = [
+  {
+    "alias": "s01",
+    "value": "test-jx6iygd1o2pw@example.com"
+  },
+  {
+    "alias": "S03",
+    "value": "test-db2xyqz7wdw3@example.com"
+  },
+  {
+    "alias": "nufsupport",
+    "value": "azlam.abdulsalam@accenture.com.support"
+  },
+  {
+    "alias": "S05",
+    "value": "test-sfvulqawd2w0@example.com"
+  }
+];
