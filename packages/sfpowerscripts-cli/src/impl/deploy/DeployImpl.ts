@@ -337,8 +337,7 @@ export default class DeployImpl {
       skip_if_package_installed,
       packageMetadata,
       false,
-      this.props.packageLogger,
-      path.join(sourceDirectoryPath, "forceignores", "." + this.props.currentStage + "ignore")
+      this.props.packageLogger
     );
 
     return installSourcePackageImpl.exec();
@@ -373,7 +372,7 @@ export default class DeployImpl {
     result: boolean;
     message: string;
   }> {
-   
+
     let sfPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,sfdx_package,null,this.props.packageLogger);
     let testOptions:TestOptions = new RunAllTestsInPackageOptions(sfPackage,60,".testresults");
     let testCoverageOptions:CoverageOptions ={

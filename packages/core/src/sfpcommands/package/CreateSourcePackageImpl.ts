@@ -18,7 +18,8 @@ export default class CreateSourcePackageImpl {
     private projectDirectory: string,
     private sfdx_package: string,
     private packageArtifactMetadata: PackageMetadata,
-    private forceignorePath?: string
+    private stageForceIgnorePath?: string,
+    private breakBuildIfEmpty: boolean = true
   ) {
     fs.outputFileSync(
       `.sfpowerscripts/logs/${sfdx_package}`,
@@ -65,62 +66,54 @@ export default class CreateSourcePackageImpl {
       packageDirectory = packageDescriptor["path"];
     }
 
-
     //Get the contents of the package
     let sfppackage:SFPPackage;
-    if (packageDirectory!=null) {
-      //Check whether forceignores will result in empty directory
+
+    let isBuildSfpPackage: boolean = true;
+    if (!this.breakBuildIfEmpty) {
+      // Check whether forceignores will result in empty directory
       let isEmpty: boolean = PackageEmptyChecker.isEmptyFolder(
         this.projectDirectory,
         packageDirectory
       );
 
-      if (!isEmpty) {
-        sfppackage = await SFPPackage.buildPackageFromProjectConfig(this.projectDirectory,this.sfdx_package,null,this.packageLogger);
-
-        this.packageArtifactMetadata.payload = sfppackage.payload;
-        this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
-        this.packageArtifactMetadata.isApexFound = sfppackage.isApexInPackage
-        this.packageArtifactMetadata.isProfilesFound = sfppackage.isProfilesInPackage;
-        this.packageArtifactMetadata.assignPermSetsPreDeployment = sfppackage.assignPermSetsPreDeployment;
-        this.packageArtifactMetadata.assignPermSetsPostDeployment = sfppackage.assignPermSetsPostDeployment;
-        this.packageArtifactMetadata.reconcileProfiles = sfppackage.reconcileProfiles;
-
-        if (sfppackage.destructiveChanges) {
-          this.packageArtifactMetadata.destructiveChanges = sfppackage.destructiveChanges;
-        }
-
-        this.handleApexTestClasses(sfppackage);
-      } else {
+      if(isEmpty) {
+        // Do not build SfpPackage, as it would cause the build to break
+        isBuildSfpPackage = false;
         this.printEmptyArtifactWarning();
       }
-    } else {
-      SFPLogger.log(
-        "Proceeding with all packages.. as a particular package was not provided",
-        null,
-        this.packageLogger
-      );
     }
 
-    //Get Artifact Detailes
+    if (isBuildSfpPackage) {
+      sfppackage = await SFPPackage.buildPackageFromProjectConfig(this.projectDirectory,this.sfdx_package,null,this.packageLogger);
+
+      this.packageArtifactMetadata.payload = sfppackage.payload;
+      this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
+      this.packageArtifactMetadata.isApexFound = sfppackage.isApexInPackage
+      this.packageArtifactMetadata.isProfilesFound = sfppackage.isProfilesInPackage;
+      this.packageArtifactMetadata.assignPermSetsPreDeployment = sfppackage.assignPermSetsPreDeployment;
+      this.packageArtifactMetadata.assignPermSetsPostDeployment = sfppackage.assignPermSetsPostDeployment;
+      this.packageArtifactMetadata.reconcileProfiles = sfppackage.reconcileProfiles;
+
+      if (sfppackage.destructiveChanges) {
+        this.packageArtifactMetadata.destructiveChanges = sfppackage.destructiveChanges;
+      }
+
+      this.handleApexTestClasses(sfppackage);
+    }
+
+
+    //Get Artifact Details
     let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
       this.projectDirectory,
       this.sfdx_package,
       packageDirectory,
-      sfppackage.destructiveChangesPath
+      sfppackage?.destructiveChangesPath
     );
 
-    // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
-    if (this.forceignorePath) {
-      if (fs.existsSync(path.join(sourcePackageArtifactDir, this.forceignorePath)))
-        fs.copySync(
-          path.join(sourcePackageArtifactDir, this.forceignorePath),
-          path.join(sourcePackageArtifactDir, ".forceignore")
-        );
-      else {
-        SFPLogger.log(`${path.join(sourcePackageArtifactDir, this.forceignorePath)} does not exist`, null, this.packageLogger);
-        SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory", null, this.packageLogger);
-      }
+    if (this.stageForceIgnorePath) {
+      // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
+      this.replaceRootForceIgnore(sourcePackageArtifactDir, this.stageForceIgnorePath);
     }
 
     this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;
@@ -161,6 +154,22 @@ export default class CreateSourcePackageImpl {
   }
 
 
+  /**
+   * Replaces root forceignore in the source folder with the appropriate stage forceignore
+   * @param pathToSourceFolder
+   * @param forceignorePath
+   */
+  private replaceRootForceIgnore(pathToSourceFolder: string, stageForceIgnorePath: string) {
+    if (fs.existsSync(path.join(pathToSourceFolder, stageForceIgnorePath)))
+      fs.copySync(
+        path.join(pathToSourceFolder, stageForceIgnorePath),
+        path.join(pathToSourceFolder, ".forceignore")
+      );
+    else {
+      SFPLogger.log(`${path.join(pathToSourceFolder, stageForceIgnorePath)} does not exist`, null, this.packageLogger);
+      SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory", null, this.packageLogger);
+    }
+  }
 
   private handleApexTestClasses(mdapiPackage: SFPPackage) {
 

@@ -256,6 +256,9 @@ export default class BuildImpl {
     console.log(`${EOL}-----------------------------------------`);
     console.log(`Package Creation Failed for ${pkg}`);
     try {
+      // Append error to log file
+      fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, 'utf8');
+
       let data = fs.readFileSync(`.sfpowerscripts/logs/${pkg}`, "utf8");
       console.log(data);
     } catch (e) {
@@ -394,27 +397,34 @@ export default class BuildImpl {
       `-- Package Version Number:        `,
       packageMetadata.package_version_number
     );
-    if (packageMetadata.package_type == "unlocked") {
-      console.log(
-        `-- Package Version Id:             `,
-        packageMetadata.package_version_id
-      );
-      console.log(
-        `-- Package Test Coverage:          `,
-        packageMetadata.test_coverage
-      );
-      console.log(
-        `-- Package Coverage Check Passed:  `,
-        packageMetadata.has_passed_coverage_check
-      );
-    } else if (packageMetadata.package_type == "source") {
+
+    if (packageMetadata.package_type !== "data") {
+      if (packageMetadata.package_type == "unlocked") {
+        console.log(
+          `-- Package Version Id:             `,
+          packageMetadata.package_version_id
+        );
+        console.log(
+          `-- Package Test Coverage:          `,
+          packageMetadata.test_coverage
+        );
+        console.log(
+          `-- Package Coverage Check Passed:  `,
+          packageMetadata.has_passed_coverage_check
+        );
+      }
+
       console.log(
         `-- Apex In Package:             `,
-        packageMetadata.isApexFound
+        packageMetadata.isApexFound ? "Yes" : "No"
       );
       console.log(
         `-- Profiles In Package:         `,
-        packageMetadata.isProfilesFound
+        packageMetadata.isProfilesFound ? "Yes" : "No"
+      );
+      console.log(
+        `-- Metadata Count:         `,
+        packageMetadata.metadataCount
       );
     }
   }
