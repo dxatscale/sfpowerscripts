@@ -19,21 +19,10 @@ export default class PackageDiffImpl {
 
     let config_file_path: string = this.config_file_path;
 
-    let project_config_path: string;
-    if (this.project_directory != null) {
-      project_config_path = path.join(
-        this.project_directory,
-        "sfdx-project.json"
-      );
-      SFPLogger.log(`Project directory being analysed ${this.project_directory}`);
-    } else {
-      project_config_path = "sfdx-project.json";
-      SFPLogger.log(`Project directory being analysed ${process.cwd()}`);
-    }
+    let project_config_path: string = this.getProjectConfigPath();
+    let projectConfig = JSON.parse(fs.readFileSync(project_config_path));
 
-    let project_json = JSON.parse(fs.readFileSync(project_config_path));
-
-    for (let dir of project_json["packageDirectories"]) {
+    for (let dir of projectConfig["packageDirectories"]) {
       if (this.sfdx_package === dir.package) {
         SFPLogger.log(
           `Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`
@@ -56,30 +45,23 @@ export default class PackageDiffImpl {
             `--no-renames`,
             `--name-only`
           ]);
-          let packageType: string = ProjectConfig.getPackageType(project_json, this.sfdx_package);
-          // Apply forceignore if not data package type
-          if (packageType !== "Data") {
-            let forceignorePath: string;
-            if (this.project_directory != null)
-              forceignorePath = path.join(this.project_directory, ".forceignore");
-            else forceignorePath = ".forceignore";
 
-            let ignoreFiles: IgnoreFiles = new IgnoreFiles(
-              fs.readFileSync(forceignorePath).toString()
-            );
+          let packageType: string = ProjectConfig.getPackageType(projectConfig, this.sfdx_package);
 
-            // Filter the list of modified files with .forceignore
-            modified_files = ignoreFiles.filter(modified_files);
-          }
+          if (packageType !== "Data")
+            modified_files = this.applyForceIgnoreToModifiedFiles(modified_files);
 
 
-          if (config_file_path != null && packageType === "Unlocked")
+          const isUnlockedAndConfigFilePath = packageType === "Unlocked" && config_file_path != null;
+
+          if (isUnlockedAndConfigFilePath)
             SFPLogger.log(`Checking for changes to ${config_file_path}`);
 
           SFPLogger.log(`Checking for changes in source directory '${dir.path}'`);
-          // From the filtered list of modified files, check whether the package has been modified
+
+          // Check whether the package has been modified
           for (let filename of modified_files) {
-            if (config_file_path != null && packageType === "Unlocked") {
+            if (isUnlockedAndConfigFilePath) {
               if (
                   filename.includes(`${dir.path}`) ||
                   filename === config_file_path
@@ -96,7 +78,6 @@ export default class PackageDiffImpl {
           }
 
           SFPLogger.log(`Checking for changes to package descriptor in sfdx-project.json`);
-
           return await this.isPackageDescriptorChanged(
             git,
             tag,
@@ -113,6 +94,38 @@ export default class PackageDiffImpl {
     throw new Error(
       `Unable to find ${this.sfdx_package} in package directories`
     );
+  }
+
+  private applyForceIgnoreToModifiedFiles(modified_files: string[]) {
+    let forceignorePath: string;
+    if (this.project_directory != null)
+      forceignorePath = path.join(this.project_directory, ".forceignore");
+    else
+      forceignorePath = ".forceignore";
+
+    let ignoreFiles: IgnoreFiles = new IgnoreFiles(
+      fs.readFileSync(forceignorePath).toString()
+    );
+
+    // Filter the list of modified files with .forceignore
+    modified_files = ignoreFiles.filter(modified_files);
+
+    return modified_files;
+  }
+
+  private getProjectConfigPath() {
+    let project_config_path: string;
+    if (this.project_directory != null) {
+      project_config_path = path.join(
+        this.project_directory,
+        "sfdx-project.json"
+      );
+      SFPLogger.log(`Project directory being analysed ${this.project_directory}`);
+    } else {
+      project_config_path = "sfdx-project.json";
+      SFPLogger.log(`Project directory being analysed ${process.cwd()}`);
+    }
+    return project_config_path;
   }
 
   private async getLatestTagFromGit(git: Git, sfdx_package: string): Promise<string> {
@@ -138,13 +151,13 @@ export default class PackageDiffImpl {
     latestTag: string,
     packageDescriptor: any
   ): Promise<boolean> {
-    let project_config: string = await git.show([
+    let projectConfigJson: string = await git.show([
       `${latestTag}:sfdx-project.json`,
     ]);
-    let project_json = JSON.parse(project_config);
+    let projectConfig = JSON.parse(projectConfigJson);
 
     let packageDescriptorFromLatestTag: string;
-    for (let dir of project_json["packageDirectories"]) {
+    for (let dir of projectConfig["packageDirectories"]) {
       if (this.sfdx_package === dir.package) {
         packageDescriptorFromLatestTag = dir;
       }
