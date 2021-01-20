@@ -49,6 +49,77 @@ No, the above are the modifiers for the orchestrator commands, irrespective if y
   }
 ```
 
+## Is all modifiers applicable for every stages of the orchestrator?
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align:left">Modifier</th>
+      <th style="text-align:left">Description</th>
+      <th style="text-align:left">Stages Applied</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align:left">aliasfy</td>
+      <td style="text-align:left">Deploy a subfolder in a source package that matches the alias of the org</td>
+      <td
+      style="text-align:left">deploy</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">isOptimizedDeployment</td>
+      <td style="text-align:left">Detects test classes in a source package automatically and utilize it
+        to deploy the provided package</td>
+      <td style="text-align:left">deploy, validate</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">skipTesting</td>
+      <td style="text-align:left">Skip testing during deployment</td>
+      <td style="text-align:left">
+        <p>deploy,</p>
+        <p>validate</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left">skipCoverageValidation</td>
+      <td style="text-align:left">Skip the coverage validation of a package (unlocked/source)</td>
+      <td style="text-align:left">validate</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">destructiveChangePath</td>
+      <td style="text-align:left">Apply destructive changes during deployment</td>
+      <td style="text-align:left">deploy</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">assignPermsetsPreDeployment</td>
+      <td style="text-align:left">Apply permsets before deploying a package</td>
+      <td style="text-align:left">
+        <p>prepare,</p>
+        <p>validate,</p>
+        <p>deploy</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left">assignPermsetsPostDeployment</td>
+      <td style="text-align:left">Apply permsets after deploying a package</td>
+      <td style="text-align:left">
+        <p>prepare,</p>
+        <p>validate,</p>
+        <p>deploy</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left">reconcileProfiles</td>
+      <td style="text-align:left">Reconcile Profiles during a deployment of source packages</td>
+      <td style="text-align:left">
+        <p>prepare,</p>
+        <p>validate,</p>
+        <p>deploy</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 ## Is there an option to change forceIgnore files depending upon the stage?
 
 Sometimes, due to certain platform errors, some metadata components need to be ignored during **quickbuild** or **validate**  or any other stages. sfpowerscripts offer you an easy mechanism, which allows to switch .forceignore files depending on the stage. 
