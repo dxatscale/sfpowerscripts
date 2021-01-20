@@ -1,9 +1,11 @@
 import child_process = require("child_process");
 
+/**
+ * Returns list of aliases and their corresponding username, as an array of objects
+ */
 export default class AliasListImpl {
-  constructor(private alias: string) {}
 
-  public exec(): string {
+  public exec(): {alias: string, value: string}[] {
     let aliasListJSON: string = child_process.execSync(
       `sfdx alias:list --json`,
       {
@@ -12,23 +14,10 @@ export default class AliasListImpl {
       }
     );
 
-    let matchedAlias;
     let aliasList = JSON.parse(aliasListJSON);
-    if (aliasList.status === 0) {
-      matchedAlias = aliasList.result.find((elem) => {
-        return elem.alias === this.alias;
-      });
-
-      if (matchedAlias === undefined) {
-        //alias doesnt exist,probably the user provided username,search for it, do one more pass
-        matchedAlias = aliasList.result.find((elem) => {
-          return elem.value === this.alias;
-        });
-      }
-    }
-
-    if (matchedAlias === undefined)
+    if (aliasList.status === 0)
+      return aliasList.result;
+    else
       throw new Error(`Failed to retrieve list of username aliases`);
-    else return matchedAlias.value;
   }
 }

@@ -3,6 +3,7 @@ import simplegit, { SimpleGit, LogOptions } from "simple-git/promise";
 import { ListLogSummary } from "simple-git/typings/response";
 import { Changelog } from "./interfaces/GenericChangelogInterfaces";
 import SFPLogger from "../utils/SFPLogger";
+import { DefaultLogFields } from "simple-git";
 
 /**
  * A class for generating a changelog between two commits
@@ -53,7 +54,7 @@ export default class GeneratePackageChangelog {
             to: revTo,
             file: packageDescriptor ? `${packageDescriptor["path"]}*` : packageDescriptor
         };
-        const gitLogResult: ListLogSummary = await git.log(options);
+        const gitLogResult: ListLogSummary<DefaultLogFields> = await git.log(options);
 
         let changelog: Changelog = {
           name: undefined,
