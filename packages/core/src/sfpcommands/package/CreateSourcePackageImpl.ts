@@ -18,7 +18,8 @@ export default class CreateSourcePackageImpl {
     private projectDirectory: string,
     private sfdx_package: string,
     private packageArtifactMetadata: PackageMetadata,
-    private stageForceIgnorePath?: string
+    private stageForceIgnorePath?: string,
+    private breakBuildIfEmpty: boolean = true
   ) {
     fs.outputFileSync(
       `.sfpowerscripts/logs/${sfdx_package}`,
@@ -65,17 +66,10 @@ export default class CreateSourcePackageImpl {
       packageDirectory = packageDescriptor["path"];
     }
 
-
     //Get the contents of the package
     let sfppackage:SFPPackage;
 
-    //Check whether forceignores will result in empty directory
-    let isEmpty: boolean = PackageEmptyChecker.isEmptyFolder(
-      this.projectDirectory,
-      packageDirectory
-    );
-
-    if (!isEmpty) {
+    if (this.breakBuildIfEmpty) {
       sfppackage = await SFPPackage.buildPackageFromProjectConfig(this.projectDirectory,this.sfdx_package,null,this.packageLogger);
 
       this.packageArtifactMetadata.payload = sfppackage.payload;
@@ -91,9 +85,17 @@ export default class CreateSourcePackageImpl {
       }
 
       this.handleApexTestClasses(sfppackage);
-    } else if (!packageDescriptor.aliasfy) {
-      this.printEmptyArtifactWarning();
+    } else {
+      //Check whether forceignores will result in empty directory
+      let isEmpty: boolean = PackageEmptyChecker.isEmptyFolder(
+        this.projectDirectory,
+        packageDirectory
+      );
+
+      if(isEmpty)
+        this.printEmptyArtifactWarning();
     }
+
 
     //Get Artifact Details
     let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(

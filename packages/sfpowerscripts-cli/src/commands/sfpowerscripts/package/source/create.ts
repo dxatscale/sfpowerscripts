@@ -95,7 +95,9 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
         let createSourcePackageImpl = new CreateSourcePackageImpl(
           null,
           sfdx_package,
-          packageMetadata
+          packageMetadata,
+          null,
+          false
         );
         packageMetadata = await createSourcePackageImpl.exec();
 
