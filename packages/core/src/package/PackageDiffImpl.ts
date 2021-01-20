@@ -78,7 +78,7 @@ export default class PackageDiffImpl {
           }
 
           SFPLogger.log(`Checking for changes to package descriptor in sfdx-project.json`);
-          return await this.isPackageDescriptorChanged(
+          return this.isPackageDescriptorChanged(
             git,
             tag,
             dir
