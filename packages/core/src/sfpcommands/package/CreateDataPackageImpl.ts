@@ -5,7 +5,6 @@ import SFPLogger from "../../utils/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import SFPStatsSender from "../../utils/SFPStatsSender";
-import  PackageEmptyChecker from "../../package/PackageEmptyChecker";
 
 export default class CreateDataPackageImpl {
   private packageLogger;
@@ -53,16 +52,6 @@ export default class CreateDataPackageImpl {
     let packageDirectory: string = packageDescriptor["path"];
 
     this.writeDeploymentStepsToArtifact(packageDescriptor);
-
-
-    if (
-      PackageEmptyChecker.isEmptyFolder(
-        this.projectDirectory,
-        packageDirectory
-      )
-    ) {
-      this.printEmptyArtifactWarning();
-    }
 
     //Get Artifact Detailes
     let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
@@ -119,28 +108,5 @@ export default class CreateDataPackageImpl {
       else
         throw new Error("Property 'assignPermSetsPostDeployment' must be of type array");
     }
-  }
-
-  private printEmptyArtifactWarning() {
-    SFPLogger.log(
-      "---------------------WARNING! Empty aritfact encountered-------------------------------",
-      null,
-      this.packageLogger
-    );
-    SFPLogger.log(
-      "Either this folder is empty or the application of .forceignore results in an empty folder",
-      null,
-      this.packageLogger
-    );
-    SFPLogger.log(
-      "Proceeding to create an empty artifact",
-      null,
-      this.packageLogger
-    );
-    SFPLogger.log(
-      "---------------------------------------------------------------------------------------",
-      null,
-      this.packageLogger
-    );
   }
 }
