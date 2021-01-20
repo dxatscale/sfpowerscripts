@@ -69,7 +69,22 @@ export default class CreateSourcePackageImpl {
     //Get the contents of the package
     let sfppackage:SFPPackage;
 
-    if (this.breakBuildIfEmpty) {
+    let isBuildSfpPackage: boolean = true;
+    if (!this.breakBuildIfEmpty) {
+      // Check whether forceignores will result in empty directory
+      let isEmpty: boolean = PackageEmptyChecker.isEmptyFolder(
+        this.projectDirectory,
+        packageDirectory
+      );
+
+      if(isEmpty) {
+        // Do not build SfpPackage, as it would cause the build to break
+        isBuildSfpPackage = false;
+        this.printEmptyArtifactWarning();
+      }
+    }
+
+    if (isBuildSfpPackage) {
       sfppackage = await SFPPackage.buildPackageFromProjectConfig(this.projectDirectory,this.sfdx_package,null,this.packageLogger);
 
       this.packageArtifactMetadata.payload = sfppackage.payload;
@@ -85,15 +100,6 @@ export default class CreateSourcePackageImpl {
       }
 
       this.handleApexTestClasses(sfppackage);
-    } else {
-      //Check whether forceignores will result in empty directory
-      let isEmpty: boolean = PackageEmptyChecker.isEmptyFolder(
-        this.projectDirectory,
-        packageDirectory
-      );
-
-      if(isEmpty)
-        this.printEmptyArtifactWarning();
     }
 
 
@@ -105,8 +111,10 @@ export default class CreateSourcePackageImpl {
       sfppackage?.destructiveChangesPath
     );
 
-    // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
-    this.replaceRootForceIgnore(sourcePackageArtifactDir, this.stageForceIgnorePath);
+    if (this.stageForceIgnorePath) {
+      // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
+      this.replaceRootForceIgnore(sourcePackageArtifactDir, this.stageForceIgnorePath);
+    }
 
     this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;
 
@@ -152,16 +160,14 @@ export default class CreateSourcePackageImpl {
    * @param forceignorePath
    */
   private replaceRootForceIgnore(pathToSourceFolder: string, stageForceIgnorePath: string) {
-    if (stageForceIgnorePath) {
-      if (fs.existsSync(path.join(pathToSourceFolder, stageForceIgnorePath)))
-        fs.copySync(
-          path.join(pathToSourceFolder, stageForceIgnorePath),
-          path.join(pathToSourceFolder, ".forceignore")
-        );
-      else {
-        SFPLogger.log(`${path.join(pathToSourceFolder, stageForceIgnorePath)} does not exist`, null, this.packageLogger);
-        SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory", null, this.packageLogger);
-      }
+    if (fs.existsSync(path.join(pathToSourceFolder, stageForceIgnorePath)))
+      fs.copySync(
+        path.join(pathToSourceFolder, stageForceIgnorePath),
+        path.join(pathToSourceFolder, ".forceignore")
+      );
+    else {
+      SFPLogger.log(`${path.join(pathToSourceFolder, stageForceIgnorePath)} does not exist`, null, this.packageLogger);
+      SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory", null, this.packageLogger);
     }
   }
 
