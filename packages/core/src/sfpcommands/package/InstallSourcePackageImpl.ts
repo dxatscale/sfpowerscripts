@@ -33,7 +33,6 @@ export default class InstallSourcePackageImpl {
     private packageMetadata: PackageMetadata,
     private isPackageCheckHandledByCaller?: boolean,
     private packageLogger?:any,
-    private forceignorePath?: string
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -86,18 +85,6 @@ export default class InstallSourcePackageImpl {
           this.sfdx_package,
           this.targetusername
         );
-      }
-
-      if (this.forceignorePath) {
-        if (fs.existsSync(this.forceignorePath))
-          fs.copySync(
-            this.forceignorePath,
-            path.join(this.sourceDirectory, ".forceignore")
-          );
-        else {
-          SFPLogger.log(`${this.forceignorePath} does not exist`, null, this.packageLogger);
-          SFPLogger.log("Package installtion will proceed using the unchanged forceignore in the source directory", null, this.packageLogger);
-        }
       }
 
       if (this.packageMetadata.assignPermSetsPreDeployment) {
