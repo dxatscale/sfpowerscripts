@@ -53,7 +53,7 @@ export default class SourcePackageGenerator {
       SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory);
     }
 
-  
+
     if(configFilePath)
     {
       SourcePackageGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory);
@@ -143,7 +143,7 @@ export default class SourcePackageGenerator {
         );
     };
 
-    let stages: string[] = ["prepare", "validate", "quickbuild", "build"];
+    let stages: string[] = ["prepare", "validate", "quickbuild", "build", "deploy"];
     stages.forEach((stage) => copyForceIgnoreForStage(stage));
 
 
