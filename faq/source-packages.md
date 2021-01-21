@@ -49,7 +49,7 @@ All these currently available options that can be enabled for source packaging b
 
 ![Source Packages with env-specific-folders](../.gitbook/assets/image%20%285%29%20%281%29.png)
 
-* **Skip Testing \( `skipTesting:<boolean>`\)** :  Allows you to deploy a source package without triggering test to an Org. Please note, this is only applicable during deployments to sandboxes.  Apex tests are mandatory \(~~if your package contains apex classes/triggers~~\) during deployment to production.
+* **Skip Testing \( `skipTesting:<boolean>`\)** :  Allows you to deploy a source package without triggering test to an Org. Please note, this is only applicable during deployments to sandboxes.  Apex tests are mandatory \(if your package contains apex classes/triggers\) during deployment to production.
 * **Reconcile Profiles \(  `reconcileProfiles:<boolean>`\) :**  By default, true, automatically reconcile a profile existing in the source package against the target org. Read more about reconcile option [here](https://github.com/Accenture/sfpowerkit/discussions/410).
 * **Apply Destructive Changes \( `destructiveChangePath:<path>)`**: Allows you to deploy a destructive manifest that need to be applied before deploying the package.
 
