@@ -46,28 +46,6 @@ stages:
                 publish: true
 
 
-  # - deployment: BuildAzPipelines
-  #   displayName: azpipelines
-  #   timeoutInMinutes: 20
-  #   pool:
-  #     vmImage: 'windows-latest'
-  #   environment: alpha
-  #   strategy:
-  #      runOnce:
-  #        deploy:
-  #          steps:
-
-  #            - template: build_templates/buildazpipelines.yml
-  #              parameters:
-  #               commitToGit: true
-  #               bump: 'prerelease'
-  #               stageToDeploy: 'alpha'
-  #               version: 'alpha'
-  #               environmentToDeploy: 'alpha'
-  #               toBuild: true
-  #               organization: dxatscalereview
-  #               buildNumber: $(minor)
-
 
 #Beta Stage
 - stage: Beta
@@ -93,27 +71,7 @@ stages:
                 publish: false
 
 
-  # - deployment: BuildAzPipelines
-  #   displayName: azpipelines
-  #   timeoutInMinutes: 20
-  #   pool:
-  #     vmImage: 'windows-latest'
-  #   environment: beta
-  #   strategy:
-  #      runOnce:
-  #        deploy:
-  #          steps:
-
-  #            - template: build_templates/buildazpipelines.yml
-  #              parameters:
-  #               commitToGit: false
-  #               bump: 'prerelease'
-  #               stageToDeploy: 'beta'
-  #               version: 'beta'
-  #               environmentToDeploy: 'beta'
-  #               toBuild: true
-  #               organization: dxatscalereview
-  #               buildNumber: $(minor)
+  
 
 # Hotfix stage
 - stage: Hotfix
@@ -138,25 +96,6 @@ stages:
                 version: 'hotfix'
                 publish: true
 
-
-  # - deployment: BuildAzPipelines
-  #   displayName: azpipelines
-  #   timeoutInMinutes: 20
-  #   pool:
-  #     vmImage: 'windows-latest'
-  #   environment: hotfix
-  #   strategy:
-  #      runOnce:
-  #        deploy:
-  #          steps:
-
-  #            - template: build_templates/buildazpipelines.yml
-  #              parameters:
-  #               commitToGit: false
-  #               stageToDeploy: 'hotfix'
-  #               version: 'hotfix'
-  #               organization: safebot
-  #               buildNumber: $(minor)
 
 #Prod Stage
 - stage: Prod
@@ -185,25 +124,4 @@ stages:
                 publish: false
 
 
-  # - deployment: BuildAzPipelines
-  #   displayName: azpipelines
-  #   dependsOn: BuildCLI
-  #   timeoutInMinutes: 30
-  #   pool:
-  #     vmImage: 'windows-latest'
-  #   environment: prod
-  #   strategy:
-  #      runOnce:
-  #        deploy:
-  #          steps:
-
-  #            - template: build_templates/buildazpipelines.yml
-  #              parameters:
-  #               commitToGit: false
-  #               bump: 'patch'
-  #               stageToDeploy: 'prod'
-  #               version: 'prod'
-  #               environmentToDeploy: 'prod'
-  #               toBuild: true
-  #               organization: dxatscalereview
-  #               buildNumber: $(minor)
+  
