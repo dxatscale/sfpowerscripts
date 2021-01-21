@@ -1,4 +1,4 @@
-import SFPLogger from "../../src/utils/SFPLogger";
+import SFPLogger from "../utils/SFPLogger";
 
 export default class IndividualClassCoverage {
   public constructor(private codeCoverage: any) {}
@@ -44,9 +44,9 @@ export default class IndividualClassCoverage {
         classesCovered: individualClassCoverage,
         classesWithInvalidCoverage: classesWithInvalidCoverage,
       };
-    } else return { 
+    } else return {
       result: true,
-      message:'All classes in this test run meet the required coverage threshold', 
+      message:'All classes in this test run meet the required coverage threshold',
       classesCovered: individualClassCoverage };
   }
 }
