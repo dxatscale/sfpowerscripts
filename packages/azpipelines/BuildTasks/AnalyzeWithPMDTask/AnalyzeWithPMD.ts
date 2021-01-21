@@ -42,7 +42,7 @@ async function run() {
     const ruleset: string = tl.getInput("ruleset", false);
     let rulesetpath=""
     if (ruleset == "Custom") {
-      let rulesetpath = tl.getInput("rulesetpath", false);
+      rulesetpath = tl.getInput("rulesetpath", false);
       console.log(rulesetpath);
     }
     const format: string = tl.getInput("format", false);
