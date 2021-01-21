@@ -53,7 +53,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 
       let rulesetpath=""
       if (ruleset == "Custom") {
-        let rulesetpath = this.flags.rulesetpath;
+        rulesetpath = this.flags.rulesetpath;
         console.log(rulesetpath);
       }
 
