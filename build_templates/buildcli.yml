@@ -117,12 +117,14 @@ steps:
 
           - task: CmdLine@2
             displayName: 'Run Unit Tests'
+            condition: eq( ${{ parameters.publish }},true)
             inputs:
                  script: 'npm run test'
                  workingDirectory: '$(System.DefaultWorkingDirectory)/packages/core'
 
           - task: CmdLine@2
             displayName: 'Upload Coverage Results'
+            condition: eq( ${{ parameters.publish }},true)
             inputs:
                  script: 'bash <(curl -s https://codecov.io/bash)'
                  workingDirectory: '$(System.DefaultWorkingDirectory)/packages/core'
