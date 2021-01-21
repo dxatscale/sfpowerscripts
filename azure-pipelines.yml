@@ -29,11 +29,16 @@ stages:
   jobs:
 
 
-  - job: BuildCLI
+  - deployment: BuildCLI
     displayName: sfdx-plugin
+    timeoutInMinutes: 20
     pool:
       vmImage: 'ubuntu-latest'
-    steps:
+    environment: alpha
+    strategy:
+      runOnce:
+        deploy:
+          steps:
              - template: build_templates/buildcli.yml
                parameters:
                 commitToGit: true
@@ -71,11 +76,16 @@ stages:
   jobs:
 
 
-  - job: BuildCLI
+  - deployment: BuildCLI
     displayName: sfdx-plugin
+    timeoutInMinutes: 20
     pool:
       vmImage: 'ubuntu-latest'
-    steps:
+    environment: beta
+    strategy:
+      runOnce:
+        deploy:
+          steps:
              - template: build_templates/buildcli.yml
                parameters:
                 commitToGit: false
@@ -112,11 +122,16 @@ stages:
   condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/hotfix/')
 
   jobs:
-  - job: BuildCLI
+  - deployment: BuildCLI
     displayName: sfdx-plugin
+    timeoutInMinutes: 20
     pool:
       vmImage: 'ubuntu-latest'
-    steps:
+    environment: hotfix
+    strategy:
+      runOnce:
+        deploy:
+          steps:
              - template: build_templates/buildcli.yml
                parameters:
                 commitToGit: false
@@ -152,11 +167,16 @@ stages:
   jobs:
 
 
-  - job: BuildCLI
+  - deployment: BuildCLI
     displayName: sfdx-plugin
+    timeoutInMinutes: 30
     pool:
       vmImage: 'ubuntu-latest'
-    steps:
+    environment: prod
+    strategy:
+      runOnce:
+        deploy:
+          steps:
              - template: build_templates/buildcli.yml
                parameters:
                 commitToGit: false
