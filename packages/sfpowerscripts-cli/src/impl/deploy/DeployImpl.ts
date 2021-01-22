@@ -79,8 +79,8 @@ export default class DeployImpl {
         LoggerLevel.INFO
       );
 
-      if (this.props.isValidateArtifactsOnHead)
-        await this.validateArtifacts();
+      // if (this.props.isValidateArtifactsOnHead)
+      //   await this.validateArtifacts();
 
       for (let i = 0; i < queue.length; i++) {
 
@@ -453,15 +453,61 @@ export default class DeployImpl {
     }
   }
 
+  private getLatestPackageManifest(artifactDirectory: string): any {
+    let latestPackageManifest: any;
+
+    let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+      artifactDirectory
+    );
+
+    let sourceRepository: string;
+    let latestPackageMetadata: PackageMetadata;
+    for (let artifact of artifacts) {
+      let packageMetadata: PackageMetadata = JSON.parse(
+        fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
+      );
+
+      // Check whether the artifact is from the same source repository
+      if (sourceRepository == null)
+        // Set source repository to the current artifact's repo URL
+        sourceRepository = packageMetadata.repository_url;
+
+      if (sourceRepository !== packageMetadata.repository_url)
+        throw new Error("Artifacts must originate from the same source repository, for deployment to work");
+
+      if (
+        latestPackageMetadata == null ||
+        latestPackageMetadata.creation_details.timestamp < packageMetadata.creation_details.timestamp
+      ) {
+        latestPackageMetadata = packageMetadata;
+
+        let pathToPackageManifest = path.join(artifact.sourceDirectoryPath, "manifests", "sfdx-project.json.ori");
+
+        if (fs.existsSync(pathToPackageManifest)) {
+          latestPackageManifest = JSON.parse(
+            fs.readFileSync(pathToPackageManifest, "utf8")
+          );
+        } else {
+          throw new Error(
+            `${latestPackageMetadata.package_name} artifact does not contain or could not read sfdx-project.json.ori`
+          );
+        }
+      }
+    }
+
+    console.log("Found latest package manifest in", latestPackageMetadata.package_name);
+    return latestPackageManifest;
+  }
+
   /**
    * Returns the packages in the project config that have an artifact
    */
   private getPackagesToDeploy(): any[] {
     let packagesToDeploy: any[];
 
-    let packages = ProjectConfig.getSFDXPackageManifest(null)[
-      "packageDirectories"
-    ];
+    let latestPackageManifest = this.getLatestPackageManifest(this.props.artifactDir)
+    let packages = latestPackageManifest["packageDirectories"];
+
     let artifacts = ArtifactFilePathFetcher.findArtifacts(this.props.artifactDir);
 
     packagesToDeploy = packages.filter((pkg) => {
