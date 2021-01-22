@@ -86,8 +86,7 @@ export default class Deploy extends SfpowerscriptsCommand {
       deploymentMode:DeploymentMode.NORMAL,
       skipIfPackageInstalled:this.flags.skipifalreadyinstalled,
       logsGroupSymbol:this.flags.logsgroupsymbol,
-      currentStage:Stage.DEPLOY,
-      isValidateArtifactsOnHead:true
+      currentStage:Stage.DEPLOY
     }
 
     try {
