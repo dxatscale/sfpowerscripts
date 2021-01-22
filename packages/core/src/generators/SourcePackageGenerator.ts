@@ -20,15 +20,16 @@ export default class SourcePackageGenerator {
     configFilePath?:string
   ): string {
 
-    let artifactDirectory=`.sfpowerscripts/${this.makefolderid(5)}_source`, rootDirectory;
-    if (!isNullOrUndefined(projectDirectory)) {
+    let artifactDirectory: string = `.sfpowerscripts/${this.makefolderid(5)}_source`, rootDirectory: string;
+
+    if (projectDirectory) {
       rootDirectory = projectDirectory;
     } else {
       rootDirectory = "";
     }
 
-     if(isNullOrUndefined(packageDirectory))
-       packageDirectory="";
+    if(packageDirectory == null)
+      packageDirectory = "";
 
     mkdirpSync(artifactDirectory);
 
@@ -37,23 +38,19 @@ export default class SourcePackageGenerator {
 
     //Create a new directory
     fs.mkdirsSync(path.join(artifactDirectory, packageDirectory));
-    fs.writeFileSync(
-      path.join(artifactDirectory, "sfdx-project.json"),
-      JSON.stringify(
-        ProjectConfig.cleanupMPDFromManifest(projectDirectory, sfdx_package)
-      )
-    );
 
-    SourcePackageGenerator.createScripts(artifactDirectory, projectDirectory, sfdx_package);
+    SourcePackageGenerator.createPackageManifests(artifactDirectory, rootDirectory, sfdx_package);
 
-    SourcePackageGenerator.createForceIgnores(artifactDirectory, projectDirectory, rootDirectory);
+    SourcePackageGenerator.createScripts(artifactDirectory, rootDirectory, sfdx_package);
+
+    SourcePackageGenerator.createForceIgnores(artifactDirectory, rootDirectory);
 
 
     if (!isNullOrUndefined(destructiveManifestFilePath)) {
       SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory);
     }
 
-  
+
     if(configFilePath)
     {
       SourcePackageGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory);
@@ -67,6 +64,24 @@ export default class SourcePackageGenerator {
     return artifactDirectory;
   }
 
+  private static createPackageManifests(artifactDirectory: string, projectDirectory: string, sfdx_package: string) {
+    // Create pruned package manifest in source directory
+    fs.writeFileSync(
+      path.join(artifactDirectory, "sfdx-project.json"),
+      JSON.stringify(
+        ProjectConfig.cleanupMPDFromManifest(projectDirectory, sfdx_package)
+      )
+    );
+
+    // Copy original package manifest
+    let manifestsDir: string = path.join(artifactDirectory, `manifests`);
+    mkdirpSync(manifestsDir);
+    fs.copySync(
+      path.join(projectDirectory, "sfdx-project.json"),
+      path.join(manifestsDir, "sfdx-project.json.ori")
+    );
+  }
+
   /**
    * Create scripts directory containing preDeploy & postDeploy
    * @param artifactDirectory
@@ -78,7 +93,7 @@ export default class SourcePackageGenerator {
     projectDirectory: string,
     sfdx_package
   ): void {
-    let scriptsDir: string = path.join(artifactDirectory, `scripts`)
+    let scriptsDir: string = path.join(artifactDirectory, `scripts`);
     mkdirpSync(scriptsDir);
 
     let packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
@@ -113,12 +128,10 @@ export default class SourcePackageGenerator {
    * Create root forceignore and forceignores directory containing ignore files for different stages
    * @param artifactDirectory
    * @param projectDirectory
-   * @param rootDirectory
    */
   private static createForceIgnores(
     artifactDirectory: string,
-    projectDirectory: string,
-    rootDirectory: string
+    projectDirectory: string
   ): void {
     let forceIgnoresDir: string = path.join(artifactDirectory, `forceignores`);
     mkdirpSync(forceIgnoresDir);
@@ -126,7 +139,7 @@ export default class SourcePackageGenerator {
     let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
     let ignoreFiles = projectConfig.plugins?.sfpowerscripts?.ignoreFiles;
 
-    let rootForceIgnore: string = path.join(rootDirectory, ".forceignore");
+    let rootForceIgnore: string = path.join(projectDirectory, ".forceignore");
     let copyForceIgnoreForStage = (stage) => {
       if (ignoreFiles?.[stage])
         if (fs.existsSync(ignoreFiles[stage]))
