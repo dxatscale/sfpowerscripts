@@ -1,5 +1,4 @@
-import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
-import simplegit, { SimpleGit } from "simple-git/promise";
+import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl";
@@ -35,8 +34,7 @@ export interface DeployProps
   artifactDir:string
   deploymentMode:DeploymentMode,
   isTestsToBeTriggered:boolean,
-  skipIfPackageInstalled:boolean
-  isValidateArtifactsOnHead?:boolean
+  skipIfPackageInstalled:boolean,
   logsGroupSymbol?:string[],
   coverageThreshold?:number
   waitTime:number,
@@ -68,7 +66,19 @@ export default class DeployImpl {
 
     let testFailure: string;
     try {
-      let queue: any[] = this.getPackagesToDeploy();
+
+      let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+        this.props.artifactDir
+      );
+
+      if (artifacts.length === 0)
+      throw new Error(`No artifacts to deploy found in ${this.props.artifactDir}`);
+
+      this.validateArtifactsSourceRepository(artifacts);
+      let latestPackageManifest = this.getLatestPackageManifest(artifacts);
+      let queue: any[] = this.getPackagesToDeploy(latestPackageManifest);
+
+      let packagesToPackageMetadata = this.getPackagesToPackageMetadata(artifacts);
 
       SFPStatsSender.logGauge("deploy.scheduled", queue.length, this.props.tags);
 
@@ -79,21 +89,10 @@ export default class DeployImpl {
         LoggerLevel.INFO
       );
 
-      // if (this.props.isValidateArtifactsOnHead)
-      //   await this.validateArtifacts();
 
       for (let i = 0; i < queue.length; i++) {
 
-
-
-        let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-          this.props.artifactDir,
-          queue[i].package
-        );
-
-        let packageMetadata: PackageMetadata = JSON.parse(
-          fs.readFileSync(artifacts[0].packageMetadataFilePath, "utf8")
-        );
+        let packageMetadata: PackageMetadata = packagesToPackageMetadata[queue[i].package];
 
         let packageType: string = packageMetadata.package_type;
 
@@ -205,6 +204,23 @@ export default class DeployImpl {
         testFailure: testFailure
       };
     }
+  }
+
+  /**
+   * Returns map of package name to package metadata
+   * @param artifacts
+   */
+  private getPackagesToPackageMetadata(
+    artifacts: ArtifactFilePaths[]
+  ): {[p: string]: PackageMetadata} {
+    let packagesToPackageMetadata: {[p: string]: PackageMetadata} = {};
+    for (let artifact of artifacts) {
+      let packageMetadata: PackageMetadata = JSON.parse(
+        fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
+      );
+      packagesToPackageMetadata[packageMetadata.package_name] = packageMetadata;
+    }
+    return packagesToPackageMetadata;
   }
 
   /**
@@ -425,55 +441,31 @@ export default class DeployImpl {
 
 
   /**
-   * Verify that artifacts are on the same source version as HEAD
+   * Verify that artifacts are from the same source repository
    */
-  private async validateArtifacts(): Promise<void> {
-    let git: SimpleGit = simplegit();
-
-    let head: string = await git.revparse([`HEAD`]);
-
-    let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-      this.props.artifactDir
-    );
-
+  private validateArtifactsSourceRepository(artifacts: ArtifactFilePaths[]): void {
+    let sourceRepository: string;
     for (let artifact of artifacts) {
       let packageMetadata: PackageMetadata = JSON.parse(
         fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
       );
 
-      if (
-        packageMetadata.sourceVersion != null &&
-        packageMetadata.sourceVersion != head
-      ) {
-        throw new Error(
-          `${packageMetadata.package_name} is on a different source version.` +
-            `Artifacts must be on the same source version in order to determine the order of deployment.`
-        );
-      }
+      if (sourceRepository == null)
+        sourceRepository = packageMetadata.repository_url;
+
+      if (sourceRepository !== packageMetadata.repository_url)
+        throw new Error("Artifacts must originate from the same source repository, for deployment to work");
     }
   }
 
-  private getLatestPackageManifest(artifactDirectory: string): any {
+  private getLatestPackageManifest(artifacts: ArtifactFilePaths[]): any {
     let latestPackageManifest: any;
 
-    let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-      artifactDirectory
-    );
-
-    let sourceRepository: string;
     let latestPackageMetadata: PackageMetadata;
     for (let artifact of artifacts) {
       let packageMetadata: PackageMetadata = JSON.parse(
         fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
       );
-
-      // Check whether the artifact is from the same source repository
-      if (sourceRepository == null)
-        // Set source repository to the current artifact's repo URL
-        sourceRepository = packageMetadata.repository_url;
-
-      if (sourceRepository !== packageMetadata.repository_url)
-        throw new Error("Artifacts must originate from the same source repository, for deployment to work");
 
       if (
         latestPackageMetadata == null ||
@@ -482,11 +474,8 @@ export default class DeployImpl {
         latestPackageMetadata = packageMetadata;
 
         let pathToPackageManifest = path.join(artifact.sourceDirectoryPath, "manifests", "sfdx-project.json.ori");
-
         if (fs.existsSync(pathToPackageManifest)) {
-          latestPackageManifest = JSON.parse(
-            fs.readFileSync(pathToPackageManifest, "utf8")
-          );
+          latestPackageManifest = JSON.parse(fs.readFileSync(pathToPackageManifest, "utf8"));
         } else {
           throw new Error(
             `${latestPackageMetadata.package_name} artifact does not contain or could not read sfdx-project.json.ori`
@@ -495,18 +484,22 @@ export default class DeployImpl {
       }
     }
 
-    console.log("Found latest package manifest in", latestPackageMetadata.package_name);
+    SFPLogger.log(
+      `Found latest package manifest in ${latestPackageMetadata.package_name} artifact`,
+       null,
+       this.props.packageLogger,
+       LoggerLevel.INFO
+    );
     return latestPackageManifest;
   }
 
   /**
    * Returns the packages in the project config that have an artifact
    */
-  private getPackagesToDeploy(): any[] {
+  private getPackagesToDeploy(packageManifest: any): any[] {
     let packagesToDeploy: any[];
 
-    let latestPackageManifest = this.getLatestPackageManifest(this.props.artifactDir)
-    let packages = latestPackageManifest["packageDirectories"];
+    let packages = packageManifest["packageDirectories"];
 
     let artifacts = ArtifactFilePathFetcher.findArtifacts(this.props.artifactDir);
 
@@ -521,8 +514,6 @@ export default class DeployImpl {
     packagesToDeploy = packagesToDeploy.filter(
       (pkg) => !this.isSkipDeployment(pkg, this.props.targetUsername)
     );
-
-
 
 
     //Ignore packages based on stage

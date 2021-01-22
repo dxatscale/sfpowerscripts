@@ -150,7 +150,6 @@ export default class ValidateImpl {
        deploymentMode:DeploymentMode.SOURCEPACKAGES,
        isTestsToBeTriggered:true,
        skipIfPackageInstalled:false,
-       isValidateArtifactsOnHead:false,
        coverageThreshold:this.props.coverageThreshold,
        logsGroupSymbol:this.props.logsGroupSymbol,
        currentStage:Stage.VALIDATE,

@@ -95,7 +95,6 @@ export default class PrepareASingleOrgImpl {
           packageLogger:packageLogger,
           isTestsToBeTriggered:false,
           skipIfPackageInstalled:false,
-          isValidateArtifactsOnHead:false,
           deploymentMode: this.installAsSourcePackages? DeploymentMode.SOURCEPACKAGES:DeploymentMode.NORMAL
         }
 
