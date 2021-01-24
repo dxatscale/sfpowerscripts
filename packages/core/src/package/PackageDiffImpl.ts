@@ -63,7 +63,7 @@ export default class PackageDiffImpl {
           for (let filename of modified_files) {
             if (isUnlockedAndConfigFilePath) {
               if (
-                  filename.includes(`${dir.path}`) ||
+                  filename.includes(path.normalize(dir.path)) ||
                   filename === config_file_path
               ) {
                   SFPLogger.log(`Found change in ${filename}`);
