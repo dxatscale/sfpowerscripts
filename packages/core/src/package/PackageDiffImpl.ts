@@ -57,20 +57,21 @@ export default class PackageDiffImpl {
           if (isUnlockedAndConfigFilePath)
             SFPLogger.log(`Checking for changes to ${config_file_path}`);
 
-          SFPLogger.log(`Checking for changes in source directory '${dir.path}'`);
+          SFPLogger.log(`Checking for changes in source directory ${path.normalize(dir.path)}`);
 
           // Check whether the package has been modified
+
           for (let filename of modified_files) {
             if (isUnlockedAndConfigFilePath) {
               if (
-                  filename.includes(`${dir.path}`) ||
+                  filename.includes(path.normalize(dir.path)) ||
                   filename === config_file_path
               ) {
                   SFPLogger.log(`Found change in ${filename}`);
                   return true;
               }
             } else {
-              if (filename.includes(`${dir.path}`)) {
+              if (filename.includes(path.normalize(dir.path))) {
                 SFPLogger.log(`Found change in ${filename}`);
                 return true;
               }

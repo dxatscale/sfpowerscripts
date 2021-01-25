@@ -23,6 +23,23 @@ jest.mock("../../src/project/ProjectConfig", () => {
   return ProjectConfig;
 });
 
+jest.mock("../../src/generators/SourcePackageGenerator", () => {
+  class SourcePackageGenerator {
+    static generateSourcePackageArtifact(
+      projectDirectory: string,
+      sfdx_package: string,
+      packageDirectory:string,
+      destructiveManifestFilePath?: string,
+      configFilePath?:string,
+      pathToReplacementForceIgnore?: string
+    ): string {
+      return ".sfpowerscripts/3sIRD_source";
+    }
+  }
+
+  return SourcePackageGenerator;
+});
+
 jest.mock("../../src/sfdxwrappers/ConvertSourceToMDAPIImpl", () => {
   class ConvertSourceToMDAPIImpl {
     exec = jest.fn().mockReturnValueOnce(Promise.resolve("mdapidir"));
@@ -68,7 +85,7 @@ jest.mock("../../src/parser/ApexTypeFetcher", () => {
           "Send_Receipt",
         )
       );
-     
+
   }
 
   return ApexTypeFetcher;
@@ -85,7 +102,7 @@ describe("Given a sfdx package, build a sfpowerscripts package", () => {
       }
     );
 
-    
+
 
 
      let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"ESBaseCodeLWC");
@@ -124,8 +141,8 @@ describe("Given a sfdx package, build a sfpowerscripts package", () => {
       "Send_Receipt",
     ));
 
-     
-     
+
+
 
 
   });

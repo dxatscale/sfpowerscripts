@@ -1,4 +1,3 @@
-import { isNullOrUndefined } from "util";
 import ProjectConfig from "../project/ProjectConfig";
 import * as rimraf from "rimraf";
 import SFPLogger from "../utils/SFPLogger";
@@ -17,7 +16,8 @@ export default class SourcePackageGenerator {
     sfdx_package: string,
     packageDirectory:string,
     destructiveManifestFilePath?: string,
-    configFilePath?:string
+    configFilePath?:string,
+    pathToReplacementForceIgnore?: string
   ): string {
 
     let artifactDirectory: string = `.sfpowerscripts/${this.makefolderid(5)}_source`, rootDirectory: string;
@@ -45,8 +45,10 @@ export default class SourcePackageGenerator {
 
     SourcePackageGenerator.createForceIgnores(artifactDirectory, rootDirectory);
 
+    if (pathToReplacementForceIgnore)
+      SourcePackageGenerator.replaceRootForceIgnore(artifactDirectory, pathToReplacementForceIgnore);
 
-    if (!isNullOrUndefined(destructiveManifestFilePath)) {
+    if (destructiveManifestFilePath) {
       SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory);
     }
 
@@ -164,6 +166,26 @@ export default class SourcePackageGenerator {
       rootForceIgnore,
       path.join(artifactDirectory, ".forceignore")
     );
+  }
+
+  /**
+   * Replaces root forceignore with provided forceignore
+   * @param artifactDirectory
+   * @param pathToReplacementForceIgnore
+   */
+  private static replaceRootForceIgnore(
+    artifactDirectory: string,
+    pathToReplacementForceIgnore: string
+  ): void {
+    if (fs.existsSync(pathToReplacementForceIgnore))
+      fs.copySync(
+        pathToReplacementForceIgnore,
+        path.join(artifactDirectory, ".forceignore")
+      );
+    else {
+      SFPLogger.log(`${pathToReplacementForceIgnore} does not exist`);
+      SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory");
+    }
   }
 
   private static copyDestructiveManifests(destructiveManifestFilePath: string, artifactDirectory: string, projectDirectory: any) {

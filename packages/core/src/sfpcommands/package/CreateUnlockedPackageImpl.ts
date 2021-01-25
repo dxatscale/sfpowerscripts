@@ -30,7 +30,7 @@ export default class CreateUnlockedPackageImpl {
     private isCoverageEnabled: boolean,
     private isSkipValidation: boolean,
     private packageArtifactMetadata: PackageMetadata,
-    private forceignorePath?: string
+    private pathToReplacementForceIgnore?: string
   ) {
     fs.outputFileSync(
       `.sfpowerscripts/logs/${sfdx_package}`,
@@ -49,7 +49,13 @@ export default class CreateUnlockedPackageImpl {
     );
 
 
-    let sfppackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(this.project_directory,this.sfdx_package,this.config_file_path,this.packageLogger);
+    let sfppackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
+      this.project_directory,
+      this.sfdx_package,
+      this.config_file_path,
+      this.packageLogger,
+      this.pathToReplacementForceIgnore
+    );
     let packageDirectory: string =sfppackage.packageDescriptor.path;
      //Get the revised package Descriptor
      let packageDescriptor = sfppackage.packageDescriptor;
@@ -59,29 +65,8 @@ export default class CreateUnlockedPackageImpl {
      );
 
 
-    //Create a working directory
-    let workingDirectory = sfppackage.createAWorkingDirectory();
-
-    // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
-    if (this.forceignorePath) {
-      if (fs.existsSync(path.join(workingDirectory, this.forceignorePath)))
-        fs.copySync(
-          path.join(workingDirectory, this.forceignorePath),
-          path.join(workingDirectory, ".forceignore")
-        );
-      else {
-        SFPLogger.log(
-          `${path.join(workingDirectory, this.forceignorePath)} does not exist`,
-          null,
-          this.packageLogger
-        );
-        SFPLogger.log(
-          "Package creation will continue using the unchanged forceignore in the root directory",
-          null,
-          this.packageLogger
-        );
-      }
-    }
+    // Get working directory
+    let workingDirectory = sfppackage.workingDirectory;
 
     //Get the one in working directory
     this.config_file_path = path.join("config", "project-scratch-def.json");
@@ -188,18 +173,10 @@ export default class CreateUnlockedPackageImpl {
         this.project_directory,
         this.sfdx_package
       )["path"],
-      null
+      null,
+      null,
+      this.pathToReplacementForceIgnore
     );
-
-    if (this.forceignorePath) {
-      if (
-        fs.existsSync(path.join(mdapiPackageArtifactDir, this.forceignorePath))
-      )
-        fs.copySync(
-          path.join(mdapiPackageArtifactDir, this.forceignorePath),
-          path.join(mdapiPackageArtifactDir, ".forceignore")
-        );
-    }
 
     this.packageArtifactMetadata.sourceDir = mdapiPackageArtifactDir;
 
