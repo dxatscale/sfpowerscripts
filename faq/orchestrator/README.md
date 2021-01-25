@@ -211,5 +211,17 @@ Yes, you could use the `ignoreOnStage` descriptor to mark which packages should 
 
 Not yet we are working on it, currently deploy commands can be used only when sfdx-project.json is available, as it determines the order of the packages to be installed, so it could only be used in a linear pipeline such as build -&gt; deploy\(sit\) -&gt; deploy\(uat\) -&gt; deploy\(prod\). If a different strategy is used, where multiple commits are accumulated to form builds and builds aggregated before deploying. In this case, we recommend to use the orchestrator till your daily/immediate testing environment, once from there the artifacts are published into a artifact repository, a script based model \(using the non orchestrator commands\) could be applied for deploying into higher environments.
 
+## What are the pre-requisites for this orchestrator command or sfpowerscripts in general?
+
+The following pre-requisites are required for the orchestrator to work  
+  - [sfpowerkit ](https://github.com/accenture/sfpowerkit):  sfdx plugin that has variety of helper commands, sfpowerscripts uses sfpowerkit for various functionality such as reconciling profiles  
+ - [sfdmu ](https://github.com/forcedotcom/SFDX-Data-Move-Utility): sfdx plugin that helps in data migration between orgs or between source to orgs. sfpowerscripts utilizes sfdmu for data package  
+ - [Addtional fields for pooling: ](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/scratchorgpool) prepare functionality needs additional fields to be deployed on devhub. These fields store information regarding scratch org's  
+ - [sfpowerscripts-artifact](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/sfpowerscripts-artifact) : Utilized for maintaining a record of packages installed in an org. Used by prepare, validate and deploy commands. You can either use an unlocked package built from our org or build one and deploy one yourself \(see instructions [here](https://dxatscale.gitbook.io/sfpowerscripts/faq/source-packages#how-do-source-packages-manage-to-skip-installation-if-its-already-deployed-in-a-org)\)
+
+##  
+
+
+
 
 
