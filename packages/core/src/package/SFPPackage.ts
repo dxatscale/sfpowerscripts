@@ -26,6 +26,7 @@ export default class SFPPackage {
   private _configFilePath: string;
   private _projectDirectory: string;
   private _apexClassesSortedByTypes:ApexSortedByType;
+  private _workingDirectory: string;
 
   private readonly _propertyFetchers: PropertyFetcher[] = [
     new AssignPermissionSetFetcher(),
@@ -90,6 +91,10 @@ export default class SFPPackage {
     return this._triggers;
   }
 
+  public get workingDirectory(): string {
+    return this._workingDirectory;
+  }
+
   public get propertyFetchers(): PropertyFetcher[] {
     return this._propertyFetchers;
   }
@@ -98,7 +103,8 @@ export default class SFPPackage {
     projectDirectory: string,
     sfdx_package: string,
     configFilePath?: string,
-    packageLogger?: any
+    packageLogger?: any,
+    pathToReplacementForceIgnore?: string
   ) {
     let sfpPackage: SFPPackage = new SFPPackage();
     sfpPackage._package_name = sfdx_package;
@@ -106,13 +112,30 @@ export default class SFPPackage {
       projectDirectory,
       sfdx_package
     );
+
     sfpPackage._projectDirectory = projectDirectory;
+
     if(configFilePath==null)
       sfpPackage._configFilePath="config/project-scratch-def.json";
     else
       sfpPackage._configFilePath=configFilePath;
+
+    for (const propertyFetcher of sfpPackage.propertyFetchers) {
+      await propertyFetcher.getSfpowerscriptsProperties(sfpPackage, packageLogger);
+    }
+
+    // Requires destructiveChangesPath which is set by the property fetcher
+    sfpPackage._workingDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
+      sfpPackage._projectDirectory,
+      sfpPackage._package_name,
+      sfpPackage._packageDescriptor.path,
+      sfpPackage.destructiveChangesPath,
+      sfpPackage._configFilePath,
+      pathToReplacementForceIgnore
+    );
+
     sfpPackage._mdapiDir = await new ConvertSourceToMDAPIImpl(
-      projectDirectory,
+      sfpPackage._workingDirectory,
       sfpPackage._packageDescriptor.path,
       packageLogger
     ).exec(true);
@@ -123,7 +146,7 @@ export default class SFPPackage {
     sfpPackage._isApexInPackage = packageManifest.isApexInPackage();
     sfpPackage._isProfilesInPackage = packageManifest.isProfilesInPackage();
     sfpPackage._packageType = ProjectConfig.getPackageType(
-      ProjectConfig.getSFDXPackageManifest(projectDirectory),
+      ProjectConfig.getSFDXPackageManifest(sfpPackage._workingDirectory),
       sfdx_package
     );
 
@@ -132,15 +155,10 @@ export default class SFPPackage {
     sfpPackage._apexClassesSortedByTypes = apexFetcher.getClassesClassifiedByType();
     sfpPackage._apexTestClassses = apexFetcher.getTestClasses();
     sfpPackage._metadataCount = MetadataCount.getMetadataCount(
-      projectDirectory,
+      sfpPackage._workingDirectory,
       sfpPackage._packageDescriptor.path
     );
     sfpPackage._apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
-
-
-    for (const propertyFetcher of sfpPackage.propertyFetchers) {
-      await propertyFetcher.getSfpowerscriptsProperties(sfpPackage, packageLogger);
-    }
 
     return sfpPackage;
   }

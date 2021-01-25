@@ -18,7 +18,7 @@ export default class CreateSourcePackageImpl {
     private projectDirectory: string,
     private sfdx_package: string,
     private packageArtifactMetadata: PackageMetadata,
-    private stageForceIgnorePath?: string,
+    private pathToReplacementForceIgnore?: string,
     private breakBuildIfEmpty: boolean = true
   ) {
     fs.outputFileSync(
@@ -85,8 +85,14 @@ export default class CreateSourcePackageImpl {
     }
 
     if (isBuildSfpPackage) {
-      sfppackage = await SFPPackage.buildPackageFromProjectConfig(this.projectDirectory,this.sfdx_package,null,this.packageLogger);
-
+      sfppackage = await SFPPackage.buildPackageFromProjectConfig(
+        this.projectDirectory,
+        this.sfdx_package,
+        null,
+        this.packageLogger,
+        this.pathToReplacementForceIgnore
+      );
+      console.log('workingDirectory', sfppackage.workingDirectory);
       this.packageArtifactMetadata.payload = sfppackage.payload;
       this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
       this.packageArtifactMetadata.isApexFound = sfppackage.isApexInPackage
@@ -108,13 +114,10 @@ export default class CreateSourcePackageImpl {
       this.projectDirectory,
       this.sfdx_package,
       packageDirectory,
-      sfppackage?.destructiveChangesPath
+      sfppackage?.destructiveChangesPath,
+      null,
+      this.pathToReplacementForceIgnore
     );
-
-    if (this.stageForceIgnorePath) {
-      // Replace root forceignore with ignore file from relevant stage e.g. build, quickbuild
-      this.replaceRootForceIgnore(sourcePackageArtifactDir, this.stageForceIgnorePath);
-    }
 
     this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;
 

@@ -528,7 +528,7 @@ export default class BuildImpl {
       !isSkipValidation,
       isSkipValidation,
       packageMetadata,
-      path.join("forceignores", "." + this.props.currentStage + "ignore")
+      this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
     );
 
     let result = createUnlockedPackageImpl.exec();
@@ -566,7 +566,7 @@ export default class BuildImpl {
       this.props.projectDirectory,
       sfdx_package,
       packageMetadata,
-      path.join("forceignores", "." + this.props.currentStage + "ignore")
+      this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
     );
     let result = createSourcePackageImpl.exec();
 
@@ -607,6 +607,32 @@ export default class BuildImpl {
     let result = createDataPackageImpl.exec();
 
     return result;
+  }
+
+  /**
+   * Get the file path of the forceignore for current stage, from project config.
+   * Returns null if a forceignore path is not defined in the project config for the current stage.
+   *
+   * @param projectConfig
+   * @param currentStage
+   */
+  private getPathToForceIgnoreForCurrentStage(projectConfig: any, currentStage: Stage): string {
+    let stageForceIgnorePath: string;
+
+    let ignoreFiles: {[key in Stage]: string} = projectConfig.plugins?.sfpowerscripts?.ignoreFiles;
+    if (ignoreFiles) {
+      Object.keys(ignoreFiles).forEach((key) => {
+        if (key.toLowerCase() == currentStage) {
+          stageForceIgnorePath = ignoreFiles[key];
+        }
+      });
+    }
+
+    if (stageForceIgnorePath) {
+      if (fs.existsSync(stageForceIgnorePath)) {
+        return stageForceIgnorePath;
+      } else throw new Error(`${stageForceIgnorePath} forceignore file does not exist`);
+    } else return null;
   }
 
   private getFormattedTime(milliseconds: number): string {
