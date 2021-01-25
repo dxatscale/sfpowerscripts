@@ -11,7 +11,6 @@ import * as rimraf from "rimraf";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import { Stage } from "../Stage";
 import * as fs from "fs-extra"
-import path = require("path");
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateUnlockedPackageImpl"
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateSourcePackageImpl"
