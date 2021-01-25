@@ -140,6 +140,34 @@ No, the above are the modifiers for the orchestrator commands, irrespective if y
         </p>
       </td>
     </tr>
+    <tr>
+      <td style="text-align:left"><b>preDeploymentScript</b>
+      </td>
+      <td style="text-align:left">Run an executable script before deploying a package. User need to provide
+        a path to the script file</td>
+      <td style="text-align:left">
+        <p><b>prepare,</b>
+        </p>
+        <p><b>validate,</b>
+        </p>
+        <p><b>deploy</b>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>postDeploymentScript</b>
+      </td>
+      <td style="text-align:left">Run an executable script after deploying a package. User need to provide
+        a path to the script file</td>
+      <td style="text-align:left">
+        <p><b>prepare,</b>
+        </p>
+        <p><b>validate,</b>
+        </p>
+        <p><b>deploy</b>
+        </p>
+      </td>
+    </tr>
   </tbody>
 </table>
 
