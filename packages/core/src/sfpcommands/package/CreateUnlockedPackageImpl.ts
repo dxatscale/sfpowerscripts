@@ -97,11 +97,20 @@ export default class CreateUnlockedPackageImpl {
       null,
       this.packageLogger
     );
-    await this.getPackageTypeInfos();
-    let packageTypeInfo = CreateUnlockedPackageImpl.packageTypeInfos.find(
+    let packageTypeInfos = await this.getPackageTypeInfos();
+    let packageTypeInfo = packageTypeInfos.find(
       (pkg) => pkg.Id == packageId
     );
-    if (packageTypeInfo.IsOrgDependent == "Yes")
+
+    if(packageTypeInfo==null)
+    {
+      SFPLogger.log("Unable to find a package info for this particular package, Are you sure you created this package?");
+      SFPLogger.log("Unable to find a package info for this particular package, Are you sure you created this package?");
+      
+    }
+
+
+    if (packageTypeInfo?.IsOrgDependent == "Yes")
       this.isOrgDependentPackage = true;
 
     SFPLogger.log("-------------------------", null, this.packageLogger);
