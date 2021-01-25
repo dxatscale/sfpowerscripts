@@ -163,18 +163,6 @@ export default class SFPPackage {
     return sfpPackage;
   }
 
-  public createAWorkingDirectory() {
-    let workingDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
-      this._projectDirectory,
-      this._package_name,
-      this._packageDescriptor.path,
-      this.destructiveChangesPath,
-      this._configFilePath
-    );
-    return workingDirectory;
-  }
-
-
   public get isApexInPackage(): boolean {
     return this._isApexInPackage;
   }
