@@ -92,7 +92,7 @@ export default class CreateSourcePackageImpl {
         this.packageLogger,
         this.pathToReplacementForceIgnore
       );
-      console.log('workingDirectory', sfppackage.workingDirectory);
+
       this.packageArtifactMetadata.payload = sfppackage.payload;
       this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
       this.packageArtifactMetadata.isApexFound = sfppackage.isApexInPackage

@@ -67,7 +67,6 @@ export default class CreateUnlockedPackageImpl {
 
     // Get working directory
     let workingDirectory = sfppackage.workingDirectory;
-    console.log('workingDirectory', workingDirectory);
 
     //Get the one in working directory
     this.config_file_path = path.join("config", "project-scratch-def.json");
