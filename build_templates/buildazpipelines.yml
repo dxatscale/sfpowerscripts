@@ -1,40 +1,40 @@
 parameters:
-  
+
   - name: commitToGit
-    type: boolean 
+    type: boolean
     default: false
-  
+
   - name: branchToDeploy
-    type: string 
+    type: string
     default: develop
-  
+
   - name: stageToDeploy
-    type: string 
+    type: string
     default: review
-  
+
   - name: version
-    type: string 
+    type: string
     default: auto
-  
+
   - name: environmentToDeploy
-    type: string 
+    type: string
     default: development
 
   - name: organization
-    type: string 
+    type: string
     default: ''
 
   - name: bump
-    type: string 
-    default: 'patch'  
+    type: string
+    default: 'patch'
 
 
   - name: buildNumber
-    type: string 
+    type: string
     default: ''
-  
+
   - name: toBuild
-    type: boolean 
+    type: boolean
     default: false
 
 steps:
@@ -47,32 +47,32 @@ steps:
             inputs:
               key: 'npm | "$(Agent.OS)" | package-lock.json'
               path: '$(System.DefaultWorkingDirectory)/node_modules'
-              cacheHitVar: 'npm | "$(Agent.OS)"'   
+              cacheHitVar: 'npm | "$(Agent.OS)"'
 
           - task: CmdLine@2
             displayName: Install Node depdencies
             inputs:
               script: 'npm install'
-           
+
 
           - script: 'npx lerna bootstrap'
             displayName: 'Bootstrap Lerna'
 
-         
+
 
           - script: 'npx lerna run build'
             displayName: 'Build  All  Packages'
-   
- 
-         
-        
+
+
+
+
           #  - task: DownloadSecureFile@1
           #    displayName: "Download App Tracker Configuration File"
           #    name: config
           #    inputs:
           #     secureFile: 'config.json'
-        
-        
+
+
           #  - task: CmdLine@2
           #    displayName: "Copy App Tracker Configuration File to Build Directory"
           #    inputs:
@@ -92,13 +92,13 @@ steps:
                 npm run increment:azpipelines:version -- --version=${{ parameters.version }}  --stage=${{ parameters.stageToDeploy }} --buildNumber=${{ parameters.buildNumber }}
                workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines_release_management_extensions'
 
-          
+
           - task: CmdLine@2
             displayName: 'Create package'
             inputs:
               script: 'npm run package:azpipelines'
               workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines'
-        
+
           - task: CmdLine@2
             displayName: 'Publish the package for ${{ parameters.stageToDeploy }}'
             inputs:
@@ -108,10 +108,11 @@ steps:
 
           - task: CmdLine@2
             displayName: 'Create release package'
+            condition: succeededOrFailed()
             inputs:
               script: 'npm run package:azpipelines'
               workingDirectory: '$(System.DefaultWorkingDirectory)/packages/azpipelines_release_management_extensions'
-        
+
           - task: CmdLine@2
             displayName: 'Publish the package for ${{ parameters.stageToDeploy }}'
             inputs:
@@ -125,14 +126,14 @@ steps:
             displayName: Publish Extension Artifiact
             condition: always()
             inputs:
-               pathtoPublish: '$(System.DefaultWorkingDirectory)/packages/azpipelines/dist' 
-               artifactName: 'vsix' 
-               publishLocation: 'Container' 
+               pathtoPublish: '$(System.DefaultWorkingDirectory)/packages/azpipelines/dist'
+               artifactName: 'vsix'
+               publishLocation: 'Container'
 
           - task: PublishBuildArtifacts@1
             displayName: Publish Extension Artifacts for Release Management Extension
             condition: always()
             inputs:
-               pathtoPublish: '$(System.DefaultWorkingDirectory)/packages/azpipelines_release_management_extensions/dist' 
-               artifactName: 'vsix' 
-               publishLocation: 'Container' 
+               pathtoPublish: '$(System.DefaultWorkingDirectory)/packages/azpipelines_release_management_extensions/dist'
+               artifactName: 'vsix'
+               publishLocation: 'Container'
