@@ -1,7 +1,7 @@
 {
   "name": "@dxatscale/sfpowerscripts",
   "description": "Simple wrappers around sfdx commands to help set up CI/CD quickly",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "author": "dxatscale",
   "bin": {
     "readVars": "./scripts/readVars.sh"
