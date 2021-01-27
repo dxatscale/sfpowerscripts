@@ -49,16 +49,7 @@ steps:
                  git config --global user.email "sfpowerkit.ci@dev.azure.com"
                  git config --global user.name "sfpowerkitci"
 
-
-
-          - task: Cache@2
-            displayName: Cache NPM Modules
-            inputs:
-              key: 'npm | "$(Agent.OS)"  | package-lock.json'
-              path: '$(System.DefaultWorkingDirectory)/node_modules'
-              cacheHitVar: 'npm | "$(Agent.OS)"'
-
-      
+          
           - task: CmdLine@2
             displayName: Install Node depdencies
             inputs:
