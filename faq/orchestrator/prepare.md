@@ -34,7 +34,7 @@ The Prepare command was built primarily due to the delays from Salesforce to ena
 
 We expect you to build a pool of scratch org's using a scheduled pipeline, that ensures the pools are always replenished with scratch org's ready for consumption. Please note before installing you need to install the prerequisite fields to the DevHub Org which help the validate/fetch commands to fetch a scratch org from the pool. Instructions on how to install the prerequisite materials are available [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling).
 
-**Also ensure  your DevHub is authenticated using** [**JWT based authentication**](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_jwt_flow.htm) **and note that the private key should only be stored in pipeline secure place and never be given to individuals otherwise it poses significant security risks.**
+**Also ensure  your DevHub is authenticated using** [**JWT based authentication**](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_jwt_flow.htm) **and note that the private key should  be stored in secure place \(in a Key Management System or Secure Storage\)** 
 
 ## Is the pools created in prepare same as **sfpowerkit:pool** commands?
 
