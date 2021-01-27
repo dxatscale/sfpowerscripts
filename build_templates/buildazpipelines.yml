@@ -115,6 +115,7 @@ steps:
 
           - task: CmdLine@2
             displayName: 'Publish the package for ${{ parameters.stageToDeploy }}'
+            condition: succeededOrFailed()
             inputs:
               script: |
                npm run publish:azpipelines --  --version=$(Build.BuildNumber) --token=$(publish_token) --stage=${{ parameters.stageToDeploy }} --organization=${{ parameters.organization }}
