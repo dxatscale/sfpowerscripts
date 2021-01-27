@@ -22,14 +22,14 @@ Currently validate only works against a  pool of scratch org's prepared by the p
 
 The following are the list of steps that are orchestrated by the **validate** command
 
-* Authenticate to the DevHub using the provided JWT Key / Client ID
-* Fetch a scratch org from the provided pools in a sequential manner
-* Authenticate to the Scratch org using the provided JWT Key / Client ID
-* Build packages that are changed by comparing the tags in your repo against the packages installed in scratch org
-* For each of the packages \(internally calls the Deploy Command\)
-  * Deploy all the built packages as [source packages](../source-packages.md) / [data package]()  \(unlocked packages are installed as source package\)
-  * Trigger Apex Tests if there are any apex test in the package
-  * Validate test coverage of the package depending on the type of the package \( source packages: each class needs to have 75% or more, unlocked packages: packages as  whole need to have 75% or more\)
+1. Authenticate to the DevHub using the provided JWT Key / Client ID
+2. Fetch a scratch org from the provided pools in a sequential manner
+3. Authenticate to the Scratch org using the provided JWT Key / Client ID
+4. Build packages that are changed by comparing the tags in your repo against the packages installed in scratch org
+5. For each of the packages \(internally calls the Deploy Command\)
+   * Deploy all the built packages as [source packages](../source-packages.md) / [data package]()  \(unlocked packages are installed as source package\)
+   * Trigger Apex Tests if there are any apex test in the package
+   * Validate test coverage of the package depending on the type of the package \( source packages: each class needs to have 75% or more, unlocked packages: packages as  whole need to have 75% or more\)
 
 ## Why do validate command asks for JWT based authentication?
 
@@ -37,7 +37,7 @@ The command needs JWT based authentication to authenticate to the DevHub and uti
 
 ## What if there are no scratch org's left in the pool?
 
-The **validate** command will fail to execute, as it would not be able to fetch a scratch org from the pool.
+The **validate** command will fail to execute, as it would not be able to fetch a scratch org from the pool. So ensure to properly count the CI scratch org privision in Prepare pipeline.
 
 ## How does validate know which packages to be validated?
 

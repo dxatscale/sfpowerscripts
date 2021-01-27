@@ -201,7 +201,7 @@ Here is a sample model that you could use on simple programs
 
 ## Is there an example repo, where all these commands are being used?
 
-Yes, head to the repo [https://github.com/dxatscale/easy-spaces-lwc](https://github.com/dxatscale/easy-spaces-lwc/tree/develop/.github) for examples on how to use these commands with GitHub actions
+Yes, head to the repo [https://github.com/dxatscale/easy-spaces-lwc](https://github.com/dxatscale/easy-spaces-lwc/tree/develop/.github) for examples on how to use these commands with GitHub actions. The .azue-pipelines folder contains sample pipelines to experienment.  
 
 ## Can I ignore any package during any stage/lifecycle/command? For eg: I do not want this package to be processed by the prepare command
 
@@ -216,7 +216,7 @@ Not yet we are working on it, currently deploy commands can be used only when sf
 The following pre-requisites are required for the orchestrator to work  
   - [sfpowerkit ](https://github.com/accenture/sfpowerkit):  sfdx plugin that has variety of helper commands, sfpowerscripts uses sfpowerkit for various functionality such as reconciling profiles  
  - [sfdmu ](https://github.com/forcedotcom/SFDX-Data-Move-Utility): sfdx plugin that helps in data migration between orgs or between source to orgs. sfpowerscripts utilizes sfdmu for data package  
- - [Addtional fields for pooling: ](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/scratchorgpool) prepare functionality needs additional fields to be deployed on devhub. These fields store information regarding scratch org's  
+ - [Addtional fields for pooling: ](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/scratchorgpool) prepare functionality needs additional fields to be deployed on devhub. These fields store information regarding scratch org's. Recommend to create a dedicated permission set for those fields in your production after this deployment.  
  - [sfpowerscripts-artifact](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/sfpowerscripts-artifact) : Utilized for maintaining a record of packages installed in an org. Used by prepare, validate and deploy commands. You can either use an unlocked package built from our org or build one and deploy one yourself \(see instructions [here](https://dxatscale.gitbook.io/sfpowerscripts/faq/source-packages#how-do-source-packages-manage-to-skip-installation-if-its-already-deployed-in-a-org)\)
 
 ##  

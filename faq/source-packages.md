@@ -79,7 +79,7 @@ This functionality  only works provided, the target org has sfpowerscripts-artif
 sfdx force:package:install --package 04t1P000000ka0fQAA -u <org> -w 10
 ```
 
- If your prefer to install a package from your DevHub rather than this package, you could do by building a package from the source provided at the [URL](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/sfpowerscripts-artifact). Once this package is built,  you can  override sfpowerscripts to use this package by passing in the  the environment variable SFPOWERSCRIPTS\_ARTIFACT\_UNLOCKED\_PACKAGE
+ If your prefer to install a package from your own DevHub rather than this package, you could do by building a package from the source provided at the [URL](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/sfpowerscripts-artifact). Once this package is built,  you can  override sfpowerscripts to use this package by passing in the  the environment variable SFPOWERSCRIPTS\_ARTIFACT\_UNLOCKED\_PACKAGE
 
 ## **Can I have an entire org composed of Source Packages?**
 
