@@ -78,8 +78,7 @@ export default class DeployImpl {
       let latestPackageManifest = this.getLatestPackageManifest(artifacts);
       let queue: any[] = this.getPackagesToDeploy(latestPackageManifest);
 
-      let packagesToPackageMetadata = this.getPackagesToPackageMetadata(artifacts);
-
+      let packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
       SFPStatsSender.logGauge("deploy.scheduled", queue.length, this.props.tags);
 
       SFPLogger.log(
@@ -91,8 +90,8 @@ export default class DeployImpl {
 
 
       for (let i = 0; i < queue.length; i++) {
-
-        let packageMetadata: PackageMetadata = packagesToPackageMetadata[queue[i].package];
+        let packageInfo = packagesToPackageInfo[queue[i].package];
+        let packageMetadata: PackageMetadata = packageInfo.packageMetadata;
 
         let packageType: string = packageMetadata.package_type;
 
@@ -129,7 +128,7 @@ export default class DeployImpl {
           packageType,
           queue[i].package,
           this.props.targetUsername,
-          artifacts[0].sourceDirectoryPath,
+          packageInfo.sourceDirectory,
           packageMetadata,
           queue[i].skipTesting,
           this.props.waitTime.toString()
@@ -207,20 +206,23 @@ export default class DeployImpl {
   }
 
   /**
-   * Returns map of package name to package metadata
+   * Returns map of package name to package info
    * @param artifacts
    */
-  private getPackagesToPackageMetadata(
+  private getPackagesToPackageInfo(
     artifacts: ArtifactFilePaths[]
-  ): {[p: string]: PackageMetadata} {
-    let packagesToPackageMetadata: {[p: string]: PackageMetadata} = {};
+  ): {[p: string]: PackageInfo} {
+    let packagesToPackageInfo: {[p: string]: PackageInfo} = {};
     for (let artifact of artifacts) {
       let packageMetadata: PackageMetadata = JSON.parse(
         fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
       );
-      packagesToPackageMetadata[packageMetadata.package_name] = packageMetadata;
+      packagesToPackageInfo[packageMetadata.package_name] = {
+        sourceDirectory: artifact.sourceDirectoryPath,
+        packageMetadata: packageMetadata
+      }
     }
-    return packagesToPackageMetadata;
+    return packagesToPackageInfo;
   }
 
   /**
@@ -344,6 +346,8 @@ export default class DeployImpl {
     skip_if_package_installed: boolean,
     wait_time: string
   ): Promise<PackageInstallationResult> {
+
+
     let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
       sfdx_package,
       targetUsername,
@@ -536,4 +540,9 @@ export default class DeployImpl {
       throw new Error(`No artifacts from project config to be deployed`);
     else return packagesToDeploy;
   }
+}
+
+interface PackageInfo {
+  sourceDirectory: string,
+  packageMetadata: PackageMetadata
 }
