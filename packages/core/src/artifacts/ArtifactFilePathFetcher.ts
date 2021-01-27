@@ -8,7 +8,7 @@ import semver = require("semver");
 export default class ArtifactFilePathFetcher {
   /**
    * Decider for which artifact retrieval method to use
-   *
+   * Returns empty array if no artifacts are found
    * @param artifactDirectory
    * @param sfdx_package
    */

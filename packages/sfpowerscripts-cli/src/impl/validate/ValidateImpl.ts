@@ -150,7 +150,6 @@ export default class ValidateImpl {
        deploymentMode:DeploymentMode.SOURCEPACKAGES,
        isTestsToBeTriggered:true,
        skipIfPackageInstalled:false,
-       isValidateArtifactsOnHead:false,
        coverageThreshold:this.props.coverageThreshold,
        logsGroupSymbol:this.props.logsGroupSymbol,
        currentStage:Stage.VALIDATE,
@@ -227,11 +226,11 @@ export default class ValidateImpl {
 
   private printArtifactVersions(queryResult: any) {
     let table = new Table({
-      head: ["Artifact", "Version"],
+      head: ["Artifact", "Version", "Commit Id"],
     });
 
     queryResult.result.records.forEach((artifact) => {
-      table.push([artifact.Name, artifact.Version__c]);
+      table.push([artifact.Name, artifact.Version__c, artifact.CommitId__c]);
     });
 
     console.log(`Artifacts installed in scratch org:`);
