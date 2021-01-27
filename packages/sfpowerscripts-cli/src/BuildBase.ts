@@ -9,6 +9,7 @@ import fs = require("fs");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import BuildImpl from "./impl/parallelBuilder/BuildImpl";
 import { Stage } from "./impl/Stage";
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -70,6 +71,10 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
   };
 
   public async execute() {
+    let buildExecResult: {generatedPackages: PackageMetadata[], failedPackages: string[]};
+    let totalElapsedTime: number;
+    let artifactCreationErrors: string[] = [];
+
     try {
       const artifactDirectory: string = this.flags.artifactdir;
       const gittag: boolean = this.flags.gittag;
@@ -83,39 +88,25 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
       console.log(`Artifact Directory: ${this.flags.artifactdir}`);
       console.log("---------------------------------------------------------");
 
-     
-
       let executionStartTime = Date.now();
 
-      let {
-        generatedPackages,
-        failedPackages,
-      } = await this.getBuildImplementer().exec();
+      buildExecResult = await this.getBuildImplementer().exec();
 
       if (
         diffcheck &&
-        generatedPackages.length == 0 &&
-        failedPackages.length == 0
+        buildExecResult.generatedPackages.length === 0 &&
+        buildExecResult.failedPackages.length === 0
       ) {
         console.log(`${EOL}${EOL}`);
         console.log("No packages found to be built.. .. ");
         return;
       }
 
+
       console.log(`${EOL}${EOL}`);
       console.log("Generating Artifacts and Tags....");
 
-      const buildResult: BuildResult = {
-        packages: [],
-        summary: {
-          scheduled_packages: null,
-          elapsed_time: null,
-          succeeded: null,
-          failed: null,
-        },
-      };
-
-      for (let generatedPackage of generatedPackages) {
+      for (let generatedPackage of buildExecResult.generatedPackages) {
         try {
           await ArtifactGenerator.generateArtifact(
             generatedPackage.package_name,
@@ -124,51 +115,16 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             generatedPackage
           );
 
-          buildResult["packages"].push({
-            name: generatedPackage["package_name"],
-            version: generatedPackage["package_version_number"],
-            elapsed_time: generatedPackage["creation_details"]?.creation_time,
-            status: "succeeded",
-          });
-
-          if (gittag) {
-            exec(`git config --global user.email "sfpowerscripts@dxscale"`);
-            exec(`git config --global user.name "sfpowerscripts"`);
-
-            let tagname = `${generatedPackage.package_name}_v${generatedPackage.package_version_number}`;
-            exec(
-              `git tag -a -m "${generatedPackage.package_name} ${generatedPackage.package_type} Package ${generatedPackage.package_version_number}" ${tagname} HEAD`,
-              { silent: false }
-            );
-          }
         } catch (error) {
-          console.log(
-            `Unable to create artifact or tag for ${generatedPackage.package_name}`
-          );
-          console.log(error);
+          artifactCreationErrors.push(generatedPackage.package_name);
         }
       }
 
-      for (let failedPackage of failedPackages) {
-        buildResult["packages"].push({
-          name: failedPackage,
-          version: null,
-          elapsed_time: null,
-          status: "failed",
-        });
-      }
+      totalElapsedTime = Date.now() - executionStartTime;
 
-      let totalElapsedTime: number = Date.now() - executionStartTime;
-      buildResult["summary"].scheduled_packages =
-        generatedPackages.length + failedPackages.length;
-      buildResult["summary"].elapsed_time = totalElapsedTime;
-      buildResult["summary"].succeeded = generatedPackages.length;
-      buildResult["summary"].failed = failedPackages.length;
+      if (artifactCreationErrors.length > 0 || buildExecResult.failedPackages.length > 0)
+        throw new Error("Build Failed");
 
-      fs.writeFileSync(
-        `buildResult.json`,
-        JSON.stringify(buildResult, null, 4)
-      );
 
       let tags = {
         is_diffcheck_enabled: String(diffcheck),
@@ -187,30 +143,82 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         tags
       );
 
+      if (gittag) {
+        exec(`git config --global user.email "sfpowerscripts@dxscale"`);
+        exec(`git config --global user.name "sfpowerscripts"`);
+
+        for (let generatedPackage of buildExecResult.generatedPackages) {
+          let tagname = `${generatedPackage.package_name}_v${generatedPackage.package_version_number}`;
+          exec(
+            `git tag -a -m "${generatedPackage.package_name} ${generatedPackage.package_type} Package ${generatedPackage.package_version_number}" ${tagname} HEAD`,
+            { silent: false }
+          );
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      process.exitCode = 1;
+    } finally {
       console.log(
         `----------------------------------------------------------------------------------------------------`
       );
       console.log(
         `${
-          generatedPackages.length
+          buildExecResult.generatedPackages.length
         } packages created in ${this.getFormattedTime(
           totalElapsedTime
-        )} minutes with {${failedPackages.length}} errors`
+        )} minutes with {${buildExecResult.failedPackages.length}} errors`
       );
 
-      if (failedPackages.length > 0) {
-        console.log(`Packages Failed To Build`, failedPackages);
-      }
+      if (buildExecResult.failedPackages.length > 0)
+        console.log(`Packages Failed To Build`, buildExecResult.failedPackages);
+
+
+      if (artifactCreationErrors.length > 0)
+        console.log(`Failed To Create Artifacts`, artifactCreationErrors);
+
       console.log(
         `----------------------------------------------------------------------------------------------------`
       );
 
-      if (failedPackages.length > 0) {
-        process.exitCode = 1;
+      const buildResult: BuildResult = {
+        packages: [],
+        summary: {
+          scheduled_packages: null,
+          elapsed_time: null,
+          succeeded: null,
+          failed: null,
+        }
+      };
+
+      for (let generatedPackage of buildExecResult.generatedPackages) {
+        buildResult["packages"].push({
+          name: generatedPackage["package_name"],
+          version: generatedPackage["package_version_number"],
+          elapsed_time: generatedPackage["creation_details"]?.creation_time,
+          status: "succeeded",
+        });
       }
-    } catch (error) {
-      console.log(error);
-      process.exitCode = 1;
+
+      for (let failedPackage of buildExecResult.failedPackages) {
+        buildResult["packages"].push({
+          name: failedPackage,
+          version: null,
+          elapsed_time: null,
+          status: "failed",
+        });
+      }
+
+      buildResult["summary"].scheduled_packages =
+        buildExecResult.generatedPackages.length + buildExecResult.failedPackages.length;
+      buildResult["summary"].elapsed_time = totalElapsedTime;
+      buildResult["summary"].succeeded = buildExecResult.generatedPackages.length;
+      buildResult["summary"].failed = buildExecResult.failedPackages.length;
+
+      fs.writeFileSync(
+        `buildResult.json`,
+        JSON.stringify(buildResult, null, 4)
+      );
     }
   }
 
