@@ -3,6 +3,11 @@
 * [Overview](README.md)
 * [Principles](principles-1.md)
 
+## CLI
+
+* [Prerequisites](cli/prerequisites.md)
+* [Using sfpowerscripts-cli sfdx plugin](cli/getting-started.md)
+
 ## FAQ
 
 * [General Questions](faq/general-questions.md)
@@ -53,10 +58,6 @@
     * [Validate Apex Test Coverage](azure-pipelines/task-specifications/testing-tasks/validate-apex-test-coverage.md)
     * [Validate Code Coverage of a Package](azure-pipelines/task-specifications/testing-tasks/validate-code-coverage-of-a-package.md)
     * [Run a static analysis of apex classes with PMD](azure-pipelines/task-specifications/testing-tasks/run-a-static-analysis-of-apex-classes-with-pmd.md)
-
-## CLI
-
-* [Using sfpowerscripts-cli sfdx plugin](cli/getting-started.md)
 
 ---
 
