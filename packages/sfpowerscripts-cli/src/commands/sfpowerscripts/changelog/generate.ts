@@ -180,7 +180,10 @@ export default class GenerateChangelog extends SfdxCommand {
             commit["commitId"] === prevReleaseLatestCommitId[artifact["name"]]
           );
           if (fromIdx === -1)
-            throw new Error(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
+            console.log(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
+            console.log("Assuming that there are no changes...");
+            artifact["commits"] = [];
+            continue;
         }
 
 
