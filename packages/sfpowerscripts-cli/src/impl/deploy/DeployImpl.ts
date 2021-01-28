@@ -366,7 +366,8 @@ export default class DeployImpl {
       skip_if_package_installed,
       packageMetadata,
       false,
-      this.props.packageLogger
+      this.props.packageLogger,
+      this.props.currentStage == "prepare" ? path.join(sourceDirectoryPath, "forceignores", ".prepareignore") : null
     );
 
     return installSourcePackageImpl.exec();
