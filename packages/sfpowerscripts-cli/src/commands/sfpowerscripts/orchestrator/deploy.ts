@@ -22,7 +22,7 @@ export default class Deploy extends SfpowerscriptsCommand {
 
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
-  protected static requiresProject = true;
+  protected static requiresProject = false;
 
   protected static flagsConfig = {
     targetorg: flags.string({
