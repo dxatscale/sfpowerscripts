@@ -33,6 +33,7 @@ export default class InstallSourcePackageImpl {
     private packageMetadata: PackageMetadata,
     private isPackageCheckHandledByCaller?: boolean,
     private packageLogger?:any,
+    private pathToReplacementForceIgnore?: string
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -84,6 +85,13 @@ export default class InstallSourcePackageImpl {
           preDeploymentScript,
           this.sfdx_package,
           this.targetusername
+        );
+      }
+
+      if (this.pathToReplacementForceIgnore) {
+        this.replaceForceIgnoreInSourceDirectory(
+          this.sourceDirectory,
+          this.pathToReplacementForceIgnore
         );
       }
 
@@ -515,4 +523,25 @@ export default class InstallSourcePackageImpl {
     let specifedTests = doublequote + apexTestClassses.join(",") + doublequote;
     return specifedTests;
   }
+
+  /**
+   * Replaces forceignore in source directory with provided forceignore
+   * @param sourceDirectory
+   * @param pathToReplacementForceIgnore
+   */
+  private replaceForceIgnoreInSourceDirectory(
+    sourceDirectory: string,
+    pathToReplacementForceIgnore: string
+  ): void {
+    if (fs.existsSync(pathToReplacementForceIgnore))
+      fs.copySync(
+        pathToReplacementForceIgnore,
+        path.join(sourceDirectory, ".forceignore")
+      );
+    else {
+      SFPLogger.log(`${pathToReplacementForceIgnore} does not exist`, null, this.packageLogger);
+      SFPLogger.log("Package installation will continue using the unchanged forceignore in the source directory", null, this.packageLogger);
+    }
+  }
+
 }
