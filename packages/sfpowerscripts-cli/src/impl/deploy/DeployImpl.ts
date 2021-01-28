@@ -138,7 +138,8 @@ export default class DeployImpl {
           packageInfo.sourceDirectory,
           packageMetadata,
           queue[i].skipTesting,
-          this.props.waitTime.toString()
+          this.props.waitTime.toString(),
+          packageManifest
         );
 
         if (
@@ -244,7 +245,8 @@ export default class DeployImpl {
     sourceDirectoryPath: string,
     packageMetadata: PackageMetadata,
     skipTesting: boolean,
-    wait_time: string
+    wait_time: string,
+    packageManifest: any
   ): Promise<PackageInstallationResult> {
     let packageInstallationResult: PackageInstallationResult;
 
@@ -261,7 +263,7 @@ export default class DeployImpl {
       } else if (packageType === "source") {
 
         let options = {
-          optimizeDeployment: this.isOptimizedDeploymentForSourcePackages(sfdx_package),
+          optimizeDeployment: this.isOptimizedDeploymentForSourcePackages(sfdx_package, packageManifest),
           skipTesting: skipTesting,
         };
 
@@ -441,11 +443,15 @@ export default class DeployImpl {
   }
 
 
-  //Allow individual packages to use non optimized path
+  // Allow individual packages to use non optimized path
   private isOptimizedDeploymentForSourcePackages(
-    sfdx_package:string
+    sfdx_package:string,
+    packageManifest: any
   ): boolean {
-    let pkgDescriptor = ProjectConfig.getSFDXPackageDescriptor(null, sfdx_package);
+    let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(
+      sfdx_package,
+      packageManifest
+    );
 
     if(pkgDescriptor["isOptimizedDeployment"] == null)
       return true;
