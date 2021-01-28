@@ -66,7 +66,12 @@ export default class Deploy extends SfpowerscriptsCommand {
 
 
 
-    let deploymentResult: {deployed: string[], skipped: string[], failed: string[]};
+    let deploymentResult: {
+      deployed: string[],
+      skipped: string[],
+      failed: string[],
+      error: any
+    };
 
     let tags = {
       targetOrg: this.flags.targetorg
@@ -96,7 +101,7 @@ export default class Deploy extends SfpowerscriptsCommand {
 
       deploymentResult = await deployImpl.exec();
 
-      if (deploymentResult.failed.length > 0) {
+      if (deploymentResult.failed.length > 0 || deploymentResult.error) {
         process.exitCode = 1;
       }
     } catch (error) {

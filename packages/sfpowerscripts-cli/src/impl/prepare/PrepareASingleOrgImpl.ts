@@ -106,7 +106,7 @@ export default class PrepareASingleOrgImpl {
 
         let deploymentResult = await deployImpl.exec();
 
-        if(deploymentResult.failed.length>0)
+        if(deploymentResult.failed.length>0 || deploymentResult.error)
         {
           console.log("Following Packages failed to deploy:" + deploymentResult.failed);
           if(this.succeedOnDeploymentErrors)

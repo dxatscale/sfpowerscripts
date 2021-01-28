@@ -76,7 +76,7 @@ export default class ValidateImpl {
 
       let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
-      if (deploymentResult.failed.length > 0)
+      if (deploymentResult.failed.length > 0 || deploymentResult.error)
         return false;
       else
         return true;
@@ -139,7 +139,8 @@ export default class ValidateImpl {
     deployed: string[],
     skipped: string[],
     failed: string[],
-    testFailure: string
+    testFailure: string,
+    error: any
   }> {
     let deployStartTime: number = Date.now();
 
