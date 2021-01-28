@@ -135,11 +135,12 @@ async function run() {
         fromIdx = packageChangelog["commits"].findIndex( (commit) =>
           commit["commitId"] === prevReleaseLatestCommitId[artifact["name"]]
         );
-        if (fromIdx === -1)
+        if (fromIdx === -1) {
           console.log(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
           console.log("Assuming that there are no changes...");
           artifact["commits"] = [];
           continue;
+        }
       }
 
       if (fromIdx > 0) {
