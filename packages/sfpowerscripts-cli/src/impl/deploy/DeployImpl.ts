@@ -58,7 +58,8 @@ export default class DeployImpl {
     deployed: string[];
     skipped: string[];
     failed: string[];
-    testFailure: string
+    testFailure: string;
+    error: any;
   }> {
     let deployed: string[] = [];
     let skipped: string[] = [];
@@ -75,8 +76,14 @@ export default class DeployImpl {
       throw new Error(`No artifacts to deploy found in ${this.props.artifactDir}`);
 
       this.validateArtifactsSourceRepository(artifacts);
-      let latestPackageManifest = this.getLatestPackageManifest(artifacts);
-      let queue: any[] = this.getPackagesToDeploy(latestPackageManifest);
+      let packageManifest = this.getLatestPackageManifest(artifacts);
+
+      if (packageManifest === null) {
+        // If unable to find latest package manfest in artifacts, use package manifest in project directory
+        packageManifest = ProjectConfig.getSFDXPackageManifest(null);
+      }
+
+      let queue: any[] = this.getPackagesToDeploy(packageManifest);
 
       let packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
       SFPStatsSender.logGauge("deploy.scheduled", queue.length, this.props.tags);
@@ -191,7 +198,8 @@ export default class DeployImpl {
         deployed: deployed,
         skipped: skipped,
         failed: failed,
-        testFailure: testFailure
+        testFailure: testFailure,
+        error: null
       };
     } catch (err) {
       SFPLogger.log(err, null, this.props.packageLogger, LoggerLevel.INFO);
@@ -200,7 +208,8 @@ export default class DeployImpl {
         deployed: deployed,
         skipped: skipped,
         failed: failed,
-        testFailure: testFailure
+        testFailure: testFailure,
+        error: err
       };
     }
   }
@@ -462,6 +471,11 @@ export default class DeployImpl {
     }
   }
 
+  /**
+   * Gets latest package manifest from artifacts
+   * Returns null if unable to find latest package manifest
+   * @param artifacts
+   */
   private getLatestPackageManifest(artifacts: ArtifactFilePaths[]): any {
     let latestPackageManifest: any;
 
@@ -480,21 +494,19 @@ export default class DeployImpl {
         let pathToPackageManifest = path.join(artifact.sourceDirectoryPath, "manifests", "sfdx-project.json.ori");
         if (fs.existsSync(pathToPackageManifest)) {
           latestPackageManifest = JSON.parse(fs.readFileSync(pathToPackageManifest, "utf8"));
-        } else {
-          throw new Error(
-            `${latestPackageMetadata.package_name} artifact does not contain or could not read sfdx-project.json.ori`
-          );
         }
       }
     }
 
-    SFPLogger.log(
-      `Found latest package manifest in ${latestPackageMetadata.package_name} artifact`,
-       null,
-       this.props.packageLogger,
-       LoggerLevel.INFO
-    );
-    return latestPackageManifest;
+    if (latestPackageManifest) {
+      SFPLogger.log(
+        `Found latest package manifest in ${latestPackageMetadata.package_name} artifact`,
+         null,
+         this.props.packageLogger,
+         LoggerLevel.INFO
+      );
+      return latestPackageManifest;
+    } else return null
   }
 
   /**
