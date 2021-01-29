@@ -1,4 +1,6 @@
-import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
+import ArtifactFilePathFetcher, {
+  ArtifactFilePaths,
+} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl";
@@ -11,7 +13,9 @@ import {
   PackageInstallationResult,
   PackageInstallationStatus,
 } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
-import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import SFPLogger, {
+  LoggerLevel,
+} from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { EOL } from "os";
 import { Stage } from "../Stage";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
@@ -21,38 +25,27 @@ import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/package/Indi
 import { RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions";
 import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions";
 
-
-
 export enum DeploymentMode {
   NORMAL,
   SOURCEPACKAGES,
 }
 
-export interface DeployProps
-{
-  targetUsername:string,
-  artifactDir:string
-  deploymentMode:DeploymentMode,
-  isTestsToBeTriggered:boolean,
-  skipIfPackageInstalled:boolean,
-  logsGroupSymbol?:string[],
-  coverageThreshold?:number
-  waitTime:number,
-  tags?:any,
-  packageLogger?:any
-  currentStage?: Stage,
-
+export interface DeployProps {
+  targetUsername: string;
+  artifactDir: string;
+  deploymentMode: DeploymentMode;
+  isTestsToBeTriggered: boolean;
+  skipIfPackageInstalled: boolean;
+  logsGroupSymbol?: string[];
+  coverageThreshold?: number;
+  waitTime: number;
+  tags?: any;
+  packageLogger?: any;
+  currentStage?: Stage;
 }
 
 export default class DeployImpl {
-
-
-
-  constructor(
-    private props:DeployProps
-  ) {}
-
-
+  constructor(private props: DeployProps) {}
 
   public async exec(): Promise<{
     deployed: string[];
@@ -67,13 +60,14 @@ export default class DeployImpl {
 
     let testFailure: string;
     try {
-
       let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         this.props.artifactDir
       );
 
       if (artifacts.length === 0)
-      throw new Error(`No artifacts to deploy found in ${this.props.artifactDir}`);
+        throw new Error(
+          `No artifacts to deploy found in ${this.props.artifactDir}`
+        );
 
       this.validateArtifactsSourceRepository(artifacts);
       let packageManifest = this.getLatestPackageManifest(artifacts);
@@ -86,7 +80,11 @@ export default class DeployImpl {
       let queue: any[] = this.getPackagesToDeploy(packageManifest);
 
       let packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
-      SFPStatsSender.logGauge("deploy.scheduled", queue.length, this.props.tags);
+      SFPStatsSender.logGauge(
+        "deploy.scheduled",
+        queue.length,
+        this.props.tags
+      );
 
       SFPLogger.log(
         `Packages to be deployed:`,
@@ -95,28 +93,19 @@ export default class DeployImpl {
         LoggerLevel.INFO
       );
 
-
       for (let i = 0; i < queue.length; i++) {
         let packageInfo = packagesToPackageInfo[queue[i].package];
         let packageMetadata: PackageMetadata = packageInfo.packageMetadata;
 
         let packageType: string = packageMetadata.package_type;
 
-        if (this.props.logsGroupSymbol?.[0])
-          SFPLogger.log(
-            this.props.logsGroupSymbol[0],
-            `Installing ${queue[i].package}`,
-            this.props.packageLogger,
-            LoggerLevel.INFO
-          );
+        this.printOpenLoggingGroup("Installing ", queue[i].package);
+
 
         let isApexFoundMessage: string =
           packageMetadata.package_type === "unlocked"
             ? ""
             : `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}`;
-
-
-
 
         SFPLogger.log(
           `-------------------------Installing Package------------------------------------${EOL}` +
@@ -146,11 +135,13 @@ export default class DeployImpl {
         if (
           packageInstallationResult.result ===
           PackageInstallationStatus.Succeeded
-        )
+        ) {
           deployed.push(queue[i].package);
-        else if (
+          this.printClosingLoggingGroup();
+        } else if (
           packageInstallationResult.result === PackageInstallationStatus.Skipped
         ) {
+          this.printClosingLoggingGroup();
           skipped.push(queue[i].package);
           continue;
         } else if (
@@ -163,20 +154,10 @@ export default class DeployImpl {
             `Unhandled PackageInstallationResult ${packageInstallationResult.result}`
           );
 
-        if (this.props.logsGroupSymbol?.[1])
-          SFPLogger.log(this.props.logsGroupSymbol[1], null, this.props.packageLogger, LoggerLevel.INFO);
-
-
         if (this.props.isTestsToBeTriggered) {
           if (packageMetadata.isApexFound) {
             if (!queue[i].skipTesting) {
-              if (this.props.logsGroupSymbol?.[0])
-              SFPLogger.log(
-                this.props.logsGroupSymbol[0],
-                `Triggering tests for ${queue[i].package}`,
-                this.props.packageLogger,
-                LoggerLevel.INFO
-              );
+              this.printOpenLoggingGroup("Trigger Tests for ", queue[i].package);
 
               let testResult = await this.triggerApexTests(
                 queue[i].package,
@@ -193,10 +174,14 @@ export default class DeployImpl {
 
                 throw new Error(testResult.message);
               } else {
-                SFPLogger.log(testResult.message, null, this.props.packageLogger, LoggerLevel.INFO);
+                SFPLogger.log(
+                  testResult.message,
+                  null,
+                  this.props.packageLogger,
+                  LoggerLevel.INFO
+                );
 
-                if (this.props.logsGroupSymbol?.[1])
-                  SFPLogger.log(this.props.logsGroupSymbol[1], null, this.props.packageLogger, LoggerLevel.INFO);
+               this.printClosingLoggingGroup();
               }
             } else {
               SFPLogger.log(
@@ -210,13 +195,12 @@ export default class DeployImpl {
         }
       }
 
-
       return {
         deployed: deployed,
         skipped: skipped,
         failed: failed,
         testFailure: testFailure,
-        error: null
+        error: null,
       };
     } catch (err) {
       SFPLogger.log(err, null, this.props.packageLogger, LoggerLevel.INFO);
@@ -226,9 +210,29 @@ export default class DeployImpl {
         skipped: skipped,
         failed: failed,
         testFailure: testFailure,
-        error: err
+        error: err,
       };
     }
+  }
+
+  private printOpenLoggingGroup(message:string,pkg:string) {
+    if (this.props.logsGroupSymbol?.[0])
+      SFPLogger.log(
+        this.props.logsGroupSymbol[0],
+        `${message} ${pkg}`,
+        this.props.packageLogger,
+        LoggerLevel.INFO
+      );
+  }
+
+  private printClosingLoggingGroup() {
+    if (this.props.logsGroupSymbol?.[1])
+      SFPLogger.log(
+        this.props.logsGroupSymbol[1],
+        null,
+        this.props.packageLogger,
+        LoggerLevel.INFO
+      );
   }
 
   /**
@@ -237,16 +241,16 @@ export default class DeployImpl {
    */
   private getPackagesToPackageInfo(
     artifacts: ArtifactFilePaths[]
-  ): {[p: string]: PackageInfo} {
-    let packagesToPackageInfo: {[p: string]: PackageInfo} = {};
+  ): { [p: string]: PackageInfo } {
+    let packagesToPackageInfo: { [p: string]: PackageInfo } = {};
     for (let artifact of artifacts) {
       let packageMetadata: PackageMetadata = JSON.parse(
         fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
       );
       packagesToPackageInfo[packageMetadata.package_name] = {
         sourceDirectory: artifact.sourceDirectoryPath,
-        packageMetadata: packageMetadata
-      }
+        packageMetadata: packageMetadata,
+      };
     }
     return packagesToPackageInfo;
   }
@@ -272,8 +276,10 @@ export default class DeployImpl {
       packageManifest
     );
 
-    skipIfPackageInstalled = pkgDescriptor.alwaysDeploy ? true : skipIfPackageInstalled;
-    if (this.props.deploymentMode==DeploymentMode.NORMAL) {
+    skipIfPackageInstalled = pkgDescriptor.alwaysDeploy
+      ? true
+      : skipIfPackageInstalled;
+    if (this.props.deploymentMode == DeploymentMode.NORMAL) {
       if (packageType === "unlocked") {
         packageInstallationResult = await this.installUnlockedPackage(
           targetUsername,
@@ -283,9 +289,10 @@ export default class DeployImpl {
           sourceDirectoryPath
         );
       } else if (packageType === "source") {
-
         let options = {
-          optimizeDeployment: this.isOptimizedDeploymentForSourcePackage(pkgDescriptor),
+          optimizeDeployment: this.isOptimizedDeploymentForSourcePackage(
+            pkgDescriptor
+          ),
           skipTesting: skipTesting,
         };
 
@@ -310,7 +317,6 @@ export default class DeployImpl {
         throw new Error(`Unhandled package type ${packageType}`);
       }
     } else if (this.props.deploymentMode == DeploymentMode.SOURCEPACKAGES) {
-
       if (packageType === "source" || packageType === "unlocked") {
         let options = {
           optimizeDeployment: false,
@@ -379,7 +385,6 @@ export default class DeployImpl {
     skip_if_package_installed: boolean,
     wait_time: string
   ): Promise<PackageInstallationResult> {
-
     let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
       sfdx_package,
       targetUsername,
@@ -390,7 +395,9 @@ export default class DeployImpl {
       packageMetadata,
       false,
       this.props.packageLogger,
-      this.props.currentStage == "prepare" ? path.join(sourceDirectoryPath, "forceignores", ".prepareignore") : null
+      this.props.currentStage == "prepare"
+        ? path.join(sourceDirectoryPath, "forceignores", ".prepareignore")
+        : null
     );
 
     return installSourcePackageImpl.exec();
@@ -415,7 +422,7 @@ export default class DeployImpl {
     return installDataPackageImpl.exec();
   }
 
-  private  async triggerApexTests(
+  private async triggerApexTests(
     sfdx_package: string,
     targetUsername: string,
     skipCoverageValidation: boolean,
@@ -425,16 +432,22 @@ export default class DeployImpl {
     result: boolean;
     message: string;
   }> {
-
-    let sfPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,sfdx_package,null,this.props.packageLogger);
-    let testOptions:TestOptions = new RunAllTestsInPackageOptions(sfPackage,60,".testresults");
-    let testCoverageOptions:CoverageOptions ={
-      isIndividualClassCoverageToBeValidated:false,
-      isPackageCoverageToBeValidated:!skipCoverageValidation,
-      coverageThreshold:coverageThreshold || 75
-    }
-
-
+    let sfPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
+      null,
+      sfdx_package,
+      null,
+      this.props.packageLogger
+    );
+    let testOptions: TestOptions = new RunAllTestsInPackageOptions(
+      sfPackage,
+      60,
+      ".testresults"
+    );
+    let testCoverageOptions: CoverageOptions = {
+      isIndividualClassCoverageToBeValidated: false,
+      isPackageCoverageToBeValidated: !skipCoverageValidation,
+      coverageThreshold: coverageThreshold || 75,
+    };
 
     let triggerApexTests: TriggerApexTests = new TriggerApexTests(
       targetUsername,
@@ -458,27 +471,22 @@ export default class DeployImpl {
     if (skipDeployOnOrgs) {
       if (!(skipDeployOnOrgs instanceof Array))
         throw new Error(`Property 'skipDeployOnOrgs' must be of type Array`);
-      else
-        return skipDeployOnOrgs.includes(targetUsername);
+      else return skipDeployOnOrgs.includes(targetUsername);
     } else return false;
   }
 
-
   // Allow individual packages to use non optimized path
-  private isOptimizedDeploymentForSourcePackage(
-    pkgDescriptor: any
-  ): boolean {
-    if(pkgDescriptor["isOptimizedDeployment"] == null)
-      return true;
-    else
-      return pkgDescriptor["isOptimizedDeployment"];
+  private isOptimizedDeploymentForSourcePackage(pkgDescriptor: any): boolean {
+    if (pkgDescriptor["isOptimizedDeployment"] == null) return true;
+    else return pkgDescriptor["isOptimizedDeployment"];
   }
-
 
   /**
    * Verify that artifacts are from the same source repository
    */
-  private validateArtifactsSourceRepository(artifacts: ArtifactFilePaths[]): void {
+  private validateArtifactsSourceRepository(
+    artifacts: ArtifactFilePaths[]
+  ): void {
     let sourceRepository: string;
     for (let artifact of artifacts) {
       let packageMetadata: PackageMetadata = JSON.parse(
@@ -489,7 +497,9 @@ export default class DeployImpl {
         sourceRepository = packageMetadata.repository_url;
 
       if (sourceRepository !== packageMetadata.repository_url)
-        throw new Error("Artifacts must originate from the same source repository, for deployment to work");
+        throw new Error(
+          "Artifacts must originate from the same source repository, for deployment to work"
+        );
     }
   }
 
@@ -509,13 +519,20 @@ export default class DeployImpl {
 
       if (
         latestPackageMetadata == null ||
-        latestPackageMetadata.creation_details.timestamp < packageMetadata.creation_details.timestamp
+        latestPackageMetadata.creation_details.timestamp <
+          packageMetadata.creation_details.timestamp
       ) {
         latestPackageMetadata = packageMetadata;
 
-        let pathToPackageManifest = path.join(artifact.sourceDirectoryPath, "manifests", "sfdx-project.json.ori");
+        let pathToPackageManifest = path.join(
+          artifact.sourceDirectoryPath,
+          "manifests",
+          "sfdx-project.json.ori"
+        );
         if (fs.existsSync(pathToPackageManifest)) {
-          latestPackageManifest = JSON.parse(fs.readFileSync(pathToPackageManifest, "utf8"));
+          latestPackageManifest = JSON.parse(
+            fs.readFileSync(pathToPackageManifest, "utf8")
+          );
         }
       }
     }
@@ -523,12 +540,12 @@ export default class DeployImpl {
     if (latestPackageManifest) {
       SFPLogger.log(
         `Found latest package manifest in ${latestPackageMetadata.package_name} artifact`,
-         null,
-         this.props.packageLogger,
-         LoggerLevel.INFO
+        null,
+        this.props.packageLogger,
+        LoggerLevel.INFO
       );
       return latestPackageManifest;
-    } else return null
+    } else return null;
   }
 
   /**
@@ -539,7 +556,9 @@ export default class DeployImpl {
 
     let packages = packageManifest["packageDirectories"];
 
-    let artifacts = ArtifactFilePathFetcher.findArtifacts(this.props.artifactDir);
+    let artifacts = ArtifactFilePathFetcher.findArtifacts(
+      this.props.artifactDir
+    );
 
     packagesToDeploy = packages.filter((pkg) => {
       let pattern = RegExp(`^${pkg.package}_sfpowerscripts_artifact.*`);
@@ -553,22 +572,17 @@ export default class DeployImpl {
       (pkg) => !this.isSkipDeployment(pkg, this.props.targetUsername)
     );
 
-
     //Ignore packages based on stage
-    packagesToDeploy = packagesToDeploy.filter(
-      (pkg) => {
-        if (
-          pkg.ignoreOnStage?.find( (stage) => {
-            stage = stage.toLowerCase();
-            return stage === this.props.currentStage;
-          })
-        )
-          return false;
-        else
-          return true;
-      }
-    );
-
+    packagesToDeploy = packagesToDeploy.filter((pkg) => {
+      if (
+        pkg.ignoreOnStage?.find((stage) => {
+          stage = stage.toLowerCase();
+          return stage === this.props.currentStage;
+        })
+      )
+        return false;
+      else return true;
+    });
 
     if (packagesToDeploy == null || packagesToDeploy.length === 0)
       throw new Error(`No artifacts from project config to be deployed`);
@@ -577,6 +591,6 @@ export default class DeployImpl {
 }
 
 interface PackageInfo {
-  sourceDirectory: string,
-  packageMetadata: PackageMetadata
+  sourceDirectory: string;
+  packageMetadata: PackageMetadata;
 }
