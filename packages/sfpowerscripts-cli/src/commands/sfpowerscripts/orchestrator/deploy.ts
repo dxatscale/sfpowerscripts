@@ -134,6 +134,9 @@ export default class Deploy extends SfpowerscriptsCommand {
         `----------------------------------------------------------------------------------------------------`
       );
 
+      if (this.flags.logsgroupsymbol?.[1])
+        console.log(this.flags.logsgroupsymbol[1]);
+
       SFPStatsSender.logGauge(
         "deploy.duration",
         totalElapsedTime,

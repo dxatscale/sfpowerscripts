@@ -163,9 +163,21 @@ export default class DeployImpl {
             `Unhandled PackageInstallationResult ${packageInstallationResult.result}`
           );
 
+        if (this.props.logsGroupSymbol?.[1])
+          SFPLogger.log(this.props.logsGroupSymbol[1], null, this.props.packageLogger, LoggerLevel.INFO);
+
+
         if (this.props.isTestsToBeTriggered) {
           if (packageMetadata.isApexFound) {
             if (!queue[i].skipTesting) {
+              if (this.props.logsGroupSymbol?.[0])
+              SFPLogger.log(
+                this.props.logsGroupSymbol[0],
+                `Triggering tests for ${queue[i].package}`,
+                this.props.packageLogger,
+                LoggerLevel.INFO
+              );
+
               let testResult = await this.triggerApexTests(
                 queue[i].package,
                 this.props.targetUsername,
@@ -180,7 +192,12 @@ export default class DeployImpl {
                   failed = queue.slice(i + 1).map((pkg) => pkg.package);
 
                 throw new Error(testResult.message);
-              } else SFPLogger.log(testResult.message, null, this.props.packageLogger, LoggerLevel.INFO);
+              } else {
+                SFPLogger.log(testResult.message, null, this.props.packageLogger, LoggerLevel.INFO);
+
+                if (this.props.logsGroupSymbol?.[1])
+                  SFPLogger.log(this.props.logsGroupSymbol[1], null, this.props.packageLogger, LoggerLevel.INFO);
+              }
             } else {
               SFPLogger.log(
                 `Skipping testing of ${queue[i].package}\n`,
@@ -193,8 +210,6 @@ export default class DeployImpl {
         }
       }
 
-      if (this.props.logsGroupSymbol?.[1])
-        SFPLogger.log(this.props.logsGroupSymbol[1], null, this.props.packageLogger, LoggerLevel.INFO);
 
       return {
         deployed: deployed,
