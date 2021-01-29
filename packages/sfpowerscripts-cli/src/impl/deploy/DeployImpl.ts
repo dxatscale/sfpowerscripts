@@ -139,7 +139,8 @@ export default class DeployImpl {
           packageMetadata,
           queue[i].skipTesting,
           this.props.waitTime.toString(),
-          packageManifest
+          packageManifest,
+          this.props.skipIfPackageInstalled
         );
 
         if (
@@ -246,24 +247,30 @@ export default class DeployImpl {
     packageMetadata: PackageMetadata,
     skipTesting: boolean,
     wait_time: string,
-    packageManifest: any
+    packageManifest: any,
+    skipIfPackageInstalled: boolean
   ): Promise<PackageInstallationResult> {
     let packageInstallationResult: PackageInstallationResult;
 
-    if (this.props.deploymentMode==DeploymentMode.NORMAL) {
+    let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(
+      sfdx_package,
+      packageManifest
+    );
 
+    skipIfPackageInstalled = pkgDescriptor.alwaysDeploy ? true : skipIfPackageInstalled;
+    if (this.props.deploymentMode==DeploymentMode.NORMAL) {
       if (packageType === "unlocked") {
         packageInstallationResult = await this.installUnlockedPackage(
           targetUsername,
           packageMetadata,
-          this.props.skipIfPackageInstalled,
+          skipIfPackageInstalled,
           wait_time,
           sourceDirectoryPath
         );
       } else if (packageType === "source") {
 
         let options = {
-          optimizeDeployment: this.isOptimizedDeploymentForSourcePackages(sfdx_package, packageManifest),
+          optimizeDeployment: this.isOptimizedDeploymentForSourcePackage(pkgDescriptor),
           skipTesting: skipTesting,
         };
 
@@ -273,7 +280,7 @@ export default class DeployImpl {
           sourceDirectoryPath,
           packageMetadata,
           options,
-          this.props.skipIfPackageInstalled,
+          skipIfPackageInstalled,
           wait_time
         );
       } else if (packageType === "data") {
@@ -281,7 +288,7 @@ export default class DeployImpl {
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
-          this.props.skipIfPackageInstalled,
+          skipIfPackageInstalled,
           packageMetadata
         );
       } else {
@@ -301,7 +308,7 @@ export default class DeployImpl {
           sourceDirectoryPath,
           packageMetadata,
           options,
-          this.props.skipIfPackageInstalled,
+          skipIfPackageInstalled,
           wait_time
         );
       } else if (packageType === "data") {
@@ -309,7 +316,7 @@ export default class DeployImpl {
           sfdx_package,
           targetUsername,
           sourceDirectoryPath,
-          this.props.skipIfPackageInstalled,
+          skipIfPackageInstalled,
           packageMetadata
         );
       } else {
@@ -357,7 +364,6 @@ export default class DeployImpl {
     skip_if_package_installed: boolean,
     wait_time: string
   ): Promise<PackageInstallationResult> {
-
 
     let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
       sfdx_package,
@@ -444,15 +450,9 @@ export default class DeployImpl {
 
 
   // Allow individual packages to use non optimized path
-  private isOptimizedDeploymentForSourcePackages(
-    sfdx_package:string,
-    packageManifest: any
+  private isOptimizedDeploymentForSourcePackage(
+    pkgDescriptor: any
   ): boolean {
-    let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(
-      sfdx_package,
-      packageManifest
-    );
-
     if(pkgDescriptor["isOptimizedDeployment"] == null)
       return true;
     else
