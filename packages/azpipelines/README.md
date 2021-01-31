@@ -1,7 +1,8 @@
-# sfpowerscripts - azure pipelines extension
+# **DEPRECATION NOTICE**
 
-**DEPRECATION NOTICE**
-The Sfpowerscripts Azure pipelines extension will no longer receive feature updates. Support for bug reports will continue to be available. Please consider switching to the latest [Sfpowerscripts CLI](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli).
+**The Sfpowerscripts Azure pipelines extension will no longer receive feature updates. Support for bug reports will continue to be available. Please consider switching to the latest [Sfpowerscripts CLI](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli).**
+
+# sfpowerscripts - azure pipelines extension
 
 sfpowerscripts is an Azure Pipelines Extension that converts Azure Pipelines into a CI/CD platform for Salesforce. The extension features the following tasks. You can read the documenation at  [sfpowerscripts](https://www.sfpowerscripts.com) website.
 
