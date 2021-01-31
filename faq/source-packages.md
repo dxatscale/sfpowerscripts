@@ -33,10 +33,10 @@ We always recommend using unlocked packages over source packages whenever you ca
 4. [Change Sets](https://help.salesforce.com/articleView?id=changesets.htm&type=5)
 
 Source Pages are typically used when you come across these constraints  
- -  [Unsupported Metadata](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_unsupported_types.htm)  
+ -  [Metadata not supported by Unlocked Packages](https://developer.salesforce.com/docs/metadata-coverage)  
  -  Facing bugs while deploying the metadata using unlocked packages  
  -  Unlocked Package validation takes too long \(still we recommend go org-dependent,\)  
- -  Dealing with metadata that is global or org-specific in nature \(such as queues, profiles etc., which doesn't make sense to be packaged using unlocked package\)
+ -  Dealing with metadata that is global or org-specific in nature \(such as queues, profiles etc or composite UI layouts., which doesn't make sense to be packaged using unlocked package\)
 
 ## **What are my options with Source Packages?**
 
