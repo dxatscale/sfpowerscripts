@@ -1,6 +1,8 @@
 # sfpowerscripts - azure pipelines extension
 
- 
+**DEPRECATION NOTICE**
+The Sfpowerscripts Azure pipelines extension will no longer receive feature updates. Support for bug reports will continue to be available. Please consider switching to the latest [Sfpowerscripts CLI](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli).
+
 sfpowerscripts is an Azure Pipelines Extension that converts Azure Pipelines into a CI/CD platform for Salesforce. The extension features the following tasks. You can read the documenation at  [sfpowerscripts](https://www.sfpowerscripts.com) website.
 
 Please note this extension only works with the newer source format based repositories only and  works with both Hosted Linux and Windows Agents
@@ -9,7 +11,7 @@ The changelog is available at [changelog](https://dxatscale.gitbook.io/sfpowersc
 
 ## Build Result Enhancements
 
-- PMD Apex Analysis Tab 
+- PMD Apex Analysis Tab
 
 ## Service Connection
 
