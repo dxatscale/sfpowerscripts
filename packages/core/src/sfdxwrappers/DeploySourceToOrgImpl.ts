@@ -102,6 +102,7 @@ export default class DeploySourceToOrgImpl {
               cwd: this.project_directory,
               encoding: "utf8",
               stdio: ["pipe", "pipe", "ignore"],
+              maxBuffer: 5*1024*1024
             }
           );
         } catch (err) {
@@ -157,7 +158,11 @@ export default class DeploySourceToOrgImpl {
       //Print final output
       let child = child_process.exec(
         `npx sfdx force:mdapi:deploy:report  -i ${deploy_id} -u ${this.target_org}`,
-        { cwd: this.project_directory, encoding: "utf8" }
+        {
+          cwd: this.project_directory,
+          encoding: "utf8",
+          maxBuffer: 5*1024*1024
+        }
       );
 
       child.stderr.on("data", (data) => {
@@ -237,4 +242,3 @@ export default class DeploySourceToOrgImpl {
     }
   }
 }
-
