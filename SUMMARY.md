@@ -10,7 +10,6 @@
 
 ## FAQ
 
-* [General Questions](faq/general-questions.md)
 * [Source Packages](faq/source-packages.md)
 * [Orchestrator](faq/orchestrator/README.md)
   * [Prepare](faq/orchestrator/prepare.md)

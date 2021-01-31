@@ -199,6 +199,12 @@ Here is a sample model that you could use on simple programs
 
 ![](../../.gitbook/assets/image%20%287%29.png)
 
+## Is there a pipeline schematic diagram that I can understand?
+
+The following schematic explains the Continuous Integration and Continuous deployment aspect of the pipelines and sfpowerscripts commands utilized. For brevity, prepare and validate is being excluded
+
+![](../../.gitbook/assets/image%20%2811%29.png)
+
 ## Is there an example repo, where all these commands are being used?
 
 Yes, head to the repo [https://github.com/dxatscale/easy-spaces-lwc](https://github.com/dxatscale/easy-spaces-lwc/tree/develop/.github) for examples on how to use these commands with GitHub actions. The .azue-pipelines folder contains sample pipelines to experienment.  
@@ -209,15 +215,7 @@ Yes, you could use the `ignoreOnStage` descriptor to mark which packages should 
 
 ## Can **deploy** command in the orchestrator, deploy artifacts without the sfdx-project.json?
 
-Not yet we are working on it, currently deploy commands can be used only when sfdx-project.json is available, as it determines the order of the packages to be installed, so it could only be used in a linear pipeline such as build -&gt; deploy\(sit\) -&gt; deploy\(uat\) -&gt; deploy\(prod\). If a different strategy is used, where multiple commits are accumulated to form builds and builds aggregated before deploying. In this case, we recommend to use the orchestrator till your daily/immediate testing environment, once from there the artifacts are published into a artifact repository, a script based model \(using the non orchestrator commands\) could be applied for deploying into higher environments.
-
-## What are the pre-requisites for this orchestrator command or sfpowerscripts in general?
-
-The following pre-requisites are required for the orchestrator to work  
-  - [sfpowerkit ](https://github.com/accenture/sfpowerkit):  sfdx plugin that has variety of helper commands, sfpowerscripts uses sfpowerkit for various functionality such as reconciling profiles  
- - [sfdmu ](https://github.com/forcedotcom/SFDX-Data-Move-Utility): sfdx plugin that helps in data migration between orgs or between source to orgs. sfpowerscripts utilizes sfdmu for data package  
- - [Addtional fields for pooling: ](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/scratchorgpool) prepare functionality needs additional fields to be deployed on devhub. These fields store information regarding scratch org's. Recommend to create a dedicated permission set for those fields in your production after this deployment.  
- - [sfpowerscripts-artifact](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/sfpowerscripts-artifact) : Utilized for maintaining a record of packages installed in an org. Used by prepare, validate and deploy commands. You can either use an unlocked package built from our org or build one and deploy one yourself \(see instructions [here](https://dxatscale.gitbook.io/sfpowerscripts/faq/source-packages#how-do-source-packages-manage-to-skip-installation-if-its-already-deployed-in-a-org)\)
+Yes, deploy commands will be able to operate on artifacts \(from Release 19\) by deciphering the sequence of deployment from the latest package provided in the collection of artifacts.
 
 ##  
 
