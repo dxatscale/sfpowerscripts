@@ -28,20 +28,18 @@ An opinionated Salesforce build system  as a sfdx plugin that can be implemented
 - All commands are enabled with statsD, for collecting metrics about your pipeline
 
 
-The project supports the following targets at the moment
-- <b>SFDX CLI Plugin</b> that can be deployed in any CI/CD system, The plugin is available [here](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)
-- <b>Azure Pipelines</b> through a native extension. More details on the extension is available [here](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/azpipelines)
+The project is delivered as a <b>SFDX CLI Plugin</b> that can be deployed in any CI/CD system, The plugin is available [here](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)
 
 
 #### Motivation
 
 - Using sfdx-cli commands are relatively simple, however additional scripts are required to parse the JSON output, set it to environment variables etc
 
-- Additonal scripts are needed to integrate with a Continous Build system's native dashboards or features. For eg: In the case of Azure Pipelines, integrating with Test Reports etc
+- Need for artifact driven build system for package based development models especially on complex and large programs
 
-- Providing additional functionality that is either not supported by the sfdx-cli, such as building a package only if its changed or skip installation if its.already installed in th org
+- Providing additional functionality that is either not supported by the sfdx-cli, such as data packages or automatically understanding tests in a given package
 
-- Ease of use, one should not be spending too much time building a pipeline.
+- Ease of use, one should not be spending too much time scripting a pipeline.
 
 #### History
 
@@ -56,4 +54,4 @@ List of Maintainers are available in the [link](https://dxatscale.gitbook.io/sfp
 
 #### Where do I reach for queries?
 
-Please create an issue using the methods listed [here](https://dxatscale.gitbook.io/sfpowerscripts/support).
+Please create an issue in the repo for bugs or utilize GitHub Discussions for other queries
