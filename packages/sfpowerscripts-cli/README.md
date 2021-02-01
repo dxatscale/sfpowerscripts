@@ -1,6 +1,6 @@
 # sfpowerscripts
 
-An opinionated Salesforce build system (statsd metrics enabled) as a sfdx plugin that can be implemented in any CI/CD system of choice
+A Salesforce build system for package based development as a sfdx plugin that can be implemented in any CI/CD system of choice. Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
 
 - Features
   - Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance on programs often dealing with multiple number of packages
@@ -45,7 +45,7 @@ USAGE
 
 ### Modifiers used by Orchestrator
 
-sfpowerscripts:orchestrator commands allow controlling attributes of a package in its stage by adding additional properties to each package as described in sfdx-project.json. This allows one to change the behaviour of the pipeline without changing any pipeline scripts
+[sfpowerscripts:orchestrator](https://app.gitbook.com/@dxatscale/s/sfpowerscripts/faq/orchestrator) commands allow controlling attributes of a package in its stage by adding additional properties to each package as described in sfdx-project.json. This allows one to change the behaviour of the pipeline without changing any pipeline scripts
 
 ```
   {
@@ -68,11 +68,12 @@ sfpowerscripts:orchestrator commands allow controlling attributes of a package i
          "prepare",
           "validate"
         ]
+    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org
   }
 ```
 ### Enabling StatsD Metrics
 Almost all the CLI commands have StatsD metrics capture enabled. This means you can setup deployment dashboards in a tool like
-Graphite or DataDog and capture your deployment statistics
+Graphite or DataDog and capture your deployment statistics. Read more about this feature [here](https://app.gitbook.com/@dxatscale/s/sfpowerscripts/faq/metrics-and-dashboards)
 
 To enable stasd, add the following environment variable, in the format below
 
@@ -155,9 +156,8 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 	 - [`sfdx sfpowerscripts:package:source:install`](#sfdx-sfpowerscriptspackagesourceinstall)
 	 - [`sfdx sfpowerscripts:package:unlocked:create`](#sfdx-sfpowerscriptspackageunlockedcreate)
 	 - [`sfdx sfpowerscripts:package:unlocked:install`](#sfdx-sfpowerscriptspackageunlockedinstall)
-   - [`sfdx sfpowerscripts:package:version:increment`](#sfdx-sfpowerscriptspackageversionincrement)
-	 - [`sfdx sfpowerscripts:source:deploy`](#sfdx-sfpowerscriptssourcedeploy)
-	 - [`sfdx sfpowerscripts:source:deployDestructiveManifest`](#sfdx-sfpowerscriptssourcedeploydestructivemanifest-)
+         - [`sfdx sfpowerscripts:package:version:increment`](#sfdx-sfpowerscriptspackageversionincrement)
+
 
  - Pool Management
 	 - [`sfdx sfpowerscripts:pool:delete `](#sfdx-sfpowerscriptspooldelete)
@@ -239,8 +239,7 @@ _See code: [commands/sfpowerscripts/orchestrator/prepare.ts](https://github.com/
 
 ## `sfdx sfpowerscripts:orchestrator:validate`
 
-Validate the incoming change against a prepared scratch org fetched from the provided pools (created using the prepare command). Please note
-it will only deploy the changed packages in the repo by comparing against the package version installed in the fetched scratchorg
+Validate the incoming change against a prepared scratch org fetched from the provided pools (created using the prepare command). If the Sfpowerscripts Artifact package is installed in the scratch orgs, only the changed packages in the repo will be deployed by comparing against the package version installed in the fetched scratchorg.
 
 ```
 Validate the incoming change against a prepared scratch org fetched from the provided pools.
@@ -289,7 +288,7 @@ _See code: [commands/sfpowerscripts/orchestrator/validate.ts](https://github.com
 
 ## `sfdx sfpowerscripts:orchestrator:validateAgainstOrg`
 
-Validate the incoming change against a target org. Please note it will only deploy the changed packages in the repo by comparing against the package version installed in the fetched scratchorg
+Validate the incoming change against a target org. If the Sfpowerscripts Artifact package is installed in the target org, only changed packages in the repo will be deployed by comparing against the package version installed in the target org.
 
 ```
 Validate the incoming change against target org
@@ -1261,105 +1260,4 @@ EXAMPLES
 
 _See code: [commands/sfpowerscripts/pool/list.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/list.ts)_
 
-## `sfdx sfpowerscripts:source:deploy`
 
-Deploy source to org using mdapi based deploy (converts source to mdapi and use mdapi deployment)
-
-```
-Deploy source to org using mdapi based deploy (converts source to mdapi and use mdapi deployment)
-
-USAGE
-  $ sfdx sfpowerscripts:source:deploy [-u <string>] [--sourcedir <string>] [--waittime <string>] [-c] [-f <string>] [-l
-  <string>] [--specifiedtests <string>] [--apextestsuite <string>] [--ignorewarnings] [--ignoreerrors] [-b] [--refname
-  <string>]
-
-OPTIONS
-  -b, --istobreakbuildifempty
-      Uncheck this field, to allow for empty folders not to break build, useful in the case of pre/post step uniformity
-      across projects
-
-  -c, --checkonly
-      Validate a deployment, but don't save to the org, Use this for Stage 1/2 CI Run's
-
-  -f, --validationignore=validationignore
-      [default: .forceignore] Validation only deployment has issues with certain metadata such as apexttestsuite, create a
-      different file similar to .forceignore and use it during validate only deployment
-
-  -l, --testlevel=NoTestRun|RunSpecifiedTests|RunApexTestSuite|RunLocalTests|RunAllTestsInOrg
-      [default: NoTestRun] The test level of the test that need to be executed when the code is to be deployed
-
-  -u, --targetorg=targetorg
-      [default: scratchorg] Alias or username of the target org where the code should be deployed
-
-  --apextestsuite=apextestsuite
-      Name of the Apex Test Suite that needs to be executed during this deployment
-
-  --ignoreerrors
-      Ignores the deploy errors, and continues with the deploy operation
-
-  --ignorewarnings
-      Ignores any warnings generated during metadata deployment
-
-
-  --refname=refname
-      Reference name to be prefixed to output variables
-
-  --sourcedir=sourcedir
-      [default: force-app] The source directory to be deployed
-
-  --specifiedtests=specifiedtests
-      Specify a comma seperated values of Apex Test that need to be executed during this deployment
-
-  --waittime=waittime
-      [default: 20] wait time for command to finish in minutes
-
-EXAMPLES
-  $ sfdx sfpowerscripts:source:deploy -u scratchorg --sourcedir force-app -c
-
-  Output variable:
-  sfpowerkit_deploysource_id
-  <refname_sfpowerkit_deploysource_id
-```
-
-_See code: [commands/sfpowerscripts/source/deploy.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/source/deploy.ts)_
-
-## `sfdx sfpowerscripts:source:deployDestructiveManifest`
-
-Delete components in org according to destructive manifest - an empty package.xml will be automatically created, Read more about the task at  https://sfpowerscripts.com/tasks/deployment-tasks/deploy-destructive-maifest-to-an-org/
-
-```
-Delete components in org according to destructive manifest - an empty package.xml will be automatically created, Read more about the task at  https://sfpowerscripts.com/tasks/deployment-tasks/deploy-destructive-maifest-to-an-org/
-
-USAGE
-  $ sfdx sfpowerscripts:source:deployDestructiveManifest [-u <string>] [-m <string>] [-f <string> | -t <string>]
-  [--skiponmissingmanifest] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -f, --destructivemanifestfilepath=destructivemanifestfilepath
-      The location to the xml file which contains the destructive changes
-
-  -m, --method=Text|FilePath
-      [default: Text] If text is specified, add the members in the next field, if URL, pass in the location of the
-      destructiveChanges.xml such as the raw git url
-
-  -t, --destructivemanifesttext=destructivemanifesttext
-      Type in the destructive manifest, follow the instructions,
-      https://developer.salesforce.com/docs/atlas.en-us.daas.meta/daas/daas_destructive_changes.htm
-
-  -u, --targetorg=targetorg
-      [default: scratchorg] Alias or username of the target org where the code should be deployed
-
-
-  --skiponmissingmanifest
-      Skip if unable to find destructive manfiest file
-
-EXAMPLES
-  $ sfdx sfpowerscripts:source:deployDestructiveManifest -u scratchorg -m Text -t "<?xml version="1.0"
-  encoding="UTF-8"?>
-  <Package
-  xmlns="http://soap.sforce.com/2006/04/metadata"><types><members>myobject__c</members><name>CustomObject</name></types>
-  </Package>"
-```
-
-_See code: [commands/sfpowerscripts/source/deployDestructiveManifest.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/source/deployDestructiveManifest.ts)_
-<!-- commandsstop -->
