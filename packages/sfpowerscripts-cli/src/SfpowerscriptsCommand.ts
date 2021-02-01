@@ -20,7 +20,8 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         'sfpowerscripts_package_version_id',
         'sfpowerscripts_package_version_number',
         'sfpowerscripts_pmd_output_path',
-        'sfpowerscripts_scratchorg_username'
+        'sfpowerscripts_scratchorg_username',
+        'sfpowerscripts_installsourcepackage_deployment_id'
     ];
 
     /**
