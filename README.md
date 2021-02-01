@@ -13,7 +13,7 @@
 
 
 
-An opinionated Salesforce build system  as a sfdx plugin that can be implemented in any CI/CD system of choice. Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
+A Salesforce build system for package based development as a sfdx plugin that can be implemented in any CI/CD system of choice. Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
 
 
 #### Features
