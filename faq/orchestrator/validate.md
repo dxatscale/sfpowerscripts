@@ -31,6 +31,10 @@ The following are the list of steps that are orchestrated by the **validate** co
    * Trigger Apex Tests if there are any apex test in the package
    * Validate test coverage of the package depending on the type of the package \( source packages: each class needs to have 75% or more, unlocked packages: packages as  whole need to have 75% or more\)
 
+## What is this variant command ' `validateAgainstOrg'`?
+
+While validate command works against a scratch org fetched from the Scratch Org pool \(created by prepare command\), there might be instances where you need to validate against an Org where you have more data or control over \(as in to write more scripts\). This is where validateAgainstOrg come into play. You could provide a target org and sfpowerscripts will try to validate the incoming changes against that org. To make a diff based validation work, please ensure the org has '[sfpowerscripts\_artifact](https://dxatscale.gitbook.io/sfpowerscripts/cli/prerequisites#on-each-org-sandbox-production-that-you-intend-to-deploy)' installed and the records populated with packages that it already has.
+
 ## Why do validate command asks for JWT based authentication?
 
 The command needs JWT based authentication to authenticate to the DevHub and utilize the same credentials to authenticate to the fetched scratch org from the pool.
