@@ -27,7 +27,7 @@ Yes, you could use the `ignoreOnStage:[ "deploy" ]` property to mark which packa
 
 ## What if I need to deploy a package everytime?
 
-There are some certain situations, due to integrity concerns \(especially around data or org-specific source packages\) that need to be installed every time, as some earlier packages if deployed in the sequence would overwrite certain components. To solve this specific challenge utilize `alwaysDeploy:true` and the particular package will always be deployed. Please note this package has to be always available in the artifacts directory to make it work.
+There are some certain situations, due to integrity concerns \(especially around data or org-specific source packages\) that need to be installed every time, as some earlier packages if deployed in the sequence would overwrite certain components. To solve this specific challenge utilize `alwaysDeploy:true` and the particular package will always be deployed. **Please note this package has to be always available in the artifacts directory to make it work.**
 
 ## I want a non-linear pipeline, how can deploy help?
 
