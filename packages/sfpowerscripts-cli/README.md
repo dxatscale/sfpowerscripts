@@ -1,6 +1,6 @@
 # sfpowerscripts
 
-An opinionated Salesforce build system (statsd metrics enabled) as a sfdx plugin that can be implemented in any CI/CD system of choice
+A Salesforce build system for package based development as a sfdx plugin that can be implemented in any CI/CD system of choice. Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
 
 - Features
   - Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance on programs often dealing with multiple number of packages
