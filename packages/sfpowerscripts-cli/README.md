@@ -1,6 +1,6 @@
 # sfpowerscripts
 
-An opinionated Salesforce build system (statsd metrics enabled) as a sfdx plugin that can be implemented in any CI/CD system of choice
+A Salesforce build system for package based development as a sfdx plugin that can be implemented in any CI/CD system of choice. Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
 
 - Features
   - Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance on programs often dealing with multiple number of packages
@@ -45,7 +45,7 @@ USAGE
 
 ### Modifiers used by Orchestrator
 
-sfpowerscripts:orchestrator commands allow controlling attributes of a package in its stage by adding additional properties to each package as described in sfdx-project.json. This allows one to change the behaviour of the pipeline without changing any pipeline scripts
+[sfpowerscripts:orchestrator](https://app.gitbook.com/@dxatscale/s/sfpowerscripts/faq/orchestrator) commands allow controlling attributes of a package in its stage by adding additional properties to each package as described in sfdx-project.json. This allows one to change the behaviour of the pipeline without changing any pipeline scripts
 
 ```
   {
@@ -68,11 +68,12 @@ sfpowerscripts:orchestrator commands allow controlling attributes of a package i
          "prepare",
           "validate"
         ]
+    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org
   }
 ```
 ### Enabling StatsD Metrics
 Almost all the CLI commands have StatsD metrics capture enabled. This means you can setup deployment dashboards in a tool like
-Graphite or DataDog and capture your deployment statistics
+Graphite or DataDog and capture your deployment statistics. Read more about this feature [here](https://app.gitbook.com/@dxatscale/s/sfpowerscripts/faq/metrics-and-dashboards)
 
 To enable stasd, add the following environment variable, in the format below
 
@@ -237,8 +238,7 @@ _See code: [commands/sfpowerscripts/orchestrator/prepare.ts](https://github.com/
 
 ## `sfdx sfpowerscripts:orchestrator:validate`
 
-Validate the incoming change against a prepared scratch org fetched from the provided pools (created using the prepare command). Please note
-it will only deploy the changed packages in the repo by comparing against the package version installed in the fetched scratchorg
+Validate the incoming change against a prepared scratch org fetched from the provided pools (created using the prepare command). If the Sfpowerscripts Artifact package is installed in the scratch orgs, only the changed packages in the repo will be deployed by comparing against the package version installed in the fetched scratchorg.
 
 ```
 Validate the incoming change against a prepared scratch org fetched from the provided pools.
@@ -287,7 +287,7 @@ _See code: [commands/sfpowerscripts/orchestrator/validate.ts](https://github.com
 
 ## `sfdx sfpowerscripts:orchestrator:validateAgainstOrg`
 
-Validate the incoming change against a target org. Please note it will only deploy the changed packages in the repo by comparing against the package version installed in the fetched scratchorg
+Validate the incoming change against a target org. If the Sfpowerscripts Artifact package is installed in the target org, only changed packages in the repo will be deployed by comparing against the package version installed in the target org.
 
 ```
 Validate the incoming change against target org
@@ -1260,3 +1260,4 @@ EXAMPLES
 _See code: [commands/sfpowerscripts/pool/list.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/list.ts)_
 
 <!-- commandsstop -->
+

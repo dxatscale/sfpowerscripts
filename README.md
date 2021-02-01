@@ -13,7 +13,7 @@
 
 
 
-An opinionated Salesforce build system  as a sfdx plugin that can be implemented in any CI/CD system of choice. Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
+A Salesforce build system for package based development as a sfdx plugin that can be implemented in any CI/CD system of choice. Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
 
 
 #### Features
@@ -43,9 +43,9 @@ The project is delivered as a <b>SFDX CLI Plugin</b> that can be deployed in any
 
 #### History
 
-sfpowerscripts initially began life in the form of a  Azure Pipelines Extension. available through the Visual Studio marketplace wrote by @azlam-abdulsalam as a personal project.
+sfpowerscripts initially began life in the form of a  Azure Pipelines Extension, available through the Visual Studio marketplace wrote by @azlam-abdulsalam as a personal project.
 
-The project was then migrated to Accenture Open Source Program and a key component of Accenture DX@Scale initiative, a set of opinionated tool and practices for Enterprise Salesforce Development.The project is currently being expanded to support other Continous Build Platforms utilizing a sfdx-plugin. 
+The project was then migrated to Accenture Open Source Program and a key component of Accenture's DX@Scale initiative, a set of open source productivity boosters for engineering teams on Salesforce.
 
 #### Maintainers
 
