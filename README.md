@@ -1,6 +1,6 @@
 # Overview
 
-An opinionated Salesforce build system as a sfdx plugin that can be implemented in any CI/CD system of choice.
+A Salesforce build system for package based development as a sfdx plugin that can be implemented in any CI/CD system of choice.
 
 ## **Features**
 
