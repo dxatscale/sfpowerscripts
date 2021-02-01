@@ -68,6 +68,7 @@ sfpowerscripts:orchestrator commands allow controlling attributes of a package i
          "prepare",
           "validate"
         ]
+    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org
   }
 ```
 ### Enabling StatsD Metrics
