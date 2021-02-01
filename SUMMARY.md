@@ -11,6 +11,7 @@
 ## FAQ
 
 * [Source Packages](faq/source-packages.md)
+* [Data Packages](faq/data-packages.md)
 * [Orchestrator](faq/orchestrator/README.md)
   * [Prepare](faq/orchestrator/prepare.md)
   * [Validate](faq/orchestrator/validate.md)
