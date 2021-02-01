@@ -109,7 +109,7 @@ The following output variables are currently supported:
 * sfpowerscripts_package_version_id
 * sfpowerscripts_package_version_number
 * sfpowerscripts_pmd_output_path
-* sfpowerkit_deploysource_id
+* sfpowerscripts_scratchorg_username
 
 If you require access to the variables at the shell layer, you may do so using the [readVars](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/scripts) helper script, which is included as part of this package.
 
