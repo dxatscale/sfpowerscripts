@@ -99,6 +99,11 @@ export default class DeployImpl {
 
         let packageType: string = packageMetadata.package_type;
 
+        let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(
+          queue[i].package,
+          packageManifest
+        );
+
         this.printOpenLoggingGroup("Installing ", queue[i].package);
 
 
@@ -107,6 +112,15 @@ export default class DeployImpl {
             ? ""
             : `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}`;
 
+        let alwaysDeployMessage: string;
+
+        if (this.props.skipIfPackageInstalled) {
+          if (pkgDescriptor.alwaysDeploy)
+            alwaysDeployMessage = `Always Deploy: True ${EOL}`;
+          else
+            alwaysDeployMessage = `Always Deploy: False ${EOL}`;
+        } else alwaysDeployMessage = "";
+
         SFPLogger.log(
           `-------------------------Installing Package------------------------------------${EOL}` +
             `Name: ${queue[i].package}${EOL}` +
@@ -114,6 +128,7 @@ export default class DeployImpl {
             `Version Number: ${packageMetadata.package_version_number}${EOL}` +
             `Metadata Count: ${packageMetadata.metadataCount}${EOL}` +
             isApexFoundMessage +
+            alwaysDeployMessage +
             `-------------------------------------------------------------------------------${EOL}`,
           null,
           this.props.packageLogger,
@@ -128,7 +143,7 @@ export default class DeployImpl {
           packageMetadata,
           queue[i].skipTesting,
           this.props.waitTime.toString(),
-          packageManifest,
+          pkgDescriptor,
           this.props.skipIfPackageInstalled
         );
 
@@ -266,19 +281,15 @@ export default class DeployImpl {
     packageMetadata: PackageMetadata,
     skipTesting: boolean,
     wait_time: string,
-    packageManifest: any,
+    pkgDescriptor: any,
     skipIfPackageInstalled: boolean
   ): Promise<PackageInstallationResult> {
     let packageInstallationResult: PackageInstallationResult;
 
-    let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(
-      sfdx_package,
-      packageManifest
-    );
-
     skipIfPackageInstalled = pkgDescriptor.alwaysDeploy
       ? true
       : skipIfPackageInstalled;
+
     if (this.props.deploymentMode == DeploymentMode.NORMAL) {
       if (packageType === "unlocked") {
         packageInstallationResult = await this.installUnlockedPackage(
