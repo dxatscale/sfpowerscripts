@@ -239,8 +239,7 @@ _See code: [commands/sfpowerscripts/orchestrator/prepare.ts](https://github.com/
 
 ## `sfdx sfpowerscripts:orchestrator:validate`
 
-Validate the incoming change against a prepared scratch org fetched from the provided pools (created using the prepare command). Please note
-it will only deploy the changed packages in the repo by comparing against the package version installed in the fetched scratchorg
+Validate the incoming change against a prepared scratch org fetched from the provided pools (created using the prepare command). If the Sfpowerscripts Artifact package is installed in the scratch orgs, only the changed packages in the repo will be deployed by comparing against the package version installed in the fetched scratchorg.
 
 ```
 Validate the incoming change against a prepared scratch org fetched from the provided pools.
@@ -289,7 +288,7 @@ _See code: [commands/sfpowerscripts/orchestrator/validate.ts](https://github.com
 
 ## `sfdx sfpowerscripts:orchestrator:validateAgainstOrg`
 
-Validate the incoming change against a target org. Please note it will only deploy the changed packages in the repo by comparing against the package version installed in the fetched scratchorg
+Validate the incoming change against a target org. If the Sfpowerscripts Artifact package is installed in the target org, only changed packages in the repo will be deployed by comparing against the package version installed in the target org.
 
 ```
 Validate the incoming change against target org
