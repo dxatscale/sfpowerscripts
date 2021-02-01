@@ -110,7 +110,8 @@ The following output variables are currently supported:
 * sfpowerscripts_package_version_id
 * sfpowerscripts_package_version_number
 * sfpowerscripts_pmd_output_path
-* sfpowerkit_deploysource_id
+* sfpowerscripts_scratchorg_username
+* sfpowerscripts_installsourcepackage_deployment_id
 
 If you require access to the variables at the shell layer, you may do so using the [readVars](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/scripts) helper script, which is included as part of this package.
 
@@ -156,8 +157,7 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 	 - [`sfdx sfpowerscripts:package:source:install`](#sfdx-sfpowerscriptspackagesourceinstall)
 	 - [`sfdx sfpowerscripts:package:unlocked:create`](#sfdx-sfpowerscriptspackageunlockedcreate)
 	 - [`sfdx sfpowerscripts:package:unlocked:install`](#sfdx-sfpowerscriptspackageunlockedinstall)
-         - [`sfdx sfpowerscripts:package:version:increment`](#sfdx-sfpowerscriptspackageversionincrement)
-
+   - [`sfdx sfpowerscripts:package:version:increment`](#sfdx-sfpowerscriptspackageversionincrement)
 
  - Pool Management
 	 - [`sfdx sfpowerscripts:pool:delete `](#sfdx-sfpowerscriptspooldelete)
@@ -1260,4 +1260,4 @@ EXAMPLES
 
 _See code: [commands/sfpowerscripts/pool/list.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/list.ts)_
 
-
+<!-- commandsstop -->

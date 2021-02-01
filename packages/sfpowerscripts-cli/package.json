@@ -62,9 +62,6 @@
       "sfpowerscripts:package": {
         "description": "Work with various types of packages such as unlocked/source/data/delta individually"
       },
-      "sfpowerscripts:source": {
-        "description": "Commands to work directly on the source folder, such as deploy a source folder and deploy destructive manifest"
-      },
       "sfpowerscripts:package:data": {
         "description": "Commands to create and install data packages (sfdmu)"
       },
