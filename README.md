@@ -1,6 +1,6 @@
 # Overview
 
-A Salesforce build system for package based development as a sfdx plugin that can be implemented in any CI/CD system of choice.
+A Salesforce build system for package based development as a sfdx plugin that can be implemented in any CI/CD system of choice. sfpowerscripts is part of the DX@Scale suite of tools, productivity boosters for engineering teams on Salesforce.
 
 ## **Features**
 
