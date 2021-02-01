@@ -40,7 +40,11 @@ $ echo'y' | sfdx plugins:install sfpowerkit
 $ echo'y' | sfdx plugins:install sfdmu
 ```
 
-  
+### **Artifact Repository \(optional\)**
+
+sfpowerscripts is designed to work with [asynchronous pipelines](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator#is-there-a-pipeline-schematic-diagram-that-i-can-understand), where CI and CD is separated into two distinct pipelines. This means an artifact repository such as Azure Artifacts, Jfrog Artifactory is essential to store the built artifacts.
+
+A linear pipeline can also be used on smaller projects where a CI/CD pipeline is a single synchronous pipeline. In this case you do not need an artifact repository  
   
  
 
