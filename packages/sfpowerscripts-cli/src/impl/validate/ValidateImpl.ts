@@ -116,7 +116,7 @@ export default class ValidateImpl {
 
   private authenticateDevHub(devHubUsername: string): void {
     child_process.execSync(
-      `sfdx force:auth:jwt:grant -u ${devHubUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://login.salesforce.com`,
+      `sfdx auth:jwt:grant -u ${devHubUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://login.salesforce.com`,
       {
         stdio: "inherit",
         encoding: "utf8"
@@ -266,7 +266,7 @@ export default class ValidateImpl {
 
   private authenticateToScratchOrg(scratchOrgUsername: string): void {
     child_process.execSync(
-      `sfdx force:auth:jwt:grant -u ${scratchOrgUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://test.salesforce.com`,
+      `sfdx auth:jwt:grant -u ${scratchOrgUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://test.salesforce.com`,
       {
         stdio: ['ignore', 'inherit', 'inherit']
       }

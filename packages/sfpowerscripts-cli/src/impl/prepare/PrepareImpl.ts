@@ -284,6 +284,7 @@ export default class PrepareImpl {
           poolUser.scratchOrgs.push(scratchOrg);
           this.totalAllocated++;
         } catch (error) {
+          console.log(error);
           console.log(`Unable to provision scratch org  ${count} ..   `);
         }
         count++;
@@ -369,7 +370,7 @@ export default class PrepareImpl {
     tag: string,
     poolUser: PoolUser
   ) {
-   
+
     poolUser.current_allocation = countOfActiveScratchOrgs;
     poolUser.to_allocate = 0;
     poolUser.to_satisfy_max =
@@ -389,11 +390,11 @@ export default class PrepareImpl {
       poolUser.to_allocate = remainingScratchOrgs;
     }
 
-    
+
     console.log(`Current Allocation of ScratchOrgs in the pool ${this.tag}: `+poolUser.current_allocation)
     console.log("Remaining Active scratchOrgs in the org: " + remainingScratchOrgs);
     console.log("ScratchOrgs to be allocated: " + poolUser.to_allocate);
-    
+
     return poolUser.to_allocate;
   }
 
@@ -432,8 +433,7 @@ export default class PrepareImpl {
           Pooltag__c: this.poolConfig.pool.tag,
           Allocation_status__c: ScratchOrgUtils.isNewVersionCompatible
             ? "Available"
-            : "",
-          Password__c: scratchOrg.password,
+            : ""
         },
         this.hubOrg
       );
