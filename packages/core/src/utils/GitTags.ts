@@ -21,7 +21,7 @@ export default class GitTags {
       `--merged`
     ]);
 
-    return await this.filterTagsAgainstBranch(tags);
+    return this.filterTagsAgainstBranch(tags);
   }
 
   private async filterTagsAgainstBranch(
