@@ -26,7 +26,8 @@ No, orchestrator is built around our experience when dealing with a very large o
     "ignoreOnStage": [ //Skip this package during the below orchestrator commands
          "prepare",
           "validate"
-        ] 
+        ],
+    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org
   }
 ```
 
@@ -166,6 +167,15 @@ No, the above are the modifiers for the orchestrator commands, irrespective if y
         </p>
         <p><b>deploy</b>
         </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>alwaysDeploy</b>
+      </td>
+      <td style="text-align:left">Deploys package, even if its installed already in the org. The artifact
+        has to be present in the artifact directory for this particular option
+        to work</td>
+      <td style="text-align:left"><b>deploy</b>
       </td>
     </tr>
   </tbody>
