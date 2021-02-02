@@ -284,6 +284,7 @@ export default class PrepareImpl {
           poolUser.scratchOrgs.push(scratchOrg);
           this.totalAllocated++;
         } catch (error) {
+          console.log(error);
           console.log(`Unable to provision scratch org  ${count} ..   `);
         }
         count++;
