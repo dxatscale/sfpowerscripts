@@ -1,4 +1,4 @@
-name: Milestone19$(Rev:.r)
+name: Milestone20$(Rev:.r)
 
 trigger:
   branches:
@@ -71,7 +71,7 @@ stages:
                 publish: false
 
 
-  
+
 
 # Hotfix stage
 - stage: Hotfix
@@ -122,6 +122,3 @@ stages:
                 bump: 'patch'
                 version: 'latest'
                 publish: false
-
-
-  
