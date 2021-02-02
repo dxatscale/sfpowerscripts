@@ -8,12 +8,21 @@ let gitShow: string = '';
 
 jest.mock("../../src/utils/Git", () => {
   class Git {
-    tag = jest.fn().mockReturnValue(gitTags);
     diff = jest.fn().mockReturnValue(gitDiff);
-    show = jest.fn().mockReturnValue(gitShow)
+    show = jest.fn().mockReturnValue(gitShow);
   }
 
   return Git;
+});
+
+jest.mock("../../src/utils/Tags", () => {
+  class Tags {
+    static async listTagsOnBranch(): Promise<string[]>{
+      return gitTags;
+    };
+  }
+
+  return Tags
 });
 
 let ignoreFilterResult: string[] = [];

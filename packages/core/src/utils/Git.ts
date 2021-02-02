@@ -31,4 +31,10 @@ export default class Git {
 
     return temp;
   }
+
+  async log(options: string[]): Promise<string[]> {
+    let gitLogResult = await this._git.log(options);
+
+    return gitLogResult["all"][0]["hash"].split("\n");
+  }
 }
