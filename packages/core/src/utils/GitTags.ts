@@ -1,40 +1,39 @@
 import Git  from "./Git";
 import child_process = require("child_process");
 
-export default class Tags {
+export default class GitTags {
+
+  constructor(
+    private git: Git,
+    private sfdx_package: string
+  ) {}
 
   /**
    * Returns list of sorted tags, belonging to package, that are reachable from HEAD and
    * follow the first parent on merge commits
    * @param sfdx_package
    */
-  static async listTagsOnBranch(git: Git, sfdx_package: string): Promise<string[]> {
-    let tags: string[] = await git.tag([
+   async listTagsOnBranch(): Promise<string[]> {
+    let tags: string[] = await this.git.tag([
       `-l`,
-      `${sfdx_package}_v*`,
+      `${this.sfdx_package}_v*`,
       `--sort=version:refname`,
       `--merged`
     ]);
 
-    return await Tags.filterTagsAgainstBranch(
-      git,
-      sfdx_package,
-      tags
-    );
+    return await this.filterTagsAgainstBranch(tags);
   }
 
-  private static async filterTagsAgainstBranch(
-    git: Git,
-    sfdx_package: string,
+  private async filterTagsAgainstBranch(
     tags: string[]
   ): Promise<string[]> {
     // Get full-length commit ID's on the current branch, following the first parent on merge commits
-    let commits: string[] = await git.log([`--pretty=format:%H`, `--first-parent`]);
+    let commits: string[] = await this.git.log([`--pretty=format:%H`, `--first-parent`]);
 
     // Get the tags' associated commit ID
     // Dereference (-d) tags into object IDs
     let gitShowRefTagsBuffer = child_process.execSync(
-      `git show-ref --tags -d | grep "${sfdx_package}_v*"`,
+      `git show-ref --tags -d | grep "${this.sfdx_package}_v*"`,
       {
         stdio: 'pipe'
       }

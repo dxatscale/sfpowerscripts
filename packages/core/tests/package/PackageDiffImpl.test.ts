@@ -15,14 +15,14 @@ jest.mock("../../src/utils/Git", () => {
   return Git;
 });
 
-jest.mock("../../src/utils/Tags", () => {
-  class Tags {
-    static async listTagsOnBranch(): Promise<string[]>{
+jest.mock("../../src/utils/GitTags", () => {
+  class GitTags {
+    async listTagsOnBranch(): Promise<string[]>{
       return gitTags;
     };
   }
 
-  return Tags
+  return GitTags
 });
 
 let ignoreFilterResult: string[] = [];

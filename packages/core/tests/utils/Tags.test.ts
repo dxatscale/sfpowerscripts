@@ -1,12 +1,12 @@
 import { jest, expect } from "@jest/globals";
-import Tags from "../../src/utils/Tags";
+import GitTags from "../../src/utils/GitTags";
 import Git from "../../src/utils/Git";
 
 import child_process = require("child_process");
 
 jest.mock("../../src/utils/Git", () => {
   class Git {
-    tag = jest.fn().mockReturnValue(gitTags);
+    tag = jest.fn().mockReturnValue(tags);
     log = jest.fn().mockReturnValue(gitLog);
   }
 
@@ -22,7 +22,9 @@ describe("Given a package, listTagsOnBranch", () => {
 
   it("should return tags belonging to package on current branch", async () => {
     let git: Git = new Git();
-    expect(await Tags.listTagsOnBranch(git, 'core')).toEqual([
+
+    const gitTags: GitTags = new GitTags(git, 'core');
+    expect(await gitTags.listTagsOnBranch()).toEqual([
       "core_v1.0.0.11",
       "core_v1.0.0.43",
       "core_v1.0.0.48",
@@ -32,7 +34,7 @@ describe("Given a package, listTagsOnBranch", () => {
 });
 
 // Last two tags are not found on the current branch
-const gitTags = [
+const tags = [
   "core_v1.0.0.11",
   "core_v1.0.0.43",
   "core_v1.0.0.48",
