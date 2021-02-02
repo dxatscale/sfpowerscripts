@@ -4,6 +4,7 @@ import Git from "../utils/Git";
 import IgnoreFiles from "../utils/IgnoreFiles";
 import SFPLogger from "../utils/SFPLogger";
 import ProjectConfig from "../project/ProjectConfig";
+import GitTags from "../utils/GitTags";
 import lodash = require("lodash");
 
 export default class PackageDiffImpl {
@@ -130,12 +131,8 @@ export default class PackageDiffImpl {
   }
 
   private async getLatestTagFromGit(git: Git, sfdx_package: string): Promise<string> {
-    let tags: string[] = await git.tag([
-      `-l`,
-      `${sfdx_package}_v*`,
-      `--sort=version:refname`,
-      `--merged`
-    ]);
+    const gitTags: GitTags = new GitTags(git, sfdx_package);
+    let tags: string[] = await gitTags.listTagsOnBranch();
 
     SFPLogger.log("Analysing tags:");
     if (tags.length > 10) {
