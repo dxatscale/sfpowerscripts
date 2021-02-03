@@ -223,7 +223,11 @@ OPTIONS
 
 
   --keys=keys                                                                       Keys to be used while installing any
-                                                                                    managed package dependent
+                                                                                    managed package dependencies.
+                                                                                    Required format is a string of
+                                                                                    key-value pairs separated by spaces
+                                                                                    e.g. packageA:pw123 packageB:pw123
+                                                                                    packageC:pw123
 
 
   --succeedondeploymenterrors                                                       Do not fail the scratch orgs, if a
