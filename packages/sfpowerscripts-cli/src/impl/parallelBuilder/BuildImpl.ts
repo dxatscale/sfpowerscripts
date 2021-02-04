@@ -15,7 +15,7 @@ import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectCon
 import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateUnlockedPackageImpl"
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateSourcePackageImpl"
 import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateDataPackageImpl"
-
+import BuildCollections from "./BuildCollections";
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -96,7 +96,9 @@ export default class BuildImpl {
 
     //Do a diff Impl
     if (this.props.isDiffCheckEnabled) {
-      let packageToBeBuilt = [];
+      let packagesToBeBuilt = [];
+
+      let buildCollections = new BuildCollections(this.props.projectDirectory);
 
       for await (const pkg of this.packagesToBeBuilt) {
         let type = this.getPriorityandTypeOfAPackage(
@@ -111,11 +113,18 @@ export default class BuildImpl {
           this.props.packagesToCommits
         );
         let isToBeBuilt = await diffImpl.exec();
+
         if (isToBeBuilt) {
-          packageToBeBuilt.push(pkg);
+          if (buildCollections.isPackageInACollection(pkg)) {
+            buildCollections.listPackagesInCollection(pkg).forEach((packageInCollection) => {
+              if (!packagesToBeBuilt.includes(packageInCollection))
+                packagesToBeBuilt.push(packageInCollection);
+            });
+          } else packagesToBeBuilt.push(pkg);
         }
       }
-      this.packagesToBeBuilt = packageToBeBuilt;
+
+      this.packagesToBeBuilt = packagesToBeBuilt;
     }
 
     //List all package that will be built

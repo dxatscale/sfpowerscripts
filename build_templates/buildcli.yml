@@ -49,12 +49,12 @@ steps:
                  git config --global user.email "sfpowerkit.ci@dev.azure.com"
                  git config --global user.name "sfpowerkitci"
 
-          
+
           - task: CmdLine@2
             displayName: Install Node depdencies
             inputs:
               script: 'npm install'
-           
+
 
           - task: DownloadSecureFile@1
             displayName: 'Download secure file .npmrc'
@@ -107,11 +107,18 @@ steps:
 
 
           - task: CmdLine@2
-            displayName: 'Run Unit Tests'
+            displayName: 'Run Core Unit Tests'
             condition: eq( ${{ parameters.publish }},true)
             inputs:
                  script: 'npm run test'
                  workingDirectory: '$(System.DefaultWorkingDirectory)/packages/core'
+
+          - task: CmdLine@2
+            displayName: 'Run CLI Unit Tests'
+            condition: eq( ${{ parameters.publish }},true)
+            inputs:
+                 script: 'npm run test'
+                 workingDirectory: '$(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli'
 
           - task: CmdLine@2
             displayName: 'Upload Coverage Results'
