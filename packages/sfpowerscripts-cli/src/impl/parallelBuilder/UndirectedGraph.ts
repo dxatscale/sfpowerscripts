@@ -17,6 +17,8 @@ export default class UndirectedGraph {
   }
 
   addEdge(vertexA: string, vertexB: string): void {
+    if (vertexA === vertexB)
+      throw new Error("Cannot add an edge to a single vertex");
     if(!this._adjacencyList[vertexA])
       throw new Error(`Vertex with name ${vertexA} does not exist`);
     if(!this._adjacencyList[vertexB])
@@ -39,6 +41,8 @@ export default class UndirectedGraph {
 
     (function dfsHandler(vertex){
       if(!vertex) return null;
+      if(!adjacencyList[vertex])
+        throw new Error(`Vertex '${vertex}' does not exist`);
       visited[vertex] = true;
       vertices.push(vertex);
       adjacencyList[vertex].forEach(neighbor => {
