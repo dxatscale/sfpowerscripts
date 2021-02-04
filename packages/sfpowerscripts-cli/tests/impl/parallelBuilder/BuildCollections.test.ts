@@ -1,5 +1,5 @@
 import { jest, expect } from "@jest/globals";
-import Bundles from "../../../src/impl/parallelBuilder/Bundles";
+import BuildCollections from "../../../src/impl/parallelBuilder/BuildCollections";
 
 let packageManifest = null;
 jest.mock("../../../../core/lib/project/ProjectConfig", () => {
@@ -12,27 +12,27 @@ jest.mock("../../../../core/lib/project/ProjectConfig", () => {
   return ProjectConfig;
 });
 
-describe("Given a Bundles class", () => {
-  it("should be able to create a graph of bundles defined in a sfdx-project.json", () => {
-    packageManifest = packageManifestWithBundles;
-    let bundles = new Bundles(null);
-    expect(bundles.graph.adjacencyList).toEqual(adjacencyList);
+describe("Given a BuildCollections class", () => {
+  it("should be able to create a graph of collections defined in a sfdx-project.json", () => {
+    packageManifest = packageManifestWithCollections;
+    let buildCollections = new BuildCollections(null);
+    expect(buildCollections.graph.adjacencyList).toEqual(adjacencyList);
   });
 
-  it("should create an empty graph when there are no bundles defined in sfdx-project.json", () => {
-    packageManifest = packageManifestWithNoBundles;
-    let bundles = new Bundles(null);
-    expect(bundles.graph.adjacencyList).toEqual({});
+  it("should create an empty graph when there are no collections defined in sfdx-project.json", () => {
+    packageManifest = packageManifestWithNoCollections;
+    let buildCollections = new BuildCollections(null);
+    expect(buildCollections.graph.adjacencyList).toEqual({});
   });
 
-  it("should throw an error when bundled package does not exist", () => {
+  it("should throw an error when package in collection does not exist", () => {
     packageManifest = packageManifestWithError1;
-    expect(() => {new Bundles(null)}).toThrowError(`Package 'UNKNOWN' in bundle UNKNOWN,core is not a valid package`);
+    expect(() => {new BuildCollections(null)}).toThrowError(`Package 'UNKNOWN' in collection UNKNOWN,core is not a valid package`);
   });
 
-  it("should throw an error when received 'bundle' property is not an array", () => {
+  it("should throw an error when received 'buildCollection' property is not an array", () => {
     packageManifest = packageManifestWithError2;
-    expect(() => {new Bundles(null)}).toThrowError(`Property 'bundle' must be of type Array. Received core`);
+    expect(() => {new BuildCollections(null)}).toThrowError(`Property 'buildCollection' must be of type Array. Received core`);
   });
 });
 
@@ -46,7 +46,7 @@ let adjacencyList = {
   "cases": ["sales"]
 }
 
-const packageManifestWithBundles = {
+const packageManifestWithCollections = {
   "packageDirectories": [
     {
       "path": "packages/temp",
@@ -55,7 +55,7 @@ const packageManifestWithBundles = {
       "versionName": "temp",
       "versionNumber": "1.0.0.0",
       "ignoreOnStage": ["prepare","validate","build"],
-      "bundle": ["core"]
+      "buildCollection": ["core"]
     },
     {
       "path": "packages/domains/core",
@@ -76,7 +76,7 @@ const packageManifestWithBundles = {
       "type":"data",
       "versionName": "mass-dataload",
       "versionNumber": "1.0.0.0",
-      "bundle": ["core"]
+      "buildCollection": ["core"]
     },
     {
       "path": "packages/access-mgmt",
@@ -85,7 +85,7 @@ const packageManifestWithBundles = {
       "versionName": "access-mgmt",
       "versionNumber": "1.0.0.0",
       "reconcileProfiles": "true",
-      "bundle": ["bi"]
+      "buildCollection": ["bi"]
     },
     {
       "path": "packages/bi",
@@ -101,7 +101,7 @@ const packageManifestWithBundles = {
       "default": false,
       "versionName": "sales",
       "versionNumber": "1.0.0.0",
-      "bundle": ["core"]
+      "buildCollection": ["core"]
     },
     {
       "path": "packages/cases",
@@ -109,7 +109,7 @@ const packageManifestWithBundles = {
       "default": false,
       "versionName": "cases",
       "versionNumber": "1.0.0.0",
-      "bundle": ["sales"]
+      "buildCollection": ["sales"]
     },
   ],
   "namespace": "",
@@ -121,7 +121,7 @@ const packageManifestWithBundles = {
   }
 }
 
-const packageManifestWithNoBundles = {
+const packageManifestWithNoCollections = {
   "packageDirectories": [
     {
       "path": "packages/temp",
@@ -144,7 +144,7 @@ const packageManifestWithError1 =  {
       "package": "temp",
       "versionName": "temp",
       "versionNumber": "1.0.0.0",
-      "bundle": ["UNKNOWN", "core"]
+      "buildCollection": ["UNKNOWN", "core"]
     },
     {
       "path": "packages/domains/core",
@@ -167,7 +167,7 @@ const packageManifestWithError2 =  {
       "package": "temp",
       "versionName": "temp",
       "versionNumber": "1.0.0.0",
-      "bundle": "core"
+      "buildCollection": "core"
     },
     {
       "path": "packages/domains/core",
