@@ -20,7 +20,6 @@ The following package creation commands shows this in action
 
 * Create Source Package
 * Create Unlocked Package
-* Create Delta Package
 * Create Data Package \(for Records Based Configuration\)
 
 
