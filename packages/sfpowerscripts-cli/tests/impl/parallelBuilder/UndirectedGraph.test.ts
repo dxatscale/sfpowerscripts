@@ -1,4 +1,4 @@
-import { jest, expect } from "@jest/globals";
+import { expect } from "@jest/globals";
 import UndirectedGraph from "../../../src/impl/parallelBuilder/UndirectedGraph";
 
 describe("Given an Undirected Graph class", () => {
