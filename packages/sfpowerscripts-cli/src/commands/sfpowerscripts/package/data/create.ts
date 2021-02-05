@@ -97,7 +97,8 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
         let createDataPackageImpl = new CreateDataPackageImpl(
           null,
           sfdx_package,
-          packageMetadata
+          packageMetadata,
+          false
         );
         packageMetadata = await createDataPackageImpl.exec();
 

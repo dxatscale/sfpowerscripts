@@ -1,5 +1,6 @@
 import path from "path";
-import { readdirSync, readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync } from "fs";
+import FileSystem from "../utils/FileSystem";
 import ignore from "ignore";
 
 export default class PackageEmptyChecker
@@ -71,16 +72,7 @@ export default class PackageEmptyChecker
       dirToCheck = sourceDirectory;
     }
 
-    let files: string[] = readdirSync(dirToCheck);
-
-    // Construct file paths that are relative to the project directory.
-    files.forEach((file, index, files) => {
-      let filepath = path.join(dirToCheck, file);
-      files[index] = path.relative(
-        projectDirectory == null ? process.cwd() : projectDirectory,
-        filepath
-      );
-    });
+    let files: string[] = FileSystem.readdirRecursive(dirToCheck);
 
     let forceignorePath;
     if (projectDirectory!=null)
@@ -95,5 +87,30 @@ export default class PackageEmptyChecker
     if (files == null || files.length === 0) return true;
     else return false;
   }
+
+  public static isEmptyDataPackage(
+    projectDirectory: string,
+    sourceDirectory: string
+  ): boolean {
+    let dirToCheck;
+
+    if (projectDirectory!=null) {
+      dirToCheck = path.join(projectDirectory, sourceDirectory);
+    } else {
+      dirToCheck = sourceDirectory;
+    }
+
+    let files: string[] = FileSystem.readdirRecursive(dirToCheck);
+
+    let hasExportJson = files.find((file) =>
+      path.basename(file) === "export.json"
+    )
+
+    let hasCsvFile = files.find((file) => path.extname(file) === ".csv")
+
+    if (!hasExportJson || !hasCsvFile) return true;
+    else return false;
+  }
+
 
 }
