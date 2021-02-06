@@ -14,7 +14,7 @@ We will also strive to provide sample pipelines to quickly get you started. **Fo
 
 ## Everything is a package
 
-sfpowerscripts \(cli/azure pipelines\) is built on the concept of generating artifacts for package creation tasks, unlocked or not, which then could be versioned, uploaded into an artifact provider or utilized in subsequent release stages for deployment across environments.
+sfpowerscripts  is built on the concept of generating artifacts for package creation tasks, unlocked or not, which then could be versioned, uploaded into an artifact provider or utilised in subsequent release stages for deployment across environments.
 
 The following package creation commands shows this in action
 
@@ -34,13 +34,13 @@ These commands create an artifact named`<package_name>_sfpowerscripts_artifact_<
 | changelog.json | A JSON based schema that carries all commit description about the package |
 | source | A directory containing the metadata in source format  |
 
-## Optimized for speed without hampering traceability
+## Optimised for speed without hampering traceability
 
 One of the common questions that is often asked to us is:  
   
-_Does deploying packages compared to delta deployments \(deploys only what is changed between two commits or a range of commits\) make the overall deployment slower?_ 
+_**Does deploying packages compared to delta deployments \(deploys only what is changed between two commits or a range of commits\) make the overall deployment slower?**_ 
 
-As packages are always deployed in its entirety, this is an understood fact. sfpowerscripts will always be built with features to optimize for speed but still ensuring the org is traceable compared to the traditional happy soup model most organizations are burdened with today.
+As packages are always deployed in its entirety, this is an understood fact. sfpowerscripts will always be built with features to optimize for speed but still ensuring the org is traceable compared to the traditional happy soup model most organisations are burdened with today.
 
 Features currently enabling this principle include 
 
