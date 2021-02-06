@@ -1,13 +1,25 @@
 # sfpowerscripts
 
-Simple wrappers around sfdx commands to help set up CI/CD quickly. These commands are universal and may be used on any automation platform, as long as a shell process is available for executing the commands.
+A Salesforce build system for package based development as a sfdx plugin that can be implemented in any CI/CD system of choice. Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
+
+- Features
+  - Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance on programs often dealing with multiple number of packages
+  - Builds packages in parallel by respecting dependencies
+  - Ability to selectively build changed packages in a mono repo
+  - Ability to deploy only packages that are changed in repo
+  - Pooling commands to prepare a pool of scratch org's with pacakges pre installed for optimized Pull/Merge Request validation
+  - Artifacts Driven,  all create commands produce an artifact or operate on an artifact
+  - Integrate with any CI/CD system of choice
+  - Support for external scripts, as hooks making integration easy
 
 ## Installation
 
-The [SFDX CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) and [sfpowerkit plugin](https://github.com/Accenture/sfpowerkit) are required for this plugin to work. If you have not already done so, please install both of these before continuing.
+The [SFDX CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm), [sfpowerkit plugin](https://github.com/Accenture/sfpowerkit), and  [sfdmu]()  are required for this plugin to work. If you have not already done so, please install both of these before continuing.
 
 To install the sfpowerscripts plugin, run the following command:
 ```
+$ sfdx plugins:install sfpowerkit
+$ sfdx plugins:install sfdmu
 $ sfdx plugins:install @dxatscale/sfpowerscripts
 ```
 For automated installations as part of a CI process or Dockerfile:
@@ -15,36 +27,79 @@ For automated installations as part of a CI process or Dockerfile:
 $ echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts
 ```
   <!-- usage -->
-## Usage
 ```sh-session
-$ sfdx sfpowerscripts:COMMAND
+$ npm install -g @dxatscale/sfpowerscripts
+$ sfdx COMMAND
 running command...
-
-$ sfdx --help sfpowerscripts:[COMMAND]
+$ sfdx (-v|--version|version)
+@dxatscale/sfpowerscripts/1.4.5 win32-x64 node-v12.16.3
+$ sfdx --help [COMMAND]
 USAGE
-  $ sfdx sfpowerscripts:COMMAND
-OPTIONS
-  -flag Description
-EXAMPLE
-  Output variable:
-
+  $ sfdx COMMAND
 ...
 ```
+<!-- usagestop -->
 
-## Output variables
+
+## Using sfpowerscripts
+
+### Modifiers used by Orchestrator
+
+[sfpowerscripts:orchestrator](https://app.gitbook.com/@dxatscale/s/sfpowerscripts/faq/orchestrator) commands allow controlling attributes of a package in its stage by adding additional properties to each package as described in sfdx-project.json. This allows one to change the behaviour of the pipeline without changing any pipeline scripts
+
+```
+  {
+    "path": "path--to--package",
+    "package": "name--of-the-package", //mandatory, when used with sfpowerscripts
+    "versionNumber": "X.Y.Z.[NEXT/BUILDNUMBER]",
+    "type":"data" //Mention the type of package, only to be used for source and data packages
+    "aliasfy": <boolean>, // Only for source packages, allows to deploy a subfolder whose name matches the alias of the org when using deploy command
+    "skipDeployOnOrgs": ["org1","org2"], // Comma seperated values of org's to mention this package should not be deployed in this org
+    "isOptimizedDeployment": <boolean>  // default:true for source packages, Utilizes the apex classes in the package for deployment,
+    "skipTesting":<boolean> //default:false, skip apex testing installation of source package
+    "skipCoverageValidation":<boolean> //default:false, skip apex coverage validation during validation phase,
+    "destructiveChangePath:<path> // only for source, if enabled, this will be applied before the package is deployed
+    "assignPermSetsPreDeployment: ["","",]
+    "assignPermSetsPostDeployment: ["","",]
+    "preDeploymentScript":<path> //All Packages
+    "postDeploymentScript:<path> // All packages
+    "reconcileProfiles:<boolean> //default:true Source Packages
+    "ignoreOnStage": [ //Skip this package during the below orchestrator commands
+         "prepare",
+          "validate"
+        ]
+    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org
+  }
+```
+### Enabling StatsD Metrics
+Almost all the CLI commands have StatsD metrics capture enabled. This means you can setup deployment dashboards in a tool like
+Graphite or DataDog and capture your deployment statistics. Read more about this feature [here](https://app.gitbook.com/@dxatscale/s/sfpowerscripts/faq/metrics-and-dashboards)
+
+To enable stasd, add the following environment variable, in the format below
+
+```
+ # Set STATSD Environment Variables for logging metrics about this build
+ export SFPOWERSCRIPTS_STATSD=true
+ export SFPOWERSCRIPTS_STATSD_HOST=172.23.95.52
+ export SFPOWERSCRIPTS_STATSD_PORT=8125     // Optional, defaults to 8125
+ export SFPOWERSCRIPTS_STATSD_PROTOCOL=UDP  // Optional, defualts to UDP, Supports UDP/TCP
+
+```
+
+### Output Variables
 
 Many of the commands listed below will output variables which may be consumed as flag inputs in subsequent commands. Simply pass the **variable name** to the command, and it will be substituted with the corresponding value, at runtime.
 
 Eg.
 ```
-  $ sfdx sfpowerscripts:IncrementBuildNumber -n <mypackage>
+  $ sfdx sfpowerscripts:package:version:increment -n <mypackage>
 
     ...
 
     Output variable:
     sfpowerscripts_incremented_project_version=1.0.0.1
 
-  $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> --versionnumber sfpowerscripts_incremented_project_version
+  $ sfdx sfpowerscripts:package:source:create -n <mypackage> --versionnumber sfpowerscripts_incremented_project_version
 ```
 
 The following output variables are currently supported:
@@ -52,12 +107,11 @@ The following output variables are currently supported:
 * sfpowerscripts_incremented_project_version
 * sfpowerscripts_artifact_directory
 * sfpowerscripts_artifact_metadata_directory
-* sfpowerscripts_delta_package_path
 * sfpowerscripts_package_version_id
 * sfpowerscripts_package_version_number
 * sfpowerscripts_pmd_output_path
-* sfpowerscripts_exportedsource_zip_path
-* sfpowerkit_deploysource_id
+* sfpowerscripts_scratchorg_username
+* sfpowerscripts_installsourcepackage_deployment_id
 
 If you require access to the variables at the shell layer, you may do so using the [readVars](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/scripts) helper script, which is included as part of this package.
 
@@ -67,7 +121,7 @@ If you require access to the variables at the shell layer, you may do so using t
 Commands that output variables optionally accept a `--refname` flag that prefixes output variables with a user-specified string. The prefix is intended as a variable namespace that allows the same command to be invoked multiple times without overwriting the output variables.
 
 ```
-$ sfdx sfpowerscripts:CreateUnlockedPackage --refname core -n core_package -b -x -v DevHub
+$ sfdx sfpowerscripts:package:unlocked:create --refname core -n core_package -b -x -v DevHub
 
 Output variables:
 core_sfpowerscripts_package_version_id=04t2v000007X2YRAA0
@@ -79,92 +133,492 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 ```
 
 
+
 <!-- usagestop -->
   ## Commands
   <!-- commands -->
-* [`sfpowerscripts:Build`](#sfpowerscriptsBuild)
-* [`sfpowerscripts:AnalyzeWithPMD`](#sfpowerscriptsanalyzewithpmd)
-* [`sfpowerscripts:CreateDeltaPackage`](#sfpowerscriptscreatedeltapackage)
-* [`sfpowerscripts:CreateSourcePackage`](#sfpowerscriptscreatesourcepackage)
-* [`sfpowerscripts:CreateUnlockedPackage`](#sfpowerscriptscreateunlockedpackage)
-* [`sfpowerscripts:DeployDestructiveManifest`](#sfpowerscriptsdeploydestructivemanifest)
-* [`sfpowerscripts:DeploySource`](#sfpowerscriptsdeploysource)
-* [`sfpowerscripts:ExportSource`](#sfpowerscriptsexportsource)
-* [`sfpowerscripts:GenerateChangelog [BETA]`](#sfpowerscriptsgeneratechangelog)
-* [`sfpowerscripts:IncrementBuildNumber`](#sfpowerscriptsincrementbuildnumber)
-* [`sfpowerscripts:InstallUnlockedPackage`](#sfpowerscriptsinstallunlockedpackage)
-* [`sfpowerscripts:TriggerApexTest`](#sfpowerscriptstriggerapextest)
-* [`sfpowerscripts:ValidateApexCoverage`](#sfpowerscriptsvalidateapexcoverage)
+ - Orchestrator Commands
+   - [`sfdx sfpowerscripts:orchestrator:prepare`](#sfdx-sfpowerscriptsorchestratorprepare)
+   - [`sfdx sfpowerscripts:orchestrator:validate`](#sfdx-sfpowerscriptsorchestratorvalidate)
+   - [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`](#sfdx-sfpowerscriptsorchestratorvalidateagainstorg)
+   - [`sfdx sfpowerscripts:orchestrator:quickbuild`](#sfdx-sfpowerscriptsorchestratorquickbuild)
+   - [`sfdx sfpowerscripts:orchestrator:build`](#sfdx-sfpowerscriptsorchestratorbuild)
+   - [`sfdx sfpowerscripts:orchestrator:deploy`](#sfdx-sfpowerscriptsorchestratordeploy)
+   - [`sfdx sfpowerscripts:orchestrator:promote`](#sfdx-sfpowerscriptsorchestratorpromote)
+   - [`sfdx sfpowerscripts:orchestrator:publish`](#sfdx-sfpowerscriptsorchestratorpublish)
 
-## `sfpowerscripts:Build`
+- Changelog (Track Releases)
+   - [`sfdx sfpowerscripts:changelog:generate`](#sfdx-sfpowerscriptschangeloggenerate)
 
-Build all packages (unlocked/source/data) in a repo in parallel with understanding of the dependency of each packages
+ - Package Commands ( Build your own workflow)
+	 - [`sfdx sfpowerscripts:package:data:create`](#sfdx-sfpowerscriptspackagedatacreate)
+	 - [`sfdx sfpowerscripts:package:data:install`](#sfdx-sfpowerscriptspackagedatainstall)
+	 - [`sfdx sfpowerscripts:package:source:create`](#sfdx-sfpowerscriptspackagesourcecreate)
+	 - [`sfdx sfpowerscripts:package:source:install`](#sfdx-sfpowerscriptspackagesourceinstall)
+	 - [`sfdx sfpowerscripts:package:unlocked:create`](#sfdx-sfpowerscriptspackageunlockedcreate)
+	 - [`sfdx sfpowerscripts:package:unlocked:install`](#sfdx-sfpowerscriptspackageunlockedinstall)
+   - [`sfdx sfpowerscripts:package:version:increment`](#sfdx-sfpowerscriptspackageversionincrement)
+
+ - Pool Management
+	 - [`sfdx sfpowerscripts:pool:delete `](#sfdx-sfpowerscriptspooldelete)
+	 - [`sfdx sfpowerscripts:pool:fetch`](#sfdx-sfpowerscriptspoolfetch)
+	 - [`sfdx sfpowerscripts:pool:list`](#sfdx-sfpowerscriptspoollist)
+
+ - Static Analysis
+	 - [`sfdx sfpowerscripts:analyze:pmd`](#sfdx-sfpowerscriptsanalyzepmd)
+
+- Apex tests
+  - [`sfdx sfpowerscripts:apextests:trigger`](#sfdx-sfpowerscriptsapexteststrigger)
+  - [`sfdx sfpowerscripts:apextests:validate`](#sfdx-sfpowerscriptsapextestsvalidate)
+
+
+## `sfdx sfpowerscripts:orchestrator:prepare`
+
+Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner,
+Please note for this feature to work the devhub should be enabled and scratchorgpool (additional fields to ScratchOrgInfo object)
+should be deployed to devhub. Please see the instructions [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling#1-install-the-supporting-fields-and-validation-rule-to-devhub). This command also
+install an unlocked package to the scratch org 'sfpowerscripts-artifact' (04t1P000000ka0fQAA) for skipping unchanged packages during
+a validation phase. This particular package can be prebuilt against your org and the ID could be overriden by setting up the
+environment variable SFPOWERSCRIPTS_ARTIFACT_UNLOCKED_PACKAGE
 
 ```
+Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner,
+
+
 USAGE
-  $ sfdx sfpowerscripts:Build [-v <string>] [--diffcheck] [--gittag] [-r <string>] [-f <filepath>]
-  [--artifactdir <directory>] [-s] [--waittime <string>] [--buildnumber <number>]
-  [--executorcount <number>][--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sfdx sfpowerscripts:orchestrator:prepare -t <string> [-e <number>] [-m <number>] [-f <filepath>]
+  [--installassourcepackages --installall] [-s <filepath>] [--succeedondeploymenterrors] [--keys <string>] [-v <string>]
+  [--apiversion <string>]
 
 OPTIONS
+  -e, --expiry=expiry                                                               [default: 2] Expiry of the scratch
+                                                                                    org's created in the pool
 
- 
-  -f, --configfilepath=configfilepath
-      [default: config/project-scratch-def.json] Path in the current project directory containing  config file for the
-      packaging org
+  -f, --config=config                                                               [default:
+                                                                                    config/project-scratch-def.json] The
+                                                                                    file path to the definition file for
+                                                                                    the scratch org shape
 
-  -k, --installationkey=installationkey
-      Installation key for this package
+  -m, --maxallocation=maxallocation                                                 [default: 10] The size of the
+                                                                                    scratch org pool to be created
 
- 
-  -r --repourl=repourl
-      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
+  -s, --artifactfetchscript=artifactfetchscript                                     The path to the script file that is
+                                                                                    used to fetch the validated
+                                                                                    artifacts to be used in the prepare
+                                                                                    command
 
-  -s, --isvalidationtobeskipped
-      Skips validation of dependencies, package ancestors, and metadata during package version creation. Skipping
-      validation reduces the time it takes to create a new package version, but package versions created without
-      validation can’t be promoted.
+  -t, --tag=tag                                                                     (required) The name/tag of the
+                                                                                    scratch org pool
 
-  -v, --devhubalias=devhubalias
-      [default: HubOrg] Provide the alias of the devhub previously authenticated, default value is HubOrg if using the
-      Authenticate Devhub task
+  -v, --targetdevhubusername=targetdevhubusername                                   username or alias for the dev hub
+                                                                                    org; overrides default dev hub org
 
- 
-  --artifactdir=artifactdir
-      [default: artifacts] The directory where the artifact is to be written
+  --apiversion=apiversion                                                           API version to be used
 
-  --diffcheck
-      Only build when the package has changed
+  --installall                                                                      Install the dependencies,along with
+                                                                                    all the packages in the repo
 
-  --gittag
-      Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
+  --installassourcepackages                                                         Install all packages as Source
+                                                                                    packages
 
 
-  --buildnumber=buildnumber
-       [default: 1] The build number to be used for source packages, Unlocked Packages will be assigned 
-       the buildnumber from Saleforce directly if using .NEXT
+  --keys=keys                                                                       Keys to be used while installing any
+                                                                                    managed package dependencies.
+                                                                                    Required format is a string of
+                                                                                    key-value pairs separated by spaces
+                                                                                    e.g. packageA:pw123 packageB:pw123
+                                                                                    packageC:pw123
 
-  --waittime=waittime
-      [default: 120] wait time for command to finish in minutes
 
-  --executorcount=executorcount
-       [default: 5] Number of parallel package task schedulors
+  --succeedondeploymenterrors                                                       Do not fail the scratch orgs, if a
+                                                                                    package failed to deploy, return the
+                                                                                    scratch org with packages till the
+                                                                                    last failure
 
+EXAMPLE
+  $ sfdx sfpowerscripts:orchestrator:prepare -t CI_1  -v <devhub>
 ```
 
+_See code: [commands/sfpowerscripts/orchestrator/prepare.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/prepare.ts)_
 
+## `sfdx sfpowerscripts:orchestrator:validate`
 
-## `sfpowerscripts:AnalyzeWithPMD`
-
-This task is used to run a static analysis of the apex classes and triggers using PMD. Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.
+Validate the incoming change against a prepared scratch org fetched from the provided pools (created using the prepare command). If the Sfpowerscripts Artifact package is installed in the scratch orgs, only the changed packages in the repo will be deployed by comparing against the package version installed in the fetched scratchorg.
 
 ```
+Validate the incoming change against a prepared scratch org fetched from the provided pools.
+
 USAGE
-  $ sfdx sfpowerscripts:AnalyzeWithPMD [--sourcedir <string>] [--ruleset <string>] [--rulesetpath <string>] [--format
-  <string>] [-o <string>] [--version <string>] [-b] [-d <string>] [--refname <string>] [--json] [--loglevel
+  $ sfdx sfpowerscripts:orchestrator:validate -u <string> -p <array> -f <filepath> -i <string> [--shapefile <string>]
+  [--coveragepercent <integer>] [-g <array>] [-x]
+
+OPTIONS
+  -f, --jwtkeyfile=jwtkeyfile                                                       (required) Path to a file containing
+                                                                                    the private key
+
+  -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to
+                                                                                    group/collapse logs in the console.
+                                                                                    Provide an opening group, and an
+                                                                                    optional closing group symbol.
+
+  -i, --clientid=clientid                                                           (required) OAuth client ID, also
+                                                                                    known as the consumer key
+
+  -p, --pools=pools                                                                 (required) Fetch scratch-org
+                                                                                    validation environment from one of
+                                                                                    listed pools, sequentially
+
+  -u, --devhubusername=devhubusername                                               (required) Authentication username
+                                                                                    for Dev Hub
+
+  -x, --deletescratchorg                                                            Delete scratch-org validation
+                                                                                    environment, after the command has
+                                                                                    finished running
+
+  --coveragepercent=coveragepercent                                                 [default: 75] Minimum required
+                                                                                    percentage coverage for validating
+                                                                                    code coverage of packages with Apex
+                                                                                    classes
+
+
+  --shapefile=shapefile                                                             Path to .zip file of scratch org
+                                                                                    shape / metadata to deploy
+
+EXAMPLE
+  $ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -u <devHubUsername> -i <clientId> -f <jwt_file>
+```
+
+_See code: [commands/sfpowerscripts/orchestrator/validate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/validate.ts)_
+
+## `sfdx sfpowerscripts:orchestrator:validateAgainstOrg`
+
+Validate the incoming change against a target org. If the Sfpowerscripts Artifact package is installed in the target org, only changed packages in the repo will be deployed by comparing against the package version installed in the target org.
+
+```
+Validate the incoming change against target org
+
+USAGE
+  $ sfdx sfpowerscripts:orchestrator:validateAgainstOrg -u <string> [--coveragepercent <integer>] [-g <array>] [--json] [--loglevel
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to group/collapse logs in the console. Provide
+                                                                                    an opening group, and an optional closing group symbol.
+
+  -u, --targetorg=targetorg                                                         (required) Alias/User Name of the target environment
+
+  --coveragepercent=coveragepercent                                                 [default: 75] Minimum required percentage coverage for validating code
+                                                                                    coverage of packages with Apex classes
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for this command invocation
+
+EXAMPLE
+  $ sfdx sfpowerscripts:orchestrator:validateAgainstOrg -u <targetorg>
+```
+
+_See code: [commands/sfpowerscripts/orchestrator/validateAgainstOrg.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/validateAgainstOrg.ts)_
+
+## `sfdx sfpowerscripts:orchestrator:quickbuild`
+
+Build packages (unlocked/source/data) in a repo in parallel, without validating depenencies or coverage in the case of unlocked packages.
+For diffcheck to work(build packages that are changed), it compares against the last know git tags, so make sure that you strategically place
+the tags push at the required state in your pipeline.
+
+```
+Build packages (unlocked/source/data) in a repo in parallel, without validating depenencies or coverage in the case of unlocked packages
+
+USAGE
+  $ sfdx sfpowerscripts:orchestrator:quickbuild [--diffcheck] [--gittag] [-r <string>] [-f <filepath>] [--artifactdir
+  <directory>] [--waittime <number>] [--buildnumber <number>] [--executorcount <number>] [--branch <string>] [--tag
+  <string>] [-v <string>] [--apiversion <string>]
+
+OPTIONS
+  -f, --configfilepath=configfilepath                                               [default:
+                                                                                    config/project-scratch-def.json]
+                                                                                    Path in the current project
+                                                                                    directory containing  config file
+                                                                                    for the packaging org
+
+  -r, --repourl=repourl                                                             Custom source repository URL to use
+                                                                                    in artifact metadata, overrides
+                                                                                    origin URL defined in git config
+
+  -v, --targetdevhubusername=targetdevhubusername                                   username or alias for the dev hub
+                                                                                    org; overrides default dev hub org
+
+  --apiversion=apiversion                                                           override the api version used for
+                                                                                    api requests made by this command
+
+  --artifactdir=artifactdir                                                         [default: artifacts] The directory
+                                                                                    where the generated artifact is to
+                                                                                    be written
+
+  --branch=branch                                                                   The git branch that this build is
+                                                                                    triggered on, Useful for metrics and
+                                                                                    general identification purposes
+
+  --buildnumber=buildnumber                                                         [default: 1] The build number to be
+                                                                                    used for source packages, Unlocked
+                                                                                    Packages will be assigned the
+                                                                                    buildnumber from Saleforce directly
+                                                                                    if using .NEXT
+
+  --diffcheck                                                                       Only build the packages which have
+                                                                                    changed by analyzing previous tags
+
+  --executorcount=executorcount                                                     [default: 5] Number of parallel
+                                                                                    package task schedulors
+
+  --gittag                                                                          Tag the current commit ID with an
+                                                                                    annotated tag containing the package
+                                                                                    name and version - does not push tag
+
+  --tag=tag                                                                         Tag the build with a label, useful
+                                                                                    to identify in metrics
+
+  --waittime=waittime                                                               [default: 120] Wait time for command
+                                                                                    to finish in minutes
+```
+
+_See code: [commands/sfpowerscripts/orchestrator/quickbuild.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/quickbuild.ts)_
+
+
+## `sfdx sfpowerscripts:orchestrator:build`
+
+Build all packages (unlocked/source/data) in a repo in parallel, respecting the dependency of each packages and generate artifacts to a provided directory.For diffcheck to work(build packages that are changed), it compares against the last know git tags, so make sure that you strategically place the tags push at the required state in your pipeline.
+
+```
+Build all packages (unlocked/source/data) in a repo in parallel, respecting the dependency of each packages and generate artifacts to a provided directory
+
+USAGE
+  $ sfdx sfpowerscripts:orchestrator:build [--diffcheck] [--gittag] [-r <string>] [-f <filepath>] [--artifactdir
+  <directory>] [--waittime <number>] [--buildnumber <number>] [--executorcount <number>] [--branch <string>] [--tag
+  <string>] [-v <string>] [--apiversion <string>]
+
+OPTIONS
+  -f, --configfilepath=configfilepath                                               [default:
+                                                                                    config/project-scratch-def.json]
+                                                                                    Path in the current project
+                                                                                    directory containing  config file
+                                                                                    for the packaging org
+
+  -r, --repourl=repourl                                                             Custom source repository URL to use
+                                                                                    in artifact metadata, overrides
+                                                                                    origin URL defined in git config
+
+  -v, --targetdevhubusername=targetdevhubusername                                   username or alias for the dev hub
+                                                                                    org; overrides default dev hub org
+
+  --apiversion=apiversion                                                           override the api version used for
+                                                                                    api requests made by this command
+
+  --artifactdir=artifactdir                                                         [default: artifacts] The directory
+                                                                                    where the generated artifact is to
+                                                                                    be written
+
+  --branch=branch                                                                   The git branch that this build is
+                                                                                    triggered on, Useful for metrics and
+                                                                                    general identification purposes
+
+  --buildnumber=buildnumber                                                         [default: 1] The build number to be
+                                                                                    used for source packages, Unlocked
+                                                                                    Packages will be assigned the
+                                                                                    buildnumber from Saleforce directly
+                                                                                    if using .NEXT
+
+  --diffcheck                                                                       Only build the packages which have
+                                                                                    changed by analyzing previous tags
+
+  --executorcount=executorcount                                                     [default: 5] Number of parallel
+                                                                                    package task schedulors
+
+  --gittag                                                                          Tag the current commit ID with an
+                                                                                    annotated tag containing the package
+                                                                                    name and version - does not push tag
+
+  --tag=tag                                                                         Tag the build with a label, useful
+                                                                                    to identify in metrics
+
+  --waittime=waittime                                                               [default: 120] Wait time for command
+                                                                                    to finish in minutes
+```
+
+_See code: [commands/sfpowerscripts/orchestrator/build.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/build.ts)_
+
+## `sfdx sfpowerscripts:orchestrator:deploy`
+
+Deploy packages from the provided aritfact directory, to a given org, using the order and configurable flags provided in sfdx-project.json
+`skipifalreadyinstalled` only works provide the target org has sfpowerscripts-artifact' (04t1P000000ka0fQAA) installed. Please note you can
+deploy your own instance of 'sfpowerscripts-artifact' by building it from the repo and overriding using the environment variable SFPOWERSCRIPTS_ARTIFACT_UNLOCKED_PACKAGE
+
+```
+Deploy packages from the provided aritfact directory, to a given org, using the order and configurable flags provided in sfdx-project.json
+
+USAGE
+  $ sfdx sfpowerscripts:orchestrator:deploy -u <string> [--artifactdir <directory>] [--waittime <number>] [-g <array>]
+  [-t <string>] [--skipifalreadyinstalled]
+
+OPTIONS
+  -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to
+                                                                                    group/collapse logs in the console.
+                                                                                    Provide an opening group, and an
+                                                                                    optional closing group symbol.
+
+  -t, --tag=tag                                                                     Tag the deploy with a label, useful
+                                                                                    for identification in metrics
+
+  -u, --targetorg=targetorg                                                         (required) [default: scratchorg]
+                                                                                    Alias/User Name of the target
+                                                                                    environment
+
+  --artifactdir=artifactdir                                                         [default: artifacts] The directory
+                                                                                    containing artifacts to be deployed
+
+
+  --skipifalreadyinstalled                                                          Skip the package installation if the
+                                                                                    package is already installed in the
+                                                                                    org
+
+  --waittime=waittime                                                               [default: 120] Wait time for command
+                                                                                    to finish in minutes
+
+EXAMPLE
+  $ sfdx sfpowerscripts:orchestrator:deploy -u <username>
+```
+
+_See code: [commands/sfpowerscripts/orchestrator/deploy.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/deploy.ts)_
+
+
+## `sfdx sfpowerscripts:orchestrator:promote`
+
+Promotes validated unlocked packages with code coverage greater than 75%
+
+```
+Promotes validated unlocked packages with code coverage greater than 75%
+
+USAGE
+  $ sfdx sfpowerscripts:orchestrator:promote -d <directory> [-v <string>]
+OPTIONS
+  -d, --artifactdir=artifactdir                                                     (required) [default: artifacts] The
+                                                                                    directory where artifacts are
+                                                                                    located
+
+  -v, --devhubalias=devhubalias                                                     [default: HubOrg] Provide the alias
+                                                                                    of the devhub previously
+                                                                                    authenticated, default value is
+                                                                                    HubOrg if using the Authenticate
+                                                                                    Devhub task
+
+
+EXAMPLE
+  $ sfdx sfpowerscripts:orchestrator:promote -d path/to/artifacts -v <org>
+```
+
+_See code: [commands/sfpowerscripts/orchestrator/promote.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/promote.ts)_
+
+## `sfdx sfpowerscripts:orchestrator:publish`
+
+Publish packages to an artifact registry, using a user-provided script that is responsible for authenticating & uploading to the registry.
+
+```
+Publish packages to an artifact registry, using a user-provided script that is responsible for authenticating & uploading to the registry.
+
+USAGE
+  $ sfdx sfpowerscripts:orchestrator:publish -d <directory> -f <filepath> [-p -v <string>] [-t <string>]
+OPTIONS
+  -d, --artifactdir=artifactdir                                                     (required) [default: artifacts] The
+                                                                                    directory containing artifacts to be
+                                                                                    published
+
+  -f, --scriptpath=scriptpath                                                       (required) Path to script that
+                                                                                    authenticates and uploaded artifacts
+                                                                                    to the registry
+
+  -p, --publishpromotedonly                                                         Only publish unlocked packages that
+                                                                                    have been promoted
+
+  -t, --tag=tag                                                                     Tag the publish with a label, useful
+                                                                                    for identification in metrics
+
+  -v, --devhubalias=devhubalias                                                     Provide the alias of the devhub
+                                                                                    previously authenticated
+
+
+EXAMPLES
+  $ sfdx sfpowerscripts:orchestrator:publish -f path/to/script
+  $ sfdx sfpowerscripts:orchestrator:publish -p -v HubOrg
+```
+
+_See code: [commands/sfpowerscripts/orchestrator/publish.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/publish.ts)_
+
+## `sfdx sfpowerscripts:changelog:generate`
+
+Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository
+
+```
+Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository
+
+USAGE
+  $ sfdx sfpowerscripts:changelog:generate -d <directory> -n <string> -w <string> -r <string> -b <string> [--limit
+  <integer>] [--workitemurl <string>] [--showallartifacts]
+OPTIONS
+  -b, --branchname=branchname                                                       (required) Repository branch in
+                                                                                    which the changelog files are
+                                                                                    located
+
+  -d, --artifactdir=artifactdir                                                     (required) [default: artifacts]
+                                                                                    Directory containing sfpowerscripts
+                                                                                    artifacts
+
+  -n, --releasename=releasename                                                     (required) Name of the release for
+                                                                                    which to generate changelog
+
+  -r, --repourl=repourl                                                             (required) Repository in which the
+                                                                                    changelog files are located. Assumes
+                                                                                    user is already authenticated.
+
+  -w, --workitemfilter=workitemfilter                                               (required) Regular expression used
+                                                                                    to search for work items (user
+                                                                                    stories) introduced in release
+
+  --json                                                                            format output as json
+
+  --limit=limit                                                                     limit the number of releases to
+                                                                                    display in changelog markdown
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
+                                                                                    this command invocation
+
+  --showallartifacts                                                                Show all artifacts in changelog
+                                                                                    markdown, including those that have
+                                                                                    not changed in the release
+
+  --workitemurl=workitemurl                                                         Generic URL for work items. Each
+                                                                                    work item ID will be appended to the
+                                                                                    URL, providing quick access to work
+                                                                                    items
+
+EXAMPLE
+  $ sfdx sfpowerscripts:changelog:generate -n <releaseName> -d path/to/artifact/directory -w <regexp> -r <repoURL> -b
+  <branchName>
+```
+
+_See code: [commands/sfpowerscripts/changelog/generate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/changelog/generate.ts)_
+
+
+
+## `sfdx sfpowerscripts:analyze:pmd`
+
+This task is used to run a static analysis of the apex classes and triggers using PMD, Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task
+
+```
+This task is used to run a static analysis of the apex classes and triggers using PMD, Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task
+
+USAGE
+  $ sfdx sfpowerscripts:analyze:pmd [--sourcedir <string>] [--ruleset <string>] [--rulesetpath <string>] [--format
+  <string>] [-o <string>] [--version <string>] [-b] [--refname <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -203,601 +657,86 @@ OPTIONS
                                                                                      project diretory as mentioned in
                                                                                      sfdx-project.json will be used
 
-  --version=version                                                                  [default: 6.22.0] The version of
+  --version=version                                                                  [default: 6.26.0] The version of
                                                                                      PMD to be used for static analysis
 
-EXAMPLE
-  $ sfdx sfpowerscripts:AnalyzeWithPMD -b
+EXAMPLES
+  $ sfdx sfpowerscripts:analyze:pmd -b
+
   Output variable:
   sfpowerscripts_pmd_output_path
   <refname>_sfpowerscripts_pmd_output_path
 ```
 
-## `sfpowerscripts:CreateDeltaPackage`
+_See code: [commands/sfpowerscripts/analyze/pmd.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/analyze/pmd.ts)_
 
-This task is used to create a delta package between two commits and bundle the created delta as as a deployable artifact. Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.
-
-```
-USAGE
-  $ sfdx sfpowerscripts:CreateDeltaPackage -n <string> -r <string> -v <string> [-t <string>] [-b] [-d <string>] [-x]
-  [--bypassdirectories <string>] [--onlydifffor <string>] [--refname <string>] [--json] [--loglevel
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-
-  -n, --package=package                                                             (required) The name of the package
-
-  -r, --revisionfrom=revisionfrom                                                   (required) Provide the full SHA
-                                                                                    Commit ID, from where the diff
-                                                                                    should start generating
-
-  -t, --revisionto=revisionto                                                       If not set, the head commit ID of
-                                                                                    the current branch is used
-
-  -v, --versionname=versionname                                                     (required) Provide a meaningful name
-                                                                                    such as the default value, so this
-                                                                                    artifact can be identified in the
-                                                                                    release
-
-  -x, --generatedestructivemanifest                                                 Check this option to generate a
-                                                                                    destructive manifest to be deployed
-
-  --artifactdir=artifactdir                                                         [default: artifacts] The directory
-                                                                                    where the artifact is to be written
-
-  --bypassdirectories=bypassdirectories                                             Ignore a comma seperated list of
-                                                                                    directories that need to be ignored
-                                                                                    while a diff is generated
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --onlydifffor=onlydifffor                                                         Generate a comma seperated list of
-                                                                                    directories that the diff should be
-                                                                                    generated, Create a
-                                                                                    sfdx-project.json to support
-                                                                                    deployment
-
-  --refname=refname                                                                 Reference name to be prefixed to
-                                                                                    output variables
-
-  --repourl=repourl                                                                 Custom source repository URL to use in
-                                                                                    artifact metadata, overrides origin URL
-                                                                                    defined in git config
-
-EXAMPLES
-  $ sfdx sfpowerscripts:CreateDeltaPackage -n <packagename> -r <61635fb> -t <3cf01b9> -v <version> -b
-
-  Output variable:
-  sfpowerscripts_delta_package_path
-  <refname>_sfpowerscripts_delta_package_path
-  sfpowerscripts_artifact_metadata_directory
-  <refname>_sfpowerscripts_artifact_metadata_directory
-  sfpowerscripts_artifact_directory
-  <refname>_sfpowerscripts_artifact_directory
-```
-
-## `sfpowerscripts:CreateSourcePackage`
-
-This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata (e.g. commit Id), source code & an optional destructive manifest. The artifact can then be consumed by release pipelines, to deploy the package.
-
-```
-USAGE
-  $ sfdx sfpowerscripts:CreateSourcePackage -n <string> -v <string> [--refname <string>] [--json] [--loglevel
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-
-  -n, --package=package
-      (required) The name of the package
-
-  -r, --repourl=repourl
-      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
-
-  -v, --versionnumber=versionnumber
-      (required) The format is major.minor.patch.buildnumber . This will override the build number mentioned in the
-      sfdx-project.json, Try considering the use of Increment Version Number task before this task
-
-  --apextestsuite=apextestsuite
-      Apex Test Suite that needs to be associated with the source package, Source packages when deployed to
-      production require each individual classes in the package to have more than 75% coverage, Hence this
-      apex test task should cover all the classes
-
-  --artifactdir=artifactdir
-      [default: artifacts] The directory where the artifact is to be written
-
-  --destructivemanifestfilepath=destructivemanifestfilepath
-      Path to a destructiveChanges.xml, mentioning any metadata that need to be deleted before the contents
-      in the source package need to be installed in the org
-
-  --diffcheck
-      Only build when the package has changed
-
-  --gittag
-      Tag the current commit ID with an annotated tag containing the package name and version - does not
-      push tag
-
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
-  --refname=refname
-      Reference name to be prefixed to output variables
-
-EXAMPLES
-  $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --refname <name>
-  $ sfdx sfpowerscripts:CreateSourcePackage -n <mypackage> -v <version> --diffcheck --gittag
-
-  Output variable:
-  sfpowerscripts_artifact_metadata_directory
-  <refname>_sfpowerscripts_artifact_metadata_directory
-  sfpowerscripts_artifact_directory
-  <refname>_sfpowerscripts_artifact_directory
-  sfpowerscripts_package_version_number
-  <refname>_sfpowerscripts_package_version_number
-```
-
-## `sfpowerscripts:CreateUnlockedPackage`
-
-Creates a new package version, and generates an artifact that consists of the metadata (e.g. version Id). The artifact can then be consumed by release pipelines, to install the unlocked package. Utilize this task in a package build for DX Unlocked Package.
-
-```
-USAGE
-  $ sfdx sfpowerscripts:CreateUnlockedPackage -n <string> [-b] [-k <string> | -x] [-v <string>] [--versionnumber
-  <string>] [-f <string>] [-d <string>] [--enablecoverage] [-s] [--tag <string>] [--waittime <string>] [--refname
-  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -b, --buildartifactenabled
-      [DEPRECATED - always generate artifact] Create a build artifact, so that this pipeline can be consumed by a release pipeline
-
-  -f, --configfilepath=configfilepath
-      [default: config/project-scratch-def.json] Path in the current project directory containing  config file for the
-      packaging org
-
-  -k, --installationkey=installationkey
-      Installation key for this package
-
-  -n, --package=package
-      (required) ID (starts with 0Ho) or alias of the package to create a version of
-
-  -r --repourl=repourl
-      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
-
-  -s, --isvalidationtobeskipped
-      Skips validation of dependencies, package ancestors, and metadata during package version creation. Skipping
-      validation reduces the time it takes to create a new package version, but package versions created without
-      validation can’t be promoted.
-
-  -v, --devhubalias=devhubalias
-      [default: HubOrg] Provide the alias of the devhub previously authenticated, default value is HubOrg if using the
-      Authenticate Devhub task
-
-  -x, --installationkeybypass
-      Bypass the requirement for having an installation key for this version of the package
-
-  --artifactdir=artifactdir
-      [default: artifacts] The directory where the artifact is to be written
-
-  --diffcheck
-      Only build when the package has changed
-
-  --enablecoverage
-      Please note this command takes a longer time to compute, activating this on every packaging build might not
-      necessary
-
-  --gittag
-      Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
-
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
-  --refname=refname
-      Reference name to be prefixed to output variables
-
-  --tag=tag
-      the package version's tag
-
-  --versionnumber=versionnumber
-      The format is major.minor.patch.buildnumber . This will override the build number mentioned in the
-      sfdx-project.json, Try considering the use of Increment Version Number task before this task
-
-  --waittime=waittime
-      [default: 120] wait time for command to finish in minutes
-
-EXAMPLES
-  $ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --refname <name>
-  $ sfdx sfpowerscripts:CreateUnlockedPackage -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag
-
-  Output variable:
-  sfpowerscripts_package_version_id
-  <refname>_sfpowerscripts_package_version_id
-  sfpowerscripts_artifact_metadata_directory
-  <refname>_sfpowerscripts_artifact_metadata_directory
-  sfpowerscripts_artifact_directory
-  <refname>_sfpowerscripts_artifact_directory
-  sfpowerscripts_package_version_number
-  <refname>_sfpowerscripts_package_version_number
-```
-
-
-
-## `sfpowerscripts:DeployDestructiveManifest`
-
-Delete components in org according to destructive manifest - an empty package.xml will be automatically created, Read more about the task at  https://sfpowerscripts.com/tasks/deployment-tasks/deploy-destructive-maifest-to-an-org/
-
-```
-USAGE
-  $ sfdx sfpowerscripts:DeployDestructiveManifest [-u <string>] [-m <string>] [-t <string>] [-f <string>] [--json]
-  [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -f, --destructivemanifestfilepath=destructivemanifestfilepath
-      The location to the xml file which contains the destructive changes
-
-  -m, --method=Text|FilePath
-      [default: Text] If text is specified, add the members in the next field, if URL, pass in the location of the
-      destructiveChanges.xml such as the raw git url
-
-  -t, --destructivemanifesttext=destructivemanifesttext
-      Type in the destructive manifest, follow the instructions,
-      https://developer.salesforce.com/docs/atlas.en-us.daas.meta/daas/daas_destructive_changes.htm
-
-  -u, --targetorg=targetorg
-      [default: scratchorg] Alias or username of the target org where the code should be deployed
-
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
-  --skiponmissingmanifest
-      Skip if unable to find destructive manfiest file
-EXAMPLES
-  $ sfdx sfpowerscripts:DeployDestructiveManifest -u scratchorg -m Text -t "<?xml version="1.0" encoding="UTF-8"?>
-  <Package
-  xmlns="http://soap.sforce.com/2006/04/metadata"><types><members>myobject__c</members><name>CustomObject</name></types>
-  </Package>"
-```
-
-
-
-## `sfpowerscripts:DeploySource`
-
-Deploy source to org using mdapi based deploy (converts source to mdapi and use mdapi deployment).
-
-```
-USAGE
-  $ sfdx sfpowerscripts:DeploySource [-u <string>] [-d <string>] [--sourcedir <string>] [--waittime <string>] [-c] [-f
-  <string>] [-l <string>] [--specifiedtests <string>] [--apextestsuite <string>] [-b] [--refname <string>] [--json]
-  [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -b, --istobreakbuildifempty
-      Uncheck this field, to allow for empty folders not to break build, useful in the case of pre/post step uniformity
-      across projects
-
-  -c, --checkonly
-      Validate a deployment, but don't save to the org, Use this for Stage 1/2 CI Run's
-
-  -f, --validationignore=validationignore
-      [default: .forceignore] Validation only deployment has issues with certain metadata such as apexttestsuite, create a
-      different file similar to .forceignore and use it during validate only deployment
-
-  -l, --testlevel=NoTestRun|RunSpecifiedTests|RunApexTestSuite|RunLocalTests|RunAllTestsInOrg
-      [default: NoTestRun] The test level of the test that need to be executed when the code is to be deployed
-
-  -u, --targetorg=targetorg
-      [default: scratchorg] Alias or username of the target org where the code should be deployed
-
-  --apextestsuite=apextestsuite
-      Name of the Apex Test Suite that needs to be executed during this deployment
-
-  --ignoreerrors
-      Ignores the deploy errors, and continues with the deploy operation
-
-  --ignorewarnings
-      Ignores any warnings generated during metadata deployment
-
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
-  --refname=refname
-      Reference name to be prefixed to output variables
-
-  --sourcedir=sourcedir
-      [default: force-app] The source directory to be deployed
-
-  --specifiedtests=specifiedtests
-      Specify a comma seperated values of Apex Test that need to be executed during this deployment
-
-  --waittime=waittime
-      [default: 20] wait time for command to finish in minutes
-
-EXAMPLE
-  $ sfdx sfpowerscripts:DeploySource -u scratchorg --sourcedir force-app -c
-  Output variable:
-  sfpowerkit_deploysource_id
-  <refname_sfpowerkit_deploysource_id
-```
-
-
-
-## `sfpowerscripts:ExportSource`
-
-Export source from any org for storing to backup or further analysis. Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.
-
-```
-USAGE
-  $ sfdx sfpowerscripts:ExportSource [-u <string>] [-d <string>] [--quickfilter <string>] [-x] [-e] [--refname <string>]
-  [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -d, --sourcedir=sourcedir                                                         [default: metadata] The directory to
-                                                                                    which the source should be exported
-                                                                                    to
-
-  -e, --isunzipenabled                                                              Unzip the exported metadata/source
-                                                                                    from the zip into the provided
-                                                                                    folder
-
-  -u, --targetorg=targetorg                                                         [default: scratchorg] Alias or
-                                                                                    username of the target org where
-                                                                                    metadata is to be retrieved
-
-  -x, --ismanagedpackagestobeexcluded                                               Exclude managed package components
-                                                                                    from the export
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --quickfilter=quickfilter                                                         Comma separated values  of metadata
-                                                                                    type, member or file names to be
-                                                                                    excluded while building the manifest
-
-  --refname=refname                                                                 Reference name to be prefixed to
-                                                                                    output variables
-
-EXAMPLE
-  $ sfdx sfpowerscripts:ExportSource -u scratchorg -d metadata -x -e
-  Output variable:
-  sfpowerscripts_exportedsource_zip_path
-  <refname>_sfpowerscripts_exportedsource_zip_path
-```
-
-
-
-## `sfpowerscripts:GenerateChangelog [BETA]`
-
-Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository
-
-```
-USAGE
-  $ sfdx sfpowerscripts:GenerateChangelog -d <directory> -n <string> -w <string> -r <string> -b <string> [--limit <integer>] [--workitemurl
-  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -b, --branchname=branchname                                                       (required) Repository branch in which the changelog files are
-                                                                                    located
-
-  -d, --artifactdir=artifactdir                                                     (required) [default: artifacts] Directory containing
-                                                                                    sfpowerscripts artifacts
-
-  -n, --releasename=releasename                                                     (required) Name of the release for which to generate
-                                                                                    changelog
-
-  -r, --repourl=repourl                                                             (required) Repository in which the changelog files are
-                                                                                    located. Assumes user is already authenticated.
-
-  -w, --workitemfilter=workitemfilter                                               (required) Regular expression used to search for work items
-                                                                                    (user stories) introduced in release
-
-  --json                                                                            format output as json
-
-  --limit=limit                                                                     limit the number of releases to display in changelog markdown
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for this command invocation
-
-  --workitemurl=workitemurl                                                         Generic URL for work items. Each work item ID will be
-                                                                                    appended to the URL, providing quick access to work items
-
-EXAMPLE
-  $ sfdx sfpowerscripts:GenerateChangelog -n <releaseName> -d path/to/artifact/directory -w <regexp> -r <repoURL> -b <branchName>
-```
-
-## `sfpowerscripts:IncrementBuildNumber`
-
-Increment the selected version counter by one and optionally commit changes to sfdx-project.json. This command does not push changes to the source repository.
-
-Please note this task skips all the options if it figures a .NEXT in the build number for an unlocked package
-
-```
-USAGE
-  $ sfdx sfpowerscripts:IncrementBuildNumber [--segment <string>] [-a -r <string>] [-n <string>] [-d <string>] [-c]
-  [--refname <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -a, --appendbuildnumber
-      Set the build segment of the version number to the build number rather than incremenenting
-
-  -c, --commitchanges
-      Mark this if you want to commit the modified sfdx-project json, Please note this will not push to the repo
-      only commits in the local checked out repo, You would need to have a push to the repo at the end of the packaging
-      task if everything is successfull
-
-  -d, --projectdir=projectdir
-      The directory should contain a sfdx-project.json for this command to succeed
-
-  -n, --package=package
-      The name of the package of which the version need to be incremented,If not specified the default package is utilized
-
-  -r, --runnumber=runnumber
-      The build number of the CI pipeline, usually available through an environment variable
-
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
-  --refname=refname
-      Reference name to be prefixed to output variables
-
-  --segment=Major|Minor|Patch|BuildNumber
-      [default: BuildNumber] Select the segment of the version
-
-EXAMPLE
-  $ sfdx IncrementBuildNumber --segment BuildNumber -n packagename -c
-  Output variable:
-  sfpowerscripts_incremented_project_version
-  <refname>_sfpowerscripts_incremented_project_version
-```
-
-
-
-## `sfpowerscripts:InstallUnlockedPackage`
-
-Installs an unlocked package using sfpowerscripts metadata.
-
-```
-USAGE
-  $ sfdx sfpowerscripts:InstallUnlockedPackage [-n <string>] [-u <string>] [-v <string> | -i] [-k <string>] [-a]
-  [--securitytype <string>] [--upgradetype <string>] [--waittime <string>] [--publishwaittime <string>] [--json]
-  [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -a, --apexcompileonlypackage                                                      Each package installation triggers a
-                                                                                    compilation of apex, flag to trigger
-                                                                                    compilation of package only
-
-  -f, --skipifalreadyinstalled                                                      Skip the package installation if the
-                                                                                    package is already installed in the org
-
-  -i, --packageinstalledfrom                                                        automatically retrieve the version
-                                                                                    ID of the package to be installed,
-                                                                                    from the build artifact
-
-  -k, --installationkey=installationkey                                             installation key for key-protected
-                                                                                    package
-
-  -n, --package=package                                                             Name of the package to be installed
-
-  -s, --skiponmissingartifact                                                       Skip package installation if the build
-                                                                                    artifact is missing.
-                                                                                    Enable this if artifacts are only
-                                                                                    being created for modified packages
-
-  -u, --targetorg=targetorg                                                         Alias/User Name of the target
-                                                                                    environment
-
-  -v, --packageversionid=packageversionid                                           manually input package version Id of
-                                                                                    the package to be installed
-
-  --artifactdir                                                                     [default: artifacts] The directory
-                                                                                    where the artifact is located
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --publishwaittime=publishwaittime                                                 [default: 10] number of minutes to
-                                                                                    wait for subscriber package version
-                                                                                    ID to become available in the target
-                                                                                    org
-
-  --securitytype=AllUsers|AdminsOnly                                                [default: AllUsers] Select the
-                                                                                    security access for the package
-                                                                                    installation
-
-  --upgradetype=DeprecateOnly|Mixed|Delete                                          [default: Mixed] the upgrade type
-                                                                                    for the package installation
-
-  --waittime=waittime                                                               [default: 120] wait time for command
-                                                                                    to finish in minutes
-
-EXAMPLE
-  $ sfdx InstallUnlockedPackage -n packagename -u sandboxalias -i
-```
-
-
-
-## `sfpowerscripts:TriggerApexTest`
+## `sfdx sfpowerscripts:apextests:trigger`
 
 Triggers Apex unit test in an org. Supports test level RunAllTestsInPackage, which optionally allows validation of individual class code coverage
 
 ```
+Triggers Apex unit test in an org. Supports test level RunAllTestsInPackage, which optionally allows validation of individual class code coverage
+
 USAGE
-  $ sfdx sfpowerscripts:TriggerApexTest [-u <string>] [-l <string>] [-s] [--specifiedtests <string>] [--apextestsuite
-  <string>] [--waittime <string>] [--json] [--loglevel
+  $ sfdx sfpowerscripts:apextests:trigger [-u <string>] [-l <string>] [-n <string>] [-c] [--validatepackagecoverage]
+  [-s] [--specifiedtests <string>] [--apextestsuite <string>] [-p <integer>] [--waittime <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-
-  -c, --validateindividualclasscoverage                                              Enable code coverage validation for
-                                                                                     individual classes, when test level is
-                                                                                     RunAllTestsInPackage
+  -c, --validateindividualclasscoverage
+      Validate that individual classes have a coverage greater than the minimum required percentage coverage, only
+      available when test level is RunAllTestsInPackage
 
   -l, --testlevel=RunSpecifiedTests|RunApexTestSuite|RunLocalTests|RunAllTestsInOrg|RunAllTestsInPackage
-                                                                                     [default: RunLocalTests] The test
-                                                                                     level of the test that need to be
-                                                                                     executed when the code is to be
-                                                                                     deployed
+      [default: RunLocalTests] The test level of the test that need to be executed when the code is to be deployed
 
-  -n, --package=package                                                              Name of the package to run
-                                                                                     tests. Required when test level is
-                                                                                     RunAllTestsInPackage
+  -n, --package=package
+      Name of the package to run tests. Required when test level is RunAllTestsInPackage
 
-  -p, --coveragepercent=coveragepercent                                              [default: 75] Minimum coverage percentage
-                                                                                     required for each class in package
+  -p, --coveragepercent=coveragepercent
+      [default: 75] Minimum required percentage coverage, when validating code coverage
 
-  -s, --synchronous                                                                  Select an option if the tests are
-                                                                                     to be run synchronously
+  -s, --synchronous
+      Select an option if the tests are to be run synchronously
 
-  -u, --targetorg=targetorg                                                          [default: scratchorg] username or
-                                                                                     alias for the target org; overrides
-                                                                                     default target org
+  -u, --targetorg=targetorg
+      [default: scratchorg] username or alias for the target org; overrides default target org
 
-  --apextestsuite=apextestsuite                                                      comma-separated list of Apex test
-                                                                                     suite names to run
+  --apextestsuite=apextestsuite
+      comma-separated list of Apex test suite names to run
 
-  --json                                                                             format output as json
+  --json
+      format output as json
 
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)   [default: warn] logging level for
-                                                                                     this command invocation
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
+      [default: warn] logging level for this command invocation
 
-  --specifiedtests=specifiedtests                                                    comma-separated list of Apex test
-                                                                                     class names or IDs and, if
-                                                                                     applicable, test methods to run
+  --specifiedtests=specifiedtests
+      comma-separated list of Apex test class names or IDs and, if applicable, test methods to run
 
-  --waittime=waittime                                                                [default: 60] wait time for command
-                                                                                     to finish in minutes
+  --validatepackagecoverage
+      Validate that the package coverage is greater than the minimum required percentage coverage, only available when
+      test level is RunAllTestsInPackage
 
-EXAMPLE
-  $ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunLocalTests -s
-  $ sfdx sfpowerscripts:TriggerApexTest -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c
+  --waittime=waittime
+      [default: 60] wait time for command to finish in minutes
+
+EXAMPLES
+  $ sfdx sfpowerscripts:apextests:trigger -u scratchorg -l RunLocalTests -s
+  $ sfdx sfpowerscripts:apextests:trigger -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c
 ```
 
-## `sfpowerscripts:ValidateApexCoverage`
+_See code: [commands/sfpowerscripts/apextests/trigger.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/apextests/trigger.ts)_
 
-Validates  apex test coverage in the org. Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.
+## `sfdx sfpowerscripts:apextests:validate`
+
+Validates apex test coverage in the org, Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.
 
 ```
+Validates apex test coverage in the org, Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.
+
 USAGE
-  $ sfdx sfpowerscripts:ValidateApexCoverage -t <string> [-u <string>] [--json] [--loglevel
+  $ sfdx sfpowerscripts:apextests:validate -t <string> [-u <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -815,8 +754,514 @@ OPTIONS
                                                                                     this command invocation
 
 EXAMPLE
-  $ sfdx sfpowerscripts:ValidateApexCoverage -u scratchorg -t 80
+  $ sfdx sfpowerscripts:apextests:validate -u scratchorg -t 80
 ```
 
+_See code: [commands/sfpowerscripts/apextests/validate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/apextests/validate.ts)_
+
+
+## `sfdx sfpowerscripts:package:data:create`
+
+Creates a versioned artifact from a source directory containing SFDMU-based data (in csv format and export json). The artifact can be consumed by release pipelines, to deploy the data to orgs
+
+```
+Creates a versioned artifact from a source directory containing SFDMU-based data (in csv format and export json). The artifact can be consumed by release pipelines, to deploy the data to orgs
+
+USAGE
+  $ sfdx sfpowerscripts:package:data:create -n <string> -v <string> [--artifactdir <directory>] [--diffcheck] [--branch
+  <string>] [--gittag] [-r <string>] [--refname <string>]
+
+OPTIONS
+  -n, --package=package
+      (required) The name of the package
+
+  -r, --repourl=repourl
+      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
+
+  -v, --versionnumber=versionnumber
+      (required) The format is major.minor.patch.buildnumber . This will override the build number mentioned in the
+      sfdx-project.json, Try considering the use of Increment Version Number task before this task
+
+  --artifactdir=artifactdir
+      [default: artifacts] The directory where the artifact is to be written
+
+  --branch=branch
+      The git branch that this build is triggered on, Useful for metrics and general identification purposes
+
+  --diffcheck
+      Only build when the package has changed
+
+  --gittag
+      Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
+
+  --refname=refname
+      Reference name to be prefixed to output variables
+
+EXAMPLES
+  $ sfdx sfpowerscripts:package:data:create -n mypackage -v <version>
+  $ sfdx sfpowerscripts:package:data:create -n <mypackage> -v <version> --diffcheck --gittag
+  Output variable:
+  sfpowerscripts_artifact_directory
+  <refname>_sfpowerscripts_artifact_directory
+  sfpowerscripts_package_version_number
+  <refname>_sfpowerscripts_package_version_number
+```
+
+_See code: [commands/sfpowerscripts/package/data/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/data/create.ts)_
+
+
+## `sfdx sfpowerscripts:package:data:install`
+
+Installs a SFDMU-based data package consisting of csvfiles and export.json to a target org
+
+```
+Installs a SFDMU-based data package consisting of csvfiles and export.json to a target org
+
+USAGE
+  $ sfdx sfpowerscripts:package:data:install -n <string> -u <string> [--artifactdir <directory>] [-s]
+  [--skipifalreadyinstalled] [--subdirectory <directory>]
+
+OPTIONS
+  -n, --package=package                                                             (required) Name of the package to be
+                                                                                    installed
+
+  -s, --skiponmissingartifact                                                       Skip package installation if the
+                                                                                    build artifact is missing. Enable
+                                                                                    this if artifacts are only being
+                                                                                    created for modified packages
+
+  -u, --targetorg=targetorg                                                         (required) Alias/User Name of the
+                                                                                    target environment
+
+  --artifactdir=artifactdir                                                         [default: artifacts] The directory
+                                                                                    where the artifact is located
+
+  --skipifalreadyinstalled                                                          Skip the package installation if the
+                                                                                    package is already installed in the
+                                                                                    org
+
+  --subdirectory=subdirectory                                                       Install specific subdirectory in the
+                                                                                    package. Useful when package
+                                                                                    consists of multiple discrete
+                                                                                    sub-packages
+
+EXAMPLE
+  $ sfdx sfpowerscripts:package:data:install -n mypackage -u <org>
+```
+
+_See code: [commands/sfpowerscripts/package/data/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/data/install.ts)_
+
+
+## `sfdx sfpowerscripts:package:source:create`
+
+This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata wrapped into an artifact. The artifact can then be consumed by release tasks, to deploy the package
+
+```
+This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata (e.g. commit Id), source code & an optional destructive manifest. The artifact can then be consumed by release pipelines, to deploy the package
+
+USAGE
+  $ sfdx sfpowerscripts:package:source:create -n <string> -v <string> [--artifactdir <directory>] [--diffcheck]
+  [--branch <string>] [--gittag] [-r <string>] [--refname <string>]
+
+OPTIONS
+  -n, --package=package
+      (required) The name of the package
+
+  -r, --repourl=repourl
+      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
+
+  -v, --versionnumber=versionnumber
+      (required) The format is major.minor.patch.buildnumber . This will override the build number mentioned in the
+      sfdx-project.json, Try considering the use of Increment Version Number task before this task
+
+  --artifactdir=artifactdir
+      [default: artifacts] The directory where the artifact is to be written
+
+  --branch=branch
+      The git branch that this build is triggered on, Useful for metrics and general identification purposes
+
+  --diffcheck
+      Only build when the package has changed
+
+  --gittag
+      Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
+
+  --refname=refname
+      Reference name to be prefixed to output variables
+
+EXAMPLES
+  $ sfdx sfpowerscripts:package:source:create -n mypackage -v <version>
+  $ sfdx sfpowerscripts:package:source:create -n <mypackage> -v <version> --diffcheck --gittag
+  Output variable:
+  sfpowerscripts_artifact_metadata_directory
+  <refname>_sfpowerscripts_artifact_metadata_directory
+  sfpowerscripts_artifact_directory
+  <refname>_sfpowerscripts_artifact_directory
+  sfpowerscripts_package_version_number
+  <refname>_sfpowerscripts_package_version_number
+```
+
+_See code: [commands/sfpowerscripts/package/source/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/source/create.ts)_
+
+## `sfdx sfpowerscripts:package:source:install`
+
+Installs a sfpowerscripts source package to the target org. skipifalreadyinstalled` only works provide the target org has sfpowerscripts-artifact' (04t1P000000ka0fQAA) installed. Please note you can deploy your own instance of 'sfpowerscripts-artifact' by building it from the repo and overriding using the environment variable SFPOWERSCRIPTS_ARTIFACT_UNLOCKED_PACKAGE
+
+```
+Installs a sfpowerscripts source package to the target org
+
+USAGE
+  $ sfdx sfpowerscripts:package:source:install -n <string> -u <string> [--artifactdir <directory>]
+  [--skipifalreadyinstalled] [-s] [--subdirectory <directory>] [-o] [-t] [--waittime <string>] [--refname <string>]
+
+OPTIONS
+  -n, --package=package                                                             (required) Name of the package to be
+                                                                                    installed
+
+  -o, --optimizedeployment                                                          Optimize deployment by triggering
+                                                                                    test classes that are in the
+                                                                                    package, rather than using the whole
+                                                                                    tests in the org
+
+  -s, --skiponmissingartifact                                                       Skip package installation if the
+                                                                                    build artifact is missing. Enable
+                                                                                    this if artifacts are only being
+                                                                                    created for modified packages
+
+  -t, --skiptesting                                                                 Skips running test when deploying to
+                                                                                    a sandbox
+
+  -u, --targetorg=targetorg                                                         (required) Alias/User Name of the
+                                                                                    target environment
+
+  --artifactdir=artifactdir                                                         [default: artifacts] The directory
+                                                                                    where the artifact is located
+
+
+  --refname=refname                                                                 Reference name to be prefixed to
+                                                                                    output variables
+
+  --skipifalreadyinstalled                                                          Skip the package installation if the
+                                                                                    package is already installed in the
+                                                                                    org
+
+  --subdirectory=subdirectory                                                       Install specific subdirectory in the
+                                                                                    package. Useful when package
+                                                                                    consists of multiple discrete
+                                                                                    sub-packages
+
+  --waittime=waittime                                                               [default: 120] wait time for command
+                                                                                    to finish in minutes
+
+EXAMPLE
+  $ sfdx sfpowerscripts:package:source:install -n mypackage -u <org>
+```
+
+_See code: [commands/sfpowerscripts/package/source/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/source/install.ts)_
+
+## `sfdx sfpowerscripts:package:unlocked:create`
+
+Creates a new package version, and generates an artifact that consists of the metadata (e.g. version Id). The artifact can then be consumed by release pipelines, to install the unlocked package. Utilize this task in a package build for DX Unlocked Package
+
+```
+Creates a new package version, and generates an artifact that consists of the metadata (e.g. version Id). The artifact can then be consumed by release pipelines, to install the unlocked package. Utilize this task in a package build for DX Unlocked Package
+
+USAGE
+  $ sfdx sfpowerscripts:package:unlocked:create -n <string> [-b] [-k <string> | -x] [--diffcheck] [--gittag] [-r
+  <string>] [--versionnumber <string>] [-f <filepath>] [--artifactdir <directory>] [--enablecoverage] [-s] [--branch
+  <string>] [--tag <string>] [--waittime <string>] [--refname <string>] [-v <string>] [--apiversion <string>]
+
+OPTIONS
+  -b, --buildartifactenabled
+      [DEPRECATED - always generate artifact] Create a build artifact, so that this pipeline can be consumed by a release
+      pipeline
+
+  -f, --configfilepath=configfilepath
+      [default: config/project-scratch-def.json] Path in the current project directory containing  config file for the
+      packaging org
+
+  -k, --installationkey=installationkey
+      Installation key for this package
+
+  -n, --package=package
+      (required) ID (starts with 0Ho) or alias of the package to create a version of
+
+  -r, --repourl=repourl
+      Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config
+
+  -s, --isvalidationtobeskipped
+      Skips validation of dependencies, package ancestors, and metadata during package version creation. Skipping
+      validation reduces the time it takes to create a new package version, but package versions created without
+      validation can’t be promoted.
+
+  -v, --targetdevhubusername=targetdevhubusername
+      username or alias for the dev hub org; overrides default dev hub org
+
+  -x, --installationkeybypass
+      Bypass the requirement for having an installation key for this version of the package
+
+  --apiversion=apiversion
+      override the api version used for api requests made by this command
+
+  --artifactdir=artifactdir
+      [default: artifacts] The directory where the artifact is to be written
+
+  --branch=branch
+      The git branch that this build is triggered on, Useful for metrics and general identification purposes
+
+  --diffcheck
+      Only build when the package has changed
+
+  --enablecoverage
+      Please note this command takes a longer time to compute, activating this on every packaging build might not
+      necessary
+
+  --gittag
+      Tag the current commit ID with an annotated tag containing the package name and version - does not push tag
+
+
+  --refname=refname
+      Reference name to be prefixed to output variables
+
+  --tag=tag
+      the package version's tag
+
+  --versionnumber=versionnumber
+      The format is major.minor.patch.buildnumber . This will override the build number mentioned in the
+      sfdx-project.json, Try considering the use of Increment Version Number task before this task
+
+  --waittime=waittime
+      [default: 120] wait time for command to finish in minutes
+
+EXAMPLES
+  $ sfdx sfpowerscripts:package:unlocked:create -n <packagealias> -b -x -v <devhubalias> --refname <name>
+  $ sfdx sfpowerscripts:package:unlocked:create -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag
+
+  Output variable:
+  sfpowerscripts_package_version_id
+  <refname>_sfpowerscripts_package_version_id
+  sfpowerscripts_artifact_metadata_directory
+  <refname>_sfpowerscripts_artifact_metadata_directory
+  sfpowerscripts_artifact_directory
+  <refname>_sfpowerscripts_artifact_directory
+  sfpowerscripts_package_version_number
+  <refname>_sfpowerscripts_package_version_number
+```
+
+_See code: [commands/sfpowerscripts/package/unlocked/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/unlocked/create.ts)_
+
+## `sfdx sfpowerscripts:package:unlocked:install`
+
+Installs an unlocked package using sfpowerscripts metadata
+
+```
+Installs an unlocked package using sfpowerscripts metadata
+
+USAGE
+  $ sfdx sfpowerscripts:package:unlocked:install [-n <string>] [-u <string>] [-v <string> | -i] [-k <string>] [-a]
+  [--artifactdir <directory>] [--securitytype <string>] [-f] [-s undefined] [--upgradetype <string>] [--waittime
+  <string>] [--publishwaittime <string>] [--json] [--loglevel
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -a, --apexcompileonlypackage                                                      Each package installation triggers a
+                                                                                    compilation of apex, flag to trigger
+                                                                                    compilation of package only
+
+  -f, --skipifalreadyinstalled                                                      Skip the package installation if the
+                                                                                    package is already installed in the
+                                                                                    org
+
+  -i, --packageinstalledfrom                                                        automatically retrieve the version
+                                                                                    ID of the package to be installed,
+                                                                                    from the build artifact
+
+  -k, --installationkey=installationkey                                             installation key for key-protected
+                                                                                    package
+
+  -n, --package=package                                                             Name of the package to be installed
+
+  -s, --skiponmissingartifact                                                       Skip package installation if the
+                                                                                    build artifact is missing. Enable
+                                                                                    this if artifacts are only being
+                                                                                    created for modified packages
+
+  -u, --targetorg=targetorg                                                         Alias/User Name of the target
+                                                                                    environment
+
+  -v, --packageversionid=packageversionid                                           manually input package version Id of
+                                                                                    the package to be installed
+
+  --artifactdir=artifactdir                                                         [default: artifacts] The directory
+                                                                                    where the artifact is located
+
+  --publishwaittime=publishwaittime                                                 [default: 10] number of minutes to
+                                                                                    wait for subscriber package version
+                                                                                    ID to become available in the target
+                                                                                    org
+
+  --securitytype=AllUsers|AdminsOnly                                                [default: AllUsers] Select the
+                                                                                    security access for the package
+                                                                                    installation
+
+  --upgradetype=DeprecateOnly|Mixed|Delete                                          [default: Mixed] the upgrade type
+                                                                                    for the package installation
+
+  --waittime=waittime                                                               [default: 120] wait time for command
+                                                                                    to finish in minutes
+
+EXAMPLE
+  $ sfdx sfpowerscripts:package:unlocked:install -n packagename -u sandboxalias -i
+```
+
+_See code: [commands/sfpowerscripts/package/unlocked/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/unlocked/install.ts)_
+
+
+## `sfdx sfpowerscripts:package:version:increment`
+
+Increment the selected version counter by one and optionally commit changes to sfdx-project.json. This command does not push changes to the source repository
+
+```
+Increment the selected version counter by one and optionally commit changes to sfdx-project.json. This command does not push changes to the source repository
+
+USAGE
+  $ sfdx sfpowerscripts:package:version:increment [--segment <string>] [-a -r <string>] [-n <string>] [-d <string>]
+  [-c] [--refname <string>]
+
+OPTIONS
+  -a, --appendbuildnumber
+      Set the build segment of the version number to the build number rather than incremenenting
+
+  -c, --commitchanges
+      Mark this if you want to commit the modified sfdx-project json, Please note this will not push to the repo only
+      commits in the local checked out repo, You would need to have a push to the repo at the end of the packaging task if
+      everything is successfull
+
+  -d, --projectdir=projectdir
+      The directory should contain a sfdx-project.json for this command to succeed
+
+  -n, --package=package
+      The name of the package of which the version need to be incremented,If not specified the default package is utilized
+
+  -r, --runnumber=runnumber
+      The build number of the CI pipeline, usually available through an environment variable
+
+  --refname=refname
+      Reference name to be prefixed to output variables
+
+  --segment=Major|Minor|Patch|BuildNumber
+      [default: BuildNumber] Select the segment of the version
+
+EXAMPLES
+  $ sfdx sfpowerscripts:package:version:increment --segment BuildNumber -n packagename -c
+
+  Output variable:
+  sfpowerscripts_incremented_project_version
+  <refname>_sfpowerscripts_incremented_project_version
+```
+
+_See code: [commands/sfpowerscripts/package/version/increment.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/version/increment.ts)_
+
+## `sfdx sfpowerscripts:pool:delete`
+
+Deletes the pooled scratch orgs from the Scratch Org Pool
+
+```
+Deletes the pooled scratch orgs from the Scratch Org Pool
+
+USAGE
+  $ sfdx sfpowerscripts:pool:delete -t <string> [-m] [-i | -a] [-v <string>] [--apiversion <string>] [--json]
+  [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -a, --allscratchorgs                                                              Deletes all used and unused Scratch
+                                                                                    orgs from pool by the tag
+
+  -i, --inprogressonly                                                              Deletes all In Progress Scratch orgs
+                                                                                    from pool by the tag
+
+  -m, --mypool                                                                      Filter only Scratch orgs created by
+                                                                                    current user in the pool
+
+  -t, --tag=tag                                                                     (required) tag used to identify the
+                                                                                    scratch org pool
+
+  -v, --targetdevhubusername=targetdevhubusername                                   username or alias for the dev hub
+                                                                                    org; overrides default dev hub org
+
+  --apiversion=apiversion                                                           override the api version used for
+                                                                                    api requests made by this command
+
+EXAMPLES
+  $ sfdx sfpowerscripts:pool:delete -t core
+  $ sfdx sfpowerscripts:pool:delete -t core -v devhub
+```
+
+_See code: [commands/sfpowerscripts/pool/delete.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/delete.ts)_
+
+## `sfdx sfpowerscripts:pool:fetch`
+
+Gets an active/unused scratch org from the scratch org pool
+
+```
+Gets an active/unused scratch org from the scratch org pool
+
+USAGE
+  $ sfdx sfpowerscripts:pool:fetch -t <string> [-v <string>] [--apiversion <string>]
+OPTIONS
+  -t, --tag=tag                                                                     (required) (required) tag used to
+                                                                                    identify the scratch org pool
+
+  -v, --targetdevhubusername=targetdevhubusername                                   username or alias for the dev hub
+                                                                                    org; overrides default dev hub org
+
+  --apiversion=apiversion                                                           override the api version used for
+                                                                                    api requests made by this command
+
+
+
+EXAMPLES
+  $ sfdx sfpowerkit:pool:fetch -t core
+  $ sfdx sfpowerkit:pool:fetch -t core -v devhub
+  $ sfdx sfpowerkit:pool:fetch -t core -v devhub -m
+  $ sfdx sfpowerkit:pool:fetch -t core -v devhub -s testuser@test.com
+```
+
+_See code: [commands/sfpowerscripts/pool/fetch.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/fetch.ts)_
+
+## `sfdx sfpowerscripts:pool:list`
+
+Retrieves a list of active scratch org and details from any pool. If this command is run with -m|--mypool, the command will retrieve the passwords for the pool created by the user who is executing the command.
+
+```
+Retrieves a list of active scratch org and details from any pool. If this command is run with -m|--mypool, the command will retrieve the passwords for the pool created by the user who is executing the command.
+
+USAGE
+  $ sfdx sfpowerscripts:pool:list [-t <string>] [-m] [-a] [-v <string>] [--apiversion <string>]
+OPTIONS
+  -a, --allscratchorgs                                                              Gets all used and unused Scratch
+                                                                                    orgs from pool
+
+  -m, --mypool                                                                      Filter the tag for any additions
+                                                                                    created  by the executor of the
+                                                                                    command
+
+  -t, --tag=tag                                                                     tag used to identify the scratch org
+                                                                                    pool
+
+  -v, --targetdevhubusername=targetdevhubusername                                   username or alias for the dev hub
+                                                                                    org; overrides default dev hub org
+
+  --apiversion=apiversion                                                           override the api version used for
+                                                                                    api requests made by this command
+
+EXAMPLES
+  $ sfdx sfpowerscripts:pool:list -t core
+  $ sfdx sfpowerscripts:pool:list -t core -v devhub
+  $ sfdx sfpowerscripts:pool:list -t core -v devhub -m
+  $ sfdx sfpowerscripts:pool:list -t core -v devhub -m -a
+```
+
+_See code: [commands/sfpowerscripts/pool/list.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/list.ts)_
 
 <!-- commandsstop -->

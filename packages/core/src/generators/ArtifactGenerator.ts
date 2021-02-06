@@ -1,63 +1,49 @@
 import path = require("path");
-import fs = require("fs-extra");
+import * as fs from "fs-extra";
 import PackageMetadata from "../PackageMetadata";
 import GeneratePackageChangelog from "../changelog/GeneratePackageChangelog";
 import { Changelog } from "../changelog/interfaces/GenericChangelogInterfaces";
-import { isNullOrUndefined } from "util";
 import * as rimraf from "rimraf";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
+import AdmZip = require("adm-zip");
 
 export default class ArtifactGenerator {
-
-
   //Generates the universal artifact used by the CLI and AZP
   public static async generateArtifact(
     sfdx_package: string,
     project_directory: string,
     artifact_directory: string,
     packageArtifactMetadata: PackageMetadata
-  ): Promise<{artifactDirectory:string,artifactMetadataFilePath:string,artifactSourceDirectory:string,changelogDirectory:string}> {
-
+  ): Promise<string> {
     try {
-      let abs_artifact_directory: string;
+      // Artifact folder consisting of artifact metadata, changelog & source
+      let artifactFolder: string =
+        sfdx_package == null
+          ? "sfpowerscripts_artifact"
+          : `${sfdx_package}_sfpowerscripts_artifact`;
 
-      if(!isNullOrUndefined(artifact_directory))
-      {
-          abs_artifact_directory = path.resolve(artifact_directory);
+      // Absolute filepath of artifact
+      let artifactFilepath: string;
+
+      if (artifact_directory != null) {
+        artifactFilepath = path.resolve(artifact_directory, artifactFolder);
+      } else {
+        artifactFilepath = path.resolve(artifactFolder);
       }
-      else
-      {
-          abs_artifact_directory=process.cwd();
 
-      }
+      fs.mkdirpSync(artifactFilepath);
 
-      let aritfactDirectory = isNullOrUndefined(sfdx_package)?"sfpowerscripts_artifact":`${sfdx_package}_sfpowerscripts_artifact`;
-
-
-      let sfdx_package_artifact: string = path.join(
-        abs_artifact_directory,
-        aritfactDirectory
-      );
-
-
-      fs.mkdirpSync(sfdx_package_artifact);
-
-      let sourcePackage: string = path.join(
-        sfdx_package_artifact,
-        `source`
-      );
+      let sourcePackage: string = path.join(artifactFilepath, `source`);
       fs.mkdirpSync(sourcePackage);
       fs.copySync(packageArtifactMetadata.sourceDir, sourcePackage);
 
       rimraf.sync(packageArtifactMetadata.sourceDir);
 
-
-
       //Modify Source Directory to the new source directory inside the artifact
-      packageArtifactMetadata.sourceDir=`source`;
+      packageArtifactMetadata.sourceDir = `source`;
 
       let artifactMetadataFilePath: string = path.join(
-        sfdx_package_artifact,
+        artifactFilepath,
         `artifact_metadata.json`
       );
 
@@ -70,14 +56,16 @@ export default class ArtifactGenerator {
       let generatePackageChangelog: GeneratePackageChangelog = new GeneratePackageChangelog(
         sfdx_package,
         packageArtifactMetadata.sourceVersionFrom,
-        packageArtifactMetadata.sourceVersionTo ? packageArtifactMetadata.sourceVersionTo : packageArtifactMetadata.sourceVersion,
+        packageArtifactMetadata.sourceVersionTo
+          ? packageArtifactMetadata.sourceVersionTo
+          : packageArtifactMetadata.sourceVersion,
         project_directory
       );
 
       let packageChangelog: Changelog = await generatePackageChangelog.exec();
 
       let changelogFilepath: string = path.join(
-        sfdx_package_artifact,
+        artifactFilepath,
         `changelog.json`
       );
 
@@ -86,16 +74,43 @@ export default class ArtifactGenerator {
         JSON.stringify(packageChangelog, null, 4)
       );
 
-      SFPLogger.log("Artifact Copy Completed");
+      SFPLogger.log("Artifact Copy Completed", null, null, LoggerLevel.DEBUG);
 
-      return {
-        artifactDirectory: path.resolve(abs_artifact_directory, aritfactDirectory),
-        artifactMetadataFilePath: artifactMetadataFilePath,
-        artifactSourceDirectory: sourcePackage,
-        changelogDirectory: changelogFilepath
-      };
+      let zip = new AdmZip();
+      zip.addLocalFolder(artifactFilepath, artifactFolder);
+      SFPLogger.log(`Zipping ${artifactFolder}`, null, null, LoggerLevel.DEBUG);
+
+      let packageVersionNumber: string = ArtifactGenerator.substituteBuildNumberWithPreRelease(
+        packageArtifactMetadata.package_version_number
+      );
+
+      let zipArtifactFilepath: string =
+        artifactFilepath + `_` + packageVersionNumber + `.zip`;
+      zip.writeZip(zipArtifactFilepath);
+
+      // Cleanup unzipped artifact
+      rimraf.sync(artifactFilepath);
+
+      return zipArtifactFilepath;
     } catch (error) {
       throw new Error("Unable to create artifact" + error);
     }
+  }
+
+  private static substituteBuildNumberWithPreRelease(
+    packageVersionNumber: string
+  ) {
+    let segments = packageVersionNumber.split(".");
+
+    if (segments.length === 4) {
+      packageVersionNumber = segments.reduce(
+        (version, segment, segmentsIdx) => {
+          if (segmentsIdx === 3) return version + "-" + segment;
+          else return version + "." + segment;
+        }
+      );
+    }
+
+    return packageVersionNumber;
   }
 }

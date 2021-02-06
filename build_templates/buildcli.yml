@@ -51,27 +51,10 @@ steps:
 
 
           - task: CmdLine@2
-            displayName: 'Checkout the current version of the branch'
-            condition: eq( ${{ parameters.publish }},true)
-            inputs:
-                 script: |
-                  git checkout  $(System.PullRequest.SourceBranch)
-                 workingDirectory: '$(System.DefaultWorkingDirectory)'
-
-
-          - task: Cache@2
-            displayName: Cache NPM Modules
-            inputs:
-              key: 'npm | "$(Agent.OS)"  | package-lock.json'
-              path: '$(System.DefaultWorkingDirectory)/node_modules'
-              cacheHitVar: 'npm | "$(Agent.OS)"'
-
-      
-          - task: CmdLine@2
             displayName: Install Node depdencies
             inputs:
               script: 'npm install'
-           
+
 
           - task: DownloadSecureFile@1
             displayName: 'Download secure file .npmrc'
@@ -121,6 +104,29 @@ steps:
           - script: 'npx lerna run build'
             displayName: 'Build  All  Packages'
             condition: or( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}', 'review') )
+
+
+          - task: CmdLine@2
+            displayName: 'Run Core Unit Tests'
+            condition: eq( ${{ parameters.publish }},true)
+            inputs:
+                 script: 'npm run test'
+                 workingDirectory: '$(System.DefaultWorkingDirectory)/packages/core'
+
+          - task: CmdLine@2
+            displayName: 'Run CLI Unit Tests'
+            condition: eq( ${{ parameters.publish }},true)
+            inputs:
+                 script: 'npm run test'
+                 workingDirectory: '$(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli'
+
+          - task: CmdLine@2
+            displayName: 'Upload Coverage Results'
+            condition: eq( ${{ parameters.publish }},true)
+            inputs:
+                 script: 'bash <(curl -s https://codecov.io/bash)'
+                 workingDirectory: '$(System.DefaultWorkingDirectory)/packages/core'
+
 
           - task: CmdLine@2
             displayName: 'Publish CLI/Core'

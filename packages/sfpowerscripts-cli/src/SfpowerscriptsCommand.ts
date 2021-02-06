@@ -1,5 +1,6 @@
 import { SfdxCommand } from "@salesforce/command";
 import { OutputFlags } from "@oclif/parser";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -16,12 +17,11 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         'sfpowerscripts_incremented_project_version',
         'sfpowerscripts_artifact_directory',
         'sfpowerscripts_artifact_metadata_directory',
-        'sfpowerscripts_delta_package_path',
         'sfpowerscripts_package_version_id',
         'sfpowerscripts_package_version_number',
         'sfpowerscripts_pmd_output_path',
-        'sfpowerscripts_exportedsource_zip_path',
-        'sfpowerkit_deploysource_id'
+        'sfpowerscripts_scratchorg_username',
+        'sfpowerscripts_installsourcepackage_deployment_id'
     ];
 
     /**
@@ -34,6 +34,9 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
      */
     async run(): Promise<any> {
         this.loadSfpowerscriptsVariables(this.flags);
+
+       //Initialise StatsD
+        this.initializeStatsD();
 
         // Execute command run code
         await this.execute();
@@ -48,6 +51,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     private loadSfpowerscriptsVariables(flags: OutputFlags<any>): void {
         require("dotenv").config();
 
+
         for (let flag in flags ) {
             for ( let sfpowerscripts_variable of this.sfpowerscripts_variable_dictionary ) {
                 if (
@@ -59,6 +63,14 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
                     break;
                 }
             }
+        }
+    }
+
+    private initializeStatsD()
+    {
+        if(process.env.SFPOWERSCRIPTS_STATSD)
+        {
+            SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
         }
     }
 }

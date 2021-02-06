@@ -1,0 +1,12 @@
+{
+  "commandDescription": "Installs a sfpowerscripts source package to the target org",
+  "packageFlagDescription": "Name of the package to be installed",
+  "targetOrgFlagDescription": "Alias/User Name of the target environment",
+  "artifactDirectoryFlagDescription": "The directory where the artifact is located",
+  "skipOnMissingArtifactFlagDescription": "Skip package installation if the build artifact is missing. Enable this if artifacts are only being created for modified packages",
+  "waitTimeFlagDescription": "wait time for command to finish in minutes",
+  "optimizedeployment":"Optimize deployment by triggering test classes that are in the package, rather than using the whole tests in the org",
+  "skiptesting":"Skips running test when deploying to a sandbox",
+  "skipIfAlreadyInstalled":"Skip the package installation if the package is already installed in the org",
+  "refNameFlagDescription": "Reference name to be prefixed to output variables"
+}

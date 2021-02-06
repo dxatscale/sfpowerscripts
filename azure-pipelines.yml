@@ -1,4 +1,4 @@
-name: Milestone18$(Rev:.r)
+name: Milestone20$(Rev:.r)
 
 trigger:
   branches:
@@ -13,7 +13,7 @@ trigger:
 variables:
  - group: Tokens
  - name: major
-   value: 18
+   value: 19
 
  - name: minor
    value: $[counter(variables['major'], 200)]
@@ -29,39 +29,22 @@ stages:
   jobs:
 
 
-  - job: BuildCLI
+  - deployment: BuildCLI
     displayName: sfdx-plugin
+    timeoutInMinutes: 20
     pool:
       vmImage: 'ubuntu-latest'
-    steps:
+    environment: alpha
+    strategy:
+      runOnce:
+        deploy:
+          steps:
              - template: build_templates/buildcli.yml
                parameters:
                 commitToGit: true
                 version: 'alpha'
                 publish: true
 
-
-  - deployment: BuildAzPipelines
-    displayName: azpipelines
-    timeoutInMinutes: 20
-    pool:
-      vmImage: 'ubuntu-latest'
-    environment: alpha
-    strategy:
-       runOnce:
-         deploy:
-           steps:
-
-             - template: build_templates/buildazpipelines.yml
-               parameters:
-                commitToGit: true
-                bump: 'prerelease'
-                stageToDeploy: 'alpha'
-                version: 'alpha'
-                environmentToDeploy: 'alpha'
-                toBuild: true
-                organization: dxatscalereview
-                buildNumber: $(minor)
 
 
 #Beta Stage
@@ -71,11 +54,16 @@ stages:
   jobs:
 
 
-  - job: BuildCLI
+  - deployment: BuildCLI
     displayName: sfdx-plugin
+    timeoutInMinutes: 20
     pool:
       vmImage: 'ubuntu-latest'
-    steps:
+    environment: beta
+    strategy:
+      runOnce:
+        deploy:
+          steps:
              - template: build_templates/buildcli.yml
                parameters:
                 commitToGit: false
@@ -83,27 +71,7 @@ stages:
                 publish: false
 
 
-  - deployment: BuildAzPipelines
-    displayName: azpipelines
-    timeoutInMinutes: 20
-    pool:
-      vmImage: 'ubuntu-latest'
-    environment: beta
-    strategy:
-       runOnce:
-         deploy:
-           steps:
 
-             - template: build_templates/buildazpipelines.yml
-               parameters:
-                commitToGit: false
-                bump: 'prerelease'
-                stageToDeploy: 'beta'
-                version: 'beta'
-                environmentToDeploy: 'beta'
-                toBuild: true
-                organization: dxatscalereview
-                buildNumber: $(minor)
 
 # Hotfix stage
 - stage: Hotfix
@@ -112,36 +80,22 @@ stages:
   condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/hotfix/')
 
   jobs:
-  - job: BuildCLI
+  - deployment: BuildCLI
     displayName: sfdx-plugin
+    timeoutInMinutes: 20
     pool:
       vmImage: 'ubuntu-latest'
-    steps:
+    environment: hotfix
+    strategy:
+      runOnce:
+        deploy:
+          steps:
              - template: build_templates/buildcli.yml
                parameters:
                 commitToGit: false
                 version: 'hotfix'
                 publish: true
 
-
-  - deployment: BuildAzPipelines
-    displayName: azpipelines
-    timeoutInMinutes: 20
-    pool:
-      vmImage: 'ubuntu-latest'
-    environment: hotfix
-    strategy:
-       runOnce:
-         deploy:
-           steps:
-
-             - template: build_templates/buildazpipelines.yml
-               parameters:
-                commitToGit: false
-                stageToDeploy: 'hotfix'
-                version: 'hotfix'
-                organization: safebot
-                buildNumber: $(minor)
 
 #Prod Stage
 - stage: Prod
@@ -152,38 +106,19 @@ stages:
   jobs:
 
 
-  - job: BuildCLI
+  - deployment: BuildCLI
     displayName: sfdx-plugin
+    timeoutInMinutes: 30
     pool:
       vmImage: 'ubuntu-latest'
-    steps:
+    environment: prod
+    strategy:
+      runOnce:
+        deploy:
+          steps:
              - template: build_templates/buildcli.yml
                parameters:
                 commitToGit: false
                 bump: 'patch'
                 version: 'latest'
                 publish: false
-
-
-  - deployment: BuildAzPipelines
-    displayName: azpipelines
-    dependsOn: BuildCLI
-    timeoutInMinutes: 30
-    pool:
-      vmImage: 'ubuntu-latest'
-    environment: prod
-    strategy:
-       runOnce:
-         deploy:
-           steps:
-
-             - template: build_templates/buildazpipelines.yml
-               parameters:
-                commitToGit: false
-                bump: 'patch'
-                stageToDeploy: 'prod'
-                version: 'prod'
-                environmentToDeploy: 'prod'
-                toBuild: true
-                organization: dxatscalereview
-                buildNumber: $(minor)

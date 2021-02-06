@@ -13,19 +13,19 @@ export default interface PackageMetadata {
     branch?:string;
     apextestsuite?: string;
     isApexFound?:boolean;
+    assignPermSetsPreDeployment?: string[];
+    assignPermSetsPostDeployment?: string[];
     apexTestClassses?:string[];
     isTriggerAllTests?:boolean;
     isProfilesFound?:boolean;
     tag?:string;
     isDependencyValidated?:boolean;
-    isDestructiveChangesFound?:boolean;
     destructiveChanges?:any;
     payload?:any;
+    metadataCount?:number;
     sourceDir?:string;
     dependencies?:any;
-    preDeploymentSteps?:string[];
-    postDeploymentSteps?:string[];
+    reconcileProfiles?: boolean;
     creation_details?:{creation_time?:number,timestamp?:number}
     deployments?:{target_org:string,sub_directory?:string,installation_time?:number,timestamp?:number}[];
   }
-  

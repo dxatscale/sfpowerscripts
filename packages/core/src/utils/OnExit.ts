@@ -2,9 +2,10 @@ import { ChildProcess } from "child_process";
 
 export async function onExit(childProcess: ChildProcess,message?:string): Promise<{}> {
     return new Promise((resolve, reject) => {
-      
+
       childProcess.once('close', (code: number, signal: string) => {
-        if (code === 0) {
+
+        if (code === 0 || (code === null && signal === "SIGTERM")) {
           resolve(undefined);
         } else {
 
@@ -16,6 +17,6 @@ export async function onExit(childProcess: ChildProcess,message?:string): Promis
       childProcess.once('error', (err: Error) => {
         reject(new Error(message?message:err.message));
       });
-         
+
     });
   }
