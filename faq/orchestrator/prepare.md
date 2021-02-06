@@ -130,9 +130,9 @@ Error: getaddrinfo ENOTFOUND page-drive-4000-dev-ed.cs73.my.salesforce.com
 }
 ```
 
-## How do I provide keys for managed package dependencies?
+## I have some managed packages that needs keys to be installed on to my scratch orgs, Does sfpowerscripts support it?
 
 The format for the 'keys' parameter is a string of key-value pairs separated by spaces - where the key is the name of the package, the value is the protection key of the package, and the  key-value pair itself is delimited by a colon . 
 
-e.g. --keys "packageA:12345 packageB:pw356 packageC:pw777" 
+e.g. `--keys "packageA:12345 packageB:pw356 packageC:pw777"` 
 
