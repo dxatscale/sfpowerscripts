@@ -105,8 +105,7 @@ export default class ValidateImpl {
   }
 
   private async installPackageDependencies(scratchOrgUsername: string) {
-    console.log(`Beginning Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
-
+    this.printOpenLoggingGroup(`Beginning Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
     SFPLogger.isSupressLogs=false;
     // Install Dependencies
     let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
@@ -123,6 +122,7 @@ export default class ValidateImpl {
       throw new Error(installationResult.message);
     }
     console.log(`Successfully completed Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
+    this.printClosingLoggingGroup();
   }
 
   private deleteScratchOrg(scratchOrgUsername: string): void {
@@ -385,5 +385,27 @@ export default class ValidateImpl {
     console.log(
       `----------------------------------------------------------------------------------------------------`
     );
+    this.printClosingLoggingGroup();
   }
+
+  private printOpenLoggingGroup(message:string) {
+    if (this.props.logsGroupSymbol?.[0])
+      SFPLogger.log(
+        this.props.logsGroupSymbol[0],
+        `${message}`,
+        null,
+        LoggerLevel.INFO
+      );
+  }
+
+  private printClosingLoggingGroup() {
+    if (this.props.logsGroupSymbol?.[1])
+      SFPLogger.log(
+        this.props.logsGroupSymbol[1],
+        null,
+        null,
+        LoggerLevel.INFO
+      );
+  }
+
 }
