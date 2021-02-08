@@ -6,6 +6,8 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata"
 import { Stage } from "../Stage";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import fs = require("fs");
+import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
+import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 const Table = require("cli-table");
 
 export enum ValidateMode {
@@ -53,6 +55,11 @@ export default class ValidateImpl {
         }
       } else throw new Error(`Unknown mode ${this.props.validateMode}`);
 
+
+   
+      await this.installPackageDependencies(scratchOrgUsername);
+
+
       let packagesToCommits: {[p: string]: string} = {};
 
       let queryResult = this.querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername);
@@ -95,6 +102,25 @@ export default class ValidateImpl {
         }
     }
 
+  }
+
+  private async installPackageDependencies(scratchOrgUsername: string) {
+    console.log(`Beginning Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
+    // Install Dependencies
+    let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
+      scratchOrgUsername,
+      this.props.devHubUsername,
+      120,
+      null,
+      null,
+      true,
+      null
+    );
+    let installationResult = await installDependencies.exec();
+    if (installationResult.result == PackageInstallationStatus.Failed) {
+      throw new Error(installationResult.message);
+    }
+    console.log(`Successfully completed Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
   }
 
   private deleteScratchOrg(scratchOrgUsername: string): void {
