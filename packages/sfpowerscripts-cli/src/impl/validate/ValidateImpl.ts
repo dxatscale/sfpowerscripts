@@ -106,6 +106,8 @@ export default class ValidateImpl {
 
   private async installPackageDependencies(scratchOrgUsername: string) {
     console.log(`Beginning Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
+
+    SFPLogger.isSupressLogs=false;
     // Install Dependencies
     let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
       scratchOrgUsername,
