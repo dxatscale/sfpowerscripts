@@ -203,7 +203,7 @@ export default class InstallSourcePackageImpl {
 
 
       } else if (result.result === false) {
-        throw new Error("Deployment failed with error " + result.message);
+        throw new Error("Deployment failed with error:" + result.message);
       }
       let elapsedTime = Date.now() - startTime;
 

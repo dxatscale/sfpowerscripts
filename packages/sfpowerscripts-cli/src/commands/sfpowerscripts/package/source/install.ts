@@ -106,12 +106,12 @@ export default class InstallSourcePackage extends InstallPackageCommand {
       );
 
       let result = await installSourcePackageImpl.exec();
-    
+
       if (result.result == PackageInstallationStatus.Failed) {
         throw new Error(result.message);
       } else {
         console.log(`Succesfully Installed source package  ${sfdx_package}`);
-        
+
         console.log("\n\nOutput variables:");
         if (result.deploy_id) {
           if (this.flags.refname) {
@@ -132,7 +132,7 @@ export default class InstallSourcePackage extends InstallPackageCommand {
         }
       }
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
       process.exitCode = 1;
     }
   }

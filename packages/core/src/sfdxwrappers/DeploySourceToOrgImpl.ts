@@ -6,7 +6,8 @@ import PackageEmptyChecker from "../package/PackageEmptyChecker";
 import PackageMetadataPrinter from "../display/PackageMetadataPrinter";
 import ConvertSourceToMDAPIImpl from "./ConvertSourceToMDAPIImpl";
 import PackageManifest from "../package/PackageManifest";
-
+import DeployErrorDisplayer from "../display/DeployErrorDisplayer";
+import * as fs from "fs-extra";
 
 export interface DeploySourceResult {
   deploy_id: string;
@@ -153,11 +154,10 @@ export default class DeploySourceToOrgImpl {
   }
 
   private async getFinalDeploymentStatus(deploy_id: string): Promise<string> {
-    let messageString = "";
+    let reportJson = "";
     try {
-      //Print final output
       let child = child_process.exec(
-        `npx sfdx force:mdapi:deploy:report  -i ${deploy_id} -u ${this.target_org}`,
+        `npx sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org}`,
         {
           cwd: this.project_directory,
           encoding: "utf8",
@@ -165,18 +165,26 @@ export default class DeploySourceToOrgImpl {
         }
       );
 
-      child.stderr.on("data", (data) => {
-        messageString += data.toString();
-      });
-
       child.stdout.on("data", (data) => {
-        messageString += data.toString();
+        reportJson += data.toString();
       });
 
       await onExit(child);
-      return messageString;
+
+      fs.mkdirpSync(`.sfpowerscripts/mdapiDeployReports`);
+      fs.writeFileSync(
+        `.sfpowerscripts/mdapiDeployReports/${deploy_id}.json`,
+        reportJson
+      );
+
+      // Return empty string for successful deployment
+      return "";
     } catch (err) {
-      return messageString;
+      let report = JSON.parse(reportJson);
+      DeployErrorDisplayer.printMetadataFailedToDeploy(
+        report.result.details.componentFailures
+      );
+      return report.message;
     }
   }
 
