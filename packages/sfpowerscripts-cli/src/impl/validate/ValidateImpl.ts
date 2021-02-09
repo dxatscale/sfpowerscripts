@@ -105,7 +105,7 @@ export default class ValidateImpl {
   }
 
   private async installPackageDependencies(scratchOrgUsername: string) {
-    this.printOpenLoggingGroup(`Beginning Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
+    this.printOpenLoggingGroup(`Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
     SFPLogger.isSupressLogs=false;
     // Install Dependencies
     let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
@@ -254,6 +254,7 @@ export default class ValidateImpl {
   }
 
   private printArtifactVersions(queryResult: any) {
+    this.printOpenLoggingGroup(`Artifacts installed in the Scratch Org"`);
     let table = new Table({
       head: ["Artifact", "Version", "Commit Id"],
     });
@@ -264,6 +265,7 @@ export default class ValidateImpl {
 
     console.log(`Artifacts installed in scratch org:`);
     console.log(table.toString());
+    this.printClosingLoggingGroup();
   }
 
   /**
@@ -274,7 +276,7 @@ export default class ValidateImpl {
   private querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername): any {
     let queryResultJson: string;
     try {
-      console.log("Querying scratch org for Sfpowerscripts Artifacts");
+     
       queryResultJson = child_process.execSync(
         `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c" -r json -u ${scratchOrgUsername}`,
         {
@@ -290,6 +292,7 @@ export default class ValidateImpl {
       console.log("Failed to query org for Sfpowerscripts Artifacts");
       return null;
     }
+    
   }
 
   private authenticateToScratchOrg(scratchOrgUsername: string): void {
