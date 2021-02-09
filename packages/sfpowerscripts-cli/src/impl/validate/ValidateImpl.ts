@@ -6,6 +6,8 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata"
 import { Stage } from "../Stage";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import fs = require("fs");
+import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
+import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 const Table = require("cli-table");
 
 export enum ValidateMode {
@@ -51,7 +53,10 @@ export default class ValidateImpl {
         if (this.props.shapeFile) {
           this.deployShapeFile(this.props.shapeFile, scratchOrgUsername);
         }
+        await this.installPackageDependencies(scratchOrgUsername);
       } else throw new Error(`Unknown mode ${this.props.validateMode}`);
+
+
 
       let packagesToCommits: {[p: string]: string} = {};
 
@@ -95,6 +100,27 @@ export default class ValidateImpl {
         }
     }
 
+  }
+
+  private async installPackageDependencies(scratchOrgUsername: string) {
+    this.printOpenLoggingGroup(`Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
+    SFPLogger.isSupressLogs=false;
+    // Install Dependencies
+    let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
+      scratchOrgUsername,
+      this.props.devHubUsername,
+      120,
+      null,
+      null,
+      true,
+      null
+    );
+    let installationResult = await installDependencies.exec();
+    if (installationResult.result == PackageInstallationStatus.Failed) {
+      throw new Error(installationResult.message);
+    }
+    console.log(`Successfully completed Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
+    this.printClosingLoggingGroup();
   }
 
   private deleteScratchOrg(scratchOrgUsername: string): void {
@@ -226,6 +252,7 @@ export default class ValidateImpl {
   }
 
   private printArtifactVersions(queryResult: any) {
+    this.printOpenLoggingGroup(`Artifacts installed in the Scratch Org"`);
     let table = new Table({
       head: ["Artifact", "Version", "Commit Id"],
     });
@@ -236,6 +263,7 @@ export default class ValidateImpl {
 
     console.log(`Artifacts installed in scratch org:`);
     console.log(table.toString());
+    this.printClosingLoggingGroup();
   }
 
   /**
@@ -246,7 +274,7 @@ export default class ValidateImpl {
   private querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername): any {
     let queryResultJson: string;
     try {
-      console.log("Querying scratch org for Sfpowerscripts Artifacts");
+     
       queryResultJson = child_process.execSync(
         `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c" -r json -u ${scratchOrgUsername}`,
         {
@@ -262,6 +290,7 @@ export default class ValidateImpl {
       console.log("Failed to query org for Sfpowerscripts Artifacts");
       return null;
     }
+    
   }
 
   private authenticateToScratchOrg(scratchOrgUsername: string): void {
@@ -357,5 +386,27 @@ export default class ValidateImpl {
     console.log(
       `----------------------------------------------------------------------------------------------------`
     );
+    this.printClosingLoggingGroup();
   }
+
+  private printOpenLoggingGroup(message:string) {
+    if (this.props.logsGroupSymbol?.[0])
+      SFPLogger.log(
+        this.props.logsGroupSymbol[0],
+        `${message}`,
+        null,
+        LoggerLevel.INFO
+      );
+  }
+
+  private printClosingLoggingGroup() {
+    if (this.props.logsGroupSymbol?.[1])
+      SFPLogger.log(
+        this.props.logsGroupSymbol[1],
+        null,
+        null,
+        LoggerLevel.INFO
+      );
+  }
+
 }
