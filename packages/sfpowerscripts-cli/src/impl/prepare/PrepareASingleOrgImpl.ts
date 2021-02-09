@@ -68,7 +68,7 @@ export default class PrepareASingleOrgImpl {
       let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
         this.scratchOrg.username,
         this.hubOrg,
-        60,
+        120,
         null,
         this.keys,
         true,

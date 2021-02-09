@@ -19,9 +19,7 @@ export default class InstallPackageDepenciesImpl {
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
-    SFPLogger.isSupressLogs = true;
     let command = `sfdx sfpowerkit:package:dependencies:install -u ${this.target_org} -v ${this.devhub_alias} -r -w ${this.wait_time}`;
-
     if (this.apexcompileonlypackage) command += ` -a`;
     if (this.keys != null && this.keys.length > 0)
       command += ` -k ${this.keys}`;
