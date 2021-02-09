@@ -4,25 +4,30 @@ import SFPLogger from "../utils/SFPLogger";
 export default class DeployErrorDisplayer {
 
   public static printMetadataFailedToDeploy(componentFailures: any, packageLogger?: any) {
-    
+
     if (componentFailures === null || componentFailures === undefined) return;
 
     let table = new Table({
       head: ["Metadata Type", "API Name","Problem Type","Problem"],
     });
 
-    let pushTypeMembersIntoTable = (type) => {
-        let item = [type.componentType, type.fullName,type.problemType,type.problem];
+    let pushComponentFailureIntoTable = (componentFailure) => {
+        let item = [
+          componentFailure.componentType,
+          componentFailure.fullName,
+          componentFailure.problemType,
+          componentFailure.problem
+        ];
         table.push(item);
     };
 
     if (componentFailures instanceof Array) {
-      for (let type of componentFailures) {
-        pushTypeMembersIntoTable(type);
+      for (let failure of componentFailures) {
+        pushComponentFailureIntoTable(failure);
       }
     } else {
-      let type = componentFailures;
-      pushTypeMembersIntoTable(type);
+      let failure = componentFailures;
+      pushComponentFailureIntoTable(failure);
     }
     SFPLogger.log(
       "The following components resulted in failures:",
