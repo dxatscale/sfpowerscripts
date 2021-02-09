@@ -10,7 +10,8 @@ export default class GitTags {
 
   /**
    * Returns list of sorted tags, belonging to package, that are reachable from HEAD and
-   * follow the first parent on merge commits
+   * follow the first parent on merge commits.
+   * If there are no tags, returns empty array
    * @param sfdx_package
    */
    async listTagsOnBranch(): Promise<string[]> {
@@ -21,7 +22,10 @@ export default class GitTags {
       `--merged`
     ]);
 
-    return this.filterTagsAgainstBranch(tags);
+    if (tags.length > 0)
+      return this.filterTagsAgainstBranch(tags);
+    else
+      return tags;
   }
 
   private async filterTagsAgainstBranch(

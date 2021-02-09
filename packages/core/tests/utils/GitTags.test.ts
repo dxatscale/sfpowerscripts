@@ -4,6 +4,7 @@ import Git from "../../src/utils/Git";
 
 import child_process = require("child_process");
 
+let tags: string[];
 jest.mock("../../src/utils/Git", () => {
   class Git {
     tag = jest.fn().mockReturnValue(tags);
@@ -20,21 +21,33 @@ describe("Given a package, listTagsOnBranch", () => {
   });
 
 
-  it("should return tags belonging to package on current branch", async () => {
+  it("should return tags belonging to package, on current branch", async () => {
+    tags = coreTags;
     let git: Git = new Git();
 
     const gitTags: GitTags = new GitTags(git, 'core');
-    expect(await gitTags.listTagsOnBranch()).toEqual([
-      "core_v1.0.0.11",
-      "core_v1.0.0.43",
-      "core_v1.0.0.48",
-      "core_v1.0.0.53"
-    ]);
+    expect(await gitTags.listTagsOnBranch()).toEqual(coreTags.slice(0,4));
+  });
+
+  it("should return an empty array if there are no tags", async () => {
+    tags = [];
+    let git: Git = new Git();
+
+    const gitTags: GitTags = new GitTags(git, 'core');
+    expect(await gitTags.listTagsOnBranch()).toEqual([]);
+  });
+
+  it ("should return an empty array if there are no tags belonging to package, on current branch", async () => {
+    tags = coreTags.slice(4)
+    let git: Git = new Git();
+
+    const gitTags: GitTags = new GitTags(git, 'core');
+    expect(await gitTags.listTagsOnBranch()).toEqual([]);
   });
 });
 
 // Last two tags are not found on the current branch
-const tags = [
+const coreTags = [
   "core_v1.0.0.11",
   "core_v1.0.0.43",
   "core_v1.0.0.48",
@@ -43,6 +56,7 @@ const tags = [
   "core_v1.0.0.163"
 ]
 
+// Commits on current branch
 const gitLog = [
   '9d7795b9e2391a93b72ae7cf391f55eac5a869c1',
   '65ed6f19bb87d31e56efd49cd50a6a19ba172626',
