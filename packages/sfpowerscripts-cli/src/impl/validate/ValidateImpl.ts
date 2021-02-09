@@ -53,11 +53,9 @@ export default class ValidateImpl {
         if (this.props.shapeFile) {
           this.deployShapeFile(this.props.shapeFile, scratchOrgUsername);
         }
+        await this.installPackageDependencies(scratchOrgUsername);
       } else throw new Error(`Unknown mode ${this.props.validateMode}`);
 
-
-   
-      await this.installPackageDependencies(scratchOrgUsername);
 
 
       let packagesToCommits: {[p: string]: string} = {};
