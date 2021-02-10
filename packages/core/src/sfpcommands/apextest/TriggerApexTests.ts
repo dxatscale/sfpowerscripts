@@ -35,7 +35,12 @@ export default class TriggerApexTests {
       triggerApexTestImpl.getGeneratedSFDXCommandWithParams(),
       this.fileLogger
     );
-    await triggerApexTestImpl.exec(true);
+
+    try {
+      await triggerApexTestImpl.exec(true);
+    } catch(err) {
+      // catch error so that results can be displayed
+    }
 
     let id = this.getTestId();
     let testReport = this.getTestReport(id);
@@ -95,7 +100,7 @@ export default class TriggerApexTests {
     }[];
   }> {
     if (this.testOptions instanceof RunAllTestsInPackageOptions) {
-  
+
       let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
         this.testOptions.sfppackage,
         this.getCoverageReport()
