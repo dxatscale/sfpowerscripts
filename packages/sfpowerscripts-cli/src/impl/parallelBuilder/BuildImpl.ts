@@ -110,7 +110,8 @@ export default class BuildImpl {
           pkg,
           this.props.projectDirectory,
           type == "Data" || type == "Source" ? null : this.props.configFilePath,
-          this.props.packagesToCommits
+          this.props.packagesToCommits,
+          this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
         );
         let isToBeBuilt = await diffImpl.exec();
 
