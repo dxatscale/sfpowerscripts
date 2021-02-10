@@ -13,6 +13,7 @@ export default class PackageDiffImpl {
     private project_directory: string,
     private config_file_path?: string,
     private packagesToCommits?: {[p: string]: string},
+    private pathToReplacementForceIgnore?: string
   ) {}
 
   public async exec(): Promise<boolean> {
@@ -51,7 +52,6 @@ export default class PackageDiffImpl {
 
           if (packageType !== "Data")
             modified_files = this.applyForceIgnoreToModifiedFiles(modified_files);
-
 
           const isUnlockedAndConfigFilePath = packageType === "Unlocked" && config_file_path != null;
 
@@ -100,7 +100,9 @@ export default class PackageDiffImpl {
 
   private applyForceIgnoreToModifiedFiles(modified_files: string[]) {
     let forceignorePath: string;
-    if (this.project_directory != null)
+    if (this.pathToReplacementForceIgnore)
+      forceignorePath = this.pathToReplacementForceIgnore;
+    else if (this.project_directory != null)
       forceignorePath = path.join(this.project_directory, ".forceignore");
     else
       forceignorePath = ".forceignore";
