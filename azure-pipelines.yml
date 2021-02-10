@@ -98,7 +98,7 @@ stages:
 
 #Prod Stage
 - stage: Prod
-  condition: or(and(succeeded('Beta'),eq(variables['build.sourceBranch'], 'refs/heads/develop')), and(succeeded('Hotfix'),startsWith(variables['build.sourceBranch'], 'refs/heads/hotfix/')))
+  condition: or(and(succeeded('Beta'),eq(variables['build.sourceBranch'], 'refs/heads/develop')), and(succeeded('Hotfix'),startsWith(variables['build.sourceBranch'], 'refs/heads/release')))
   dependsOn:
     - Beta
     - Hotfix
