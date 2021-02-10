@@ -3,7 +3,6 @@ name: Milestone20$(Rev:.r)
 trigger:
   branches:
     include:
-     - release/*
      - develop
   paths:
     exclude:
@@ -77,7 +76,7 @@ stages:
 - stage: Hotfix
   displayName: Hotfix
   dependsOn: []
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/hotfix/')
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/release')
 
   jobs:
   - deployment: BuildCLI
