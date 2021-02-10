@@ -1,6 +1,7 @@
 import { jest, expect } from "@jest/globals";
 import fs = require("fs");
 import PackageDiffImpl from "../../src/package/PackageDiffImpl";
+import ProjectConfig from "../../src/project/ProjectConfig";
 
 let gitTags: string[] = [];
 let gitDiff: string[] = [];
@@ -28,6 +29,7 @@ jest.mock("../../src/utils/GitTags", () => {
 let ignoreFilterResult: string[] = [];
 jest.mock("../../src/utils/IgnoreFiles", () => {
   class IgnoreFiles {
+
     filter = jest.fn().mockReturnValue(ignoreFilterResult);
   }
 
@@ -37,9 +39,14 @@ jest.mock("../../src/utils/IgnoreFiles", () => {
 describe("Determines whether a given package has changed", () => {
 
   beforeEach( () => {
+    const projectConfigMock = jest.spyOn(ProjectConfig, "getSFDXPackageManifest");
+    projectConfigMock.mockImplementation( () => {
+      return JSON.parse(packageConfigJson);
+    });
+
     const fsMock = jest.spyOn(fs, "readFileSync");
-    fsMock.mockImplementation( () => {
-      return packageConfigJson;
+    fsMock.mockImplementationOnce( () => {
+      return "**README.md";
     });
   });
 
@@ -198,8 +205,7 @@ const packageConfigJson: string = `
     "bi":"0x002232323232",
     "core":"0H04X00000000XXXXX"
   }
-}
-`;
+}`;
 
 const packageDescriptorChange: string = `
 {

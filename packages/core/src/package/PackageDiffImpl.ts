@@ -21,81 +21,74 @@ export default class PackageDiffImpl {
 
     let config_file_path: string = this.config_file_path;
 
-    let project_config_path: string = this.getProjectConfigPath();
-    let projectConfig = JSON.parse(fs.readFileSync(project_config_path));
+    let projectConfig = ProjectConfig.getSFDXPackageManifest(this.project_directory);
+    let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(this.sfdx_package, projectConfig);
 
-    for (let dir of projectConfig["packageDirectories"]) {
-      if (this.sfdx_package === dir.package) {
-        SFPLogger.log(
-          `Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`
-        );
+    SFPLogger.log(
+      `Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`
+    );
 
-        let tag: string;
-        if ( this.packagesToCommits != null ) {
-          tag = this.getLatestCommitFromMap(this.sfdx_package, this.packagesToCommits);
-        } else {
-          tag = await this.getLatestTagFromGit(git, this.sfdx_package);
-        }
+    let tag: string;
+    if ( this.packagesToCommits != null ) {
+      tag = this.getLatestCommitFromMap(this.sfdx_package, this.packagesToCommits);
+    } else {
+      tag = await this.getLatestTagFromGit(git, this.sfdx_package);
+    }
 
-        if (tag) {
-          SFPLogger.log(`\nUtilizing tag ${tag} for ${this.sfdx_package}`);
+    if (tag) {
+      SFPLogger.log(`\nUtilizing tag ${tag} for ${this.sfdx_package}`);
 
-          // Get the list of modified files between the tag and HEAD refs
-          let modified_files: string[] = await git.diff([
-            `${tag}`,
-            `HEAD`,
-            `--no-renames`,
-            `--name-only`
-          ]);
+      // Get the list of modified files between the tag and HEAD refs
+      let modified_files: string[] = await git.diff([
+        `${tag}`,
+        `HEAD`,
+        `--no-renames`,
+        `--name-only`
+      ]);
 
-          let packageType: string = ProjectConfig.getPackageType(projectConfig, this.sfdx_package);
+      let packageType: string = ProjectConfig.getPackageType(projectConfig, this.sfdx_package);
 
-          if (packageType !== "Data")
-            modified_files = this.applyForceIgnoreToModifiedFiles(modified_files);
+      if (packageType !== "Data")
+        modified_files = this.applyForceIgnoreToModifiedFiles(modified_files);
 
-          const isUnlockedAndConfigFilePath = packageType === "Unlocked" && config_file_path != null;
+      const isUnlockedAndConfigFilePath = packageType === "Unlocked" && config_file_path != null;
 
-          if (isUnlockedAndConfigFilePath)
-            SFPLogger.log(`Checking for changes to ${config_file_path}`);
+      if (isUnlockedAndConfigFilePath)
+        SFPLogger.log(`Checking for changes to ${config_file_path}`);
 
-          SFPLogger.log(`Checking for changes in source directory ${path.normalize(dir.path)}`);
+      SFPLogger.log(`Checking for changes in source directory ${path.normalize(pkgDescriptor.path)}`);
 
-          // Check whether the package has been modified
+      // Check whether the package has been modified
 
-          for (let filename of modified_files) {
-            if (isUnlockedAndConfigFilePath) {
-              if (
-                  filename.includes(path.normalize(dir.path)) ||
-                  filename === config_file_path
-              ) {
-                  SFPLogger.log(`Found change in ${filename}`);
-                  return true;
-              }
-            } else {
-              if (filename.includes(path.normalize(dir.path))) {
-                SFPLogger.log(`Found change in ${filename}`);
-                return true;
-              }
-            }
+      for (let filename of modified_files) {
+        if (isUnlockedAndConfigFilePath) {
+          if (
+              filename.includes(path.normalize(pkgDescriptor.path)) ||
+              filename === config_file_path
+          ) {
+              SFPLogger.log(`Found change in ${filename}`);
+              return true;
           }
-
-          SFPLogger.log(`Checking for changes to package descriptor in sfdx-project.json`);
-          return await this.isPackageDescriptorChanged(
-            git,
-            tag,
-            dir
-          );
         } else {
-          SFPLogger.log(
-            `Tag missing for ${this.sfdx_package}...marking package for build anyways`
-          );
-          return true;
+          if (filename.includes(path.normalize(pkgDescriptor.path))) {
+            SFPLogger.log(`Found change in ${filename}`);
+            return true;
+          }
         }
       }
+
+      SFPLogger.log(`Checking for changes to package descriptor in sfdx-project.json`);
+      return await this.isPackageDescriptorChanged(
+        git,
+        tag,
+        pkgDescriptor
+      );
+    } else {
+      SFPLogger.log(
+        `Tag missing for ${this.sfdx_package}...marking package for build anyways`
+      );
+      return true;
     }
-    throw new Error(
-      `Unable to find ${this.sfdx_package} in package directories`
-    );
   }
 
   private applyForceIgnoreToModifiedFiles(modified_files: string[]) {
@@ -115,21 +108,6 @@ export default class PackageDiffImpl {
     modified_files = ignoreFiles.filter(modified_files);
 
     return modified_files;
-  }
-
-  private getProjectConfigPath() {
-    let project_config_path: string;
-    if (this.project_directory != null) {
-      project_config_path = path.join(
-        this.project_directory,
-        "sfdx-project.json"
-      );
-      SFPLogger.log(`Project directory being analysed ${this.project_directory}`);
-    } else {
-      project_config_path = "sfdx-project.json";
-      SFPLogger.log(`Project directory being analysed ${process.cwd()}`);
-    }
-    return project_config_path;
   }
 
   private async getLatestTagFromGit(git: Git, sfdx_package: string): Promise<string> {
