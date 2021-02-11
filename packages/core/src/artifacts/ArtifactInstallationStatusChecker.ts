@@ -10,26 +10,30 @@ export default class ArtifactInstallationStatusChecker {
     packageMetadata: PackageMetadata,
     subdirectory:string,
     isHandledByCaller: boolean
-  ): Promise<boolean> {
-    if (isHandledByCaller) return false; //This is already handled by the caller, in that case if it reached here, we should 
+  ): Promise<{isInstalled:boolean,versionNumber?:string}> {
+    if (isHandledByCaller) return {isInstalled:false}; //This is already handled by the caller, in that case if it reached here, we should 
                                          //always install
-
+    let result:{isInstalled:boolean,versionNumber?:string};
     try {
+      result.isInstalled=false;
       let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(
         target_org
       );
-
       let packageName= packageMetadata.package_name+(subdirectory?"_"+subdirectory:"");
       for (const artifact of installedArtifacts) {
-        if (
-          artifact.Name === packageName && artifact.Version__c === packageMetadata.package_version_number
-        ) {
-          return true;
+        if(artifact.Name === packageName)
+        {
+          result.versionNumber=artifact.Version__c;
+          if(artifact.Version__c === packageMetadata.package_version_number)
+          {
+            result.isInstalled=true;
+            return result;
+          }
         }
       }
     } catch (error) {
       SFPLogger.log("Unable to fetch artifacts from the org");
     }
-    return false;
+    return result;
   }
 }

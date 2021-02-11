@@ -6,6 +6,7 @@ import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSen
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl";
 import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallSourcePackageImpl";
 import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl";
+import ArtifactInstallationStatusChecker from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInstallationStatusChecker"
 
 import fs = require("fs");
 import path = require("path");
@@ -24,6 +25,7 @@ import SFPPackage from "@dxatscale/sfpowerscripts.core/lib/package/SFPPackage";
 import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/package/IndividualClassCoverage";
 import { RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions";
 import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions";
+const Table = require("cli-table");
 
 export enum DeploymentMode {
   NORMAL,
@@ -77,21 +79,30 @@ export default class DeployImpl {
         packageManifest = ProjectConfig.getSFDXPackageManifest(null);
       }
 
-      let queue: any[] = this.getPackagesToDeploy(packageManifest);
 
+
+      let queue: any[] = this.getPackagesToDeploy(packageManifest);
       let packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
+
+      //Filter the queue based on what is deployed in the target org
+      if(this.props.skipIfPackageInstalled)
+      {
+      let filteredDeploymentQueue =await this.filterByPackagesInstalledInTheOrg(packageManifest,queue,packagesToPackageInfo,this.props.targetUsername);
+      this.printArtifactVersionsWhenSkipped(filteredDeploymentQueue,packagesToPackageInfo);
+      queue = filteredDeploymentQueue;
+      }
+      else
+      {
+        this.printArtifactVersions(queue,packagesToPackageInfo);
+      }
+      
       SFPStatsSender.logGauge(
         "deploy.scheduled",
         queue.length,
         this.props.tags
       );
 
-      SFPLogger.log(
-        `Packages to be deployed:`,
-        queue.map((pkg) => pkg.package),
-        this.props.packageLogger,
-        LoggerLevel.INFO
-      );
+   
 
       for (let i = 0; i < queue.length; i++) {
         let packageInfo = packagesToPackageInfo[queue[i].package];
@@ -230,7 +241,66 @@ export default class DeployImpl {
     }
   }
 
-  private printOpenLoggingGroup(message:string,pkg:string) {
+
+  private printArtifactVersionsWhenSkipped(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo}) {
+    this.printOpenLoggingGroup(`Packages Installed In Org"`);
+    let table = new Table({
+      head: ["Package", "Version to be installed", "Version installed in org","To be installed?"],
+    });
+
+    queue.forEach((pkg) => {
+      table.push(pkg.package, 
+         packagesToPackageInfo[pkg.package].packageMetadata.package_version_number,
+         packagesToPackageInfo[pkg.package].versionInstalledInOrg?packagesToPackageInfo[pkg.package].versionInstalledInOrg:"N/A",
+         packagesToPackageInfo[pkg.package].isPackageToBeInstalled?"Yes":"No");
+    });
+    console.log(table.toString());
+    this.printClosingLoggingGroup();
+  }
+
+  private printArtifactVersions(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo}) {
+    this.printOpenLoggingGroup(`Packages Installed In Org"`);
+    let table = new Table({
+      head: ["Package", "Version to be installed"],
+    });
+
+    queue.forEach((pkg) => {
+      table.push(pkg.package, 
+         packagesToPackageInfo[pkg.package].packageMetadata.package_version_number);
+    });
+    console.log(table.toString());
+    this.printClosingLoggingGroup();
+  }
+
+  private async filterByPackagesInstalledInTheOrg(packageManifest:any,queue:any[], packagesToPackageInfo:{[p: string]: PackageInfo} , targetUsername: string):Promise<any[]>{
+  
+    const clonedQueue = [];
+    queue.forEach(val => clonedQueue.push(Object.assign({}, val)));
+
+
+    for (var i = queue.length - 1; i >= 0; i--) {
+      let packageInfo = packagesToPackageInfo[clonedQueue[i].package];
+      let packageMetadata: PackageMetadata = packageInfo.packageMetadata;
+      let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(
+        clonedQueue[i].package,
+        packageManifest
+      );
+      let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(targetUsername,packageMetadata,pkgDescriptor.aliasfy ? targetUsername : null,false);
+      if(packageInstalledInTheOrg.versionNumber)
+        packageInfo.versionInstalledInOrg = packageInstalledInTheOrg.versionNumber;
+      if(packageInstalledInTheOrg.isInstalled)
+      {
+         packageInfo.isPackageToBeInstalled=true; 
+         clonedQueue.splice(i,1);
+      }
+    }
+
+   
+   return clonedQueue;
+
+  }
+
+  private printOpenLoggingGroup(message:string,pkg?:string) {
     if (this.props.logsGroupSymbol?.[0])
       SFPLogger.log(
         this.props.logsGroupSymbol[0],
@@ -604,4 +674,6 @@ export default class DeployImpl {
 interface PackageInfo {
   sourceDirectory: string;
   packageMetadata: PackageMetadata;
+  versionInstalledInOrg?:string
+  isPackageToBeInstalled?:boolean; 
 }

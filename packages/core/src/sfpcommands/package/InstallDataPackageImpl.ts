@@ -47,12 +47,14 @@ export default class InstallDataPackageImpl {
 
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
-        isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+        let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
           this.targetusername,
           this.packageMetadata,
           packageDescriptor.aliasfy ? this.targetusername : null,
           this.isPackageCheckHandledByCaller
         );
+        isPackageInstalled = installationStatus.isInstalled;
+
         if(isPackageInstalled)
           {
            SFPLogger.log("Skipping Package Installation",null,this.packageLogger)
