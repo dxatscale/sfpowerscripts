@@ -1,6 +1,5 @@
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult';
 import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl';
