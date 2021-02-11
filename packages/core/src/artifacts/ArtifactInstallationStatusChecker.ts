@@ -13,7 +13,7 @@ export default class ArtifactInstallationStatusChecker {
   ): Promise<{isInstalled:boolean,versionNumber?:string}> {
     if (isHandledByCaller) return {isInstalled:false}; //This is already handled by the caller, in that case if it reached here, we should 
                                          //always install
-    let result:{isInstalled:boolean,versionNumber?:string};
+    let result:{isInstalled:boolean,versionNumber?:string}={isInstalled:false};
     try {
       result.isInstalled=false;
       let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(
