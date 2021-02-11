@@ -51,7 +51,6 @@ export default class DeployImpl {
 
   public async exec(): Promise<{
     deployed: string[];
-    skipped: string[];
     failed: string[];
     testFailure: string;
     error: any;
@@ -223,7 +222,6 @@ export default class DeployImpl {
 
       return {
         deployed: deployed,
-        skipped: skipped,
         failed: failed,
         testFailure: testFailure,
         error: null,
@@ -233,7 +231,6 @@ export default class DeployImpl {
 
       return {
         deployed: deployed,
-        skipped: skipped,
         failed: failed,
         testFailure: testFailure,
         error: err,
