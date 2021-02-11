@@ -68,7 +68,6 @@ export default class Deploy extends SfpowerscriptsCommand {
 
     let deploymentResult: {
       deployed: string[],
-      skipped: string[],
       failed: string[],
       error: any
     };
@@ -119,13 +118,10 @@ export default class Deploy extends SfpowerscriptsCommand {
       console.log(
         `${deploymentResult.deployed.length} packages deployed in ${this.getFormattedTime(
           totalElapsedTime
-        )} with {${deploymentResult.failed.length}} errors and {${deploymentResult.skipped.length}} skipped`
+        )} with {${deploymentResult.failed.length}} errors`
       );
 
 
-      if (deploymentResult.skipped.length > 0) {
-        console.log(`\nPackages Skipped`, deploymentResult.skipped);
-      }
 
       if (deploymentResult.failed.length > 0) {
         console.log(`\nPackages Failed to Deploy`, deploymentResult.failed);
@@ -149,13 +145,7 @@ export default class Deploy extends SfpowerscriptsCommand {
         tags
       );
 
-      if (deploymentResult.skipped.length > 0) {
-        SFPStatsSender.logGauge(
-          "deploy.skipped",
-          deploymentResult.skipped.length,
-          tags
-        );
-      }
+    
 
       if (deploymentResult.failed.length > 0) {
         SFPStatsSender.logGauge(
