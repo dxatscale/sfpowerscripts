@@ -56,7 +56,6 @@ export default class DeployImpl {
     error: any;
   }> {
     let deployed: string[] = [];
-    let skipped: string[] = [];
     let failed: string[] = [];
 
     let testFailure: string;
@@ -167,7 +166,6 @@ export default class DeployImpl {
           packageInstallationResult.result === PackageInstallationStatus.Skipped
         ) {
           this.printClosingLoggingGroup();
-          skipped.push(queue[i].package);
           continue;
         } else if (
           packageInstallationResult.result === PackageInstallationStatus.Failed
