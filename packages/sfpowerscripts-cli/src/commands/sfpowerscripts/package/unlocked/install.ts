@@ -1,6 +1,5 @@
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult';
 import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl';
@@ -46,9 +45,7 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
    try {
 
       const targetOrg: string = this.flags.targetorg;
-      const sfdx_package: string = this.flags.package;
       const package_installedfrom = this.flags.packageinstalledfrom;
-
       const installationkey = this.flags.installationkey;
       const apexcompileonlypackage = this.flags.apexcompileonlypackage;
       const security_type = this.flags.securitytype;
@@ -88,7 +85,7 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
         upgradetype: upgrade_type
       };
 
-      let startTime=Date.now();
+
 
       let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
         package_version_id,
@@ -103,16 +100,9 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
 
       let result = await installUnlockedPackageImpl.exec();
 
-      let elapsedTime=Date.now()-startTime;
-
       if (result.result === PackageInstallationStatus.Failed) {
-        SFPStatsSender.logCount("package.installation.failure",{package:sfdx_package,type:"unlocked"})
-
         throw new Error(result.message);
-      } else if (result.result === PackageInstallationStatus.Succeeded) {
-        SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"unlocked", target_org:targetOrg});
-        SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"unlocked",target_org:targetOrg});
-      }
+      } 
     } catch(err) {
       console.log(err);
       process.exitCode=1;

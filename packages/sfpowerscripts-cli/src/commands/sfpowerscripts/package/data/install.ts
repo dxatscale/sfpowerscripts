@@ -1,6 +1,5 @@
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult';
 import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl';
@@ -40,7 +39,7 @@ export default class InstallDataPackage extends InstallPackageCommand {
       const sfdx_package: string = this.flags.package;
       const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
 
-      let startTime=Date.now();
+  
 
       let artifactMetadataFilepath = this.artifactFilePaths.packageMetadataFilePath;
 
@@ -63,16 +62,10 @@ export default class InstallDataPackage extends InstallPackageCommand {
 
       let result = await installDataPackageImpl.exec();
 
-      let elapsedTime=Date.now()-startTime;
 
       if (result.result === PackageInstallationStatus.Failed) {
-        SFPStatsSender.logCount("package.installation.failure",{package:sfdx_package,type:"data"});
         throw new Error(result.message);
-      } else if (result.result === PackageInstallationStatus.Succeeded) {
-        SFPStatsSender.logElapsedTime("package.installation.elapsed_time",elapsedTime,{package:sfdx_package,type:"unlocked", target_org:targetOrg});
-        SFPStatsSender.logCount("package.installation",{package:sfdx_package,type:"unlocked",target_org:targetOrg});
-      }
-
+      } 
 
 
     } catch(err) {

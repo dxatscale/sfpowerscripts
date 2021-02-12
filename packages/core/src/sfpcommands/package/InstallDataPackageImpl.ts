@@ -8,6 +8,7 @@ import ProjectConfig from "../../project/ProjectConfig";
 import SFPLogger from "../../utils/SFPLogger";
 import PackageInstallationHelpers from "../../utils/PackageInstallationHelpers";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
+import SFPStatsSender from "../../utils/SFPStatsSender";
 const path = require("path");
 
 export default class InstallDataPackageImpl {
@@ -26,6 +27,7 @@ export default class InstallDataPackageImpl {
     let packageDirectory: string;
 
     try {
+      let startTime = Date.now();
       let packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(this.sourceDirectory, this.sfdx_package);
 
       if (packageDescriptor.aliasfy) {
@@ -144,10 +146,31 @@ export default class InstallDataPackageImpl {
         this.isPackageCheckHandledByCaller
       );
 
+      let elapsedTime = Date.now() - startTime;
+        SFPStatsSender.logElapsedTime(
+          "package.installation.elapsed_time",
+          elapsedTime,
+          {
+            package: this.packageMetadata.package_name,
+            type: "data",
+            target_org: this.targetusername,
+          }
+        );
+        SFPStatsSender.logCount("package.installation", {
+          package: this.packageMetadata.package_name,
+          type: "data",
+          target_org: this.targetusername,
+        });
+
       return {result: PackageInstallationStatus.Succeeded};
 
 
     } catch (err) {
+      SFPStatsSender.logCount("package.installation.failure", {
+        package: this.packageMetadata.package_name,
+        type: "data",
+        target_org: this.targetusername,
+      });
       return {result: PackageInstallationStatus.Failed, message: err.message};
     } finally {
       let csvIssuesReportFilepath: string = path.join(this.sourceDirectory, packageDirectory, `CSVIssuesReport.csv`)
