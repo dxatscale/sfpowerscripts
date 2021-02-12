@@ -86,9 +86,19 @@ export default class DeployImpl {
       //Filter the queue based on what is deployed in the target org
       if(this.props.skipIfPackageInstalled)
       {
-        this.props.baselineOrg=this.props.baselineOrg?this.props.baselineOrg:this.props.targetUsername;
+        let isBaselinOrgModeActivated=false;
+        if(this.props.baselineOrg)
+        {
+          isBaselinOrgModeActivated=true;
+        }
+        else
+        {
+          this.props.baselineOrg=this.props.targetUsername; //Change baseline to the target one itself
+          isBaselinOrgModeActivated=false;
+        }
+      
         let filteredDeploymentQueue =await this.filterByPackagesInstalledInTheOrg(packageManifest,queue,packagesToPackageInfo,this.props.baselineOrg);
-        this.printArtifactVersionsWhenSkipped(queue,packagesToPackageInfo);
+        this.printArtifactVersionsWhenSkipped(queue,packagesToPackageInfo,isBaselinOrgModeActivated);
         queue = filteredDeploymentQueue;
       }
       else
@@ -239,10 +249,10 @@ export default class DeployImpl {
   }
 
 
-  private printArtifactVersionsWhenSkipped(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo}) {
+  private printArtifactVersionsWhenSkipped(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo},isBaselinOrgModeActivated:boolean) {
     this.printOpenLoggingGroup(`Computing Packages to be deployed`);
     let table = new Table({
-      head: ["Package", "Version to be installed", "Version installed in org","To be installed?"],
+      head: ["Package", "Incoming Version", isBaselinOrgModeActivated?"Version in baseline org":"Version in org","To be installed?"],
     });
 
     queue.forEach((pkg) => {
