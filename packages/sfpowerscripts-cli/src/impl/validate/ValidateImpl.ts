@@ -251,7 +251,7 @@ export default class ValidateImpl {
   }
 
   private printArtifactVersions(queryResult: any) {
-    this.printOpenLoggingGroup(`Artifacts installed in the Scratch Org"`);
+    this.printOpenLoggingGroup(`Artifacts installed in the Scratch Org`);
     let table = new Table({
       head: ["Artifact", "Version", "Commit Id"],
     });

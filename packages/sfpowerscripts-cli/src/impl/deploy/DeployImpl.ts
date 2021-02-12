@@ -238,7 +238,7 @@ export default class DeployImpl {
 
 
   private printArtifactVersionsWhenSkipped(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo}) {
-    this.printOpenLoggingGroup(`Packages Installed In Org"`);
+    this.printOpenLoggingGroup(`Computing Packages to be deployed`);
     let table = new Table({
       head: ["Package", "Version to be installed", "Version installed in org","To be installed?"],
     });
@@ -256,14 +256,14 @@ export default class DeployImpl {
   }
 
   private printArtifactVersions(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo}) {
-    this.printOpenLoggingGroup(`Packages Installed In Org"`);
+    this.printOpenLoggingGroup(`Computing Packages to be deployed`);
     let table = new Table({
       head: ["Package", "Version to be installed"],
     });
 
     queue.forEach((pkg) => {
-      table.push(pkg.package,
-         packagesToPackageInfo[pkg.package].packageMetadata.package_version_number);
+      table.push([pkg.package,
+         packagesToPackageInfo[pkg.package].packageMetadata.package_version_number]);
     });
     console.log(table.toString());
     this.printClosingLoggingGroup();
