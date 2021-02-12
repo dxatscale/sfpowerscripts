@@ -52,6 +52,11 @@ export default class Deploy extends SfpowerscriptsCommand {
       default:false,
       description: messages.getMessage("skipIfAlreadyInstalled"),
     }),
+    baselineorg: flags.string({
+      char: "b",
+      description: messages.getMessage("baselineorgFlagDescription"),
+      required: false
+    }),
   };
 
   public async execute() {
@@ -61,6 +66,8 @@ export default class Deploy extends SfpowerscriptsCommand {
     console.log("command: deploy");
     console.log(`Skip Packages If Already Installed: ${this.flags.skipifalreadyinstalled}`);
     console.log(`Artifact Directory: ${this.flags.artifactdir}`);
+    if(this.flags.baselineorg)
+      console.log(`Baselined Against Org: ${this.flags.baselineorg}`)
     console.log("---------------------------------------------------------");
 
 
@@ -90,7 +97,8 @@ export default class Deploy extends SfpowerscriptsCommand {
       deploymentMode:DeploymentMode.NORMAL,
       skipIfPackageInstalled:this.flags.skipifalreadyinstalled,
       logsGroupSymbol:this.flags.logsgroupsymbol,
-      currentStage:Stage.DEPLOY
+      currentStage:Stage.DEPLOY,
+      baselineOrg: this.flags.baselineorg
     }
 
     try {
