@@ -85,22 +85,22 @@ export default class DeployImpl {
       //Filter the queue based on what is deployed in the target org
       if(this.props.skipIfPackageInstalled)
       {
-      let filteredDeploymentQueue =await this.filterByPackagesInstalledInTheOrg(packageManifest,queue,packagesToPackageInfo,this.props.targetUsername);
-      this.printArtifactVersionsWhenSkipped(filteredDeploymentQueue,packagesToPackageInfo);
-      queue = filteredDeploymentQueue;
+        let filteredDeploymentQueue =await this.filterByPackagesInstalledInTheOrg(packageManifest,queue,packagesToPackageInfo,this.props.targetUsername);
+        this.printArtifactVersionsWhenSkipped(queue,packagesToPackageInfo);
+        queue = filteredDeploymentQueue;
       }
       else
       {
         this.printArtifactVersions(queue,packagesToPackageInfo);
       }
-      
+
       SFPStatsSender.logGauge(
         "deploy.scheduled",
         queue.length,
         this.props.tags
       );
 
-   
+
 
       for (let i = 0; i < queue.length; i++) {
         let packageInfo = packagesToPackageInfo[queue[i].package];
@@ -244,10 +244,12 @@ export default class DeployImpl {
     });
 
     queue.forEach((pkg) => {
-      table.push(pkg.package, 
+      table.push(
+        [pkg.package,
          packagesToPackageInfo[pkg.package].packageMetadata.package_version_number,
          packagesToPackageInfo[pkg.package].versionInstalledInOrg?packagesToPackageInfo[pkg.package].versionInstalledInOrg:"N/A",
-         packagesToPackageInfo[pkg.package].isPackageToBeInstalled?"Yes":"No");
+         packagesToPackageInfo[pkg.package].isPackageInstalled?"No":"Yes"]
+      );
     });
     console.log(table.toString());
     this.printClosingLoggingGroup();
@@ -260,7 +262,7 @@ export default class DeployImpl {
     });
 
     queue.forEach((pkg) => {
-      table.push(pkg.package, 
+      table.push(pkg.package,
          packagesToPackageInfo[pkg.package].packageMetadata.package_version_number);
     });
     console.log(table.toString());
@@ -268,10 +270,9 @@ export default class DeployImpl {
   }
 
   private async filterByPackagesInstalledInTheOrg(packageManifest:any,queue:any[], packagesToPackageInfo:{[p: string]: PackageInfo} , targetUsername: string):Promise<any[]>{
-  
+
     const clonedQueue = [];
     queue.forEach(val => clonedQueue.push(Object.assign({}, val)));
-
 
     for (var i = queue.length - 1; i >= 0; i--) {
       let packageInfo = packagesToPackageInfo[clonedQueue[i].package];
@@ -285,12 +286,12 @@ export default class DeployImpl {
         packageInfo.versionInstalledInOrg = packageInstalledInTheOrg.versionNumber;
       if(packageInstalledInTheOrg.isInstalled)
       {
-         packageInfo.isPackageToBeInstalled=true; 
+         packageInfo.isPackageInstalled=true;
          clonedQueue.splice(i,1);
       }
     }
 
-   
+
    return clonedQueue;
 
   }
@@ -299,7 +300,7 @@ export default class DeployImpl {
     if (this.props.logsGroupSymbol?.[0])
       SFPLogger.log(
         this.props.logsGroupSymbol[0],
-        `${message} ${pkg}`,
+        message + (pkg ? pkg : ""),
         this.props.packageLogger,
         LoggerLevel.INFO
       );
@@ -670,5 +671,5 @@ interface PackageInfo {
   sourceDirectory: string;
   packageMetadata: PackageMetadata;
   versionInstalledInOrg?:string
-  isPackageToBeInstalled?:boolean; 
+  isPackageInstalled?:boolean;
 }
