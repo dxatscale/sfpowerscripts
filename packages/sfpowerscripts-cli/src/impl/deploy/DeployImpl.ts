@@ -44,6 +44,7 @@ export interface DeployProps {
   tags?: any;
   packageLogger?: any;
   currentStage?: Stage;
+  baselineOrg?:string;
 }
 
 export default class DeployImpl {
@@ -85,7 +86,8 @@ export default class DeployImpl {
       //Filter the queue based on what is deployed in the target org
       if(this.props.skipIfPackageInstalled)
       {
-        let filteredDeploymentQueue =await this.filterByPackagesInstalledInTheOrg(packageManifest,queue,packagesToPackageInfo,this.props.targetUsername);
+        this.props.baselineOrg=this.props.baselineOrg?this.props.baselineOrg:this.props.targetUsername;
+        let filteredDeploymentQueue =await this.filterByPackagesInstalledInTheOrg(packageManifest,queue,packagesToPackageInfo,this.props.baselineOrg);
         this.printArtifactVersionsWhenSkipped(queue,packagesToPackageInfo);
         queue = filteredDeploymentQueue;
       }
