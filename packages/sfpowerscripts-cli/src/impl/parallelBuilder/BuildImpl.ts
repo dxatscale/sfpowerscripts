@@ -81,7 +81,6 @@ export default class BuildImpl {
 
     rimraf.sync(".sfpowerscripts");
 
-    console.log("Computing Packages to be deployed");
     SFPLogger.isSupressLogs = true;
 
     // Read Manifest
