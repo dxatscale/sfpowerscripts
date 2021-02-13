@@ -9,6 +9,7 @@ import path = require("path");
 import fs = require("fs");
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import SFPStatsSender from "../../utils/SFPStatsSender";
+import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -112,6 +113,15 @@ export default class InstallUnlockedPackageImpl {
             )
           }
         }
+
+
+        await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
+          this.targetusername,
+          this.packageMetadata,
+          null,
+          false
+        );
+
 
         let elapsedTime = Date.now() - startTime;
         SFPStatsSender.logElapsedTime(
