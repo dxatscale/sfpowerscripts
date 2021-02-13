@@ -8,7 +8,6 @@ description: Run checks before accepting incoming changes
 
 **validate** command helps you to validate a change made to your configuration / code. This command should ideally be triggered as part of your pull request process, to ensure that automatically checked code is merged in, before being merged into your **main** branch. validate simplifies setting up and speeding up the process by using a scratch org prepared earlier using [prepare ](prepare.md)command.
 
-
 ## What checks do validate run?
 
 **validate** command at the moment runs the following checks
@@ -26,7 +25,7 @@ The following are the list of steps that are orchestrated by the **validate** co
 3. Authenticate to the Scratch org using the provided JWT Key / Client ID
 4. Build packages that are changed by comparing the tags in your repo against the packages installed in scratch org
 5. For each of the packages \(internally calls the Deploy Command\)
-   * Deploy all the built packages as [source packages](../source-packages.md) / [data package]()  \(unlocked packages are installed as source package\)
+   * Deploy all the built packages as [source packages](../source-packages.md) / [data package](validate.md)  \(unlocked packages are installed as source package\)
    * Trigger Apex Tests if there are any apex test in the package
    * Validate test coverage of the package depending on the type of the package \( source packages: each class needs to have 75% or more, unlocked packages: packages as  whole need to have 75% or more\)
 
@@ -44,7 +43,7 @@ The **validate** command will fail to execute, as it would not be able to fetch 
 
 ## How does validate know which packages to be validated?
 
-It uses the same functionality as in QuickBuild Command  and is explained in [How does Build & QuickBuild  know what to build when using "diffcheck" flag?](build-and-quickbuild.md#how-does-build-and-quickbuild-know-what-to-build-when-using-diffcheck-flag)
+It uses the same functionality as in QuickBuild Command and is explained in [How does Build & QuickBuild know what to build when using "diffcheck" flag?](build-and-quickbuild.md#how-does-build-and-quickbuild-know-what-to-build-when-using-diffcheck-flag)
 
 ## What is a shape file and why should I provide one?
 
@@ -71,7 +70,7 @@ Start &gt; Run &gt; %TEMP%
 
 ## My metadata looks intact, but validate is failing on deployment of some packages? Why is that and what should be done?
 
-We have noticed specific instances where a change is not compatible with a scratch org fetched with the pool. Most notorious are changes to picklists, causing checks to fail. We recommend you always create a pool, with out **installall** flag, and design your pipelines in a way \(through an environment variable / or through a commit message hook\) to switch to a pool which only has the dependent packages for your repo to validate your changes. 
+We have noticed specific instances where a change is not compatible with a scratch org fetched with the pool. Most notorious are changes to picklists, causing checks to fail. We recommend you always create a pool, with out **installall** flag, and design your pipelines in a way \(through an environment variable / or through a commit message hook\) to switch to a pool which only has the dependent packages for your repo to validate your changes.
 
 ## I have some issues with some apex test on a particular package and I need to disable it temporarily. What are my options?
 
@@ -91,7 +90,7 @@ Source packages have a more stringent validation \(for an optimized deployment, 
 
 ## I am getting "bad object:xxxyyy" error during validate command, What am I doing wrong?
 
-Validate commands compare the incoming commit, with what is installed in the scratch org, and what is in the repos to figure out which packages are to be built and validated in the scratch org. CI Build systems especially like **Github Actions** by default only do a fetch of the tip of the Pull Request branch, and hence validate command will not be able to reach out the ancestors to do a diff.  We recommend you to check the CI/CD platform docs to do a more deeper fetch of the repo. Here is how is it in Github
+Validate commands compare the incoming commit, with what is installed in the scratch org, and what is in the repos to figure out which packages are to be built and validated in the scratch org. CI Build systems especially like **Github Actions** by default only do a fetch of the tip of the Pull Request branch, and hence validate command will not be able to reach out the ancestors to do a diff. We recommend you to check the CI/CD platform docs to do a more deeper fetch of the repo. Here is how is it in Github
 
 ```text
             # Checkout the code in the pull request
@@ -100,10 +99,4 @@ Validate commands compare the incoming commit, with what is installed in the scr
               with:
                 fetch-depth: 0
 ```
-
-
-
-
-
-
 

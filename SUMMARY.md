@@ -2,6 +2,7 @@
 
 * [Overview](README.md)
 * [Principles](principles-1.md)
+* [Features](features.md)
 
 ## CLI
 

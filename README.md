@@ -2,7 +2,7 @@
 
 A  build system for package based development on Salesforce that can be implemented in any CI/CD system of choice. sfpowerscripts is part of the **DX@Scale**, productivity boosters for engineering teams on Salesforce.
 
-## **Features**
+## **Key Features**
 
 * Features an Orchestrator, which utilises the sfdx-project.json \([Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm)\) as the source of truth for driving the build system, ensuring very low maintenance on projects and programs often dealing with multiple number of packages
 * Builds packages in parallel by respecting dependencies
