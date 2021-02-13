@@ -8,7 +8,6 @@ description: Run checks before accepting incoming changes
 
 **validate** command helps you to validate a change made to your configuration / code. This command should ideally be triggered as part of your pull request process, to ensure that automatically checked code is merged in, before being merged into your **main** branch. validate simplifies setting up and speeding up the process by using a scratch org prepared earlier using [prepare ](prepare.md)command.
 
-Currently validate only works against a  pool of scratch org's prepared by the prepare command.
 
 ## What checks do validate run?
 
