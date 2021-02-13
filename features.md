@@ -1,5 +1,5 @@
 ---
-description: sfpowerscripts features the following functionality
+description: Learn about all the features in sfpowerscripts
 ---
 
 # Features
@@ -17,7 +17,7 @@ description: sfpowerscripts features the following functionality
 
 ### **Instantaneous CI Environments!**
 
-* Prepare a pool of Scratch Org’s to act as a just in time CI  orgs, reducing significant amount of time during validation phase
+* Prepare a pool of Scratch Org’s to act as a just in time CI  orgs, reducing a significant amount of time during  the validation phase
 
 ### **Shift Left... We got it Right!**
 
@@ -52,5 +52,5 @@ description: sfpowerscripts features the following functionality
 
 * All functionality instrumented with StatsD, as well as Log Based metrics\* to build dashboards the way you want it.
 
-\*Log Based Metrics are slated for March 2021
+\*Log Based Metrics are slated for release in March 2021
 
