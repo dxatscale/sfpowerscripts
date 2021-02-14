@@ -96,7 +96,7 @@ export default class DeployImpl {
           this.props.baselineOrg=this.props.targetUsername; //Change baseline to the target one itself
           isBaselinOrgModeActivated=false;
         }
-      
+
         let filteredDeploymentQueue =await this.filterByPackagesInstalledInTheOrg(packageManifest,queue,packagesToPackageInfo,this.props.baselineOrg);
         this.printArtifactVersionsWhenSkipped(queue,packagesToPackageInfo,isBaselinOrgModeActivated);
         queue = filteredDeploymentQueue;
@@ -250,21 +250,36 @@ export default class DeployImpl {
 
 
   private printArtifactVersionsWhenSkipped(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo},isBaselinOrgModeActivated:boolean) {
+    this.printOpenLoggingGroup(`Full Deployment Breakdown`);
+    let maxTable = new Table({
+      head: ["Package", "Incoming Version", isBaselinOrgModeActivated?"Version in baseline org":"Version in org","To be installed?"],
+    });
+
+    queue.forEach((pkg) => {
+      maxTable.push(
+        [pkg.package,
+         packagesToPackageInfo[pkg.package].packageMetadata.package_version_number,
+         packagesToPackageInfo[pkg.package].versionInstalledInOrg?packagesToPackageInfo[pkg.package].versionInstalledInOrg:"N/A",
+         packagesToPackageInfo[pkg.package].isPackageInstalled?"No":"Yes"]
+      );
+    });
+    console.log(maxTable.toString());
+    this.printClosingLoggingGroup();
+
     this.printOpenLoggingGroup(`Packages to be deployed`);
-    let table = new Table({
+    let minTable = new Table({
       head: ["Package", "Incoming Version", isBaselinOrgModeActivated?"Version in baseline org":"Version in org"],
     });
 
     queue.forEach((pkg) => {
-     
-      if(packagesToPackageInfo[pkg.package].isPackageInstalled)
-      table.push(
-        [pkg.package,
-         packagesToPackageInfo[pkg.package].packageMetadata.package_version_number,
-         packagesToPackageInfo[pkg.package].versionInstalledInOrg?packagesToPackageInfo[pkg.package].versionInstalledInOrg:"N/A"]
-      );
+      if(!packagesToPackageInfo[pkg.package].isPackageInstalled)
+        minTable.push(
+          [pkg.package,
+          packagesToPackageInfo[pkg.package].packageMetadata.package_version_number,
+          packagesToPackageInfo[pkg.package].versionInstalledInOrg?packagesToPackageInfo[pkg.package].versionInstalledInOrg:"N/A"]
+        );
     });
-    console.log(table.toString());
+    console.log(minTable.toString());
     this.printClosingLoggingGroup();
   }
 
