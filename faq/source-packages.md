@@ -10,11 +10,11 @@ Source Packages is an sfpowerscripts construct which wraps the Salesforce Metada
 
 ## How are Source Packages different from deploying a folder using source:deploy?
 
-Well, no difference, internally sfpowerscripts is using the same command to deploy it in to the Salesforce org.
+Well, no difference, internally sfpowerscripts is using the same command to deploy it into the Salesforce org.
 
 ## Why I should be using Source Packages instead of deploying a folder?
 
-We have some added some additional enhancements that makes it worth taking a look at:  
+We have  added some additional enhancements that make it worth taking a look at:  
     - **Ability to skip the package if already installed:** By keeping a record of the version of the package installed in the target org with the support of an unlocked package, sfpowerscripts can skip installation of source packages if it is already installed in the org  
    - **Optimized Deployment Mode:**  sfpowerscripts package installation commands can auto-detect apex unit tests provided in the package, thus a package can be deployed to an Org by utilizing only the apex test classes provided in the package \(provided each class is having a code coverage of 75% or more by the apex classes in the package\) thus saving time spend on triggering local tests of all the apex classes in an org for every source packages in your repo  
 -  **Versioned Artifact:**  Aligned with sfpowerscripts principle of traceability, every deployment is traceable to a versioned artifact, which is difficult to achieve when you are using a folder to deploy
@@ -83,9 +83,9 @@ sfdx force:package:install --package 04t1P000000ka0fQAA -u <org> -w 10
 
 ## **Can I have an entire org composed of Source Packages?**
 
-Of course, you can, you would get traceability in terms of packages in your CI/CD pipelines, and some nice functionality, however the benefits of validating dependencies and modular development would not be fully realized. There is also associated danger, as there is no locks associated with source packages, so another source package with same metadata component can overwrite a metadata component deployed by another package. For these, reasons, we always prefer unlocked packages.
+Of course, you can, you would get traceability in terms of packages in your CI/CD pipelines, and some nice functionality, however, the benefits of validating dependencies and modular development would not be fully realized. There is also associated danger, as there is no locks associated with source packages, so another source package with same metadata component can overwrite a metadata component deployed by another package. For these, reasons, we always prefer unlocked packages.
 
-An example of a common metadata component that typically gets overridden are [Custom Labels](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_customlabels.htm) which can span across multiple packages.
+An example of a common metadata component that typically gets overridden is [Custom Labels](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_customlabels.htm) which can span across multiple packages.
 
 ## How do I delete components deployed through an earlier version of Source Packages?
 
