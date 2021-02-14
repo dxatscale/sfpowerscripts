@@ -250,17 +250,18 @@ export default class DeployImpl {
 
 
   private printArtifactVersionsWhenSkipped(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo},isBaselinOrgModeActivated:boolean) {
-    this.printOpenLoggingGroup(`Computing Packages to be deployed`);
+    this.printOpenLoggingGroup(`Packages to be deployed`);
     let table = new Table({
-      head: ["Package", "Incoming Version", isBaselinOrgModeActivated?"Version in baseline org":"Version in org","To be installed?"],
+      head: ["Package", "Incoming Version", isBaselinOrgModeActivated?"Version in baseline org":"Version in org"],
     });
 
     queue.forEach((pkg) => {
+     
+      if(packagesToPackageInfo[pkg.package].isPackageInstalled)
       table.push(
         [pkg.package,
          packagesToPackageInfo[pkg.package].packageMetadata.package_version_number,
-         packagesToPackageInfo[pkg.package].versionInstalledInOrg?packagesToPackageInfo[pkg.package].versionInstalledInOrg:"N/A",
-         packagesToPackageInfo[pkg.package].isPackageInstalled?"No":"Yes"]
+         packagesToPackageInfo[pkg.package].versionInstalledInOrg?packagesToPackageInfo[pkg.package].versionInstalledInOrg:"N/A"]
       );
     });
     console.log(table.toString());
@@ -268,7 +269,7 @@ export default class DeployImpl {
   }
 
   private printArtifactVersions(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo}) {
-    this.printOpenLoggingGroup(`Computing Packages to be deployed`);
+    this.printOpenLoggingGroup(`Packages to be deployed`);
     let table = new Table({
       head: ["Package", "Version to be installed"],
     });
