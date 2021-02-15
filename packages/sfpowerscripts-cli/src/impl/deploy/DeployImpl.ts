@@ -314,8 +314,11 @@ export default class DeployImpl {
         packageInfo.versionInstalledInOrg = packageInstalledInTheOrg.versionNumber;
       if(packageInstalledInTheOrg.isInstalled)
       {
+        if(!pkgDescriptor.alwaysDeploy)
+         {
          packageInfo.isPackageInstalled=true;
          clonedQueue.splice(i,1);
+         }
       }
     }
 
