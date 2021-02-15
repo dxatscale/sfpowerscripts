@@ -52,7 +52,6 @@ export default class InstallDataPackageImpl {
         let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
           this.targetusername,
           this.packageMetadata,
-          packageDescriptor.aliasfy ? this.targetusername : null,
           this.isPackageCheckHandledByCaller
         );
         isPackageInstalled = installationStatus.isInstalled;

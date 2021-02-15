@@ -310,7 +310,7 @@ export default class DeployImpl {
         clonedQueue[i].package,
         packageManifest
       );
-      let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(targetUsername,packageMetadata,pkgDescriptor.aliasfy ? targetUsername : null,false);
+      let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(targetUsername,packageMetadata,false);
       if(packageInstalledInTheOrg.versionNumber)
         packageInfo.versionInstalledInOrg = packageInstalledInTheOrg.versionNumber;
       if(packageInstalledInTheOrg.isInstalled)
