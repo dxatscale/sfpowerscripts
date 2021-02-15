@@ -39,8 +39,7 @@ export default class ArtifactInstallationStatusUpdater {
 
     let artifactId = await ArtifactInstallationStatusUpdater.getRecordId(
       username,
-      packageMetadata,
-      subdirectory
+      packageMetadata
     );
 
 
@@ -84,14 +83,13 @@ export default class ArtifactInstallationStatusUpdater {
 
   private static async getRecordId(
     username: string,
-    packageMetadata: PackageMetadata,
-    subdirectory?:string
+    packageMetadata: PackageMetadata
   ): Promise<string> {
     let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(
       username
     );
 
-    let packageName = packageMetadata.package_name+(subdirectory?"_"+subdirectory:"");
+    let packageName = packageMetadata.package_name;
     for (const artifact of installedArtifacts) {
       if (
         artifact.Name === packageName
