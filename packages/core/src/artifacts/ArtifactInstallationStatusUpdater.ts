@@ -94,7 +94,7 @@ export default class ArtifactInstallationStatusUpdater {
     let packageName = packageMetadata.package_name+(subdirectory?"_"+subdirectory:"");
     for (const artifact of installedArtifacts) {
       if (
-        artifact.Name === packageName && artifact.Version__c === packageMetadata.package_version_number
+        artifact.Name === packageName
       ) {
         return artifact.Id;
       }
