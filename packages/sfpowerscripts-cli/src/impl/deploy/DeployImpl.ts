@@ -7,6 +7,7 @@ import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpco
 import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallSourcePackageImpl";
 import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl";
 import ArtifactInstallationStatusChecker from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInstallationStatusChecker"
+import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher"
 
 import fs = require("fs");
 import path = require("path");
@@ -90,6 +91,7 @@ export default class DeployImpl {
         if(this.props.baselineOrg)
         {
           isBaselinOrgModeActivated=true;
+          this.props.skipIfPackageInstalled=false;
         }
         else
         {
@@ -309,17 +311,21 @@ export default class DeployImpl {
         clonedQueue[i].package,
         packageManifest
       );
-      let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(targetUsername,packageMetadata,pkgDescriptor.aliasfy ? targetUsername : null,false);
+      let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(targetUsername,packageMetadata,false);
       if(packageInstalledInTheOrg.versionNumber)
         packageInfo.versionInstalledInOrg = packageInstalledInTheOrg.versionNumber;
       if(packageInstalledInTheOrg.isInstalled)
       {
+        if(!pkgDescriptor.alwaysDeploy)
+         {
          packageInfo.isPackageInstalled=true;
          clonedQueue.splice(i,1);
+         }
       }
     }
 
-
+    //Do a reset after this stage, as fetched artifacts are a static var, to reduce roundtrip, but this has side effects
+   InstalledAritfactsFetcher.resetFetchedArtifacts();
    return clonedQueue;
 
   }
