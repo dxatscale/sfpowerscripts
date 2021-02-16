@@ -91,6 +91,7 @@ export default class DeployImpl {
         if(this.props.baselineOrg)
         {
           isBaselinOrgModeActivated=true;
+          this.props.skipIfPackageInstalled=false;
         }
         else
         {
