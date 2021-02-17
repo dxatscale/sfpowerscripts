@@ -196,7 +196,6 @@ export default class InstallSourcePackageImpl {
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
           this.targetusername,
           this.packageMetadata,
-          packageDescriptor.aliasfy ? this.targetusername : null,
           this.isPackageCheckHandledByCaller
         );
 
