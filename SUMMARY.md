@@ -9,7 +9,7 @@
 * [Prerequisites](cli/prerequisites.md)
 * [Using sfpowerscripts-cli sfdx plugin](cli/getting-started.md)
 
-## FAQ
+## Essential Read <a id="faq"></a>
 
 * [Source Packages](faq/source-packages.md)
 * [Data Packages](faq/data-packages.md)
