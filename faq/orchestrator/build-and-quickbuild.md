@@ -24,7 +24,7 @@ We recommend using quickbuild, to generate packages upon every merge and then de
 
 A comparison \(using git diff\) is made between the latest source code and previous version of the package, defined by a tag that follows semantic versioning. If any difference is detected in the **package directory**, **package version** or **scratch org definition file** \(applies to unlocked packages only\), then the package will be created - otherwise it is skipped.     
 
-## How does these commands know the order to build?
+## How do these commands know the order to build?
 
 These commands follow the order of the the packages as ordered in your sfdx-project.json. The commands also read your dependencies property, and then when triggered, will wait till all its dependencies are resolved, before triggering the package creation command. For eg:  provided the followings packages  
                                          
@@ -56,7 +56,7 @@ No,  build command understand the type of the packages by reading the properties
 
 ## Source and Data packages do not have dependencies, If I have many of these, does it delay building unlocked packages?
 
-Source and Data packages are placed in the queue with a slightly lower priority, as the generation of these commands are faster. Unlocked Packages, with dependencies  are prioritized so that they are able to use the threads.
+Source and Data packages are placed in the queue with a slightly lower priority, as the generation of these commands is faster. Unlocked Packages, with dependencies  are prioritized so that they are able to use the threads.
 
 ## Can I skip code coverage check when building dependency validated packages using the 'build' command?
 
@@ -76,7 +76,9 @@ Please note  the current version of spowerscripts do not support pushing tags to
 
 ## I do not want a particular package to be built, Is there a way to do it?
 
-Yes, you could use the `ignoreOnStage:[ "build" ]` property to mark which packages should be skipped by the **build** command. Similarly you can use `ignoreOnStage:[ "quickbuild" ]` to skip packages in the quickbuild stage
+Yes, you could use the `ignoreOnStage:[ "build" ]` property to mark which packages should be skipped by the **build** command. Similarly you can use `ignoreOnStage:[ "quickbuild" ]` to skip packages in the quickbuild stage.
+
+## 
 
 
 
