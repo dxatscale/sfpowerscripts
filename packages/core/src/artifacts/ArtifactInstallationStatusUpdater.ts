@@ -13,14 +13,13 @@ export default class ArtifactInstallationStatusUpdater {
   public static async updatePackageInstalledInOrg(
     target_org: string,
     packageMetadata: PackageMetadata,
-    subdirectory:string,
     isHandledByCaller: boolean
   ):Promise<boolean> {
     if (isHandledByCaller) return true; //This is to be handled by the caller, in that case if it reached here, we should
                                         //just ignore
 
     try {
-      return  await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata,subdirectory);
+      return  await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata);
     } catch (error) {
       SFPLogger.log(
         "Unable to update details about artifacts to the org"
@@ -32,15 +31,13 @@ export default class ArtifactInstallationStatusUpdater {
 
   private static async updateArtifact(
     username: string,
-    packageMetadata: PackageMetadata,
-    subdirectory?:string
+    packageMetadata: PackageMetadata
   ): Promise<boolean> {
 
 
     let artifactId = await ArtifactInstallationStatusUpdater.getRecordId(
       username,
-      packageMetadata,
-      subdirectory
+      packageMetadata
     );
 
 
@@ -49,7 +46,7 @@ export default class ArtifactInstallationStatusUpdater {
       async (bail) => {
 
         let cmdOutput;
-        let packageName= packageMetadata.package_name+(subdirectory?"_"+subdirectory:"");
+        let packageName= packageMetadata.package_name;
         SFPLogger.log("Updating Org with new Artifacts "+packageName+" "+packageMetadata.package_version_number+" "+(artifactId?artifactId:""), null, null, LoggerLevel.DEBUG);
         if (artifactId == null) {
           cmdOutput = child_process.execSync(
@@ -84,17 +81,16 @@ export default class ArtifactInstallationStatusUpdater {
 
   private static async getRecordId(
     username: string,
-    packageMetadata: PackageMetadata,
-    subdirectory?:string
+    packageMetadata: PackageMetadata
   ): Promise<string> {
     let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(
       username
     );
 
-    let packageName = packageMetadata.package_name+(subdirectory?"_"+subdirectory:"");
+    let packageName = packageMetadata.package_name;
     for (const artifact of installedArtifacts) {
       if (
-        artifact.Name === packageName && artifact.Version__c === packageMetadata.package_version_number
+        artifact.Name === packageName
       ) {
         return artifact.Id;
       }

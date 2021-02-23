@@ -8,6 +8,8 @@ import PackageInstallationHelpers from "../../utils/PackageInstallationHelpers";
 import path = require("path");
 import fs = require("fs");
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
+import SFPStatsSender from "../../utils/SFPStatsSender";
+import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -24,6 +26,7 @@ export default class InstallUnlockedPackageImpl {
 
   public async exec(): Promise<PackageInstallationResult> {
     try {
+      let startTime = Date.now();
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
         isPackageInstalled = this.checkWhetherPackageIsIntalledInOrg();
@@ -111,12 +114,43 @@ export default class InstallUnlockedPackageImpl {
           }
         }
 
+
+        await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
+          this.targetusername,
+          this.packageMetadata,
+          false
+        );
+
+
+        let elapsedTime = Date.now() - startTime;
+        SFPStatsSender.logElapsedTime(
+          "package.installation.elapsed_time",
+          elapsedTime,
+          {
+            package: this.packageMetadata.package_name,
+            type: "unlocked",
+            target_org: this.targetusername,
+          }
+        );
+        SFPStatsSender.logCount("package.installation", {
+          package: this.packageMetadata.package_name,
+          type: "unlocked",
+          target_org: this.targetusername,
+        });
+
         return { result: PackageInstallationStatus.Succeeded}
       } else {
         SFPLogger.log("Skipping Package Installation",null,this.packageLogger)
         return { result: PackageInstallationStatus.Skipped }
       }
     } catch (err) {
+
+      SFPStatsSender.logCount("package.installation.failure", {
+        package: this.packageMetadata.package_name,
+        type: "unlocked",
+        target_org: this.targetusername,
+      });
+
       return {
         result: PackageInstallationStatus.Failed,
         message: err.message

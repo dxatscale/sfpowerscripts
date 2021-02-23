@@ -47,8 +47,6 @@ export default class ArtifactFilePathFetcher {
       result.push(artifactFilePaths);
     }
 
-    SFPLogger.log("Artifact File Paths",JSON.stringify(result), null, LoggerLevel.DEBUG);
-
     return result;
   }
 
@@ -92,13 +90,10 @@ export default class ArtifactFilePathFetcher {
     let unzippedArtifactsDirectory: string = `.sfpowerscripts/unzippedArtifacts/${this.makefolderid(8)}`;
 
     fs.mkdirpSync(unzippedArtifactsDirectory);
-
-    SFPLogger.log(`Unzipping ${artifact} to ${unzippedArtifactsDirectory}`, null, null, LoggerLevel.DEBUG);
     let zip = new AdmZip(artifact);
 
     // Overwrite existing files
     zip.extractAllTo(unzippedArtifactsDirectory, true);
-
 
     let artifactName: string = path.basename(artifact).match(/.*sfpowerscripts_artifact/)?.[0]
     if (artifactName == null) {

@@ -51,12 +51,13 @@ export default class InstallSourcePackageImpl {
 
     let isPackageInstalled = false;
     if (this.skip_if_package_installed) {
-      isPackageInstalled = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+
+      let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
         this.targetusername,
         this.packageMetadata,
-        packageDescriptor.aliasfy ? this.targetusername : null,
         this.isPackageCheckHandledByCaller
       );
+      isPackageInstalled = installationStatus.isInstalled;
       if (isPackageInstalled) {
         SFPLogger.log("Skipping Package Installation",null,this.packageLogger, LoggerLevel.INFO);
         return { result: PackageInstallationStatus.Skipped };
@@ -195,7 +196,6 @@ export default class InstallSourcePackageImpl {
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
           this.targetusername,
           this.packageMetadata,
-          packageDescriptor.aliasfy ? this.targetusername : null,
           this.isPackageCheckHandledByCaller
         );
 

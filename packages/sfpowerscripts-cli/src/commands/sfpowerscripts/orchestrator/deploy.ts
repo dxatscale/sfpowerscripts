@@ -52,6 +52,11 @@ export default class Deploy extends SfpowerscriptsCommand {
       default:false,
       description: messages.getMessage("skipIfAlreadyInstalled"),
     }),
+    baselineorg: flags.string({
+      char: "b",
+      description: messages.getMessage("baselineorgFlagDescription"),
+      required: false
+    }),
   };
 
   public async execute() {
@@ -61,6 +66,8 @@ export default class Deploy extends SfpowerscriptsCommand {
     console.log("command: deploy");
     console.log(`Skip Packages If Already Installed: ${this.flags.skipifalreadyinstalled}`);
     console.log(`Artifact Directory: ${this.flags.artifactdir}`);
+    if(this.flags.baselineorg)
+      console.log(`Baselined Against Org: ${this.flags.baselineorg}`)
     console.log("---------------------------------------------------------");
 
 
@@ -68,7 +75,6 @@ export default class Deploy extends SfpowerscriptsCommand {
 
     let deploymentResult: {
       deployed: string[],
-      skipped: string[],
       failed: string[],
       error: any
     };
@@ -91,7 +97,8 @@ export default class Deploy extends SfpowerscriptsCommand {
       deploymentMode:DeploymentMode.NORMAL,
       skipIfPackageInstalled:this.flags.skipifalreadyinstalled,
       logsGroupSymbol:this.flags.logsgroupsymbol,
-      currentStage:Stage.DEPLOY
+      currentStage:Stage.DEPLOY,
+      baselineOrg: this.flags.baselineorg
     }
 
     try {
@@ -119,13 +126,10 @@ export default class Deploy extends SfpowerscriptsCommand {
       console.log(
         `${deploymentResult.deployed.length} packages deployed in ${this.getFormattedTime(
           totalElapsedTime
-        )} with {${deploymentResult.failed.length}} errors and {${deploymentResult.skipped.length}} skipped`
+        )} with {${deploymentResult.failed.length}} errors`
       );
 
 
-      if (deploymentResult.skipped.length > 0) {
-        console.log(`\nPackages Skipped`, deploymentResult.skipped);
-      }
 
       if (deploymentResult.failed.length > 0) {
         console.log(`\nPackages Failed to Deploy`, deploymentResult.failed);
@@ -143,23 +147,27 @@ export default class Deploy extends SfpowerscriptsCommand {
         tags
       );
 
-      SFPStatsSender.logGauge(
+      SFPStatsSender.logCount(
         "deploy.succeeded",
+        tags
+      );
+
+      SFPStatsSender.logGauge(
+        "deploy.succeeded.packages",
         deploymentResult.deployed.length,
         tags
       );
 
-      if (deploymentResult.skipped.length > 0) {
-        SFPStatsSender.logGauge(
-          "deploy.skipped",
-          deploymentResult.skipped.length,
-          tags
-        );
-      }
+    
 
       if (deploymentResult.failed.length > 0) {
-        SFPStatsSender.logGauge(
+        SFPStatsSender.logCount(
           "deploy.failed",
+          tags
+        );
+
+        SFPStatsSender.logGauge(
+          "deploy.failed.packages",
           deploymentResult.failed.length,
           tags
         );
