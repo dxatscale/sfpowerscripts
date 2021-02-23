@@ -45,13 +45,25 @@ export default class TriggerApexTests {
         this.fileLogger
       );
 
+      let testExecErrorMsg: string;
       try {
         await triggerApexTestImpl.exec(true);
       } catch (err) {
         // catch error so that results can be displayed
+        testExecErrorMsg = err.message;
       }
 
-      let id = this.getTestId();
+      let id: string;
+      try {
+        id = this.getTestId();
+      } catch (err) {
+        // catch file parse error and replace with test exec error
+        if (testExecErrorMsg)
+          throw new Error(testExecErrorMsg);
+        else
+          throw err;
+      }
+
       let testReport = this.getTestReport(id);
       let testReportDisplayer = new TestReportDisplayer(
         testReport,

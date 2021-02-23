@@ -123,7 +123,7 @@ describe("Update a sfpowerscripts artifact to  an org",()=>{
      sourceVersion:"3232x232xc3e"
    }
 
-   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,null,false);
+   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false);
    expect(result).toEqual(true);
 
   });
@@ -170,7 +170,7 @@ describe("Update a sfpowerscripts artifact to  an org",()=>{
      sourceVersion:"3232x232xc3e"
    }
 
-   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,null,false);
+   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false);
    expect(result).toEqual(true);
 
   });
@@ -213,7 +213,7 @@ describe("Update a sfpowerscripts artifact to  an org",()=>{
    }
 
 
-   expect(ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,null,false)).resolves.toBeFalsy;
+   expect(ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false)).resolves.toBeFalsy;
    
   });
 

@@ -8,6 +8,9 @@ import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils
 import fs = require("fs");
 import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
+import PoolFetchImpl from "../pool/PoolFetchImpl";
+import { Org } from "@salesforce/core";
+import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
 const Table = require("cli-table");
 
 export enum ValidateMode {
@@ -43,7 +46,7 @@ export default class ValidateImpl {
       } else if (this.props.validateMode === ValidateMode.POOL) {
         this.authenticateDevHub(this.props.devHubUsername);
 
-        scratchOrgUsername = this.fetchScratchOrgFromPool(
+        scratchOrgUsername = await this.fetchScratchOrgFromPool(
           this.props.pools,
           this.props.devHubUsername
         );
@@ -273,7 +276,7 @@ export default class ValidateImpl {
   private querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername): any {
     let queryResultJson: string;
     try {
-     
+
       queryResultJson = child_process.execSync(
         `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c" -r json -u ${scratchOrgUsername}`,
         {
@@ -289,7 +292,7 @@ export default class ValidateImpl {
       console.log("Failed to query org for Sfpowerscripts Artifacts");
       return null;
     }
-    
+
   }
 
   private authenticateToScratchOrg(scratchOrgUsername: string): void {
@@ -301,29 +304,24 @@ export default class ValidateImpl {
     );
   }
 
-  private fetchScratchOrgFromPool(pools: string[], devHubUsername: string): string {
+  private  async fetchScratchOrgFromPool(pools: string[], devHubUsername: string): Promise<string> {
     let scratchOrgUsername: string;
 
     for (let pool of pools) {
-      let fetchResultJson: string;
+      let scratchOrg:ScratchOrg
       try {
-        fetchResultJson = child_process.execSync(
-          `sfdx sfpowerkit:pool:fetch -t ${pool.trim()} -v ${devHubUsername} --json`,
-          {
-            stdio: 'pipe',
-            encoding: 'utf8'
-          }
-        );
+        let hubOrg:Org = await Org.create({aliasOrUsername:devHubUsername,isDevHub:true});
+
+        let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false);
+        scratchOrg = await poolFetchImpl.execute();
+
       } catch (error) {}
 
-      if (fetchResultJson) {
-        let fetchResult = JSON.parse(fetchResultJson);
-        if (fetchResult.status === 0) {
-          scratchOrgUsername = fetchResult.result.username;
+      if (scratchOrg && scratchOrg.status==="Assigned") {
+          scratchOrgUsername = scratchOrg.username;
           console.log(`Fetched scratch org ${scratchOrgUsername} from ${pool}`);
           break;
         }
-      }
     }
 
     if (scratchOrgUsername)
@@ -375,7 +373,7 @@ export default class ValidateImpl {
     if (deploymentResult.testFailure)
       console.log(`\nTests failed for`, deploymentResult.testFailure);
 
-   
+
     if (deploymentResult.failed.length > 0) {
       console.log(`\nPackages Failed to Deploy`, deploymentResult.failed);
     }
