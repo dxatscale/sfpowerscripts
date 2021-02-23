@@ -276,7 +276,7 @@ export default class ValidateImpl {
   private querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername): any {
     let queryResultJson: string;
     try {
-     
+
       queryResultJson = child_process.execSync(
         `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c" -r json -u ${scratchOrgUsername}`,
         {
@@ -292,7 +292,7 @@ export default class ValidateImpl {
       console.log("Failed to query org for Sfpowerscripts Artifacts");
       return null;
     }
-    
+
   }
 
   private authenticateToScratchOrg(scratchOrgUsername: string): void {
@@ -310,8 +310,8 @@ export default class ValidateImpl {
     for (let pool of pools) {
       let scratchOrg:ScratchOrg
       try {
+        let hubOrg:Org = await Org.create({aliasOrUsername:devHubUsername,isDevHub:true});
 
-        let hubOrg:Org = new Org({aliasOrUsername:devHubUsername,isDevHub:true});
         let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false);
         scratchOrg = await poolFetchImpl.execute();
 
@@ -373,7 +373,7 @@ export default class ValidateImpl {
     if (deploymentResult.testFailure)
       console.log(`\nTests failed for`, deploymentResult.testFailure);
 
-   
+
     if (deploymentResult.failed.length > 0) {
       console.log(`\nPackages Failed to Deploy`, deploymentResult.failed);
     }
