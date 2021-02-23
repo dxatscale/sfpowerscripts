@@ -1,6 +1,6 @@
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
-import { Org, SfdxError } from "@salesforce/core";
+import { Org } from "@salesforce/core";
 import ScratchOrgUtils, { ScratchOrg } from "./utils/ScratchOrgUtils";
 
 export default class PoolFetchImpl {
@@ -60,7 +60,7 @@ export default class PoolFetchImpl {
     }
 
     if (results.records.length == 0 || !soDetail) {
-      throw new SfdxError(
+      throw new Error(
         `No scratch org available at the moment for ${this.tag}, try again in sometime.`
       );
     }
