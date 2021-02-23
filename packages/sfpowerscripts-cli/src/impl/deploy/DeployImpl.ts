@@ -108,12 +108,14 @@ export default class DeployImpl {
         this.printArtifactVersions(queue,packagesToPackageInfo);
       }
 
+
+
+      SFPStatsSender.logCount("deploy.scheduled",this.props.tags);
       SFPStatsSender.logGauge(
-        "deploy.scheduled",
+        "deploy.scheduled.packages",
         queue.length,
         this.props.tags
       );
-
 
 
       for (let i = 0; i < queue.length; i++) {
