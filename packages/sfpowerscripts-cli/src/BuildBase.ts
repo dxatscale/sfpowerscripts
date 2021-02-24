@@ -4,7 +4,6 @@ import { EOL } from "os";
 import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "./SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
-import { exec } from "shelljs";
 import fs = require("fs");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import BuildImpl from "./impl/parallelBuilder/BuildImpl";
