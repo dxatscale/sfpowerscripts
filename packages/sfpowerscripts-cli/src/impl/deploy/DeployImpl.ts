@@ -389,7 +389,7 @@ export default class DeployImpl {
     let packageInstallationResult: PackageInstallationResult;
 
     skipIfPackageInstalled = pkgDescriptor.alwaysDeploy
-      ? true
+      ? false
       : skipIfPackageInstalled;
 
     if (this.props.deploymentMode == DeploymentMode.NORMAL) {
