@@ -48,7 +48,16 @@ export default class Promote extends SfpowerscriptsCommand {
     tag: flags.string({
       char: 't',
       description: messages.getMessage('tagFlagDescription')
-    })
+    }),
+    gittag: flags.boolean({
+      description: messages.getMessage('gitTagFlagDescription'),
+      default: false,
+    }),
+    pushgittag: flags.boolean({
+      description: messages.getMessage('gitPushTagFlagDescription'),
+      default: false,
+    }),
+ 
   };
 
 
@@ -58,6 +67,7 @@ export default class Promote extends SfpowerscriptsCommand {
     SFPLogger.isSupressLogs = true;
 
     let executionStartTime = Date.now();
+    let succesfullyPublishedPackageNamesForTagging = new Array();
 
     try {
     
@@ -144,6 +154,9 @@ export default class Promote extends SfpowerscriptsCommand {
               stdio: ['ignore', 'ignore', 'inherit']
             }
           );
+
+   
+          succesfullyPublishedPackageNamesForTagging.push({name:packageName, version:packageVersionNumber.replace("-", "."),type:packageType, tag:`${packageName}_v${packageVersionNumber.replace("-", ".")}`});
           nPublishedArtifacts++;
         } catch (err) {
           failedArtifacts.push(`${packageName} v${packageVersionNumber}`);
@@ -151,6 +164,12 @@ export default class Promote extends SfpowerscriptsCommand {
           process.exitCode = 1;
         }
       }
+
+      this.createGitTags(failedArtifacts, succesfullyPublishedPackageNamesForTagging);
+      
+      this.pushGitTags();
+
+
 
     } catch (err) {
       console.log(err.message);
@@ -203,6 +222,27 @@ export default class Promote extends SfpowerscriptsCommand {
           "publish.failed",
           failedArtifacts.length,
           tags
+        );
+      }
+    }
+  }
+  private pushGitTags() {
+    if(this.flags.gittags && this.flags.pushgittag)
+    {
+      child_process.execSync(
+        `git push --tags`
+      );
+    }
+  }
+
+  private createGitTags(failedArtifacts: string[], succesfullyPublishedPackageNamesForTagging: any[]) {
+    if (this.flags.gittag && failedArtifacts.length == 0) {
+      child_process.execSync(`git config --global user.email "sfpowerscripts@dxscale"`);
+      child_process.execSync(`git config --global user.name "sfpowerscripts"`);
+
+      for (let packageTag of succesfullyPublishedPackageNamesForTagging) {
+        child_process.execSync(
+          `git tag -a -m "${packageTag.name} ${packageTag.type} Package ${packageTag.version}" ${packageTag} HEAD`
         );
       }
     }
