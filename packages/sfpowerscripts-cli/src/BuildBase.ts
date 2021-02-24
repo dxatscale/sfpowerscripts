@@ -4,7 +4,6 @@ import { EOL } from "os";
 import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "./SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
-import { exec } from "shelljs";
 import fs = require("fs");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import BuildImpl from "./impl/parallelBuilder/BuildImpl";
@@ -29,8 +28,9 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
       default: false,
     }),
     gittag: flags.boolean({
-      description: messages.getMessage("gitTagFlagDescription"),
+      description: "This flag is now deprecated, Please utilize git tags on publish stage",
       default: false,
+      deprecated: {messageOverride:"This flag is now deprecated, Please utilize git tags on publish stage"}
     }),
     repourl: flags.string({
       char: "r",
@@ -143,18 +143,6 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         tags
       );
 
-      if (gittag) {
-        exec(`git config --global user.email "sfpowerscripts@dxscale"`);
-        exec(`git config --global user.name "sfpowerscripts"`);
-
-        for (let generatedPackage of buildExecResult.generatedPackages) {
-          let tagname = `${generatedPackage.package_name}_v${generatedPackage.package_version_number}`;
-          exec(
-            `git tag -a -m "${generatedPackage.package_name} ${generatedPackage.package_type} Package ${generatedPackage.package_version_number}" ${tagname} HEAD`,
-            { silent: false }
-          );
-        }
-      }
     } catch (error) {
       console.log(error);
       process.exitCode = 1;
