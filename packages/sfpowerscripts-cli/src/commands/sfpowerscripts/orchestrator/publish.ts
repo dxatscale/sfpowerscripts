@@ -57,7 +57,7 @@ export default class Promote extends SfpowerscriptsCommand {
       description: messages.getMessage('gitPushTagFlagDescription'),
       default: false,
     }),
- 
+
   };
 
 
@@ -67,16 +67,22 @@ export default class Promote extends SfpowerscriptsCommand {
     SFPLogger.isSupressLogs = true;
 
     let executionStartTime = Date.now();
-    let succesfullyPublishedPackageNamesForTagging = new Array();
+
+    let succesfullyPublishedPackageNamesForTagging: {
+      name: string,
+      version: string,
+      type: string,
+      tag: string
+    }[] = new Array();
 
     try {
-    
+
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: publish");
     console.log(`Publish promoted artifacts only: ${this.flags.publishpromotedonly}`);
     console.log("---------------------------------------------------------");
-  
-  
+
+
 
 
 
@@ -155,8 +161,14 @@ export default class Promote extends SfpowerscriptsCommand {
             }
           );
 
-   
-          succesfullyPublishedPackageNamesForTagging.push({name:packageName, version:packageVersionNumber.replace("-", "."),type:packageType, tag:`${packageName}_v${packageVersionNumber.replace("-", ".")}`});
+
+          succesfullyPublishedPackageNamesForTagging.push({
+            name:packageName,
+            version:packageVersionNumber.replace("-", "."),
+            type:packageType,
+            tag:`${packageName}_v${packageVersionNumber.replace("-", ".")}`
+          });
+
           nPublishedArtifacts++;
         } catch (err) {
           failedArtifacts.push(`${packageName} v${packageVersionNumber}`);
@@ -166,7 +178,7 @@ export default class Promote extends SfpowerscriptsCommand {
       }
 
       this.createGitTags(failedArtifacts, succesfullyPublishedPackageNamesForTagging);
-      
+
       this.pushGitTags();
 
 
@@ -235,14 +247,22 @@ export default class Promote extends SfpowerscriptsCommand {
     }
   }
 
-  private createGitTags(failedArtifacts: string[], succesfullyPublishedPackageNamesForTagging: any[]) {
+  private createGitTags(
+    failedArtifacts: string[],
+    succesfullyPublishedPackageNamesForTagging: {
+      name: string,
+      version: string,
+      type: string,
+      tag: string
+    }[]
+  ) {
     if (this.flags.gittag && failedArtifacts.length == 0) {
       child_process.execSync(`git config --global user.email "sfpowerscripts@dxscale"`);
       child_process.execSync(`git config --global user.name "sfpowerscripts"`);
 
       for (let packageTag of succesfullyPublishedPackageNamesForTagging) {
         child_process.execSync(
-          `git tag -a -m "${packageTag.name} ${packageTag.type} Package ${packageTag.version}" ${packageTag} HEAD`
+          `git tag -a -m "${packageTag.name} ${packageTag.type} Package ${packageTag.version}" ${packageTag.tag} HEAD`
         );
       }
     }
