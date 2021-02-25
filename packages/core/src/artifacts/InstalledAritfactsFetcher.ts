@@ -1,5 +1,4 @@
 import child_process = require("child_process");
-import SFPLogger from "../utils/SFPLogger";
 const retry = require("async-retry");
 
 //Fetch sfpowerscripts Artifats installed in an Org
