@@ -239,7 +239,8 @@ export default class Promote extends SfpowerscriptsCommand {
     }
   }
   private pushGitTags() {
-    if(this.flags.gittags && this.flags.pushgittag)
+    console.log("Pushing Git Tags to Repo");
+    if(this.flags.gittag && this.flags.pushgittag)
     {
       child_process.execSync(
         `git push --tags`
@@ -257,6 +258,7 @@ export default class Promote extends SfpowerscriptsCommand {
     }[]
   ) {
     if (this.flags.gittag && failedArtifacts.length == 0) {
+      console.log("Creating Git Tags in Repo");
       child_process.execSync(`git config --global user.email "sfpowerscripts@dxscale"`);
       child_process.execSync(`git config --global user.name "sfpowerscripts"`);
 
