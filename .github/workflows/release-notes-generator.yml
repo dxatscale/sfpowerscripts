@@ -1,11 +1,7 @@
 # Trigger the workflow on milestone events
-on: 
-  workflow_dispatch:
-    inputs:
-      milestoneId:
-        description: 'Milestone ID'     
-        required: true
-        default: '20'
+on:
+  milestone:
+    types: [closed]
 name: Generate Release Notes
 jobs:
   create-release-notes:
