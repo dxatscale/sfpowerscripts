@@ -22,7 +22,7 @@ async function run() {
     if (apexcompileonlypackage)
       command += ` -a`;
     if (keys!=null && keys.length>0)
-      command += ` -k ${keys}`;
+      command += ` -k "${keys}"`;
     if (forceinstall)
       command += ` -o`;
 

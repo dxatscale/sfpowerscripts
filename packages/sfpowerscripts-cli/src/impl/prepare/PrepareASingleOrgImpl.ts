@@ -1,6 +1,6 @@
 import { SfdxApi } from "../pool/sfdxnode/types";
 import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
-import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
+import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import * as fs from "fs-extra";
 import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
@@ -65,7 +65,7 @@ export default class PrepareASingleOrgImpl {
       console.log(`Beginning Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`)
 
       // Install Dependencies
-      let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
+      let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
         this.scratchOrg.username,
         this.hubOrg,
         60,
