@@ -55,7 +55,8 @@ export default class Deploy extends SfpowerscriptsCommand {
     baselineorg: flags.string({
       char: "b",
       description: messages.getMessage("baselineorgFlagDescription"),
-      required: false
+      required: false,
+      dependsOn: ['skipifalreadyinstalled']
     }),
   };
 
@@ -158,7 +159,7 @@ export default class Deploy extends SfpowerscriptsCommand {
         tags
       );
 
-    
+
 
       if (deploymentResult.failed.length > 0) {
         SFPStatsSender.logCount(

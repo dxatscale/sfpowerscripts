@@ -462,7 +462,7 @@ Deploy packages from the provided aritfact directory, to a given org, using the 
 
 USAGE
   $ sfdx sfpowerscripts:orchestrator:deploy -u <string> [--artifactdir <directory>] [--waittime <number>] [-g <array>]
-  [-t <string>] [--skipifalreadyinstalled]
+  [-t <string>] [-b <string> --skipifalreadyinstalled]
 
 OPTIONS
   -b, --baselineorg=baselineorg                                                     The org against which the package skip
