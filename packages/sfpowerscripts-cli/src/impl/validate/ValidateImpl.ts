@@ -6,7 +6,7 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata"
 import { Stage } from "../Stage";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import fs = require("fs");
-import InstallPackageDepenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
+import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import PoolFetchImpl from "../pool/PoolFetchImpl";
 import { Org } from "@salesforce/core";
@@ -29,6 +29,7 @@ export interface ValidateProps {
   client_id?: string,
   shapeFile?: string,
   isDeleteScratchOrg?: boolean,
+  keys?: string
 }
 
 export default class ValidateImpl {
@@ -109,12 +110,12 @@ export default class ValidateImpl {
     this.printOpenLoggingGroup(`Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
     SFPLogger.isSupressLogs=false;
     // Install Dependencies
-    let installDependencies: InstallPackageDepenciesImpl = new InstallPackageDepenciesImpl(
+    let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
       scratchOrgUsername,
       this.props.devHubUsername,
       120,
       null,
-      null,
+      this.props.keys,
       true,
       null
     );

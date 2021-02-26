@@ -280,6 +280,11 @@ OPTIONS
                                                                                     code coverage of packages with Apex
                                                                                     classes
 
+  --keys=keys                                                                       Keys to be used while installing any
+                                                                                    managed package dependencies. Required
+                                                                                    format is a string of key-value pairs
+                                                                                    separated by spaces e.g. packageA:pw123
+                                                                                    packageB:pw123 packageC:pw123
 
   --shapefile=shapefile                                                             Path to .zip file of scratch org
                                                                                     shape / metadata to deploy

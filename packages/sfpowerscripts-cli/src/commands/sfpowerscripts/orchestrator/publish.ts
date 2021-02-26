@@ -177,10 +177,10 @@ export default class Promote extends SfpowerscriptsCommand {
         }
       }
 
-      this.createGitTags(failedArtifacts, succesfullyPublishedPackageNamesForTagging);
-
-      this.pushGitTags();
-
+      if (this.flags.gittag && failedArtifacts.length == 0) {
+        this.createGitTags(succesfullyPublishedPackageNamesForTagging);
+        this.pushGitTags();
+      }
 
 
     } catch (err) {
@@ -239,7 +239,8 @@ export default class Promote extends SfpowerscriptsCommand {
     }
   }
   private pushGitTags() {
-    if(this.flags.gittags && this.flags.pushgittag)
+    console.log("Pushing Git Tags to Repo");
+    if(this.flags.pushgittag)
     {
       child_process.execSync(
         `git push --tags`
@@ -248,7 +249,6 @@ export default class Promote extends SfpowerscriptsCommand {
   }
 
   private createGitTags(
-    failedArtifacts: string[],
     succesfullyPublishedPackageNamesForTagging: {
       name: string,
       version: string,
@@ -256,7 +256,7 @@ export default class Promote extends SfpowerscriptsCommand {
       tag: string
     }[]
   ) {
-    if (this.flags.gittag && failedArtifacts.length == 0) {
+      console.log("Creating Git Tags in Repo");
       child_process.execSync(`git config --global user.email "sfpowerscripts@dxscale"`);
       child_process.execSync(`git config --global user.name "sfpowerscripts"`);
 
@@ -265,7 +265,7 @@ export default class Promote extends SfpowerscriptsCommand {
           `git tag -a -m "${packageTag.name} ${packageTag.type} Package ${packageTag.version}" ${packageTag.tag} HEAD`
         );
       }
-    }
+    
   }
 
   private isPackageVersionIdReleased(packageVersionList: any, packageVersionId: string): boolean {
