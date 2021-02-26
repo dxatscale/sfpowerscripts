@@ -54,6 +54,10 @@ export default class Validate extends SfpowerscriptsCommand {
       char: 'x',
       description: messages.getMessage("deleteScratchOrgFlagDescription"),
       default: false
+    }),
+    keys: flags.string({
+      required: false,
+      description: messages.getMessage("keysFlagDescription"),
     })
   };
 
@@ -80,7 +84,8 @@ export default class Validate extends SfpowerscriptsCommand {
       jwt_key_file: this.flags.jwtkeyfile,
       client_id: this.flags.clientid,
       shapeFile: this.flags.shapefile,
-      isDeleteScratchOrg: this.flags.deletescratchorg
+      isDeleteScratchOrg: this.flags.deletescratchorg,
+      keys: this.flags.keys
     }
 
     let validateImpl: ValidateImpl = new ValidateImpl( validateProps);

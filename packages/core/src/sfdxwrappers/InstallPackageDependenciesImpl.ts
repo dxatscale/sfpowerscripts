@@ -7,7 +7,7 @@ import {
 import { onExit } from "../utils/OnExit";
 import SFPLogger from "../utils/SFPLogger";
 
-export default class InstallPackageDepenciesImpl {
+export default class InstallPackageDependenciesImpl {
   public constructor(
     private target_org: string,
     private devhub_alias: string,
@@ -22,7 +22,7 @@ export default class InstallPackageDepenciesImpl {
     let command = `sfdx sfpowerkit:package:dependencies:install -u ${this.target_org} -v ${this.devhub_alias} -r -w ${this.wait_time}`;
     if (this.apexcompileonlypackage) command += ` -a`;
     if (this.keys != null && this.keys.length > 0)
-      command += ` -k ${this.keys}`;
+      command += ` -k "${this.keys}"`;
 
     SFPLogger.log("Executing Command:", command,this.packageLogger);
 
