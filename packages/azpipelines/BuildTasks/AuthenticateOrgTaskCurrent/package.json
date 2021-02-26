@@ -1,7 +1,7 @@
 {
   "name": "sfpowerscripts-authenticateorg-task",
   "description": "sfpowerscripts-authenticateorg-task",
-  "version": "10.0.8",
+  "version": "10.0.9",
   "private": true,
   "repository": {
     "type": "git",

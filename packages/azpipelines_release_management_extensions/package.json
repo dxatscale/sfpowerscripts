@@ -1,7 +1,7 @@
 {
   "name": "@dxatscale/sfpowerscripts.azpipelines.releasemanagement",
   "private": true,
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "Additonal capability for Release Orchestration when used with sfpowerscripts",
   "repository": {
     "type": "git",

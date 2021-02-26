@@ -3,7 +3,7 @@
     "id": "sfpowerscripts-release-extension",
     "publisher": "dxatscale",
     "name": "sfpowerscripts-release-extension",
-    "version": "1.0.26",
+    "version": "1.0.27",
     "description": "Additonal capability for Release Orchestration when used with sfpowerscripts",
     "tags": [
         "Extension",
