@@ -68,7 +68,8 @@ USAGE
          "prepare",
           "validate"
         ]
-    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org
+    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org,
+    "buildCollection": ["packageB", "packageC"] // packages in the same build collection are always built together, as long as one package in the collection has changed
   }
 ```
 ### Enabling StatsD Metrics
