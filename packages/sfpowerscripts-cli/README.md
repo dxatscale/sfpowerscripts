@@ -465,6 +465,9 @@ USAGE
   [-t <string>] [--skipifalreadyinstalled]
 
 OPTIONS
+  -b, --baselineorg=baselineorg                                                     The org against which the package skip
+                                                                                    should be baselined
+
   -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to
                                                                                     group/collapse logs in the console.
                                                                                     Provide an opening group, and an
