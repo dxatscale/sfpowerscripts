@@ -37,6 +37,7 @@ description: Learn about all the features in sfpowerscripts
 ### **Deploy with confidence!**
 
 * Deploy only packages that are changed
+* Ability to deploy a set of packages by comparing against a baseline org
 * Always deploy a package if required
 * Skip deployment of a package on a particular org
 * Reconcile profiles automatically for source packages
