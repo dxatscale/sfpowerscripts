@@ -7,7 +7,7 @@ description: When you are stuck!
 ## Why do I get InvalidPackageDirectory error during validation and deployment tasks?
 
 **Stage:** Validation, Deployment  
- **Build Task:** Deploy a Source Directory \(Source Format\) to an Org  
+**Build Task:** Deploy a Source Directory \(Source Format\) to an Org  
 
 
 ```text
@@ -32,4 +32,12 @@ package:<name-of-the-package> // this is mandatory for each of the packages
 versionNumber:<X.Y.Z.BuildNumber/NEXT> //this is mandatory for each of the packages
 versionName:<any-version_name> 
 ```
+
+## Why am I getting the below error during prepare/validate command?
+
+![](../.gitbook/assets/image%20%2811%29.png)
+
+This error is thrown when sfpowerkit is unable to fetch information about the dependencies of a package. Check for the following  
+- There is a valid alias for package dependencies for any of the unlocked /source packages  
+-  Unlocked packages are found to refer to a source package dependency
 
