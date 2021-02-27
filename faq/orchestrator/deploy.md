@@ -11,7 +11,7 @@ Given a directory of artifacts and a target org, the **deploy** command will dep
 The **deploy** command removes the overhead of scripting individual package deployments. The packages to deploy and order of deployment is automatically decoded from the project configuration file carried inside the packages \(From Release 19\) 
 
 {% hint style="info" %}
-For the deploy command to work, it requires artifacts must be created from the same repository
+For the deploy command to work, the artifacts must be created from the same source respository 
 {% endhint %}
 
 ## What are the sequence of steps the deploy command does?

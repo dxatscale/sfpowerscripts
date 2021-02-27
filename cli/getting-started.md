@@ -251,7 +251,12 @@ OPTIONS
                                                                                     code coverage of packages with Apex
                                                                                     classes
 
-
+  --keys=keys                                                                       Keys to be used while installing any
+                                                                                    managed package dependencies. Required
+                                                                                    format is a string of key-value pairs
+                                                                                    separated by spaces e.g. packageA:pw123
+                                                                                    packageB:pw123 packageC:pw123            
+  
   --shapefile=shapefile                                                             Path to .zip file of scratch org
                                                                                     shape / metadata to deploy
 
@@ -340,9 +345,8 @@ OPTIONS
   --executorcount=executorcount                                                     [default: 5] Number of parallel
                                                                                     package task schedulors
 
-  --gittag                                                                          Tag the current commit ID with an
-                                                                                    annotated tag containing the package
-                                                                                    name and version - does not push tag
+  --gittag                                                                          This flag is deprecated, Please 
+                                                                                    utilize git tags on publish stage
 
   --tag=tag                                                                         Tag the build with a label, useful
                                                                                     to identify in metrics
@@ -402,9 +406,8 @@ OPTIONS
   --executorcount=executorcount                                                     [default: 5] Number of parallel
                                                                                     package task schedulors
 
-  --gittag                                                                          Tag the current commit ID with an
-                                                                                    annotated tag containing the package
-                                                                                    name and version - does not push tag
+  --gittag                                                                          This flag is deprecated, Please 
+                                                                                    utilize git tags on publish stage
 
   --tag=tag                                                                         Tag the build with a label, useful
                                                                                     to identify in metrics
@@ -509,7 +512,14 @@ OPTIONS
 
   -v, --devhubalias=devhubalias                                                     Provide the alias of the devhub
                                                                                     previously authenticated
-
+                                                                                    
+  --gittag                                                                          Tag the current commit ID with an
+                                                                                    annotated tag containing the package
+                                                                                    name and version - does not push tag
+  
+  --pushgittag                                                                      Pushes the git tags created by this
+                                                                                    command to the repo, ensure you have
+                                                                                    access to the repo
 
 EXAMPLES
   $ sfdx sfpowerscripts:orchestrator:publish -f path/to/script
