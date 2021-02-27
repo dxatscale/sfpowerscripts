@@ -2,13 +2,13 @@
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpwowerscript-validateapextestcoverage-task | 4.0.14 |
+| sfpwowerscript-validateapextestcoverage-task | 5.0.5 |
 
 This task is used to validate the apex test coverage of an org
 
 **Prerequisites**
 
-[Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md)  task must be added to the pipeline before utilizing this task
+[Install SFDX CLI with sfpowerkit](../utility-tasks/install-sfdx-cli-with-sfpowerkit.md) task must be added to the pipeline before utilizing this task
 
 **Task Snapshot**
 
@@ -18,7 +18,7 @@ This task is used to validate the apex test coverage of an org
 
 {% tabs %}
 {% tab title="Input Parameters" %}
-Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+Classic Designer Labels are in **Bold,** YAML Variables are in _italics_
 
 * **Alias or username of the target org** / _targetOrg_ The alias or username of the target org
 {% endtab %}
@@ -38,10 +38,9 @@ None
 {% endtab %}
 {% endtabs %}
 
-
-
 **Changelog**
 
+* 5.0.5 Upgrade to Node 10
 * 4.0.8 Update Core dependency
 * 4.0.5  Remove Telemetry Collection
 * 3.0.9 Refactored to use revamped folder structure

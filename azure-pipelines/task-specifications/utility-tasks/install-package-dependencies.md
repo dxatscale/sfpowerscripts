@@ -4,7 +4,7 @@ This task is a wrapper over sfpowerkit:package:dependencies:install command. It 
 
 | Task Id | Version |
 | :--- | :--- |
-| sfpowerscript-installpackagedependencies-task | 5.0.5 |
+| sfpowerscript-installpackagedependencies-task | 6.0.5 |
 
 **Prerequisites**
 
@@ -18,7 +18,7 @@ This task is a wrapper over sfpowerkit:package:dependencies:install command. It 
 
 {% tabs %}
 {% tab title="Input Parameters" %}
-Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
+Classic Designer Labels are in **Bold,** YAML Variables are in _italics_
 
 * **Alias or username of the target org /** _target\_org_ Username or alias of the target org on which the source directory is to be deployed 
 * **Alias/Username of the devhub** / _devhub\_alias_ Provide the alias or username of the devhub which houses the unlocked packages 
@@ -50,6 +50,7 @@ None
 
 **Changelog**
 
+* 6.0.5 Upgrade to Node 10
 * 4.0.9 Update Core dependency
 * 4.0.4 Remove Telemetry collection
 * 3.0.9 Refactored to use revamped folder structure
