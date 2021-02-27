@@ -6,13 +6,14 @@ description: Build your packages in parallel
 
 ## What does Build & QuickBuild do?
 
-These commands are useful especially in a mono repo with multiple package directories, to build packages in parallel and by respecting the order to be built. 
+These commands are useful especially in a mono repo with multiple package directories, to build packages in parallel and by respecting the order to be built.
 
 ## Why should you be using these  Build commands?
 
-These commands provide the following benefits   
- - Reduce time taken to build unlocked packages, by triggering the package creation commands in parallel provided dependencies are built  
--  Reduce efforts in reducing maintenance of builds scripts, when you have multiple packages.
+These commands provide the following benefits
+
+* Reduce time taken to build unlocked packages, by triggering the package creation commands in parallel provided dependencies are built  
+  * Reduce efforts in reducing maintenance of builds scripts, when you have multiple packages.
 
 ## What's the difference between Build & QuickBuild?
 
@@ -22,45 +23,45 @@ We recommend using quickbuild, to generate packages upon every merge and then de
 
 ## How does Build & QuickBuild  know what to build when using "diffcheck" flag?
 
-A comparison \(using git diff\) is made between the latest source code and previous version of the package, defined by a tag that follows semantic versioning. If any difference is detected in the **package directory**, **package version** or **scratch org definition file** \(applies to unlocked packages only\), then the package will be created - otherwise it is skipped.     
+A comparison \(using git diff\) is made between the latest source code and previous version of the package, defined by a tag that follows semantic versioning. If any difference is detected in the **package directory**, **package version** or **scratch org definition file** \(applies to unlocked packages only\), then the package will be created - otherwise it is skipped.
 
 ## How do these commands know the order to build?
 
-These commands follow the order of the the packages as ordered in your sfdx-project.json. The commands also read your dependencies property, and then when triggered, will wait till all its dependencies are resolved, before triggering the package creation command. For eg:  provided the followings packages  
-                                         
+These commands follow the order of the the packages as ordered in your sfdx-project.json. The commands also read your dependencies property, and then when triggered, will wait till all its dependencies are resolved, before triggering the package creation command. For eg: provided the followings packages
 
-**Scenario 1  : Build All**                                      
+**Scenario 1 : Build All**
 
 ![](../../.gitbook/assets/image%20%284%29.png)
 
-where B and C is dependent on A, D is dependent on C.  The build commands creates packages in the following order  
- - Trigger creation of package A  
- - Once A is completed, trigger creation of package B & C \(using the version of A, created in step 1\)  
--  Once C is completed, trigger creation of package D
+where B and C is dependent on A, D is dependent on C. The build commands creates packages in the following order
 
-**Scenario 2 :  Build with diffCheck enabled on a package with no dependencies**
+* Trigger creation of package A  
+* Once A is completed, trigger creation of package B & C \(using the version of A, created in step 1\)  
+  * Once C is completed, trigger creation of package D
+
+**Scenario 2 : Build with diffCheck enabled on a package with no dependencies**
 
 ![](../../.gitbook/assets/image%20%286%29.png)
 
 In this scenario, where only a single package has changed and **diffCheck** is enabled, the build command will only trigger the creation of Package B
 
-**Scenario 3 :  Build with diffCheck enabled on changes in multiple packages**
+**Scenario 3 : Build with diffCheck enabled on changes in multiple packages**
 
 ![](../../.gitbook/assets/image%20%282%29.png)
 
-In this scenario,  where there are changes in multiple packages, say B & C, the build command will trigger these packages in parallel, as their dependent package A has not changed \(hence fulfilled\). Please note even though there is a change in C, package D will not be triggered, unless there is an explicit version change of version number \(major.minor.patch\) of package D
+In this scenario, where there are changes in multiple packages, say B & C, the build command will trigger these packages in parallel, as their dependent package A has not changed \(hence fulfilled\). Please note even though there is a change in C, package D will not be triggered, unless there is an explicit version change of version number \(major.minor.patch\) of package D
 
 ## Does build commands work only for unlocked packages?
 
-No,  build command understand the type of the packages by reading the properties from sfdx-project.json and probing DevHub, to understand whether you have unlocked \(normal and org-dependent\), source and data packages.
+No, build command understand the type of the packages by reading the properties from sfdx-project.json and probing DevHub, to understand whether you have unlocked \(normal and org-dependent\), source and data packages.
 
 ## Source and Data packages do not have dependencies, If I have many of these, does it delay building unlocked packages?
 
-Source and Data packages are placed in the queue with a slightly lower priority, as the generation of these commands is faster. Unlocked Packages, with dependencies  are prioritized so that they are able to use the threads.
+Source and Data packages are placed in the queue with a slightly lower priority, as the generation of these commands is faster. Unlocked Packages, with dependencies are prioritized so that they are able to use the threads.
 
 ## Can I skip code coverage check when building dependency validated packages using the 'build' command?
 
-No, we do not provide this option at this stage. Please utilize the artifacts generated by quickbuild for this use ****case.
+No, we do not provide this option at this stage. Please utilize the artifacts generated by quickbuild for this use _\*\*_case.
 
 ## **What should be my approach to versioning the packages?**
 
@@ -69,26 +70,12 @@ Utilize the .NEXT and .LATEST for versioning the build number of unlocked packag
 ## **When should I be pushing tags to repo?**
 
 {% hint style="warning" %}
-From Release 20 onward, the Build & QuickBuild commands no longer support tagging. This functionality has been moved to the Publish command, which means that tags will only be created after artifacts have been published.    
+From Release 20 onward, the Build & QuickBuild commands no longer support tagging. This functionality has been moved to the Publish command, which means that tags will only be created after artifacts have been published.
 {% endhint %}
 
 ## I do not want a particular package to be built, Is there a way to do it?
 
 Yes, you could use the `ignoreOnStage:[ "build" ]` property to mark which packages should be skipped by the **build** command. Similarly you can use `ignoreOnStage:[ "quickbuild" ]` to skip packages in the quickbuild stage.
 
-## 
-
-
-
 \*\*\*\*
-
-
-
-
-
-
-
-
-
-
 
