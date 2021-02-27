@@ -8,7 +8,7 @@ This task is usually the first task of any pipeline you build using sfpowerscrip
 
 Please note this task is not supported in Hosted Mac Agents as of now
 
-#### **Task Snapshot**
+## **Task Snapshot**
 
 **Parameters**
 
@@ -30,7 +30,14 @@ Classic Designer Labels are in **Bold,**  YAML Variables are in _italics_
 
 * **Additional Plugins to be installed /** _plugins_
 
-  Provide additional sfdx plugins to be installed, when this task is run. The format to be followed is **pluginame1@version,pluginname2@version** and so forth.  
+  Provide additional sfdx plugins to be installed, when this task is run. The format to be followed is **pluginame1@version,pluginname2@version** and so forth.
+
+* **Enable sending metrics about build to a statsd daemon** / _enableStatsd_  
+  Send sfpowerscripts metrics \(e.g. build times,  package installation\) to StatsD daemon
+
+* **URI to StatsD server, format &lt;HOST&gt;:&lt;PORT&gt;:&lt;PROTOCOL&gt;** / _statsd\_config_
+
+  Host address, port number and transport layer protocol of the StatsD daemon 
 {% endtab %}
 
 {% tab title="Output Parameters" %}
@@ -50,6 +57,7 @@ None
 
 **Changelog**
 
+* 9.0.5 Configure StatsD daemon 
 * 7.0.8 Update Core dependency
 * 7.0.4 Updated major versions to remove telemetry collection
 * 6.0.5 Refactored to use revamped folder structure
