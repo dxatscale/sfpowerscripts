@@ -4,7 +4,7 @@
 * [Principles](principles-1.md)
 * [Features](features.md)
 
-## CLI
+## Getting started <a id="cli"></a>
 
 * [Prerequisites](cli/prerequisites.md)
 * [Using sfpowerscripts-cli sfdx plugin](cli/getting-started.md)
