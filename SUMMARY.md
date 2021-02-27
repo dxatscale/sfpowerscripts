@@ -2,10 +2,27 @@
 
 * [Overview](README.md)
 * [Principles](principles-1.md)
+* [Features](features.md)
+
+## CLI
+
+* [Prerequisites](cli/prerequisites.md)
+* [Using sfpowerscripts-cli sfdx plugin](cli/getting-started.md)
+
+## Essential Read <a id="faq"></a>
+
+* [Source Packages](faq/source-packages.md)
+* [Data Packages](faq/data-packages.md)
+* [Orchestrator](faq/orchestrator/README.md)
+  * [Prepare](faq/orchestrator/prepare.md)
+  * [Validate](faq/orchestrator/validate.md)
+  * [Build & QuickBuild](faq/orchestrator/build-and-quickbuild.md)
+  * [Deploy](faq/orchestrator/deploy.md)
+* [Metrics and Dashboards](faq/metrics-and-dashboards.md)
+* [Troubleshooting](faq/troubleshooting.md)
 
 ## Azure Pipelines
 
-* [Getting Started](azure-pipelines/getting-started.md)
 * [Build your pipelines](azure-pipelines/pipelines/README.md)
   * [Pull Request Validation using Scratch Org](azure-pipelines/pipelines/pull-request-validation-using-scratch-org.md)
   * [Build Pipeline - Org Based Deployment](azure-pipelines/pipelines/continous-integration-pipeline-org-based.md)
@@ -17,10 +34,9 @@
     * [Connecting to Salesforce Org using ServiceConnection](azure-pipelines/task-specifications/authentication/connecting-to-salesforce-using-serviceconnection.md)
     * [Authenticate a Salesforce Org](azure-pipelines/task-specifications/authentication/authenticate-an-org.md)
   * [Utility Tasks](azure-pipelines/task-specifications/utility-tasks/README.md)
-    * [Generate Changelog \[ALPHA\]](azure-pipelines/task-specifications/utility-tasks/sfpowerscripts-generatechangelog-task.md)
+    * [Generate Changelog](azure-pipelines/task-specifications/utility-tasks/sfpowerscripts-generatechangelog-task.md)
     * [Install SFDX CLI with sfpowerkit](azure-pipelines/task-specifications/utility-tasks/install-sfdx-cli-with-sfpowerkit.md)
     * [Create/Delete a Scratch Org](azure-pipelines/task-specifications/utility-tasks/create-delete-a-scratch-org.md)
-    * [Export Metadata from an org](azure-pipelines/task-specifications/utility-tasks/export-metadata-from-an-org.md)
     * [Install package dependencies](azure-pipelines/task-specifications/utility-tasks/install-package-dependencies.md)
     * [Increment Version Number of a package](azure-pipelines/task-specifications/utility-tasks/increment-version-number-of-a-package.md)
   * [Packaging Tasks](azure-pipelines/task-specifications/packaging-tasks/README.md)
@@ -43,16 +59,9 @@
     * [Validate Apex Test Coverage](azure-pipelines/task-specifications/testing-tasks/validate-apex-test-coverage.md)
     * [Validate Code Coverage of a Package](azure-pipelines/task-specifications/testing-tasks/validate-code-coverage-of-a-package.md)
     * [Run a static analysis of apex classes with PMD](azure-pipelines/task-specifications/testing-tasks/run-a-static-analysis-of-apex-classes-with-pmd.md)
-* [Troubleshooting](azure-pipelines/troubleshooting.md)
-
-## CLI
-
-* [Using sfpowerscripts-cli sfdx plugin](cli/getting-started.md)
 
 ---
 
-* [FAQ's](faqs.md)
-* [Change Log](change-log.md)
 * [Maintainers](maintainers.md)
 * [Contributors](contributors.md)
 * [Contributing to sfpowerscripts](contributing-to-sfpowerscripts.md)
