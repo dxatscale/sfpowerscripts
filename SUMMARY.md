@@ -4,13 +4,10 @@
 * [Principles](principles-1.md)
 * [Features](features.md)
 
-## CLI
-
-* [Prerequisites](cli/prerequisites.md)
-* [Using sfpowerscripts-cli sfdx plugin](cli/getting-started.md)
-
 ## Essential Read <a id="faq"></a>
 
+* [Prerequisites](faq/prerequisites.md)
+* [Using sfpowerscripts-cli sfdx plugin](faq/getting-started.md)
 * [Source Packages](faq/source-packages.md)
 * [Data Packages](faq/data-packages.md)
 * [Orchestrator](faq/orchestrator/README.md)

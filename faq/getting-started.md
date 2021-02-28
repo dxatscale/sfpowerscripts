@@ -4,30 +4,27 @@
 
 The [SFDX CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm), [sfpowerkit plugin](https://github.com/Accenture/sfpowerkit), and [sfdmu](getting-started.md) are required for this plugin to work. If you have not already done so, please install both of these before continuing.
 
-To install the sfpowerscripts plugin, run the following command:
+To install the pre-requisites, run the following commands:
 
 ```text
-$ sfdx plugins:install sfpowerkit
-$ sfdx plugins:install sfdmu
-$ sfdx plugins:install @dxatscale/sfpowerscripts
+$ echo 'y' | sfdx plugins:install sfpowerkit
+$ echo 'y' | sfdx plugins:install sfdmu
+$ echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts
 ```
 
-For automated installations as part of a CI process or Dockerfile:
+To install sfpowerscripts, run the below command:
 
 ```text
 $ echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts
 ```
 
+To ensure everything is installed, try running the below command and ensure it displays similar to below
+
 ```text
-$ npm install -g @dxatscale/sfpowerscripts
-$ sfdx COMMAND
-running command...
-$ sfdx (-v|--version|version)
-@dxatscale/sfpowerscripts/1.4.5 win32-x64 node-v12.16.3
-$ sfdx --help [COMMAND]
-USAGE
-  $ sfdx COMMAND
-...
+$ sfdx plugins
+@dxatscale/sfpowercripts <version_number>
+sfpowerkit <version_number>
+sfdmu <version>
 ```
 
 ## Using sfpowerscripts
@@ -40,8 +37,8 @@ USAGE
   {
     "path": "path--to--package",
     "package": "name--of-the-package", //mandatory, when used with sfpowerscripts
-    "versionNumber": "X.Y.Z.[NEXT/BUILDNUMBER]",
-    "type":"data" //Mention the type of package, only to be used for source and data packages
+    "versionNumber": "X.Y.Z.[0/NEXT]",// 0 for source/data .NEXT for Unlocked
+    "type":"data/source" //Mention the type of package, only to be used for source and data packages
     "aliasfy": <boolean>, // Only for source packages, allows to deploy a subfolder whose name matches the alias of the org when using deploy command
     "skipDeployOnOrgs": ["org1","org2"], // Comma seperated values of org's to mention this package should not be deployed in this org
     "isOptimizedDeployment": <boolean>  // default:true for source packages, Utilizes the apex classes in the package for deployment,
