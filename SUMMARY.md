@@ -4,13 +4,10 @@
 * [Principles](principles-1.md)
 * [Features](features.md)
 
-## CLI
-
-* [Prerequisites](cli/prerequisites.md)
-* [Using sfpowerscripts-cli sfdx plugin](cli/getting-started.md)
-
 ## Essential Read <a id="faq"></a>
 
+* [Prerequisites](faq/prerequisites.md)
+* [Using sfpowerscripts-cli sfdx plugin](faq/getting-started.md)
 * [Source Packages](faq/source-packages.md)
 * [Data Packages](faq/data-packages.md)
 * [Orchestrator](faq/orchestrator/README.md)
@@ -18,6 +15,7 @@
   * [Validate](faq/orchestrator/validate.md)
   * [Build & QuickBuild](faq/orchestrator/build-and-quickbuild.md)
   * [Deploy](faq/orchestrator/deploy.md)
+<<<<<<< HEAD
 * [Metrics and Dashboards](faq/metrics-and-dashboards.md)
 * [Troubleshooting](faq/troubleshooting.md)
 
@@ -59,6 +57,11 @@
     * [Validate Apex Test Coverage](azure-pipelines/task-specifications/testing-tasks/validate-apex-test-coverage.md)
     * [Validate Code Coverage of a Package](azure-pipelines/task-specifications/testing-tasks/validate-code-coverage-of-a-package.md)
     * [Run a static analysis of apex classes with PMD](azure-pipelines/task-specifications/testing-tasks/run-a-static-analysis-of-apex-classes-with-pmd.md)
+=======
+  * [Publish](faq/orchestrator/publish.md)
+* [Metrics and Dashboards](faq/metrics-and-dashboards.md)
+* [Troubleshooting](faq/troubleshooting.md)
+>>>>>>> beta
 
 ---
 

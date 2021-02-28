@@ -34,15 +34,7 @@ The following are the list of metrics that are captured.
 | sfpowerscripts.deploy.failed  | Number of times deploy command failed | COUNT |
 |  sfpowerscripts.deploy.duration | Time spent on executing deploy command | GUAGE |
 | sfpowerscripts.deploy.scheduled  | Number of times deployment was scheduled to run | COUNT |
-<<<<<<< HEAD
 | sfpowerscripts.deploy.succeeded | Number of succeeded deploy executions | COUNT |
-=======
-| sfpowerscripts.deploy.scheduled.packages | Number of packages that were scheduled to be deployed by the deploy command | GUAGE |
-| sfpowerscripts.deploy.succeeded | Number of succeeded deploy executions | COUNT |
-| sfpowerscripts.deploy.succeeded.packages | Number of packages that were successfully deployed | GUAGE |
-| sfpowerscripts.deploy.failed | Number of times deploy command failed to execute | COUNT |
-| sfpowerscripts.deploy.failed.packages | Number and details of packages that failed to deploy | GUAGE |
->>>>>>> beta
 | sfpowerscripts.build.scheduled | Number of times build was scheduled to run | COUNT |
 | sfpowerscripts.build.duration  | Time spent on executing build command | GUAGE |
 | sfpowerscripts.build.scheduled.packages | Number of packages being scheduled to build | GUAGE |
@@ -61,13 +53,6 @@ The following are the list of metrics that are captured.
 | sfpowerscripts.apextests.triggered  | Number of times apex tests were triggered for a package | COUNT |
 | sfpowerscripts.apextest.testtotal | Time taken for Apex Test Execution  | GUAGE |
 | sfpowerscripts.apextest.command.time | Time taken for Apex Test  Execution \(Command Time\) | GUAGE |
-<<<<<<< HEAD
-=======
-| sfpowerscripts.prepare.succeededorgs | Number of orgs that were succeeded during a run of prepare | GUAGE |
-| sfpowerscripts.prepare.failedorgs | Number of orgs that failed during a run of prepare | GUAGE |
-| sfpowerscripts.prepare.duration | Time take to prepare a  pool of scratchorgs | GUAGE |
-| sfpowerscripts.pool.remaining | Number of scratch orgs that are remaining in a pool after fetched by validate command  | GUAGE |
->>>>>>> beta
 
 ## Can you show me examples of dashboards that could be created with these metrics?
 
