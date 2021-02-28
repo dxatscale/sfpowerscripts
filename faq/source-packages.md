@@ -57,11 +57,7 @@ All these currently available options that can be enabled for source packaging b
   {
     "path": "path--to--package",
     "package": "name--of-the-package", //mandatory, when used with sfpowerscripts
-<<<<<<< HEAD
-    "versionNumber": "X.Y.Z.[NEXT/BUILDNUMBER]",
-=======
     "versionNumber": "X.Y.Z.0", //Pass the build number flag to override zero
->>>>>>> beta
     "aliasfy": <boolean>, // Only for source packages, allows to deploy a subfolder whose name matches the alias of the org when using deploy command
     "isOptimizedDeployment": <boolean>  // default:true for source packages, Utilizes the apex classes in the package for deployment,
     "skipTesting":<boolean> //default:false, skip apex testing during installation of source package to a sandbox
@@ -95,9 +91,6 @@ An example of a common metadata component that typically gets overridden is [Cus
 
 By utilizing a destructive manifest file, one could delete metadata components during a Source Package Installation. Add the `destructiveChangePath` in the package descriptor by directing to the path to the file that carries information on the component that needs to be uninstalled.
 
-<<<<<<< HEAD
-
-=======
 ## Can I have dependencies for source packages?
 
 **Short answer no**, source packages assume that dependent metadata is already there in your org before the metadata in the source package is being deployed. That being said, for purposes of development in scratch org, you could add '**unlocked package'** dependencies to a source  package, so commands like prepare and validate \(in sfpowerscritpts:orchestrator\) will install the dependencies to the scratch org.
@@ -107,7 +100,6 @@ By utilizing a destructive manifest file, one could delete metadata components d
 At the moment, it is not supported and we have a bug where the .next is not replaced by passed build number. So ensure that all your source packages in your repository has '0' as the build number. 
 
 ##  
->>>>>>> beta
 
 
 
