@@ -33,13 +33,15 @@ The project is delivered as a <b>SFDX CLI Plugin</b> that can be deployed in any
 
 #### Motivation
 
-- Using sfdx-cli commands are relatively simple, however additional scripts are required to parse the JSON output, set it to environment variables etc
-
 - Need for artifact driven build system for package based development models especially on complex and large programs
 
 - Providing additional functionality that is either not supported by the sfdx-cli, such as data packages or automatically understanding tests in a given package
 
 - Ease of use, one should not be spending too much time scripting a pipeline.
+
+#### Sample Pipelines
+
+Sample pipelines demonstrating the usage of sfpowerscripts are available [here](https://github.com/dxatscale/easy-spaces-lwc)
 
 #### Docker
 
@@ -51,7 +53,9 @@ The sfpowerscripts docker image has the following SFDX CLI plugins installed:
 - [sfpowerkit](https://github.com/Accenture/sfpowerkit)
 - [sfdmu](https://github.com/forcedotcom/SFDX-Data-Move-Utility)
 
-We recommend using the sfpowerscripts docker image to avoid breakages in your CICD pipelines due to updates in sfpowerscripts or any of its dependencies such as the SFDX CLI.
+We recommend using the sfpowerscripts docker image to avoid breakages in your CICD pipelines due to updates in sfpowerscripts or any of its dependencies such as the SFDX CLI. DockerHub has rate limiting for pulling docker images, hence we recommend copying the docker image to your own DockerHub Subscription, [AWS ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html) or [Azure Container Registry](https://medium.com/@pjbgf/moving-docker-images-from-one-container-registry-to-another-2f1f1631dc49)
+
+
 
 #### History
 
