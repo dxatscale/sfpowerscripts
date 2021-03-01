@@ -45,6 +45,12 @@ The project is delivered as a <b>SFDX CLI Plugin</b> that can be deployed in any
 
 Docker images for sfpowerscripts are available at [Docker Hub](https://hub.docker.com/r/dxatscale/sfpowerscripts).
 
+The sfpowerscripts docker image has the following SFDX CLI plugins installed:
+
+- [sfpowerscripts](https://github.com/Accenture/sfpowerscripts)
+- [sfpowerkit](https://github.com/Accenture/sfpowerkit)
+- [sfdmu](https://github.com/forcedotcom/SFDX-Data-Move-Utility)
+
 We recommend using the sfpowerscripts docker image to avoid breakages in your CICD pipelines due to updates in sfpowerscripts or any of its dependencies such as the SFDX CLI.
 
 #### History
