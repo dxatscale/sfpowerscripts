@@ -1,6 +1,6 @@
 [![DeepScan grade](https://deepscan.io/api/teams/10234/projects/12959/branches/208838/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=10234&pid=12959&bid=208838)  [![Build Status](https://dev.azure.com/dxatscale/sfpowerscripts/_apis/build/status/Release?branchName=develop)](https://dev.azure.com/dxatscale/sfpowerscripts/_build/latest?definitionId=40&branchName=develop)   [![codecov](https://codecov.io/gh/Accenture/sfpowerscripts/branch/develop/graph/badge.svg?token=BOSH3G2PSU)](https://codecov.io/gh/Accenture/sfpowerscripts)  [![CodeFactor](https://www.codefactor.io/repository/github/accenture/sfpowerscripts/badge)](https://www.codefactor.io/repository/github/accenture/sfpowerscripts)
- 
- ![npm (tag)](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts/alpha)  ![npm (tag)](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts/beta) ![npm](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts) 
+
+ ![npm (tag)](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts/alpha)  ![npm (tag)](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts/beta) ![npm](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts)
 
  ![NPM](https://img.shields.io/npm/l/@dxatscale/sfpowerscripts)
  ![npm](https://img.shields.io/npm/dw/@dxatscale/sfpowerscripts) ![Visual Studio Marketplace Installs - Azure DevOps Extension](https://img.shields.io/visual-studio-marketplace/azure-devops/installs/total/AzlamSalam.sfpowerscripts?label=visualstudio%20marketplace%20installations)
@@ -41,6 +41,12 @@ The project is delivered as a <b>SFDX CLI Plugin</b> that can be deployed in any
 
 - Ease of use, one should not be spending too much time scripting a pipeline.
 
+#### Docker
+
+Docker images for sfpowerscripts are available at [Docker Hub](https://hub.docker.com/r/dxatscale/sfpowerscripts).
+
+We recommend using the sfpowerscripts docker image to avoid breakages in your CICD pipelines due to updates in sfpowerscripts or any of its dependencies such as the SFDX CLI.
+
 #### History
 
 sfpowerscripts initially began life in the form of a  Azure Pipelines Extension, available through the Visual Studio marketplace wrote by @azlam-abdulsalam as a personal project.
@@ -49,7 +55,7 @@ The project was then migrated to Accenture Open Source Program and a key compone
 
 #### Maintainers
 
-List of Maintainers are available in the [link](https://dxatscale.gitbook.io/sfpowerscripts/maintainers) 
+List of Maintainers are available in the [link](https://dxatscale.gitbook.io/sfpowerscripts/maintainers)
 
 
 #### Where do I reach for queries?
