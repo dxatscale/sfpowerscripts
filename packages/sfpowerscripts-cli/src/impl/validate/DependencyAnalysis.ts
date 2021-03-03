@@ -1,4 +1,3 @@
-// import simplegit, { SimpleGit } from "simple-git/promise";
 import Git from "@dxatscale/sfpowerscripts.core/lib/utils/Git";
 import IgnoreFiles from "@dxatscale/sfpowerscripts.core/lib/utils/IgnoreFiles";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";

@@ -24,7 +24,6 @@
     "handlebars": "^4.7.7",
     "hook-std": "^2.0.0",
     "puppeteer": "^7.1.0",
-    "puppeteer-core": "^7.1.0",
     "rimraf": "^3.0.2",
     "salesforce-alm": "^50.6.0",
     "shelljs": "0.8.4",
@@ -102,6 +101,7 @@
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json",
     "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect",
     "test": "jest --verbose --coverage --detectOpenHandles"
   },
   "snyk": true
