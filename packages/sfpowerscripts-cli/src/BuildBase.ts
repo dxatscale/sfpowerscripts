@@ -116,6 +116,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
           );
 
         } catch (error) {
+          console.log(error.message);
           artifactCreationErrors.push(generatedPackage.package_name);
         }
       }
