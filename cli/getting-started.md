@@ -30,6 +30,11 @@ USAGE
 ...
 ```
 
+## Sample Pipelines
+
+Sample pipelines demonstrating the usage of these commands on Github Actions and Azure Pipelines are available here
+https://github.com/dxatscale/easy-spaces-lwc
+
 ## Using sfpowerscripts
 
 ### Modifiers used by Orchestrator
