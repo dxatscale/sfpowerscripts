@@ -106,12 +106,12 @@ steps:
             condition: or( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}', 'review') )
 
 
-         - task: CmdLine@2
-           displayName: "Update Build Number"
-           condition: or ( eq( '${{ parameters.version }}', 'alpha'), eq( '${{ parameters.version }}', 'hotfix'))
-           inputs:
-             workingDirectory: '$(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli'
-             script: |
+          - task: CmdLine@2
+            displayName: "Update Build Number"
+            condition: or ( eq( '${{ parameters.version }}', 'alpha'), eq( '${{ parameters.version }}', 'hotfix'))
+            inputs:
+              workingDirectory: '$(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli'
+              script: |
                PKG_VERSION=$(jq -r ".version" package.json)
                echo "##vso[build.updatebuildnumber]${PKG_VERSION}"
 
