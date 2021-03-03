@@ -1,4 +1,3 @@
-name: Milestone20$(Rev:.r)
 
 trigger:
   branches:
@@ -11,11 +10,6 @@ trigger:
 
 variables:
  - group: Tokens
- - name: major
-   value: 19
-
- - name: minor
-   value: $[counter(variables['major'], 200)]
 
 
 
