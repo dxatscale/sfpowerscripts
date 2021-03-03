@@ -1,5 +1,4 @@
 import child_process = require("child_process");
-import SFPLogger from "../utils/SFPLogger";
 const retry = require("async-retry");
 
 //Fetch sfpowerscripts Artifats installed in an Org
@@ -10,7 +9,6 @@ export default class InstalledAritfactsFetcher {
     if (InstalledAritfactsFetcher.artifacts == null) {
       return await retry(
         async (bail) => {
-          SFPLogger.log("Querying Installed Artifacts from the Org");
           let cmdOutput = child_process.execSync(
             `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c" -r json -u ${username}`,
             { encoding: "utf8", stdio:"pipe" }
