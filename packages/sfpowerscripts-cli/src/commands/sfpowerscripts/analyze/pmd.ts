@@ -34,7 +34,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
     sourcedir: flags.string({description: messages.getMessage('sourceDirectoryFlagDescription')}),
     ruleset: flags.string({description: messages.getMessage('rulesetFlagDescription'), options: ['sfpowerkit','Custom'], default: 'sfpowerkit'}),
     rulesetpath: flags.string({description: messages.getMessage('rulesetPathFlagDescription')}),
-    format: flags.string({description: messages.getMessage('formatFlagDescription'), options: ['text','textcolor','csv','emacs','summaryhtml','html','xml','xslt','yahtml','vbhtml','textpad'], default: 'text'}),
+    format: flags.string({description: messages.getMessage('formatFlagDescription'), options: ['text','textcolor','csv','emacs','summaryhtml','html','xml','xslt','yahtml','vbhtml','textpad', 'sarif'], default: 'text'}),
     outputpath: flags.string({char: 'o', description: messages.getMessage('outputPathFlagDescription')}),
     version: flags.string({description: messages.getMessage('versionFlagDescription'), default: '6.26.0'}),
     istobreakbuild: flags.boolean({char: 'b', description: messages.getMessage('isToBreakBuildFlagDescription')}),
