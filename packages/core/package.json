@@ -5,7 +5,8 @@
   "main": "lib/index",
   "types": "lib/index",
   "files": [
-    "lib"
+    "lib",
+    "resources"
   ],
   "scripts": {
     "build": "npm run clean && npm run compile",

@@ -21,10 +21,13 @@
     "dotenv": "^8.2.0",
     "fs-extra": "^9.0.1",
     "glob": "^7.1.6",
+    "handlebars": "^4.7.7",
     "hook-std": "^2.0.0",
+    "puppeteer": "^7.1.0",
     "rimraf": "^3.0.2",
     "salesforce-alm": "^50.6.0",
     "shelljs": "0.8.4",
+    "sfdc-soup": "^1.0.1",
     "simple-git": "^2.31.0",
     "snyk": "^1.438.0",
     "ts-node": "^9.0.0"
@@ -42,7 +45,8 @@
     "/lib",
     "/messages",
     "/npm-shrinkwrap.json",
-    "/scripts"
+    "/scripts",
+    "/resources"
   ],
   "homepage": "https://github.com/Accenture/sfpowerscripts",
   "keywords": [
