@@ -198,12 +198,24 @@ export default class DeployImpl {
             if (!queue[i].skipTesting) {
               this.printOpenLoggingGroup("Trigger Tests for ", queue[i].package);
 
-              let testResult = await this.triggerApexTests(
+              let testResult;
+              try
+              {
+               testResult=await this.triggerApexTests(
                 queue[i].package,
                 this.props.targetUsername,
                 queue[i].skipCoverageValidation,
                 this.props.coverageThreshold
               );
+              }catch(error)
+                {
+                  //Print Any errors, Report that as execution failed for reporting
+                  console.log(error);
+                  testResult={
+                  result: false,
+                  message: "Test Execution failed"
+                 };
+              }
 
               if (!testResult.result) {
                 testFailure = queue[i].package;
