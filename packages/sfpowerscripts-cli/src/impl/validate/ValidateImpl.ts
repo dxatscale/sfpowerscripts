@@ -100,8 +100,8 @@ export default class ValidateImpl {
             );
             await dependencyAnalysis.exec();
           } catch(err){
+            console.log(err.message);
             console.log("Failed to perform change analysis");
-            throw err;
           }
         }
         return true;

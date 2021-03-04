@@ -80,7 +80,10 @@ export default class DependencyAnalysis {
 
     this.copyDependencies(resourcesDir, impactAnalysisResultsDir);
 
-    const browser = await puppeteer.launch({defaultViewport: {width: 1920, height: 1080}});
+    const browser = await puppeteer.launch({
+      defaultViewport: {width: 1920, height: 1080},
+      args: ["--no-sandbox"]
+    });
 
     for (let entrypoint of entrypoints) {
       await this.generateGraphFilesForEntrypoint(
