@@ -27,6 +27,10 @@ sfpowerkit <version_number>
 sfdmu <version>
 ```
 
+## Sample Pipelines
+
+Sample pipelines demonstrating the usage of sfpowerscripts are available [here](https://github.com/dxatscale/easy-spaces-lwc)
+
 ## Using sfpowerscripts
 
 ### Modifiers used by Orchestrator
