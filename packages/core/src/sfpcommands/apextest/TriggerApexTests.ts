@@ -54,8 +54,10 @@ export default class TriggerApexTests {
       }
 
       let id: string;
+      let testReport;
       try {
         id = this.getTestId();
+        testReport = this.getTestReport(id);
       } catch (err) {
         // catch file parse error and replace with test exec error
         if (testExecErrorMsg)
@@ -64,7 +66,6 @@ export default class TriggerApexTests {
           throw err;
       }
 
-      let testReport = this.getTestReport(id);
       let testReportDisplayer = new TestReportDisplayer(
         testReport,
         this.testOptions,
