@@ -28,7 +28,7 @@ Creating an issue is the simplest form of contributing to the project. But there
 
 ## Issues <a id="issues"></a>
 
-Please only create issues for bug reports or feature requests at [SFPowerscripts repo](https://github.com/azlamsalam/sfpowerscripts). Issues discussing any other topics may be closed by the project’s maintainers without further explanation.
+Please only create issues for bug reports or feature requests at [SFPowerscripts repo](https://github.com/Accenture/sfpowerscripts). Issues discussing any other topics may be closed by the project’s maintainers without further explanation.
 
 Do not create issues about bumping dependencies unless a bug has been identified and you can demonstrate that it effects this [repo.](https://github.com/azlamsalam/sfpowerscripts)
 
