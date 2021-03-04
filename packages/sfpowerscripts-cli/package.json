@@ -26,6 +26,7 @@
     "puppeteer": "^7.1.0",
     "rimraf": "^3.0.2",
     "salesforce-alm": "^50.6.0",
+    "semver": "^7.3.4",
     "sfdc-soup": "^1.0.1",
     "shelljs": "0.8.4",
     "simple-git": "^2.31.0",

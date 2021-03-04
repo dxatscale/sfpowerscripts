@@ -26,6 +26,7 @@ import SFPPackage from "@dxatscale/sfpowerscripts.core/lib/package/SFPPackage";
 import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/package/IndividualClassCoverage";
 import { RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions";
 import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions";
+import semver = require("semver");
 const Table = require("cli-table");
 
 export enum DeploymentMode {
@@ -372,16 +373,71 @@ export default class DeployImpl {
     artifacts: ArtifactFilePaths[]
   ): { [p: string]: PackageInfo } {
     let packagesToPackageInfo: { [p: string]: PackageInfo } = {};
+
     for (let artifact of artifacts) {
       let packageMetadata: PackageMetadata = JSON.parse(
         fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
       );
-      packagesToPackageInfo[packageMetadata.package_name] = {
-        sourceDirectory: artifact.sourceDirectoryPath,
-        packageMetadata: packageMetadata,
-      };
+
+      if (packagesToPackageInfo[packageMetadata.package_name]) {
+        let previousVersionNumber = this.convertBuildNumDotDelimToHyphen(
+          packagesToPackageInfo[packageMetadata.package_name].packageMetadata.package_version_number
+        );
+        let currentVersionNumber = this.convertBuildNumDotDelimToHyphen(
+          packageMetadata.package_version_number
+        );
+
+        // replace existing packageInfo if package version number is newer
+        if (semver.gt(currentVersionNumber, previousVersionNumber)) {
+          packagesToPackageInfo[packageMetadata.package_name] = {
+            sourceDirectory: artifact.sourceDirectoryPath,
+            packageMetadata: packageMetadata,
+          };
+        }
+      } else {
+        packagesToPackageInfo[packageMetadata.package_name] = {
+          sourceDirectory: artifact.sourceDirectoryPath,
+          packageMetadata: packageMetadata,
+        };
+      }
     }
     return packagesToPackageInfo;
+  }
+
+  /**
+   * Converts build-number dot delimeter to hyphen
+   * If dot delimeter does not exist, returns input
+   * @param version
+   */
+  private convertBuildNumDotDelimToHyphen(version: string) {
+    let convertedVersion = version;
+
+    let indexOfBuildNumDelimiter = this.getIndexOfBuildNumDelimeter(version);
+    if (version[indexOfBuildNumDelimiter] === ".") {
+      convertedVersion =
+        version.substring(0, indexOfBuildNumDelimiter) +
+        "-" +
+        version.substring(indexOfBuildNumDelimiter+1);
+    }
+    return convertedVersion;
+  }
+
+  /**
+   * Get the index of the build-number delimeter
+   * Returns null if unable to find index of delimeter
+   * @param version
+   */
+  private getIndexOfBuildNumDelimeter(version: string) {
+    let numOfDelimetersTraversed: number = 0;
+    for (let i=0; i < version.length; i++) {
+      if (!Number.isInteger(parseInt(version[i], 10))) {
+        numOfDelimetersTraversed++
+      }
+      if (numOfDelimetersTraversed === 3) {
+        return i;
+      }
+    }
+    return null;
   }
 
   /**
