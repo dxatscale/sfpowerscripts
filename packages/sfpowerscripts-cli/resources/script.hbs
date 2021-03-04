@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function(){
             let type = ele.data('type');
             return metadataTypeColours[type] ? metadataTypeColours[type] : '#756D76';
           },
-          'border-width': '0.5',
+          'border-width': '1',
           'border-color': function (ele) {
             let classes = ele.classes();
             return classes.includes("changed") ? "#00FF00" : "#FFF";
