@@ -19,16 +19,25 @@ export default class SFPStatsSender {
   }
 
    static logElapsedTime(metric: string, elapsedMilliSeconds: number,tags?:{ [key: string]: string } | string[]) {
+ 
+    console.log(`####sfpowerscripts.${metric}   elapsedTime:${elapsedMilliSeconds}   ${JSON.stringify(tags)}`);
+
     if (SFPStatsSender.client != null)
         SFPStatsSender.client.timing(metric, elapsedMilliSeconds,tags);
   }
 
    static logGauge(metric: string, value: number,tags?:{ [key: string]: string } | string[]) {
+
+    console.log(`####sfpowerscripts.${metric}   value:${value}   ${JSON.stringify(tags)}`);
+
     if (SFPStatsSender.client != null)
       SFPStatsSender.client.gauge(metric, value,tags);
   }
 
   static logCount(metric: string,tags?:{ [key: string]: string } | string[]) {
+
+    console.log(`####sfpowerscripts.${metric}   ${JSON.stringify(tags)}`);
+
     if (SFPStatsSender.client != null)
       SFPStatsSender.client.increment(metric,tags)
   }
