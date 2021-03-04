@@ -68,7 +68,8 @@ USAGE
          "prepare",
           "validate"
         ]
-    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org
+    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org,
+    "buildCollection": ["packageB", "packageC"] // packages in the same build collection are always built together, as long as one package in the collection has changed
   }
 ```
 ### Enabling StatsD Metrics
@@ -461,9 +462,12 @@ Deploy packages from the provided aritfact directory, to a given org, using the 
 
 USAGE
   $ sfdx sfpowerscripts:orchestrator:deploy -u <string> [--artifactdir <directory>] [--waittime <number>] [-g <array>]
-  [-t <string>] [--skipifalreadyinstalled]
+  [-t <string>] [-b <string> --skipifalreadyinstalled]
 
 OPTIONS
+  -b, --baselineorg=baselineorg                                                     The org against which the package skip
+                                                                                    should be baselined
+
   -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to
                                                                                     group/collapse logs in the console.
                                                                                     Provide an opening group, and an

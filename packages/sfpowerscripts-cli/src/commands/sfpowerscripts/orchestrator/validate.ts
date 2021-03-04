@@ -57,7 +57,11 @@ export default class Validate extends SfpowerscriptsCommand {
     }),
     keys: flags.string({
       required: false,
-      description: messages.getMessage("keysFlagDescription"),
+      description: messages.getMessage("keysFlagDescription")
+    }),
+    visualizechangesagainst: flags.string({
+      char: 'c',
+      description: messages.getMessage("visualizeChangesAgainstFlagDescription")
     })
   };
 
@@ -85,7 +89,8 @@ export default class Validate extends SfpowerscriptsCommand {
       client_id: this.flags.clientid,
       shapeFile: this.flags.shapefile,
       isDeleteScratchOrg: this.flags.deletescratchorg,
-      keys: this.flags.keys
+      keys: this.flags.keys,
+      visualizeChangesAgainst: this.flags.visualizechangesagainst
     }
 
     let validateImpl: ValidateImpl = new ValidateImpl( validateProps);

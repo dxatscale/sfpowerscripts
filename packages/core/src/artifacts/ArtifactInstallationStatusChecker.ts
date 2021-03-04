@@ -14,6 +14,7 @@ export default class ArtifactInstallationStatusChecker {
                                          //always install
     let result:{isInstalled:boolean,versionNumber?:string}={isInstalled:false};
     try {
+      SFPLogger.log(`Querying for version of  ${packageMetadata.package_name} in the Org..`);
       result.isInstalled=false;
       let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(
         target_org
@@ -31,7 +32,9 @@ export default class ArtifactInstallationStatusChecker {
         }
       }
     } catch (error) {
-      SFPLogger.log("Unable to fetch artifacts from the org");
+      SFPLogger.log("Unable to fetch any sfpowerscripts artifacts in the org\n" +
+      "1. sfpowerscripts package is not installed in the org\n" +
+      "2. The required prerequisite object is not deployed to this org\n");
     }
     return result;
   }

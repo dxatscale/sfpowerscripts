@@ -11,6 +11,7 @@ import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/pa
 import PoolFetchImpl from "../pool/PoolFetchImpl";
 import { Org } from "@salesforce/core";
 import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
+import DependencyAnalysis from "./DependencyAnalysis";
 const Table = require("cli-table");
 
 export enum ValidateMode {
@@ -29,7 +30,8 @@ export interface ValidateProps {
   client_id?: string,
   shapeFile?: string,
   isDeleteScratchOrg?: boolean,
-  keys?: string
+  keys?: string,
+  visualizeChangesAgainst?: string
 }
 
 export default class ValidateImpl {
@@ -41,9 +43,11 @@ export default class ValidateImpl {
   public async exec(): Promise<boolean>{
     let scratchOrgUsername: string;
     try {
+      let authDetails;
       if (this.props.validateMode === ValidateMode.ORG) {
         scratchOrgUsername = this.props.targetOrg;
 
+        //TODO: get accessToken and instanceURL for scratch org
       } else if (this.props.validateMode === ValidateMode.POOL) {
         this.authenticateDevHub(this.props.devHubUsername);
 
@@ -52,7 +56,7 @@ export default class ValidateImpl {
           this.props.devHubUsername
         );
 
-        this.authenticateToScratchOrg(scratchOrgUsername);
+        authDetails = this.authenticateToScratchOrg(scratchOrgUsername);
 
         if (this.props.shapeFile) {
           this.deployShapeFile(this.props.shapeFile, scratchOrgUsername);
@@ -87,8 +91,21 @@ export default class ValidateImpl {
 
       if (deploymentResult.failed.length > 0 || deploymentResult.error)
         return false;
-      else
+      else {
+        if (this.props.visualizeChangesAgainst) {
+          try {
+            let dependencyAnalysis: DependencyAnalysis = new DependencyAnalysis(
+              this.props.visualizeChangesAgainst,
+              authDetails
+            );
+            await dependencyAnalysis.exec();
+          } catch(err){
+            console.log("Failed to perform change analysis");
+            throw err;
+          }
+        }
         return true;
+      }
     } finally {
       if (this.props.isDeleteScratchOrg) {
         this.deleteScratchOrg(scratchOrgUsername);
@@ -198,7 +215,7 @@ export default class ValidateImpl {
     return deploymentResult;
   }
 
-  private async buildChangedSourcePackages(packagesToCommits: { [p: string]: string; }): Promise<void> {
+  private async buildChangedSourcePackages(packagesToCommits: { [p: string]: string; }): Promise<any> {
     let buildStartTime: number = Date.now();
 
 
@@ -241,6 +258,8 @@ export default class ValidateImpl {
     let buildElapsedTime: number = Date.now() - buildStartTime;
 
     this.printBuildSummary(generatedPackages, failedPackages, buildElapsedTime);
+
+    return generatedPackages;
   }
 
   private getPackagesToCommits(queryResult: any): {[p: string]: string} {
@@ -296,13 +315,26 @@ export default class ValidateImpl {
 
   }
 
-  private authenticateToScratchOrg(scratchOrgUsername: string): void {
-    child_process.execSync(
-      `sfdx auth:jwt:grant -u ${scratchOrgUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://test.salesforce.com`,
-      {
-        stdio: ['ignore', 'inherit', 'inherit']
-      }
-    );
+  /**
+   * Authenticate to scratch org and return auth details:
+   * username, accessToken, orgId, loginUrl, privateKey, clientId and instanceUrl
+   * @param scratchOrgUsername
+   */
+  private authenticateToScratchOrg(scratchOrgUsername: string) {
+    try {
+      let grantJson = child_process.execSync(
+        `sfdx auth:jwt:grant -u ${scratchOrgUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://test.salesforce.com --json`,
+        {
+          stdio: "pipe",
+          encoding: "utf8"
+        }
+      );
+      let grant = JSON.parse(grantJson);
+      console.log(`Successfully authorized ${grant.username} with org ID ${grant.orgId}`);
+      return grant.result;
+    } catch (err) {
+      throw new Error(`Failed to authenticate to ${scratchOrgUsername}`);
+    }
   }
 
   private  async fetchScratchOrgFromPool(pools: string[], devHubUsername: string): Promise<string> {
