@@ -86,11 +86,17 @@ export default class DependencyAnalysis {
     });
 
     for (let entrypoint of entrypoints) {
+      let { nodes, edges } = await this.createGraphElements(entrypoint, connection);
+
+      // skip graphs with single node
+      if (nodes.length === 1) continue;
+
       await this.generateGraphFilesForEntrypoint(
-        entrypoint,
-        connection,
+        nodes,
+        edges,
         resourcesDir,
-        impactAnalysisResultsDir
+        impactAnalysisResultsDir,
+        entrypoint.name
       );
 
       const page = await browser.newPage();
@@ -114,12 +120,12 @@ export default class DependencyAnalysis {
   }
 
   private async generateGraphFilesForEntrypoint(
-    entrypoint: { name: string; type: string; id: string; },
-    connection: { token: string; url: string; },
+    nodes: any[],
+    edges: any[],
     resourcesDir: string,
-    impactAnalysisResultsDir: string
-  ) {
-    let { nodes, edges } = await this.createGraph(entrypoint, connection);
+    impactAnalysisResultsDir: string,
+    componentName: string
+  ): Promise<void> {
 
     let data = {
       elements: nodes.concat(edges)
@@ -137,7 +143,7 @@ export default class DependencyAnalysis {
     fs.writeFileSync(
       path.join(
         impactAnalysisResultsDir,
-        `${entrypoint.name}.js`
+        `${componentName}.js`
       ),
       scriptTemplate(data)
     );
@@ -154,11 +160,11 @@ export default class DependencyAnalysis {
     fs.writeFileSync(
       path.join(
         impactAnalysisResultsDir,
-        `${entrypoint.name}.html`
+        `${componentName}.html`
       ),
       markupTemplate({
-        componentName: entrypoint.name,
-        script: `${entrypoint.name}.js`
+        componentName: componentName,
+        script: `${componentName}.js`
       })
     );
   }
@@ -215,11 +221,11 @@ export default class DependencyAnalysis {
   }
 
   /**
-   * Create graph of entrypoint and child components that are dependent on it
+   * Create graph elements for entrypoint and child components that are dependent on it
    * @param entrypoint
    * @param connection
    */
-  private async createGraph(
+  private async createGraphElements(
     entrypoint: { name: string; type: string; id: string},
     connection: { token: string, url: string}
   ) {
