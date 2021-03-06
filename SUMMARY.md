@@ -7,7 +7,6 @@
 ## Essential Read <a id="faq"></a>
 
 * [Prerequisites](faq/prerequisites.md)
-* [Using sfpowerscripts-cli sfdx plugin](faq/getting-started.md)
 * [Source Packages](faq/source-packages.md)
 * [Data Packages](faq/data-packages.md)
 * [Orchestrator](faq/orchestrator/README.md)
@@ -17,6 +16,7 @@
   * [Deploy](faq/orchestrator/deploy.md)
   * [Publish](faq/orchestrator/publish.md)
 * [Docker](faq/docker.md)
+* [Using sfpowerscripts-cli sfdx plugin](faq/getting-started.md)
 * [Metrics and Dashboards](faq/metrics-and-dashboards.md)
 * [Troubleshooting](faq/troubleshooting.md)
 
