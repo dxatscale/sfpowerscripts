@@ -92,6 +92,10 @@ document.addEventListener('DOMContentLoaded', function(){
       }
     });
 
-    nodesToRemove.remove();
+    if (nodesToRemove.size() > 0) {
+      nodesToRemove.remove();
+      let alert = document.getElementById("alert");
+      alert.textContent = `WARNING: graph has been truncated as depth exceeds ${maxDepth}. The full graph is available in artifacts.`
+    }
   }
 });

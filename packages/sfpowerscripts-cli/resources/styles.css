@@ -18,6 +18,10 @@ h1 {
   z-index: 800;
 }
 
+.my-legend {
+  font-size: 1.2em;
+}
+
 .my-legend .legend-title {
   position:absolute;
   top: 10px;
@@ -55,4 +59,17 @@ h1 {
 
 .my-legend a {
   color: #777;
+}
+
+#componentName {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+#alert {
+  position: absolute;
+  top: 30px;
+  left: 5px;
+  font-size: 1.2em;
+  color: orange;
 }
