@@ -114,20 +114,6 @@ No, sfpowerscripts:prepare doesnt allow you to run any scripts other than what i
   }
 ```
 
-## Why do some scratch org's fail during pool creation?
-
-Occasionally you will find errors like the below one during the pool creation, this is mainly due to the created scratch org, not available for further operations. We have found that to be quite rare. Only that particular scratch org will be skipped and the commands will continue as expected for other scratch org's
-
-```text
-Error: getaddrinfo ENOTFOUND page-drive-4000-dev-ed.cs73.my.salesforce.com
-    at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:67:26) {
-  errno: -3008,
-  code: ‘ENOTFOUND’,
-  syscall: ‘getaddrinfo’,
-  hostname: ‘page-drive-4000-dev-ed.cs73.my.salesforce.com’
-}
-```
-
 ## I have some managed packages that needs keys to be installed on to my scratch orgs, Does sfpowerscripts support it?
 
 The format for the 'keys' parameter is a string of key-value pairs separated by spaces - where the key is the name of the package, the value is the protection key of the package, and the  key-value pair itself is delimited by a colon . 

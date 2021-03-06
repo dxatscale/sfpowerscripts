@@ -41,3 +41,19 @@ This error is thrown when sfpowerkit is unable to fetch information about the de
 * There is a valid alias for package dependencies for any of the unlocked /source packages  
 * Unlocked packages are found to refer to a source package dependency
 
+## Why do some scratch org's fail during pool creation?
+
+Occasionally you will find errors like the below one during the pool creation, this is mainly due to the created scratch org, not available for further operations. We have found that to be quite rare. Only that particular scratch org will be skipped and the commands will continue as expected for other scratch org's
+
+```text
+Error: getaddrinfo ENOTFOUND page-drive-4000-dev-ed.cs73.my.salesforce.com
+    at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:67:26) {
+  errno: -3008,
+  code: ‘ENOTFOUND’,
+  syscall: ‘getaddrinfo’,
+  hostname: ‘page-drive-4000-dev-ed.cs73.my.salesforce.com’
+}
+```
+
+
+
