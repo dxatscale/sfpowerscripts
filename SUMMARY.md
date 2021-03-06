@@ -16,6 +16,7 @@
   * [Build & QuickBuild](faq/orchestrator/build-and-quickbuild.md)
   * [Deploy](faq/orchestrator/deploy.md)
   * [Publish](faq/orchestrator/publish.md)
+* [Docker](faq/docker.md)
 * [Metrics and Dashboards](faq/metrics-and-dashboards.md)
 * [Troubleshooting](faq/troubleshooting.md)
 

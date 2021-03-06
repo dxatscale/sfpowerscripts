@@ -13,8 +13,7 @@ For any other feedback or suggestions or general discussions, please use the[ Gi
 
 ![](.gitbook/assets/slack-monochrome-black-498x127-f7f95e3.png)
 
-### ![](/uploads/slack-monochrome-black-498x127-f7f95e3.png)
+## ![](https://github.com/Accenture/sfpowerscripts/tree/1c916f2256bd430a54db363c91efcf5c0685acf7/uploads/slack-monochrome-black-498x127-f7f95e3.png)
 
 Join our slack discussion channel using this invite [link](https://join.slack.com/t/dxatscale/shared_invite/zt-9uahlx2v-r0TczYpEkR7_1YKg6uk7Yw)
-### 
 
