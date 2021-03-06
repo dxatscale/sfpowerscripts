@@ -12,8 +12,7 @@
 </p>
 
 
-
-A Salesforce build system for package based development as a sfdx plugin that can be implemented in any CI/CD system of choice. Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
+A build system for package based development in Salesforce , delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
 
 
 #### Features
@@ -25,8 +24,9 @@ A Salesforce build system for package based development as a sfdx plugin that ca
 - Pooling commands to prepare a pool of scratch org's with packages pre installed for optimized Pull/Merge Request validation
 - Artifacts Driven, all create commands produce an artifact or operate on an artifact
 - Integrate with any CI/CD system of choice
-- All commands are enabled with statsD, for collecting metrics about your pipeline
+- All commands are enabled with statsD, for collecting metrics about your pipeline.
 
+There are lot more features to explore. Read more at  https://dxatscale.gitbook.io/sfpowerscripts/features
 
 The project is delivered as a <b>SFDX CLI Plugin</b> that can be deployed in any CI/CD system, The plugin is available [here](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)
 
