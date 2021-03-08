@@ -9,7 +9,6 @@ To install the pre-requisites, run the following commands:
 ```text
 $ echo 'y' | sfdx plugins:install sfpowerkit
 $ echo 'y' | sfdx plugins:install sfdmu
-$ echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts
 ```
 
 To install sfpowerscripts, run the below command:
