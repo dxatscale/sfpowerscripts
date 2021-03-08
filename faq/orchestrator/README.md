@@ -27,7 +27,8 @@ No, orchestrator is built around our experience when dealing with a very large o
          "prepare",
           "validate"
         ],
-    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org
+    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org,
+    "buildCollection": ["pkg1","pkg2"] // Create a collection of packages that need to be built together
   }
 ```
 
@@ -176,6 +177,14 @@ No, the above are the modifiers for the orchestrator commands, irrespective if y
         has to be present in the artifact directory for this particular option
         to work</td>
       <td style="text-align:left"><b>deploy</b>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>buildCollection</b>
+      </td>
+      <td style="text-align:left">Utilize this to build packages in unison, it will build all packages in
+        the collection, even if only one of them changes</td>
+      <td style="text-align:left"><b>build</b>
       </td>
     </tr>
   </tbody>
