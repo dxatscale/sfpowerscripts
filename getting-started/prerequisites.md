@@ -40,6 +40,12 @@ $ echo'y' | sfdx plugins:install sfpowerkit
 $ echo'y' | sfdx plugins:install sfdmu
 ```
 
+### **StatsD Server \(optional\)**
+
+Metrics should be a key part of your DevOps process. It is through these metrics, one can drive continuous improvement of your delivery process. Almost all commands in sfpowerscripts, is instrumented with StatsD.
+
+You will need a StatsD server reachable from your CI/CD agent to report the metrics. Read more on supported metrics and dashboards [here](metrics-and-dashboards.md).
+
 ### **Artifact Repository \(optional\)**
 
 sfpowerscripts is designed to work with [asynchronous pipelines](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator#is-there-a-pipeline-schematic-diagram-that-i-can-understand), where CI and CD is separated into two distinct pipelines. This means an artifact repository such as Azure Artifacts, Jfrog Artifactory is essential to store the built artifacts.
