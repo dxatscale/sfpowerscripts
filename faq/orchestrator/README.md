@@ -1,5 +1,5 @@
 ---
-description: 'Ask us anything about orchestrator, the shiny new kid on the block'
+description: The heart of sfpowerscripts
 ---
 
 # Orchestrator
