@@ -226,7 +226,7 @@ The following schematic explains the Continuous Integration and Continuous deplo
 
 ## Is there an example repo, where all these commands are being used?
 
-Yes, head to the repo [https://github.com/dxatscale/easy-spaces-lwc](https://github.com/dxatscale/easy-spaces-lwc/tree/develop/.github) for examples on how to use these commands with GitHub actions. The .azue-pipelines folder contains sample pipelines to experienment.  
+Yes, head to the repo [https://github.com/dxatscale/easy-spaces-lwc](https://github.com/dxatscale/easy-spaces-lwc/tree/develop/.github) for examples on how to use these commands with GitHub actions. The .azure-pipelines folder contains sample pipelines for Azure Pipelines.  
 
 ## Can I ignore any package during any stage/lifecycle/command? For eg: I do not want this package to be processed by the prepare command
 
