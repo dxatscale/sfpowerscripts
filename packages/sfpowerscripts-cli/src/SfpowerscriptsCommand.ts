@@ -1,6 +1,7 @@
 import { SfdxCommand } from "@salesforce/command";
 import { OutputFlags } from "@oclif/parser";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
+import * as rimraf from "rimraf";
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -34,6 +35,10 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
      */
     async run(): Promise<any> {
         this.loadSfpowerscriptsVariables(this.flags);
+
+        //Clear temp directory before every run
+        rimraf.sync(".sfpowerscripts");
+
 
        //Initialise StatsD
         this.initializeStatsD();
@@ -72,5 +77,6 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         {
             SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
         }
+        SFPStatsSender.initializeLogBasedMetrics();
     }
 }
