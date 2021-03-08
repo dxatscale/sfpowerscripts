@@ -27,6 +27,12 @@ sfdx force:package:install --package 04t1P000000ka0fQAA -u <org> -w 10
 
 ### **On your CI/CD**
 
+ [sfdx-cli ](https://www.npmjs.com/package/sfdx-cli):  sfpowerscripts is a SFDX CLI extension. Hence require the latest version of sfdx-cli installed in your CI/CD agents
+
+```text
+$ npm i sfdx-cli
+```
+
 - [sfpowerkit ](https://github.com/accenture/sfpowerkit):  sfdx plugin that has variety of helper commands, sfpowerscripts uses sfpowerkit for various functionality such as reconciling profiles. 
 
 ```text
