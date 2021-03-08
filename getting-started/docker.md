@@ -1,14 +1,14 @@
-# Docker
+---
+description: Using docker images in your CI/CD
+---
 
-## What is the sfpowerscripts Docker image?
+# Docker
 
 Put simply, the sfpowerscripts Docker image will allow you to run your builds / releases within a container, which is like a virtualised environment running on a physical system and has its own OS, apps etc. For more information on Docker and containerisation, visit [Docker's documentation](https://docs.docker.com/).
 
 The sfpowerscripts Docker image is available at:
 
 * \*\*\*\*[**Docker Hub**](https://hub.docker.com/r/dxatscale/sfpowerscripts)\*\*\*\*
-
-## Why should you use the sfpowerscripts Docker image?
 
 We recommend using the sfpowerscripts Docker image because it will grant your CICD pipelines **greater reliability** - avoiding breakages due to updates in sfpowerscripts or its dependencies \(e.g. SFDX CLI, SFDMU\). Each sfpowerscripts image has static versions of sfpowerscripts and its dependencies, which means that it will not be affected by any updates.  
 
