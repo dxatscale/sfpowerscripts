@@ -4,7 +4,7 @@
 * [Principles](principles-1.md)
 * [Features](features.md)
 
-## Essential Read <a id="faq"></a>
+## CONCEPTS <a id="faq"></a>
 
 * [Source Packages](faq/source-packages.md)
 * [Data Packages](faq/data-packages.md)
@@ -14,14 +14,17 @@
   * [Build & QuickBuild](faq/orchestrator/build-and-quickbuild.md)
   * [Deploy](faq/orchestrator/deploy.md)
   * [Publish](faq/orchestrator/publish.md)
-* [Docker](faq/docker.md)
-* [Prerequisites](faq/prerequisites.md)
-* [Using sfpowerscripts-cli sfdx plugin](faq/getting-started.md)
-* [Metrics and Dashboards](faq/metrics-and-dashboards.md)
-* [Troubleshooting](faq/troubleshooting.md)
+
+## GETTING STARTED
+
+* [Prerequisites](getting-started/prerequisites.md)
+* [Docker](getting-started/docker.md)
+* [Using sfpowerscripts-cli sfdx plugin](getting-started/getting-started.md)
+* [Metrics and Dashboards](getting-started/metrics-and-dashboards.md)
 
 ---
 
+* [Troubleshooting](troubleshooting.md)
 * [Maintainers](maintainers.md)
 * [Contributors](contributors.md)
 * [Contributing to sfpowerscripts](contributing-to-sfpowerscripts.md)

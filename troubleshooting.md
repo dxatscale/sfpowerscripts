@@ -34,7 +34,7 @@ versionName:<any-version_name>
 
 ## Why am I getting the below error during prepare/validate command?
 
-![](../.gitbook/assets/image%20%2811%29.png)
+![](.gitbook/assets/image%20%2811%29.png)
 
 This error is thrown when sfpowerkit is unable to fetch information about the dependencies of a package. Check for the following
 
