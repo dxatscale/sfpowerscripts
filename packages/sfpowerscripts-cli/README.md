@@ -560,9 +560,14 @@ OPTIONS
                                                                                     command to the repo, ensure you have
                                                                                     access to the repo
 
+  --npm                                                                             Upload artifacts to a pre-authenticated
+                                                                                    npm registry
+
 EXAMPLES
   $ sfdx sfpowerscripts:orchestrator:publish -f path/to/script
-  $ sfdx sfpowerscripts:orchestrator:publish -p -v HubOrg
+  $ sfdx sfpowerscripts:orchestrator:publish --npm
+  $ sfdx sfpowerscripts:orchestrator:publish -f path/to/script -p -v HubOrg
+  $ sfdx sfpowerscripts:orchestrator:publish -f path/to/script --gittag --pushgittag
 ```
 
 _See code: [commands/sfpowerscripts/orchestrator/publish.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/publish.ts)_
