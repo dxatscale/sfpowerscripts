@@ -139,6 +139,12 @@ Let's unpack the concepts utilizing the above example
 
   If any of the managed package has keys, it can be provided as an argument to the prepare command. Check the command's flag for more information 
 
+## I have some managed packages that needs keys to be installed on to my scratch orgs, Does sfpowerscripts support it?
+
+The format for the 'keys' parameter is a string of key-value pairs separated by spaces - where the key is the name of the package, the value is the protection key of the package, and the  key-value pair itself is delimited by a colon . 
+
+e.g. `--keys "packageA:12345 packageB:pw356 packageC:pw777"` 
+
 ## How long does this command typically takes? 
 
 The time taken by this command depends on how many managed packages and your packages that need to be installed. Please note, if you are triggering this command in a CI server, ensure proper time outs are provided for this task, as most cloud based CI providers have time limits on how long a single task could be run to completion.
@@ -179,9 +185,5 @@ No, sfpowerscripts:prepare doesnt allow you to run any scripts other than what i
   }
 ```
 
-## I have some managed packages that needs keys to be installed on to my scratch orgs, Does sfpowerscripts support it?
-
-The format for the 'keys' parameter is a string of key-value pairs separated by spaces - where the key is the name of the package, the value is the protection key of the package, and the  key-value pair itself is delimited by a colon . 
-
-e.g. `--keys "packageA:12345 packageB:pw356 packageC:pw777"` 
+## 
 
