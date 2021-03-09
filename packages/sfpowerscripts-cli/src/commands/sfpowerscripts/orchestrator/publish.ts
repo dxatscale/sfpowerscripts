@@ -33,7 +33,6 @@ export default class Promote extends SfpowerscriptsCommand {
     publishpromotedonly: flags.boolean({
       char: 'p',
       description: messages.getMessage('publishPromotedOnlyFlagDescription'),
-      default: false,
       dependsOn: ['devhubalias']
     }),
     devhubalias: flags.string({
