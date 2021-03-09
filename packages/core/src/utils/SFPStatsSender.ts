@@ -1,8 +1,10 @@
 import StatsDClient, { ClientOptions, StatsD } from "hot-shots";
-
+import * as fs from "fs-extra";
+import { EOL } from "os";
 
 export default class SFPStatsSender {
   private static client: StatsD;
+  private static metricsLogger;
 
   static initialize(
     port: string,
@@ -18,6 +20,24 @@ export default class SFPStatsSender {
     SFPStatsSender.client = new StatsDClient(options);
   }
 
+  static initializeLogBasedMetrics()
+  {
+    try
+    {
+    fs.mkdirpSync(".sfpowerscripts/logs");
+    fs.outputFileSync(
+      `.sfpowerscripts/logs/metrics.log`,
+      `sfpowerscripts--metrics-log${EOL}`
+    );
+    SFPStatsSender.metricsLogger = `.sfpowerscripts/logs/metrics.log`;
+    }
+    catch(error)
+    {
+      console.log("Unable to initiate Log based metrics",error);
+    }
+  }
+
+
   static logElapsedTime(metric: string, elapsedMilliSeconds: number, tags?: { [key: string]: string } | string[]) {
 
 
@@ -29,10 +49,10 @@ export default class SFPStatsSender {
       metric: `sfpowerscripts.${metric}`,
       type: `timers`,
       value: elapsedMilliSeconds,
+      timestamp:Date.now(),
       tags: tags
     }
-    console.log(JSON.stringify(metrics));
-
+    SFPStatsSender.logMetrics(metrics,SFPStatsSender.metricsLogger);
   }
 
   static logGauge(metric: string, value: number, tags?: { [key: string]: string } | string[]) {
@@ -46,9 +66,10 @@ export default class SFPStatsSender {
       metric: `sfpowerscripts.${metric}`,
       type: `guage`,
       value: value,
+      timestamp:Date.now(),
       tags: tags
     }
-    console.log(JSON.stringify(metrics));
+    SFPStatsSender.logMetrics(metrics,SFPStatsSender.metricsLogger);
   }
 
   static logCount(metric: string, tags?: { [key: string]: string } | string[]) {
@@ -59,8 +80,17 @@ export default class SFPStatsSender {
     let metrics = {
       metric: `sfpowerscripts.${metric}`,
       type: `count`,
+      timestamp:Date.now(),
       tags: tags
     }
-    console.log(JSON.stringify(metrics));
+    SFPStatsSender.logMetrics(metrics,SFPStatsSender.metricsLogger);
+  }
+
+
+
+  static logMetrics(key: any, logger?:any) {
+    if (logger) {
+      fs.appendFileSync(logger, `${JSON.stringify(key)}${EOL}`, 'utf8')
+    }
   }
 }

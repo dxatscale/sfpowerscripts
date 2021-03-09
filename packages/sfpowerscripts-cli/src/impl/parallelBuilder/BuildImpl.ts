@@ -7,7 +7,6 @@ import { exec } from "shelljs";
 import IncrementProjectBuildNumberImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { EOL } from "os";
-import * as rimraf from "rimraf";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import { Stage } from "../Stage";
 import * as fs from "fs-extra"
@@ -78,8 +77,6 @@ export default class BuildImpl {
     this.packagesToBeBuilt = this.getAllPackages(
       this.props.projectDirectory
     );
-
-    rimraf.sync(".sfpowerscripts");
 
     SFPLogger.isSupressLogs = true;
 
