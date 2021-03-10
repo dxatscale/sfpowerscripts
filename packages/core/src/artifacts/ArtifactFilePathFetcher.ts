@@ -221,13 +221,21 @@ export default class ArtifactFilePathFetcher {
    * @param artifacts
    */
   private static getLatestArtifact(artifacts: string[]) {
-      // Consider zip artifacts only
-      artifacts = artifacts.filter((artifact) => path.extname(artifact) === ".zip");
+      // Consider zip & tarball artifacts only
+      artifacts = artifacts.filter((artifact) => {
+        let ext: string = path.extname(artifact);
+        return ext === ".zip" || ext === ".tgz";
+      });
 
+      let pattern = new RegExp("(?:^.*)(?:_sfpowerscripts_artifact_)(?<version>.*)(?:\\.zip|\\.tgz)");
       let versions: string[] = artifacts.map( (artifact) => {
-        let tokens = artifact.split("_");
-        let version = tokens[tokens.length - 1];
-        return version.slice(0, version.indexOf(".zip"));
+        let match: RegExpMatchArray = path.basename(artifact).match(pattern);
+        let version = match?.groups.version;
+
+        if (version)
+          return version
+        else
+          throw new Error("Corrupted artifact detected with no version number");
       });
 
       // Pick artifact with latest semantic version
