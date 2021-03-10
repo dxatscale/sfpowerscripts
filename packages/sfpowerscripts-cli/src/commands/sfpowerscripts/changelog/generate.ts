@@ -1,5 +1,6 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
+import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { ReleaseChangelog, Release, Artifact } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
@@ -19,7 +20,7 @@ export default class GenerateChangelog extends SfdxCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:changelog:generate -n <releaseName> -d path/to/artifact/directory -w <regexp> -r <repoURL> -b <branchName> `
+    `$ sfdx sfpowerscripts:changelog:generate -n <releaseName> -d path/to/artifact/directory -w <regexp> -r <repoURL> -b <branchName>`
   ];
 
   protected static requiresUsername = false;
@@ -87,16 +88,11 @@ export default class GenerateChangelog extends SfdxCommand {
       git = simplegit(repoTempDir);
       await git.checkout(this.flags.branchname);
 
-
-      let packageMetadataFilepaths: string[] = glob.sync(
-        `**/artifact_metadata.json`,
-        {
-          cwd: path.resolve(process.cwd(), this.flags.artifactdir),
-          absolute: true
-        }
+      let artifact_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+        this.flags.artifactdir
       );
 
-      if (packageMetadataFilepaths.length === 0) {
+      if (artifact_filepaths.length === 0) {
         throw new Error(`No artifacts found at ${path.resolve(process.cwd(), this.flags.artifactdir)}`);
       }
 
@@ -109,9 +105,11 @@ export default class GenerateChangelog extends SfdxCommand {
 
       // Read artifacts for latest release definition
       let missingChangelogs: Error[] = [];
-      for (let packageMetadataFilepath of packageMetadataFilepaths ) {
+      for (let artifactFilepaths of artifact_filepaths ) {
 
-        let packageMetadata: PackageMetadata = JSON.parse(fs.readFileSync(packageMetadataFilepath, 'utf8'));
+        let packageMetadata: PackageMetadata = JSON.parse(
+          fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
+        );
 
         let artifact: Artifact = {
           name: packageMetadata["package_name"],
@@ -124,18 +122,13 @@ export default class GenerateChangelog extends SfdxCommand {
 
         latestReleaseDefinition["artifacts"].push(artifact);
 
-        let changelogFilepath: string = path.join(
-          path.dirname(packageMetadataFilepath),
-          `changelog.json`
-        );
-
-        if (!fs.existsSync(changelogFilepath)) {
+        if (!fs.existsSync(artifactFilepaths.changelogFilePath)) {
           missingChangelogs.push(
             new Error(`No changelog found in artifact ${packageMetadata["package_name"]} ${packageMetadata["package_version_number"]}`)
           );
         }
 
-        packageChangelogMap[packageMetadata["package_name"]] = changelogFilepath;
+        packageChangelogMap[packageMetadata["package_name"]] = artifactFilepaths.changelogFilePath;
       }
 
       if (missingChangelogs.length > 0) {
@@ -159,7 +152,6 @@ export default class GenerateChangelog extends SfdxCommand {
         for (let artifact of latestReleaseDefinition["artifacts"]) {
           for (let prevReleaseArtifact of prevReleaseDefinition["artifacts"]) {
             if (artifact["name"] === prevReleaseArtifact["name"]) {
-              // Verify that this modifies latestReleaseDefinition
               artifact["from"] = prevReleaseArtifact["to"];
               prevReleaseLatestCommitId[artifact["name"]] = prevReleaseArtifact["latestCommitId"];
               break;
@@ -170,7 +162,9 @@ export default class GenerateChangelog extends SfdxCommand {
 
       // Get commits for the latest release
       for (let artifact of latestReleaseDefinition["artifacts"]) {
-        let packageChangelog: PackageChangelog = JSON.parse(fs.readFileSync(packageChangelogMap[artifact["name"]], 'utf8'));
+        let packageChangelog: PackageChangelog = JSON.parse(
+          fs.readFileSync(packageChangelogMap[artifact["name"]], 'utf8')
+        );
 
         artifact["latestCommitId"] = packageChangelog["commits"][0]["commitId"];
 
@@ -239,7 +233,13 @@ export default class GenerateChangelog extends SfdxCommand {
         JSON.stringify(releaseChangelog, null, 4)
       );
 
-      let payload: string = generateMarkdown(releaseChangelog, this.flags.workitemurl, this.flags.limit, this.flags.showallartifacts);
+      let payload: string = generateMarkdown(
+        releaseChangelog,
+        this.flags.workitemurl,
+        this.flags.limit,
+        this.flags.showallartifacts
+      );
+
       fs.writeFileSync(
         path.join(repoTempDir,`Release-Changelog.md`),
         payload
