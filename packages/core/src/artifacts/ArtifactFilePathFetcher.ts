@@ -176,7 +176,7 @@ export default class ArtifactFilePathFetcher {
       changelogFilePath: changelogFilePath
     };
 
-    // ArtifactFilePathFetcher.existsArtifactFilepaths(artifactFilePaths);
+    ArtifactFilePathFetcher.existsArtifactFilepaths(artifactFilePaths);
 
     return artifactFilePaths;
   }
