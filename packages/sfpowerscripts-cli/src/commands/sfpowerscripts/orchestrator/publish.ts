@@ -115,7 +115,7 @@ export default class Promote extends SfpowerscriptsCommand {
       let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);
 
       // Pattern captures two named groups, the "package" name and "version" number
-      let pattern = new RegExp("(?<package>^.*)(?:sfpowerscripts_artifact_)(?<version>.*)(?:\\.zip)");
+      let pattern = new RegExp("(?<package>^.*)(?:_sfpowerscripts_artifact[_-])(?<version>.*)(?:\\.zip|\\.tgz)");
       for (let artifact of artifacts) {
         let packageName: string;
         let packageVersionNumber: string;
@@ -123,11 +123,7 @@ export default class Promote extends SfpowerscriptsCommand {
         let match: RegExpMatchArray = path.basename(artifact).match(pattern);
 
         if (match !== null) {
-          packageName = match.groups.package; // can be an empty string
-          if (packageName) {
-            // Remove trailing underscore
-            packageName = packageName.substring(0, packageName.length - 1);
-          }
+          packageName = match.groups.package;
           packageVersionNumber = match.groups.version;
         } else {
           // artifact filename doesn't match pattern
@@ -162,7 +158,7 @@ export default class Promote extends SfpowerscriptsCommand {
             let artifactRootDirectory = path.dirname(sourceDirectory);
 
             let packageJson = {
-              name: packageName,
+              name: packageName + "_sfpowerscripts_artifact",
               version: packageVersionNumber
             };
 
