@@ -60,6 +60,11 @@ export default class Promote extends SfpowerscriptsCommand {
     npm: flags.boolean({
       description: messages.getMessage('npmFlagDescription'),
       exclusive: ['scriptpath']
+    }),
+    scope: flags.string({
+      description: messages.getMessage('scopeFlagDescription'),
+      dependsOn: ['npm'],
+      required: false
     })
   };
 
@@ -157,8 +162,12 @@ export default class Promote extends SfpowerscriptsCommand {
           if (this.flags.npm) {
             let artifactRootDirectory = path.dirname(sourceDirectory);
 
+            let name: string = packageName + "_sfpowerscripts_artifact"
+
+            if (this.flags.scope) name = `@${this.flags.scope}/` + name;
+
             let packageJson = {
-              name: packageName + "_sfpowerscripts_artifact",
+              name: name,
               version: packageVersionNumber
             };
 
