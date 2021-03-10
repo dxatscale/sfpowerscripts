@@ -9,7 +9,6 @@ import * as fs from "fs-extra"
 import path = require('path');
 import simplegit, { SimpleGit } from "simple-git/promise";
 const tmp = require('tmp');
-const glob = require("glob");
 
 
 Messages.importMessagesDirectory(__dirname);
