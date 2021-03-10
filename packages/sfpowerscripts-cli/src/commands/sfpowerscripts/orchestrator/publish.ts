@@ -115,7 +115,7 @@ export default class Promote extends SfpowerscriptsCommand {
       let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);
 
       // Pattern captures two named groups, the "package" name and "version" number
-      let pattern = new RegExp("(?<package>^.*)(?:_sfpowerscripts_artifact[_-])(?<version>.*)(?:\\.zip|\\.tgz)");
+      let pattern = new RegExp("(?<package>^.*)(?:_sfpowerscripts_artifact_)(?<version>.*)(?:\\.zip)");
       for (let artifact of artifacts) {
         let packageName: string;
         let packageVersionNumber: string;
