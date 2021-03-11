@@ -65,6 +65,11 @@ export default class Promote extends SfpowerscriptsCommand {
       description: messages.getMessage('scopeFlagDescription'),
       dependsOn: ['npm'],
       required: false
+    }),
+    npmtag: flags.string({
+      description: messages.getMessage('npmTagFlagDescription'),
+      dependsOn: ['npm'],
+      required: false
     })
   };
 
@@ -179,6 +184,9 @@ export default class Promote extends SfpowerscriptsCommand {
             );
 
             cmd = `npm publish ${artifactRootDirectory}`;
+
+            if (this.flags.npmtag) cmd += ` --tag ${this.flags.npmtag}`;
+
           } else {
             if (process.platform !== 'win32') {
               cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;

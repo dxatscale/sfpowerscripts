@@ -28,6 +28,7 @@ export default class PrepareImpl {
   private succeedOnDeploymentErrors: boolean;
   private _isNpm: boolean;
   private _scope: string;
+  private _npmTag: string;
 
   public constructor(
     private hubOrg: Org,
@@ -71,6 +72,10 @@ export default class PrepareImpl {
 
   public set scope(scope: string) {
     this._scope = scope;
+  }
+
+  public set npmTag(tag: string) {
+    this._npmTag = tag;
   }
 
   public async poolScratchOrgs(): Promise< {
@@ -180,6 +185,7 @@ export default class PrepareImpl {
         this.fetchArtifactFromNpmRegistry(
           pkg.package,
           this._scope,
+          this._npmTag,
           "artifacts"
         );
       });
@@ -471,6 +477,7 @@ export default class PrepareImpl {
   private fetchArtifactFromNpmRegistry(
     packageName: string,
     scope: string,
+    npmTag: string,
     artifactDirectory: string
   ) {
     let cmd: string;
@@ -479,6 +486,9 @@ export default class PrepareImpl {
       cmd= `npm pack @${scope}/${packageName}_sfpowerscripts_artifact`;
     else
       cmd = `npm pack ${packageName}_sfpowerscripts_artifact`;
+
+    if (npmTag)
+      cmd += `@${npmTag}`;
 
     child_process.execSync(cmd, {
       cwd: artifactDirectory,

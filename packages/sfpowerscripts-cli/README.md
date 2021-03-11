@@ -236,6 +236,16 @@ OPTIONS
                                                                                     scratch org with packages till the
                                                                                     last failure
 
+  --npm                                                                             Fetch artifacts from a pre-authenticated
+                                                                                    private npm registry
+
+  --scope                                                                           User or Organisation scope of the NPM
+                                                                                    packages
+
+  --npmtag                                                                          The distribution tag of the package to
+                                                                                    download. If not provided, the 'latest'
+                                                                                    tag is used by default.
+
 EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:prepare -t CI_1  -v <devhub>
 ```
@@ -563,6 +573,12 @@ OPTIONS
   --npm                                                                             Upload artifacts to a pre-authenticated
                                                                                     npm registry
 
+  --scope                                                                           User or Organisation scope of the NPM
+                                                                                    package
+
+  --npmtag                                                                          Add an optional distribution tag to NPM
+                                                                                    packages. If not provided, the 'latest'
+                                                                                    tag is set to the published version
 EXAMPLES
   $ sfdx sfpowerscripts:orchestrator:publish -f path/to/script
   $ sfdx sfpowerscripts:orchestrator:publish --npm

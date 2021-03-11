@@ -82,6 +82,11 @@ export default class Prepare extends SfpowerscriptsCommand {
       description: messages.getMessage('scopeFlagDescription'),
       dependsOn: ['npm'],
       required: false
+    }),
+    npmtag: flags.string({
+      description: messages.getMessage('npmTagFlagDescription'),
+      dependsOn: ['npm'],
+      required: false
     })
   };
 
@@ -142,6 +147,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     prepareImpl.setPackageKeys(this.flags.keys);
     prepareImpl.isNpm = this.flags.npm;
     prepareImpl.scope = this.flags.scope;
+    prepareImpl.npmTag = this.flags.npmtag;
 
     try {
       let results= await prepareImpl.poolScratchOrgs();
