@@ -2,6 +2,14 @@
 
 The following pre-requisites are required for sfpowerscripts to work
 
+### **Understanding of Salesforce DX and Packaging in general**
+
+To get the maximum benefit out of sfpowerscripts, you need a good understanding of GIT, Salesforce DX and packaging in general. Here are some links to get you started  
+  
+1. [Trailhead Modules](https://trailhead.salesforce.com/en/users/azlam/trailmixes/salesforce-dx)  
+2. [Adopting Package Based Development Model in Salesforce  
+](https://www.linkedin.com/pulse/adopting-package-based-development-model-salesforce-azlam-abdulsalam/?trk=read_related_article-card_title)
+
 ### **On your DevHub / Production Org**
 
 [Addtional fields for pooling: ](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/scratchorgpool) prepare functionality in the orchestrator  needs additional fields to be deployed on DevHub. These fields store information regarding scratch org's. 

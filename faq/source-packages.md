@@ -17,8 +17,8 @@ Well, no difference, internally sfpowerscripts is using the same command to depl
 We have added some additional enhancements that make it worth taking a look at:
 
 * **Ability to skip the package if already installed:** By keeping a record of the version of the package installed in the target org with the support of an unlocked package, sfpowerscripts can skip installation of source packages if it is already installed in the org  
-  * **Optimized Deployment Mode:**  sfpowerscripts package installation commands can auto-detect apex unit tests provided in the package, thus a package can be deployed to an Org by utilizing only the apex test classes provided in the package \(provided each class is having a code coverage of 75% or more by the apex classes in the package\) thus saving time spend on triggering local tests of all the apex classes in an org for every source packages in your repo  
-  * **Versioned Artifact:**  Aligned with sfpowerscripts principle of traceability, every deployment is traceable to a versioned artifact, which is difficult to achieve when you are using a folder to deploy
+* **Optimized Deployment Mode:**  sfpowerscripts package installation commands can auto-detect apex unit tests provided in the package, thus a package can be deployed to an Org by utilizing only the apex test classes provided in the package \(provided each class is having a code coverage of 75% or more by the apex classes in the package\) thus saving time spend on triggering local tests of all the apex classes in an org for every source packages in your repo  
+* **Versioned Artifact:**  Aligned with sfpowerscripts principle of traceability, every deployment is traceable to a versioned artifact, which is difficult to achieve when you are using a folder to deploy
 
 ## How do Source Packages compare against Unlocked Packages?
 
@@ -30,7 +30,7 @@ We always recommend using unlocked packages over source packages whenever you ca
 
 1. [Unlocked Packages](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_intro.htm)
 2. [Unlocked Packages \(org-dependent\)](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_org_dependent.htm)
-3. Source Packages
+3. [Source Packages](source-packages.md)
 4. [Change Sets](https://help.salesforce.com/articleView?id=changesets.htm&type=5)
 
 Source Pages are typically used when you come across these constraints
