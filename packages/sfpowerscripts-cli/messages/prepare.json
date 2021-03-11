@@ -10,5 +10,7 @@
   "installationModeDescription": "Install all the unlocked packages as Source Packages",
   "keysDescription": "Keys to be used while installing any managed package dependencies. Required format is a string of key-value pairs separated by spaces e.g. packageA:pw123 packageB:pw123 packageC:pw123",
   "succeedondeploymenterrorsDescription": "Do not fail the scratch orgs, if a package failed to deploy, return the scratch org with packages till the last failure",
-  "apiversion": "API version to be used"
+  "apiversion": "API version to be used",
+  "npmFlagDescription": "Fetch artifacts from a pre-authenticated npm registry",
+  "scopeFlagDescription": "User or Organisation scope of the NPM packages"
 }
