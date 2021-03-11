@@ -48,7 +48,7 @@ export default class TriggerApexTestImpl extends SFDXCommand {
 
     if(!testOptions.specifiedTests || testOptions.specifiedTests.length==0)
     {
-      throw ("No Apex Tests found in the package, Unable to proceed further");
+      throw new Error(("No Apex Tests found in the package, Unable to proceed further"));
     }
 
     return `--testlevel=${testOptions.testLevel} --classnames=${testOptions.specifiedTests}`;
