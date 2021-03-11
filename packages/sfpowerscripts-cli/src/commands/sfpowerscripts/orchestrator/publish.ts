@@ -65,6 +65,11 @@ export default class Promote extends SfpowerscriptsCommand {
       description: messages.getMessage('scopeFlagDescription'),
       dependsOn: ['npm'],
       required: false
+    }),
+    repository: flags.string({
+      description: messages.getMessage('repositoryFlagDescription'),
+      dependsOn: ['npm'],
+      required: false
     })
   };
 
@@ -162,13 +167,15 @@ export default class Promote extends SfpowerscriptsCommand {
           if (this.flags.npm) {
             let artifactRootDirectory = path.dirname(sourceDirectory);
 
-            let name: string = packageName + "_sfpowerscripts_artifact"
+            // NPM does not accept packages with uppercase characters
+            let name: string = packageName.toLowerCase() + "_sfpowerscripts_artifact"
 
             if (this.flags.scope) name = `@${this.flags.scope}/` + name;
 
             let packageJson = {
               name: name,
-              version: packageVersionNumber
+              version: packageVersionNumber,
+              repository: this.flags.repository
             };
 
             fs.writeFileSync(
