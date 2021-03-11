@@ -65,11 +65,6 @@ export default class Promote extends SfpowerscriptsCommand {
       description: messages.getMessage('scopeFlagDescription'),
       dependsOn: ['npm'],
       required: false
-    }),
-    repository: flags.string({
-      description: messages.getMessage('repositoryFlagDescription'),
-      dependsOn: ['npm'],
-      required: false
     })
   };
 
@@ -175,7 +170,7 @@ export default class Promote extends SfpowerscriptsCommand {
             let packageJson = {
               name: name,
               version: packageVersionNumber,
-              repository: this.flags.repository
+              repository: packageMetadata.repository_url
             };
 
             fs.writeFileSync(
