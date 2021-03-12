@@ -37,7 +37,7 @@ export default class DeployMDAPIDirToOrgImpl extends SFDXCommand {
     //Get Deploy ID
     let deploymentId = "";
     try {
-      SFPLogger.log("Executing Command",this.getGeneratedSFDXCommandWithParams(),this.logFile,this.loggerLevel)
+      SFPLogger.log("Executing Command:",this.getGeneratedSFDXCommandWithParams(),this.logFile,this.loggerLevel)
       let resultAsJSON = await super.exec(quiet);
       let result = JSON.parse(resultAsJSON);
       deploymentId = result.result.id;

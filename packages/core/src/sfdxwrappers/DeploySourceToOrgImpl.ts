@@ -66,7 +66,7 @@ export default class DeploySourceToOrgImpl {
       let deploy_id = "";
       try {
         let command = this.buildExecCommand();
-        SFPLogger.log("Executing Command" + command, null, this.packageLogger);
+        SFPLogger.log("Executing Command:" + command, null, this.packageLogger);
         let result = child_process.execSync(command, {
           cwd: this.project_directory,
           encoding: "utf8",
@@ -75,6 +75,7 @@ export default class DeploySourceToOrgImpl {
         let resultAsJSON = JSON.parse(result);
         deploy_id = resultAsJSON.result.id;
       } catch (error) {
+        console.log(error);
         deploySourceResult.result = false;
         deploySourceResult.message = error;
         return deploySourceResult;
@@ -98,7 +99,7 @@ export default class DeploySourceToOrgImpl {
       while (true) {
         try {
           result = child_process.execSync(
-            `npx sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org}`,
+            `sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org}`,
             {
               cwd: this.project_directory,
               encoding: "utf8",
@@ -157,7 +158,7 @@ export default class DeploySourceToOrgImpl {
     let reportJson = "";
     try {
       let child = child_process.exec(
-        `npx sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org}`,
+        `sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org}`,
         {
           cwd: this.project_directory,
           encoding: "utf8",
@@ -236,7 +237,7 @@ export default class DeploySourceToOrgImpl {
     );
 
     let result = child_process.execSync(
-      `npx sfdx sfpowerkit:source:apextestsuite:convert  -n ${apextestsuite} --json`,
+      `sfdx sfpowerkit:source:apextestsuite:convert  -n ${apextestsuite} --json`,
       { cwd: this.project_directory, encoding: "utf8" }
     );
 
