@@ -14,13 +14,13 @@
   * [Build & QuickBuild](faq/orchestrator/build-and-quickbuild.md)
   * [Deploy](faq/orchestrator/deploy.md)
   * [Publish](faq/orchestrator/publish.md)
+* [Metrics and Dashboards](faq/metrics-and-dashboards.md)
 
 ## GETTING STARTED
 
 * [Prerequisites](getting-started/prerequisites.md)
 * [Docker](getting-started/docker.md)
 * [Using sfpowerscripts-cli sfdx plugin](getting-started/getting-started.md)
-* [Metrics and Dashboards](getting-started/metrics-and-dashboards.md)
 
 ---
 

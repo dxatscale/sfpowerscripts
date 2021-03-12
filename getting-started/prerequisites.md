@@ -66,7 +66,7 @@ Alternatively, you could use our [docker](docker.md) image and we highly recomme
 
 Metrics should be a key part of your DevOps process. It is through these metrics, one can drive continuous improvement of your delivery process. Almost all commands in sfpowerscripts, is instrumented with StatsD.
 
-You will need a StatsD server reachable from your CI/CD agent to report the metrics. Read more on supported metrics and dashboards [here](metrics-and-dashboards.md).
+You will need a StatsD server reachable from your CI/CD agent to report the metrics. Read more on supported metrics and dashboards [here](../faq/metrics-and-dashboards.md).
 
 ### **Artifact Repository \(optional\)**
 

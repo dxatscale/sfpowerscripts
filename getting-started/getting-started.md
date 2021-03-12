@@ -1,37 +1,5 @@
 # Using sfpowerscripts-cli sfdx plugin
 
-## Installation
-
-The [SFDX CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm), [sfpowerkit plugin](https://github.com/Accenture/sfpowerkit), and [sfdmu](getting-started.md) are required for this plugin to work. If you have not already done so, please install both of these before continuing.
-
-To install the pre-requisites, run the following commands:
-
-```text
-$ echo 'y' | sfdx plugins:install sfpowerkit
-$ echo 'y' | sfdx plugins:install sfdmu
-```
-
-To install sfpowerscripts, run the below command:
-
-```text
-$ echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts
-```
-
-To ensure everything is installed, try running the below command and ensure it displays similar to below
-
-```text
-$ sfdx plugins
-@dxatscale/sfpowercripts <version_number>
-sfpowerkit <version_number>
-sfdmu <version>
-```
-
-## Sample Pipelines
-
-Sample pipelines demonstrating the usage of sfpowerscripts are available [here](https://github.com/dxatscale/easy-spaces-lwc)
-
-## Using sfpowerscripts
-
 ### Modifiers used by Orchestrator
 
 [sfpowerscripts:orchestrator](https://app.gitbook.com/@dxatscale/s/sfpowerscripts/faq/orchestrator) commands allow controlling attributes of a package in its stage by adding additional properties to each package as described in sfdx-project.json. This allows one to change the behaviour of the pipeline without changing any pipeline scripts
@@ -123,7 +91,7 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 
 ## Commands
 
-* Orchestrator Commands
+* [Orchestrator Commands](../faq/orchestrator/)
   * [`sfdx sfpowerscripts:orchestrator:prepare`](getting-started.md#sfdx-sfpowerscriptsorchestratorprepare)
   * [`sfdx sfpowerscripts:orchestrator:validate`](getting-started.md#sfdx-sfpowerscriptsorchestratorvalidate)
   * [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`](getting-started.md#sfdx-sfpowerscriptsorchestratorvalidateagainstorg)
