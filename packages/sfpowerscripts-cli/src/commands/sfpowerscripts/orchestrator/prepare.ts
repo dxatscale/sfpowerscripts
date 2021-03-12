@@ -7,6 +7,7 @@ import { loadSFDX } from "../../../impl/pool/sfdxnode/GetNodeWrapper";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import { Stage } from "../../../impl/Stage";
 import * as fs from "fs-extra"
+import ScratchOrgUtils from "../../../impl/pool/utils/ScratchOrgUtils";
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -106,6 +107,8 @@ export default class Prepare extends SfpowerscriptsCommand {
     console.log(`Requested Count of Orgs: ${this.flags.maxallocation}`);
     console.log(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`);
     console.log(`Fetch artifacts from pre-authenticated NPM registry: ${this.flags.npm ? "true" : "false"}`);
+    if(this.flags.npm && this.flags.npmtag)
+      console.log(`Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`);
     console.log(`All packages in the repo to be installed: ${this.flags.installall}`);
     console.log(`Scratch Orgs to be submitted to pool in case of failures: ${this.flags.succeedondeploymenterrors}`)
     console.log("---------------------------------------------------------");
@@ -185,15 +188,16 @@ export default class Prepare extends SfpowerscriptsCommand {
       }
       else
       {
-        SFPStatsSender.logGauge(
+
+    
+      await this.getCurrentRemainingNumberOfOrgsInPoolAndReport();
+    
+      SFPStatsSender.logGauge(
           "prepare.succeededorgs",
           results.success,
           tags
         );
       }
-
-
-
       SFPStatsSender.logGauge(
         "prepare.duration",
         (Date.now() - executionStartTime),
@@ -202,6 +206,23 @@ export default class Prepare extends SfpowerscriptsCommand {
 
     } catch (err) {
       throw new SfdxError("Unable to execute command .. " + err);
+    }
+  }
+
+  private async getCurrentRemainingNumberOfOrgsInPoolAndReport() {
+    try
+    {
+    const results = await ScratchOrgUtils.getScratchOrgsByTag(
+      this.flags.tag,
+      this.hubOrg,
+      false,
+      true
+    )
+    SFPStatsSender.logGauge("pool.remaining", results.records.length, { poolName: this.flags.tag });
+    }
+    catch(error)
+    {
+     //do nothing, we are not reporting anything if anything goes wrong here
     }
   }
 
