@@ -18,7 +18,9 @@ export default class Promote extends SfpowerscriptsCommand {
 
   public static examples = [
     `$ sfdx sfpowerscripts:orchestrator:publish -f path/to/script`,
-    `$ sfdx sfpowerscripts:orchestrator:publish -p -v HubOrg`
+    `$ sfdx sfpowerscripts:orchestrator:publish --npm`,
+    `$ sfdx sfpowerscripts:orchestrator:publish -f path/to/script -p -v HubOrg`,
+    `$ sfdx sfpowerscripts:orchestrator:publish -f path/to/script --gittag --pushgittag`
   ];
 
   protected static requiresUsername = false;
@@ -33,7 +35,6 @@ export default class Promote extends SfpowerscriptsCommand {
     publishpromotedonly: flags.boolean({
       char: 'p',
       description: messages.getMessage('publishPromotedOnlyFlagDescription'),
-      default: false,
       dependsOn: ['devhubalias']
     }),
     devhubalias: flags.string({
@@ -41,7 +42,6 @@ export default class Promote extends SfpowerscriptsCommand {
       description: messages.getMessage('devhubAliasFlagDescription')
     }),
     scriptpath: flags.filepath({
-      required: true,
       char: 'f',
       description: messages.getMessage('scriptPathFlagDescription')
     }),
@@ -57,11 +57,30 @@ export default class Promote extends SfpowerscriptsCommand {
       description: messages.getMessage('gitPushTagFlagDescription'),
       default: false,
     }),
-
+    npm: flags.boolean({
+      description: messages.getMessage('npmFlagDescription'),
+      exclusive: ['scriptpath']
+    }),
+    scope: flags.string({
+      description: messages.getMessage('scopeFlagDescription'),
+      dependsOn: ['npm'],
+      required: false
+    }),
+    npmtag: flags.string({
+      description: messages.getMessage('npmTagFlagDescription'),
+      dependsOn: ['npm'],
+      required: false
+    })
   };
 
 
   public async execute(){
+    if (this.flags.scriptpath === undefined && this.flags.npm === undefined)
+      throw new Error("Either --scriptpath or --npm flag must be provided");
+
+    if (this.flags.scriptpath && !fs.existsSync(this.flags.scriptpath))
+      throw new Error(`Script path ${this.flags.scriptpath} does not exist`);
+
     let nPublishedArtifacts: number = 0;
     let failedArtifacts: string[] = [];
     SFPLogger.isSupressLogs = true;
@@ -76,18 +95,17 @@ export default class Promote extends SfpowerscriptsCommand {
     }[] = new Array();
 
     try {
-
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: publish");
-    console.log(`Publish promoted artifacts only: ${this.flags.publishpromotedonly}`);
+    console.log(`target: ${this.flags.scriptpath ? this.flags.scriptpath : "NPM"}`);
+    console.log(`Publish promoted artifacts only: ${this.flags.publishpromotedonly ? true : false}`);
     console.log("---------------------------------------------------------");
 
 
 
 
 
-      if (!fs.existsSync(this.flags.scriptpath))
-        throw new Error(`Script path ${this.flags.scriptpath} does not exist`);
+
 
       let packageVersionList: any;
       if (this.flags.publishpromotedonly) {
@@ -107,7 +125,7 @@ export default class Promote extends SfpowerscriptsCommand {
       let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);
 
       // Pattern captures two named groups, the "package" name and "version" number
-      let pattern = new RegExp("(?<package>^.*)(?:sfpowerscripts_artifact_)(?<version>.*)(?:\\.zip)");
+      let pattern = new RegExp("(?<package>^.*)(?:_sfpowerscripts_artifact_)(?<version>.*)(?:\\.zip)");
       for (let artifact of artifacts) {
         let packageName: string;
         let packageVersionNumber: string;
@@ -115,22 +133,21 @@ export default class Promote extends SfpowerscriptsCommand {
         let match: RegExpMatchArray = path.basename(artifact).match(pattern);
 
         if (match !== null) {
-          packageName = match.groups.package; // can be an empty string
-          if (packageName) {
-            // Remove trailing underscore
-            packageName = packageName.substring(0, packageName.length - 1);
-          }
+          packageName = match.groups.package;
           packageVersionNumber = match.groups.version;
         } else {
           // artifact filename doesn't match pattern
           continue;
         }
 
-        let {packageType, packageVersionId} = this.getPackageVersionIdAndType(
+        let {sourceDirectory, packageMetadata} = this.getPackageInfo(
           artifactFilePaths,
           packageName,
           packageVersionNumber
         );
+
+        let packageType = packageMetadata.package_type;
+        let packageVersionId = packageMetadata.package_version_id;
 
         if (this.flags.publishpromotedonly && packageType === "unlocked") {
           let isReleased = this.isPackageVersionIdReleased(packageVersionList, packageVersionId);
@@ -147,10 +164,35 @@ export default class Promote extends SfpowerscriptsCommand {
           console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
 
           let cmd: string;
-          if (process.platform !== 'win32') {
-            cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+          if (this.flags.npm) {
+            let artifactRootDirectory = path.dirname(sourceDirectory);
+
+            // NPM does not accept packages with uppercase characters
+            let name: string = packageName.toLowerCase() + "_sfpowerscripts_artifact"
+
+            if (this.flags.scope) name = `@${this.flags.scope}/` + name;
+
+            let packageJson = {
+              name: name,
+              version: packageVersionNumber,
+              repository: packageMetadata.repository_url
+            };
+
+            fs.writeFileSync(
+              path.join(artifactRootDirectory, "package.json"),
+              JSON.stringify(packageJson, null, 4)
+            );
+
+            cmd = `npm publish ${artifactRootDirectory}`;
+
+            if (this.flags.npmtag) cmd += ` --tag ${this.flags.npmtag}`;
+
           } else {
-            cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+            if (process.platform !== 'win32') {
+              cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+            } else {
+              cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+            }
           }
 
           child_process.execSync(
@@ -265,7 +307,7 @@ export default class Promote extends SfpowerscriptsCommand {
           `git tag -a -m "${packageTag.name} ${packageTag.type} Package ${packageTag.version}" ${packageTag.tag} HEAD`
         );
       }
-    
+
   }
 
   private isPackageVersionIdReleased(packageVersionList: any, packageVersionId: string): boolean {
@@ -279,32 +321,28 @@ export default class Promote extends SfpowerscriptsCommand {
       return false
   }
 
-  private getPackageVersionIdAndType(
-    artifactFilePaths: ArtifactFilePaths[],
+  /**
+   * Get sourceDirectory and packageMetadata of artifact with package name and version
+   * @param artifacts
+   * @param packageName
+   * @param packageVersionNumber
+   */
+  private getPackageInfo(
+    artifacts: ArtifactFilePaths[],
     packageName,
     packageVersionNumber
-  ): {packageType: string, packageVersionId: string}
-  {
-    let packageType: string;
-    let packageVersionId: string;
-    let isPackageMetadataFound: boolean;
-    for (let artifact of artifactFilePaths) {
+  ): {sourceDirectory: string, packageMetadata: PackageMetadata }{
+    for (let artifact of artifacts) {
       let packageMetadata: PackageMetadata = JSON.parse(fs.readFileSync(artifact.packageMetadataFilePath, 'utf8'));
       if (
         packageMetadata.package_name === packageName &&
         packageMetadata.package_version_number === packageVersionNumber.replace("-", ".")
       ) {
-        isPackageMetadataFound = true;
-        packageType = packageMetadata.package_type;
-        packageVersionId = packageMetadata.package_version_id;
-        break;
+        return { sourceDirectory: artifact.sourceDirectoryPath, packageMetadata: packageMetadata };
       }
     }
 
-    if (!isPackageMetadataFound)
-      throw new Error(`Unable to find artifact metadata for ${packageName} Version ${packageVersionNumber.replace("-", ".")}`);
-
-    return {packageType: packageType, packageVersionId: packageVersionId};
+    throw new Error(`Unable to find artifact metadata for ${packageName} Version ${packageVersionNumber.replace("-", ".")}`);
   }
 
   private getFormattedTime(milliseconds: number): string {

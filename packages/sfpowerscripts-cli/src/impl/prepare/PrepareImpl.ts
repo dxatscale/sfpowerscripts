@@ -26,7 +26,9 @@ export default class PrepareImpl {
   private installAll:boolean;
   private installAsSourcePackages: boolean;
   private succeedOnDeploymentErrors: boolean;
-
+  private _isNpm: boolean;
+  private _scope: string;
+  private _npmTag: string;
 
   public constructor(
     private hubOrg: Org,
@@ -64,7 +66,17 @@ export default class PrepareImpl {
     this.keys=keys;
   }
 
+  public set isNpm(npm: boolean) {
+    this._isNpm = npm;
+  }
 
+  public set scope(scope: string) {
+    this._scope = scope;
+  }
+
+  public set npmTag(tag: string) {
+    this._npmTag = tag;
+  }
 
   public async poolScratchOrgs(): Promise< {
     totalallocated:number,
@@ -168,7 +180,16 @@ export default class PrepareImpl {
       "packageDirectories"
     ];
 
-    if (fs.existsSync(this.fetchArtifactScript)) {
+    if (this._isNpm) {
+      packages.forEach((pkg) => {
+        this.fetchArtifactFromNpmRegistry(
+          pkg.package,
+          this._scope,
+          this._npmTag,
+          "artifacts"
+        );
+      });
+    } else if (fs.existsSync(this.fetchArtifactScript)) {
       packages.forEach((pkg) => {
         this.fetchArtifactFromRepositoryUsingProvidedScript(
           pkg.package,
@@ -445,6 +466,34 @@ export default class PrepareImpl {
     }
 
     return result;
+  }
+
+  /**
+   * Fetch un/scoped package from pre-authenticated NPM registry
+   * @param packageName
+   * @param scope
+   * @param artifactDirectory
+   */
+  private fetchArtifactFromNpmRegistry(
+    packageName: string,
+    scope: string,
+    npmTag: string,
+    artifactDirectory: string
+  ) {
+    let cmd: string;
+
+    if (scope)
+      cmd= `npm pack @${scope}/${packageName}_sfpowerscripts_artifact`;
+    else
+      cmd = `npm pack ${packageName}_sfpowerscripts_artifact`;
+
+    if (npmTag)
+      cmd += `@${npmTag}`;
+
+    child_process.execSync(cmd, {
+      cwd: artifactDirectory,
+      stdio: ["ignore", "inherit", "inherit"],
+    });
   }
 
   private fetchArtifactFromRepositoryUsingProvidedScript(

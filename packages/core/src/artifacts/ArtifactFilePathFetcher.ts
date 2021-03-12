@@ -4,6 +4,7 @@ import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
 const glob = require("glob");
 import AdmZip = require("adm-zip");
 import semver = require("semver");
+import tar = require("tar");
 
 export default class ArtifactFilePathFetcher {
   /**
@@ -39,6 +40,10 @@ export default class ArtifactFilePathFetcher {
         );
       } else if (path.extname(artifact) === ".zip") {
         artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePathsFromZipFile(
+          artifact
+        );
+      } else if (path.extname(artifact) === ".tgz") {
+        artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePathsFromTarball(
           artifact
         );
       } else {
@@ -130,10 +135,58 @@ export default class ArtifactFilePathFetcher {
   }
 
   /**
-   * Find zip artifacts
+   * Helper method for retrieving ArtifactFilePaths of a tarball
+   * @param artifact
+   */
+  private static fetchArtifactFilePathsFromTarball(
+    artifact: string
+  ): ArtifactFilePaths {
+    let unzippedArtifactsDirectory: string = `.sfpowerscripts/unzippedArtifacts/${this.makefolderid(8)}`;
+    fs.mkdirpSync(unzippedArtifactsDirectory);
+
+    tar.x(
+      {
+        file: artifact,
+        cwd: unzippedArtifactsDirectory,
+        sync: true
+      }
+    );
+
+    let packageMetadataFilePath = path.join(
+      unzippedArtifactsDirectory,
+      "package",
+      "artifact_metadata.json"
+    );
+
+    let sourceDirectory = path.join(
+      unzippedArtifactsDirectory,
+      "package",
+      `source`
+    );
+
+    let changelogFilePath = path.join(
+      unzippedArtifactsDirectory,
+      "package",
+      `changelog.json`
+    );
+
+    let artifactFilePaths: ArtifactFilePaths = {
+      packageMetadataFilePath: packageMetadataFilePath,
+      sourceDirectoryPath: sourceDirectory,
+      changelogFilePath: changelogFilePath
+    };
+
+    ArtifactFilePathFetcher.existsArtifactFilepaths(artifactFilePaths);
+
+    return artifactFilePaths;
+  }
+
+  /**
+   * Find zip and tarball artifacts
    * Artifact format/s:
-   * sfpowerscripts_artifact_<version>.zip
-   * <sfdx_package>_sfpowerscripts_artifact_<version>.zip
+   * sfpowerscripts_artifact_<version>.zip,
+   * [sfdx_package]_sfpowerscripts_artifact_[version].zip,
+   * [sfdx_package]_sfpowerscripts_artifact_[version].tgz
    */
   public static findArtifacts(
     artifactDirectory: string,
@@ -141,9 +194,9 @@ export default class ArtifactFilePathFetcher {
   ): string[] {
     let pattern: string;
     if (sfdx_package) {
-      pattern = `**/${sfdx_package}_sfpowerscripts_artifact*.zip`;
+      pattern = `**/${sfdx_package}_sfpowerscripts_artifact*.@(zip|tgz)`;
     } else {
-      pattern = `**/*sfpowerscripts_artifact*.zip`;
+      pattern = `**/*sfpowerscripts_artifact*.@(zip|tgz)`;
     }
 
     let artifacts: string[] = glob.sync(
@@ -168,13 +221,21 @@ export default class ArtifactFilePathFetcher {
    * @param artifacts
    */
   private static getLatestArtifact(artifacts: string[]) {
-      // Consider zip artifacts only
-      artifacts = artifacts.filter((artifact) => path.extname(artifact) === ".zip");
+      // Consider zip & tarball artifacts only
+      artifacts = artifacts.filter((artifact) => {
+        let ext: string = path.extname(artifact);
+        return ext === ".zip" || ext === ".tgz";
+      });
 
+      let pattern = new RegExp("(?:^.*)(?:_sfpowerscripts_artifact_)(?<version>.*)(?:\\.zip|\\.tgz)");
       let versions: string[] = artifacts.map( (artifact) => {
-        let tokens = artifact.split("_");
-        let version = tokens[tokens.length - 1];
-        return version.slice(0, version.indexOf(".zip"));
+        let match: RegExpMatchArray = path.basename(artifact).match(pattern);
+        let version = match?.groups.version;
+
+        if (version)
+          return version
+        else
+          throw new Error("Corrupted artifact detected with no version number");
       });
 
       // Pick artifact with latest semantic version

@@ -73,6 +73,21 @@ export default class Prepare extends SfpowerscriptsCommand {
     apiversion: flags.builtin({
       description: messages.getMessage("apiversion"),
     }),
+    npm: flags.boolean({
+      description: messages.getMessage('npmFlagDescription'),
+      exclusive: ['artifactfetchscript'],
+      required: false
+    }),
+    scope: flags.string({
+      description: messages.getMessage('scopeFlagDescription'),
+      dependsOn: ['npm'],
+      required: false
+    }),
+    npmtag: flags.string({
+      description: messages.getMessage('npmTagFlagDescription'),
+      dependsOn: ['npm'],
+      required: false
+    })
   };
 
   public static description = messages.getMessage("commandDescription");
@@ -85,20 +100,20 @@ export default class Prepare extends SfpowerscriptsCommand {
 
     let executionStartTime = Date.now();
 
-
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: prepare");
     console.log(`Pool Name: ${this.flags.tag}`);
     console.log(`Requested Count of Orgs: ${this.flags.maxallocation}`);
     console.log(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`);
+    console.log(`Fetch artifacts from pre-authenticated NPM registry: ${this.flags.npm ? "true" : "false"}`);
     console.log(`All packages in the repo to be installed: ${this.flags.installall}`);
     console.log(`Scratch Orgs to be submitted to pool in case of failures: ${this.flags.succeedondeploymenterrors}`)
     console.log("---------------------------------------------------------");
 
 
-    
+
     if (this.flags.artifactfetchscript && !fs.existsSync(this.flags.artifactfetchscript))
-    {     
+    {
        console.log(`Script path ${this.flags.scriptpath} does not exist, Please provide a valid path to the script file`);
        process.exitCode=1;
        return;
@@ -130,6 +145,9 @@ export default class Prepare extends SfpowerscriptsCommand {
     prepareImpl.setArtifactFetchScript(this.flags.artifactfetchscript);
     prepareImpl.setInstallationBehaviour(this.flags.installall,this.flags.installassourcepackages,this.flags.succeedondeploymenterrors);
     prepareImpl.setPackageKeys(this.flags.keys);
+    prepareImpl.isNpm = this.flags.npm;
+    prepareImpl.scope = this.flags.scope;
+    prepareImpl.npmTag = this.flags.npmtag;
 
     try {
       let results= await prepareImpl.poolScratchOrgs();

@@ -4,23 +4,25 @@ import ArtifactFilePathFetcher from "../../src/artifacts/ArtifactFilePathFetcher
 
 describe("Provided a path to the artifacts folder containing sfpowerscripts artifact", () => {
 
- 
+
 
   it("should return all the artifacts, if a package name is not provided", () => {
     const globMock = jest.spyOn(glob, "sync");
     globMock.mockImplementation(() => {
       return new Array(
-        "core_sfpowerscripts_artifact_v1.0.0-2.zip",
-        "core2_sfpowerscripts_artifact_v1.0.0-2.zip",
-        "core3_sfpowerscripts_artifact_v1.0.0-3.zip"
+        "/path/to/core_sfpowerscripts_artifact_1.0.0-2.zip",
+        "/path/to/core2_sfpowerscripts_artifact_1.0.0-2.zip",
+        "/path/to/core3_sfpowerscripts_artifact_1.0.0-3.zip",
+        "/path/to/my-package_sfpowerscripts_artifact_3.30.53-NEXT.tgz"
       );
     });
     let artifacts = ArtifactFilePathFetcher.findArtifacts("artifacts");
     expect(artifacts).toEqual(
       new Array(
-        "core_sfpowerscripts_artifact_v1.0.0-2.zip",
-        "core2_sfpowerscripts_artifact_v1.0.0-2.zip",
-        "core3_sfpowerscripts_artifact_v1.0.0-3.zip"
+        "/path/to/core_sfpowerscripts_artifact_1.0.0-2.zip",
+        "/path/to/core2_sfpowerscripts_artifact_1.0.0-2.zip",
+        "/path/to/core3_sfpowerscripts_artifact_1.0.0-3.zip",
+        "/path/to/my-package_sfpowerscripts_artifact_3.30.53-NEXT.tgz"
       )
     );
 
@@ -30,13 +32,13 @@ describe("Provided a path to the artifacts folder containing sfpowerscripts arti
     const globMock = jest.spyOn(glob, "sync");
     globMock.mockImplementation(() => {
       return new Array(
-        "core_sfpowerscripts_artifact_v1.0.0-2.zip"
+        "/path/to/core_sfpowerscripts_artifact_1.0.0-2.zip"
       );
     });
     let artifacts = ArtifactFilePathFetcher.findArtifacts("artifacts","core");
     expect(artifacts).toEqual(
       new Array(
-        "core_sfpowerscripts_artifact_v1.0.0-2.zip"
+        "/path/to/core_sfpowerscripts_artifact_1.0.0-2.zip"
       )
     );
   });
@@ -45,20 +47,21 @@ describe("Provided a path to the artifacts folder containing sfpowerscripts arti
     const globMock = jest.spyOn(glob, "sync");
     globMock.mockImplementation(() => {
       return new Array(
-        "core_sfpowerscripts_artifact_v1.0.0-2.zip",
-        "core_sfpowerscripts_artifact_v1.0.0-3.zip",
-        "core_sfpowerscripts_artifact_v1.0.0-4.zip",
+        "/path/to/core_sfpowerscripts_artifact_1.0.0-2.zip",
+        "/path/to/core_sfpowerscripts_artifact_1.0.0-3.zip",
+        "/path/to/core_sfpowerscripts_artifact_1.0.0-4.zip",
+        "/path/to/core_sfpowerscripts_artifact_1.0.0-5.tgz"
       );
     });
     let artifacts = ArtifactFilePathFetcher.findArtifacts("artifacts","core");
     expect(artifacts).toEqual(
       new Array(
-        "core_sfpowerscripts_artifact_v1.0.0-4.zip"
+        "/path/to/core_sfpowerscripts_artifact_1.0.0-5.tgz"
       )
     );
   });
 
- 
+
 
 
 
