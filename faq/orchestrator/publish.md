@@ -10,7 +10,7 @@ The Publish command pushes artifacts created in the Build stage to an artifact r
 
 ## What registry are my artifacts published to?
 
-Rather than lock everyone into a particular registry provider, you can provide a shell script that handles uploading of artifacts to a registry of your choice.    
+Rather than lock everyone into a particular registry provider, you can provide a shell script that handles uploading of artifacts to a registry of your choice.
 
 ## How do I create the script that uploads artifacts to my registry?
 
@@ -24,17 +24,16 @@ Example for Linux / MacOS
 # $3 artifact file path
 # $4 isPublishPromotedOnly
 
-myvendor artifacts push --name $1 --version $2 --path $3 
-
+myvendor artifacts push --name $1 --version $2 --path $3
 ```
 
 ## What does the `--publishpromotedonly` flag do?
 
-When the `--publishpromotedonly`flag is specified, only unlocked packages that have been promoted will be published to the registry. 
+When the `--publishpromotedonly`flag is specified, only unlocked packages that have been promoted will be published to the registry.
 
 ## What does `--gittag` parameter used for?
 
-The `--gittag` parameter creates a tag, at the current commit ID, for packages that have been successfully published. In combination with the `--diffcheck` parameter in the Build commands, the tags enable significant time-saving by comparing the latest tag with the source code - and only building the package if a change is found.  
+The `--gittag` parameter creates a tag, at the current commit ID, for packages that have been successfully published. In combination with the `--diffcheck` parameter in the Build commands, the tags enable significant time-saving by comparing the latest tag with the source code - and only building the package if a change is found.
 
 ## Why are the git tags not showing up in my repo?
 
