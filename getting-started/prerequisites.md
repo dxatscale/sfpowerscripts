@@ -54,6 +54,14 @@ $ echo'y' | sfdx plugins:install sfpowerkit
 $ echo'y' | sfdx plugins:install sfdmu
 ```
 
+ - [sfpowerscripts](https://www.npmjs.com/package/@dxatscale/sfpowerscripts):  Install the sfpowerscripts sfdx-cli plugin from npm
+
+```text
+$ echo'y' | sfdx plugins:install @dxatscale/sfpowerscripts
+```
+
+Alternatively, you could use our [docker](docker.md) image and we highly recommend to utilize it.
+
 ### **StatsD Server \(optional\)**
 
 Metrics should be a key part of your DevOps process. It is through these metrics, one can drive continuous improvement of your delivery process. Almost all commands in sfpowerscripts, is instrumented with StatsD.
