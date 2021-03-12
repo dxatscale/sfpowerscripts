@@ -90,7 +90,7 @@ export default class SFPStatsSender {
 
   static logMetrics(key: any, logger?:any) {
     if (logger) {
-      fs.appendFileSync(logger, `${JSON.stringify(key)}${EOL}`, 'utf8')
+      fs.appendFileSync(logger, `${new Date().toISOString()} ${JSON.stringify(key)}${EOL}`, 'utf8')
     }
   }
 }
