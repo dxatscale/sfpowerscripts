@@ -52,19 +52,6 @@ Data packages support the following options, through the sfdx-project.json.
   }
 ```
 
-## How to create a pre/post deployment script for data package?
-
-In some situations, you might need to execute a pre/post deployment script to do manipulate the data before or after being deployed to the org. **sfpowerscripts** allow you to provide a path to a shell script \(Mac/Unix\)  / batch script \(on windows\).  The script will be provided with the following parameters which could be utilised to write your logic  
-  
-For eg: if you want to trigger an anonymous apex script after the installation of the package, you will create a script file similar to below and then add the path to the **postDeploymentScript** property of your data package
-
-```text
-# $1 package name
-# $2 org
-
-sfdx force:apex:execute -f scripts/datascript.apex -u $2
-```
-
 ## Why isn't force:source:push working with Data packages defined in my sfdx-project.json?
 
 The error arises because the Data Package contains csv files, which are not natively supported by Salesforce. In order to bypass the error, add the package path to the forceignore file. This will not inhibit creation of Data packages.
