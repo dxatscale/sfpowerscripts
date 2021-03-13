@@ -6,7 +6,11 @@ description: Bridging your CI and CD pipelines using artifacts
 
 ## What does the Publish command do?
 
-The Publish command pushes artifacts created in the Build stage to an artifact registry primarily for further utilisation by a release pipeline. The user must provide a shell script that handles uploading of artifacts to a package registry of their choice. Typical examples of package registry which supports universal artifacts include Azure Artifacts, JFrog Artifactory
+The Publish command pushes artifacts created in the Build stage to an artifact registry primarily for further utilisation by a release pipeline. The user must provide a shell script that handles uploading of artifacts to a package registry of their choice. Typical examples of package registry which supports universal artifacts include Azure Artifacts, JFrog Artifactory.
+
+## What is an Artifact Registry?
+
+Artifact Registries allow one to store all the application artifacts in one central place. It typically provide features to manage various the full lifecycle of artifacts. Here is a short video from Jfrog explaining the need for an artifact registry. **Please note we are platform independent and work with any artifact registry which supports Universal Artifacts**
 
 ## What registry are my artifacts published to?
 
