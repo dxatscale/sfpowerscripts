@@ -4,13 +4,10 @@ The following pre-requisites are required for sfpowerscripts to work
 
 ### **On your DevHub / Production Org**
 
-[Addtional fields for pooling: ](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/scratchorgpool) prepare functionality in the orchestrator  needs additional fields to be deployed on DevHub. These fields store information regarding scratch org's. 
+[Addtional fields for pooling: ](https://github.com/Accenture/sfpowerkit/tree/main/src_saleforce_packages/scratchorgpool) prepare functionality in the orchestrator  needs additional fields to be deployed on DevHub. These fields store information regarding scratch org's. 
 
 ```text
-git clone https://github.com/Accenture/sfpowerscripts
-cd sfpowerscripts
-cd prerequisites/scratchorgpool
-sfdx force:source:deploy -p force-app -u Devhub -w 30 -l RunSpecifiedTests -r skip
+sfdx force:package:install -p 04t1P000000gOkXQAU -u Devhub -r -a package -s AdminsOnly -w 30
 ```
 
 ### **On each org \(sandbox/production\) that you intend to deploy**
