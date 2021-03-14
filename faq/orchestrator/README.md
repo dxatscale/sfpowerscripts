@@ -222,7 +222,7 @@ Here is a sample model that you could use on simple programs
 
 The following schematic explains the Continuous Integration and Continuous deployment aspect of the pipelines and sfpowerscripts commands utilized. For brevity, prepare and validate is being excluded
 
-![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%281%29.png)
+![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%281%29.png)
 
 ## Is there an example repo, where all these commands are being used?
 
