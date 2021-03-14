@@ -12,9 +12,13 @@ The Publish command pushes artifacts created in the Build stage to an artifact r
 
 Artifact Registries allow one to store all the application artifacts in one central place. It typically provide features to manage various the full lifecycle of artifacts. Here is a short video from Jfrog explaining the need for an artifact registry. **Please note we are platform independent and work with any artifact registry which supports Universal Artifacts**
 
-{% embed url="https://www.youtube.com/watch?v=r2_A5CPo43U" %}
+{% embed url="https://www.youtube.com/watch?v=r2\_A5CPo43U" caption="" %}
 
-## What registry are my artifacts published to?
+## Why do you need an Artifact Registry in the context of sfpowerscripts?
+
+Artifact registry allows you to split your CI and CD pipelines. We believe that this is essential for a smoother deployment model and allows you to better control what is being deployed to environments if you are using a multi-stage environment strategy. 
+
+## What registry can sfpowerscripts artifacts published to?
 
 Rather than lock everyone into a particular registry provider, you can provide a shell script that handles uploading of artifacts to a registry of your choice.
 
