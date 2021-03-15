@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Org_Name__c</fullName>
+    <fullName>InstallationTime__c</fullName>
     <externalId>false</externalId>
-    <label>Org Name</label>
-    <length>200</length>
+    <label>Installation Time</label>
     <required>true</required>
     <trackTrending>false</trackTrending>
-    <type>Text</type>
-    <unique>false</unique>
+    <type>DateTime</type>
 </CustomField>

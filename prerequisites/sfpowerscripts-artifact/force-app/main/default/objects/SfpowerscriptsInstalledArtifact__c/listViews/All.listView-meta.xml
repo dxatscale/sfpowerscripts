@@ -2,7 +2,7 @@
 <ListView xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>All</fullName>
     <columns>NAME</columns>
-    <columns>Org_Name__c</columns>
+    <columns>OrgName__c</columns>
     <columns>PackageType__c</columns>
     <columns>PackageName__c</columns>
     <columns>VersionNumber__c</columns>

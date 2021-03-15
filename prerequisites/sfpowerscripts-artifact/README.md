@@ -28,6 +28,10 @@ sfdx force:source:deploy -p force-app -u Devhub -w 30
 ## Assign permission set to Admin/CI user
 <TODO: Add description>
 
+```
+sfdx force:user:permset:assign -n Sfpowerscripts_Artifact -u Devhub
+```
+
 ## sfpowerscripts-artifact to Scaratch org
 
 <TODO: update description>

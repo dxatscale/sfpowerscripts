@@ -2,7 +2,7 @@
 <ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Version_Id_required_for_Unlocked_package</fullName>
     <active>true</active>
-    <errorConditionFormula>ISPICKVAL( PackageType__c, &apos;Unlocked&apos;) &amp;&amp; ISNULL(VersionID__c)</errorConditionFormula>
+    <errorConditionFormula>ISPICKVAL( PackageType__c, &quot;Unlocked&quot;) &amp;&amp;  VersionID__c == &apos;&apos;</errorConditionFormula>
     <errorDisplayField>VersionID__c</errorDisplayField>
     <errorMessage>Version Id required for Unlocked package</errorMessage>
 </ValidationRule>
