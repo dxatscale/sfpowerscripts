@@ -149,17 +149,18 @@
     <enableHistory>false</enableHistory>
     <enableLicensing>false</enableLicensing>
     <enableReports>false</enableReports>
-    <enableSearch>false</enableSearch>
+    <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <externalSharingModel>Private</externalSharingModel>
-    <label>Sfpowerscripts Artifact</label>
+    <label>Sfpowerscripts Artifact Catalogue</label>
     <nameField>
-        <label>Package Name</label>
-        <type>Text</type>
+        <displayFormat>A-{00000000}</displayFormat>
+        <label>Artifact ID</label>
+        <type>AutoNumber</type>
     </nameField>
-    <pluralLabel>Sfpowerscripts Artifacts</pluralLabel>
+    <pluralLabel>Sfpowerscripts Artifact Catalogue</pluralLabel>
     <searchLayouts/>
-    <sharingModel>ReadWrite</sharingModel>
+    <sharingModel>Private</sharingModel>
     <visibility>Public</visibility>
 </CustomObject>

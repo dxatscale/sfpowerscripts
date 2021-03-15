@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <applicationVisibilities>
+        <application>sfpowerscriptsartifact</application>
+        <visible>true</visible>
+    </applicationVisibilities>
     <fieldPermissions>
         <editable>true</editable>
-        <field>SfpowerscriptsArtifact__c.CommitId__c</field>
+        <field>SfpowerscriptsArtifactCatalogue__c.VersionID__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>SfpowerscriptsArtifact__c.Tag__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>SfpowerscriptsArtifact__c.Version__c</field>
+        <field>SfpowerscriptsInstalledArtifact__c.VersionID__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
@@ -23,7 +22,24 @@
         <allowEdit>true</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>true</modifyAllRecords>
-        <object>SfpowerscriptsArtifact__c</object>
+        <object>SfpowerscriptsArtifactCatalogue__c</object>
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>true</modifyAllRecords>
+        <object>SfpowerscriptsInstalledArtifact__c</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
+    <tabSettings>
+        <tab>SfpowerscriptsArtifactCatalogue__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>SfpowerscriptsInstalledArtifact__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
 </PermissionSet>
