@@ -58,6 +58,10 @@ export default class Deploy extends SfpowerscriptsCommand {
       required: false,
       dependsOn: ['skipifalreadyinstalled']
     }),
+    allowunpromotedpackages: flags.boolean({
+      description: messages.getMessage("allowUnpromotedPackagesFlagDescription"),
+      hidden: true
+    })
   };
 
   public async execute() {
@@ -99,7 +103,8 @@ export default class Deploy extends SfpowerscriptsCommand {
       skipIfPackageInstalled:this.flags.skipifalreadyinstalled,
       logsGroupSymbol:this.flags.logsgroupsymbol,
       currentStage:Stage.DEPLOY,
-      baselineOrg: this.flags.baselineorg
+      baselineOrg: this.flags.baselineorg,
+      isCheckIfPackagesPromoted: !this.flags.allowunpromotedpackages
     }
 
     try {

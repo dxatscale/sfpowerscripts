@@ -48,6 +48,7 @@ export interface DeployProps {
   packageLogger?: any;
   currentStage?: Stage;
   baselineOrg?:string;
+  isCheckIfPackagesPromoted?: boolean;
 }
 
 export default class DeployImpl {
@@ -112,7 +113,8 @@ export default class DeployImpl {
       }
 
       if (!orgDetails.IsSandbox) {
-        this.checkIfPackagesPromoted(queue, packagesToPackageInfo);
+        if (this.props.isCheckIfPackagesPromoted)
+          this.checkIfPackagesPromoted(queue, packagesToPackageInfo);
       }
 
       SFPStatsSender.logCount("deploy.scheduled",this.props.tags);
