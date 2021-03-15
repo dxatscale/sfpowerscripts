@@ -28,7 +28,8 @@ export default class Promote extends SfpowerscriptsCommand {
 
   protected static flagsConfig = {
     artifactdir: flags.directory({
-      required: true, char: 'd',
+      required: true,
+      char: 'd',
       description: messages.getMessage('artifactDirectoryFlagDescription'),
       default: 'artifacts'
     }),
