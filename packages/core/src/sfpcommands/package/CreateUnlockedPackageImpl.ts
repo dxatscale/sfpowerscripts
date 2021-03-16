@@ -359,7 +359,7 @@ export default class CreateUnlockedPackageImpl {
   }
 
   private buildInfoCommand(subscriberPackageVersion: string): string {
-    let command = `npx sfdx sfpowerkit:package:version:codecoverage -i ${subscriberPackageVersion}  --json`;
+    let command = `sfdx sfpowerkit:package:version:codecoverage -i ${subscriberPackageVersion}  --json`;
 
     command += ` -v ${this.devhub_alias}`;
 
