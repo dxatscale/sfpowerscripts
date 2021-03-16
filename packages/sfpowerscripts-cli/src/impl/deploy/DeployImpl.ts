@@ -8,6 +8,7 @@ import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcomm
 import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl";
 import ArtifactInstallationStatusChecker from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInstallationStatusChecker"
 import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher"
+import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
 
 import fs = require("fs");
 import path = require("path");
@@ -47,6 +48,7 @@ export interface DeployProps {
   packageLogger?: any;
   currentStage?: Stage;
   baselineOrg?:string;
+  isCheckIfPackagesPromoted?: boolean;
 }
 
 export default class DeployImpl {
@@ -58,6 +60,8 @@ export default class DeployImpl {
     testFailure: string;
     error: any;
   }> {
+    let orgDetails = await OrgDetails.getOrgDetails(this.props.targetUsername);
+
     let deployed: string[] = [];
     let failed: string[] = [];
 
@@ -108,7 +112,10 @@ export default class DeployImpl {
         this.printArtifactVersions(queue,packagesToPackageInfo);
       }
 
-
+      if (!orgDetails.IsSandbox) {
+        if (this.props.isCheckIfPackagesPromoted)
+          this.checkIfPackagesPromoted(queue, packagesToPackageInfo);
+      }
 
       SFPStatsSender.logCount("deploy.scheduled",this.props.tags);
       SFPStatsSender.logGauge(
@@ -264,6 +271,17 @@ export default class DeployImpl {
     }
   }
 
+
+  private checkIfPackagesPromoted(queue: any[], packagesToPackageInfo: { [p: string]: PackageInfo; }) {
+    let unpromotedPackages: string[] = [];
+    queue.forEach((pkg) => {
+      if (!packagesToPackageInfo[pkg.package].packageMetadata.isPromoted)
+        unpromotedPackages.push(pkg.package);
+    });
+
+    if (unpromotedPackages.length > 0)
+      throw new Error(`Packages must be promoted for deployments to production org: ${unpromotedPackages}`);
+  }
 
   private printArtifactVersionsWhenSkipped(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo},isBaselinOrgModeActivated:boolean) {
     this.printOpenLoggingGroup(`Full Deployment Breakdown`);
