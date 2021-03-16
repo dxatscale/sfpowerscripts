@@ -14,7 +14,7 @@ export default class DeleteScratchOrgImpl {
   }
 
   public async buildExecCommand(): Promise<string> {
-    let command = `npx sfdx force:org:delete -u  ${this.target_org} -v ${this.devhub} -p`;
+    let command = `sfdx force:org:delete -u  ${this.target_org} -v ${this.devhub} -p`;
     return command;
   }
 

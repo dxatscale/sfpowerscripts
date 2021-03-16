@@ -22,7 +22,7 @@ export default class ValidateDXUnlockedPackageImpl {
   public async buildExecCommand(): Promise<string> {
 
     let command;
-        command = `npx sfdx sfpowerkit:package:valid`;
+        command = `sfdx sfpowerkit:package:valid`;
 
 
     if(!isNullOrUndefined(this.validate_package))

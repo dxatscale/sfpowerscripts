@@ -24,7 +24,7 @@ export default class AnalyzeWithPMDImpl {
   public async buildExecCommand(): Promise<string> {
 
     let command;
-        command = `npx sfdx sfpowerkit:source:pmd`;
+        command = `sfdx sfpowerkit:source:pmd`;
 
 
     if(!isNullOrUndefined(this.directory))
