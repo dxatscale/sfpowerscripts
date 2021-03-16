@@ -5,6 +5,8 @@ import * as fs from "fs-extra"
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl"
 import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
+import AdmZip = require("adm-zip");
+import path = require("path");
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'promote');
@@ -21,14 +23,28 @@ export default class Promote extends SfpowerscriptsCommand {
   protected static requiresDevhubUsername = false;
 
   protected static flagsConfig = {
-    artifactdir: flags.directory({required: true, char: 'd', description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
-    devhubalias: flags.string({char: 'v', description: messages.getMessage('devhubAliasFlagDescription'), default: 'HubOrg'}),
+    artifactdir: flags.directory({
+      required: true, char: 'd',
+      description: messages.getMessage('artifactDirectoryFlagDescription'),
+      default: 'artifacts'
+    }),
+    outputdir: flags.directory({
+      required: true,
+      char: 'o',
+      description: messages.getMessage('outputDirectoryFlagDescription')
+    }),
+    devhubalias: flags.string({
+      char: 'v',
+      description: messages.getMessage('devhubAliasFlagDescription'),
+      default: 'HubOrg'
+    })
   };
 
 
   public async execute(){
+    if (this.flags.outputdir === this.flags.artifactdir)
+      throw new Error("--outputdir flag cannot be the same as --artifactdir flag");
 
-    
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: promote");
     console.log("---------------------------------------------------------");
@@ -44,6 +60,8 @@ export default class Promote extends SfpowerscriptsCommand {
         throw new Error(`No artifacts found at ${this.flags.artifactdir}`);
       }
 
+      fs.mkdirpSync(this.flags.outputdir);
+
       let result: boolean = true;
       let promotedPackages: string[] = [];
       for (let artifact of artifacts) {
@@ -51,24 +69,47 @@ export default class Promote extends SfpowerscriptsCommand {
           fs.readFileSync(artifact.packageMetadataFilePath, 'utf8')
         );
 
-        if (packageMetadata.package_type === "unlocked") {
-          try {
+        try {
+          if (packageMetadata.package_type === "unlocked") {
             let promoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
               artifact.sourceDirectoryPath,
               packageMetadata.package_version_id,
               this.flags.devhubalias
             );
             await promoteUnlockedPackageImpl.exec();
-
-            promotedPackages.push(packageMetadata.package_name);
-          } catch (err) {
-            result = false;
-
-            unpromotedPackages.push({
-              name: packageMetadata.package_name,
-              error: err.message
-            });
           }
+
+          packageMetadata.isPromoted = true;
+          fs.writeFileSync(
+            artifact.packageMetadataFilePath,
+            JSON.stringify(packageMetadata, null, 4)
+          );
+
+          let artifactRootDir: string = path.dirname(artifact.sourceDirectoryPath);
+          let zip = new AdmZip();
+          zip.addLocalFolder(
+            artifactRootDir,
+            path.basename(artifactRootDir)
+          );
+
+
+          let zipArtifactFilepath: string = path.resolve(
+              this.flags.outputdir,
+              packageMetadata.package_name + `_sfpowerscripts_artifact_` +
+              this.substituteBuildNumberWithPreRelease(packageMetadata.package_version_number) +
+              `.zip`
+          );
+          zip.writeZip(zipArtifactFilepath);
+
+
+          promotedPackages.push(packageMetadata.package_name);
+        } catch (err) {
+          result = false;
+
+          unpromotedPackages.push({
+            name: packageMetadata.package_name,
+            error: err.message
+          });
         }
       }
       console.log(`Promoted packages:`, promotedPackages);
@@ -89,4 +130,23 @@ export default class Promote extends SfpowerscriptsCommand {
       process.exitCode = 1;
     }
   }
+
+  private substituteBuildNumberWithPreRelease(
+    packageVersionNumber: string
+  ) {
+    let segments = packageVersionNumber.split(".");
+
+    if (segments.length === 4) {
+      packageVersionNumber = segments.reduce(
+        (version, segment, segmentsIdx) => {
+          if (segmentsIdx === 3) return version + "-" + segment;
+          else return version + "." + segment;
+        }
+      );
+    }
+
+    return packageVersionNumber;
+  }
+
+
 }

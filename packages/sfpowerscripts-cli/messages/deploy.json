@@ -7,5 +7,6 @@
     "tagFlagDescription":"Tag the deploy with a label, useful for identification in metrics",
     "validateModeFlagDescription": "Enable for validation deployments",
     "skipIfAlreadyInstalled":"Skip the package installation if the package is already installed in the org",
-    "baselineorgFlagDescription": "The org against which the package skip should be baselined"
+    "baselineorgFlagDescription": "The org against which the package skip should be baselined",
+    "allowUnpromotedPackagesFlagDescription": "Allow un-promoted packages to be installed in production"
 }
