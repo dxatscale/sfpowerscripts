@@ -36,11 +36,12 @@ export default class Promote extends SfpowerscriptsCommand {
     publishpromotedonly: flags.boolean({
       char: 'p',
       description: messages.getMessage('publishPromotedOnlyFlagDescription'),
-      dependsOn: ['devhubalias']
+      default: false
     }),
     devhubalias: flags.string({
       char: 'v',
-      description: messages.getMessage('devhubAliasFlagDescription')
+      description: messages.getMessage('devhubAliasFlagDescription'),
+      deprecated: {messageOverride:"--devhubalias has been deprecated"}
     }),
     scriptpath: flags.filepath({
       char: 'f',
@@ -104,24 +105,6 @@ export default class Promote extends SfpowerscriptsCommand {
 
 
 
-
-
-
-
-      let packageVersionList: any;
-      if (this.flags.publishpromotedonly) {
-        let packageVersionListJson: string = child_process.execSync(
-          `sfdx force:package:version:list --released -v ${this.flags.devhubalias} --json`,
-          {
-            cwd: process.cwd(),
-            stdio: ['ignore', 'pipe', 'pipe'],
-            encoding: 'utf8',
-            maxBuffer: 5*1024*1024
-          }
-        );
-        packageVersionList = JSON.parse(packageVersionListJson);
-      }
-
       let artifacts = ArtifactFilePathFetcher.findArtifacts(this.flags.artifactdir);
       let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);
 
@@ -147,15 +130,10 @@ export default class Promote extends SfpowerscriptsCommand {
           packageVersionNumber
         );
 
-        let packageType = packageMetadata.package_type;
-        let packageVersionId = packageMetadata.package_version_id;
-
-        if (this.flags.publishpromotedonly && packageType === "unlocked") {
-          let isReleased = this.isPackageVersionIdReleased(packageVersionList, packageVersionId);
-
-          if (!isReleased) {
+        if (this.flags.publishpromotedonly) {
+          if (!packageMetadata.isPromoted) {
             failedArtifacts.push(`${packageName} v${packageVersionNumber}`);
-            console.log(`Skipping ${packageName} Version ${packageVersionNumber}. Package Version Id ${packageVersionId} has not been promoted.`);
+            console.log(`Skipping ${packageName} Version ${packageVersionNumber} as it has not been promoted.`);
             process.exitCode = 1;
             continue;
           }
@@ -208,7 +186,7 @@ export default class Promote extends SfpowerscriptsCommand {
           succesfullyPublishedPackageNamesForTagging.push({
             name:packageName,
             version:packageVersionNumber.replace("-", "."),
-            type:packageType,
+            type: packageMetadata.package_type,
             tag:`${packageName}_v${packageVersionNumber.replace("-", ".")}`
           });
 
@@ -309,17 +287,6 @@ export default class Promote extends SfpowerscriptsCommand {
         );
       }
 
-  }
-
-  private isPackageVersionIdReleased(packageVersionList: any, packageVersionId: string): boolean {
-    let packageVersion = packageVersionList.result.find((pkg) => {
-      return pkg.SubscriberPackageVersionId === packageVersionId;
-    });
-
-    if (packageVersion)
-      return true
-    else
-      return false
   }
 
   /**
