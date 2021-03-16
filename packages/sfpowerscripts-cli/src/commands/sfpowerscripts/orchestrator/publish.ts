@@ -130,13 +130,10 @@ export default class Promote extends SfpowerscriptsCommand {
           packageVersionNumber
         );
 
-        let packageType = packageMetadata.package_type;
-        let packageVersionId = packageMetadata.package_version_id;
-
         if (this.flags.publishpromotedonly) {
           if (!packageMetadata.isPromoted) {
             failedArtifacts.push(`${packageName} v${packageVersionNumber}`);
-            console.log(`Skipping ${packageName} Version ${packageVersionNumber}. Package Version Id ${packageVersionId} has not been promoted.`);
+            console.log(`Skipping ${packageName} Version ${packageVersionNumber} as it has not been promoted.`);
             process.exitCode = 1;
             continue;
           }
@@ -189,7 +186,7 @@ export default class Promote extends SfpowerscriptsCommand {
           succesfullyPublishedPackageNamesForTagging.push({
             name:packageName,
             version:packageVersionNumber.replace("-", "."),
-            type:packageType,
+            type: packageMetadata.package_type,
             tag:`${packageName}_v${packageVersionNumber.replace("-", ".")}`
           });
 
