@@ -312,7 +312,6 @@ export default class CreateUnlockedPackageImpl {
   private async getPackageTypeInfos() {
     if (CreateUnlockedPackageImpl.packageTypeInfos == null) {
       CreateUnlockedPackageImpl.packageTypeInfos = await new PackageVersionListImpl(
-        this.project_directory,
         this.devhub_alias
       ).exec();
     }
