@@ -53,15 +53,7 @@ The sfpowerscripts docker image has the following SFDX CLI plugins installed:
 - [sfpowerkit](https://github.com/Accenture/sfpowerkit)
 - [sfdmu](https://github.com/forcedotcom/SFDX-Data-Move-Utility)
 
-We recommend using the sfpowerscripts docker image to avoid breakages in your CICD pipelines due to updates in sfpowerscripts or any of its dependencies such as the SFDX CLI. DockerHub has rate limiting for pulling docker images, hence we recommend copying the docker image to your own DockerHub Subscription, [AWS ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html) or [Azure Container Registry](https://medium.com/@pjbgf/moving-docker-images-from-one-container-registry-to-another-2f1f1631dc49)
-
-
-
-#### History
-
-sfpowerscripts initially began life in the form of a  Azure Pipelines Extension, available through the Visual Studio marketplace wrote by @azlam-abdulsalam as a personal project.
-
-The project was then migrated to Accenture Open Source Program and a key component of Accenture's DX@Scale initiative, a set of open source productivity boosters for engineering teams on Salesforce.
+We recommend using the sfpowerscripts docker image to avoid breakages in your CICD pipelines due to updates in sfpowerscripts or any of its dependencies such as the SFDX CLI.
 
 #### Maintainers
 
