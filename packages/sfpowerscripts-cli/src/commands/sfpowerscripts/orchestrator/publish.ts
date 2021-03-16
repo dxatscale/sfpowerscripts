@@ -41,7 +41,7 @@ export default class Promote extends SfpowerscriptsCommand {
     devhubalias: flags.string({
       char: 'v',
       description: messages.getMessage('devhubAliasFlagDescription'),
-      deprecated: {messageOverride:"--devhubalias has been deprecated, as it not longer necessary"}
+      deprecated: {messageOverride:"--devhubalias has been deprecated"}
     }),
     scriptpath: flags.filepath({
       char: 'f',
