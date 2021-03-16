@@ -1,6 +1,4 @@
 import { SFDXCommand } from "../SFDXCommand";
-import { LoggerLevel } from "../utils/SFPLogger";
-
 
 export default class PackageVersionListImpl extends SFDXCommand
 {
