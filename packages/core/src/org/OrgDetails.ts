@@ -4,7 +4,7 @@ const retry = require("async-retry");
 
 export default class OrgDetails {
 
-  public static async getOrgDetails(username: string): Promise<string> {
+  public static async getOrgDetails(username: string): Promise<any> {
 
       return await retry(
         async bail => {
