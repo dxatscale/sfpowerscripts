@@ -103,15 +103,7 @@ export default class Prepare extends SfpowerscriptsCommand {
   ];
 
   public async execute(): Promise<any> {
-    if (this.flags.artifactfetchscript && !fs.existsSync(this.flags.artifactfetchscript))
-    {
-       console.log(`Script path ${this.flags.scriptpath} does not exist, Please provide a valid path to the script file`);
-       process.exitCode=1;
-       return;
-    }
-
-    if (this.flags.npm && !this.flags.scope)
-      throw new Error("--scope parameter is required for NPM");
+    this.validateFlags();
 
     let executionStartTime = Date.now();
 
@@ -213,6 +205,15 @@ export default class Prepare extends SfpowerscriptsCommand {
     } catch (err) {
       throw new SfdxError("Unable to execute command .. " + err);
     }
+  }
+
+  private validateFlags() {
+    if (this.flags.artifactfetchscript && !fs.existsSync(this.flags.artifactfetchscript)) {
+      throw new Error(`Script path ${this.flags.scriptpath} does not exist, Please provide a valid path to the script file`);
+    }
+
+    if (this.flags.npm && !this.flags.scope)
+      throw new Error("--scope parameter is required for NPM");
   }
 
   private async getCurrentRemainingNumberOfOrgsInPoolAndReport() {

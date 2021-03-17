@@ -82,14 +82,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
 
   public async execute(){
-    if (this.flags.scriptpath === undefined && this.flags.npm === undefined)
-      throw new Error("Either --scriptpath or --npm flag must be provided");
-
-    if (this.flags.scriptpath && !fs.existsSync(this.flags.scriptpath))
-      throw new Error(`Script path ${this.flags.scriptpath} does not exist`);
-
-    if (this.flags.npm && !this.flags.scope)
-      throw new Error("--scope parameter is required for NPM");
+    this.validateFlags();
 
     let nPublishedArtifacts: number = 0;
     let failedArtifacts: string[] = [];
@@ -279,6 +272,17 @@ export default class Promote extends SfpowerscriptsCommand {
       }
     }
   }
+  private validateFlags() {
+    if (this.flags.scriptpath === undefined && this.flags.npm === undefined)
+      throw new Error("Either --scriptpath or --npm flag must be provided");
+
+    if (this.flags.scriptpath && !fs.existsSync(this.flags.scriptpath))
+      throw new Error(`Script path ${this.flags.scriptpath} does not exist`);
+
+    if (this.flags.npm && !this.flags.scope)
+      throw new Error("--scope parameter is required for NPM");
+  }
+
   private pushGitTags() {
     console.log("Pushing Git Tags to Repo");
     if(this.flags.pushgittag)
