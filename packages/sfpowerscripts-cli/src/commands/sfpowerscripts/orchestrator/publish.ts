@@ -66,7 +66,6 @@ export default class Promote extends SfpowerscriptsCommand {
     scope: flags.string({
       description: messages.getMessage('scopeFlagDescription'),
       dependsOn: ['npm'],
-      required: true,
       parse: (scope) => scope.replace(/@/g,"").toLowerCase()
     }),
     npmtag: flags.string({
@@ -88,6 +87,9 @@ export default class Promote extends SfpowerscriptsCommand {
 
     if (this.flags.scriptpath && !fs.existsSync(this.flags.scriptpath))
       throw new Error(`Script path ${this.flags.scriptpath} does not exist`);
+
+    if (this.flags.npm && !this.flags.scope)
+      throw new Error("--scope parameter is required for NPM");
 
     let nPublishedArtifacts: number = 0;
     let failedArtifacts: string[] = [];

@@ -82,7 +82,6 @@ export default class Prepare extends SfpowerscriptsCommand {
     scope: flags.string({
       description: messages.getMessage('scopeFlagDescription'),
       dependsOn: ['npm'],
-      required: true,
       parse: (scope) => scope.replace(/@/g,"").toLowerCase()
     }),
     npmtag: flags.string({
@@ -104,6 +103,15 @@ export default class Prepare extends SfpowerscriptsCommand {
   ];
 
   public async execute(): Promise<any> {
+    if (this.flags.artifactfetchscript && !fs.existsSync(this.flags.artifactfetchscript))
+    {
+       console.log(`Script path ${this.flags.scriptpath} does not exist, Please provide a valid path to the script file`);
+       process.exitCode=1;
+       return;
+    }
+
+    if (this.flags.npm && !this.flags.scope)
+      throw new Error("--scope parameter is required for NPM");
 
     let executionStartTime = Date.now();
 
@@ -118,15 +126,6 @@ export default class Prepare extends SfpowerscriptsCommand {
     console.log(`All packages in the repo to be installed: ${this.flags.installall}`);
     console.log(`Scratch Orgs to be submitted to pool in case of failures: ${this.flags.succeedondeploymenterrors}`)
     console.log("---------------------------------------------------------");
-
-
-
-    if (this.flags.artifactfetchscript && !fs.existsSync(this.flags.artifactfetchscript))
-    {
-       console.log(`Script path ${this.flags.scriptpath} does not exist, Please provide a valid path to the script file`);
-       process.exitCode=1;
-       return;
-    }
 
     let tags = {
       stage: Stage.PREPARE,
