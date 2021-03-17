@@ -12,7 +12,7 @@
   "succeedondeploymenterrorsDescription": "Do not fail the scratch orgs, if a package failed to deploy, return the scratch org with packages till the last failure",
   "apiversion": "API version to be used",
   "npmFlagDescription": "Fetch artifacts from a pre-authenticated private npm registry",
-  "scopeFlagDescription": "User or Organisation scope of the NPM packages",
+  "scopeFlagDescription": "(required for NPM) User or Organisation scope of the NPM packages",
   "npmTagFlagDescription": "The distribution tag of the package to download. If not provided, the 'latest' tag is used by default.",
   "npmrcPathFlagDescription": "Path to .npmrc file used for authentication to registry. If left blank, defaults to home directory"
 }
