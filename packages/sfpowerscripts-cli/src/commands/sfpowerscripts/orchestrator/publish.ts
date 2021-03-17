@@ -66,7 +66,8 @@ export default class Promote extends SfpowerscriptsCommand {
     scope: flags.string({
       description: messages.getMessage('scopeFlagDescription'),
       dependsOn: ['npm'],
-      required: true
+      required: true,
+      parse: (scope) => scope.replace(/@/g,"").toLowerCase()
     }),
     npmtag: flags.string({
       description: messages.getMessage('npmTagFlagDescription'),
