@@ -82,7 +82,6 @@ export default class Promote extends SfpowerscriptsCommand {
 
 
   public async execute(){
-    this.validateFlags();
 
     let nPublishedArtifacts: number = 0;
     let failedArtifacts: string[] = [];
@@ -272,7 +271,8 @@ export default class Promote extends SfpowerscriptsCommand {
       }
     }
   }
-  private validateFlags() {
+
+  protected validateFlags() {
     if (this.flags.scriptpath === undefined && this.flags.npm === undefined)
       throw new Error("Either --scriptpath or --npm flag must be provided");
 

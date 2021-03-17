@@ -36,6 +36,8 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     async run(): Promise<any> {
         this.loadSfpowerscriptsVariables(this.flags);
 
+        this.validateFlags();
+
         //Clear temp directory before every run
         rimraf.sync(".sfpowerscripts");
 
@@ -46,6 +48,13 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         // Execute command run code
         await this.execute();
     }
+
+    /**
+     * Optional method for programmatically validating flags.
+     * Useful for complex flag behaviours that cannot be adequately defined using flag props
+     * e.g. making a flag required only if another flag that it depends on is passed
+     */
+    protected validateFlags(): void {}
 
     /**
      * Substitutes CLI inputs, that match the variable dictionary, with
