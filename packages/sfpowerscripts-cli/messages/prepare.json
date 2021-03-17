@@ -13,5 +13,6 @@
   "apiversion": "API version to be used",
   "npmFlagDescription": "Fetch artifacts from a pre-authenticated private npm registry",
   "scopeFlagDescription": "User or Organisation scope of the NPM packages",
-  "npmTagFlagDescription": "The distribution tag of the package to download. If not provided, the 'latest' tag is used by default."
+  "npmTagFlagDescription": "The distribution tag of the package to download. If not provided, the 'latest' tag is used by default.",
+  "npmrcPathFlagDescription": "Path to .npmrc file used for authentication to registry. If left blank, defaults to home directory"
 }

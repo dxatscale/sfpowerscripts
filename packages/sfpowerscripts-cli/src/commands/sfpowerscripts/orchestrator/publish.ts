@@ -66,10 +66,15 @@ export default class Promote extends SfpowerscriptsCommand {
     scope: flags.string({
       description: messages.getMessage('scopeFlagDescription'),
       dependsOn: ['npm'],
-      required: false
+      required: true
     }),
     npmtag: flags.string({
       description: messages.getMessage('npmTagFlagDescription'),
+      dependsOn: ['npm'],
+      required: false
+    }),
+    npmrcpath: flags.filepath({
+      description: messages.getMessage('npmrcPathFlagDescription'),
       dependsOn: ['npm'],
       required: false
     })
@@ -143,8 +148,11 @@ export default class Promote extends SfpowerscriptsCommand {
           console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
 
           let cmd: string;
+          let childProcessCwd: string;
+
           if (this.flags.npm) {
             let artifactRootDirectory = path.dirname(sourceDirectory);
+            childProcessCwd = artifactRootDirectory;
 
             // NPM does not accept packages with uppercase characters
             let name: string = packageName.toLowerCase() + "_sfpowerscripts_artifact"
@@ -162,11 +170,20 @@ export default class Promote extends SfpowerscriptsCommand {
               JSON.stringify(packageJson, null, 4)
             );
 
-            cmd = `npm publish ${artifactRootDirectory}`;
+            if (this.flags.npmrcpath) {
+              fs.copyFileSync(
+                this.flags.npmrcpath,
+                path.join(artifactRootDirectory, ".npmrc")
+              );
+            }
+
+            cmd = `npm publish`;
 
             if (this.flags.npmtag) cmd += ` --tag ${this.flags.npmtag}`;
 
           } else {
+            childProcessCwd = process.cwd();
+
             if (process.platform !== 'win32') {
               cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
             } else {
@@ -177,7 +194,7 @@ export default class Promote extends SfpowerscriptsCommand {
           child_process.execSync(
             cmd,
             {
-              cwd: process.cwd(),
+              cwd: childProcessCwd,
               stdio: ['ignore', 'ignore', 'inherit']
             }
           );

@@ -82,10 +82,15 @@ export default class Prepare extends SfpowerscriptsCommand {
     scope: flags.string({
       description: messages.getMessage('scopeFlagDescription'),
       dependsOn: ['npm'],
-      required: false
+      required: true
     }),
     npmtag: flags.string({
       description: messages.getMessage('npmTagFlagDescription'),
+      dependsOn: ['npm'],
+      required: false
+    }),
+    npmrcpath: flags.string({
+      description: messages.getMessage('npmrcPathFlagDescription'),
       dependsOn: ['npm'],
       required: false
     })
@@ -151,6 +156,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     prepareImpl.isNpm = this.flags.npm;
     prepareImpl.scope = this.flags.scope;
     prepareImpl.npmTag = this.flags.npmtag;
+    prepareImpl.npmrcPath = this.flags.npmrcpath;
 
     try {
       let results= await prepareImpl.poolScratchOrgs();
@@ -189,9 +195,9 @@ export default class Prepare extends SfpowerscriptsCommand {
       else
       {
 
-    
+
       await this.getCurrentRemainingNumberOfOrgsInPoolAndReport();
-    
+
       SFPStatsSender.logGauge(
           "prepare.succeededorgs",
           results.success,
