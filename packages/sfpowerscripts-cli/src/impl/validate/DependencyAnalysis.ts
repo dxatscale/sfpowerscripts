@@ -80,43 +80,46 @@ export default class DependencyAnalysis {
 
     this.copyDependencies(resourcesDir, impactAnalysisResultsDir);
 
-    const browser = await puppeteer.launch({
-      defaultViewport: {width: 1920, height: 1080},
-      args: ["--no-sandbox"]
-    });
-
-    for (let entrypoint of entrypoints) {
-      let { nodes, edges } = await this.createGraphElements(entrypoint, connection);
-
-      // skip graphs with single node
-      if (nodes.length === 1) continue;
-
-      await this.generateGraphFilesForEntrypoint(
-        nodes,
-        edges,
-        resourcesDir,
-        impactAnalysisResultsDir,
-        entrypoint.name
-      );
-
-      const page = await browser.newPage();
-
-      await page.goto(
-        `file://` +
-        path.resolve(impactAnalysisResultsDir, `${entrypoint.name}.html`) +
-        `?depth=2`
-      );
-
-      await page.screenshot({
-        path: path.join(
-          screenshotDir,
-          entrypoint.name + '.png'
-        ),
-        fullPage: true
+    let browser;
+    try{
+      browser = await puppeteer.launch({
+        defaultViewport: {width: 1920, height: 1080},
+        args: ["--no-sandbox"]
       });
-    }
 
-    await browser.close();
+      for (let entrypoint of entrypoints) {
+        let { nodes, edges } = await this.createGraphElements(entrypoint, connection);
+
+        // skip graphs with single node
+        if (nodes.length === 1) continue;
+
+        await this.generateGraphFilesForEntrypoint(
+          nodes,
+          edges,
+          resourcesDir,
+          impactAnalysisResultsDir,
+          entrypoint.name
+        );
+
+        const page = await browser.newPage();
+
+        await page.goto(
+          `file://` +
+          path.resolve(impactAnalysisResultsDir, `${entrypoint.name}.html`) +
+          `?depth=2`
+        );
+
+        await page.screenshot({
+          path: path.join(
+            screenshotDir,
+            entrypoint.name + '.png'
+          ),
+          fullPage: true
+        });
+      }
+    } finally {
+      if (browser)  await browser.close();
+    }
   }
 
   private async generateGraphFilesForEntrypoint(
