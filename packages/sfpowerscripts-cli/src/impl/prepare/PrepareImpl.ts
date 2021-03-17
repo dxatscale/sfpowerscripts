@@ -8,6 +8,7 @@ import { SfdxApi } from "../pool/sfdxnode/types";
 import PrepareASingleOrgImpl, {
   ScriptExecutionResult,
 } from "./PrepareASingleOrgImpl";
+import path = require("path");
 
 import child_process = require("child_process");
 import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
@@ -29,6 +30,7 @@ export default class PrepareImpl {
   private _isNpm: boolean;
   private _scope: string;
   private _npmTag: string;
+  private _npmrcPath: string;
 
   public constructor(
     private hubOrg: Org,
@@ -76,6 +78,10 @@ export default class PrepareImpl {
 
   public set npmTag(tag: string) {
     this._npmTag = tag;
+  }
+
+  public set npmrcPath(path: string) {
+    this._npmrcPath = path;
   }
 
   public async poolScratchOrgs(): Promise< {
@@ -181,6 +187,18 @@ export default class PrepareImpl {
     ];
 
     if (this._isNpm) {
+      if (this._npmrcPath) {
+        fs.copyFileSync(
+          this._npmrcPath,
+          path.resolve(".npmrc")
+        );
+
+        if (!fs.existsSync("package.json")) {
+          // package json is required in the same directory as .npmrc
+          fs.writeFileSync("package.json", "{}");
+        }
+      }
+
       packages.forEach((pkg) => {
         this.fetchArtifactFromNpmRegistry(
           pkg.package,
@@ -480,8 +498,10 @@ export default class PrepareImpl {
     npmTag: string,
     artifactDirectory: string
   ) {
-    let cmd: string;
+    // NPM package names must be lowercase
+    packageName = packageName.toLowerCase();
 
+    let cmd: string;
     if (scope)
       cmd= `npm pack @${scope}/${packageName}_sfpowerscripts_artifact`;
     else
