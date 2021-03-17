@@ -192,6 +192,11 @@ export default class PrepareImpl {
           this._npmrcPath,
           path.resolve(".npmrc")
         );
+
+        if (!fs.existsSync("package.json")) {
+          // package json is required in the same directory as .npmrc
+          fs.writeFileSync("package.json", "{}");
+        }
       }
 
       packages.forEach((pkg) => {
