@@ -1304,7 +1304,7 @@ _See code: [commands/sfpowerscripts/pool/list.ts](https://github.com/Accenture/s
 ## `sfdx sfpowerscripts:artifacts:fetch`
 
 ```
-Fetch artifacts from an artifact registry
+Fetch artifacts from an artifact registry that is either NPM compatible or supports universal artifacts
 
 USAGE
   $ sfdx sfpowerscripts:artifacts:fetch -d <directory> [-p <filepath>] [--scope <string> [--npm | -f <filepath>]] [--npmrcpath <filepath> undefined] [--json]
@@ -1314,10 +1314,11 @@ OPTIONS
   -d, --artifactdir=artifactdir                                                     (required) [default: artifacts] Directory
                                                                                     to save downloaded artifacts
 
-  -f, --scriptpath=scriptpath                                                       Path to script that authenticates and
-                                                                                    downloads artifacts from the registry
+  -f, --scriptpath=scriptpath                                                       (Optional: no-NPM)Path to script that
+                                                                                    authenticates and downloads artifacts
+                                                                                    from the registry
 
-  -p, --releasedefinition=releasedefinition                                         Path to yaml file containing map of
+  -p, --releasedefinition=releasedefinition                                         Path to YAML file containing map of
                                                                                     packages and package versions to
                                                                                     download
 
@@ -1333,7 +1334,8 @@ OPTIONS
                                                                                     to registry. If left blank, defaults to
                                                                                     home directory
 
-  --scope=scope                                                                     User or Organisation scope of the NPM package
+  --scope=scope                                                                     (required for NPM) User or Organisation
+                                                                                    scope of the NPM package
 
 EXAMPLES
   $ sfdx sfpowerscripts:artifacts:fetch -p myreleasedefinition.yaml -f myscript.sh
