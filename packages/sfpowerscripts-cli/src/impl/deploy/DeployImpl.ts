@@ -755,7 +755,8 @@ export default class DeployImpl {
     );
 
     packagesToDeploy = packages.filter((pkg) => {
-      let pattern = RegExp(`^${pkg.package}_sfpowerscripts_artifact.*`);
+      // case-insensitivity accommodates NPM packages
+      let pattern = RegExp(`${pkg.package}_sfpowerscripts_artifact[_-].*(\\.zip|\\.tgz)$`, "i");
       return artifacts.find((artifact) =>
         pattern.test(path.basename(artifact))
       );
