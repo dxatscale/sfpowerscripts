@@ -227,7 +227,7 @@ export default class ArtifactFilePathFetcher {
         return ext === ".zip" || ext === ".tgz";
       });
 
-      let pattern = new RegExp("(?:^.*)(?:_sfpowerscripts_artifact_)(?<version>.*)(?:\\.zip|\\.tgz)");
+      let pattern = new RegExp("(?:^.*)(?:_sfpowerscripts_artifact[_-])(?<version>.*)(?:\\.zip|\\.tgz)$");
       let versions: string[] = artifacts.map( (artifact) => {
         let match: RegExpMatchArray = path.basename(artifact).match(pattern);
         let version = match?.groups.version;
