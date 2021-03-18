@@ -1,5 +1,5 @@
 ---
-description: 'Ask us anything about orchestrator, the shiny new kid on the block'
+description: The heart of sfpowerscripts
 ---
 
 # Orchestrator
@@ -27,13 +27,14 @@ No, orchestrator is built around our experience when dealing with a very large o
          "prepare",
           "validate"
         ],
-    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org
+    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org,
+    "buildCollection": ["pkg1","pkg2"] // Create a collection of packages that need to be built together
   }
 ```
 
 ## Is the above mentioned,  is all the "modifiers" that is available?
 
-No, the above are the modifiers for the orchestrator commands, irrespective if you use orchestrator or individual commands, following modifiers are available for every packages 
+No, the above are the modifiers for the orchestrator commands, irrespective if you use orchestrator or individual commands, following modifiers are available for every packages
 
 ```text
   {
@@ -178,12 +179,20 @@ No, the above are the modifiers for the orchestrator commands, irrespective if y
       <td style="text-align:left"><b>deploy</b>
       </td>
     </tr>
+    <tr>
+      <td style="text-align:left"><b>buildCollection</b>
+      </td>
+      <td style="text-align:left">Utilize this to build packages in unison, it will build all packages in
+        the collection, even if only one of them changes</td>
+      <td style="text-align:left"><b>build</b>
+      </td>
+    </tr>
   </tbody>
 </table>
 
 ## Is there an option to change forceIgnore files depending upon the stage?
 
-Sometimes, due to certain platform errors, some metadata components need to be ignored during **quickbuild** or **validate**  or any other stages. sfpowerscripts offer you an easy mechanism, which allows to switch .forceignore files depending on the stage. 
+Sometimes, due to certain platform errors, some metadata components need to be ignored during **quickbuild** or **validate** or any other stages. sfpowerscripts offer you an easy mechanism, which allows to switch .forceignore files depending on the stage.
 
 Add this entry to your sfdx-project.json and as in the example below, mention the path to different files that need to be used for different stages
 
@@ -213,11 +222,11 @@ Here is a sample model that you could use on simple programs
 
 The following schematic explains the Continuous Integration and Continuous deployment aspect of the pipelines and sfpowerscripts commands utilized. For brevity, prepare and validate is being excluded
 
-![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%283%29.png)
+![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%281%29.png)
 
 ## Is there an example repo, where all these commands are being used?
 
-Yes, head to the repo [https://github.com/dxatscale/easy-spaces-lwc](https://github.com/dxatscale/easy-spaces-lwc/tree/develop/.github) for examples on how to use these commands with GitHub actions. The .azue-pipelines folder contains sample pipelines to experienment.  
+Yes, head to the repo [https://github.com/dxatscale/easy-spaces-lwc](https://github.com/dxatscale/easy-spaces-lwc/tree/develop/.github) for examples on how to use these commands with GitHub actions. The .azure-pipelines folder contains sample pipelines for Azure Pipelines.
 
 ## Can I ignore any package during any stage/lifecycle/command? For eg: I do not want this package to be processed by the prepare command
 
@@ -226,10 +235,4 @@ Yes, you could use the `ignoreOnStage` descriptor to mark which packages should 
 ## Can **deploy** command in the orchestrator, deploy artifacts without the sfdx-project.json?
 
 Yes, deploy commands will be able to operate on artifacts \(from Release 19\) by deciphering the sequence of deployment from the latest package provided in the collection of artifacts.
-
-##  
-
-
-
-
 

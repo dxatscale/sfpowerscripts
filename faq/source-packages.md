@@ -6,7 +6,7 @@ description: All the details about Source Packages
 
 ## What is Source Package?
 
-Source Packages is an sfpowerscripts construct which wraps the Salesforce Metadata \(in [source format](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_source_file_format.htm)\), along with [sfdx-project.json](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm), some metadata information \(such as commit id, branch, tag\) etc. in a versioned zip file \(artifact\), which can be deployed to a Salesforce Org using sfpowerscripts package installation command or any other deployment tool of choice.
+Source Packages is an sfpowerscripts construct which wraps the Salesforce Metadata \(in [source format](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_source_file_format.htm)\), along with [sfdx-project.json](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm), some metadata information \(such as commit id, branch, tag\) etc. in a versioned zip file \(artifact\), which can be deployed to a Salesforce Org using sfpowerscripts package installation command
 
 ## How are Source Packages different from deploying a folder using source:deploy?
 
@@ -17,8 +17,8 @@ Well, no difference, internally sfpowerscripts is using the same command to depl
 We have added some additional enhancements that make it worth taking a look at:
 
 * **Ability to skip the package if already installed:** By keeping a record of the version of the package installed in the target org with the support of an unlocked package, sfpowerscripts can skip installation of source packages if it is already installed in the org  
-  * **Optimized Deployment Mode:**  sfpowerscripts package installation commands can auto-detect apex unit tests provided in the package, thus a package can be deployed to an Org by utilizing only the apex test classes provided in the package \(provided each class is having a code coverage of 75% or more by the apex classes in the package\) thus saving time spend on triggering local tests of all the apex classes in an org for every source packages in your repo  
-  * **Versioned Artifact:**  Aligned with sfpowerscripts principle of traceability, every deployment is traceable to a versioned artifact, which is difficult to achieve when you are using a folder to deploy
+* **Optimized Deployment Mode:**  sfpowerscripts package installation commands can auto-detect apex unit tests provided in the package, thus a package can be deployed to an Org by utilizing only the apex test classes provided in the package \(provided each class is having a code coverage of 75% or more by the apex classes in the package\) thus saving time spend on triggering local tests of all the apex classes in an org for every source packages in your repo  
+* **Versioned Artifact:**  Aligned with sfpowerscripts principle of traceability, every deployment is traceable to a versioned artifact, which is difficult to achieve when you are using a folder to deploy
 
 ## How do Source Packages compare against Unlocked Packages?
 
@@ -30,7 +30,7 @@ We always recommend using unlocked packages over source packages whenever you ca
 
 1. [Unlocked Packages](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_intro.htm)
 2. [Unlocked Packages \(org-dependent\)](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_org_dependent.htm)
-3. Source Packages
+3. [Source Packages](source-packages.md)
 4. [Change Sets](https://help.salesforce.com/articleView?id=changesets.htm&type=5)
 
 Source Pages are typically used when you come across these constraints
@@ -49,7 +49,7 @@ All these currently available options that can be enabled for source packaging b
 * **Optimized Deployment  \(`isOptimizedDeployment:<boolean>)`:** Control the behaviour of testing of source packages during deployment, utilize the org 's coverage or better have apex unit tests that have 75% or more coverage for each class carried in the source package. Any source packages that do not have apex classes/triggers will be deployed without triggering tests  
 * **Aliasify \(`aliasfy:<boolean>`\)** :  Aliasify enables deployment of a subfolder in a source package that matches the target org. For example, you have a source package as listed below.   During Installation, only the metadata contents of the folder that matches the alias gets deployed
 
-![Source Packages with env-specific-folders](../.gitbook/assets/image%20%285%29%20%284%29%20%283%29%20%284%29%20%281%29%20%283%29.png)
+![Source Packages with env-specific-folders](../.gitbook/assets/image%20%285%29%20%284%29%20%283%29%20%284%29%20%281%29%20%285%29.png)
 
 * **Skip Testing \( `skipTesting:<boolean>`\)** :  Allows you to deploy a source package without triggering test to an Org. Please note, this is only applicable during deployments to sandboxes.  Apex tests are mandatory \(if your package contains apex classes/triggers\) during deployment to production.
 * **Reconcile Profiles \(  `reconcileProfiles:<boolean>`\) :**  By default, true, automatically reconcile a profile existing in the source package against the target org. Read more about reconcile option [here](https://github.com/Accenture/sfpowerkit/discussions/410).

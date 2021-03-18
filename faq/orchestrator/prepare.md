@@ -10,7 +10,7 @@ description: >-
 
 Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during validation process when a scratch org is used as Just-in-time CI environment.
 
-Please note that you should still build your own pipeline to provision scratch orgs for your developers to work on stories by using **sfpowerkit pool** related commands. 
+Please note that you should still build your own pipeline to provision scratch orgs for your developers to work on stories by using **sfpowerkit pool** related commands.
 
 ## Why do I need to use Scratch Orgs for running tests?
 
@@ -34,7 +34,7 @@ The Prepare command was built primarily due to the delays from Salesforce to ena
 
 We expect you to build a pool of scratch org's using a scheduled pipeline, that ensures the pools are always replenished with scratch org's ready for consumption. Please note before installing you need to install the prerequisite fields to the DevHub Org which help the validate/fetch commands to fetch a scratch org from the pool. Instructions on how to install the prerequisite materials are available [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling).
 
-**Also ensure  your DevHub is authenticated using** [**JWT based authentication**](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_jwt_flow.htm) **and note that the private key should  be stored in secure place \(in a Key Management System or Secure Storage\)** 
+**Also ensure your DevHub is authenticated using** [**JWT based authentication**](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_jwt_flow.htm) **and note that the private key should be stored in secure place \(in a Key Management System or Secure Storage\)**
 
 ## Is the pools created in prepare same as **sfpowerkit:pool** commands?
 
@@ -46,7 +46,7 @@ Please note prepare command should **ONLY** be used with a DevHub authenticated 
 
 ## What is "artifactFetchScript" and how do I go about using it?
 
-Building packages in the repository during pooling, takes a considerable amount of time, as well as there could be situations where the latest head is broken. Hence we recommend you to last known good version from the artifact repository. A hook is provided  to run a script \(that you provided\)  that would be used to fetch sfpowerscripts artifact from an artifact repository when used with **installall** flag. The script will be provided with _**artifactname** \(name of the package\) and **arifact\_directory**_ \( the directory where the artifact should be placed\) parameters . It is the responsibility of the script to provide with the right version of the artifact. We usually recommend using the latest tested and validated version of the artifacts installed as source packages to the scratch org.
+Building packages in the repository during pooling, takes a considerable amount of time, as well as there could be situations where the latest head is broken. Hence we recommend you to last known good version from the artifact repository. A hook is provided to run a script \(that you provided\) that would be used to fetch sfpowerscripts artifact from an artifact repository when used with **installall** flag. The script will be provided with _**artifactname** \(name of the package\) and **arifact\_directory**_ \( the directory where the artifact should be placed\) parameters . It is the responsibility of the script to provide with the right version of the artifact. We usually recommend using the latest tested and validated version of the artifacts installed as source packages to the scratch org.
 
 ## What if I do not provide a script for fetching artifact?
 
@@ -54,9 +54,9 @@ We would attempt to do a build of all packages in the repository and install it 
 
 ## What is meant by **installassourcepackages** ?
 
-If this flag is used, we would attempt installing all packages as source packages, overriding the default package type \(so a unlocked package will be installed as source package\). 
+If this flag is used, we would attempt installing all packages as source packages, overriding the default package type \(so a unlocked package will be installed as source package\).
 
-We typically recommend this option to install packages as source packages, as often we have noticed,  during validation phase, where a package is installed as source and this often causes issues when deployed on top of an unlocked package.
+We typically recommend this option to install packages as source packages, as often we have noticed, during validation phase, where a package is installed as source and this often causes issues when deployed on top of an unlocked package.
 
 ## What is the sequence of activities that happen in a prepare command?
 
@@ -74,13 +74,81 @@ We typically recommend this option to install packages as source packages, as of
 
 We usually recommend you install your latest validated packages \( generated by the **build** command \) deployed as source packages \( we utilize the source carried along with our unlocked package artifact, to convert it as a source package\). This ensures your scratch org is running the latest version of technically validated code.
 
-## How long does this command typically takes? 
+## My package is dependent on a managed package or another unlocked package that is not in the current repository. Can this command do something about it?
+
+prepare command utilizes \(**sfpowerkit:package:dependencies:install** \) under the hood to orchestrate installation of package dependencies. You can mark a dependency of package, as described in Salesforce [docs](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev2gp_config_file.htm)
+
+```javascript
+{
+  "packageDirectories": [
+    {
+      "path": "util",
+      "default": true,
+      "package": "Expense Manager - Util",
+      "versionName": "Winter ‘20",
+      "versionDescription": "Welcome to Winter 2020 Release of Expense Manager Util Package",
+      "versionNumber": "4.7.0.NEXT"
+    },
+    {
+      "path": "exp-core",
+      "default": false,
+      "package": "Expense Manager",
+      "versionName": "v 3.2",
+      "versionDescription": "Winter 2020 Release",
+      "versionNumber": "3.2.0.NEXT",
+      "dependencies": [
+        {
+          "package": "Expense Manager - Util",
+          "versionNumber": "4.7.0.LATEST"
+        },
+          {
+          "package": "TriggerFramework",
+          "versionNumber": "1.7.0.LATEST"
+        },
+        {
+          "package": "External Apex Library - 1.0.0.4"
+        }
+      ]
+    }
+  ],
+  "sourceApiVersion": "47.0",
+  "packageAliases": {
+    "TriggerFramework": "0HoB00000004RFpLAM",
+    "Expense Manager - Util": "0HoB00000004CFpKAM",
+    "External Apex Library@1.0.0.4": "04tB0000000IB1EIAW",
+    "Expense Manager": "0HoB00000004CFuKAM"
+  }
+}
+```
+
+Let's unpack the concepts utilizing the above example
+
+* There are two unlocked packages
+  * Expense Manager - Util is an unlocked package in your DevHub, identifiable by 0H in the packageAlias
+  * Expense Manager - another unlocked package which is dependent on ' Expense Manager - Util', 'TriggerFramework' and  'External Apex Library - 1.0.0.4'
+* External Apex Library is an external dependency, It could be a managed  package or any unlocked package built on a different devhub. All external package dependencies have to be defined with 04t id. \( You get the 04t id of  a managed package from the installation URL from AppExchange or contact your vendor\)
+* sfpowerscripts parses sfdx-project.json and does the following in order
+  * Skips  Expense manager - Util as it doesn't   have any dependencies
+  * For Expense manager
+    * Checks whether  any of the package is part of the same repo, in this example 'Expense Manager-Util' is part of the same repository and will not be installed as a dependency
+    * Installs the latest version of TriggerFramework \( with major, minor and patch versions matching 1.7.0\) to the scratch org
+    * Install the 'External Apex Library - 1.0.0.4' by utilising the 04t id provided in the packageAliases
+
+If any of the managed package has keys, it can be provided as an argument to the prepare command. Check the command's flag for more information
+
+## I have some managed packages that needs keys to be installed on to my scratch orgs, Does sfpowerscripts support it?
+
+The format for the 'keys' parameter is a string of key-value pairs separated by spaces - where the key is the name of the package, the value is the protection key of the package, and the key-value pair itself is delimited by a colon .
+
+e.g. `--keys "packageA:12345 packageB:pw356 packageC:pw777"`
+
+## How long does this command typically takes?
 
 The time taken by this command depends on how many managed packages and your packages that need to be installed. Please note, if you are triggering this command in a CI server, ensure proper time outs are provided for this task, as most cloud based CI providers have time limits on how long a single task could be run to completion.
 
 ## What happens if my shape of the org changes?
 
-If it is  a change in settings, check out the [validate command's faq](validate.md), where we will explain you how to update settings of a scratch org from the pool. Otherwise you will have to delete the existing pool and recreate again.
+If it is a change in settings, check out the [validate command's faq](validate.md), where we will explain you how to update settings of a scratch org from the pool. Otherwise you will have to delete the existing pool and recreate again.
 
 ## How do I manage these Scratch Org\(s\) created by the pool command, such as deleting a pool?
 
@@ -91,7 +159,7 @@ You can use the **sfpowerscripts:pool** topic to manage the scratch org pools cr
 No, these pools are only to be used as a **CI environment**, as the scratch org's fetched from this pool cannot be used by a user other than the user who created. Use **"sfpowerkit"** to create developer pools like example below and use a seperate pipeline to schedule its provision.
 
 ```text
-sfdx sfpowerkit:pool:create -f config/pool-config-dev.json  -v devhub    
+sfdx sfpowerkit:pool:create -f config/pool-config-dev.json  -v devhub
 ```
 
 Note: sfpowerkit requires you to create your own pool configuration. Follow [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling) to start.
@@ -113,24 +181,4 @@ No, sfpowerscripts:prepare doesnt allow you to run any scripts other than what i
     "postDeploymentScript:<path> // Path to script file
   }
 ```
-
-## Why do some scratch org's fail during pool creation?
-
-Occasionally you will find errors like the below one during the pool creation, this is mainly due to the created scratch org, not available for further operations. We have found that to be quite rare. Only that particular scratch org will be skipped and the commands will continue as expected for other scratch org's
-
-```text
-Error: getaddrinfo ENOTFOUND page-drive-4000-dev-ed.cs73.my.salesforce.com
-    at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:67:26) {
-  errno: -3008,
-  code: ‘ENOTFOUND’,
-  syscall: ‘getaddrinfo’,
-  hostname: ‘page-drive-4000-dev-ed.cs73.my.salesforce.com’
-}
-```
-
-## I have some managed packages that needs keys to be installed on to my scratch orgs, Does sfpowerscripts support it?
-
-The format for the 'keys' parameter is a string of key-value pairs separated by spaces - where the key is the name of the package, the value is the protection key of the package, and the  key-value pair itself is delimited by a colon . 
-
-e.g. `--keys "packageA:12345 packageB:pw356 packageC:pw777"` 
 
