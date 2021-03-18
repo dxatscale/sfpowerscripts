@@ -67,8 +67,6 @@ export default class Fetch extends SfpowerscriptsCommand {
 
       // Fail the task when an error occurs
       process.exitCode = 1;
-    } finally {
-
     }
   }
 
