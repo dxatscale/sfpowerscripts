@@ -1,7 +1,7 @@
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import FetchImpl from '../../../impl/artifacts/fetchImpl';
+import FetchImpl from '../../../impl/artifacts/FetchImpl';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'fetch');
