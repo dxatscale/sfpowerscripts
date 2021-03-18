@@ -11,7 +11,7 @@ export default class Fetch extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-
+    `$ sfdx sfpowerscripts:artifacts:fetch`
   ];
 
   protected static requiresUsername = false;
@@ -40,11 +40,6 @@ export default class Fetch extends SfpowerscriptsCommand {
       description: messages.getMessage('scopeFlagDescription'),
       dependsOn: ['npm'],
       parse: (scope) => scope.replace(/@/g,"").toLowerCase()
-    }),
-    npmtag: flags.string({
-      description: messages.getMessage('npmTagFlagDescription'),
-      dependsOn: ['npm'],
-      required: false
     }),
     npmrcpath: flags.filepath({
       description: messages.getMessage('npmrcPathFlagDescription'),
