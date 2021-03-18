@@ -18,7 +18,6 @@ export default class FetchImpl {
 
   async exec() {
     let releaseDefinition: ReleaseDefinition = yaml.load(fs.readFileSync(this.releaseDefinition, 'utf8'))
-    console.log(JSON.stringify(releaseDefinition,null,4));
     this.validateReleaseDefinition(releaseDefinition, this.isNpm);
 
     fs.mkdirpSync(this.artifactDirectory);
@@ -67,7 +66,6 @@ export default class FetchImpl {
       // NPM package names must be lowercase
       let packageName = artifact[0].toLowerCase();
       let cmd = `npm pack @${scope}/${packageName}_sfpowerscripts_artifact@${version}`
-      console.log(cmd);
       child_process.execSync(
         cmd,
         {
@@ -122,7 +120,6 @@ export default class FetchImpl {
       let match: RegExpMatchArray = latestTag.match(
         /^.*_v(?<version>[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+|\.LATEST|\.NEXT)?)$/
       );
-      console.log(match);
       if (match)
         version = this.substituteBuildNumberWithPreRelease(
           match.groups.version
