@@ -1,6 +1,8 @@
-# Prerequisites
+---
+description: The following pre-requisites are required for sfpowerscripts to work
+---
 
-The following pre-requisites are required for sfpowerscripts to work
+# Prerequisites
 
 ## **Understanding of Salesforce DX and Packaging in general**
 
