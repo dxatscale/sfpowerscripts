@@ -1,0 +1,10 @@
+{
+  "commandDescription": "Fetch artifacts from an artifact registry",
+  "releaseDefinitionFlagDescription": "Path to yaml file containing map of packages and package versions to download",
+  "artifactDirectoryFlagDescription": "Directory to save downloaded artifacts",
+  "scriptPathFlagDescription": "Path to script that authenticates and downloads artifacts from the registry",
+  "npmFlagDescription": "Download artifacts from a pre-authenticated private npm registry",
+  "scopeFlagDescription": "User or Organisation scope of the NPM package",
+  "npmTagFlagDescription": "Add an optional distribution tag to NPM packages. If not provided, the 'latest' tag is used",
+  "npmrcPathFlagDescription": "Path to .npmrc file used for authentication to registry. If left blank, defaults to home directory"
+}
