@@ -17,7 +17,7 @@ export default class FetchImpl {
   ){}
 
   async exec() {
-    let releaseDefinition = yaml.load(fs.readFileSync(this.releaseDefinition, 'utf8'))
+    let releaseDefinition: ReleaseDefinition = yaml.load(fs.readFileSync(this.releaseDefinition, 'utf8'))
     console.log(JSON.stringify(releaseDefinition,null,4));
     this.validateReleaseDefinition(releaseDefinition, this.isNpm);
 
@@ -51,7 +51,7 @@ export default class FetchImpl {
   }
 
   private async fetchArtifactsFromNpm(
-    releaseDefinition: any,
+    releaseDefinition: ReleaseDefinition,
     artifactDirectory: string,
     scope: string
   ): Promise<void> {
@@ -79,7 +79,7 @@ export default class FetchImpl {
   }
 
   private async fetchArtifactsFromScript(
-    releaseDefinition: any,
+    releaseDefinition: ReleaseDefinition,
     artifactDirectory: string
   ): Promise<void> {
     const git: Git = new Git(null);
@@ -135,7 +135,10 @@ export default class FetchImpl {
     return version;
   }
 
-  private validateReleaseDefinition(releaseDefinition, isNpm: boolean): void {
+  private validateReleaseDefinition(
+    releaseDefinition: ReleaseDefinition,
+    isNpm: boolean
+  ): void {
     let v = new Validator();
 
     let versionPattern: RegExp;
@@ -198,5 +201,12 @@ export default class FetchImpl {
     }
 
     return packageVersionNumber;
+  }
+}
+
+interface ReleaseDefinition {
+  release: string,
+  artifacts: {
+    [p: string]: string
   }
 }
