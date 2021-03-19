@@ -11,7 +11,7 @@ description: The following pre-requisites are required for sfpowerscripts to wor
 To get the maximum benefit out of sfpowerscripts, you need a good understanding of GIT, Salesforce DX and packaging in general. Here are some links to get you started
 
 1. [Trailhead Modules](https://trailhead.salesforce.com/en/users/azlam/trailmixes/salesforce-dx)  
-2. \[Adopting Package Based Development Model in Salesforce  
+2. \[Adopting Package Based Development Model in Salesforce
 
    \]\([https://www.linkedin.com/pulse/adopting-package-based-development-model-salesforce-azlam-abdulsalam/?trk=read\_related\_article-card\_title](https://www.linkedin.com/pulse/adopting-package-based-development-model-salesforce-azlam-abdulsalam/?trk=read_related_article-card_title)\)
 
@@ -23,7 +23,7 @@ To get the maximum benefit out of sfpowerscripts, you need a good understanding 
 sfdx force:package:install -p 04t1P000000gOkXQAU -u Devhub -r -a package -s AdminsOnly -w 30
 ```
 
-If you prefer to install using source code instead or to create your own package, the source code is available at this [link](https://github.com/Accenture/sfpowerkit/tree/main/src_saleforce_packages/scratchorgpool) 
+If you prefer to install using source code instead or to create your own package, the source code is available at this [link](https://github.com/Accenture/sfpowerkit/tree/main/src_saleforce_packages/scratchorgpool)
 
 ## **On each org \(sandbox/production\) that you intend to deploy**
 
