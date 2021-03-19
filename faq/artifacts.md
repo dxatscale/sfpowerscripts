@@ -11,7 +11,7 @@ Artifact Registries allow one to store all the application artifacts in one cent
 
 ### Artifact Registries in the context of sfpowerscripts
 
-Artifact registry allows you to split your CI and CD pipelines. We believe that this is essential for a smoother deployment model and allows you to better control what is being deployed to environments if you are using a multi-stage environment strategy.
+Artifact registry allows you to split your CI and CD pipelines. We believe that this is essential for a smoother deployment model and allows you to better control what is being deployed to environments if you are using a multi-speed deployment strategy.
 
 Let's have a look at the below example, here a CI pipeline creates a bunch of artifacts/packages, then the publish command is used to publish these artifacts into an Artifact Registry.
 
