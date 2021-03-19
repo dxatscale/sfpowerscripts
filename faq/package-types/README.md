@@ -1,6 +1,6 @@
 # Package Types
 
-sfpowerscripts is a build system for package based development. In a package based development model, your org is split into a composable packages with each package providing a distinct lifecycle.
+sfpowerscripts is a build system for package-based development. In a package based development model, your org is split into composable packages with each package providing a distinct lifecycle.
 
 Salesforce provides a lot of material to get you started on packaging. Here are some of the links if you are new to packaging
 
