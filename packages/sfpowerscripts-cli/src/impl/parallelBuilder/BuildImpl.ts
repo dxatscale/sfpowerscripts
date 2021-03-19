@@ -78,6 +78,8 @@ export default class BuildImpl {
       this.props.projectDirectory
     );
 
+    this.validatePackageNames(this.packagesToBeBuilt);
+
     SFPLogger.isSupressLogs = true;
 
     // Read Manifest
@@ -221,6 +223,16 @@ export default class BuildImpl {
     };
   }
 
+  /**
+   * Validate that package names comply with naming convention
+   * @param packageNames
+   */
+  private validatePackageNames(packageNames: string[]) {
+    packageNames.forEach((name) => {
+      if (name.match(/^[a-zA-Z0-9-._~]+$/) === null)
+        throw new Error(`Invalid package name "${name}". Package names can only contain alphanumeric characters and the symbols - . _ ~`);
+    });
+  }
 
   private getAllPackages(projectDirectory: string): string[] {
 
