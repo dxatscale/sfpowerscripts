@@ -97,6 +97,8 @@ export default class Promote extends SfpowerscriptsCommand {
       tag: string
     }[] = new Array();
 
+    let npmrcFilesToRemove: string[] = [];
+
     try {
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: publish");
@@ -171,6 +173,10 @@ export default class Promote extends SfpowerscriptsCommand {
                 this.flags.npmrcpath,
                 path.join(artifactRootDirectory, ".npmrc")
               );
+
+              npmrcFilesToRemove.push(
+                path.join(artifactRootDirectory, ".npmrc")
+              );
             }
 
             cmd = `npm publish`;
@@ -223,6 +229,13 @@ export default class Promote extends SfpowerscriptsCommand {
       // Fail the task when an error occurs
       process.exitCode = 1;
     } finally {
+
+      if (npmrcFilesToRemove.length > 0) {
+        npmrcFilesToRemove.forEach((file) => {
+          fs.unlinkSync(file);
+        });
+      }
+
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
       console.log(
