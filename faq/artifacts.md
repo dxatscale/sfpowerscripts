@@ -21,9 +21,9 @@ An important thing to note here is especially when a CI pipeline is enabled with
 
 One approach to solve is to use branches,  where a branch per environment is used to stage changes, and new builds are generated from this branch to deploy to the environment.  We belive this practice is incorrect as they break the traceability chain and errors could be introduced, moreover it complicates your version control strategy. Our premise is rather to use the same set of artifacts that were built at one stage all the way to production. 
 
-This is where an artifact registry comes into play, it stores all the artifacts produced by the build system into a repository, which allows you to consolidate all versions of your artifacts and then allowing you to decide which all packages/artifacts should be aggregated and released into production.
+This is where an artifact registry comes into play, it stores all the artifacts produced by the build stage into a repository, which allows you to consolidate all versions of your artifacts and then allowing you to decide which all packages/artifacts should be aggregated and released into production.
 
-The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and it's version number as the input. Typically we advise you to select all the latest versions in your artifact repository and add an option to override a certain version of the package by fetching a run time input \(Most repositories have some api's which will allow you to list all the packages in a repository and its versions\). 
+The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and it's version number/tag as the input. Typically we advise you to select all the latest versions in your artifact repository and add an option to override a certain version of the package by fetching a run time input \(Most repositories have some api's which will allow you to list all the packages in a repository and its versions\). 
 
 ### **Type of Artifact Registries supported**
 
@@ -46,8 +46,6 @@ Please refer to your artifact registry provider's documentation on how to set it
 * Azure Artifacts [https://docs.gitlab.com/ee/user/packages/npm\_registry/](https://docs.gitlab.com/ee/user/packages/npm_registry/)
 * JFrog Artifactory [https://www.jfrog.com/confluence/display/JFROG/npm+Registry](https://www.jfrog.com/confluence/display/JFROG/npm+Registry)
 * MyGet [https://docs.myget.org/docs/reference/myget-npm-support](https://docs.myget.org/docs/reference/myget-npm-support)
-
-You can read additional information on [Publish](orchestrator/publish.md#i-am-planning-to-use-non-npm-compabible-sfpowerscripts-artifact-how-do-i-create-the-script-that-uploads-artifacts-to-my-registry) command, which is the equivalent sfpowerscripts functionality responsible for publishing packages to the repository
 
 ### Publishing/Fetching Packages  to or from Artifact Registry
 
