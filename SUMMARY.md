@@ -8,6 +8,7 @@
 
 * [Source Packages](faq/source-packages.md)
 * [Data Packages](faq/data-packages.md)
+* [Artifacts](faq/artifacts.md)
 * [Orchestrator](faq/orchestrator/README.md)
   * [Prepare](faq/orchestrator/prepare.md)
   * [Validate](faq/orchestrator/validate.md)
