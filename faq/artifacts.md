@@ -5,7 +5,7 @@ sfpowerscripts operate on the concepts of artifacts. Artifacts are central to th
 
 ### Artifact Registries
 
-Artifact Registries allow one to store all the application artifacts in one central place. It typically provide features to manage various the full lifecycle of artifacts. Here is a short video from Jfrog explaining the need for an artifact registry. **Please note we are platform independent and work with any artifact registry which supports Universal Artifacts**
+Artifact Registries allow one to store all the application artifacts in one central place. It typically provide features to manage various the full lifecycle of artifacts. Here is a short video from Jfrog explaining the need for an artifact registry. **Please note we are platform independent and work with any artifact registry which supports Universal  / NPM Artifacts** 
 
 {% embed url="https://www.youtube.com/watch?v=r2\_A5CPo43U" caption="" %}
 
