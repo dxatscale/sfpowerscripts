@@ -97,7 +97,7 @@ export default class Promote extends SfpowerscriptsCommand {
       tag: string
     }[] = new Array();
 
-    let npmrcFilesToRemove: string[] = [];
+    let npmrcFilesToCleanup: string[] = [];
 
     try {
     console.log("-----------sfpowerscripts orchestrator ------------------");
@@ -174,7 +174,7 @@ export default class Promote extends SfpowerscriptsCommand {
                 path.join(artifactRootDirectory, ".npmrc")
               );
 
-              npmrcFilesToRemove.push(
+              npmrcFilesToCleanup.push(
                 path.join(artifactRootDirectory, ".npmrc")
               );
             }
@@ -230,8 +230,8 @@ export default class Promote extends SfpowerscriptsCommand {
       process.exitCode = 1;
     } finally {
 
-      if (npmrcFilesToRemove.length > 0) {
-        npmrcFilesToRemove.forEach((file) => {
+      if (npmrcFilesToCleanup.length > 0) {
+        npmrcFilesToCleanup.forEach((file) => {
           fs.unlinkSync(file);
         });
       }
