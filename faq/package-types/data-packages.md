@@ -32,7 +32,7 @@ Simply add an entry in the package directories, providing the package's name, pa
 
 Export your Salesforce records to csv files using the [SFDMU plugin](https://github.com/forcedotcom/SFDX-Data-Move-Utility). For more information on plugin installation, creating an export.json file, and exporting to csv files, refer to _Plugin Basic &gt; Basic Usage_ in SFDMU's [documentation](https://help.sfdmu.com/quick-start).
 
-![A sample data package structure](../.gitbook/assets/image%20%285%29.png)
+![A sample data package structure](../../.gitbook/assets/image%20%285%29.png)
 
 ## **What are my options with Data Packages?**
 

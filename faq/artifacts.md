@@ -1,3 +1,7 @@
+---
+description: Huh! These folks must really hate branches!
+---
+
 # Artifacts
 
 sfpowerscripts operate on the concepts of artifacts. Artifacts are central to the concept of sfpowerscripts and its very existense.  Artifacts are traceable, versioned, immutable entities that get generated during the build or promote command. sfpowerscripts artifacts contain source code of the package, metadata information , changelog and much more.  Artifacts help sfpowerscripts to orchestrate deployment without being tied to the notion of branches.   

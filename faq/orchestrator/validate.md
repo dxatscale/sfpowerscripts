@@ -25,7 +25,7 @@ The following are the list of steps that are orchestrated by the **validate** co
 3. Authenticate to the Scratch org using the provided JWT Key / Client ID
 4. Build packages that are changed by comparing the tags in your repo against the packages installed in scratch org
 5. For each of the packages \(internally calls the Deploy Command\)
-   * Deploy all the built packages as [source packages](../source-packages.md) / [data package](validate.md)  \(unlocked packages are installed as source package\)
+   * Deploy all the built packages as [source packages](../package-types/source-packages.md) / [data package](validate.md)  \(unlocked packages are installed as source package\)
    * Trigger Apex Tests if there are any apex test in the package
    * Validate test coverage of the package depending on the type of the package \( source packages: each class needs to have 75% or more, unlocked packages: packages as  whole need to have 75% or more\)
 
