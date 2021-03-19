@@ -2,6 +2,7 @@ import { SfdxCommand } from "@salesforce/command";
 import { OutputFlags } from "@oclif/parser";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
 import * as rimraf from "rimraf";
+import ProjectValidation from "./ProjectValidation";
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -9,7 +10,6 @@ import * as rimraf from "rimraf";
  * @extends SfdxCommand
  */
 export default abstract class SfpowerscriptsCommand extends SfdxCommand {
-
     /**
      * List of recognised CLI inputs that are substituted with their
      * corresponding environment variable at runtime
@@ -35,6 +35,12 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
      */
     async run(): Promise<any> {
         this.loadSfpowerscriptsVariables(this.flags);
+
+        if (this.statics.requiresProject) {
+            let projectValidation = new ProjectValidation();
+            projectValidation.validatePackageBuildNumbers();
+        }
+
 
         //Clear temp directory before every run
         rimraf.sync(".sfpowerscripts");
