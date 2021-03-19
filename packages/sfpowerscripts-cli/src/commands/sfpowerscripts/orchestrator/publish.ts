@@ -231,8 +231,8 @@ export default class Promote extends SfpowerscriptsCommand {
     } finally {
 
       if (npmrcFilesToCleanup.length > 0) {
-        npmrcFilesToCleanup.forEach((file) => {
-          fs.unlinkSync(file);
+        npmrcFilesToCleanup.forEach((npmrcFile) => {
+          fs.unlinkSync(npmrcFile);
         });
       }
 
