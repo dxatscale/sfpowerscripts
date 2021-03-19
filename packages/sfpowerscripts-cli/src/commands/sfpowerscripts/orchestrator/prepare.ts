@@ -103,8 +103,6 @@ export default class Prepare extends SfpowerscriptsCommand {
   ];
 
   public async execute(): Promise<any> {
-    this.validateFlags();
-
     let executionStartTime = Date.now();
 
     console.log("-----------sfpowerscripts orchestrator ------------------");
@@ -207,7 +205,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     }
   }
 
-  private validateFlags() {
+  protected validateFlags() {
     if (this.flags.artifactfetchscript && !fs.existsSync(this.flags.artifactfetchscript)) {
       throw new Error(`Script path ${this.flags.scriptpath} does not exist, Please provide a valid path to the script file`);
     }
