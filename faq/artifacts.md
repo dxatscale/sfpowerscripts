@@ -11,13 +11,17 @@ Artifact Registries allow one to store all the application artifacts in one cent
 
 ### Artifact Registries in the context of sfpowerscripts
 
-Artifact registry allows you to split your CI and CD pipelines. We believe that this is essential for a smoother deployment model and allows you to better control what is being deployed to environments if you are using a multi-speed deployment strategy.
+Artifact registry allows you to split your CI and CD pipelines. We believe that this is essential for a smoother deployment model and allows you to better control what is being deployed to environments if you are using a **multi-speed deployment strategy.**
 
-Let's have a look at the below example, here a CI pipeline creates a bunch of artifacts/packages, then the publish command is used to publish these artifacts into an Artifact Registry.
+Let's have a look at the below example, here a CI pipeline creates a bunch of artifacts/packages, then the publish command is used to publish these artifacts into an Artifact Registry. This stage often gets repeated multiple times during a day.
 
 ![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%285%29.png)
 
-An important thing to note here is especially when a CI pipeline is enabled with '**diffcheck'** functionality, it only builds packages for the particular run. Unless you are immediately deploying these packages to production, there is no way to deploy an entire set of packages other than going through each of the build runs and pushing into production. This is where an artifact registry comes into play, it stores all the artifacts produced by the build system into a repository, which allows you to consolidate all versions of your artifacts and then allowing you to decide which all packages/artifacts should be aggregated and released into production.
+An important thing to note here is especially when a CI pipeline is enabled with '[diffcheck](orchestrator/build-and-quickbuild.md#how-does-build-and-quickbuild-know-what-to-build-when-using-diffcheck-flag)**'** functionality, it only builds packages for the particular build run. Unless you are immediately deploying these packages to production, there is no way to deploy an entire set of packages other than going through each of the build runs and immediately pushing them into production.  You will need to aggregate packages before you proceed to the next stage.
+
+One approach to solve is to use branches,  where a branch per environment is used to stage changes, and new builds are generated from this branch to deploy to the environment.  We belive this practice is incorrect as they break the traceability chain and errors could be introduced, moreover it complicates your version control strategy. Our premise is rather to use the same set of artifacts that were built at one stage all the way to production. 
+
+This is where an artifact registry comes into play, it stores all the artifacts produced by the build system into a repository, which allows you to consolidate all versions of your artifacts and then allowing you to decide which all packages/artifacts should be aggregated and released into production.
 
 The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and it's version number as the input. Typically we advise you to select all the latest versions in your artifact repository and add an option to override a certain version of the package by fetching a run time input \(Most repositories have some api's which will allow you to list all the packages in a repository and its versions\). 
 
@@ -26,7 +30,7 @@ The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can b
 Rather than lock everyone into a particular registry provider,  sfpowerscripts supports artifact registries which support the following
 
 * **NPM compatible private registry** \(Almost  every artifact registries supports NPM \)
-* **A  registry which supports universal packages \(** Jfrog Aritfactory, Azure Artifacts\)
+* **A  registry that supports universal packages \(** Jfrog Aritfactory, Azure Artifacts\)
 
 {% hint style="danger" %}
 Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default  public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages. 
@@ -47,7 +51,7 @@ You can read additional information on [Publish](orchestrator/publish.md#i-am-pl
 
 ### Publishing/Fetching Packages  to or from Artifact Registry
 
-sfpowerscripts provides with functionality to help you fetch or [publish](orchestrator/publish.md) artifacts.  Some orchestrator commands like prepare also fetches artifacts from the artifact registry.  
+sfpowerscripts provides with functionality to help you fetch or [publish](orchestrator/publish.md) artifacts.  Some orchestrator commands like [prepare](orchestrator/prepare.md) also fetches artifacts from the artifact registry.  
 
 
 
