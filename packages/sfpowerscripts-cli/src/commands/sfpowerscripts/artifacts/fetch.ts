@@ -71,7 +71,7 @@ export default class Fetch extends SfpowerscriptsCommand {
     }
   }
 
-  private validateFlags() {
+  protected validateFlags() {
     if (this.flags.npm && !this.flags.scope)
       throw new Error("--scope parameter is required for NPM");
   }
