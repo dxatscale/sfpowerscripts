@@ -9,5 +9,6 @@
   "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.",
   "deleteScratchOrgFlagDescription": "Delete scratch-org validation environment, after the command has finished running",
   "keysFlagDescription": "Keys to be used while installing any managed package dependencies. Required format is a string of key-value pairs separated by spaces e.g. packageA:pw123 packageB:pw123 packageC:pw123",
-  "visualizeChangesAgainstFlagDescription": "Branch to conduct change analysis against. Enables visualization of changes and the components affected"
+  "visualizeChangesAgainstFlagDescription": "Branch to conduct change analysis against. Enables visualization of changes and the components affected",
+  "tagFlagDescription":"Tag the build with a label, useful to identify in metrics"
 }

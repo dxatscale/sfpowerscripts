@@ -7,6 +7,7 @@ import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
 import { EOL } from "os";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { Stage } from "../Stage";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
@@ -111,6 +112,7 @@ export default class PrepareASingleOrgImpl {
           console.log("Following Packages failed to deploy:" + deploymentResult.failed);
           if(this.succeedOnDeploymentErrors)
           {
+            SFPStatsSender.logCount("prepare.org.partial"); 
             console.log("Cancelling any further packages to be deployed, Adding the scratchorg to the pool")
           }
           else
@@ -121,9 +123,19 @@ export default class PrepareASingleOrgImpl {
             );
           }
         }
+        else
+        {
+          //Send succeeded metrics when everything is in
+          SFPStatsSender.logCount("prepare.org.succeeded"); 
+        }
 
       }
-
+      else
+      {
+        //Send succeeded metrics when everything is in when no install is activated
+        SFPStatsSender.logCount("prepare.org.succeeded"); 
+      }
+     
       return {
         status: "success",
         isSuccess: true,
@@ -131,6 +143,7 @@ export default class PrepareASingleOrgImpl {
         scratchOrgUsername: this.scratchOrg.username,
       };
     } catch (error) {
+      SFPStatsSender.logCount("prepare.org.failed"); 
       return {
         status: "failure",
         isSuccess: false,

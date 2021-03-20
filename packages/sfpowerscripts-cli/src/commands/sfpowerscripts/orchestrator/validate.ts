@@ -62,7 +62,10 @@ export default class Validate extends SfpowerscriptsCommand {
     visualizechangesagainst: flags.string({
       char: 'c',
       description: messages.getMessage("visualizeChangesAgainstFlagDescription")
-    })
+    }),
+    tag: flags.string({
+      description: messages.getMessage("tagFlagDescription"),
+    }),
   };
 
   async execute(): Promise<void> {
@@ -103,20 +106,25 @@ export default class Validate extends SfpowerscriptsCommand {
       process.exitCode=1;
 
     } catch (error) {
+      validateResult=false;
       console.log(error.message);
       process.exitCode=1;
     } finally {
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
+      if (validateResult)
+      SFPStatsSender.logCount("validate.succeeded",this.flags.tag);
+    else
+      SFPStatsSender.logCount("validate.failed",this.flags.tag);
+
+      
       SFPStatsSender.logGauge(
         "validate.duration",
-        totalElapsedTime
+        totalElapsedTime,
+        this.flags.tag
       );
 
-      if (validateResult)
-        SFPStatsSender.logCount("validate.succeeded");
-      else
-        SFPStatsSender.logCount("validate.failed");
+   
     }
   }
 }
