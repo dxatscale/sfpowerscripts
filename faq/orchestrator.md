@@ -12,7 +12,7 @@ description: The heart of sfpowerscripts
 
 To understand the orchestrator, let's take a look at a typical CI/CD pipeline for a package based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
-![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%282%29.png)
+![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%288%29.png)
 
 Let's dive into the pipeline depicted above, there are two basic pipelines in play
 
@@ -25,9 +25,9 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
 
   Each of this stage could have a pre-approval step modelled like the example shown below
 
-![](../.gitbook/assets/image%20%2813%29.png)
+![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29.png)
 
-![](../.gitbook/assets/image%20%2816%29.png)
+![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%283%29.png)
 
 * **CD Pipeline**:  A Continous Delivery Pipeline that gets triggered manually or automatically \( every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
   * Fetch the Artifacts from the artifact repository using the provided release definition
@@ -41,11 +41,11 @@ Take a note of each stage in the pipeline above and the key functionality requir
 ## Orchestrator commands
 
 1. [**prepare**](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/prepare) **\( sfdx sfpowerscripts:orchestrator:prepare\)** :  Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during a pull request validation process when a scratch org is used as Just-in-time CI environment. In simple terms,  it reduces time taken in building a scratch org to validate your changes in an incoming pull request. This command also have an option to pull artifacts from your artifact repository, so that say you can prebuild your validation orgs , say from validated set of packages.   
-2. \*\*\*\*[**validate**](../commands/validate.md) **\(sfdx sfpowerscripts:orchestrator:validate\)**: This command goes in pair with the prepare command. It fetches a scratch org from the pool already pre prepared \(by the prepare command\) and deploys/unit tests the changed packages.    
-3. \*\*\*\*[**build**](../commands/build-and-quickbuild.md) **\(sfdx sfpowerscripts:orchestrator:build/quickbuild\)** : This command builds all the packages in parallel wherever possible by understanding your manifest and dependency tree. Goodbye to the sequential builds, where you fail in the n-1th package and have to wait for the next hour. This command brings massive savings to your build\(package creation\) time. Also use the quickbuild variant, which builds unlocked package without dependency check in intermittent stages for faster feedback.   
-4. \*\*\*\*[**deploy**](../commands/deploy.md) **\(sfdx sfpowerscripts:orchestrator:deploy\)**: So you have built all the packages, now this command takes care of deploying it, by reading the order of installation as you have specified in your sfdx-project.json. Installs it one by one, deciding to trigger tests etc. and provide you with the logs if anything fails   
+2. [**validate**](../commands/validate.md) **\(sfdx sfpowerscripts:orchestrator:validate\)**: This command goes in pair with the prepare command. It fetches a scratch org from the pool already pre prepared \(by the prepare command\) and deploys/unit tests the changed packages.    
+3. [**build**](../commands/build-and-quickbuild.md) **\(sfdx sfpowerscripts:orchestrator:build/quickbuild\)** : This command builds all the packages in parallel wherever possible by understanding your manifest and dependency tree. Goodbye to the sequential builds, where you fail in the n-1th package and have to wait for the next hour. This command brings massive savings to your build\(package creation\) time. Also use the quickbuild variant, which builds unlocked package without dependency check in intermittent stages for faster feedback.   
+4. [**deploy**](../commands/deploy.md) **\(sfdx sfpowerscripts:orchestrator:deploy\)**: So you have built all the packages, now this command takes care of deploying it, by reading the order of installation as you have specified in your sfdx-project.json. Installs it one by one, deciding to trigger tests etc. and provide you with the logs if anything fails   
 5. **promote \(sfdx sfpowerscripts:orchestrator:promote\)** : Promote enables the packages to be deployable to production. This explicit stage prevents incorrectly tested packages to reach production    
-6. \*\*\*\*[**Publish**](../commands/publish.md) **\(sfdx sfpowerscripts:orchestrator:publish\)** :  Publish lets you publish the built artifacts into an artifact registry during publish stages of your pipeline.
+6. [**publish**](../commands/publish.md) **\(sfdx sfpowerscripts:orchestrator:publish\)** :  Publish lets you publish the built artifacts into an artifact registry during publish stages of your pipeline.
 
 ## Controlling Aspects of the Orchestrator
 
