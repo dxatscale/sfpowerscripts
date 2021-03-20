@@ -3,6 +3,7 @@
 * [Overview](README.md)
 * [Principles](principles-1.md)
 * [Features](features.md)
+* [Commands](commands-1.md)
 
 ## CONCEPTS <a id="faq"></a>
 
@@ -23,7 +24,6 @@
 
 * [Prerequisites](getting-started/prerequisites.md)
 * [Docker](getting-started/docker.md)
-* [Using sfpowerscripts-cli sfdx plugin](getting-started/getting-started.md)
 
 ---
 
