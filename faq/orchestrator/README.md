@@ -36,7 +36,8 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
   * If the packages are successful in all of the testing, the packages are marked for promotion
   *  The promoted packages are then [deployed](deploy.md) to production.
 
-Take a note of each stage in the pipeline above and the key functionality required, such as build, deploy, fetch etc. This is what sfpowerscripts orchestrator brings to the table,  a command for each stage.  
+Take a note of each stage in the pipeline above and the key functionality required, such as build, deploy, fetch etc, this is typically done by inserting the equivalent sfdx commands into your CI/CD pipeline definition. As your number of packages grow, it not only is hard to maintain but is error prone.
+This is where sfpowerscripts orchestrator simplifies the pipeline to a one time setup. All the stagges are driven by sfdx-project.json, which ensures zero maintenance to the pipelines. Each stage of the above pipeline could be modelled by using equipment sfpowerscripts orchestrator commands
 
 
 ### Orchestrator commands
