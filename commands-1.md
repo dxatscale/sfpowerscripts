@@ -5,33 +5,33 @@ description: Usage instructions of all commands available in sfpowerscripts
 # Commands
 
 * [Orchestrator Commands](faq/orchestrator/)
-  * [`sfdx sfpowerscripts:orchestrator:prepare`]()
-  * [`sfdx sfpowerscripts:orchestrator:validate`]()
-  * [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`]()
-  * [`sfdx sfpowerscripts:orchestrator:quickbuild`]()
-  * [`sfdx sfpowerscripts:orchestrator:build`]()
-  * [`sfdx sfpowerscripts:orchestrator:deploy`]()
-  * [`sfdx sfpowerscripts:orchestrator:promote`]()
-  * [`sfdx sfpowerscripts:orchestrator:publish`]()
+  * [`sfdx sfpowerscripts:orchestrator:prepare`](commands-1.md)
+  * [`sfdx sfpowerscripts:orchestrator:validate`](commands-1.md)
+  * [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`](commands-1.md)
+  * [`sfdx sfpowerscripts:orchestrator:quickbuild`](commands-1.md)
+  * [`sfdx sfpowerscripts:orchestrator:build`](commands-1.md)
+  * [`sfdx sfpowerscripts:orchestrator:deploy`](commands-1.md)
+  * [`sfdx sfpowerscripts:orchestrator:promote`](commands-1.md)
+  * [`sfdx sfpowerscripts:orchestrator:publish`](commands-1.md)
 * Changelog \(Track Releases\)
-  * [`sfdx sfpowerscripts:changelog:generate`]()
+  * [`sfdx sfpowerscripts:changelog:generate`](commands-1.md)
 * Package Commands \( Build your own workflow\)
-  * [`sfdx sfpowerscripts:package:data:create`]()
-  * [`sfdx sfpowerscripts:package:data:install`]()
-  * [`sfdx sfpowerscripts:package:source:create`]()
-  * [`sfdx sfpowerscripts:package:source:install`]()
-  * [`sfdx sfpowerscripts:package:unlocked:create`]()
-  * [`sfdx sfpowerscripts:package:unlocked:install`]()
-  * [`sfdx sfpowerscripts:package:version:increment`]()
+  * [`sfdx sfpowerscripts:package:data:create`](commands-1.md)
+  * [`sfdx sfpowerscripts:package:data:install`](commands-1.md)
+  * [`sfdx sfpowerscripts:package:source:create`](commands-1.md)
+  * [`sfdx sfpowerscripts:package:source:install`](commands-1.md)
+  * [`sfdx sfpowerscripts:package:unlocked:create`](commands-1.md)
+  * [`sfdx sfpowerscripts:package:unlocked:install`](commands-1.md)
+  * [`sfdx sfpowerscripts:package:version:increment`](commands-1.md)
 * Pool Management
-  * [`sfdx sfpowerscripts:pool:delete`]()
-  * [`sfdx sfpowerscripts:pool:fetch`]()
-  * [`sfdx sfpowerscripts:pool:list`]()
+  * [`sfdx sfpowerscripts:pool:delete`](commands-1.md)
+  * [`sfdx sfpowerscripts:pool:fetch`](commands-1.md)
+  * [`sfdx sfpowerscripts:pool:list`](commands-1.md)
 * Static Analysis
-  * [`sfdx sfpowerscripts:analyze:pmd`]()
+  * [`sfdx sfpowerscripts:analyze:pmd`](commands-1.md)
 * Apex tests
-  * [`sfdx sfpowerscripts:apextests:trigger`]()
-  * [`sfdx sfpowerscripts:apextests:validate`]()
+  * [`sfdx sfpowerscripts:apextests:trigger`](commands-1.md)
+  * [`sfdx sfpowerscripts:apextests:validate`](commands-1.md)
 
 ## `sfdx sfpowerscripts:orchestrator:prepare`
 
@@ -1103,6 +1103,4 @@ EXAMPLES
 ```
 
 _See code:_ [_commands/sfpowerscripts/pool/list.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/list.ts)\`\`
-
-
 

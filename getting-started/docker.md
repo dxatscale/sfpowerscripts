@@ -16,9 +16,9 @@ Utilizing the sfpowerscripts Docker image will give you the surety that your **b
 
 Most of all, the sfpowerscripts Docker image makes things easy. We have already done all the hard work of creating an image that has all the required dependencies installed \(Node, JDK, sfpowerkit, sfdmu, etc.\). All that is required from you is to pull the image from the registry and run it.
 
-To use this docker in your CI/CD Pipelines,  please check the documentation of your CI/CD provider.  
+To use this docker in your CI/CD Pipelines, please check the documentation of your CI/CD provider.
 
-Checkout below samples 
+Checkout below samples
 
 {% tabs %}
 {% tab title="Azure Pipelines" %}
@@ -42,7 +42,7 @@ on:
     workflow_dispatch:
     schedule:
         - cron: '0 0 * * *'
-        
+
 # Read more about using contaniers
 # https://docs.github.com/en/actions/guides/about-service-containers
 

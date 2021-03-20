@@ -10,13 +10,13 @@ The Publish command pushes artifacts created in the Build stage to an artifact r
 
 ## What registry can sfpowerscripts artifacts published to?
 
-Rather than lock everyone into a particular registry provider,  sfpowerscripts supports artifact registries which support the following
+Rather than lock everyone into a particular registry provider, sfpowerscripts supports artifact registries which support the following
 
 * **NPM compatible private registry** \(Almost  every artifact registries supports NPM \)
 * **A  registry which supports universal packages \(** Jfrog Aritfactory, Azure Artifacts\)
 
 {% hint style="danger" %}
-Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default  public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages only. sfpowerscripts in  
+Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages only. sfpowerscripts in
 {% endhint %}
 
 ## I am planning to use npm compatible sfpowerscripts artifact, How can I publish the artifacts?
@@ -45,7 +45,7 @@ To publish to a NPM compatible private registry, you need the following
 
 You will need to provide a publishing script as a hook to the sfpowerscripts publish command. This will be in turn utilized by sfpowerscripts to publish package to the registry.
 
-We pass through cetrain parameters  to your script, which expose the name and version of the package being published, the file path of the artifact and whether the `publishpromoteonly`flag was passed to the command. With the information available through these parameters, push the artifact to the registry using your vendor's API.
+We pass through cetrain parameters to your script, which expose the name and version of the package being published, the file path of the artifact and whether the `publishpromoteonly`flag was passed to the command. With the information available through these parameters, push the artifact to the registry using your vendor's API.
 
 Example for Linux / MacOS
 
@@ -60,7 +60,7 @@ myvendor artifacts push --name $1 --version $2 --path $3
 
 ## What does the `--publishpromotedonly` flag do?
 
-When the `--publishpromotedonly`flag is specified, only  packages that have been promoted will be published to the registry.
+When the `--publishpromotedonly`flag is specified, only packages that have been promoted will be published to the registry.
 
 ## What does `--gittag` parameter used for?
 
