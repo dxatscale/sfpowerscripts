@@ -16,8 +16,8 @@ Scratch Org's are one of the best features that Salesforce released, when they r
 
 The Just-in-time aspect of creation and an org completely built from your source code repository, makes it an ideal candidate to validate changes before merging pull requests. In this process, a freshly spun up scratch org could be used to deploy the metadata in your repository with the changes \( a PR process creates a temporary merge of the incoming branch along with current head of the target branch\), run apex tests, run UI tests etc. This addresses the following problems compared to using a sandbox for validation, especially in large programs.
 
-* **Time taken to spin a sandbox:** Developer sandbox still takes anywhere under 1 hour to create and activate a new environment. So it is not cost effective to provision sandboxes as a just-in-time disposable environment.  
-* **CI Org getting corrupted:**  Due to the time taken to spin a sandbox for every run,  an dedidicated CI sandbox or an existing sandbox is typical repurposed for validating incoming pull requests.  Due to the nature in software development for Salesforce, these sandbox typically tend to become corrupted due to unwanted deployments or configuration changes directly in the org.  As a result the changes must be manually fixed before being able to be use again as the CI org.  
+* **Time consumed to spin a sandbox:** Developer sandbox still takes anywhere under 1 hour to create and activate a new environment. So it is not cost effective to provision sandboxes as a just-in-time disposable environment.   
+* **CI Org getting corrupted:**  Due to the time taken to spin a sandbox for every run,  often a  dedidicated CI sandbox or an existing sandbox is repurposed for validating incoming pull requests.  Due to the nature in software development for Salesforce, these sandbox typically tend to become corrupted due to unwanted deployments or configuration changes directly in the org.  As a result the changes must be manually fixed before being able to be use again as the CI org.   
 * **Resource Contention:** Before scratch org's came into existence, typically a sandbox was used for validation run's. This means validation run's had to be queued up waiting for the CI environment to be free.  As a result, deployment queues on the sandbox may result in delays in validation error results.
 
 ### Building a pool of scratch org's
@@ -33,6 +33,8 @@ We expect you to build a pool of scratch org's using a  pipeline at scheduled in
 {% hint style="info" %}
 Please note before creating a pool you need to install the prerequisite fields to the DevHub Org which help the validate/fetch commands to fetch a scratch org from the pool. Instructions on how to install the prerequisite materials are available [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling).
 {% endhint %}
+
+### Steps undertaken by prepare command
 
 The prepare command does the following sequence of activities
 
