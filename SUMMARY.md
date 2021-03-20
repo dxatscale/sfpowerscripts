@@ -7,18 +7,18 @@
 
 ## CONCEPTS <a id="faq"></a>
 
-* [Package Types](faq/package-types/README.md)
-  * [Unlocked Packages](faq/package-types/unlocked-packages.md)
-  * [Source Packages](faq/package-types/source-packages.md)
-  * [Data Packages](faq/package-types/data-packages.md)
-* [Artifacts](faq/artifacts.md)
 * [Orchestrator](faq/orchestrator/README.md)
   * [Prepare](faq/orchestrator/prepare.md)
   * [Validate](faq/orchestrator/validate.md)
   * [Build & QuickBuild](faq/orchestrator/build-and-quickbuild.md)
   * [Deploy](faq/orchestrator/deploy.md)
   * [Publish](faq/orchestrator/publish.md)
+* [Artifacts](faq/artifacts.md)
 * [Metrics and Dashboards](faq/metrics-and-dashboards.md)
+* [Package Types](faq/package-types/README.md)
+  * [Unlocked Packages](faq/package-types/unlocked-packages.md)
+  * [Source Packages](faq/package-types/source-packages.md)
+  * [Data Packages](faq/package-types/data-packages.md)
 
 ## GETTING STARTED
 
