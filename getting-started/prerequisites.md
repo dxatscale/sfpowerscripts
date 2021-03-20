@@ -6,8 +6,6 @@ description: The following pre-requisites are required for sfpowerscripts to wor
 
 ## **Understanding of Salesforce DX and Packaging in general**
 
-## **Understanding of Salesforce DX and Packaging in general**
-
 To get the maximum benefit out of sfpowerscripts, you need a good understanding of GIT, Salesforce DX and packaging in general. Here are some links to get you started
 
 1. [Trailhead Modules](https://trailhead.salesforce.com/en/users/azlam/trailmixes/salesforce-dx)  

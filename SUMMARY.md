@@ -3,11 +3,15 @@
 * [Overview](README.md)
 * [Principles](principles-1.md)
 * [Features](features.md)
+* [Commands](commands-1.md)
 
 ## CONCEPTS <a id="faq"></a>
 
-* [Source Packages](faq/source-packages.md)
-* [Data Packages](faq/data-packages.md)
+* [Package Types](faq/package-types/README.md)
+  * [Unlocked Packages](faq/package-types/unlocked-packages.md)
+  * [Source Packages](faq/package-types/source-packages.md)
+  * [Data Packages](faq/package-types/data-packages.md)
+* [Artifacts](faq/artifacts.md)
 * [Orchestrator](faq/orchestrator/README.md)
   * [Prepare](faq/orchestrator/prepare.md)
   * [Validate](faq/orchestrator/validate.md)
@@ -20,7 +24,6 @@
 
 * [Prerequisites](getting-started/prerequisites.md)
 * [Docker](getting-started/docker.md)
-* [Using sfpowerscripts-cli sfdx plugin](getting-started/getting-started.md)
 
 ---
 
