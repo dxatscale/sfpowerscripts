@@ -4,13 +4,13 @@ All the information related to unlocked package is available in the respective [
 
 ## How are dependencies to my unlocked package handled?
 
-You can define dependencies to your unlocked package as mentioned in the [Salesforce developer guides.](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev2gp_config_file.htm) Orchestrator commands such as [prepare](../orchestrator/prepare.md#my-package-is-dependent-on-a-managed-package-or-another-unlocked-package-that-is-not-in-the-current-repository-can-this-command-do-something-about-it), [build](../orchestrator/build-and-quickbuild.md#how-do-these-commands-know-the-order-to-build) and [validate](../orchestrator/validate.md) utilize this information to install the dependencies to your org.
+You can define dependencies to your unlocked package as mentioned in the [Salesforce developer guides.](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev2gp_config_file.htm) Orchestrator commands such as [prepare](../../commands/prepare.md#my-package-is-dependent-on-a-managed-package-or-another-unlocked-package-that-is-not-in-the-current-repository-can-this-command-do-something-about-it), [build](../../commands/build-and-quickbuild.md#how-do-these-commands-know-the-order-to-build) and [validate](../../commands/validate.md) utilize this information to install the dependencies to your org.
 
 For any other use cases, Salesforce handles the dependency. Unlocked packages will only succeed in installation if the dependencies are available in the target org.
 
 ## My unlocked package is taking too long to build, What are my options?
 
-Unlocked packages have two build modes, one with [skip dependency check](../orchestrator/build-and-quickbuild.md) and one without. A package being built without skipping dependency check cant be deployed into production and can usually take a long time to build. sfpowerscripts tries to build packages in parallel understanding your dependency, however some of your packages could spend a significant time in validation.
+Unlocked packages have two build modes, one with [skip dependency check](../../commands/build-and-quickbuild.md) and one without. A package being built without skipping dependency check cant be deployed into production and can usually take a long time to build. sfpowerscripts tries to build packages in parallel understanding your dependency, however some of your packages could spend a significant time in validation.
 
 During these situations, we ask you to consider whether the time taken to build all validated packages on an average is within your build budget, If not, here are your options
 

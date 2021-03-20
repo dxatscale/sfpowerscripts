@@ -20,7 +20,7 @@ Let's have a look at the below example, here a CI pipeline creates a bunch of ar
 
 ![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2811%29.png)
 
-An important thing to note here is especially when a CI pipeline is enabled with '[diffcheck](orchestrator/build-and-quickbuild.md#how-does-build-and-quickbuild-know-what-to-build-when-using-diffcheck-flag)**'** functionality, it only builds packages for the particular build run. Unless you are immediately deploying these packages to production, there is no way to deploy an entire set of packages other than going through each of the build runs and immediately pushing them into production. You will need to aggregate packages before you proceed to the next stage.
+An important thing to note here is especially when a CI pipeline is enabled with '[diffcheck](../commands/build-and-quickbuild.md#how-does-build-and-quickbuild-know-what-to-build-when-using-diffcheck-flag)**'** functionality, it only builds packages for the particular build run. Unless you are immediately deploying these packages to production, there is no way to deploy an entire set of packages other than going through each of the build runs and immediately pushing them into production. You will need to aggregate packages before you proceed to the next stage.
 
 One approach to solve is to use branches, where a branch per environment is used to stage changes, and new builds are generated from this branch to deploy to the environment. We belive this practice is incorrect as they break the traceability chain and errors could be introduced, moreover it complicates your version control strategy. Our premise is rather to use the same set of artifacts that were built at one stage all the way to production.
 
@@ -51,5 +51,5 @@ Please refer to your artifact registry provider's documentation on how to set it
 
 ## Publishing/Fetching Packages  to or from Artifact Registry
 
-sfpowerscripts provides with functionality to help you fetch or [publish](orchestrator/publish.md) artifacts. Some orchestrator commands like [prepare](orchestrator/prepare.md) also fetches artifacts from the artifact registry.
+sfpowerscripts provides with functionality to help you fetch or [publish](../commands/publish.md) artifacts. Some orchestrator commands like [prepare](../commands/prepare.md) also fetches artifacts from the artifact registry.
 
