@@ -8,7 +8,7 @@ description: The heart of sfpowerscripts
 
 ![Snapshot for orchestrator](../../.gitbook/assets/image%20%287%29%20%281%29%20%281%29.png)
 
-### A typical pipeline
+## A typical pipeline
 
 To understand the orchestrator, let's take a look at a typical CI/CD pipeline for a package based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
@@ -16,14 +16,14 @@ To understand the orchestrator, let's take a look at a typical CI/CD pipeline fo
 
 Let's dive into the pipeline depicted above, there are two basic pipelines in play
 
-* **CI Pipeline**: A pipeline that gets triggered on every merge to the trunk. During this process,  the following stages happen in sequence.
+* **CI Pipeline**: A pipeline that gets triggered on every merge to the trunk. During this process, the following stages happen in sequence.
 
-  *  [quickbuild](build-and-quickbuild.md) a set of changed packages \( packages without validating for dependency or code coverage\) 
-  *  [deploy](deploy.md) to a  Development Sandbox.  This process ensures the upgrade process of a package is accurate and you could also do a quick round of validation of your packages coming in from a scratch org.
+  * [quickbuild](build-and-quickbuild.md) a set of changed packages \( packages without validating for dependency or code coverage\) 
+  * [deploy](deploy.md) to a  Development Sandbox.  This process ensures the upgrade process of a package is accurate and you could also do a quick round of validation of your packages coming in from a scratch org.
   * Once deploy is  successful, the pipeline proceed to [build](build-and-quickbuild.md) the set of changed packages \( but this time with dependency validation and code coverage check\)
   * The pipeline could then [publish](publish.md) these validated packages to an artifact repository for deployment into higher environments for further testing.
 
-  Each of this stage could have a pre-approval step modelled like the example shown below   
+  Each of this stage could have a pre-approval step modelled like the example shown below
 
 ![](../../.gitbook/assets/image%20%2813%29.png)
 
@@ -34,25 +34,26 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
   * [Deploy](deploy.md) the set of packages say to System Testing environment
   * Upon successful  testing, the same set of packages progress to the  System Integration Test environment and so forth
   * If the packages are successful in all of the testing, the packages are marked for promotion
-  *  The promoted packages are then [deployed](deploy.md) to production.
+  * The promoted packages are then [deployed](deploy.md) to production.
 
-Take a note of each stage in the pipeline above and the key functionality required, such as build, deploy, fetch etc. This is what sfpowerscripts orchestrator brings to the table,  a command for each stage.  
+Take a note of each stage in the pipeline above and the key functionality required, such as build, deploy, fetch etc, this is typically done by inserting the equivalent sfdx commands into your CI/CD pipeline definition. As your number of packages grow, it not only is hard to maintain but is error prone. This is where sfpowerscripts orchestrator simplifies the pipeline to a one time setup. All the stages are driven by sfdx-project.json, which ensures zero maintenance to the pipelines. Each stage of the above pipeline could be modelled by using equivalent sfpowerscripts orchestrator commands
 
+## Orchestrator commands
 
-### Orchestrator commands
+1. [**prepare**](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/prepare) **\( sfdx sfpowerscripts:orchestrator:prepare\)** :  Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during a pull request validation process when a scratch org is used as Just-in-time CI environment. In simple terms,  it reduces time taken in building a scratch org to validate your changes in an incoming pull request. This command also have an option to pull artifacts from your artifact repository, so that say you can prebuild your validation orgs , say from validated set of packages.   
+2. \*\*\*\*[**validate**](validate.md) **\(sfdx sfpowerscripts:orchestrator:validate\)**: This command goes in pair with the prepare command. It fetches a scratch org from the pool already pre prepared \(by the prepare command\) and deploys/unit tests the changed packages.    
+3. \*\*\*\*[**build**](build-and-quickbuild.md) **\(sfdx sfpowerscripts:orchestrator:build/quickbuild\)** : This command builds all the packages in parallel wherever possible by understanding your manifest and dependency tree. Goodbye to the sequential builds, where you fail in the n-1th package and have to wait for the next hour. This command brings massive savings to your build\(package creation\) time. Also use the quickbuild variant, which builds unlocked package without dependency check in intermittent stages for faster feedback.   
+4. \*\*\*\*[**deploy**](deploy.md) **\(sfdx sfpowerscripts:orchestrator:deploy\)**: So you have built all the packages, now this command takes care of deploying it, by reading the order of installation as you have specified in your sfdx-project.json. Installs it one by one, deciding to trigger tests etc. and provide you with the logs if anything fails   
+5. **promote \(sfdx sfpowerscripts:orchestrator:promote\)** : Promote enables the packages to be deployable to production. This explicit stage prevents incorrectly tested packages to reach production    
+6. \*\*\*\*[**Publish**](publish.md) **\(sfdx sfpowerscripts:orchestrator:publish\)** :  Publish lets you publish the built artifacts into an artifact registry during publish stages of your pipeline.
 
-1. \*\*\*\*[**prepare**](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/prepare) **\( sfdx sfpowerscripts:orchestrator:prepare\)** :  Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during validation process when a scratch org is used as Just-in-time CI environment. In simple terms,  it reduces time taken in building a scratch org to validate your changes in an incoming pull request. This command also have an option to pull artifacts from your artifact repository, so that say you can prebuild your validation orgs , say from validated set of packages.  
-2. [validate](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/validate) \(sfdx sfpowerscripts:orchestrator:validate\): This command goes in pair with the prepare command. It fetches a scratch org from the pool already pre prepared \(by the prepare command\) and deploys/unit tests the changed packages. Please take a note , it tests only the changed packages, so you have a very good chance of detecting the issues as this is the behaviour in your higher environments  
-3. [build](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/build-and-quickbuild) \(sfdx sfpowerscripts:orchestrator:build/quickbuild\) : This command builds all the packages in parallel wherever possible by understanding your manifest and dependency tree. Goodbye to the sequential builds, where you fail in the n-1th package and have to wait for the next hour. This command brings massive savings to your build\(package creation\) time. Also use the quickbuild variant, which builds unlocked package without dependency check in intermittent stages for faster feedback.  
-4. [deploy](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/deploy) \(sfdx sfpowerscripts:orchestrator:deploy\): So you have built all the packages, now this command takes care of deploying it, by reading the order of installation as you have specified in your sfdx-project.json. Installs it one by one, deciding to trigger tests etc. and provide you with the logs if anything fails  
-5. promote \(sfdx sfpowerscripts:orchestrator:promote\): Now you have done the hard work of building and deploying multiple times and ready to hit production, this command promotes all the unlocked packages that you have built so far.  
-6. [Publish](../../troubleshooting.md) \(sfdx sfpowerscripts:orchestrator:publish\) : What good is your pipeline, if it doesn't publish artifacts to an artifact repository? Provide a script to publish an artifact to this command, and let it publish all the artifacts to your preferred artifact provider.  
-
-
-
-### Controlling Aspects of the Orchestrator
+## Controlling Aspects of the Orchestrator
 
 Orchestrator utilizes additional properties mentioned along with each package in your sfdx-project.json which can be used to control what the orchestrator should work with each package.
+
+
+
+![Skipping unit test for a package](../../.gitbook/assets/screen-recording-2021-03-21-at-8.43.27-am.gif)
 
 <table>
   <thead>
@@ -82,13 +83,14 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>skipTesting</b>
       </td>
-      <td style="text-align:left">Skip testing during deployment</td>
-      <td style="text-align:left">
+      <td style="text-align:left">Skip unit testing during validate or deployment (source packages)</td>
+      <td
+      style="text-align:left">
         <p><b>deploy,</b>
         </p>
         <p><b>validate</b>
         </p>
-      </td>
+        </td>
     </tr>
     <tr>
       <td style="text-align:left"><b>skipCoverageValidation</b>
@@ -191,7 +193,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
   </tbody>
 </table>
 
-### Handling multiple ignore files
+## Handling multiple ignore files
 
 Sometimes, due to certain platform errors, some metadata components need to be ignored during **quickbuild** or **validate** or any other stages. sfpowerscripts offer you an easy mechanism, which allows to switch .forceignore files depending on the stage.
 
@@ -209,9 +211,7 @@ Add this entry to your sfdx-project.json and as in the example below, mention th
         }
 ```
 
-### Ignoring a package on any particular stage from being being processed by the orcestrator
+## Ignoring a package on any particular stage from being being processed by the orcestrator
 
 Utilize the `ignoreOnStage` descriptor to mark which packages should be skipped by the lifecycle commands.
-
-
 
