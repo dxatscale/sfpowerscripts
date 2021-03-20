@@ -209,7 +209,27 @@ Add this entry to your sfdx-project.json and as in the example below, mention th
         }
 ```
 
-### Ignoring a package on any particular stage from being being processed by the orcestrator
+## Can I combine orchestrator with standalone install commands.. such as build from orchestrator and script out install package commands?
+
+Excluding **prepare** and **validate**, the other orchestrator commands such as **quickbuild, build** and **deploy** operate on a given artifact directory \(that contains sfpowerscripts artifacts\) and a sfdx-project.json
+
+## Is there a lifecycle diagram that I can follow to understand how to model the process using the orchestrator?
+
+Here is a sample model that you could use on simple programs
+
+![](../../.gitbook/assets/image%20%287%29.png)
+
+## Is there a pipeline schematic diagram that I can understand?
+
+The following schematic explains the Continuous Integration and Continuous deployment aspect of the pipelines and sfpowerscripts commands utilized. For brevity, prepare and validate is being excluded
+
+![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2815%29.png)
+
+## Is there an example repo, where all these commands are being used?
+
+Yes, head to the repo [https://github.com/dxatscale/easy-spaces-lwc](https://github.com/dxatscale/easy-spaces-lwc/tree/develop/.github) for examples on how to use these commands with GitHub actions. The .azure-pipelines folder contains sample pipelines for Azure Pipelines.
+
+## Can I ignore any package during any stage/lifecycle/command? For eg: I do not want this package to be processed by the prepare command
 
 Utilize the `ignoreOnStage` descriptor to mark which packages should be skipped by the lifecycle commands.
 

@@ -19,7 +19,7 @@ Rather than lock everyone into a particular registry provider, sfpowerscripts su
 Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages only. sfpowerscripts in
 {% endhint %}
 
-## I am planning to use npm compatible sfpowerscripts artifact, How can I publish the artifacts?
+![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%284%29.png)
 
 To publish to a NPM compatible private registry, you need the following
 
