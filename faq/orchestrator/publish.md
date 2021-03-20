@@ -8,31 +8,44 @@ description: Bridging your CI and CD pipelines using artifacts
 
 The Publish command pushes artifacts created in the Build stage to an artifact registry primarily for further utilisation by a release pipeline. The user must provide a shell script that handles uploading of artifacts to a package registry of their choice. Typical examples of package registry which supports universal artifacts include Azure Artifacts, JFrog Artifactory.
 
-## What is an Artifact Registry?
-
-Artifact Registries allow one to store all the application artifacts in one central place. It typically provide features to manage various the full lifecycle of artifacts. Here is a short video from Jfrog explaining the need for an artifact registry. **Please note we are platform independent and work with any artifact registry which supports Universal Artifacts**
-
-{% embed url="https://www.youtube.com/watch?v=r2\_A5CPo43U" caption="" %}
-
-## Why do you need an Artifact Registry in the context of sfpowerscripts?
-
-Artifact registry allows you to split your CI and CD pipelines. We believe that this is essential for a smoother deployment model and allows you to better control what is being deployed to environments if you are using a multi-stage environment strategy.    
-  
-Let's have a look at the below example, here a CI pipeline creates a bunch of artifacts/packages, then the publish command is used to publish these artifacts into an Artifact Registry.  
-
-![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%283%29.png)
-
-An important thing to note here is especially when a CI pipeline is enabled with '**diffcheck'**  functionality, it only builds packages for the particular run. Unless you are immediately deploying these packages to production, there is no way to deploy an entire set of packages other than going through each of the build runs and pushing into production. This is where an artifact registry comes into play, it stores all the artifacts produced by the build system into a  repository, which allows you to consolidate all versions of your artifacts and then allowing you to decide which all packages/artifacts should be aggregated and released into production.
-
-The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically,  with artifacts and it's version number as the input.  Typically we advise you to select all the latest versions in your artifact repository and add an option to override a certain version of the package by fetching a run time input \(Most repositories have some api's which will allow you to list all the packages in a repository and its versions\). This is an area, which you would need to script it yourself.  We are working on 
-
 ## What registry can sfpowerscripts artifacts published to?
 
-Rather than lock everyone into a particular registry provider, you can provide a shell script that handles uploading of artifacts to a registry of your choice.
+Rather than lock everyone into a particular registry provider, sfpowerscripts supports artifact registries which support the following
 
-## How do I create the script that uploads artifacts to my registry?
+* **NPM compatible private registry** \(Almost  every artifact registries supports NPM \)
+* **A  registry which supports universal packages \(** Jfrog Aritfactory, Azure Artifacts\)
 
-There are command-line parameters available to your script, which expose the name and version of the package being published, the file path of the artifact and whether the `publishpromoteonly`flag was passed to the command. With the information available through these parameters, push the artifact to the registry using your vendor's API.
+{% hint style="danger" %}
+Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages only. sfpowerscripts in
+{% endhint %}
+
+## I am planning to use npm compatible sfpowerscripts artifact, How can I publish the artifacts?
+
+To publish to a NPM compatible private registry, you need the following
+
+* A NPM Compatible private registry, here are some links on different registries and their documentation
+  * Github [https://docs.github.com/en/packages/guides/configuring-npm-for-use-with-github-packages](https://docs.github.com/en/packages/guides/configuring-npm-for-use-with-github-packages)
+  * Gitlab [https://docs.gitlab.com/ee/user/packages/npm\_registry/](https://docs.gitlab.com/ee/user/packages/npm_registry/)
+  * Azure Artifacts [https://docs.gitlab.com/ee/user/packages/npm\_registry/](https://docs.gitlab.com/ee/user/packages/npm_registry/)
+  * JFrog Artifactory [https://www.jfrog.com/confluence/display/JFROG/npm+Registry](https://www.jfrog.com/confluence/display/JFROG/npm+Registry)
+  * MyGet [https://docs.myget.org/docs/reference/myget-npm-support](https://docs.myget.org/docs/reference/myget-npm-support)
+* Follow the instructions on your npm registry to generate .[npmrc](https://docs.npmjs.com/cli/v7/configuring-npm/npmrc) file with the correct URL and access token \(which has the permission to publish into your registry.
+* Utilize the parameters in sfpowercripts:orchestrator:publish and provide the npmrc file along with activating npm
+
+```text
+"npm":  Upload artifacts to a pre-authenticated private npm registry
+"scope": (required for NPM) User or Organisation scope of the NPM package
+"npmtag": Add an optional distribution tag to NPM packages. If not provided
+          the 'latest' tag is set to the published version
+"npmrcpath": Path to .npmrc file used for authentication to registry.
+              If left blank, defaults to home directory
+```
+
+## I am planning to use non npm compabible sfpowerscripts artifact, How do I create the script that uploads artifacts to my registry?
+
+You will need to provide a publishing script as a hook to the sfpowerscripts publish command. This will be in turn utilized by sfpowerscripts to publish package to the registry.
+
+We pass through cetrain parameters to your script, which expose the name and version of the package being published, the file path of the artifact and whether the `publishpromoteonly`flag was passed to the command. With the information available through these parameters, push the artifact to the registry using your vendor's API.
 
 Example for Linux / MacOS
 
@@ -47,7 +60,7 @@ myvendor artifacts push --name $1 --version $2 --path $3
 
 ## What does the `--publishpromotedonly` flag do?
 
-When the `--publishpromotedonly`flag is specified, only unlocked packages that have been promoted will be published to the registry.
+When the `--publishpromotedonly`flag is specified, only packages that have been promoted will be published to the registry.
 
 ## What does `--gittag` parameter used for?
 

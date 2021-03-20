@@ -32,7 +32,7 @@ Simply add an entry in the package directories, providing the package's name, pa
 
 Export your Salesforce records to csv files using the [SFDMU plugin](https://github.com/forcedotcom/SFDX-Data-Move-Utility). For more information on plugin installation, creating an export.json file, and exporting to csv files, refer to _Plugin Basic &gt; Basic Usage_ in SFDMU's [documentation](https://help.sfdmu.com/quick-start).
 
-![A sample data package structure](../.gitbook/assets/image%20%285%29.png)
+![A sample data package structure](../../.gitbook/assets/image%20%285%29.png)
 
 ## **What are my options with Data Packages?**
 
@@ -50,6 +50,19 @@ Data packages support the following options, through the sfdx-project.json.
     "preDeploymentScript":<path>, //All Packages
     "postDeploymentScript":<path> // All packages
   }
+```
+
+## How to create a pre/post deployment script for data package?
+
+In some situations, you might need to execute a pre/post deployment script to do manipulate the data before or after being deployed to the org. **sfpowerscripts** allow you to provide a path to a shell script \(Mac/Unix\) / batch script \(on windows\). The script will be provided with the following parameters which could be utilised to write your logic
+
+For eg: if you want to trigger an anonymous apex script after the installation of the package, you will create a script file similar to below and then add the path to the **postDeploymentScript** property of your data package
+
+```text
+# $1 package name
+# $2 org
+
+sfdx force:apex:execute -f scripts/datascript.apex -u $2
 ```
 
 ## Why isn't force:source:push working with Data packages defined in my sfdx-project.json?

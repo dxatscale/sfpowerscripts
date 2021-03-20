@@ -36,7 +36,7 @@ It is often a recommended practice to split CI/CD into [asynchronous pipelines](
 
 In this particular instance, this is a rough schematic for designing such pipelines are as follows. As you could see, from the below diagram, deploy could be used in the CD pipelines using only the artifacts from the artifact repository without the need for version control system to be hooked into the CD pipelines.
 
-![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%284%29.png)
+![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%289%29.png)
 
 ## What does the `--baselineorg` parameter do?
 
@@ -46,9 +46,9 @@ The `--baselineorg` parameter allows you to specify the alias or username of an 
 
 ## How to create a pre/post deployment script for a package?
 
-In some situations, you might need to execute a pre/post deployment script to do manipulate some aspect on the org before or after being deployed to the org. **sfpowerscripts** allow you to provide a path to a shell script \(Mac/Unix\)  / batch script \(on windows\).  The script will be provided with the following parameters which could be utilised to write your logic  
-  
-For eg: if you want to trigger an anonymous apex script after the installation of the package, you will create a script file similar to below and then add the path to the **postDeploymentScript** property of your  package
+In some situations, you might need to execute a pre/post deployment script to do manipulate some aspect on the org before or after being deployed to the org. **sfpowerscripts** allow you to provide a path to a shell script \(Mac/Unix\) / batch script \(on windows\). The script will be provided with the following parameters which could be utilised to write your logic
+
+For eg: if you want to trigger an anonymous apex script after the installation of the package, you will create a script file similar to below and then add the path to the **postDeploymentScript** property of your package
 
 ```text
 # $1 package name

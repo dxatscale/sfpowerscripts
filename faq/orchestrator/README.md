@@ -4,54 +4,55 @@ description: The heart of sfpowerscripts
 
 # Orchestrator
 
-## What is this orchestrator?
-
 **sfpowerscripts:orchestrator** is a group of commands \(or topic in the CLI parlance\) that enables one to work with multiple packages in a mono-repo through the development lifecycle or stages. The current version of the orchestrator features these commands
 
 ![Snapshot for orchestrator](../../.gitbook/assets/image%20%287%29%20%281%29%20%281%29.png)
 
-## When should I use orchestrator?
+### A typical pipeline
 
-You should use the orchestrator when you have two or more packages \( source/unlocked/data\) and mono-repo is your preferred approach.
+To understand the orchestrator, let's take a look at a typical CI/CD pipeline for a package based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
-## Hmm, these orchestrator contains  pretty powerful one line commands, will I lose my flexibility in my pipeline?
+![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%282%29.png)
 
-No, orchestrator is built around our experience when dealing with a very large org with multiple packages. We have added lot of "**modifiers**" that can be added as to each individual package which can be used to control the test/build/deploy behavior of a package declaratively. If these options are not sufficient, we are happy to help by adding additional options or you could script yourselves using the standalone sfpowerscripts commands. The current **"modifiers"** for orchestrator as follows, however each individual packages supports more modifiers, which is detailed **here.**
+Let's dive into the pipeline depicted above, there are two basic pipelines in play
 
-```text
-  {
+* **CI Pipeline**: A pipeline that gets triggered on every merge to the trunk. During this process,  the following stages happen in sequence.
 
-    "skipDeployOnOrgs": ["org1","org2"], // List of org's that this package should be skipped during deployment
-    "skipCoverageValidation":<boolean> //default:false, skip apex coverage validation during validation phase,
-    "ignoreOnStage": [ //Skip this package during the below orchestrator commands
-         "prepare",
-          "validate"
-        ],
-    "alwaysDeploy": <boolean> // If true, deploys package even if already installed in org,
-    "buildCollection": ["pkg1","pkg2"] // Create a collection of packages that need to be built together
-  }
-```
+  *  [quickbuild](build-and-quickbuild.md) a set of changed packages \( packages without validating for dependency or code coverage\) 
+  *  [deploy](deploy.md) to a  Development Sandbox.  This process ensures the upgrade process of a package is accurate and you could also do a quick round of validation of your packages coming in from a scratch org.
+  * Once deploy is  successful, the pipeline proceed to [build](build-and-quickbuild.md) the set of changed packages \( but this time with dependency validation and code coverage check\)
+  * The pipeline could then [publish](publish.md) these validated packages to an artifact repository for deployment into higher environments for further testing.
 
-## Is the above mentioned,  is all the "modifiers" that is available?
+  Each of this stage could have a pre-approval step modelled like the example shown below   
 
-No, the above are the modifiers for the orchestrator commands, irrespective if you use orchestrator or individual commands, following modifiers are available for every packages
+![](../../.gitbook/assets/image%20%2813%29.png)
 
-```text
-  {
-    "aliasfy": <boolean>, // Only for source packages, allows to deploy a subfolder whose name matches the alias of the org when using deploy command
-    "isOptimizedDeployment": <boolean>  // default:true for source packages, Utilizes the apex classes in the package for deployment,
-    "skipTesting":<boolean> //default:false, skip apex testing during installation of source package to a sandbox
-    "skipCoverageValidation":<boolean> //default:false, skip apex coverage validation during validation phase,
-    "destructiveChangePath:<path> // only for source, if enabled, this will be applied before the package is deployed
-    "assignPermSetsPreDeployment: ["","",]
-    "assignPermSetsPostDeployment: ["","",]
-    "preDeploymentScript":<path> //All Packages
-    "postDeploymentScript:<path> // All packages
-    "reconcileProfiles:<boolean> //default:true Source Packages 
-  }
-```
+![](../../.gitbook/assets/image%20%2816%29.png)
 
-## Is all modifiers applicable for every stages of the orchestrator?
+* **CD Pipeline**:  A Continous Delivery Pipeline that gets triggered manually or automatically \( every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
+  * Fetch the Artifacts from the artifact repository using the provided release definition
+  * [Deploy](deploy.md) the set of packages say to System Testing environment
+  * Upon successful  testing, the same set of packages progress to the  System Integration Test environment and so forth
+  * If the packages are successful in all of the testing, the packages are marked for promotion
+  *  The promoted packages are then [deployed](deploy.md) to production.
+
+Take a note of each stage in the pipeline above and the key functionality required, such as build, deploy, fetch etc. This is what sfpowerscripts orchestrator brings to the table,  a command for each stage.  
+
+
+### Orchestrator commands
+
+1. \*\*\*\*[**prepare**](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/prepare) **\( sfdx sfpowerscripts:orchestrator:prepare\)** :  Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during validation process when a scratch org is used as Just-in-time CI environment. In simple terms,  it reduces time taken in building a scratch org to validate your changes in an incoming pull request. This command also have an option to pull artifacts from your artifact repository, so that say you can prebuild your validation orgs , say from validated set of packages.  
+2. [validate](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/validate) \(sfdx sfpowerscripts:orchestrator:validate\): This command goes in pair with the prepare command. It fetches a scratch org from the pool already pre prepared \(by the prepare command\) and deploys/unit tests the changed packages. Please take a note , it tests only the changed packages, so you have a very good chance of detecting the issues as this is the behaviour in your higher environments  
+3. [build](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/build-and-quickbuild) \(sfdx sfpowerscripts:orchestrator:build/quickbuild\) : This command builds all the packages in parallel wherever possible by understanding your manifest and dependency tree. Goodbye to the sequential builds, where you fail in the n-1th package and have to wait for the next hour. This command brings massive savings to your build\(package creation\) time. Also use the quickbuild variant, which builds unlocked package without dependency check in intermittent stages for faster feedback.  
+4. [deploy](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/deploy) \(sfdx sfpowerscripts:orchestrator:deploy\): So you have built all the packages, now this command takes care of deploying it, by reading the order of installation as you have specified in your sfdx-project.json. Installs it one by one, deciding to trigger tests etc. and provide you with the logs if anything fails  
+5. promote \(sfdx sfpowerscripts:orchestrator:promote\): Now you have done the hard work of building and deploying multiple times and ready to hit production, this command promotes all the unlocked packages that you have built so far.  
+6. [Publish](../../troubleshooting.md) \(sfdx sfpowerscripts:orchestrator:publish\) : What good is your pipeline, if it doesn't publish artifacts to an artifact repository? Provide a script to publish an artifact to this command, and let it publish all the artifacts to your preferred artifact provider.  
+
+
+
+### Controlling Aspects of the Orchestrator
+
+Orchestrator utilizes additional properties mentioned along with each package in your sfdx-project.json which can be used to control what the orchestrator should work with each package.
 
 <table>
   <thead>
@@ -190,7 +191,7 @@ No, the above are the modifiers for the orchestrator commands, irrespective if y
   </tbody>
 </table>
 
-## Is there an option to change forceIgnore files depending upon the stage?
+### Handling multiple ignore files
 
 Sometimes, due to certain platform errors, some metadata components need to be ignored during **quickbuild** or **validate** or any other stages. sfpowerscripts offer you an easy mechanism, which allows to switch .forceignore files depending on the stage.
 
@@ -208,31 +209,9 @@ Add this entry to your sfdx-project.json and as in the example below, mention th
         }
 ```
 
-## Can I combine orchestrator with standalone install commands.. such as build from orchestrator and script out install package commands?
+### Ignoring a package on any particular stage from being being processed by the orcestrator
 
-Excluding **prepare** and **validate**, the other orchestrator commands such as **quickbuild, build** and **deploy** operate on a given artifact directory \(that contains sfpowerscripts artifacts\) and a sfdx-project.json
+Utilize the `ignoreOnStage` descriptor to mark which packages should be skipped by the lifecycle commands.
 
-## Is there a lifecycle diagram that I can follow to understand how to model the process using the orchestrator?
 
-Here is a sample model that you could use on simple programs
-
-![](../../.gitbook/assets/image%20%287%29.png)
-
-## Is there a pipeline schematic diagram that I can understand?
-
-The following schematic explains the Continuous Integration and Continuous deployment aspect of the pipelines and sfpowerscripts commands utilized. For brevity, prepare and validate is being excluded
-
-![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2811%29.png)
-
-## Is there an example repo, where all these commands are being used?
-
-Yes, head to the repo [https://github.com/dxatscale/easy-spaces-lwc](https://github.com/dxatscale/easy-spaces-lwc/tree/develop/.github) for examples on how to use these commands with GitHub actions. The .azure-pipelines folder contains sample pipelines for Azure Pipelines.
-
-## Can I ignore any package during any stage/lifecycle/command? For eg: I do not want this package to be processed by the prepare command
-
-Yes, you could use the `ignoreOnStage` descriptor to mark which packages should be skipped by the lifecycle commands.
-
-## Can **deploy** command in the orchestrator, deploy artifacts without the sfdx-project.json?
-
-Yes, deploy commands will be able to operate on artifacts \(from Release 19\) by deciphering the sequence of deployment from the latest package provided in the collection of artifacts.
 

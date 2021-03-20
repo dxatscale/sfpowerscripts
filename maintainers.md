@@ -6,7 +6,7 @@ description: Meet our team!
 
 ![Azlam Abdulsalam](.gitbook/assets/azlam-abdulsalam.jpg)
 
-Azlam is a Tech Architect with a particular interest on delivering iterative software. He is passionate on developer enablement utilizing plugins, frameworks along with automation. These days, he is focused on improving the speed and quality of Salesforce Development
+Azlam is a Tech Architect with a particular interest on delivering iterative software. He is passionate on improving developer experience using tools.These days, he is focused on improving the speed and quality of Salesforce Development. Azlam initated the sfpower series of tools when he was faced with the same problems everywhere.
 
 ![Alan Ly](.gitbook/assets/alan-ly.png)
 
