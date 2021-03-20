@@ -20,7 +20,7 @@ Artifact registry allows you to split your CI and CD pipelines. We believe that 
   
 Let's have a look at the below example, here a CI pipeline creates a bunch of artifacts/packages, then the publish command is used to publish these artifacts into an Artifact Registry.  
 
-![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%282%29.png)
+![](../../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%283%29.png)
 
 An important thing to note here is especially when a CI pipeline is enabled with '**diffcheck'**  functionality, it only builds packages for the particular run. Unless you are immediately deploying these packages to production, there is no way to deploy an entire set of packages other than going through each of the build runs and pushing into production. This is where an artifact registry comes into play, it stores all the artifacts produced by the build system into a  repository, which allows you to consolidate all versions of your artifacts and then allowing you to decide which all packages/artifacts should be aggregated and released into production.
 
