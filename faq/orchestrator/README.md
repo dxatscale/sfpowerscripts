@@ -51,6 +51,10 @@ Take a note of each stage in the pipeline above and the key functionality requir
 
 Orchestrator utilizes additional properties mentioned along with each package in your sfdx-project.json which can be used to control what the orchestrator should work with each package.
 
+
+
+![Skipping unit test for a package](../../.gitbook/assets/screen-recording-2021-03-21-at-8.43.27-am.gif)
+
 <table>
   <thead>
     <tr>
@@ -79,13 +83,14 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>skipTesting</b>
       </td>
-      <td style="text-align:left">Skip testing during deployment</td>
-      <td style="text-align:left">
+      <td style="text-align:left">Skip unit testing during validate or deployment (source packages)</td>
+      <td
+      style="text-align:left">
         <p><b>deploy,</b>
         </p>
         <p><b>validate</b>
         </p>
-      </td>
+        </td>
     </tr>
     <tr>
       <td style="text-align:left"><b>skipCoverageValidation</b>
