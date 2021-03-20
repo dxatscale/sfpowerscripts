@@ -3,22 +3,25 @@
 * [Overview](README.md)
 * [Principles](principles-1.md)
 * [Features](features.md)
-* [Commands](commands-1.md)
 
 ## CONCEPTS <a id="faq"></a>
 
-* [Orchestrator](faq/orchestrator/README.md)
-  * [Prepare](faq/orchestrator/prepare.md)
-  * [Validate](faq/orchestrator/validate.md)
-  * [Build & QuickBuild](faq/orchestrator/build-and-quickbuild.md)
-  * [Deploy](faq/orchestrator/deploy.md)
-  * [Publish](faq/orchestrator/publish.md)
 * [Artifacts](faq/artifacts.md)
+* [Orchestrator](faq/orchestrator.md)
 * [Metrics and Dashboards](faq/metrics-and-dashboards.md)
 * [Package Types](faq/package-types/README.md)
   * [Unlocked Packages](faq/package-types/unlocked-packages.md)
   * [Source Packages](faq/package-types/source-packages.md)
   * [Data Packages](faq/package-types/data-packages.md)
+
+## COMMANDS
+
+* [Prepare](commands/prepare.md)
+* [Validate](commands/validate.md)
+* [Build & QuickBuild](commands/build-and-quickbuild.md)
+* [Deploy](commands/deploy.md)
+* [Publish](commands/publish.md)
+* [Command Glossary](commands/command-glossary.md)
 
 ## GETTING STARTED
 
