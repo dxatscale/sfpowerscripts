@@ -20,7 +20,7 @@ export default class ProjectValidation {
         pkg.versionNumber.match(pattern) &&
         (packageType === "Source" || packageType === "Data")
       ) {
-        throw new Error('The build-number keywords "NEXT" & "LATEST" are not supported for Source & Data packages');
+        throw new Error('The build-number keywords "NEXT" & "LATEST" are not supported for Source & Data packages. Please use 0 instead');
       }
     });
   }
