@@ -211,7 +211,7 @@ Add this entry to your sfdx-project.json and as in the example below, mention th
 
 ### Ignoring a package on any particular stage from being being processed by the orcestrator
 
-Yes, you could use the `ignoreOnStage` descriptor to mark which packages should be skipped by the lifecycle commands.
+Utilize the `ignoreOnStage` descriptor to mark which packages should be skipped by the lifecycle commands.
 
 
 
