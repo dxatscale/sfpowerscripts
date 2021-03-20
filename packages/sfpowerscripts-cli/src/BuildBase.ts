@@ -90,6 +90,8 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
       let executionStartTime = Date.now();
 
+      
+
       buildExecResult = await this.getBuildImplementer().exec();
 
       if (
@@ -137,7 +139,9 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         tags["tag"] = this.flags.tag;
       }
 
-      console.log("Sending Metrics if enabled..", tags);
+      SFPStatsSender.logCount("build.scheduled", tags);
+      
+
       SFPStatsSender.logGauge(
         "build.duration",
         Date.now() - executionStartTime,

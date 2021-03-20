@@ -117,7 +117,7 @@ export default class DeployImpl {
           this.checkIfPackagesPromoted(queue, packagesToPackageInfo);
       }
 
-      SFPStatsSender.logCount("deploy.scheduled",this.props.tags);
+     
       SFPStatsSender.logGauge(
         "deploy.scheduled.packages",
         queue.length,

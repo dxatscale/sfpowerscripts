@@ -87,10 +87,6 @@ export default class BuildImpl {
       this.props.projectDirectory
     );
 
-    SFPStatsSender.logCount("build.scheduled", {
-      isDiffCheckEnabled: this.props.isDiffCheckEnabled ? "true" : "false",
-      prMode: this.props.isBuildAllAsSourcePackages ? "true" : "false",
-    });
 
     //Do a diff Impl
     if (this.props.isDiffCheckEnabled) {

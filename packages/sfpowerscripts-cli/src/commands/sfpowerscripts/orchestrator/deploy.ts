@@ -147,34 +147,23 @@ export default class Deploy extends SfpowerscriptsCommand {
       if (this.flags.logsgroupsymbol?.[1])
         console.log(this.flags.logsgroupsymbol[1]);
 
+     SFPStatsSender.logCount("deploy.scheduled",tags);   
+
       SFPStatsSender.logGauge(
         "deploy.duration",
         totalElapsedTime,
         tags
       );
-
-      SFPStatsSender.logCount(
-        "deploy.succeeded",
-        tags
-      );
-
-      SFPStatsSender.logGauge(
-        "deploy.succeeded.packages",
-        deploymentResult.deployed.length,
-        tags
-      );
-
-
-
       if (deploymentResult.failed.length > 0) {
         SFPStatsSender.logCount(
           "deploy.failed",
           tags
         );
-
-        SFPStatsSender.logGauge(
-          "deploy.failed.packages",
-          deploymentResult.failed.length,
+      }
+      else
+      {
+        SFPStatsSender.logCount(
+          "deploy.succeeded",
           tags
         );
       }
