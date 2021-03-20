@@ -63,15 +63,15 @@ $ echo'y' | sfdx plugins:install @dxatscale/sfpowerscripts
 
 Alternatively, you could use our [docker](docker.md) image and we highly recommend to utilize it.
 
-## **StatsD Server \(optional\)**
+## **StatsD Server \(Highly Recommended\)**
 
 Metrics should be a key part of your DevOps process. It is through these metrics, one can drive continuous improvement of your delivery process. Almost all commands in sfpowerscripts, is instrumented with StatsD.
 
 You will need a StatsD server reachable from your CI/CD agent to report the metrics. Read more on supported metrics and dashboards [here](../faq/metrics-and-dashboards.md).
 
-## **Artifact Repository \(optional\)**
+## **Artifact Registry \(Highly recommended\)**
 
-sfpowerscripts is designed to work with [asynchronous pipelines](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator#is-there-a-pipeline-schematic-diagram-that-i-can-understand), where CI and CD is separated into two distinct pipelines. This means an artifact repository such as Azure Artifacts, Jfrog Artifactory is essential to store the built artifacts.
+sfpowerscripts is designed to work with [asynchronous pipelines](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator#is-there-a-pipeline-schematic-diagram-that-i-can-understand), where CI and CD is separated into two distinct pipelines. This means an artifact repository/registry such as Azure Artifacts, Jfrog Artifactory is essential to store the built artifacts.
 
-A linear pipeline can also be used on smaller projects where a CI/CD pipeline is a single synchronous pipeline. In this case you do not need an artifact repository
+A linear pipeline can also be used on smaller projects where a CI/CD pipeline is a single synchronous pipeline. In this case you do not need an artifact repository. Read more about artifact registries [here](../faq/artifacts.md)
 
