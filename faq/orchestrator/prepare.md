@@ -1,7 +1,5 @@
 ---
-description: >-
-  Prepare a pool of scratch org's for validating incoming changes acting as a
-  just in time CI server
+description: Prepare a pool of just in time CI server
 ---
 
 # Prepare
