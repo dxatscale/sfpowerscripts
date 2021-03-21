@@ -6,7 +6,6 @@ description: All about collecting metrics from sfpowerscripts
 
 Metrics should be a key part of your DevOps process. It is through these metrics, one can drive continuous improvement of your delivery process. Almost all commands in sfpowerscripts, are instrumented with StatsD as well as Log Based Metrics. Read more about StatsD here \([https://www.datadoghq.com/blog/statsd/](https://www.datadoghq.com/blog/statsd/)\).
 
-
 ## Getting started with Metrics
 
 Stats D

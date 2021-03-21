@@ -144,7 +144,7 @@ The time taken by this command depends on how many managed packages and your pac
 
 ## Handling a change in shape of the scratch org's in pool
 
-If it is a change in settings, check out the [validate command's faq](validate.md), where we will explain you how to update settings of a scratch org from the pool. Otherwise you will have to delete the existing pool and recreate again.
+If it is a change in settings, check out the [validate command's documentation](validate.md)  where you will find an option how to update settings of a scratch org from the pool. Otherwise you will have to delete the existing pool and recreate again.
 
 ## Managing the Scratch Org pool
 
