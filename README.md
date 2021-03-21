@@ -1,6 +1,6 @@
 # Overview
 
-A  build system for package based development on Salesforce that can be implemented in any CI/CD system of choice. sfpowerscripts is part of the **DX@Scale** initiative, productivity boosters for engineering teams on Salesforce.
+A build system for package based development on Salesforce that can be implemented in any CI/CD system of choice. sfpowerscripts is part of the **DX@Scale** initiative, productivity boosters for engineering teams on Salesforce.
 
 ## **Key Features**
 
@@ -13,7 +13,7 @@ A  build system for package based development on Salesforce that can be implemen
 * Integrate with any CI/CD system of choice
 * All commands are enabled with [statsD](https://www.datadoghq.com/blog/statsd/), for collecting metrics about your pipeline
 
-{% embed url="https://www.youtube.com/watch?v=De9euEin67A" %}
+{% embed url="https://www.youtube.com/watch?v=De9euEin67A" caption="" %}
 
 ## Maintainers
 

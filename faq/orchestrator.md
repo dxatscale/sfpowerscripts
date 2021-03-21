@@ -27,7 +27,6 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
 
 ![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29.png)
 
-
 * **CD Pipeline**:  A Continous Delivery Pipeline that gets triggered manually or automatically \(  on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
   * Fetch the Artifacts from the artifact repository using the provided release definition
   * [Deploy](../commands/deploy.md) the set of packages say to System Testing environment
@@ -186,6 +185,23 @@ Orchestrator utilizes additional properties mentioned along with each package in
         the collection, even if only one of them changes</td>
       <td style="text-align:left"><b>build</b>
       </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>ignoreOnStage</b>
+      </td>
+      <td style="text-align:left">Utilize an array of stages where a particular package should be ignored,
+        possible values are prepare, validate, quickbuild, build and deploy</td>
+      <td
+      style="text-align:left">
+        <p><b>prepare,</b>
+        </p>
+        <p><b>validate,<br />quickbuild</b>
+        </p>
+        <p><b>build,</b>
+        </p>
+        <p><b>deploy</b>
+        </p>
+        </td>
     </tr>
   </tbody>
 </table>
