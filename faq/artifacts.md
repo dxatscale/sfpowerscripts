@@ -1,10 +1,10 @@
 ---
-description: Huh! These folks must really hate branches!
+description: Traceability from the origin
 ---
 
 # Artifacts
 
-sfpowerscripts operate on the concepts of artifacts. Artifacts are central to the concept of sfpowerscripts and its very existense. Artifacts are traceable, versioned, immutable entities that get generated during the build or promote command. sfpowerscripts artifacts contain source code of the package, metadata information , changelog and much more. Artifacts help sfpowerscripts to orchestrate deployment without being tied to the notion of branches.
+sfpowerscripts operate on the concepts of artifacts. Artifacts are central to the concept of sfpowerscripts and its very existense. Artifacts are traceable, versioned, immutable entities that get generated during the build or promote command. sfpowerscripts artifacts contain source code of the package, metadata information , changelog and much more. Artifacts help sfpowerscripts to orchestrate deployment with traceability
 
 ## Artifact Registries
 
@@ -28,7 +28,7 @@ This is where an artifact registry comes into play, it stores all the artifacts 
 
 The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and it's version number/tag as the input. Typically we advise you to select all the latest versions in your artifact repository and add an option to override a certain version of the package by fetching a run time input \(Most repositories have some api's which will allow you to list all the packages in a repository and its versions\).
 
-## **Type of Artifact Registries supported**
+## **Type of Artifact Registries/Repository supported**
 
 Rather than lock everyone into a particular registry provider, sfpowerscripts supports artifact registries which support the following
 
@@ -39,7 +39,7 @@ Rather than lock everyone into a particular registry provider, sfpowerscripts su
 Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages.
 {% endhint %}
 
-## Setting up an Artifact Registry
+## Setting up an Artifact Registry/Repository
 
 Please refer to your artifact registry provider's documentation on how to set it up. If you are planning to use npm compatible private registry, here are some links to get you started
 
