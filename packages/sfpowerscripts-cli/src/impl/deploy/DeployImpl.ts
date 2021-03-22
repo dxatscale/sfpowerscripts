@@ -85,9 +85,12 @@ export default class DeployImpl {
       }
 
 
-
-      let queue: any[] = this.getPackagesToDeploy(packageManifest);
       let packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
+
+      let queue: any[] = this.getPackagesToDeploy(
+        packageManifest,
+        packagesToPackageInfo
+      );
 
       if(this.props.skipIfPackageInstalled)
       {
@@ -745,21 +748,17 @@ export default class DeployImpl {
   /**
    * Returns the packages in the project config that have an artifact
    */
-  private getPackagesToDeploy(packageManifest: any): any[] {
+  private getPackagesToDeploy(
+    packageManifest: any,
+    packagesToPackageInfo: {[p:string]: PackageInfo}
+  ): any[] {
     let packagesToDeploy: any[];
 
     let packages = packageManifest["packageDirectories"];
 
-    let artifacts = ArtifactFilePathFetcher.findArtifacts(
-      this.props.artifactDir
-    );
-
+    // Filter package manifest by artifact
     packagesToDeploy = packages.filter((pkg) => {
-      // case-insensitivity accommodates NPM packages
-      let pattern = RegExp(`${pkg.package}_sfpowerscripts_artifact[_-].*(\\.zip|\\.tgz)$`, "i");
-      return artifacts.find((artifact) =>
-        pattern.test(path.basename(artifact))
-      );
+      return packagesToPackageInfo[pkg.package]
     });
 
     // Filter out packages that are to be skipped on the target org
