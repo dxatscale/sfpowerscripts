@@ -9,9 +9,9 @@ export default function validateReleaseDefinition(
 
   let versionPattern: RegExp;
   if (isNpm) {
-    versionPattern = /(^[0-9]+\.[0-9]+\.[0-9]+(-.+)?)|^LATEST_TAG$|^[a-zA-Z0-9]+$/
+    versionPattern = /(^[0-9]+\.[0-9]+\.[0-9]+(-.+)?$)|^LATEST_TAG$|^[a-zA-Z0-9]+$/
   } else {
-    versionPattern = /(^[0-9]+\.[0-9]+\.[0-9]+(-.+)?)|^LATEST_TAG$/
+    versionPattern = /(^[0-9]+\.[0-9]+\.[0-9]+(-.+)?$)|^LATEST_TAG$/
   }
 
   const schema = {
