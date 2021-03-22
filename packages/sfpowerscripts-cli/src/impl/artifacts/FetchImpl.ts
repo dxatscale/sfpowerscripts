@@ -1,14 +1,13 @@
 import child_process = require("child_process");
-const yaml = require('js-yaml');
 import * as fs from "fs-extra";
 import path = require("path");
-const Validator = require('jsonschema').Validator;
 import Git from "@dxatscale/sfpowerscripts.core/lib/utils/Git";
 import GitTags from "@dxatscale/sfpowerscripts.core/lib/utils/GitTags";
+import ReleaseDefinition from "../release/ReleaseDefinitionInterface";
 
 export default class FetchImpl {
   constructor(
-    private releaseDefinition: string,
+    private releaseDefinition: ReleaseDefinition,
     private artifactDirectory: string,
     private scriptPath: string,
     private isNpm: boolean,
@@ -17,9 +16,6 @@ export default class FetchImpl {
   ){}
 
   async exec() {
-    let releaseDefinition: ReleaseDefinition = yaml.load(fs.readFileSync(this.releaseDefinition, 'utf8'))
-    this.validateReleaseDefinition(releaseDefinition, this.isNpm);
-
     fs.mkdirpSync(this.artifactDirectory);
 
     if (this.isNpm) {
@@ -36,14 +32,14 @@ export default class FetchImpl {
       }
 
       await this.fetchArtifactsFromNpm(
-        releaseDefinition,
+        this.releaseDefinition,
         this.artifactDirectory,
         this.scope
       );
 
      } else {
       await this.fetchArtifactsFromScript(
-        releaseDefinition,
+        this.releaseDefinition,
         this.artifactDirectory
       );
      }
@@ -132,57 +128,6 @@ export default class FetchImpl {
     return version;
   }
 
-  private validateReleaseDefinition(
-    releaseDefinition: ReleaseDefinition,
-    isNpm: boolean
-  ): void {
-    let v = new Validator();
-
-    let versionPattern: RegExp;
-    if (isNpm) {
-      versionPattern = /(^[0-9]+\.[0-9]+\.[0-9]+(-.+)?)|^LATEST_TAG$|^[a-zA-Z0-9]+$/
-    } else {
-      versionPattern = /(^[0-9]+\.[0-9]+\.[0-9]+(-.+)?)|^LATEST_TAG$/
-    }
-
-    const schema = {
-        "type": "object",
-        "properties": {
-            "release": {
-                "type": "string"
-            },
-            "artifacts": {
-                "type": "object",
-                "patternProperties": {
-                  ".+": {
-                    "type": "string",
-                    "pattern": versionPattern
-                  }
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "release",
-            "artifacts",
-        ]
-    };
-
-    let validationResult = v.validate(releaseDefinition, schema);
-    if (validationResult.errors.length > 0) {
-        let errorMsg: string =
-            `Release definition does not meet schema requirements, ` +
-            `found ${validationResult.errors.length} validation errors:\n`;
-
-        validationResult.errors.forEach( (error, errorNum) => {
-            errorMsg += `\n${errorNum+1}. ${error.stack}`;
-            if (error.instance != null)
-                errorMsg += `\nReceived: ${JSON.stringify(error.instance)}\n`;
-        });
-        throw new Error(errorMsg);
-    }
-  }
-
   private substituteBuildNumberWithPreRelease(
     packageVersionNumber: string
   ) {
@@ -198,12 +143,5 @@ export default class FetchImpl {
     }
 
     return packageVersionNumber;
-  }
-}
-
-interface ReleaseDefinition {
-  release: string,
-  artifacts: {
-    [p: string]: string
   }
 }
