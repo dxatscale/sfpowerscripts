@@ -90,8 +90,6 @@ export default class CreateUnlockedPackageImpl {
     if(packageTypeInfo==null)
     {
       SFPLogger.log("Unable to find a package info for this particular package, Are you sure you created this package?");
-      SFPLogger.log("Unable to find a package info for this particular package, Are you sure you created this package?");
-      
     }
 
 
@@ -165,6 +163,13 @@ export default class CreateUnlockedPackageImpl {
     //Get the full details on the package
     await this.getPackageInfo();
 
+
+    //Break if coverage is low
+    if (this.isCoverageEnabled) {
+      if(!this.packageArtifactMetadata.has_passed_coverage_check)
+       throw new Error("This package has not meet the minimum coverage requirement of 75%");
+    }
+     
     //Generate Source Artifact
     let mdapiPackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
       this.project_directory,
@@ -333,7 +338,7 @@ export default class CreateUnlockedPackageImpl {
   }
 
   private buildExecCommand(): string {
-    let command = `npx sfdx force:package:version:create -p ${this.sfdx_package}  -w ${this.wait_time} --definitionfile ${this.config_file_path} --json`;
+    let command = `sfdx force:package:version:create -p ${this.sfdx_package}  -w ${this.wait_time} --definitionfile ${this.config_file_path} --json`;
 
     if (!isNullOrUndefined(this.version_number))
       command += `  --versionnumber ${this.version_number}`;
