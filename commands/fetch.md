@@ -1,10 +1,10 @@
 ---
-description: Systematic approach to fetching artifacts from a registry
+description: Fetch artifacts from a repository
 ---
 
 # Fetch
 
-The `artifacts:fetch` command provides a systematic method of fetching artifacts from an artifact repository. Each call to the command requires a `release-definition.yml` file which contains the name of the artifacts that you want to download, and a mapping to the version to download. If fetching from a **NPM registry**, the command will handle everything else for you. However, for universal artifacts there is no uniform method for downloading artifacts from a repository, so you will need to provide a shell script that calls the relevant API.    
+The `artifacts:fetch` command provides a simplified method of fetching artifacts from an artifact repository. Each call to the command requires a `release-definition.yml` file which contains the name of the artifacts that you want to download, and a mapping to the version to download. If fetching from a **NPM registry**, the command will handle everything else for you. However, for universal artifacts there is no uniform method for downloading artifacts from a repository, so you will need to provide a shell script that calls the relevant API.    
 
 ```text
 # release-definition.yml
