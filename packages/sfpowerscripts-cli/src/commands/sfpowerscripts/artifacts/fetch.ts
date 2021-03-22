@@ -2,6 +2,10 @@ import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import FetchImpl from '../../../impl/artifacts/FetchImpl';
+const yaml = require('js-yaml');
+import * as fs from "fs-extra";
+import ReleaseDefinition from "../../../impl/release/ReleaseDefinitionInterface";
+import validateReleaseDefinition from "../../../impl/release/validateReleaseDefinition";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'fetch');
@@ -54,8 +58,13 @@ export default class Fetch extends SfpowerscriptsCommand {
     this.validateFlags();
 
     try {
+      let releaseDefinition: ReleaseDefinition = yaml.load(
+        fs.readFileSync(this.flags.releasedefinition, 'utf8')
+      );
+      validateReleaseDefinition(releaseDefinition, this.flags.npm);
+
       let fetchImpl: FetchImpl = new FetchImpl(
-        this.flags.releasedefinition,
+        releaseDefinition,
         this.flags.artifactdir,
         this.flags.scriptpath,
         this.flags.npm,
