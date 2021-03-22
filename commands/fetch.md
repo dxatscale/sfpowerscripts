@@ -16,6 +16,10 @@ artifacts:
   mypackageC: 1.2.3-5 # Provide the exact version to download
 ```
 
+{% hint style="info" %}
+The `LATEST_TAG` keyword is only supported if the current working directory is pointing to the project directory, and if at least one git tag exists for the package.
+{% endhint %}
+
 ## Fetching universal artifacts 
 
 For universal artifacts, there is no uniform method for downloading artifacts from a registry, so you will need to provide a shell script that calls the relevant API.
