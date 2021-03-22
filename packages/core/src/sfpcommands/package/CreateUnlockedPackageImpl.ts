@@ -165,7 +165,7 @@ export default class CreateUnlockedPackageImpl {
 
 
     //Break if coverage is low
-    if (this.packageArtifactMetadata.isDependencyValidated) {
+    if (this.isCoverageEnabled) {
       if(!this.packageArtifactMetadata.has_passed_coverage_check)
        throw new Error("This package has not meet the minimum coverage requirement of 75%");
     }
