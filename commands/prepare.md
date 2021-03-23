@@ -58,15 +58,15 @@ Please note prepare command should **ONLY** be used with a DevHub authenticated 
 
 ## **Using pre-existing artifacts in Scratch Org Pools**
 
-Building packages in the repository during pooling, takes a considerable amount of time, as well as there could be situations where the latest head is broken. Hence we recommend you to last known good version from the artifact repository. A hook is provided to run a script \(that you provided\) that would be used to fetch sfpowerscripts artifact from an artifact repository when used with **installall** flag. The script will be provided with _**artifactname** \(name of the package\) and **arifact\_directory**_ \( the directory where the artifact should be placed\) parameters . It is the responsibility of the script to provide with the right version of the artifact. We usually recommend using the latest tested and validated version of the artifacts installed as source packages to the scratch org.
+Building packages in the repository during pooling, takes a considerable amount of time, as well as there could be situations where the latest head is broken. Hence we recommend you to use the last known good version from the artifact repository. A hook is provided to run a script \(that you provided\) that would be used to fetch sfpowerscripts artifact from an artifact repository when used with **installall** flag. The script will be provided with _**artifactname** \(name of the package\) and **arifact\_directory**_ \( the directory where the artifact should be placed\) parameters . It is the responsibility of the script to provide with the right version of the artifact. We usually recommend using the latest tested and validated version of the artifacts installed as source packages to the scratch org.
 
 {% hint style="info" %}
-If installall flag is utilized, sfpowerscripts would attempt to do a build of all packages in the repository and install it to the scratch org.
+If installall flag is utilized, sfpowerscripts would attempt to do a build all packages in your git repository and install it to the scratch org,  provided the script to fetch artifacts is not provided \( --artifactfetchscript\)
 {% endhint %}
 
 ## Installing **pre-existing artifacts** as source packages
 
-If this flag is used, we would attempt installing all packages as source packages, overriding the default package type \(so a unlocked package will be installed as source package\).
+If this flag \(--installassourcepackages\)  is used, we would attempt installing all packages as source packages, overriding the default package type \(so a unlocked package will be installed as source package\).
 
 We typically recommend this option to install packages as source packages, as often we have noticed, during validation phase, where a package is installed as source and this often causes issues when deployed on top of an unlocked package.
 
