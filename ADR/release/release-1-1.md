@@ -25,13 +25,13 @@ As part of a release, we need to install package dependencies. There are two dif
 
 Chosen option: 2. Duplicate dependencies in the release definition
 
-Although it requires more input from the user, re-defining dependencies within the release definition is more reliable, as you have a precise control over what dependencies are being installed. It also allows package dependencies to be tracked within the release definition file.
+Although it requires more input from the user, re-defining dependencies within the release definition is more reliable, as you have precise control over what dependencies are being installed. It also allows package dependencies to be tracked within the release definition file.
 
 ## Pros and Cons of the Options <!-- optional -->
 
 ### Re-use dependencies defined in latest package manifest
 
- Requires the latest package manifest to be pruned of any packages that do not have an artifact, including any references to those packages as a dependency.  
+ Requires the latest package manifest to be pruned of any packages that do not have an artifact, including any references to those packages as a dependency.
 
 Pros:
 * Least amount of effort required from the user, since package dependencies are already defined in the package manifest
