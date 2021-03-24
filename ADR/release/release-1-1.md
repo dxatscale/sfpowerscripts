@@ -1,6 +1,6 @@
 # Install package dependencies as part of release
 
-* Status: Proposed<!-- optional -->
+* Status: Accepted<!-- optional -->
 * Deciders: Azlam, Alan <!-- optional -->
 * Date: 23/03/21 <!-- optional -->
 
