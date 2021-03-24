@@ -1,6 +1,6 @@
 # Introduce a notion of release into sfpowerscripts
 
-* Status: Proposed  <!-- optional -->
+* Status: Accepted  <!-- optional -->
 * Deciders: Azlam, Alan <!-- optional -->
 * Date: 23/03/21 <!-- optional -->
 
