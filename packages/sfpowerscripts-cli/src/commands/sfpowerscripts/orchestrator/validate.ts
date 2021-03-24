@@ -100,6 +100,8 @@ export default class Validate extends SfpowerscriptsCommand {
 
     let validateResult  = await validateImpl.exec();
 
+     SFPStatsSender.logCount("validate.succeeded",this.flags.tag);
+
     if (validateResult)
       process.exitCode=0;
     else
@@ -112,10 +114,8 @@ export default class Validate extends SfpowerscriptsCommand {
     } finally {
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
-      if (validateResult)
-      SFPStatsSender.logCount("validate.succeeded",this.flags.tag);
-    else
-      SFPStatsSender.logCount("validate.failed",this.flags.tag);
+    if (!validateResult)
+       SFPStatsSender.logCount("validate.failed",this.flags.tag);
 
       
       SFPStatsSender.logGauge(
