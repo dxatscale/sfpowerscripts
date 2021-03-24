@@ -25,10 +25,6 @@ export default class SFPStatsSender {
     try
     {
     fs.mkdirpSync(".sfpowerscripts/logs");
-    fs.outputFileSync(
-      `.sfpowerscripts/logs/metrics.log`,
-      `sfpowerscripts--metrics-log${EOL}`
-    );
     SFPStatsSender.metricsLogger = `.sfpowerscripts/logs/metrics.log`;
     }
     catch(error)
@@ -90,7 +86,7 @@ export default class SFPStatsSender {
 
   static logMetrics(key: any, logger?:any) {
     if (logger) {
-      fs.appendFileSync(logger, `${new Date().toISOString()} ${JSON.stringify(key)}${EOL}`, 'utf8')
+      fs.appendFileSync(logger, `${JSON.stringify(key)}${EOL}`, 'utf8')
     }
   }
 }
