@@ -50,6 +50,6 @@ Cons:
 
 ## Links <!-- optional -->
 
-* [Installing Package Dependencies]() <!-- example: Refined by [ADR-0005](0005-example.md) -->
+* [Installing Package Dependencies](https://github.com/Accenture/sfpowerscripts/blob/develop/ADR/release/release-1-1.md) <!-- example: Refined by [ADR-0005](0005-example.md) -->
 
 <!-- markdownlint-disable-file MD013 -->
