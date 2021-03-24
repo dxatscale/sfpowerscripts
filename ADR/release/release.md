@@ -26,7 +26,7 @@ sfpowerscripts currently does not have a notion of 'release', which some CICD pl
 
 Chosen option: 1. `orchestrator:release` command
 
-An orchestrator command is more intuitive to use than a shell script, and it's independent from OS.
+An orchestrator command is more intuitive to use than a shell script, and it's independent from OS. Though this is bit inflexible and tied to the options being provided by the sfpowerscripts, it fastens adoption of the tooling. Users who have requirements that are not satisfied by the release commands can switch to a shell script and orchestrate it.
 
 
 ## Pros and Cons of the Options <!-- optional -->
@@ -39,9 +39,15 @@ Pros:
 * Easy to use
 * Compatible with any OS running Node
 
+Cons:
+* Loses flexibility, one can only use the functionality provided by the release command. There will be no hookpoints to call external scripts
+
 ### Shell script that orchestrates a release
 
 A re-usable shell script that that fetches artifacts, installs dependencies, deploys artifacts and generates a changelog.
+
+Pros:
+* Flexibility, one can interleave custom scripts before any of the orchestrator calls
 
 Cons:
 * Can't be packaged as a SFDX plugin
