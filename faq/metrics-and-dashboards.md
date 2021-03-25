@@ -28,13 +28,15 @@ Metrics should be a key part of your DevOps process. It is through these metrics
 sfpowerscripts is also able to generate metrics in a log file.  These metrics are written to **.sfpowerscripts/metrics.log** in your working directory.  This log file after every run of a command could be send to a log aggregator for further analysis.  
 
 
-Each log entry has a UTC time stamp in the beginning followed by a JSON payload. The JSON payload consist  of the the following, name of the metric \(**metric**\), type of the metric such as count, guage or timers  \( **type** \), timestamp \(**timestamp**\) and followed by tags pertaining to the particular metric \(**tags**\)  
+ The JSON payload consist  of the the following, name of the metric \(**metric**\), type of the metric such as count, guage or timers  \( **type** \), timestamp \(**timestamp**\) and followed by tags pertaining to the particular metric \(**tags**\)  
   
 A sample metric is shown below       
 
 ```text
-2021-03-23T04:56:36.815Z {"metric":"sfpowerscripts.build.scheduled.packages","type":"count","timestamp":1616475396815,"tags":{"package":"core-crm","type":"Unlocked","is_diffcheck_enabled":"true","is_dependency_validated":"true","pr_mode":"false"}
+{"metric":"sfpowerscripts.build.scheduled.packages","type":"count","timestamp":1616475396815,"tags":{"package":"core-crm","type":"Unlocked","is_diffcheck_enabled":"true","is_dependency_validated":"true","pr_mode":"false"}
 ```
+
+One could write a parse this file, and then send each individual entries to a  logging system that allows JSON based logging.
 
 ## Metrics available within sfpowerscripts
 
