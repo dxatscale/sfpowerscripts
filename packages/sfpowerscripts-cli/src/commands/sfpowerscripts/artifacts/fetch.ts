@@ -71,7 +71,7 @@ export default class Fetch extends SfpowerscriptsCommand {
         this.flags.scope,
         this.flags.npmrcpath
       );
-      fetchImpl.exec();
+      await fetchImpl.exec();
     } catch (err) {
       console.log(err.message);
 
