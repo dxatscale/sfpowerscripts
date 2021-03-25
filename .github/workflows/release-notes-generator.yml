@@ -2,6 +2,12 @@
 on:
   milestone:
     types: [closed]
+  workflow_dispatch:
+    inputs:
+      milestoneId:
+        description: 'Milestone ID'     
+        required: true
+        default: '1'
 name: Generate Release Notes
 jobs:
   create-release-notes:
