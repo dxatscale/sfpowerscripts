@@ -2,17 +2,12 @@ import validateReleaseDefinition from "./validateReleaseDefinition";
 import ReleaseDefinition from "./ReleaseDefinitionInterface";
 import FetchImpl from "../artifacts/FetchImpl";
 import DeployImpl, { DeployProps , DeploymentMode } from "../deploy/DeployImpl";
-import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
-import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
-import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
-import ArtifactInquirer from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInquirer";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { Stage } from "../Stage";
 import get18DigitSalesforceId from "../../utils/get18DigitSalesforceId";
 const yaml = require('js-yaml');
 import child_process = require("child_process");
 import * as fs from "fs-extra";
-import path = require("path");
 
 
 export default class ReleaseImpl {
@@ -40,9 +35,6 @@ export default class ReleaseImpl {
       );
       validateReleaseDefinition(releaseDefinition, this.isNpm);
 
-      // if (releaseDefinition.packageDependencies?.install && !this.devHubUsername)
-      //   throw new Error("Dev Hub username is required for installing dependencies");
-
       this.printOpenLoggingGroup("Fetching artifacts");
       let fetchImpl: FetchImpl = new FetchImpl(
         releaseDefinition,
@@ -55,34 +47,6 @@ export default class ReleaseImpl {
       await fetchImpl.exec();
       this.printClosingLoggingGroup();
 
-      // let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths("artifacts");
-
-      // if (artifacts.length === 0)
-      //   throw new Error(
-      //     `No artifacts to deploy found in ${path.resolve("artifacts")}`
-      //   );
-
-      // let artifactInquirer: ArtifactInquirer = new ArtifactInquirer(artifacts);
-      // let { latestPackageManifest, pathToLatestPackageManifest } = artifactInquirer.getLatestPackageManifest();
-
-      // if (releaseDefinition.installDependencies) {
-      //   this.printOpenLoggingGroup("Installing package dependencies");
-      //   // TODO: set working directory to latest package manifest
-      //   let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
-      //     this.targetOrg,
-      //     this.devHubUsername,
-      //     120,
-      //     path.dirname(pathToLatestPackageManifest),
-      //     this.keys,
-      //     true,
-      //     null
-      //   );
-      //   let installationResult = await installDependencies.exec();
-      //   if (installationResult.result == PackageInstallationStatus.Failed) {
-      //     throw new Error(installationResult.message);
-      //   }
-      //   this.printClosingLoggingGroup();
-      // }
       if (releaseDefinition.packageDependencies) {
 
         let packagesToKeys: {[p: string]: string};
