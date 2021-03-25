@@ -58,17 +58,19 @@ Please note prepare command should **ONLY** be used with a DevHub authenticated 
 
 ## **Using pre-existing artifacts in Scratch Org Pools**
 
-Building packages in the repository during pooling, takes a considerable amount of time, as well as there could be situations where the latest head is broken. Hence we recommend you to last known good version from the artifact repository. A hook is provided to run a script \(that you provided\) that would be used to fetch sfpowerscripts artifact from an artifact repository when used with **installall** flag. The script will be provided with _**artifactname** \(name of the package\) and **arifact\_directory**_ \( the directory where the artifact should be placed\) parameters . It is the responsibility of the script to provide with the right version of the artifact. We usually recommend using the latest tested and validated version of the artifacts installed as source packages to the scratch org.
+Building packages in the repository during pooling, takes a considerable amount of time, as well as there could be situations where the latest head is broken. Hence we recommend you to last known good version from the artifact repository. A hook is provided to run a script \(that you provided\) that would be used to fetch sfpowerscripts artifact from an artifact repository when used with **--installall** flag. The script will be provided with _**artifactname** \(name of the package\) and **arifact\_directory**_ \( the directory where the artifact should be placed\) parameters. It is the responsibility of the script to provide with the right version of the artifact. We usually recommend using the latest tested and validated version of the artifacts installed as source packages to the scratch org.
 
 {% hint style="info" %}
-If installall flag is utilized, sfpowerscripts would attempt to do a build of all packages in the repository and install it to the scratch org.
+If **--installall** flag is utilized, sfpowerscripts would attempt to do a build of all packages in the repository and install it to the scratch org.
 {% endhint %}
 
 ## Installing **pre-existing artifacts** as source packages
 
-If this flag is used, we would attempt installing all packages as source packages, overriding the default package type \(so a unlocked package will be installed as source package\).
+If this flag \(**--installassourcepackages**\)   is used, we would attempt installing all packages as [source packages](../faq/package-types/source-packages.md), overriding the default package type \(so an [unlocked package ](../faq/package-types/unlocked-packages.md)will be installed as a source package\).
 
-We typically recommend this option to install packages as source packages, as often we have noticed, during validation phase, where a package is installed as source and this often causes issues when deployed on top of an unlocked package.
+{% hint style="success" %}
+We typically recommend this option to install your packages in the repo as source packages, as often we have noticed, during the validation phase, where a package is installed as a source package often causes issues when deployed on top of an unlocked package.
+{% endhint %}
 
 ## Managing Package Dependencies
 
@@ -132,7 +134,7 @@ Let's unpack the concepts utilizing the above example
 
 If any of the managed package has keys, it can be provided as an argument to the prepare command. Check the command's flag for more information
 
-### Key Support for Managed Packages
+#### Key Support for Managed Packages
 
 The format for the 'keys' parameter is a string of key-value pairs separated by spaces - where the key is the name of the package, the value is the protection key of the package, and the key-value pair itself is delimited by a colon .
 
