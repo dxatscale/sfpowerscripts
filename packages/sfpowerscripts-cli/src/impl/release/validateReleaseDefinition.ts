@@ -28,6 +28,15 @@ export default function validateReleaseDefinition(
                   "pattern": versionPattern
                 }
               }
+          },
+          "packageDependencies": {
+            "type": "object",
+            "patternProperties": {
+              ".+": {
+                "type": "string",
+                "pattern": /^04t([a-zA-Z0-9]{12}|[a-zA-Z0-9]{15})$/
+              }
+            }
           }
       },
       "additionalProperties": false,

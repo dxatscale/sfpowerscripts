@@ -50,6 +50,7 @@ export interface DeployProps {
   currentStage?: Stage;
   baselineOrg?:string;
   isCheckIfPackagesPromoted?: boolean;
+  isDryRun?: boolean;
 }
 
 export default class DeployImpl {

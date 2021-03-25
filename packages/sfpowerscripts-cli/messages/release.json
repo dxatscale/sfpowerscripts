@@ -1,0 +1,17 @@
+{
+  "commandDescription": "Release artifacts to an org",
+  "releaseDefinitionFlagDescription": "Path to YAML file containing map of packages and package versions to download",
+  "targetOrgFlagDescription": "Alias/User Name of the target environment",
+  "scriptPathFlagDescription": "(Optional: no-NPM) Path to script that authenticates and downloads artifacts from the registry",
+  "npmFlagDescription": "Download artifacts from a pre-authenticated private npm registry",
+  "scopeFlagDescription": "(required for NPM) User or Organisation scope of the NPM package",
+  "npmrcPathFlagDescription": "Path to .npmrc file used for authentication to registry. If left blank, defaults to home directory",
+  "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.",
+  "tagFlagDescription":"Tag the release with a label, useful for identification in metrics",
+  "skipIfAlreadyInstalled":"Skip the package installation if the package is already installed in the org",
+  "baselineorgFlagDescription": "The org against which the package skip should be baselined",
+  "dryRunFlagDescription": "Perform dry-run of release. No artifacts are deployed to the target org.",
+  "waitTimeFlagDescription": "Wait time for package installation",
+  "keysFlagDescription": "Keys to be used while installing any managed package dependencies. Required format is a string of key-value pairs separated by spaces e.g. packageA:pw123 packageB:pw123 packageC:pw123",
+  "allowUnpromotedPackagesFlagDescription": "Allow un-promoted packages to be installed in production"
+}
