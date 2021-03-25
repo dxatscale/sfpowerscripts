@@ -4,8 +4,6 @@ description: All the details about Source Packages
 
 # Source Packages
 
-## What is Source Package?
-
 Source Packages is an sfpowerscripts construct which wraps the Salesforce Metadata \(in [source format](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_source_file_format.htm)\), along with [sfdx-project.json](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm), some metadata information \(such as commit id, branch, tag\) etc. in a versioned zip file \(artifact\), which can be deployed to a Salesforce Org using sfpowerscripts package installation command
 
 ## How are Source Packages different from deploying a folder using source:deploy?
