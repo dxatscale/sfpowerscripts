@@ -25,9 +25,9 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
 
   Each of this stage could have a pre-approval step modelled like the example shown below
 
-![](../.gitbook/assets/image%20%2813%29.png)
+![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29.png)
 
-![](../.gitbook/assets/image%20%2816%29.png)
+![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%285%29.png)
 
 * **CD Pipeline**:  A Continous Delivery Pipeline that gets triggered manually or automatically \( every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
   * Fetch the Artifacts from the artifact repository using the provided release definition
