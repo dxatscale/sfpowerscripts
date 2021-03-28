@@ -241,7 +241,7 @@ export default class ValidateImpl {
       throw new Error(`Failed to create source packages ${failedPackages}`);
 
 
-    if(generatedPackages.length == 0) {
+    if(generatedPackages.length === 0) {
       throw new Error(`No changes detected in the packages to be built \n, validate will only execute if there is a change in atleast one of the packages`);
     }
 
