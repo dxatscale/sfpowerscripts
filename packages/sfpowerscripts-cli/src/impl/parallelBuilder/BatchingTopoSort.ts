@@ -26,7 +26,7 @@ export default class BatchingTopoSort {
 
       return sorted;
     } catch (error) {
-      throw Error("Missing package in adjacency list");
+      throw Error("Missing package in adjacency list or cycles detected"+error);
     }
   }
 

@@ -154,7 +154,22 @@ export default class Deploy extends SfpowerscriptsCommand {
         totalElapsedTime,
         tags
       );
+
+
+      SFPStatsSender.logGauge(
+        "deploy.succeeded.packages",
+        deploymentResult.deployed.length,
+        tags
+      );
+
+      SFPStatsSender.logGauge(
+        "deploy.failed.packages",
+        deploymentResult.failed.length,
+        tags
+      );
+
       if (deploymentResult.failed.length > 0) {
+        
         SFPStatsSender.logCount(
           "deploy.failed",
           tags

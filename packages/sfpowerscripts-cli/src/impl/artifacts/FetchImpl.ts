@@ -53,6 +53,7 @@ export default class FetchImpl {
     const git: Git = new Git(null);
 
     for (let artifact of Object.entries<string>(releaseDefinition.artifacts)) {
+      console.log(`Fetching artifact for ${artifact[0]}`);
       let version: string;
       if (artifact[1] === "LATEST_TAG") {
         version = await this.getVersionFromLatestTag(git, artifact[0]);
@@ -66,7 +67,7 @@ export default class FetchImpl {
         cmd,
         {
           cwd: artifactDirectory,
-          stdio: ["ignore", "inherit", "inherit"],
+          stdio: "pipe",
         }
       );
     }
@@ -79,6 +80,7 @@ export default class FetchImpl {
     const git: Git = new Git(null);
 
     for (let artifact of Object.entries<string>(releaseDefinition.artifacts)) {
+      console.log(`Fetching artifact for ${artifact[0]}`);
       let version: string;
       if (artifact[1] === "LATEST_TAG") {
         version = await this.getVersionFromLatestTag(git, artifact[0]);
