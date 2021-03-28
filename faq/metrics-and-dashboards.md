@@ -4,13 +4,11 @@ description: All about collecting metrics from sfpowerscripts
 
 # Metrics and Dashboards
 
-## How is metrics reported from sfpowerscripts?
+Metrics should be a key part of your DevOps process. It is through these metrics, one can drive continuous improvement of your delivery process. Almost all commands in sfpowerscripts, are instrumented with [StatsD](https://www.datadoghq.com/blog/statsd/) as well as Log Based Metrics.
 
-Metrics should be a key part of your DevOps process. It is through these metrics, one can drive continuous improvement of your delivery process. Almost all commands in sfpowerscripts, are instrumented with StatsD. Read more about StatsD here \([https://www.datadoghq.com/blog/statsd/](https://www.datadoghq.com/blog/statsd/)\)
+## Getting started with Metrics
 
-## How do I start capturing metrics?
-
-Couple of things
+#### Stats D
 
 * Ensure you have a StatsD Daemon running on a server, Setting up StatsD daemon on a server is quite simple, there are lot of guides available \([https://www.scalyr.com/blog/statsd-measure-anything-in-your-system/](https://www.scalyr.com/blog/statsd-measure-anything-in-your-system/)\) . If you are after a hosted StatsD, hosted Graphite offers a hosted StatsD solution as part of their Hosted Graphite offering \([https://www.hostedgraphite.com/docs/integrationguide/ig\_hosted\_statsd.html](https://www.hostedgraphite.com/docs/integrationguide/ig_hosted_statsd.html)\). 
 * Ensure your build agents can reach the StatsD server, this can be bit problematic, when you are using cloud based agents, which imply StatsD service has to be on the internet and reachable from the agent, so plan this out.  If you are using self hosted agents, the StatsD server should be reachable as well.
@@ -25,7 +23,22 @@ Couple of things
  export SFPOWERSCRIPTS_STATSD_PROTOCOL=UDP  // Optional, defualts to UDP, Supports UDP/TCP
 ```
 
-## What are the metrics being captured?
+#### Log Based Metrics
+
+sfpowerscripts is also able to generate metrics in a log file.  These metrics are written to **.sfpowerscripts/metrics.log** in your working directory.  This log file after every run of a command could be send to a log aggregator for further analysis.  
+
+
+ The JSON payload consist  of the the following, name of the metric \(**metric**\), type of the metric such as count, guage or timers  \( **type** \), timestamp \(**timestamp**\) and followed by tags pertaining to the particular metric \(**tags**\)  
+  
+A sample metric is shown below       
+
+```text
+{"metric":"sfpowerscripts.build.scheduled.packages","type":"count","timestamp":1616475396815,"tags":{"package":"core-crm","type":"Unlocked","is_diffcheck_enabled":"true","is_dependency_validated":"true","pr_mode":"false"}
+```
+
+One could write a parse this file, and then send each individual entries to a  logging system that allows JSON based logging.
+
+## Metrics available within sfpowerscripts
 
 The following are the list of metrics that are captured.
 
@@ -62,7 +75,7 @@ The following are the list of metrics that are captured.
 | sfpowerscripts.prepare.duration | Time take to prepare a  pool of scratchorgs | GUAGE |
 | sfpowerscripts.pool.remaining | Number of scratch orgs that are remaining in a pool after fetched by validate command | GUAGE |
 
-## Can you show me examples of dashboards that could be created with these metrics?
+## Sample Dashboards
 
 ![Package Status Dashboard](../.gitbook/assets/status_package.jpeg)
 

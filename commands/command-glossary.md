@@ -4,36 +4,36 @@ description: Commands in sfpowerscripts
 
 # Command Glossary
 
-
-
 * [Orchestrator Commands](../faq/orchestrator.md)
-  * [`sfdx sfpowerscripts:orchestrator:prepare`]()
-  * [`sfdx sfpowerscripts:orchestrator:validate`]()
-  * [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`]()
-  * [`sfdx sfpowerscripts:orchestrator:quickbuild`]()
-  * [`sfdx sfpowerscripts:orchestrator:build`]()
-  * [`sfdx sfpowerscripts:orchestrator:deploy`]()
-  * [`sfdx sfpowerscripts:orchestrator:promote`]()
-  * [`sfdx sfpowerscripts:orchestrator:publish`]()
+  * [`sfdx sfpowerscripts:orchestrator:prepare`](command-glossary.md)
+  * [`sfdx sfpowerscripts:orchestrator:validate`](command-glossary.md)
+  * [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`](command-glossary.md)
+  * [`sfdx sfpowerscripts:orchestrator:quickbuild`](command-glossary.md)
+  * [`sfdx sfpowerscripts:orchestrator:build`](command-glossary.md)
+  * [`sfdx sfpowerscripts:orchestrator:deploy`](command-glossary.md)
+  * [`sfdx sfpowerscripts:orchestrator:promote`](command-glossary.md)
+  * [`sfdx sfpowerscripts:orchestrator:publish`](command-glossary.md)
 * Changelog \(Track Releases\)
-  * [`sfdx sfpowerscripts:changelog:generate`]()
+  * [`sfdx sfpowerscripts:changelog:generate`](command-glossary.md)
 * Package Commands \( Build your own workflow\)
-  * [`sfdx sfpowerscripts:package:data:create`]()
-  * [`sfdx sfpowerscripts:package:data:install`]()
-  * [`sfdx sfpowerscripts:package:source:create`]()
-  * [`sfdx sfpowerscripts:package:source:install`]()
-  * [`sfdx sfpowerscripts:package:unlocked:create`]()
-  * [`sfdx sfpowerscripts:package:unlocked:install`]()
-  * [`sfdx sfpowerscripts:package:version:increment`]()
+  * [`sfdx sfpowerscripts:package:data:create`](command-glossary.md)
+  * [`sfdx sfpowerscripts:package:data:install`](command-glossary.md)
+  * [`sfdx sfpowerscripts:package:source:create`](command-glossary.md)
+  * [`sfdx sfpowerscripts:package:source:install`](command-glossary.md)
+  * [`sfdx sfpowerscripts:package:unlocked:create`](command-glossary.md)
+  * [`sfdx sfpowerscripts:package:unlocked:install`](command-glossary.md)
+  * [`sfdx sfpowerscripts:package:version:increment`](command-glossary.md)
 * Pool Management
-  * [`sfdx sfpowerscripts:pool:delete`]()
-  * [`sfdx sfpowerscripts:pool:fetch`]()
-  * [`sfdx sfpowerscripts:pool:list`]()
+  * [`sfdx sfpowerscripts:pool:delete`](command-glossary.md)
+  * [`sfdx sfpowerscripts:pool:fetch`](command-glossary.md)
+  * [`sfdx sfpowerscripts:pool:list`](command-glossary.md)
 * Static Analysis
-  * [`sfdx sfpowerscripts:analyze:pmd`]()
+  * [`sfdx sfpowerscripts:analyze:pmd`](command-glossary.md)
 * Apex tests
-  * [`sfdx sfpowerscripts:apextests:trigger`]()
-  * [`sfdx sfpowerscripts:apextests:validate`]()
+  * [`sfdx sfpowerscripts:apextests:trigger`](command-glossary.md)
+  * [`sfdx sfpowerscripts:apextests:validate`](command-glossary.md)
+* Artifacts
+  * \`\`[`sfdx sfpowerscripts:artifacts:fetch`](command-glossary.md#sfdx-sfpowerscripts-artifacts-fetch)\`\`
 
 ## `sfdx sfpowerscripts:orchestrator:prepare`
 
@@ -1105,4 +1105,47 @@ EXAMPLES
 ```
 
 _See code:_ [_commands/sfpowerscripts/pool/list.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/list.ts)\`\`
+
+## `sfdx sfpowerscripts:artifacts:fetch`
+
+```text
+Fetch artifacts from an artifact registry that is either NPM compatible or supports universal artifacts
+
+USAGE
+  $ sfdx sfpowerscripts:artifacts:fetch -d <directory> [-p <filepath>] [--scope <string> [--npm | -f <filepath>]] [--npmrcpath <filepath> undefined] [--json]
+  [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -d, --artifactdir=artifactdir                                                     (required) [default: artifacts] Directory
+                                                                                    to save downloaded artifacts
+
+  -f, --scriptpath=scriptpath                                                       (Optional: no-NPM)Path to script that
+                                                                                    authenticates and downloads artifacts
+                                                                                    from the registry
+
+  -p, --releasedefinition=releasedefinition                                         Path to YAML file containing map of
+                                                                                    packages and package versions to
+                                                                                    download
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for this
+                                                                                    command invocation
+
+  --npm                                                                             Download artifacts from a pre-authenticated
+                                                                                    private npm registry
+
+  --npmrcpath=npmrcpath                                                             Path to .npmrc file used for authentication
+                                                                                    to registry. If left blank, defaults to
+                                                                                    home directory
+
+  --scope=scope                                                                     (required for NPM) User or Organisation
+                                                                                    scope of the NPM package
+
+EXAMPLES
+  $ sfdx sfpowerscripts:artifacts:fetch -p myreleasedefinition.yaml -f myscript.sh
+  $ sfdx sfpowerscripts:artifacts:fetch -p myreleasedefinition.yaml --npm --scope myscope --npmrcpath path/to/.npmrc
+```
+
+_See code:_ [_commands/sfpowerscripts/artifacts/fetch.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/artifacts/fetch.ts)
 

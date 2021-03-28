@@ -21,6 +21,7 @@
 * [Build & QuickBuild](commands/build-and-quickbuild.md)
 * [Deploy](commands/deploy.md)
 * [Publish](commands/publish.md)
+* [Fetch](commands/fetch.md)
 * [Command Glossary](commands/command-glossary.md)
 
 ## GETTING STARTED

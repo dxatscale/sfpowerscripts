@@ -12,7 +12,7 @@ Rather than lock everyone into a particular registry provider, sfpowerscripts su
 * **A  registry which supports universal packages \(** Jfrog Aritfactory, Azure Artifacts\)
 
 {% hint style="danger" %}
-Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages only. sfpowerscripts in
+Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages only.
 {% endhint %}
 
 ## Tagging artifacts to git during publish
