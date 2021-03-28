@@ -95,6 +95,21 @@ export default class GenerateChangelog extends SfdxCommand {
         throw new Error(`No artifacts found at ${path.resolve(process.cwd(), this.flags.artifactdir)}`);
       }
 
+      let prevReleaseDefinition: Release;
+      let releaseChangelog: ReleaseChangelog;
+      if (fs.existsSync(path.join(repoTempDir,`releasechangelog.json`))) {
+        releaseChangelog = JSON.parse(fs.readFileSync(path.join(repoTempDir,`releasechangelog.json`), 'utf8'));
+        if (releaseChangelog["releases"].length > 0) {
+          prevReleaseDefinition = releaseChangelog["releases"][releaseChangelog["releases"].length - 1];
+        }
+      }
+
+      if (prevReleaseDefinition?.name === this.flags.releasename) {
+        console.log(`The release named "${this.flags.releasename}" already exists.`);
+        console.log("Skipping changelog generation...");
+        return;
+      }
+
       let packageChangelogMap: {[P:string]: string} = {};
       let latestReleaseDefinition: Release = {
         name: this.flags.releasename,
@@ -135,16 +150,6 @@ export default class GenerateChangelog extends SfdxCommand {
       }
 
       console.log("Generating changelog...");
-
-      // Get artifact versions from previous release definition
-      let prevReleaseDefinition: Release;
-      let releaseChangelog: ReleaseChangelog;
-      if (fs.existsSync(path.join(repoTempDir,`releasechangelog.json`))) {
-        releaseChangelog = JSON.parse(fs.readFileSync(path.join(repoTempDir,`releasechangelog.json`), 'utf8'));
-        if (releaseChangelog["releases"].length > 0) {
-          prevReleaseDefinition = releaseChangelog["releases"][releaseChangelog["releases"].length - 1];
-        }
-      }
 
       let prevReleaseLatestCommitId: {[P: string]: string} = {}
       if (prevReleaseDefinition) {
@@ -257,6 +262,7 @@ export default class GenerateChangelog extends SfdxCommand {
         await git.push();
       }
 
+      console.log(`Successfully generated changelog`);
     } catch (err) {
 
       let errorMessage: string = "";
@@ -274,7 +280,6 @@ export default class GenerateChangelog extends SfdxCommand {
       process.exit(1);
     } finally {
       tempDir.removeCallback();
-      console.log(`Successfully generated changelog`);
     }
   }
 }
