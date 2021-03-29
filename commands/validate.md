@@ -78,7 +78,7 @@ Source packages have a more stringent validation \(for an optimized deployment, 
 
 ### How is code coverage calculated?
 
-For unlocked packages, the code coverage is of the entire package, calculated as the 'total lines covered' divided by the 'total number of lines' in the package.
+For unlocked packages, the code coverage is of the entire package, calculated as the 'total lines covered' divided by the 'total number of lines' in the package. 
 
 Code coverage for source packages is calculated differently, as they are not 'legitimate' packages and are deployed using the MDAPI. For source packages, the code coverage is determined for individual classes. Each class must have a code coverage that is greater than the threshold set by the user.
 

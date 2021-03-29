@@ -66,7 +66,7 @@ If **--installall** flag is utilized, sfpowerscripts would attempt to do a build
 
 ## Installing **pre-existing artifacts** as source packages
 
-If this flag \(**--installassourcepackages**\) is used, we would attempt installing all packages as [source packages](../faq/package-types/source-packages.md), overriding the default package type \(so an [unlocked package ](../faq/package-types/unlocked-packages.md)will be installed as a source package\).
+If this flag \(**--installassourcepackages**\)   is used, we would attempt installing all packages as [source packages](../faq/package-types/source-packages.md), overriding the default package type \(so an [unlocked package ](../faq/package-types/unlocked-packages.md)will be installed as a source package\).
 
 {% hint style="success" %}
 We typically recommend this option to install your packages in the repo as source packages, as often we have noticed, during the validation phase, where a package is installed as a source package often causes issues when deployed on top of an unlocked package.
@@ -134,7 +134,7 @@ Let's unpack the concepts utilizing the above example
 
 If any of the managed package has keys, it can be provided as an argument to the prepare command. Check the command's flag for more information
 
-### Key Support for Managed Packages
+#### Key Support for Managed Packages
 
 The format for the 'keys' parameter is a string of key-value pairs separated by spaces - where the key is the name of the package, the value is the protection key of the package, and the key-value pair itself is delimited by a colon .
 
@@ -146,7 +146,7 @@ The time taken by this command depends on how many managed packages and your pac
 
 ## Handling a change in shape of the scratch org's in pool
 
-If it is a change in settings, check out the [validate command's documentation](validate.md) where you will find an option how to update settings of a scratch org from the pool. Otherwise you will have to delete the existing pool and recreate again.
+If it is a change in settings, check out the [validate command's documentation](validate.md)  where you will find an option how to update settings of a scratch org from the pool. Otherwise you will have to delete the existing pool and recreate again.
 
 ## Managing the Scratch Org pool
 

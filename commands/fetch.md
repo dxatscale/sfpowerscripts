@@ -4,7 +4,7 @@ description: Fetch artifacts from a repository
 
 # Fetch
 
-The `sfpowerscripts:artifacts:fetch` command provides a simplified method of fetching artifacts from an artifact repository. Each call to the command requires a `release-definition.yml` file which contains the name of the artifacts that you want to download, and a mapping to the version to download. If fetching from a **NPM registry**, the command will handle everything else for you. However, for universal artifacts there is no uniform method for downloading artifacts from a repository, so you will need to provide a shell script that calls the relevant API.
+The `sfpowerscripts:artifacts:fetch` command provides a simplified method of fetching artifacts from an artifact repository. Each call to the command requires a `release-definition.yml` file which contains the name of the artifacts that you want to download, and a mapping to the version to download. If fetching from a **NPM registry**, the command will handle everything else for you. However, for universal artifacts there is no uniform method for downloading artifacts from a repository, so you will need to provide a shell script that calls the relevant API.    
 
 ```text
 # release-definition.yml
@@ -20,7 +20,7 @@ artifacts:
 The `LATEST_TAG` keyword is only supported if the current working directory is pointing to the project directory, and if at least one git tag exists for the package.
 {% endhint %}
 
-## Fetching universal artifacts
+## Fetching universal artifacts 
 
 For universal artifacts, there is no uniform method for downloading artifacts from a registry, so you will need to provide a shell script that calls the relevant API.
 
@@ -43,5 +43,8 @@ echo "Downloading Artifact $1 Version $2"
 
 az artifacts universal download --feed myfeed --name $1 --version $2 --path $3 \
     --organization "https://dev.azure.com/myorg/" --project myproject --scope project
+
 ```
+
+ 
 
