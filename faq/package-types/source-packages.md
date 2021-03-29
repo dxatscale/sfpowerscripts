@@ -4,8 +4,6 @@ description: All the details about Source Packages
 
 # Source Packages
 
-## What is Source Package?
-
 Source Packages is an sfpowerscripts construct which wraps the Salesforce Metadata \(in [source format](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_source_file_format.htm)\), along with [sfdx-project.json](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm), some metadata information \(such as commit id, branch, tag\) etc. in a versioned zip file \(artifact\), which can be deployed to a Salesforce Org using sfpowerscripts package installation command
 
 ## How are Source Packages different from deploying a folder using source:deploy?
@@ -49,7 +47,7 @@ All these currently available options that can be enabled for source packaging b
 * **Optimized Deployment  \(`isOptimizedDeployment:<boolean>)`:** Control the behaviour of testing of source packages during deployment, utilize the org 's coverage or better have apex unit tests that have 75% or more coverage for each class carried in the source package. Any source packages that do not have apex classes/triggers will be deployed without triggering tests  
 * **Aliasify \(`aliasfy:<boolean>`\)** :  Aliasify enables deployment of a subfolder in a source package that matches the target org. For example, you have a source package as listed below.   During Installation, only the metadata contents of the folder that matches the alias gets deployed
 
-![Source Packages with env-specific-folders](../../.gitbook/assets/image%20%285%29%20%284%29%20%283%29%20%284%29%20%281%29%20%284%29.png)
+![Source Packages with env-specific-folders](../../.gitbook/assets/image%20%285%29%20%284%29%20%283%29%20%284%29%20%281%29.png)
 
 * **Skip Testing \( `skipTesting:<boolean>`\)** :  Allows you to deploy a source package without triggering test to an Org. Please note, this is only applicable during deployments to sandboxes.  Apex tests are mandatory \(if your package contains apex classes/triggers\) during deployment to production.
 * **Reconcile Profiles \(  `reconcileProfiles:<boolean>`\) :**  By default, true, automatically reconcile a profile existing in the source package against the target org. Read more about reconcile option [here](https://github.com/Accenture/sfpowerkit/discussions/410).

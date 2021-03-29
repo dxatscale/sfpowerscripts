@@ -38,7 +38,7 @@ sfdx force:apex:execute -f scripts/datascript.apex -u $2
 One could use the `ignoreOnStage:[ "deploy" ]` property to mark which packages should be skipped by the deploy command. If you want a selective skip, that is skip a particular package being deployed to specific org, you could use the property
 
 ```text
-         `skipDeployOnOrgs: ["username/alias","username/alias"]`                     
+         `skipDeployOnOrgs: ["username/alias","username/alias"]`
 ```
 
 If the username/alias passed as a flag to the command matches the array, then this package will be skipped on deployment
@@ -59,5 +59,5 @@ It is often a recommended practice to split CI/CD into [asynchronous pipelines](
 
 In this particular instance, this is a rough schematic for designing such pipelines are as follows. As you could see, from the below diagram, deploy could be used in the CD pipelines using only the artifacts from the artifact repository without the need for version control system to be hooked into the CD pipelines.
 
-![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2825%29.png)
+![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2823%29.png)
 
