@@ -29,7 +29,7 @@ description: Learn about all the features in sfpowerscripts
 ## **Faster Builds... Less slack time!**
 
 * Parallelized Package Builder that steps through building packages by understanding dependencies
-* Build packages that are only changed, saving significant amount of time
+* Build packages that are only changed, saving a significant amount of time
 * Automated resolution of package version numbers to ensure packages are built with the right versions during parallel builds
 * Handle multiple .forceignore files depending on stage \(development vs validation vs build\)
 * Bundled Package Builds \( build a group of package, if any one of them changes\)

@@ -15,7 +15,21 @@ During **quickbuild**, unlocked packages are built without triggering dependency
 We recommend using quickbuild, to generate packages upon every merge and then deploying the to your test org's. When you have tested successfully, you could use the build command to generate validated packages
 {% endhint %}
 
-Both Build & Quickbuild is equipped with a diffcheck functionality, which os enabled when one utilizes **diffcheck** flag, A comparison \(using git diff\) is made between the latest source code and the previous version of the package, defined by a tag that follows semantic versioning. If any difference is detected in the **package directory**, **package version** or **scratch org definition file** \(applies to unlocked packages only\), then the package will be created - otherwise, it is skipped.
+Both Build & Quickbuild is equipped with a diffcheck functionality, which is enabled when one utilizes **diffcheck** flag, A comparison \(using git diff\) is made between the latest source code and the previous version of the package, defined by a tag that follows semantic versioning. If any difference is detected in the **package directory**, **package version** or **scratch org definition file** \(applies to unlocked packages only\), then the package will be created, otherwise, it will be skipped.
+
+{% hint style="warning" %}
+Please ensure you checkout the whole repo for this command to succeed, especially when used with diffcheck .
+
+For eg: if you are using github actions
+
+```text
+            # Checkout the code in the pull request
+            - name: 'Checkout source code'
+              uses: actions/checkout@v2
+              with:
+                fetch-depth: 0
+```
+{% endhint %}
 
 ## Determining Package to be built
 
@@ -46,6 +60,10 @@ In this scenario, where there are changes in multiple packages, say B & C, the b
 ## **Versioning Packages**
 
 Utilize the .NEXT and .LATEST for versioning the build number of unlocked packages. For Source and Data package, utilize the "**buildnumber"** flag and provide the build number from your CI/CD system
+
+{% hint style="danger" %}
+Source and Data packages do not support .NEXT for version numbers. Please use 0 as the build number and pass the build number from your CI/CD for substituting the build number
+{% endhint %}
 
 ## **Ignoring Packages from being built**
 
