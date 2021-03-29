@@ -31,15 +31,16 @@ description: Commands in sfpowerscripts
   * [`sfdx sfpowerscripts:package:unlocked:install`](command-glossary.md#sfdx-sfpowerscriptspackageunlockedinstall)
   * [`sfdx sfpowerscripts:package:version:increment`](command-glossary.md#sfdx-sfpowerscriptspackageversionincrement)
 
-  
-  Pool Management
+* Pool Management
 
   * [`sfdx sfpowerscripts:pool:delete`](command-glossary.md#sfdx-sfpowerscriptspooldelete)
   * [`sfdx sfpowerscripts:pool:fetch`](command-glossary.md#sfdx-sfpowerscriptspoolfetch)
   * [`sfdx sfpowerscripts:pool:list`](command-glossary.md#sfdx-sfpowerscriptspoollist)
 
 * Static Analysis
+
   * [`sfdx sfpowerscripts:analyze:pmd`](command-glossary.md#sfdx-sfpowerscriptsanalyzepmd)
+
 * Apex tests
 
   * [`sfdx sfpowerscripts:apextests:trigger`](command-glossary.md#sfdx-sfpowerscriptsapexteststrigger)
