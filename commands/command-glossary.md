@@ -7,6 +7,7 @@ description: Commands in sfpowerscripts
 ## Commands
 
 * Orchestrator Commands
+
   * [`sfdx sfpowerscripts:orchestrator:prepare`](command-glossary.md#sfdx-sfpowerscriptsorchestratorprepare)
   * [`sfdx sfpowerscripts:orchestrator:validate`](command-glossary.md#sfdx-sfpowerscriptsorchestratorvalidate)
   * [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`](command-glossary.md#sfdx-sfpowerscriptsorchestratorvalidateagainstorg)
@@ -15,25 +16,35 @@ description: Commands in sfpowerscripts
   * [`sfdx sfpowerscripts:orchestrator:deploy`](command-glossary.md#sfdx-sfpowerscriptsorchestratordeploy)
   * [`sfdx sfpowerscripts:orchestrator:promote`](command-glossary.md#sfdx-sfpowerscriptsorchestratorpromote)
   * [`sfdx sfpowerscripts:orchestrator:publish`](command-glossary.md#sfdx-sfpowerscriptsorchestratorpublish)
+
 * Changelog \(Track Releases\)
+
   * [`sfdx sfpowerscripts:changelog:generate`](command-glossary.md#sfdx-sfpowerscriptschangeloggenerate)
-  * Package Commands \( Build your own workflow\)
-    * [`sfdx sfpowerscripts:package:data:create`](command-glossary.md#sfdx-sfpowerscriptspackagedatacreate)
-    * [`sfdx sfpowerscripts:package:data:install`](command-glossary.md#sfdx-sfpowerscriptspackagedatainstall)
-    * [`sfdx sfpowerscripts:package:source:create`](command-glossary.md#sfdx-sfpowerscriptspackagesourcecreate)
-    * [`sfdx sfpowerscripts:package:source:install`](command-glossary.md#sfdx-sfpowerscriptspackagesourceinstall)
-    * [`sfdx sfpowerscripts:package:unlocked:create`](command-glossary.md#sfdx-sfpowerscriptspackageunlockedcreate)
-    * [`sfdx sfpowerscripts:package:unlocked:install`](command-glossary.md#sfdx-sfpowerscriptspackageunlockedinstall)
-      * [`sfdx sfpowerscripts:package:version:increment`](command-glossary.md#sfdx-sfpowerscriptspackageversionincrement)
-  * Pool Management
-    * [`sfdx sfpowerscripts:pool:delete`](command-glossary.md#sfdx-sfpowerscriptspooldelete)
-    * [`sfdx sfpowerscripts:pool:fetch`](command-glossary.md#sfdx-sfpowerscriptspoolfetch)
-    * [`sfdx sfpowerscripts:pool:list`](command-glossary.md#sfdx-sfpowerscriptspoollist)
-  * Static Analysis
-    * [`sfdx sfpowerscripts:analyze:pmd`](command-glossary.md#sfdx-sfpowerscriptsanalyzepmd)
+
+* Package Commands \( Build your own workflow\)
+
+  * [`sfdx sfpowerscripts:package:data:create`](command-glossary.md#sfdx-sfpowerscriptspackagedatacreate)
+  * [`sfdx sfpowerscripts:package:data:install`](command-glossary.md#sfdx-sfpowerscriptspackagedatainstall)
+  * [`sfdx sfpowerscripts:package:source:create`](command-glossary.md#sfdx-sfpowerscriptspackagesourcecreate)
+  * [`sfdx sfpowerscripts:package:source:install`](command-glossary.md#sfdx-sfpowerscriptspackagesourceinstall)
+  * [`sfdx sfpowerscripts:package:unlocked:create`](command-glossary.md#sfdx-sfpowerscriptspackageunlockedcreate)
+  * [`sfdx sfpowerscripts:package:unlocked:install`](command-glossary.md#sfdx-sfpowerscriptspackageunlockedinstall)
+  * [`sfdx sfpowerscripts:package:version:increment`](command-glossary.md#sfdx-sfpowerscriptspackageversionincrement)
+
+  
+  Pool Management
+
+  * [`sfdx sfpowerscripts:pool:delete`](command-glossary.md#sfdx-sfpowerscriptspooldelete)
+  * [`sfdx sfpowerscripts:pool:fetch`](command-glossary.md#sfdx-sfpowerscriptspoolfetch)
+  * [`sfdx sfpowerscripts:pool:list`](command-glossary.md#sfdx-sfpowerscriptspoollist)
+
+* Static Analysis
+  * [`sfdx sfpowerscripts:analyze:pmd`](command-glossary.md#sfdx-sfpowerscriptsanalyzepmd)
 * Apex tests
+
   * [`sfdx sfpowerscripts:apextests:trigger`](command-glossary.md#sfdx-sfpowerscriptsapexteststrigger)
   * [`sfdx sfpowerscripts:apextests:validate`](command-glossary.md#sfdx-sfpowerscriptsapextestsvalidate)
+
 * Artifacts
   * [`sfdx sfpowerscripts:artifacts:fetch`](command-glossary.md#sfdx-sfpowerscriptsartifactsfetch)
 
