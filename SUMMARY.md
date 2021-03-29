@@ -22,6 +22,7 @@
 * [Deploy](commands/deploy.md)
 * [Publish](commands/publish.md)
 * [Fetch](commands/fetch.md)
+* [Changelog](commands/changelog.md)
 * [Command Glossary](commands/command-glossary.md)
 
 ## GETTING STARTED
