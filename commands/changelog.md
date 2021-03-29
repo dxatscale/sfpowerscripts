@@ -1,8 +1,5 @@
 ---
-description: >-
-  Attach the changelog:generate command to your deployment pipeline to get a
-  running history of artifacts, work items and commits being deployed to an org,
-  in each release
+description: Gather the release notes!
 ---
 
 # Changelog
