@@ -18,8 +18,8 @@ We recommend using quickbuild, to generate packages upon every merge and then de
 Both Build & Quickbuild is equipped with a diffcheck functionality, which is enabled when one utilizes **diffcheck** flag, A comparison \(using git diff\) is made between the latest source code and the previous version of the package, defined by a tag that follows semantic versioning. If any difference is detected in the **package directory**, **package version** or **scratch org definition file** \(applies to unlocked packages only\), then the package will be created, otherwise, it will be skipped.
 
 {% hint style="warning" %}
-Please ensure you checkout the whole repo for this command to succeed, especially when used with diffcheck .   
-  
+Please ensure you checkout the whole repo for this command to succeed, especially when used with diffcheck .
+
 For eg: if you are using github actions
 
 ```text
@@ -68,8 +68,4 @@ Source and Data packages do not support .NEXT for version numbers. Please use 0 
 ## **Ignoring Packages from being built**
 
 Using the `ignoreOnStage:[ "build" ]` property on a package, causes the particular package to be skipped by the **build** command. Similarly you can use `ignoreOnStage:[ "quickbuild" ]` to skip packages in the quickbuild stage.
-
-
-
-
 

@@ -4,55 +4,44 @@ description: Commands in sfpowerscripts
 
 # Command Glossary
 
-  ## Commands
+## Commands
 
- - Orchestrator Commands
-   - [`sfdx sfpowerscripts:orchestrator:prepare`](#sfdx-sfpowerscriptsorchestratorprepare)
-   - [`sfdx sfpowerscripts:orchestrator:validate`](#sfdx-sfpowerscriptsorchestratorvalidate)
-   - [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`](#sfdx-sfpowerscriptsorchestratorvalidateagainstorg)
-   - [`sfdx sfpowerscripts:orchestrator:quickbuild`](#sfdx-sfpowerscriptsorchestratorquickbuild)
-   - [`sfdx sfpowerscripts:orchestrator:build`](#sfdx-sfpowerscriptsorchestratorbuild)
-   - [`sfdx sfpowerscripts:orchestrator:deploy`](#sfdx-sfpowerscriptsorchestratordeploy)
-   - [`sfdx sfpowerscripts:orchestrator:promote`](#sfdx-sfpowerscriptsorchestratorpromote)
-   - [`sfdx sfpowerscripts:orchestrator:publish`](#sfdx-sfpowerscriptsorchestratorpublish)
-
-- Changelog (Track Releases)
-   - [`sfdx sfpowerscripts:changelog:generate`](#sfdx-sfpowerscriptschangeloggenerate)
-
- - Package Commands ( Build your own workflow)
-	 - [`sfdx sfpowerscripts:package:data:create`](#sfdx-sfpowerscriptspackagedatacreate)
-	 - [`sfdx sfpowerscripts:package:data:install`](#sfdx-sfpowerscriptspackagedatainstall)
-	 - [`sfdx sfpowerscripts:package:source:create`](#sfdx-sfpowerscriptspackagesourcecreate)
-	 - [`sfdx sfpowerscripts:package:source:install`](#sfdx-sfpowerscriptspackagesourceinstall)
-	 - [`sfdx sfpowerscripts:package:unlocked:create`](#sfdx-sfpowerscriptspackageunlockedcreate)
-	 - [`sfdx sfpowerscripts:package:unlocked:install`](#sfdx-sfpowerscriptspackageunlockedinstall)
-   - [`sfdx sfpowerscripts:package:version:increment`](#sfdx-sfpowerscriptspackageversionincrement)
-
- - Pool Management
-	 - [`sfdx sfpowerscripts:pool:delete `](#sfdx-sfpowerscriptspooldelete)
-	 - [`sfdx sfpowerscripts:pool:fetch`](#sfdx-sfpowerscriptspoolfetch)
-	 - [`sfdx sfpowerscripts:pool:list`](#sfdx-sfpowerscriptspoollist)
-
- - Static Analysis
-	 - [`sfdx sfpowerscripts:analyze:pmd`](#sfdx-sfpowerscriptsanalyzepmd)
-
-- Apex tests
-  - [`sfdx sfpowerscripts:apextests:trigger`](#sfdx-sfpowerscriptsapexteststrigger)
-  - [`sfdx sfpowerscripts:apextests:validate`](#sfdx-sfpowerscriptsapextestsvalidate)
-
-- Artifacts
-  - [`sfdx sfpowerscripts:artifacts:fetch`](#sfdx-sfpowerscriptsartifactsfetch)
+* Orchestrator Commands
+  * [`sfdx sfpowerscripts:orchestrator:prepare`](command-glossary.md#sfdx-sfpowerscriptsorchestratorprepare)
+  * [`sfdx sfpowerscripts:orchestrator:validate`](command-glossary.md#sfdx-sfpowerscriptsorchestratorvalidate)
+  * [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`](command-glossary.md#sfdx-sfpowerscriptsorchestratorvalidateagainstorg)
+  * [`sfdx sfpowerscripts:orchestrator:quickbuild`](command-glossary.md#sfdx-sfpowerscriptsorchestratorquickbuild)
+  * [`sfdx sfpowerscripts:orchestrator:build`](command-glossary.md#sfdx-sfpowerscriptsorchestratorbuild)
+  * [`sfdx sfpowerscripts:orchestrator:deploy`](command-glossary.md#sfdx-sfpowerscriptsorchestratordeploy)
+  * [`sfdx sfpowerscripts:orchestrator:promote`](command-glossary.md#sfdx-sfpowerscriptsorchestratorpromote)
+  * [`sfdx sfpowerscripts:orchestrator:publish`](command-glossary.md#sfdx-sfpowerscriptsorchestratorpublish)
+* Changelog \(Track Releases\)
+  * [`sfdx sfpowerscripts:changelog:generate`](command-glossary.md#sfdx-sfpowerscriptschangeloggenerate)
+  * Package Commands \( Build your own workflow\)
+    * [`sfdx sfpowerscripts:package:data:create`](command-glossary.md#sfdx-sfpowerscriptspackagedatacreate)
+    * [`sfdx sfpowerscripts:package:data:install`](command-glossary.md#sfdx-sfpowerscriptspackagedatainstall)
+    * [`sfdx sfpowerscripts:package:source:create`](command-glossary.md#sfdx-sfpowerscriptspackagesourcecreate)
+    * [`sfdx sfpowerscripts:package:source:install`](command-glossary.md#sfdx-sfpowerscriptspackagesourceinstall)
+    * [`sfdx sfpowerscripts:package:unlocked:create`](command-glossary.md#sfdx-sfpowerscriptspackageunlockedcreate)
+    * [`sfdx sfpowerscripts:package:unlocked:install`](command-glossary.md#sfdx-sfpowerscriptspackageunlockedinstall)
+      * [`sfdx sfpowerscripts:package:version:increment`](command-glossary.md#sfdx-sfpowerscriptspackageversionincrement)
+  * Pool Management
+    * [`sfdx sfpowerscripts:pool:delete`](command-glossary.md#sfdx-sfpowerscriptspooldelete)
+    * [`sfdx sfpowerscripts:pool:fetch`](command-glossary.md#sfdx-sfpowerscriptspoolfetch)
+    * [`sfdx sfpowerscripts:pool:list`](command-glossary.md#sfdx-sfpowerscriptspoollist)
+  * Static Analysis
+    * [`sfdx sfpowerscripts:analyze:pmd`](command-glossary.md#sfdx-sfpowerscriptsanalyzepmd)
+* Apex tests
+  * [`sfdx sfpowerscripts:apextests:trigger`](command-glossary.md#sfdx-sfpowerscriptsapexteststrigger)
+  * [`sfdx sfpowerscripts:apextests:validate`](command-glossary.md#sfdx-sfpowerscriptsapextestsvalidate)
+* Artifacts
+  * [`sfdx sfpowerscripts:artifacts:fetch`](command-glossary.md#sfdx-sfpowerscriptsartifactsfetch)
 
 ## `sfdx sfpowerscripts:orchestrator:prepare`
 
-Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner,
-Please note for this feature to work the devhub should be enabled and scratchorgpool (additional fields to ScratchOrgInfo object)
-should be deployed to devhub. Please see the instructions [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling#1-install-the-supporting-fields-and-validation-rule-to-devhub). This command also
-install an unlocked package to the scratch org 'sfpowerscripts-artifact' (04t1P000000ka0fQAA) for skipping unchanged packages during
-a validation phase. This particular package can be prebuilt against your org and the ID could be overriden by setting up the
-environment variable SFPOWERSCRIPTS_ARTIFACT_UNLOCKED_PACKAGE
+Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner, Please note for this feature to work the devhub should be enabled and scratchorgpool \(additional fields to ScratchOrgInfo object\) should be deployed to devhub. Please see the instructions [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling#1-install-the-supporting-fields-and-validation-rule-to-devhub). This command also install an unlocked package to the scratch org 'sfpowerscripts-artifact' \(04t1P000000ka0fQAA\) for skipping unchanged packages during a validation phase. This particular package can be prebuilt against your org and the ID could be overriden by setting up the environment variable SFPOWERSCRIPTS\_ARTIFACT\_UNLOCKED\_PACKAGE
 
-```
+```text
 Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner,
 
 
@@ -120,13 +109,13 @@ EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:prepare -t CI_1  -v <devhub>
 ```
 
-_See code: [commands/sfpowerscripts/orchestrator/prepare.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/prepare.ts)_
+_See code:_ [_commands/sfpowerscripts/orchestrator/prepare.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/prepare.ts)
 
 ## `sfdx sfpowerscripts:orchestrator:validate`
 
-Validate the incoming change against a prepared scratch org fetched from the provided pools (created using the prepare command). If the Sfpowerscripts Artifact package is installed in the scratch orgs, only the changed packages in the repo will be deployed by comparing against the package version installed in the fetched scratchorg.
+Validate the incoming change against a prepared scratch org fetched from the provided pools \(created using the prepare command\). If the Sfpowerscripts Artifact package is installed in the scratch orgs, only the changed packages in the repo will be deployed by comparing against the package version installed in the fetched scratchorg.
 
-```
+```text
 Validate the incoming change against a prepared scratch org fetched from the provided pools.
 
 USAGE
@@ -174,13 +163,13 @@ EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -u <devHubUsername> -i <clientId> -f <jwt_file>
 ```
 
-_See code: [commands/sfpowerscripts/orchestrator/validate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/validate.ts)_
+_See code:_ [_commands/sfpowerscripts/orchestrator/validate.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/validate.ts)
 
 ## `sfdx sfpowerscripts:orchestrator:validateAgainstOrg`
 
 Validate the incoming change against a target org. If the Sfpowerscripts Artifact package is installed in the target org, only changed packages in the repo will be deployed by comparing against the package version installed in the target org.
 
-```
+```text
 Validate the incoming change against target org
 
 USAGE
@@ -204,15 +193,13 @@ EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:validateAgainstOrg -u <targetorg>
 ```
 
-_See code: [commands/sfpowerscripts/orchestrator/validateAgainstOrg.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/validateAgainstOrg.ts)_
+_See code:_ [_commands/sfpowerscripts/orchestrator/validateAgainstOrg.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/validateAgainstOrg.ts)
 
 ## `sfdx sfpowerscripts:orchestrator:quickbuild`
 
-Build packages (unlocked/source/data) in a repo in parallel, without validating depenencies or coverage in the case of unlocked packages.
-For diffcheck to work(build packages that are changed), it compares against the last know git tags, so make sure that you strategically place
-the tags push at the required state in your pipeline.
+Build packages \(unlocked/source/data\) in a repo in parallel, without validating depenencies or coverage in the case of unlocked packages. For diffcheck to work\(build packages that are changed\), it compares against the last know git tags, so make sure that you strategically place the tags push at the required state in your pipeline.
 
-```
+```text
 Build packages (unlocked/source/data) in a repo in parallel, without validating depenencies or coverage in the case of unlocked packages
 
 USAGE
@@ -267,14 +254,13 @@ OPTIONS
                                                                                     to finish in minutes
 ```
 
-_See code: [commands/sfpowerscripts/orchestrator/quickbuild.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/quickbuild.ts)_
-
+_See code:_ [_commands/sfpowerscripts/orchestrator/quickbuild.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/quickbuild.ts)
 
 ## `sfdx sfpowerscripts:orchestrator:build`
 
-Build all packages (unlocked/source/data) in a repo in parallel, respecting the dependency of each packages and generate artifacts to a provided directory.For diffcheck to work(build packages that are changed), it compares against the last know git tags, so make sure that you strategically place the tags push at the required state in your pipeline.
+Build all packages \(unlocked/source/data\) in a repo in parallel, respecting the dependency of each packages and generate artifacts to a provided directory.For diffcheck to work\(build packages that are changed\), it compares against the last know git tags, so make sure that you strategically place the tags push at the required state in your pipeline.
 
-```
+```text
 Build all packages (unlocked/source/data) in a repo in parallel, respecting the dependency of each packages and generate artifacts to a provided directory
 
 USAGE
@@ -329,15 +315,13 @@ OPTIONS
                                                                                     to finish in minutes
 ```
 
-_See code: [commands/sfpowerscripts/orchestrator/build.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/build.ts)_
+_See code:_ [_commands/sfpowerscripts/orchestrator/build.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/build.ts)
 
 ## `sfdx sfpowerscripts:orchestrator:deploy`
 
-Deploy packages from the provided aritfact directory, to a given org, using the order and configurable flags provided in sfdx-project.json
-`skipifalreadyinstalled` only works provide the target org has sfpowerscripts-artifact' (04t1P000000ka0fQAA) installed. Please note you can
-deploy your own instance of 'sfpowerscripts-artifact' by building it from the repo and overriding using the environment variable SFPOWERSCRIPTS_ARTIFACT_UNLOCKED_PACKAGE
+Deploy packages from the provided aritfact directory, to a given org, using the order and configurable flags provided in sfdx-project.json `skipifalreadyinstalled` only works provide the target org has sfpowerscripts-artifact' \(04t1P000000ka0fQAA\) installed. Please note you can deploy your own instance of 'sfpowerscripts-artifact' by building it from the repo and overriding using the environment variable SFPOWERSCRIPTS\_ARTIFACT\_UNLOCKED\_PACKAGE
 
-```
+```text
 Deploy packages from the provided aritfact directory, to a given org, using the order and configurable flags provided in sfdx-project.json
 
 USAGE
@@ -375,14 +359,13 @@ EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:deploy -u <username>
 ```
 
-_See code: [commands/sfpowerscripts/orchestrator/deploy.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/deploy.ts)_
-
+_See code:_ [_commands/sfpowerscripts/orchestrator/deploy.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/deploy.ts)
 
 ## `sfdx sfpowerscripts:orchestrator:promote`
 
 Promotes validated unlocked packages with code coverage greater than 75%
 
-```
+```text
 Promotes validated unlocked packages with code coverage greater than 75%
 
 USAGE
@@ -403,13 +386,13 @@ EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:promote -d path/to/artifacts -v <org>
 ```
 
-_See code: [commands/sfpowerscripts/orchestrator/promote.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/promote.ts)_
+_See code:_ [_commands/sfpowerscripts/orchestrator/promote.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/promote.ts)
 
 ## `sfdx sfpowerscripts:orchestrator:publish`
 
 Publish packages to an artifact registry, using a user-provided script that is responsible for authenticating & uploading to the registry.
 
-```
+```text
 Publish packages to an artifact registry, using a user-provided script that is responsible for authenticating & uploading to the registry.
 
 USAGE
@@ -456,13 +439,13 @@ EXAMPLES
   $ sfdx sfpowerscripts:orchestrator:publish -f path/to/script --gittag --pushgittag
 ```
 
-_See code: [commands/sfpowerscripts/orchestrator/publish.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/publish.ts)_
+_See code:_ [_commands/sfpowerscripts/orchestrator/publish.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/publish.ts)
 
 ## `sfdx sfpowerscripts:changelog:generate`
 
 Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository
 
-```
+```text
 Generates release changelog, providing a summary of artifact versions, work items and commits introduced in a release. Creates a release definition based on artifacts contained in the artifact directory, and compares it to previous release definition in changelog stored on a source repository
 
 USAGE
@@ -510,15 +493,13 @@ EXAMPLE
   <branchName>
 ```
 
-_See code: [commands/sfpowerscripts/changelog/generate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/changelog/generate.ts)_
-
-
+_See code:_ [_commands/sfpowerscripts/changelog/generate.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/changelog/generate.ts)
 
 ## `sfdx sfpowerscripts:analyze:pmd`
 
 This task is used to run a static analysis of the apex classes and triggers using PMD, Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task
 
-```
+```text
 This task is used to run a static analysis of the apex classes and triggers using PMD, Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task
 
 USAGE
@@ -573,13 +554,13 @@ EXAMPLES
   <refname>_sfpowerscripts_pmd_output_path
 ```
 
-_See code: [commands/sfpowerscripts/analyze/pmd.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/analyze/pmd.ts)_
+_See code:_ [_commands/sfpowerscripts/analyze/pmd.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/analyze/pmd.ts)
 
 ## `sfdx sfpowerscripts:apextests:trigger`
 
 Triggers Apex unit test in an org. Supports test level RunAllTestsInPackage, which optionally allows validation of individual class code coverage
 
-```
+```text
 Triggers Apex unit test in an org. Supports test level RunAllTestsInPackage, which optionally allows validation of individual class code coverage
 
 USAGE
@@ -631,13 +612,13 @@ EXAMPLES
   $ sfdx sfpowerscripts:apextests:trigger -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c
 ```
 
-_See code: [commands/sfpowerscripts/apextests/trigger.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/apextests/trigger.ts)_
+_See code:_ [_commands/sfpowerscripts/apextests/trigger.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/apextests/trigger.ts)
 
 ## `sfdx sfpowerscripts:apextests:validate`
 
 Validates apex test coverage in the org, Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.
 
-```
+```text
 Validates apex test coverage in the org, Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.
 
 USAGE
@@ -662,14 +643,13 @@ EXAMPLE
   $ sfdx sfpowerscripts:apextests:validate -u scratchorg -t 80
 ```
 
-_See code: [commands/sfpowerscripts/apextests/validate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/apextests/validate.ts)_
-
+_See code:_ [_commands/sfpowerscripts/apextests/validate.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/apextests/validate.ts)
 
 ## `sfdx sfpowerscripts:package:data:create`
 
-Creates a versioned artifact from a source directory containing SFDMU-based data (in csv format and export json). The artifact can be consumed by release pipelines, to deploy the data to orgs
+Creates a versioned artifact from a source directory containing SFDMU-based data \(in csv format and export json\). The artifact can be consumed by release pipelines, to deploy the data to orgs
 
-```
+```text
 Creates a versioned artifact from a source directory containing SFDMU-based data (in csv format and export json). The artifact can be consumed by release pipelines, to deploy the data to orgs
 
 USAGE
@@ -712,14 +692,13 @@ EXAMPLES
   <refname>_sfpowerscripts_package_version_number
 ```
 
-_See code: [commands/sfpowerscripts/package/data/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/data/create.ts)_
-
+_See code:_ [_commands/sfpowerscripts/package/data/create.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/data/create.ts)
 
 ## `sfdx sfpowerscripts:package:data:install`
 
 Installs a SFDMU-based data package consisting of csvfiles and export.json to a target org
 
-```
+```text
 Installs a SFDMU-based data package consisting of csvfiles and export.json to a target org
 
 USAGE
@@ -754,14 +733,13 @@ EXAMPLE
   $ sfdx sfpowerscripts:package:data:install -n mypackage -u <org>
 ```
 
-_See code: [commands/sfpowerscripts/package/data/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/data/install.ts)_
-
+_See code:_ [_commands/sfpowerscripts/package/data/install.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/data/install.ts)
 
 ## `sfdx sfpowerscripts:package:source:create`
 
 This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata wrapped into an artifact. The artifact can then be consumed by release tasks, to deploy the package
 
-```
+```text
 This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata (e.g. commit Id), source code & an optional destructive manifest. The artifact can then be consumed by release pipelines, to deploy the package
 
 USAGE
@@ -806,13 +784,13 @@ EXAMPLES
   <refname>_sfpowerscripts_package_version_number
 ```
 
-_See code: [commands/sfpowerscripts/package/source/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/source/create.ts)_
+_See code:_ [_commands/sfpowerscripts/package/source/create.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/source/create.ts)
 
 ## `sfdx sfpowerscripts:package:source:install`
 
-Installs a sfpowerscripts source package to the target org. skipifalreadyinstalled` only works provide the target org has sfpowerscripts-artifact' (04t1P000000ka0fQAA) installed. Please note you can deploy your own instance of 'sfpowerscripts-artifact' by building it from the repo and overriding using the environment variable SFPOWERSCRIPTS_ARTIFACT_UNLOCKED_PACKAGE
+Installs a sfpowerscripts source package to the target org. skipifalreadyinstalled\` only works provide the target org has sfpowerscripts-artifact' \(04t1P000000ka0fQAA\) installed. Please note you can deploy your own instance of 'sfpowerscripts-artifact' by building it from the repo and overriding using the environment variable SFPOWERSCRIPTS\_ARTIFACT\_UNLOCKED\_PACKAGE
 
-```
+```text
 Installs a sfpowerscripts source package to the target org
 
 USAGE
@@ -862,13 +840,13 @@ EXAMPLE
   $ sfdx sfpowerscripts:package:source:install -n mypackage -u <org>
 ```
 
-_See code: [commands/sfpowerscripts/package/source/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/source/install.ts)_
+_See code:_ [_commands/sfpowerscripts/package/source/install.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/source/install.ts)
 
 ## `sfdx sfpowerscripts:package:unlocked:create`
 
-Creates a new package version, and generates an artifact that consists of the metadata (e.g. version Id). The artifact can then be consumed by release pipelines, to install the unlocked package. Utilize this task in a package build for DX Unlocked Package
+Creates a new package version, and generates an artifact that consists of the metadata \(e.g. version Id\). The artifact can then be consumed by release pipelines, to install the unlocked package. Utilize this task in a package build for DX Unlocked Package
 
-```
+```text
 Creates a new package version, and generates an artifact that consists of the metadata (e.g. version Id). The artifact can then be consumed by release pipelines, to install the unlocked package. Utilize this task in a package build for DX Unlocked Package
 
 USAGE
@@ -953,13 +931,13 @@ EXAMPLES
   <refname>_sfpowerscripts_package_version_number
 ```
 
-_See code: [commands/sfpowerscripts/package/unlocked/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/unlocked/create.ts)_
+_See code:_ [_commands/sfpowerscripts/package/unlocked/create.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/unlocked/create.ts)
 
 ## `sfdx sfpowerscripts:package:unlocked:install`
 
 Installs an unlocked package using sfpowerscripts metadata
 
-```
+```text
 Installs an unlocked package using sfpowerscripts metadata
 
 USAGE
@@ -1019,14 +997,13 @@ EXAMPLE
   $ sfdx sfpowerscripts:package:unlocked:install -n packagename -u sandboxalias -i
 ```
 
-_See code: [commands/sfpowerscripts/package/unlocked/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/unlocked/install.ts)_
-
+_See code:_ [_commands/sfpowerscripts/package/unlocked/install.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/unlocked/install.ts)
 
 ## `sfdx sfpowerscripts:package:version:increment`
 
 Increment the selected version counter by one and optionally commit changes to sfdx-project.json. This command does not push changes to the source repository
 
-```
+```text
 Increment the selected version counter by one and optionally commit changes to sfdx-project.json. This command does not push changes to the source repository
 
 USAGE
@@ -1065,13 +1042,13 @@ EXAMPLES
   <refname>_sfpowerscripts_incremented_project_version
 ```
 
-_See code: [commands/sfpowerscripts/package/version/increment.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/version/increment.ts)_
+_See code:_ [_commands/sfpowerscripts/package/version/increment.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/version/increment.ts)
 
 ## `sfdx sfpowerscripts:pool:delete`
 
 Deletes the pooled scratch orgs from the Scratch Org Pool
 
-```
+```text
 Deletes the pooled scratch orgs from the Scratch Org Pool
 
 USAGE
@@ -1102,13 +1079,13 @@ EXAMPLES
   $ sfdx sfpowerscripts:pool:delete -t core -v devhub
 ```
 
-_See code: [commands/sfpowerscripts/pool/delete.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/delete.ts)_
+_See code:_ [_commands/sfpowerscripts/pool/delete.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/delete.ts)
 
 ## `sfdx sfpowerscripts:pool:fetch`
 
 Gets an active/unused scratch org from the scratch org pool
 
-```
+```text
 Gets an active/unused scratch org from the scratch org pool
 
 USAGE
@@ -1132,13 +1109,13 @@ EXAMPLES
   $ sfdx sfpowerkit:pool:fetch -t core -v devhub -s testuser@test.com
 ```
 
-_See code: [commands/sfpowerscripts/pool/fetch.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/fetch.ts)_
+_See code:_ [_commands/sfpowerscripts/pool/fetch.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/fetch.ts)
 
 ## `sfdx sfpowerscripts:pool:list`
 
-Retrieves a list of active scratch org and details from any pool. If this command is run with -m|--mypool, the command will retrieve the passwords for the pool created by the user who is executing the command.
+Retrieves a list of active scratch org and details from any pool. If this command is run with -m\|--mypool, the command will retrieve the passwords for the pool created by the user who is executing the command.
 
-```
+```text
 Retrieves a list of active scratch org and details from any pool. If this command is run with -m|--mypool, the command will retrieve the passwords for the pool created by the user who is executing the command.
 
 USAGE
@@ -1167,11 +1144,11 @@ EXAMPLES
   $ sfdx sfpowerscripts:pool:list -t core -v devhub -m -a
 ```
 
-_See code: [commands/sfpowerscripts/pool/list.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/list.ts)_
+_See code:_ [_commands/sfpowerscripts/pool/list.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/list.ts)
 
 ## `sfdx sfpowerscripts:artifacts:fetch`
 
-```
+```text
 Fetch artifacts from an artifact registry that is either NPM compatible or supports universal artifacts
 
 USAGE
@@ -1210,4 +1187,5 @@ EXAMPLES
   $ sfdx sfpowerscripts:artifacts:fetch -p myreleasedefinition.yaml --npm --scope myscope --npmrcpath path/to/.npmrc
 ```
 
-_See code: [commands/sfpowerscripts/artifacts/fetch.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/artifacts/fetch.ts)_
+_See code:_ [_commands/sfpowerscripts/artifacts/fetch.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/artifacts/fetch.ts)
+
