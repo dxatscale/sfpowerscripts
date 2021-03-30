@@ -4,7 +4,7 @@ description: Gather the release notes!
 
 # Changelog
 
-The `changelog:generate` command gives you a running history of artifacts, work items and commits that were deployed to an org, for a release.  Simply attach the command to your deployment pipeline, and it will generate the changelog in mardown format `Release-Changelog.md` , which you can display in a VCS wiki or elsewhere.
+The `changelog:generate` command gives you a running history of artifacts, work items and commits that were deployed to an org, for a release. Simply attach the command to your deployment pipeline, and it will generate the changelog in mardown format `Release-Changelog.md` , which you can display in a VCS wiki or elsewhere.
 
 ```text
 OPTIONS
@@ -27,14 +27,14 @@ OPTIONS
   --showallartifacts                                                                Show all artifacts in changelog markdown, including those that have not changed in the 
                                                                                     release
 
-  --workitemurl=workitemurl  
+  --workitemurl=workitemurl
 ```
 
- The data for each release is stored in JSON format `releasechangelog.json` and saved to a source repository specified by the user. Each new release is formed by comparing data from the previous release to determine the new commits and work items. 
+The data for each release is stored in JSON format `releasechangelog.json` and saved to a source repository specified by the user. Each new release is formed by comparing data from the previous release to determine the new commits and work items.
 
 ## Work items
 
- Work items are identified by searching for the pattern, defined by the `--workitemfilter` flag, within commit messages. This implies that in order to take full advantage of the changelog functionality, you need to label your commit messages with the corresponding work item. The `--workitemfilter` flag accepts regular expressions and is case-insensitive.
+Work items are identified by searching for the pattern, defined by the `--workitemfilter` flag, within commit messages. This implies that in order to take full advantage of the changelog functionality, you need to label your commit messages with the corresponding work item. The `--workitemfilter` flag accepts regular expressions and is case-insensitive.
 
 ```text
 # One possible regular expression that would match  the commit message below 
@@ -42,6 +42,4 @@ OPTIONS
 
 $ git commit -m "Implement user story APR-3035"
 ```
-
-
 
