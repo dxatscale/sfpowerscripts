@@ -11,7 +11,7 @@ export class RunAllTestsInPackageOptions extends RunSpecifiedTestsOption {
     wait_time: number,
     outputdir: string
   ) {
-    super(wait_time, outputdir, _sfppackage.apexTestClassses.toString(), true);
+    super(wait_time, outputdir, _sfppackage.apexTestClassses.toString(), false);
   }
 
   public get sfppackage()
