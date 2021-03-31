@@ -29,90 +29,112 @@ export default class ReleaseImpl {
   ){}
 
   public async exec(): Promise<boolean> {
-    try {
-      let releaseDefinition: ReleaseDefinition = yaml.load(
-        fs.readFileSync(this.releaseDefinition, 'utf8')
+
+    let releaseDefinition: ReleaseDefinition = yaml.load(
+      fs.readFileSync(this.releaseDefinition, 'utf8')
+    );
+    validateReleaseDefinition(releaseDefinition, this.isNpm);
+
+    this.printOpenLoggingGroup("Fetching artifacts");
+    let fetchImpl: FetchImpl = new FetchImpl(
+      releaseDefinition,
+      "artifacts",
+      this.fetchArtifactScript,
+      this.isNpm,
+      this.scope,
+      this.npmrcPath
+    );
+    await fetchImpl.exec();
+    this.printClosingLoggingGroup();
+
+
+    if (releaseDefinition.packageDependencies) {
+      this.installPackageDependencies(
+        releaseDefinition.packageDependencies,
+        this.targetOrg,
+        this.keys,
+        this.waitTime
       );
-      validateReleaseDefinition(releaseDefinition, this.isNpm);
+    }
 
-      this.printOpenLoggingGroup("Fetching artifacts");
-      let fetchImpl: FetchImpl = new FetchImpl(
-        releaseDefinition,
-        "artifacts",
-        this.fetchArtifactScript,
-        this.isNpm,
-        this.scope,
-        this.npmrcPath
-      );
-      await fetchImpl.exec();
-      this.printClosingLoggingGroup();
+    let deploymentResult = await this.deployArtifacts();
 
-      if (releaseDefinition.packageDependencies) {
+    if (deploymentResult.failed.length > 0 || deploymentResult.error) {
+      return false
+    } else {
+      return true
+    }
+  }
 
-        let packagesToKeys: {[p: string]: string};
-        if (this.keys) {
-          packagesToKeys = this.parseKeys(this.keys);
-        }
+  private async deployArtifacts() {
+    let deployStartTime: number = Date.now();
 
-        for (let pkg in releaseDefinition.packageDependencies) {
-          let packageVersionId = get18DigitSalesforceId(releaseDefinition.packageDependencies[pkg]);
-          if (!this.isPackageInstalledInOrg(packageVersionId, this.targetOrg)) {
-            let cmd = `sfdx force:package:install -p ${packageVersionId} -u ${this.targetOrg} -w ${this.waitTime} -b ${this.waitTime} --noprompt`;
+    let deployProps: DeployProps = {
+      targetUsername: this.targetOrg,
+      artifactDir: "artifacts",
+      waitTime: this.waitTime,
+      tags: this.tags,
+      isTestsToBeTriggered: false,
+      deploymentMode: DeploymentMode.NORMAL,
+      skipIfPackageInstalled: this.skipIfPackageInstalled,
+      logsGroupSymbol: this.logsGroupSymbol,
+      currentStage: Stage.DEPLOY,
+      baselineOrg: this.baselineOrg,
+      isCheckIfPackagesPromoted: this.isCheckIfPackagesPromoted,
+      isDryRun: this.isDryRun
+    };
 
-            if (packagesToKeys?.[pkg])
-              cmd += ` -k ${packagesToKeys[pkg]}`;
+    let deployImpl: DeployImpl = new DeployImpl(
+      deployProps
+    );
 
-            SFPLogger.log(
-              `Installing package dependency ${pkg}: ${packageVersionId}`,
-              null,
-              null,
-              LoggerLevel.INFO
-            );
-            child_process.execSync(
-              cmd,
-              {
-                stdio: 'inherit'
-              }
-            );
-          } else {
-            console.log(`Package dependency ${pkg}: ${packageVersionId} is already installed in target org`);
-            continue;
+    let deploymentResult = await deployImpl.exec();
+
+    let deploymentElapsedTime: number = Date.now() - deployStartTime;
+
+    this.printDeploySummary(deploymentResult, deploymentElapsedTime);
+    return deploymentResult;
+  }
+
+  private installPackageDependencies(
+    packageDependencies: {[p:string]: string},
+    targetOrg: string,
+    keys: string,
+    waitTime: number
+  ) {
+    this.printOpenLoggingGroup("Installing package dependencies");
+
+    let packagesToKeys: {[p: string]: string};
+    if (keys) {
+      packagesToKeys = this.parseKeys(keys);
+    }
+
+    for (let pkg in packageDependencies) {
+      let packageVersionId = get18DigitSalesforceId(packageDependencies[pkg]);
+      if (!this.isPackageInstalledInOrg(packageVersionId, targetOrg)) {
+        let cmd = `sfdx force:package:install -p ${packageVersionId} -u ${targetOrg} -w ${waitTime} -b ${waitTime} --noprompt`;
+
+        if (packagesToKeys?.[pkg])
+          cmd += ` -k ${packagesToKeys[pkg]}`;
+
+        SFPLogger.log(
+          `Installing package dependency ${pkg}: ${packageVersionId}`,
+          null,
+          null,
+          LoggerLevel.INFO
+        );
+        child_process.execSync(
+          cmd,
+          {
+            stdio: 'inherit'
           }
-        }
-      }
-
-      let deployStartTime: number = Date.now();
-
-      let deployProps: DeployProps = {
-        targetUsername: this.targetOrg,
-        artifactDir: "artifacts",
-        waitTime: this.waitTime,
-        tags: this.tags,
-        isTestsToBeTriggered: false,
-        deploymentMode: DeploymentMode.NORMAL,
-        skipIfPackageInstalled: this.skipIfPackageInstalled,
-        logsGroupSymbol: this.logsGroupSymbol,
-        currentStage: Stage.DEPLOY,
-        baselineOrg: this.baselineOrg,
-        isCheckIfPackagesPromoted: this.isCheckIfPackagesPromoted,
-        isDryRun: this.isDryRun
-      }
-
-      let deployImpl: DeployImpl = new DeployImpl(
-        deployProps
-      );
-
-      let deploymentResult = await deployImpl.exec();
-
-      let deploymentElapsedTime: number = Date.now() - deployStartTime;
-
-      this.printDeploySummary(deploymentResult, deploymentElapsedTime)
-      if (deploymentResult.failed.length > 0 || deploymentResult.error) {
-        return false
+        );
       } else {
-        return true
+        console.log(`Package dependency ${pkg}: ${packageVersionId} is already installed in target org`);
+        continue;
       }
-    } finally{}
+    }
+    this.printClosingLoggingGroup();
   }
 
   /**
