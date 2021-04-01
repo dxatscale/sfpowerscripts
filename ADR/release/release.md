@@ -33,7 +33,9 @@ An orchestrator command is more intuitive to use than a shell script, and it's i
 
 ### `orchestrator:release` command
 
-Utilises a release definition file (YAML format) and combines the steps in a release into a single SFDX command: fetching artifacts, installing dependencies, deployment and release changelog generation
+Utilises a release definition file (YAML format) and combines the steps in a release into a single SFDX command: fetching artifacts, installing dependencies, deployment and release changelog generation.
+
+This command utilizes a YAML based release defintion as opposed to sfdx-project.json which is used by the orchestrator elsewhere. The benefit of using a seperate defintion is to keep release and build defintions seperated, as one could use for selective deployments.
 
 Pros:
 * Easy to use
