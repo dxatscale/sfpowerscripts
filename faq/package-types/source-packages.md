@@ -97,5 +97,5 @@ By utilizing a destructive manifest file, one could delete metadata components d
 
 ## Why is the version number for source packages have to end with zero? Doesn't it support .next?
 
-At the moment, it is not supported and we have a bug where the .next is not replaced by passed build number. So ensure that all your source packages in your repository has '0' as the build number.
+At the moment, it is not supported. So ensure that all your source packages in your repository has '0' as placeholder for the build number which can be replaced by a build number passed as a flag by the build command
 
