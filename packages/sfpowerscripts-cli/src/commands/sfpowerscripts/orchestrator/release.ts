@@ -3,6 +3,7 @@ import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 import ReleaseImpl from "../../../impl/release/ReleaseImpl";
+import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
 import path = require("path");
 
 Messages.importMessagesDirectory(__dirname);
@@ -13,7 +14,7 @@ export default class Release extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-
+    `sfdx sfpowerscripts:orchestrator:release -p path/to/releasedefinition.yml -u myorg --npm --scope myscope`
   ];
 
   protected static requiresUsername = false;
@@ -57,20 +58,10 @@ export default class Release extends SfpowerscriptsCommand {
       char: 't',
       description: messages.getMessage('tagFlagDescription')
     }),
-    skipifalreadyinstalled: flags.boolean({
-      required:false,
-      default: false,
-      description: messages.getMessage("skipIfAlreadyInstalled")
-    }),
-    baselineorg: flags.string({
-      char: "b",
-      description: messages.getMessage("baselineorgFlagDescription"),
-      required: false,
-      dependsOn: ['skipifalreadyinstalled']
-    }),
     dryrun: flags.boolean({
       description: messages.getMessage("dryRunFlagDescription"),
-      default: false
+      default: false,
+      hidden: true
     }),
     waittime: flags.number({
       description: messages.getMessage("waitTimeFlagDescription"),
@@ -100,21 +91,26 @@ export default class Release extends SfpowerscriptsCommand {
       tags["tag"] = this.flags.tag;
     }
 
+    let releaseDefinition = new ReleaseDefinition(
+      this.flags.releasedefinition,
+      this.flags.npm
+    ).releaseDefinition;
+
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: release");
     console.log(`Target Org: ${this.flags.targetorg}`);
     console.log(`Release Definition: ${this.flags.releasedefinition}`);
     console.log(`Artifact Directory: ${path.resolve("artifacts")}`);
-    console.log(`Skip Packages If Already Installed: ${this.flags.skipifalreadyinstalled}`);
-    if(this.flags.baselineorg)
-      console.log(`Baselined Against Org: ${this.flags.baselineorg}`);
+    console.log(`Skip Packages If Already Installed: ${releaseDefinition.releaseOptions?.skipIfAlreadyInstalled ? true : false}`);
+    if(releaseDefinition.releaseOptions?.baselineOrg)
+      console.log(`Baselined Against Org: ${releaseDefinition.releaseOptions.baselineOrg}`);
     console.log(`Dry-run: ${this.flags.dryrun}`);
     console.log("---------------------------------------------------------");
 
     let releaseResult: boolean;
     try {
       let releaseImpl: ReleaseImpl = new ReleaseImpl(
-        this.flags.releasedefinition,
+        releaseDefinition,
         this.flags.targetorg,
         this.flags.scriptpath,
         this.flags.npm,
@@ -122,8 +118,6 @@ export default class Release extends SfpowerscriptsCommand {
         this.flags.npmrcpath,
         this.flags.logsgroupsymbol,
         tags,
-        this.flags.skipifalreadyinstalled,
-        this.flags.baselineorg,
         this.flags.dryrun,
         this.flags.waittime,
         this.flags.keys,

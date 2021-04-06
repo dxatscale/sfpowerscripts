@@ -1,18 +1,15 @@
-import validateReleaseDefinition from "./validateReleaseDefinition";
-import ReleaseDefinition from "./ReleaseDefinitionInterface";
+import ReleaseDefinitionI from "./ReleaseDefinitionInterface";
 import FetchImpl from "../artifacts/FetchImpl";
 import DeployImpl, { DeployProps , DeploymentMode } from "../deploy/DeployImpl";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { Stage } from "../Stage";
 import get18DigitSalesforceId from "../../utils/get18DigitSalesforceId";
-const yaml = require('js-yaml');
 import child_process = require("child_process");
-import * as fs from "fs-extra";
 
 
 export default class ReleaseImpl {
   constructor(
-    private releaseDefinition: string,
+    private releaseDefinition: ReleaseDefinitionI,
     private targetOrg: string,
     private fetchArtifactScript: string,
     private isNpm: boolean,
@@ -20,8 +17,6 @@ export default class ReleaseImpl {
     private npmrcPath: string,
     private logsGroupSymbol: string[],
     private tags: any,
-    private skipIfPackageInstalled: boolean,
-    private baselineOrg: string,
     private isDryRun: boolean,
     private waitTime: number,
     private keys: string,
@@ -30,14 +25,9 @@ export default class ReleaseImpl {
 
   public async exec(): Promise<boolean> {
 
-    let releaseDefinition: ReleaseDefinition = yaml.load(
-      fs.readFileSync(this.releaseDefinition, 'utf8')
-    );
-    validateReleaseDefinition(releaseDefinition, this.isNpm);
-
     this.printOpenLoggingGroup("Fetching artifacts");
     let fetchImpl: FetchImpl = new FetchImpl(
-      releaseDefinition,
+      this.releaseDefinition,
       "artifacts",
       this.fetchArtifactScript,
       this.isNpm,
@@ -48,16 +38,16 @@ export default class ReleaseImpl {
     this.printClosingLoggingGroup();
 
 
-    if (releaseDefinition.packageDependencies) {
+    if (this.releaseDefinition.packageDependencies) {
       this.installPackageDependencies(
-        releaseDefinition.packageDependencies,
+        this.releaseDefinition.packageDependencies,
         this.targetOrg,
         this.keys,
         this.waitTime
       );
     }
 
-    let deploymentResult = await this.deployArtifacts();
+    let deploymentResult = await this.deployArtifacts(this.releaseDefinition);
 
     if (deploymentResult.failed.length > 0 || deploymentResult.error) {
       return false
@@ -66,7 +56,9 @@ export default class ReleaseImpl {
     }
   }
 
-  private async deployArtifacts() {
+  private async deployArtifacts(
+    releaseDefinition: ReleaseDefinitionI
+  ) {
     let deployStartTime: number = Date.now();
 
     let deployProps: DeployProps = {
@@ -76,10 +68,10 @@ export default class ReleaseImpl {
       tags: this.tags,
       isTestsToBeTriggered: false,
       deploymentMode: DeploymentMode.NORMAL,
-      skipIfPackageInstalled: this.skipIfPackageInstalled,
+      skipIfPackageInstalled: releaseDefinition.releaseOptions?.skipIfAlreadyInstalled,
       logsGroupSymbol: this.logsGroupSymbol,
       currentStage: Stage.DEPLOY,
-      baselineOrg: this.baselineOrg,
+      baselineOrg: releaseDefinition.releaseOptions?.baselineOrg,
       isCheckIfPackagesPromoted: this.isCheckIfPackagesPromoted,
       isDryRun: this.isDryRun
     };
