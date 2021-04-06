@@ -4,7 +4,7 @@
 * Deciders: Azlam, Alan <!-- optional -->
 * Date:  <!-- optional -->
 
-Technical Story: [Issue #476](https://github.com/Accenture/sfpowerscripts/issues/476) <!-- optional -->
+Issue [Issue #476](https://github.com/Accenture/sfpowerscripts/issues/476) <!-- optional -->
 
 ## Context and Problem Statement
 
