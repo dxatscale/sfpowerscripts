@@ -11,7 +11,7 @@ Technical Story: [Issue #452](https://github.com/Accenture/sfpowerscripts/issues
 sfpowerscripts currently does not have a notion of 'release', which some CICD platforms like Azure pipelines support, allowing users to create release definitions, each with their own list of artifacts and task configurations. To achieve this across CICD platforms, the fetch, deploy and changelog generator commands all need to be combined to form a notion of release. Doing so will ensure that the notion of a release is available on all CICD platforms.
 
 
-## Considered Options
+## Implementation Options
 
 ### 1. `orchestrator:release` command
 

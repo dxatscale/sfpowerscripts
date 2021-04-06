@@ -8,7 +8,7 @@
 
 As part of a release, we need to install package dependencies. There are two different ways we could represent the package dependencies to be installed, each with their own merits.
 
-## Considered Options
+## Implementation Options
 
 ### 1. Re-use dependencies defined in latest package manifest
 
