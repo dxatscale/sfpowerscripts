@@ -13,16 +13,17 @@ export default class ArtifactInstallationStatusUpdater {
   public static async updatePackageInstalledInOrg(
     target_org: string,
     packageMetadata: PackageMetadata,
-    isHandledByCaller: boolean
+    isHandledByCaller: boolean,
+    packageLogger?:any
   ):Promise<boolean> {
     if (isHandledByCaller) return true; //This is to be handled by the caller, in that case if it reached here, we should
                                         //just ignore
 
     try {
-      return  await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata);
+      return  await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata, packageLogger);
     } catch (error) {
       SFPLogger.log(
-        "Unable to update details about artifacts to the org"
+        "Unable to update details about artifacts to the org",error,packageLogger,LoggerLevel.DEBUG
       );
       return false;
     }
@@ -31,7 +32,8 @@ export default class ArtifactInstallationStatusUpdater {
 
   private static async updateArtifact(
     username: string,
-    packageMetadata: PackageMetadata
+    packageMetadata: PackageMetadata,
+    packageLogger?:any
   ): Promise<boolean> {
 
 
@@ -47,7 +49,7 @@ export default class ArtifactInstallationStatusUpdater {
 
         let cmdOutput;
         let packageName= packageMetadata.package_name;
-        SFPLogger.log("Updating Org with new Artifacts "+packageName+" "+packageMetadata.package_version_number+" "+(artifactId?artifactId:""), null, null, LoggerLevel.DEBUG);
+        SFPLogger.log("Updating Org with new Artifacts "+packageName+" "+packageMetadata.package_version_number+" "+(artifactId?artifactId:""), null, packageLogger, LoggerLevel.INFO);
         if (artifactId == null) {
           cmdOutput = child_process.execSync(
             `sfdx force:data:record:create --json -s SfpowerscriptsArtifact__c -u ${username}  -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}"`,
@@ -69,7 +71,7 @@ export default class ArtifactInstallationStatusUpdater {
           bail(
             new Error(
               "Unable to update any sfpowerscripts artifacts in the org\n" +
-                "1. No permissions avaialbe to update the object \n" +
+                "1. No permissions available to update the object \n" +
                 "2. The required prerequisite object is not deployed to this org\n"
             )
           );

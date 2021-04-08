@@ -4,45 +4,30 @@
 * Deciders: Azlam, Alan <!-- optional -->
 * Date: 23/03/21 <!-- optional -->
 
-Technical Story: [Issue #452](https://github.com/Accenture/sfpowerscripts/issues/452) <!-- optional -->
+Issue: [Issue #452](https://github.com/Accenture/sfpowerscripts/issues/452) <!-- optional -->
 
 ## Context and Problem Statement
 
 sfpowerscripts currently does not have a notion of 'release', which some CICD platforms like Azure pipelines support, allowing users to create release definitions, each with their own list of artifacts and task configurations. To achieve this across CICD platforms, the fetch, deploy and changelog generator commands all need to be combined to form a notion of release. Doing so will ensure that the notion of a release is available on all CICD platforms.
 
 
-## Decision Drivers <!-- optional -->
+## Implementation Options
 
-* Ease-of-use <!-- numbers of drivers can vary -->
-* Portability
+### 1. `orchestrator:release` command
 
-## Considered Options
+Utilises a release definition file (YAML format) and combines the steps in a release into a single SFDX command: fetching artifacts, installing dependencies, deployment and release changelog generation.
 
-1. `orchestrator:release` command
-2.  Shell script that orchestrates a release
-
-
-## Decision Outcome
-
-Chosen option: 1. `orchestrator:release` command
-
-An orchestrator command is more intuitive to use than a shell script, and it's independent from OS. Though this is bit inflexible and tied to the options being provided by the sfpowerscripts, it fastens adoption of the tooling. Users who have requirements that are not satisfied by the release commands can switch to a shell script and orchestrate it.
-
-
-## Pros and Cons of the Options <!-- optional -->
-
-### `orchestrator:release` command
-
-Utilises a release definition file (YAML format) and combines the steps in a release into a single SFDX command: fetching artifacts, installing dependencies, deployment and release changelog generation
+This command utilizes a YAML based release defintion as opposed to sfdx-project.json which is used by the orchestrator elsewhere. The benefit of using a seperate defintion is to keep release and build defintions seperated, as one could use for selective deployments.
 
 Pros:
 * Easy to use
 * Compatible with any OS running Node
 
 Cons:
-* Loses flexibility, one can only use the functionality provided by the release command. There will be no hookpoints to call external scripts
+* Loses flexibility, one can only use the functionality provided by the release command.
 
-### Shell script that orchestrates a release
+
+### 2.  Shell script that orchestrates a release
 
 A re-usable shell script that that fetches artifacts, installs dependencies, deploys artifacts and generates a changelog.
 
@@ -53,6 +38,14 @@ Cons:
 * Can't be packaged as a SFDX plugin
 * Needs multiple scripts to support different OS
 * Unintuitive to use, requires external documentation
+
+
+## Decision 
+
+Chosen option: 1. `orchestrator:release` command
+
+An orchestrator command is more intuitive to use than a shell script, and it's independent from OS. Though this is bit inflexible and tied to the options being provided by the sfpowerscripts, it fastens adoption of the tooling. Users who have requirements that are not satisfied by the release commands can switch to a shell script and orchestrate it.
+
 
 ## Links <!-- optional -->
 
