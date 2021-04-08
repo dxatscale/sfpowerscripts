@@ -61,6 +61,12 @@ $ echo'y' | sfdx plugins:install @dxatscale/sfpowerscripts
 
 Alternatively, you could use our [docker](docker.md) image and we highly recommend to utilize it.
 
+### JWT Based Authentication
+
+sfpowerscripts need JWT based authentication setup in DevHub for the commands to work succesfully. To setup JWT based authentication please follow the link [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_jwt_flow.htm).
+
+Once the authentication is setup, ensure the client id, jwtkeyfile are stored as secrets in your CI/CD platform \(or a secrets manager connected to your CI/CD platform\) for authenticating your CI/CD agents to Salesforce org's  
+
 ## **StatsD Server \(Highly Recommended\)**
 
 Metrics should be a key part of your DevOps process. It is through these metrics, one can drive continuous improvement of your delivery process. Almost all commands in sfpowerscripts, is instrumented with StatsD.
