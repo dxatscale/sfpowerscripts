@@ -5,7 +5,7 @@ export default class FetchArtifactsError extends SfpowerscriptsError {
   /**
    * Payload consisting of artifacts that succeeded and failed to fetch
    */
-  data: {
+  readonly data: {
     success: [string, string][],
     failed: [string, string][]
   }
@@ -18,5 +18,4 @@ export default class FetchArtifactsError extends SfpowerscriptsError {
 
     this.data = data;
   }
-
 }
