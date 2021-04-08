@@ -106,7 +106,7 @@
     "compile": "tsc -b tsconfig.json",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect",
-    "test": "jest --verbose --coverage --detectOpenHandles"
+    "test": "FORCE_COLOR=true jest --verbose --coverage --detectOpenHandles"
   },
   "snyk": true
 }
