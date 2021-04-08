@@ -5,7 +5,7 @@ import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/pa
 import * as fs from "fs-extra";
 import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
 import { EOL } from "os";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { Stage } from "../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 
@@ -63,7 +63,7 @@ export default class PrepareASingleOrgImpl {
       SFPLogger.isSupressLogs=true;
       let startTime=Date.now();
       SFPLogger.log(`Installing package depedencies to the ${this.scratchOrg.alias}`,null,packageLogger);
-      console.log(`Beginning Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`)
+      SFPLogger.log(`Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`)
 
       // Install Dependencies
       let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
@@ -84,8 +84,8 @@ export default class PrepareASingleOrgImpl {
 
       if (this.installAll) {
 
-        console.log(`Deploying all packages in the repo to  ${this.scratchOrg.alias}`);
-        SFPLogger.log(`Deploying all packages to  ${this.scratchOrg.alias}`,null,packageLogger);
+        SFPLogger.log(`Deploying all packages in the repo to  ${this.scratchOrg.alias}`);
+        SFPLogger.log(`Deploying all packages in the repo to  ${this.scratchOrg.alias}`,null,packageLogger);
 
 
         let deployProps:DeployProps = {
@@ -109,15 +109,22 @@ export default class PrepareASingleOrgImpl {
 
         if(deploymentResult.failed.length>0 || deploymentResult.error)
         {
-          console.log("Following Packages failed to deploy:" + deploymentResult.failed);
+          //Write to Scratch Org Logs
+          SFPLogger.log(`Following Packages failed to deploy in ${this.scratchOrg.alias}`,null,packageLogger,LoggerLevel.INFO);
+          SFPLogger.log(deploymentResult.failed,null,packageLogger,LoggerLevel.INFO);
+
+          //Write to console
+          SFPLogger.log(`Following Packages failed to deploy in ${this.scratchOrg.alias}`);
+          SFPLogger.log(deploymentResult.failed);
+
           if(this.succeedOnDeploymentErrors)
           {
             SFPStatsSender.logCount("prepare.org.partial"); 
-            console.log("Cancelling any further packages to be deployed, Adding the scratchorg to the pool")
+            SFPLogger.log(`Cancelling any further packages to be deployed, Adding the scratchorg ${this.scratchOrg.alias} to the pool`)
           }
           else
           {
-            console.log("Deployment of packages failed, this scratch org will be deleted")
+            SFPLogger.log(`Deployment of packages failed in ${this.scratchOrg.alias}, this scratch org will be deleted`)
             throw new Error(
               "Following Packages failed to deploy:" + deploymentResult.failed
             );

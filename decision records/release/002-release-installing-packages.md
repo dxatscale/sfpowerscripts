@@ -4,11 +4,13 @@
 * Deciders: Azlam, Alan <!-- optional -->
 * Date: 23/03/21 <!-- optional -->
 
+Issue: [Issue #452](https://github.com/Accenture/sfpowerscripts/issues/452) <!-- optional -->
+
 ## Context and Problem Statement
 
 As part of a release, we need to install package dependencies. There are two different ways we could represent the package dependencies to be installed, each with their own merits.
 
-## Considered Options
+## Implementation Options
 
 ### 1. Re-use dependencies defined in latest package manifest
 

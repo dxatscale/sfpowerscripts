@@ -3,10 +3,10 @@ const retry = require("async-retry");
 
 //Fetch sfpowerscripts Artifats installed in an Org
 export default class InstalledAritfactsFetcher {
-  private static artifacts;
+  private static usernamesToArtifacts: {[p: string]: any} = {};
 
   public static async getListofArtifacts(username: string): Promise<any> {
-    if (InstalledAritfactsFetcher.artifacts == null) {
+    if (InstalledAritfactsFetcher.usernamesToArtifacts[username] == null) {
       return await retry(
         async (bail) => {
           let cmdOutput = child_process.execSync(
@@ -15,8 +15,8 @@ export default class InstalledAritfactsFetcher {
           );
           let result = JSON.parse(cmdOutput);
           if (result["status"] == 0) {
-            InstalledAritfactsFetcher.artifacts = result["result"]["records"];
-            return InstalledAritfactsFetcher.artifacts;
+            InstalledAritfactsFetcher.usernamesToArtifacts[username] = result["result"]["records"];
+            return InstalledAritfactsFetcher.usernamesToArtifacts[username];
           } else {
             bail(
               new Error(
@@ -30,12 +30,12 @@ export default class InstalledAritfactsFetcher {
         { retries: 3, minTimeout: 2000 }
       );
     } else {
-      return InstalledAritfactsFetcher.artifacts;
+      return InstalledAritfactsFetcher.usernamesToArtifacts[username];
     }
   }
 
   public static resetFetchedArtifacts()
   {
-    this.artifacts=null;
+    this.usernamesToArtifacts = {};
   }
 }

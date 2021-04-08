@@ -81,7 +81,7 @@ export default class InstallSourcePackageImpl {
       );
 
       if (fs.existsSync(preDeploymentScript)) {
-        console.log("Executing preDeployment script");
+        SFPLogger.log("Executing preDeployment script",null,this.packageLogger,LoggerLevel.INFO);
         PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,

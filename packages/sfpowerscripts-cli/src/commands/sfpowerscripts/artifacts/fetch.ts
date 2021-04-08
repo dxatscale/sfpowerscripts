@@ -57,6 +57,12 @@ export default class Fetch extends SfpowerscriptsCommand {
   public async execute(){
     this.validateFlags();
 
+    let result: {
+      nSuccess: number,
+      nFailed: number
+    } = {nSuccess: 0, nFailed: 0};
+
+    let executionStartTime = Date.now();
     try {
       let releaseDefinition: ReleaseDefinition = yaml.load(
         fs.readFileSync(this.flags.releasedefinition, 'utf8')
@@ -71,12 +77,29 @@ export default class Fetch extends SfpowerscriptsCommand {
         this.flags.scope,
         this.flags.npmrcpath
       );
-      await fetchImpl.exec();
+      result = await fetchImpl.exec();
+
+      if (result.nFailed > 0)
+        process.exitCode = 1;
+
     } catch (err) {
       console.log(err.message);
 
       // Fail the task when an error occurs
       process.exitCode = 1;
+    } finally {
+      let totalElapsedTime: number = Date.now() - executionStartTime;
+
+      console.log(
+        `----------------------------------------------------------------------------------------------------`
+      );
+      console.log(
+        `Fetched ${result.nSuccess} artifacts in ${new Date(totalElapsedTime).toISOString().substr(11,8)
+        } with ${result.nFailed} failures`
+      );
+      console.log(
+        `----------------------------------------------------------------------------------------------------`
+      );
     }
   }
 
