@@ -4,6 +4,7 @@ import path = require("path");
 import Git from "@dxatscale/sfpowerscripts.core/lib/utils/Git";
 import GitTags from "@dxatscale/sfpowerscripts.core/lib/utils/GitTags";
 import ReleaseDefinition from "../release/ReleaseDefinitionInterface";
+import FetchArtifactsError from "../../errors/FetchArtifactsError";
 
 export default class FetchImpl {
   constructor(
@@ -16,8 +17,8 @@ export default class FetchImpl {
   ){}
 
   async exec(): Promise<{
-    nSuccess: number,
-    nFailed: number
+    success: [string, string][],
+    failed: [string, string][]
   }> {
     fs.mkdirpSync(this.artifactDirectory);
 
@@ -51,10 +52,11 @@ export default class FetchImpl {
       );
     }
 
-    return {
-      nSuccess: fetchedArtifacts.success.length,
-      nFailed: fetchedArtifacts.failed.length
-    };
+    if (fetchedArtifacts.failed.length > 0) {
+      throw new FetchArtifactsError("Failed to fetch artifacts", fetchedArtifacts);
+    }
+
+    return fetchedArtifacts;
   }
 
   private async fetchArtifactsFromNpm(
@@ -100,7 +102,7 @@ export default class FetchImpl {
       }
     } catch (error) {
       console.log(error.message);
-      fetchedArtifacts.failed.push(artifacts.slice(i));
+      fetchedArtifacts.failed = artifacts.slice(i);
     }
 
 
@@ -152,7 +154,7 @@ export default class FetchImpl {
       }
     } catch (error) {
       console.log(error.message);
-      fetchedArtifacts.failed.push(artifacts.slice(i));
+      fetchedArtifacts.failed = artifacts.slice(i);
     }
 
     return fetchedArtifacts;

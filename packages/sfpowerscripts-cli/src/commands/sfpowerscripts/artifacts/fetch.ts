@@ -6,6 +6,7 @@ const yaml = require('js-yaml');
 import * as fs from "fs-extra";
 import ReleaseDefinition from "../../../impl/release/ReleaseDefinitionInterface";
 import validateReleaseDefinition from "../../../impl/release/validateReleaseDefinition";
+import FetchArtifactsError from "../../../errors/FetchArtifactsError";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'fetch');
@@ -57,18 +58,18 @@ export default class Fetch extends SfpowerscriptsCommand {
   public async execute(){
     this.validateFlags();
 
+    let releaseDefinition: ReleaseDefinition = yaml.load(
+      fs.readFileSync(this.flags.releasedefinition, 'utf8')
+    );
+    validateReleaseDefinition(releaseDefinition, this.flags.npm);
+
     let result: {
-      nSuccess: number,
-      nFailed: number
-    } = {nSuccess: 0, nFailed: 0};
+      success: [string, string][],
+      failed: [string, string][]
+    };
 
     let executionStartTime = Date.now();
     try {
-      let releaseDefinition: ReleaseDefinition = yaml.load(
-        fs.readFileSync(this.flags.releasedefinition, 'utf8')
-      );
-      validateReleaseDefinition(releaseDefinition, this.flags.npm);
-
       let fetchImpl: FetchImpl = new FetchImpl(
         releaseDefinition,
         this.flags.artifactdir,
@@ -77,30 +78,39 @@ export default class Fetch extends SfpowerscriptsCommand {
         this.flags.scope,
         this.flags.npmrcpath
       );
+
       result = await fetchImpl.exec();
 
-      if (result.nFailed > 0)
-        process.exitCode = 1;
-
     } catch (err) {
-      console.log(err.message);
 
-      // Fail the task when an error occurs
+      if (err instanceof FetchArtifactsError) {
+        result = err.data;
+      } else {
+        console.log(err.message);
+      }
+
       process.exitCode = 1;
     } finally {
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
-      console.log(
-        `----------------------------------------------------------------------------------------------------`
-      );
-      console.log(
-        `Fetched ${result.nSuccess} artifacts in ${new Date(totalElapsedTime).toISOString().substr(11,8)
-        } with ${result.nFailed} failures`
-      );
-      console.log(
-        `----------------------------------------------------------------------------------------------------`
-      );
+      if (result)
+        this.printSummary(result, totalElapsedTime);
     }
+  }
+
+  private printSummary(result: { success: [string, string][]; failed: [string, string][]; }, totalElapsedTime: number) {
+    console.log(
+      `----------------------------------------------------------------------------------------------------`
+    );
+    console.log(`Fetched ${result.success.length} artifacts`);
+
+    if (result.failed.length > 0)
+      console.log(`Failed to fetch ${result.failed.length} artifacts`);
+
+    console.log(`Elapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11, 8)}`);
+    console.log(
+      `----------------------------------------------------------------------------------------------------`
+    );
   }
 
   protected validateFlags() {
