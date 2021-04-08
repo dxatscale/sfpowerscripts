@@ -2,6 +2,9 @@ import SfpowerscriptsError from "./SfpowerscriptsError";
 
 export default class FetchArtifactsError extends SfpowerscriptsError {
 
+  /**
+   * Payload consisting of artifacts that succeeded and failed to fetch
+   */
   data: {
     success: [string, string][],
     failed: [string, string][]
