@@ -10,12 +10,19 @@ export default class FetchArtifactsError extends SfpowerscriptsError {
     failed: [string, string][]
   }
 
+  /**
+   * The underlying error that caused this error to be raised
+   */
+  readonly cause: Error
+
   constructor(
     message: string,
-    data: {success: [string, string][], failed: [string,string][]}
+    data: {success: [string, string][], failed: [string,string][]},
+    cause: Error
   ) {
     super(message);
 
     this.data = data;
+    this.cause = cause;
   }
 }

@@ -27,22 +27,12 @@ export default class FetchImpl {
       failed: [string, string][]
     };
     if (this.isNpm) {
-      if (this.npmrcPath) {
-        fs.copyFileSync(
-          this.npmrcPath,
-          path.resolve(".npmrc")
-        );
-
-        if (!fs.existsSync("package.json")) {
-          // package json is required in the same directory as .npmrc
-          fs.writeFileSync("package.json", "{}");
-        }
-      }
 
       fetchedArtifacts = await this.fetchArtifactsFromNpm(
         this.releaseDefinition,
         this.artifactDirectory,
-        this.scope
+        this.scope,
+        this.npmrcPath
       );
 
     } else {
@@ -52,21 +42,30 @@ export default class FetchImpl {
       );
     }
 
-    if (fetchedArtifacts.failed.length > 0) {
-      throw new FetchArtifactsError("Failed to fetch artifacts", fetchedArtifacts);
-    }
-
     return fetchedArtifacts;
   }
 
   private async fetchArtifactsFromNpm(
     releaseDefinition: ReleaseDefinition,
     artifactDirectory: string,
-    scope: string
+    scope: string,
+    npmrcPath: string
   ): Promise<{
     success: [string, string][],
     failed: [string, string][]
   }> {
+    if (npmrcPath) {
+      fs.copyFileSync(
+        npmrcPath,
+        path.resolve(".npmrc")
+      );
+
+      if (!fs.existsSync("package.json")) {
+        // package json is required in the same directory as .npmrc
+        fs.writeFileSync("package.json", "{}");
+      }
+
+    }
     const git: Git = new Git(null);
 
     let fetchedArtifacts = {
@@ -103,6 +102,7 @@ export default class FetchImpl {
     } catch (error) {
       console.log(error.message);
       fetchedArtifacts.failed = artifacts.slice(i);
+      throw new FetchArtifactsError("Failed to fetch artifacts", fetchedArtifacts, error);
     }
 
 
@@ -155,6 +155,7 @@ export default class FetchImpl {
     } catch (error) {
       console.log(error.message);
       fetchedArtifacts.failed = artifacts.slice(i);
+      throw new FetchArtifactsError("Failed to fetch artifacts", fetchedArtifacts, error);
     }
 
     return fetchedArtifacts;
