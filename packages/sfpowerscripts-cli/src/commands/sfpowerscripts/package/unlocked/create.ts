@@ -136,7 +136,7 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           config_file_path
         );
 
-        runBuild = await packageDiffImpl.exec();
+        runBuild = (await packageDiffImpl.exec()).isToBeBuilt;
 
         if (runBuild)
           console.log(

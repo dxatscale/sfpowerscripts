@@ -16,7 +16,7 @@ export default class PackageDiffImpl {
     private pathToReplacementForceIgnore?: string
   ) {}
 
-  public async exec(): Promise<boolean> {
+  public async exec(): Promise<{isToBeBuilt:boolean,reason:string,tag?:string}> {
     let git: Git = new Git(this.project_directory);
 
     let config_file_path: string = this.config_file_path;
@@ -66,28 +66,30 @@ export default class PackageDiffImpl {
               filename.includes(path.normalize(pkgDescriptor.path)) ||
               filename === config_file_path
           ) {
-              SFPLogger.log(`Found change in ${filename}`);
-              return true;
+              SFPLogger.log(`Found change(s) in ${filename}`);
+              return {isToBeBuilt:true,reason:`Found change(s) in package/config`,tag:tag};
           }
         } else {
           if (filename.includes(path.normalize(pkgDescriptor.path))) {
-            SFPLogger.log(`Found change in ${filename}`);
-            return true;
+            SFPLogger.log(`Found change(s) in ${filename}`);
+            return {isToBeBuilt:true,reason:`Found change(s) in package`,tag:tag};
           }
         }
       }
 
       SFPLogger.log(`Checking for changes to package descriptor in sfdx-project.json`);
-      return await this.isPackageDescriptorChanged(
+      let isPackageDescriptorChanged = await this.isPackageDescriptorChanged(
         git,
         tag,
         pkgDescriptor
       );
+      if(isPackageDescriptorChanged)
+        return  {isToBeBuilt:true,reason:`Package Descriptor Changed`,tag:tag};
     } else {
       SFPLogger.log(
         `Tag missing for ${this.sfdx_package}...marking package for build anyways`
       );
-      return true;
+      return  {isToBeBuilt:true,reason:`Previous version not found`};
     }
   }
 
