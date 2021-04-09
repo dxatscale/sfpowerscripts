@@ -63,7 +63,7 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
       if (this.flags.diffcheck) {
         let packageDiffImpl = new PackageDiffImpl(sfdx_package, null);
 
-        runBuild = await packageDiffImpl.exec();
+        runBuild = (await packageDiffImpl.exec()).isToBeBuilt;
 
         if ( runBuild )
         console.log(`Detected changes to ${sfdx_package} package...proceeding\n`);
