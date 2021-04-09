@@ -4,6 +4,7 @@ import path = require("path");
 import Git from "@dxatscale/sfpowerscripts.core/lib/utils/Git";
 import GitTags from "@dxatscale/sfpowerscripts.core/lib/utils/GitTags";
 import ReleaseDefinition from "../release/ReleaseDefinitionInterface";
+import FetchArtifactsError from "../../errors/FetchArtifactsError";
 
 export default class FetchImpl {
   constructor(
@@ -15,93 +16,149 @@ export default class FetchImpl {
     private npmrcPath: string
   ){}
 
-  async exec() {
+  async exec(): Promise<{
+    success: [string, string][],
+    failed: [string, string][]
+  }> {
     fs.mkdirpSync(this.artifactDirectory);
 
+    let fetchedArtifacts: {
+      success: [string, string][],
+      failed: [string, string][]
+    };
     if (this.isNpm) {
-      if (this.npmrcPath) {
-        fs.copyFileSync(
-          this.npmrcPath,
-          path.resolve(".npmrc")
-        );
 
-        if (!fs.existsSync("package.json")) {
-          // package json is required in the same directory as .npmrc
-          fs.writeFileSync("package.json", "{}");
-        }
-      }
-
-      await this.fetchArtifactsFromNpm(
+      fetchedArtifacts = await this.fetchArtifactsFromNpm(
         this.releaseDefinition,
         this.artifactDirectory,
-        this.scope
+        this.scope,
+        this.npmrcPath
       );
 
-     } else {
-      await this.fetchArtifactsFromScript(
+    } else {
+      fetchedArtifacts = await this.fetchArtifactsFromScript(
         this.releaseDefinition,
         this.artifactDirectory
       );
-     }
+    }
+
+    return fetchedArtifacts;
   }
 
   private async fetchArtifactsFromNpm(
     releaseDefinition: ReleaseDefinition,
     artifactDirectory: string,
-    scope: string
-  ): Promise<void> {
+    scope: string,
+    npmrcPath: string
+  ): Promise<{
+    success: [string, string][],
+    failed: [string, string][]
+  }> {
+    if (npmrcPath) {
+      fs.copyFileSync(
+        npmrcPath,
+        path.resolve(".npmrc")
+      );
+
+      if (!fs.existsSync("package.json")) {
+        // package json is required in the same directory as .npmrc
+        fs.writeFileSync("package.json", "{}");
+      }
+
+    }
     const git: Git = new Git(null);
 
-    for (let artifact of Object.entries<string>(releaseDefinition.artifacts)) {
-      console.log(`Fetching artifact for ${artifact[0]}`);
-      let version: string;
-      if (artifact[1] === "LATEST_TAG") {
-        version = await this.getVersionFromLatestTag(git, artifact[0]);
-      } else
-        version = artifact[1];
+    let fetchedArtifacts = {
+      success: [],
+      failed: []
+    };
 
-      // NPM package names must be lowercase
-      let packageName = artifact[0].toLowerCase();
-      let cmd = `npm pack @${scope}/${packageName}_sfpowerscripts_artifact@${version}`
-      child_process.execSync(
-        cmd,
-        {
-          cwd: artifactDirectory,
-          stdio: "pipe",
-        }
-      );
+    let artifacts: [string, string][];
+    let i: number;
+    try {
+      artifacts = Object.entries(releaseDefinition.artifacts);
+      for (i = 0; i < artifacts.length; i++) {
+        let version: string;
+        if (artifacts[i][1] === "LATEST_TAG") {
+          version = await this.getVersionFromLatestTag(git, artifacts[i][0]);
+        } else
+          version = artifacts[i][1];
+
+        // NPM package names must be lowercase
+        let packageName = artifacts[i][0].toLowerCase();
+        let cmd = `npm pack @${scope}/${packageName}_sfpowerscripts_artifact@${version}`
+
+        console.log(`Fetching artifact for ${artifacts[i][0]} version ${version}`);
+        child_process.execSync(
+          cmd,
+          {
+            cwd: artifactDirectory,
+            stdio: "pipe",
+          }
+        );
+
+        fetchedArtifacts.success.push(artifacts[i]);
+      }
+    } catch (error) {
+      console.log(error.message);
+      fetchedArtifacts.failed = artifacts.slice(i);
+      throw new FetchArtifactsError("Failed to fetch artifacts", fetchedArtifacts, error);
     }
+
+
+    return fetchedArtifacts;
   }
 
   private async fetchArtifactsFromScript(
     releaseDefinition: ReleaseDefinition,
     artifactDirectory: string
-  ): Promise<void> {
+  ): Promise<{
+    success: [string, string][],
+    failed: [string, string][]
+  }> {
     const git: Git = new Git(null);
 
-    for (let artifact of Object.entries<string>(releaseDefinition.artifacts)) {
-      console.log(`Fetching artifact for ${artifact[0]}`);
-      let version: string;
-      if (artifact[1] === "LATEST_TAG") {
-        version = await this.getVersionFromLatestTag(git, artifact[0]);
-      } else
-        version = artifact[1];
+    let fetchedArtifacts = {
+      success: [],
+      failed: []
+    };
 
-      let cmd: string;
-      if (process.platform !== 'win32') {
-        cmd = `bash -e ${this.scriptPath} ${artifact[0]} ${version} ${artifactDirectory}`;
-      } else {
-        cmd = `cmd.exe /c ${this.scriptPath} ${artifact[0]} ${version} ${artifactDirectory}`;
-      }
+    let artifacts: [string, string][];
+    let i: number;
+    try {
+      artifacts = Object.entries(releaseDefinition.artifacts);
+      for (i = 0; i < artifacts.length; i++) {
+        let version: string;
+        if (artifacts[i][1] === "LATEST_TAG") {
+          version = await this.getVersionFromLatestTag(git, artifacts[i][0]);
+        } else
+          version = artifacts[i][1];
 
-      child_process.execSync(
-        cmd,
-        {
-          cwd: process.cwd(),
-          stdio: ['ignore', 'inherit', 'inherit']
+        let cmd: string;
+        if (process.platform !== 'win32') {
+          cmd = `bash -e "${this.scriptPath}" "${artifacts[i][0]}" "${version}" "${artifactDirectory}"`;
+        } else {
+          cmd = `cmd.exe /c "${this.scriptPath}" "${artifacts[i][0]}" "${version}" "${artifactDirectory}"`;
         }
-      );
+
+        console.log(`Fetching artifact for ${artifacts[i][0]} version ${version}`);
+        child_process.execSync(
+          cmd,
+          {
+            cwd: process.cwd(),
+            stdio: ['ignore', 'inherit', 'inherit']
+          }
+        );
+
+        fetchedArtifacts.success.push(artifacts[i]);
+      }
+    } catch (error) {
+      console.log(error.message);
+      fetchedArtifacts.failed = artifacts.slice(i);
+      throw new FetchArtifactsError("Failed to fetch artifacts", fetchedArtifacts, error);
     }
+
+    return fetchedArtifacts;
   }
 
   private async getVersionFromLatestTag(

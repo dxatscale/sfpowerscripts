@@ -1,14 +1,14 @@
 {
   "name": "@dxatscale/sfpowerscripts",
   "description": "A build system for package based development in Salesforce,delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/",
-  "version": "4.4.10",
+  "version": "5.0.5",
   "author": "dxatscale",
   "bin": {
     "readVars": "./scripts/readVars.sh"
   },
   "bugs": "https://github.com/Accenture/sfpowerscripts/issues",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^10.3.7",
+    "@dxatscale/sfpowerscripts.core": "^11.0.5",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",
@@ -105,8 +105,7 @@
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json",
     "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect",
-    "test": "jest --verbose --coverage --detectOpenHandles"
+    "test": "FORCE_COLOR=true jest --verbose --coverage --detectOpenHandles"
   },
   "snyk": true
 }

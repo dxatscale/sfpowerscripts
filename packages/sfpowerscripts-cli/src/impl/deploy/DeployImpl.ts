@@ -53,7 +53,7 @@ export interface DeployProps {
 
 export default class DeployImpl {
   constructor(private props: DeployProps) {}
-
+  // TODO: Refactor to use exception pattern
   public async exec(): Promise<{
     deployed: string[];
     failed: string[];
@@ -120,7 +120,7 @@ export default class DeployImpl {
           this.checkIfPackagesPromoted(queue, packagesToPackageInfo);
       }
 
-     
+
       SFPStatsSender.logGauge(
         "deploy.scheduled.packages",
         queue.length,
@@ -330,7 +330,7 @@ export default class DeployImpl {
       table.push([pkg.package,
          packagesToPackageInfo[pkg.package].packageMetadata.package_version_number]);
     });
-    console.log(table.toString());
+    SFPLogger.log(table.toString(),null,this.props.packageLogger,LoggerLevel.INFO);
     this.printClosingLoggingGroup();
   }
 
