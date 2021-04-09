@@ -15,6 +15,7 @@ import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcom
 import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateSourcePackageImpl"
 import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateDataPackageImpl"
 import BuildCollections from "./BuildCollections";
+const Table = require("cli-table");
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -88,45 +89,25 @@ export default class BuildImpl {
     );
 
 
+   
+
     //Do a diff Impl
+    let table;
     if (this.props.isDiffCheckEnabled) {
-      let packagesToBeBuilt = [];
-
-      let buildCollections = new BuildCollections(this.props.projectDirectory);
-
-      for await (const pkg of this.packagesToBeBuilt) {
-        let type = this.getPriorityandTypeOfAPackage(
-          this.projectConfig,
-          pkg
-        ).type;
-
-        let diffImpl: PackageDiffImpl = new PackageDiffImpl(
-          pkg,
-          this.props.projectDirectory,
-          type == "Data" || type == "Source" ? null : this.props.configFilePath,
-          this.props.packagesToCommits,
-          this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
-        );
-        let isToBeBuilt = await diffImpl.exec();
-
-        if (isToBeBuilt) {
-          if (buildCollections.isPackageInACollection(pkg)) {
-            buildCollections.listPackagesInCollection(pkg).forEach((packageInCollection) => {
-              if (!packagesToBeBuilt.includes(packageInCollection))
-                packagesToBeBuilt.push(packageInCollection);
-            });
-          } else packagesToBeBuilt.push(pkg);
-        }
-      }
-
-      this.packagesToBeBuilt = packagesToBeBuilt;
+       let packagesToBeBuiltWithReasons= await this.getListOfOnlyChangedPackages(this.props.projectDirectory,this.packagesToBeBuilt);
+       table = this.createDiffPackageScheduledDisplayedAsATable(packagesToBeBuiltWithReasons);
+       this.packagesToBeBuilt=Array.from(packagesToBeBuiltWithReasons.keys()); //Assign it back to the instance variable
     }
-
-    //List all package that will be built
-    console.log("Packages scheduled to be built", this.packagesToBeBuilt);
-
+    else
+    {
+      table = this.createAllPackageScheduledDisplayedAsATable();
+    }
     //Log Packages to be built
+    console.log(EOL+"Packages scheduled for build")
+    console.log(table.toString());
+
     for await (const pkg of this.packagesToBeBuilt) {
+        
       let type = this.getPriorityandTypeOfAPackage(
         this.projectConfig,
         pkg
@@ -217,6 +198,62 @@ export default class BuildImpl {
       generatedPackages: this.generatedPackages,
       failedPackages: this.failedPackages,
     };
+  }
+
+  private createDiffPackageScheduledDisplayedAsATable(packagesToBeBuilt: Map<string, any>) {
+    let table = new Table({
+      head: ["Package", "Reason to be built", "Last Known Tag"],
+    });
+    for (const pkg of packagesToBeBuilt.keys()) {
+      let item = [pkg, packagesToBeBuilt.get(pkg).reason, packagesToBeBuilt.get(pkg).tag ? packagesToBeBuilt.get(pkg).tag : ""];
+      table.push(item);
+    }
+    return table;
+  }
+
+  private createAllPackageScheduledDisplayedAsATable() {
+    let table = new Table({
+      head: ["Package", "Reason to be built"],
+    });
+    for (const pkg of this.packagesToBeBuilt) {
+      let item = [pkg, "Activated as part of all package build"];
+      table.push(item);
+    }
+    return table;
+  }
+
+  private async getListOfOnlyChangedPackages(projectDirectory:string,allPackagesInRepo:any) {
+    let packagesToBeBuilt = new Map<string, any>();
+    let buildCollections = new BuildCollections(projectDirectory);
+
+    for await (const pkg of allPackagesInRepo) {
+      let type = this.getPriorityandTypeOfAPackage(
+        this.projectConfig,
+        pkg
+      ).type;
+
+      let diffImpl: PackageDiffImpl = new PackageDiffImpl(
+        pkg,
+        this.props.projectDirectory,
+        type == "Data" || type == "Source" ? null : this.props.configFilePath,
+        this.props.packagesToCommits,
+        this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
+      );
+      let packageDiffCheck = await diffImpl.exec();
+
+      if (packageDiffCheck) {
+        packagesToBeBuilt.set(pkg,{reason:packageDiffCheck.reason,tag:packageDiffCheck.tag});
+        //Add Bundles
+        if (buildCollections.isPackageInACollection(pkg)) {
+          buildCollections.listPackagesInCollection(pkg).forEach((packageInCollection) => {
+            if (!packagesToBeBuilt.has(packageInCollection)) {
+              packagesToBeBuilt.set(packageInCollection, {reason:"Part of a build collection"});
+            }
+          });
+        } 
+      }
+    }
+    return packagesToBeBuilt;
   }
 
   /**
