@@ -43,6 +43,16 @@ steps:
           - checkout: self
 
           - task: CmdLine@2
+            displayName: "Update Build Number"
+            condition: or ( eq( '${{ parameters.version }}', 'alpha'), eq( '${{ parameters.version }}', 'hotfix'))
+            inputs:
+              workingDirectory: '$(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli'
+              script: |
+               PKG_VERSION=$(jq -r ".version" package.json)
+               echo "##vso[build.updatebuildnumber]${PKG_VERSION}"
+
+
+          - task: CmdLine@2
             displayName: "Set Git Config"
             inputs:
                script: |
@@ -105,15 +115,11 @@ steps:
             displayName: 'Build  All  Packages'
             condition: or( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}', 'review') )
 
+                 
+          - script: 'npx lerna run snyk-protect'
+            displayName: 'Run snyk protect'
+            condition: or( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}', 'review') )
 
-          - task: CmdLine@2
-            displayName: "Update Build Number"
-            condition: or ( eq( '${{ parameters.version }}', 'alpha'), eq( '${{ parameters.version }}', 'hotfix'))
-            inputs:
-              workingDirectory: '$(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli'
-              script: |
-               PKG_VERSION=$(jq -r ".version" package.json)
-               echo "##vso[build.updatebuildnumber]${PKG_VERSION}"
 
 
           - task: CmdLine@2

@@ -1,6 +1,6 @@
 {
   "name": "@dxatscale/sfpowerscripts.core",
-  "version": "11.0.4",
+  "version": "11.0.5",
   "description": "Core Module used by sfpowerscripts",
   "main": "lib/index",
   "types": "lib/index",
@@ -12,7 +12,7 @@
     "build": "npm run clean && npm run compile",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json",
-    "test": "jest --verbose --coverage --detectOpenHandles"
+    "test": "FORCE_COLOR=true jest --verbose --coverage --detectOpenHandles"
   },
   "dependencies": {
     "adm-zip": "^0.5.2",
