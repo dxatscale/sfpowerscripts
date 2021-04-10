@@ -44,8 +44,8 @@ sfpowerscripts source packages support the following exclusive options in additi
 
 All these currently available options that can be enabled for source packaging by adding to the package descriptor in the sfdx-project.json file.
 
-* **Optimized Deployment  \(`isOptimizedDeployment:<boolean>)`:** Control the behaviour of testing of source packages during deployment, utilize the org 's coverage or better have apex unit tests that have 75% or more coverage for each class carried in the source package. Any source packages that do not have apex classes/triggers will be deployed without triggering tests  
-* **Aliasify \(`aliasfy:<boolean>`\)** :  Aliasify enables deployment of a subfolder in a source package that matches the target org. For example, you have a source package as listed below.   During Installation, only the metadata contents of the folder that matches the alias gets deployed
+* **Optimized Deployment  \(`isOptimizedDeployment:<boolean>)`:** Control the behaviour of testing of source packages during deployment, utilize the org's coverage or better have apex unit tests that have 75% or more coverage for each class carried in the source package. Any source packages that do not have apex classes/triggers will be deployed without triggering tests  
+* **Aliasify \(`aliasfy:<boolean>`\)** :  Aliasify enables deployment of a subfolder in a source package that matches the target org. For example, you have a source package as listed below. During Installation, only the metadata contents of the folder that matches the alias gets deployed
 
 ![Source Packages with env-specific-folders](../../.gitbook/assets/image%20%285%29%20%284%29%20%283%29%20%284%29%20%281%29.png)
 
@@ -71,7 +71,7 @@ All these currently available options that can be enabled for source packaging b
   }
 ```
 
-## How do source packages manage to skip installation if its already deployed in a org?
+## How do source packages manage to skip installation if it's already deployed in a org?
 
 This functionality only works provided, the target org has sfpowerscripts-artifact' \(04t1P000000ka0fQAA\) package installed. You need to install the package to every target org \(including your production environment\). The command for installing this package is as follows
 
