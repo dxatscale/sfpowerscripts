@@ -71,36 +71,11 @@ Orchestrator utilizes additional properties mentioned along with each package in
         </td>
     </tr>
     <tr>
-      <td style="text-align:left"><b>isOptimizedDeployment</b>
+      <td style="text-align:left"><b>alwaysDeploy</b>
       </td>
-      <td style="text-align:left">Detects test classes in a source package automatically and utilize it
-        to deploy the provided package</td>
-      <td style="text-align:left"><b>deploy, validate</b>
-      </td>
-    </tr>
-    <tr>
-      <td style="text-align:left"><b>skipTesting</b>
-      </td>
-      <td style="text-align:left">Skip unit testing during validate or deployment (source packages)</td>
-      <td
-      style="text-align:left">
-        <p><b>deploy,</b>
-        </p>
-        <p><b>validate</b>
-        </p>
-        </td>
-    </tr>
-    <tr>
-      <td style="text-align:left"><b>skipCoverageValidation</b>
-      </td>
-      <td style="text-align:left">Skip the coverage validation of a package (unlocked/source)</td>
-      <td style="text-align:left"><b>validate</b>
-      </td>
-    </tr>
-    <tr>
-      <td style="text-align:left"><b>destructiveChangePath</b>
-      </td>
-      <td style="text-align:left">Apply destructive changes during deployment</td>
+      <td style="text-align:left">Deploys package, even if it&apos;s installed already in the org. The artifact
+        has to be present in the artifact directory for this particular option
+        to work</td>
       <td style="text-align:left"><b>deploy</b>
       </td>
     </tr>
@@ -131,9 +106,39 @@ Orchestrator utilizes additional properties mentioned along with each package in
       </td>
     </tr>
     <tr>
-      <td style="text-align:left"><b>reconcileProfiles</b>
+      <td style="text-align:left"><b>buildCollection</b>
       </td>
-      <td style="text-align:left">Reconcile Profiles during a deployment of source packages</td>
+      <td style="text-align:left">Utilize this to build packages in unison, it will build all packages in
+        the collection, even if only one of them changes</td>
+      <td style="text-align:left"><b>build</b>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>destructiveChangePath</b>
+      </td>
+      <td style="text-align:left">Apply destructive changes during deployment</td>
+      <td style="text-align:left"><b>deploy</b>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>isOptimizedDeployment</b>
+      </td>
+      <td style="text-align:left">Detects test classes in a source package automatically and utilize it
+        to deploy the provided package</td>
+      <td style="text-align:left"><b>deploy, validate</b>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>ignoreOnStage</b>
+      </td>
+      <td style="text-align:left"></td>
+      <td style="text-align:left"></td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>postDeploymentScript</b>
+      </td>
+      <td style="text-align:left">Run an executable script after deploying a package. User need to provide
+        a path to the script file</td>
       <td style="text-align:left">
         <p><b>prepare,</b>
         </p>
@@ -158,10 +163,9 @@ Orchestrator utilizes additional properties mentioned along with each package in
       </td>
     </tr>
     <tr>
-      <td style="text-align:left"><b>postDeploymentScript</b>
+      <td style="text-align:left"><b>reconcileProfiles</b>
       </td>
-      <td style="text-align:left">Run an executable script after deploying a package. User need to provide
-        a path to the script file</td>
+      <td style="text-align:left">Reconcile Profiles during a deployment of source packages</td>
       <td style="text-align:left">
         <p><b>prepare,</b>
         </p>
@@ -172,21 +176,35 @@ Orchestrator utilizes additional properties mentioned along with each package in
       </td>
     </tr>
     <tr>
-      <td style="text-align:left"><b>alwaysDeploy</b>
+      <td style="text-align:left"><b>type</b>
       </td>
-      <td style="text-align:left">Deploys package, even if its installed already in the org. The artifact
-        has to be present in the artifact directory for this particular option
-        to work</td>
-      <td style="text-align:left"><b>deploy</b>
+      <td style="text-align:left"></td>
+      <td style="text-align:left"></td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>skipCoverageValidation</b>
+      </td>
+      <td style="text-align:left">Skip the coverage validation of a package (unlocked/source)</td>
+      <td style="text-align:left"><b>validate</b>
       </td>
     </tr>
     <tr>
-      <td style="text-align:left"><b>buildCollection</b>
+      <td style="text-align:left"><b>skipDeployOnOrgs</b>
       </td>
-      <td style="text-align:left">Utilize this to build packages in unison, it will build all packages in
-        the collection, even if only one of them changes</td>
-      <td style="text-align:left"><b>build</b>
+      <td style="text-align:left"></td>
+      <td style="text-align:left"></td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>skipTesting</b>
       </td>
+      <td style="text-align:left">Skip unit testing during validate or deployment (source packages)</td>
+      <td
+      style="text-align:left">
+        <p><b>deploy,</b>
+        </p>
+        <p><b>validate</b>
+        </p>
+        </td>
     </tr>
   </tbody>
 </table>
@@ -209,7 +227,7 @@ Add this entry to your sfdx-project.json and as in the example below, mention th
         }
 ```
 
-## Ignoring a package on any particular stage from being being processed by the orcestrator
+## Ignoring a package on any particular stage from being being processed by the orchestrator
 
 Utilize the `ignoreOnStage` descriptor to mark which packages should be skipped by the lifecycle commands.
 
