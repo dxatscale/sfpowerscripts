@@ -32,8 +32,8 @@ The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can b
 
 Rather than lock everyone into a particular registry provider, sfpowerscripts supports artifact registries which support the following
 
-* **NPM compatible private registry** \(Almost  every artifact registries supports NPM \)
-* **A  registry that supports universal packages \(** Jfrog Aritfactory, Azure Artifacts\)
+* **NPM compatible private registry** \(Almost every artifact registries supports NPM \)
+* **A registry that supports universal packages \(**Jfrog Aritfactory, Azure Artifacts\)
 
 {% hint style="danger" %}
 Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages.

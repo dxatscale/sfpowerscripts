@@ -32,7 +32,7 @@ description: Learn about all the features in sfpowerscripts
 * Build packages that are only changed, saving a significant amount of time
 * Automated resolution of package version numbers to ensure packages are built with the right versions during parallel builds
 * Handle multiple .forceignore files depending on stage \(development vs validation vs build\)
-* Bundled Package Builds \( build a group of package, if any one of them changes\)
+* Bundled Package Builds \(build a group of package, if any one of them changes\)
 
 ## **Deploy with confidence!**
 
