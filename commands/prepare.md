@@ -7,7 +7,7 @@ description: Prepare a pool of just in time CI server
 Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during validation process when a scratch org is used as Just-in-time CI environment.
 
 {% hint style="danger" %}
-Please note that you should still build your own pipeline to provision scratch orgs for your developers to work on stories by using **sfpowerkit pool** related commands.
+Please note that you should still build your own pipeline to provision scratch orgs for your developers to work on stories by using [**sfpowerkit pool**](https://github.com/Accenture/sfpowerkit#sfpowerkitpoolcreate) related commands.
 {% endhint %}
 
 ## Using scratch org's as CI environments
