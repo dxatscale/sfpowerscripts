@@ -27,7 +27,6 @@
 * [Deploy](commands/deploy.md)
 * [Publish](commands/publish.md)
 * [Fetch](commands/fetch.md)
-* [Promote](commands/promote.md)
 * [Changelog](commands/changelog.md)
 * [Command Glossary](commands/command-glossary.md)
 
