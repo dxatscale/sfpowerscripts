@@ -31,11 +31,14 @@
 * [Changelog](commands/changelog.md)
 * [Command Glossary](commands/command-glossary.md)
 
-## Additional Information
+## FAQ <a id="faq-1"></a>
 
-* [Troubleshooting](additional-information/troubleshooting.md)
-* [Maintainers](additional-information/maintainers.md)
-* [Contributors](additional-information/contributors.md)
-* [Contributing to sfpowerscripts](additional-information/contributing-to-sfpowerscripts.md)
-* [Support](additional-information/support.md)
+* [Troubleshooting](faq-1/troubleshooting.md)
+
+## Community
+
+* [Maintainers](community/maintainers.md)
+* [Contributors](community/contributors.md)
+* [Contributing to sfpowerscripts](community/contributing-to-sfpowerscripts.md)
+* [Support](community/support.md)
 

@@ -23,9 +23,9 @@ The project was then migrated to [Accenture Open Source Program](https://accentu
 
 ## Maintainers
 
-A list of people maintaining sfpowerscripts and these pages is available [here](additional-information/maintainers.md)
+A list of people maintaining sfpowerscripts and these pages is available [here](community/maintainers.md)
 
 ## How do I submit a query to sfpowerscripts?
 
-Please create an issue using the methods listed [here](additional-information/contributing-to-sfpowerscripts.md).
+Please create an issue using the methods listed [here](community/contributing-to-sfpowerscripts.md).
 
