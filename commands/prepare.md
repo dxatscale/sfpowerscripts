@@ -124,7 +124,7 @@ Let's unpack the concepts utilizing the above example
 * There are two unlocked packages
   * Expense Manager - Util is an unlocked package in your DevHub, identifiable by 0H in the packageAlias
   * Expense Manager - another unlocked package which is dependent on ' Expense Manager - Util', 'TriggerFramework' and  'External Apex Library - 1.0.0.4'
-* External Apex Library is an external dependency, It could be a managed  package or any unlocked package built on a different devhub. All external package dependencies have to be defined with 04t id. \( You get the 04t id of  a managed package from the installation URL from AppExchange or contact your vendor\)
+* External Apex Library is an external dependency, It could be a managed package or any unlocked package built on a different devhub. All external package dependencies have to be defined with 04t id. \( You get the 04t id of  a managed package from the installation URL from AppExchange or contact your vendor\)
 * sfpowerscripts parses sfdx-project.json and does the following in order
   * Skips Expense manager - Util as it doesn't have any dependencies
   * For Expense manager
