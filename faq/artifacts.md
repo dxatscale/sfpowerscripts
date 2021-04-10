@@ -33,7 +33,7 @@ The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can b
 Rather than lock everyone into a particular registry provider, sfpowerscripts supports artifact registries which support the following
 
 * **NPM compatible private registry** \(Almost every artifact registries supports NPM \)
-* **A registry that supports universal packages \(**Jfrog Aritfactory, Azure Artifacts\)
+* **A registry that supports universal packages \(**JFrog Aritfactory, Azure Artifacts\)
 
 {% hint style="danger" %}
 Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages.
@@ -43,11 +43,11 @@ Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the 
 
 Please refer to your artifact registry provider's documentation on how to set it up. If you are planning to use npm compatible private registry, here are some links to get you started
 
-* Github [https://docs.github.com/en/packages/guides/configuring-npm-for-use-with-github-packages](https://docs.github.com/en/packages/guides/configuring-npm-for-use-with-github-packages)
-* Gitlab [https://docs.gitlab.com/ee/user/packages/npm\_registry/](https://docs.gitlab.com/ee/user/packages/npm_registry/)
-* Azure Artifacts [https://docs.gitlab.com/ee/user/packages/npm\_registry/](https://docs.gitlab.com/ee/user/packages/npm_registry/)
-* JFrog Artifactory [https://www.jfrog.com/confluence/display/JFROG/npm+Registry](https://www.jfrog.com/confluence/display/JFROG/npm+Registry)
-* MyGet [https://docs.myget.org/docs/reference/myget-npm-support](https://docs.myget.org/docs/reference/myget-npm-support)
+* [Github](https://docs.github.com/en/packages/guides/configuring-npm-for-use-with-github-packages)
+* [Gitlab](https://docs.gitlab.com/ee/user/packages/npm_registry/)
+* [Azure Artifacts](https://docs.microsoft.com/en-us/azure/devops/artifacts/get-started-npm?view=azure-devops%20)
+* [JFrog Artifactory](https://www.jfrog.com/confluence/display/JFROG/npm+Registry)
+* [MyGet](https://docs.myget.org/docs/reference/myget-npm-support)
 
 ## Publishing/Fetching Packages  to or from Artifact Registry
 
