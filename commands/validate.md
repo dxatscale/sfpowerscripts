@@ -23,7 +23,7 @@ The following are the list of steps that are orchestrated by the **validate** co
 5. For each of the packages \(internally calls the Deploy Command\)
    * Deploy all the built packages as [source packages](../faq/package-types/source-packages.md) / [data package](validate.md)  \(unlocked packages are installed as source package\)
    * Trigger Apex Tests if there are any apex test in the package
-   * Validate test coverage of the package depending on the type of the package \( source packages: each class needs to have 75% or more, unlocked packages: packages as  whole need to have 75% or more\)
+   * Validate test coverage of the package depending on the type of the package \( source packages: each class needs to have 75% or more, unlocked packages: packages as whole need to have 75% or more\)
 
 {% hint style="danger" %}
 The command needs JWT based authentication mechanism to authenticate to the DevHub and utilize the same credentials to authenticate to the fetched scratch org from the pool.
