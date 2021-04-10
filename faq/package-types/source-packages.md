@@ -4,7 +4,7 @@ description: All the details about Source Packages
 
 # Source Packages
 
-Source Packages is an sfpowerscripts construct which wraps the Salesforce Metadata \(in [source format](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_source_file_format.htm)\), along with [sfdx-project.json](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm), some metadata information \(such as commit id, branch, tag\) etc. in a versioned zip file \(artifact\), which can be deployed to a Salesforce Org using sfpowerscripts package installation command
+Source Packages is an sfpowerscripts construct which wraps the Salesforce Metadata \(in [source format](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_source_file_format.htm)\), along with [sfdx-project.json](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm), some metadata information \(such as commit id, branch, tag\) etc. in a versioned zip file \(artifact\), which can be deployed to a Salesforce Org using sfpowerscripts package installation command.
 
 ## How are Source Packages different from deploying a folder using source:deploy?
 
@@ -27,7 +27,7 @@ Source Packages are metadata deployments from a Salesforce perspective, it is a 
 We always recommend using unlocked packages over source packages whenever you can. As a matter of preference, this is our priority of approach packages.
 
 1. [Unlocked Packages](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_intro.htm)
-2. [Unlocked Packages \(org-dependent\)](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_org_dependent.htm)
+2. [Unlocked Packages \(Org-Dependent\)](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_org_dependent.htm)
 3. [Source Packages](source-packages.md)
 4. [Change Sets](https://help.salesforce.com/articleView?id=changesets.htm&type=5)
 
