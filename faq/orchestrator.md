@@ -18,9 +18,9 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
 
 * **CI Pipeline**: A pipeline that gets triggered on every merge to the trunk. During this process, the following stages happen in sequence.
 
-  * [quickbuild](../commands/build-and-quickbuild.md) a set of changed packages \( packages without validating for dependency or code coverage\) 
-  * [deploy](../commands/deploy.md) to a  Development Sandbox.  This process ensures the upgrade process of a package is accurate and you could also do a quick round of validation of your packages coming in from a scratch org.
-  * Once deploy is  successful, the pipeline proceed to [build](../commands/build-and-quickbuild.md) the set of changed packages \( but this time with dependency validation and code coverage check\)
+  * [quickbuild](../commands/build-and-quickbuild.md) a set of changed packages \(packages without validating for dependency or code coverage\) 
+  * [deploy](../commands/deploy.md) to a Development Sandbox.  This process ensures the upgrade process of a package is accurate and you could also do a quick round of validation of your packages coming in from a scratch org.
+  * Once deploy is successful, the pipeline proceed to [build](../commands/build-and-quickbuild.md) the set of changed packages \(but this time with dependency validation and code coverage check\)
   * The pipeline could then [publish](../commands/publish.md) these validated packages to an artifact repository for deployment into higher environments for further testing.
 
   Each of this stage could have a pre-approval step modelled like the example shown below
@@ -29,10 +29,10 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
 
 ![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%286%29.png)
 
-* **CD Pipeline**:  A Continous Delivery Pipeline that gets triggered manually or automatically \( every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
+* **CD Pipeline**:  A Continuous Delivery Pipeline that gets triggered manually or automatically \(every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
   * Fetch the Artifacts from the artifact repository using the provided release definition
   * [Deploy](../commands/deploy.md) the set of packages say to System Testing environment
-  * Upon successful  testing, the same set of packages progress to the  System Integration Test environment and so forth
+  * Upon successful testing, the same set of packages progress to the System Integration Test environment and so forth
   * If the packages are successful in all of the testing, the packages are marked for promotion
   * The promoted packages are then [deployed](../commands/deploy.md) to production.
 
