@@ -17,7 +17,7 @@ description: Learn about all the features in sfpowerscripts
 
 ## **Instantaneous CI Environments!**
 
-* Prepare a pool of Scratch Org’s to act as a just in time CI  orgs, reducing a significant amount of time during  the validation phase
+* Prepare a pool of Scratch Org’s to act as a just in time CI orgs, reducing a significant amount of time during the validation phase
 
 ## **Shift Left... We got it Right!**
 
