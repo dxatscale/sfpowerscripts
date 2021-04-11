@@ -55,7 +55,7 @@ export interface DeployProps {
 
 export default class DeployImpl {
   constructor(private props: DeployProps) {}
-
+  // TODO: Refactor to use exception pattern
   public async exec(): Promise<{
     deployed: string[];
     failed: string[];
