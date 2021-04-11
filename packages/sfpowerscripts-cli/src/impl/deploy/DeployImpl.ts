@@ -728,3 +728,10 @@ interface PackageInfo {
   versionInstalledInOrg?:string
   isPackageInstalled?:boolean;
 }
+
+export interface DeploymentResult {
+  deployed: string[];
+  failed: string[];
+  testFailure: string;
+  error: any;
+}

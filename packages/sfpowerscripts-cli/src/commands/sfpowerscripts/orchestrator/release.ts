@@ -2,8 +2,9 @@ import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
-import ReleaseImpl from "../../../impl/release/ReleaseImpl";
+import ReleaseImpl, { ReleaseResult } from "../../../impl/release/ReleaseImpl";
 import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
+import ReleaseError from "../../../errors/ReleaseError";
 import path = require("path");
 
 Messages.importMessagesDirectory(__dirname);
@@ -81,8 +82,6 @@ export default class Release extends SfpowerscriptsCommand {
   public async execute(){
     this.validateFlags();
 
-    let executionStartTime = Date.now();
-
     let tags = {
       targetOrg: this.flags.targetorg
     };
@@ -90,6 +89,8 @@ export default class Release extends SfpowerscriptsCommand {
     if (this.flags.tag != null) {
       tags["tag"] = this.flags.tag;
     }
+
+    let executionStartTime = Date.now();
 
     let releaseDefinition = new ReleaseDefinition(
       this.flags.releasedefinition,
@@ -107,8 +108,9 @@ export default class Release extends SfpowerscriptsCommand {
     console.log(`Dry-run: ${this.flags.dryrun}`);
     console.log("---------------------------------------------------------");
 
-    let releaseResult: boolean;
+    let releaseResult: ReleaseResult;
     try {
+
       let releaseImpl: ReleaseImpl = new ReleaseImpl(
         releaseDefinition,
         this.flags.targetorg,
@@ -126,33 +128,32 @@ export default class Release extends SfpowerscriptsCommand {
 
       releaseResult = await releaseImpl.exec();
 
-      if (releaseResult)
-        process.exitCode = 0;
-      else
-        process.exitCode = 1;
+      SFPStatsSender.logCount(
+        "release.succeeded",
+        tags
+      );
 
     } catch (err) {
-      releaseResult = false;
-      console.log(err.message);
+
+      if (err instanceof ReleaseError) {
+        releaseResult = err.data;
+      } else console.log(err.message);
+
+      SFPStatsSender.logCount(
+        "release.failed",
+        tags
+      );
 
       // Fail the task when an error occurs
       process.exitCode = 1;
     } finally {
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
-      SFPStatsSender.logCount("release.scheduled",tags);
-
       if (releaseResult) {
-        SFPStatsSender.logCount(
-          "release.succeeded",
-          tags
-        );
-      } else {
-        SFPStatsSender.logCount(
-          "release.failed",
-          tags
-        );
+        this.printReleaseSummary(releaseResult, totalElapsedTime);
       }
+
+      SFPStatsSender.logCount("release.scheduled",tags);
 
       SFPStatsSender.logGauge(
         "release.duration",
@@ -160,6 +161,39 @@ export default class Release extends SfpowerscriptsCommand {
         tags
       );
     }
+  }
+
+  private printReleaseSummary(
+    releaseResult: ReleaseResult,
+    totalElapsedTime: number
+  ): void {
+    if (this.flags.logsgroupsymbol?.[0])
+      console.log(this.flags.logsgroupsymbol[0], "Release Summary");
+
+    console.log(
+      `----------------------------------------------------------------------------------------------------`
+    );
+    if (releaseResult.installDependenciesResult) {
+      console.log(`\nPackage Dependencies`);
+      console.log(`   ${releaseResult.installDependenciesResult.success.length} succeeded`);
+      console.log(`   ${releaseResult.installDependenciesResult.skipped.length} skipped`);
+      console.log(`   ${releaseResult.installDependenciesResult.failed.length} failed`);
+    }
+
+    if (releaseResult.deploymentResult) {
+      console.log(`\nDeployment`);
+      console.log(`   ${releaseResult.deploymentResult.deployed.length} succeeded`);
+      console.log(`   ${releaseResult.deploymentResult.failed.length} failed`);
+
+      if (releaseResult.deploymentResult.failed.length > 0) {
+        console.log(`\nPackages Failed to Deploy`, releaseResult.deploymentResult.failed);
+      }
+    }
+
+    console.log(`\nElapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11,8)}`);
+    console.log(
+      `----------------------------------------------------------------------------------------------------`
+    );
   }
 
   protected validateFlags() {

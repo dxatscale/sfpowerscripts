@@ -2,6 +2,7 @@ import ReleaseDefinitionI from "./ReleaseDefinitionInterface";
 const Validator = require('jsonschema').Validator;
 const yaml = require('js-yaml');
 import lodash = require("lodash");
+import get18DigitSalesforceId from "../../utils/get18DigitSalesforceId";
 import * as fs from "fs-extra";
 
 export default class ReleaseDefinition {
@@ -23,6 +24,16 @@ export default class ReleaseDefinition {
     // Workaround for jsonschema not supporting validation based on dependency value
     if (this._releaseDefinition.releaseOptions?.baselineOrg && !this._releaseDefinition.releaseOptions?.skipIfAlreadyInstalled)
       throw new Error("Release option 'skipIfAlreadyInstalled' must be true for 'baselineOrg'");
+
+    if (this._releaseDefinition.packageDependencies) {
+      this.convertPackageDependenciesIdTo18Digits(this._releaseDefinition.packageDependencies);
+    }
+  }
+
+  private convertPackageDependenciesIdTo18Digits(packageDependencies: {[p: string]: string}) {
+    for (let pkg in packageDependencies) {
+      packageDependencies[pkg] = get18DigitSalesforceId(packageDependencies[pkg]);
+    }
   }
 
   private validateReleaseDefinition(
