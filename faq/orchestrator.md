@@ -178,8 +178,16 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>type</b>
       </td>
-      <td style="text-align:left"></td>
-      <td style="text-align:left"></td>
+      <td style="text-align:left">Denotes the type of the package, accepted values are &quot;source&quot;,&quot;data&quot;</td>
+      <td
+      style="text-align:left">
+        <p><b>prepare,</b>
+        </p>
+        <p><b>validate,</b>
+        </p>
+        <p><b>deploy</b>
+        </p>
+        </td>
     </tr>
     <tr>
       <td style="text-align:left"><b>skipCoverageValidation</b>
@@ -191,8 +199,16 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>skipDeployOnOrgs</b>
       </td>
-      <td style="text-align:left"></td>
-      <td style="text-align:left"></td>
+      <td style="text-align:left">Skip deployment on a particular org or org(s). Take an array of aliases
+        as the input</td>
+      <td style="text-align:left">
+        <p><b>prepare,</b>
+        </p>
+        <p><b>validate,</b>
+        </p>
+        <p><b>deploy</b>
+        </p>
+      </td>
     </tr>
     <tr>
       <td style="text-align:left"><b>skipTesting</b>
