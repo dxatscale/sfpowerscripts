@@ -4,7 +4,7 @@ description: All the details about Source Packages
 
 # Source Packages
 
-Source Packages is an sfpowerscripts construct which wraps the Salesforce Metadata \(in [source format](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_source_file_format.htm)\), along with [sfdx-project.json](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm), some metadata information \(such as commit id, branch, tag\) etc. in a versioned zip file \(artifact\), which can be deployed to a Salesforce Org using sfpowerscripts package installation command
+Source Packages is an sfpowerscripts construct which wraps the Salesforce Metadata \(in [source format](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_source_file_format.htm)\), along with [sfdx-project.json](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm), some metadata information \(such as commit id, branch, tag\) etc. in a versioned zip file \(artifact\), which can be deployed to a Salesforce Org using sfpowerscripts package installation command.
 
 ## How are Source Packages different from deploying a folder using source:deploy?
 
@@ -27,7 +27,7 @@ Source Packages are metadata deployments from a Salesforce perspective, it is a 
 We always recommend using unlocked packages over source packages whenever you can. As a matter of preference, this is our priority of approach packages.
 
 1. [Unlocked Packages](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_intro.htm)
-2. [Unlocked Packages \(org-dependent\)](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_org_dependent.htm)
+2. [Unlocked Packages \(Org-Dependent\)](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_unlocked_pkg_org_dependent.htm)
 3. [Source Packages](source-packages.md)
 4. [Change Sets](https://help.salesforce.com/articleView?id=changesets.htm&type=5)
 
@@ -44,8 +44,8 @@ sfpowerscripts source packages support the following exclusive options in additi
 
 All these currently available options that can be enabled for source packaging by adding to the package descriptor in the sfdx-project.json file.
 
-* **Optimized Deployment  \(`isOptimizedDeployment:<boolean>)`:** Control the behaviour of testing of source packages during deployment, utilize the org 's coverage or better have apex unit tests that have 75% or more coverage for each class carried in the source package. Any source packages that do not have apex classes/triggers will be deployed without triggering tests  
-* **Aliasify \(`aliasfy:<boolean>`\)** :  Aliasify enables deployment of a subfolder in a source package that matches the target org. For example, you have a source package as listed below.   During Installation, only the metadata contents of the folder that matches the alias gets deployed
+* **Optimized Deployment  \(`isOptimizedDeployment:<boolean>)`:** Control the behaviour of testing of source packages during deployment, utilize the org's coverage or better have apex unit tests that have 75% or more coverage for each class carried in the source package. Any source packages that do not have apex classes/triggers will be deployed without triggering tests  
+* **Aliasify \(`aliasfy:<boolean>`\)** :  Aliasify enables deployment of a subfolder in a source package that matches the target org. For example, you have a source package as listed below. During Installation, only the metadata contents of the folder that matches the alias gets deployed
 
 ![Source Packages with env-specific-folders](../../.gitbook/assets/image%20%285%29%20%284%29%20%283%29%20%284%29%20%281%29.png)
 
@@ -71,7 +71,7 @@ All these currently available options that can be enabled for source packaging b
   }
 ```
 
-## How do source packages manage to skip installation if its already deployed in a org?
+## How do source packages manage to skip installation if it's already deployed in a org?
 
 This functionality only works provided, the target org has sfpowerscripts-artifact' \(04t1P000000ka0fQAA\) package installed. You need to install the package to every target org \(including your production environment\). The command for installing this package is as follows
 
@@ -97,5 +97,5 @@ By utilizing a destructive manifest file, one could delete metadata components d
 
 ## Why is the version number for source packages have to end with zero? Doesn't it support .next?
 
-At the moment, it is not supported and we have a bug where the .next is not replaced by passed build number. So ensure that all your source packages in your repository has '0' as the build number.
+At the moment, it is not supported. So ensure that all your source packages in your repository has '0' as placeholder for the build number which can be replaced by a build number passed as a flag by the build command
 

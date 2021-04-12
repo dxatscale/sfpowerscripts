@@ -19,13 +19,13 @@ An end to end build and deployment orchestrator for package based development on
 
 sfpowerscripts initially began life in the form of an [Azure Pipelines Extension](https://marketplace.visualstudio.com/items?itemName=AzlamSalam.sfpowerscripts) available through the [Visual Studio Marketplace](https://marketplace.visualstudio.com/) wrote by Azlam Abdulsalam as a personal project.
 
-The project was then migrated to [Accenture Open Source Program](https://accenture.github.io/) and a key component of Accenture DX@Scale initiative, a set of opinionated tool and practices for Enterprise Salesforce Development. The project is currently being expanded to support other Continuous Build Platforms utilizing a sfdx-plugin.
+The project was then migrated to [Accenture Open Source Program](https://accenture.github.io/) and a key component of Accenture DX@Scale initiative, a set of opinionated tool and practices for Enterprise Salesforce Development. The project was then revamped as a build system delivered as a CLI plugin
 
 ## Maintainers
 
-A list of people maintaining sfpowerscripts and these pages is available [here](maintainers.md)
+A list of people maintaining sfpowerscripts and these pages is available [here](community/maintainers.md)
 
 ## How do I submit a query to sfpowerscripts?
 
-Please create an issue using the methods listed [here](contributing-to-sfpowerscripts.md).
+Please create an issue using the methods listed [here](community/contributing-to-sfpowerscripts.md).
 

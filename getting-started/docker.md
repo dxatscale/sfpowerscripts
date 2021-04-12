@@ -4,7 +4,7 @@ description: Using docker images in your CI/CD
 
 # Docker
 
-Put simply, the sfpowerscripts Docker image will allow you to run your builds / releases within a container, which is like a virtualised environment running on a physical system and has its own OS, apps etc. For more information on Docker and containerisation, visit [Docker's documentation](https://docs.docker.com/).
+Put simply, the sfpowerscripts Docker image will allow you to run your builds / releases within a container, which is like a virtualized environment running on a physical system and has its own OS, apps etc. For more information on Docker and containerization, visit [Docker's documentation](https://docs.docker.com/).
 
 The sfpowerscripts Docker image is available at:
 

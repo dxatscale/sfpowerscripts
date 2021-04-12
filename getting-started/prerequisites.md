@@ -9,9 +9,7 @@ description: The following pre-requisites are required for sfpowerscripts to wor
 To get the maximum benefit out of sfpowerscripts, you need a good understanding of GIT, Salesforce DX and packaging in general. Here are some links to get you started
 
 1. [Trailhead Modules](https://trailhead.salesforce.com/en/users/azlam/trailmixes/salesforce-dx)  
-2. \[Adopting Package Based Development Model in Salesforce
-
-   \]\([https://www.linkedin.com/pulse/adopting-package-based-development-model-salesforce-azlam-abdulsalam/?trk=read\_related\_article-card\_title](https://www.linkedin.com/pulse/adopting-package-based-development-model-salesforce-azlam-abdulsalam/?trk=read_related_article-card_title)\)
+2. [Adopting Package Based Development Model in Salesforce](https://www.linkedin.com/pulse/adopting-package-based-development-model-salesforce-azlam-abdulsalam/?trk=read_related_article-card_title)
 
 ## **On your DevHub / Production Org**
 
@@ -62,6 +60,12 @@ $ echo'y' | sfdx plugins:install @dxatscale/sfpowerscripts
 ```
 
 Alternatively, you could use our [docker](docker.md) image and we highly recommend to utilize it.
+
+### JWT Based Authentication
+
+sfpowerscripts need JWT based authentication setup in DevHub for the commands to work successfully. To setup JWT based authentication please follow the link [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_jwt_flow.htm).
+
+Once the authentication is setup, ensure the client id, jwt keyfile are stored as secrets in your CI/CD platform \(or a secrets manager connected to your CI/CD platform\) for authenticating your CI/CD agents to Salesforce org's  
 
 ## **StatsD Server \(Highly Recommended\)**
 

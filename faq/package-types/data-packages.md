@@ -4,7 +4,7 @@
 
 Data packages are a sfpowerscripts construct that utilise the [SFDMU plugin](https://github.com/forcedotcom/SFDX-Data-Move-Utility) to create a versioned artifact of Salesforce object records in csv format, which can be deployed to the a Salesforce org using the sfpowerscripts package installation command.
 
-The Data Package offers a seamless method of integrating Salesforce data into your CICD pipelines , and is primarily intended for record-based configuration of managed package such as CPQ and nCino.
+The Data Package offers a seamless method of integrating Salesforce data into your CICD pipelines , and is primarily intended for record-based configuration of managed package such as CPQ, Vlocity \(Salesforce Industries\), and nCino.
 
 ## Why should I use Data Packages instead of SFDMU directly?
 
@@ -54,7 +54,7 @@ Data packages support the following options, through the sfdx-project.json.
 
 ## How to create a pre/post deployment script for data package?
 
-In some situations, you might need to execute a pre/post deployment script to do manipulate the data before or after being deployed to the org. **sfpowerscripts** allow you to provide a path to a shell script \(Mac/Unix\) / batch script \(on windows\). The script will be provided with the following parameters which could be utilised to write your logic
+In some situations, you might need to execute a pre/post deployment script to do manipulate the data before or after being deployed to the org. **sfpowerscripts** allow you to provide a path to a shell script \(Mac/Unix\) / batch script \(on Windows\). The script will be provided with the following parameters which could be utilized to write your logic
 
 For eg: if you want to trigger an anonymous apex script after the installation of the package, you will create a script file similar to below and then add the path to the **postDeploymentScript** property of your data package
 

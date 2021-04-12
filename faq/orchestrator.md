@@ -12,27 +12,27 @@ description: The heart of sfpowerscripts
 
 To understand the orchestrator, let's take a look at a typical CI/CD pipeline for a package based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
-![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2816%29.png)
+![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2822%29.png)
 
 Let's dive into the pipeline depicted above, there are two basic pipelines in play
 
 * **CI Pipeline**: A pipeline that gets triggered on every merge to the trunk. During this process, the following stages happen in sequence.
 
-  * [quickbuild](../commands/build-and-quickbuild.md) a set of changed packages \( packages without validating for dependency or code coverage\) 
-  * [deploy](../commands/deploy.md) to a  Development Sandbox.  This process ensures the upgrade process of a package is accurate and you could also do a quick round of validation of your packages coming in from a scratch org.
-  * Once deploy is  successful, the pipeline proceed to [build](../commands/build-and-quickbuild.md) the set of changed packages \( but this time with dependency validation and code coverage check\)
+  * [quickbuild](../commands/build-and-quickbuild.md) a set of changed packages \(packages without validating for dependency or code coverage\) 
+  * [deploy](../commands/deploy.md) to a Development Sandbox.  This process ensures the upgrade process of a package is accurate and you could also do a quick round of validation of your packages coming in from a scratch org.
+  * Once deploy is successful, the pipeline proceed to [build](../commands/build-and-quickbuild.md) the set of changed packages \(but this time with dependency validation and code coverage check\)
   * The pipeline could then [publish](../commands/publish.md) these validated packages to an artifact repository for deployment into higher environments for further testing.
 
   Each of this stage could have a pre-approval step modelled like the example shown below
 
-![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%2811%29.png)
-
 ![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%285%29.png)
 
-* **CD Pipeline**:  A Continous Delivery Pipeline that gets triggered manually or automatically \( every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
+![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%286%29.png)
+
+* **CD Pipeline**:  A Continuous Delivery Pipeline that gets triggered manually or automatically \(every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
   * Fetch the Artifacts from the artifact repository using the provided release definition
   * [Deploy](../commands/deploy.md) the set of packages say to System Testing environment
-  * Upon successful  testing, the same set of packages progress to the  System Integration Test environment and so forth
+  * Upon successful testing, the same set of packages progress to the System Integration Test environment and so forth
   * If the packages are successful in all of the testing, the packages are marked for promotion
   * The promoted packages are then [deployed](../commands/deploy.md) to production.
 
@@ -40,12 +40,12 @@ Take a note of each stage in the pipeline above and the key functionality requir
 
 ## Orchestrator commands
 
-1. [**prepare**](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/prepare) **\( sfdx sfpowerscripts:orchestrator:prepare\)** :  Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during a pull request validation process when a scratch org is used as Just-in-time CI environment. In simple terms,  it reduces time taken in building a scratch org to validate your changes in an incoming pull request. This command also have an option to pull artifacts from your artifact repository, so that say you can prebuild your validation orgs , say from validated set of packages.   
-2. \*\*\*\*[**validate**](../commands/validate.md) **\(sfdx sfpowerscripts:orchestrator:validate\)**: This command goes in pair with the prepare command. It fetches a scratch org from the pool already pre prepared \(by the prepare command\) and deploys/unit tests the changed packages.    
-3. \*\*\*\*[**build**](../commands/build-and-quickbuild.md) **\(sfdx sfpowerscripts:orchestrator:build/quickbuild\)** : This command builds all the packages in parallel wherever possible by understanding your manifest and dependency tree. Goodbye to the sequential builds, where you fail in the n-1th package and have to wait for the next hour. This command brings massive savings to your build\(package creation\) time. Also use the quickbuild variant, which builds unlocked package without dependency check in intermittent stages for faster feedback.   
-4. \*\*\*\*[**deploy**](../commands/deploy.md) **\(sfdx sfpowerscripts:orchestrator:deploy\)**: So you have built all the packages, now this command takes care of deploying it, by reading the order of installation as you have specified in your sfdx-project.json. Installs it one by one, deciding to trigger tests etc. and provide you with the logs if anything fails   
-5. **promote \(sfdx sfpowerscripts:orchestrator:promote\)** : Promote enables the packages to be deployable to production. This explicit stage prevents incorrectly tested packages to reach production    
-6. \*\*\*\*[**Publish**](../commands/publish.md) **\(sfdx sfpowerscripts:orchestrator:publish\)** :  Publish lets you publish the built artifacts into an artifact registry during publish stages of your pipeline.
+1. [**prepare**](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator/prepare) **\(sfdx sfpowerscripts:orchestrator:prepare\)**:  Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during a pull request validation process when a scratch org is used as Just-in-time CI environment. In simple terms, it reduces time taken in building a scratch org to validate your changes in an incoming pull request. This command also have an option to pull artifacts from your artifact repository, so that say you can prebuild your validation orgs, say from validated set of packages.   
+2. [**validate**](../commands/validate.md) **\(sfdx sfpowerscripts:orchestrator:validate\)**: This command goes in pair with the prepare command. It fetches a scratch org from the pool already pre prepared \(by the prepare command\) and deploys/unit tests the changed packages.    
+3. [**build**](../commands/build-and-quickbuild.md) **\(sfdx sfpowerscripts:orchestrator:build/quickbuild\)** : This command builds all the packages in parallel wherever possible by understanding your manifest and dependency tree. Goodbye to the sequential builds, where you fail in the n-1th package and have to wait for the next hour. This command brings massive savings to your build \(package creation\) time. Also use the [**quickbuild**](../commands/build-and-quickbuild.md) variant, which builds unlocked package without dependency check in intermittent stages for faster feedback.   
+4. [**deploy**](../commands/deploy.md) **\(sfdx sfpowerscripts:orchestrator:deploy\)**: So you have built all the packages, now this command takes care of deploying it, by reading the order of installation as you have specified in your sfdx-project.json. Installs it one by one, deciding to trigger tests etc. and provide you with the logs if anything fails   
+5. [**promote**]() **\(sfdx sfpowerscripts:orchestrator:promote\)** : Promote enables the packages to be deployable to production. This explicit stage prevents incorrectly tested packages to reach production    
+6. [**publish**](../commands/publish.md) **\(sfdx sfpowerscripts:orchestrator:publish\)** :  Publish lets you publish the built artifacts into an artifact registry during publish stages of your pipeline.
 
 ## Controlling Aspects of the Orchestrator
 
@@ -71,36 +71,11 @@ Orchestrator utilizes additional properties mentioned along with each package in
         </td>
     </tr>
     <tr>
-      <td style="text-align:left"><b>isOptimizedDeployment</b>
+      <td style="text-align:left"><b>alwaysDeploy</b>
       </td>
-      <td style="text-align:left">Detects test classes in a source package automatically and utilize it
-        to deploy the provided package</td>
-      <td style="text-align:left"><b>deploy, validate</b>
-      </td>
-    </tr>
-    <tr>
-      <td style="text-align:left"><b>skipTesting</b>
-      </td>
-      <td style="text-align:left">Skip unit testing during validate or deployment (source packages)</td>
-      <td
-      style="text-align:left">
-        <p><b>deploy,</b>
-        </p>
-        <p><b>validate</b>
-        </p>
-        </td>
-    </tr>
-    <tr>
-      <td style="text-align:left"><b>skipCoverageValidation</b>
-      </td>
-      <td style="text-align:left">Skip the coverage validation of a package (unlocked/source)</td>
-      <td style="text-align:left"><b>validate</b>
-      </td>
-    </tr>
-    <tr>
-      <td style="text-align:left"><b>destructiveChangePath</b>
-      </td>
-      <td style="text-align:left">Apply destructive changes during deployment</td>
+      <td style="text-align:left">Deploys package, even if it&apos;s installed already in the org. The artifact
+        has to be present in the artifact directory for this particular option
+        to work</td>
       <td style="text-align:left"><b>deploy</b>
       </td>
     </tr>
@@ -131,9 +106,39 @@ Orchestrator utilizes additional properties mentioned along with each package in
       </td>
     </tr>
     <tr>
-      <td style="text-align:left"><b>reconcileProfiles</b>
+      <td style="text-align:left"><b>buildCollection</b>
       </td>
-      <td style="text-align:left">Reconcile Profiles during a deployment of source packages</td>
+      <td style="text-align:left">Utilize this to build packages in unison, it will build all packages in
+        the collection, even if only one of them changes</td>
+      <td style="text-align:left"><b>build</b>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>destructiveChangePath</b>
+      </td>
+      <td style="text-align:left">Apply destructive changes during deployment</td>
+      <td style="text-align:left"><b>deploy</b>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>isOptimizedDeployment</b>
+      </td>
+      <td style="text-align:left">Detects test classes in a source package automatically and utilize it
+        to deploy the provided package</td>
+      <td style="text-align:left"><b>deploy, validate</b>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>ignoreOnStage</b>
+      </td>
+      <td style="text-align:left"></td>
+      <td style="text-align:left"></td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>postDeploymentScript</b>
+      </td>
+      <td style="text-align:left">Run an executable script after deploying a package. User need to provide
+        a path to the script file</td>
       <td style="text-align:left">
         <p><b>prepare,</b>
         </p>
@@ -158,10 +163,9 @@ Orchestrator utilizes additional properties mentioned along with each package in
       </td>
     </tr>
     <tr>
-      <td style="text-align:left"><b>postDeploymentScript</b>
+      <td style="text-align:left"><b>reconcileProfiles</b>
       </td>
-      <td style="text-align:left">Run an executable script after deploying a package. User need to provide
-        a path to the script file</td>
+      <td style="text-align:left">Reconcile Profiles during a deployment of source packages</td>
       <td style="text-align:left">
         <p><b>prepare,</b>
         </p>
@@ -172,21 +176,51 @@ Orchestrator utilizes additional properties mentioned along with each package in
       </td>
     </tr>
     <tr>
-      <td style="text-align:left"><b>alwaysDeploy</b>
+      <td style="text-align:left"><b>type</b>
       </td>
-      <td style="text-align:left">Deploys package, even if its installed already in the org. The artifact
-        has to be present in the artifact directory for this particular option
-        to work</td>
-      <td style="text-align:left"><b>deploy</b>
+      <td style="text-align:left">Denotes the type of the package, accepted values are &quot;source&quot;,&quot;data&quot;</td>
+      <td
+      style="text-align:left">
+        <p><b>prepare,</b>
+        </p>
+        <p><b>validate,</b>
+        </p>
+        <p><b>deploy</b>
+        </p>
+        </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>skipCoverageValidation</b>
+      </td>
+      <td style="text-align:left">Skip the coverage validation of a package (unlocked/source)</td>
+      <td style="text-align:left"><b>validate</b>
       </td>
     </tr>
     <tr>
-      <td style="text-align:left"><b>buildCollection</b>
+      <td style="text-align:left"><b>skipDeployOnOrgs</b>
       </td>
-      <td style="text-align:left">Utilize this to build packages in unison, it will build all packages in
-        the collection, even if only one of them changes</td>
-      <td style="text-align:left"><b>build</b>
+      <td style="text-align:left">Skip deployment on a particular org or org(s). Take an array of aliases
+        as the input</td>
+      <td style="text-align:left">
+        <p><b>prepare,</b>
+        </p>
+        <p><b>validate,</b>
+        </p>
+        <p><b>deploy</b>
+        </p>
       </td>
+    </tr>
+    <tr>
+      <td style="text-align:left"><b>skipTesting</b>
+      </td>
+      <td style="text-align:left">Skip unit testing during validate or deployment (source packages)</td>
+      <td
+      style="text-align:left">
+        <p><b>deploy,</b>
+        </p>
+        <p><b>validate</b>
+        </p>
+        </td>
     </tr>
   </tbody>
 </table>
@@ -209,7 +243,7 @@ Add this entry to your sfdx-project.json and as in the example below, mention th
         }
 ```
 
-## Ignoring a package on any particular stage from being being processed by the orcestrator
+## Ignoring a package on any particular stage from being being processed by the orchestrator
 
 Utilize the `ignoreOnStage` descriptor to mark which packages should be skipped by the lifecycle commands.
 

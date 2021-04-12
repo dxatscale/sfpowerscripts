@@ -18,7 +18,7 @@ Artifact registry allows you to split your CI and CD pipelines. We believe that 
 
 Let's have a look at the below example, here a CI pipeline creates a bunch of artifacts/packages, then the publish command is used to publish these artifacts into an Artifact Registry. This stage often gets repeated multiple times during a day.
 
-![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2830%29.png)
+![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2832%29.png)
 
 An important thing to note here is especially when a CI pipeline is enabled with '[diffcheck](../commands/build-and-quickbuild.md#how-does-build-and-quickbuild-know-what-to-build-when-using-diffcheck-flag)**'** functionality, it only builds packages for the particular build run. Unless you are immediately deploying these packages to production, there is no way to deploy an entire set of packages other than going through each of the build runs and immediately pushing them into production. You will need to aggregate packages before you proceed to the next stage.
 
@@ -26,14 +26,14 @@ One approach to solve is to use branches, where a branch per environment is used
 
 This is where an artifact registry comes into play, it stores all the artifacts produced by the build stage into a repository, which allows you to consolidate all versions of your artifacts and then allowing you to decide which all packages/artifacts should be aggregated and released into production.
 
-The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and it's version number/tag as the input. Typically we advise you to select all the latest versions in your artifact repository and add an option to override a certain version of the package by fetching a run time input \(Most repositories have some api's which will allow you to list all the packages in a repository and its versions\).
+The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and it's version number/tag as the input, such as by using a release definition used by the [fetch](../commands/fetch.md) command.
 
 ## **Type of Artifact Registries supported**
 
 Rather than lock everyone into a particular registry provider, sfpowerscripts supports artifact registries which support the following
 
-* **NPM compatible private registry** \(Almost  every artifact registries supports NPM \)
-* **A  registry that supports universal packages \(** Jfrog Aritfactory, Azure Artifacts\)
+* **NPM compatible private registry** \(Almost every artifact registries supports NPM \)
+* **A registry that supports universal packages \(**JFrog Aritfactory, Azure Artifacts\)
 
 {% hint style="danger" %}
 Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages.
@@ -43,13 +43,13 @@ Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the 
 
 Please refer to your artifact registry provider's documentation on how to set it up. If you are planning to use npm compatible private registry, here are some links to get you started
 
-* Github [https://docs.github.com/en/packages/guides/configuring-npm-for-use-with-github-packages](https://docs.github.com/en/packages/guides/configuring-npm-for-use-with-github-packages)
-* Gitlab [https://docs.gitlab.com/ee/user/packages/npm\_registry/](https://docs.gitlab.com/ee/user/packages/npm_registry/)
-* Azure Artifacts [https://docs.gitlab.com/ee/user/packages/npm\_registry/](https://docs.gitlab.com/ee/user/packages/npm_registry/)
-* JFrog Artifactory [https://www.jfrog.com/confluence/display/JFROG/npm+Registry](https://www.jfrog.com/confluence/display/JFROG/npm+Registry)
-* MyGet [https://docs.myget.org/docs/reference/myget-npm-support](https://docs.myget.org/docs/reference/myget-npm-support)
+* [Github](https://docs.github.com/en/packages/guides/configuring-npm-for-use-with-github-packages)
+* [Gitlab](https://docs.gitlab.com/ee/user/packages/npm_registry/)
+* [Azure Artifacts](https://docs.microsoft.com/en-us/azure/devops/artifacts/get-started-npm?view=azure-devops%20)
+* [JFrog Artifactory](https://www.jfrog.com/confluence/display/JFROG/npm+Registry)
+* [MyGet](https://docs.myget.org/docs/reference/myget-npm-support)
 
 ## Publishing/Fetching Packages  to or from Artifact Registry
 
-sfpowerscripts provides with functionality to help you fetch or [publish](../commands/publish.md) artifacts. Some orchestrator commands like [prepare](../commands/prepare.md) also fetches artifacts from the artifact registry.
+sfpowerscripts provides with functionality to help you [fetch](../commands/fetch.md) or [publish](../commands/publish.md) artifacts. Some orchestrator commands like [prepare](../commands/prepare.md) also fetches artifacts from the artifact registry.
 

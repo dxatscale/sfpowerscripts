@@ -45,35 +45,35 @@ The following are the list of metrics that are captured.
 | METRIC | DESCRIPTION | TYPE |
 | :--- | :--- | :--- |
 | sfpowerscripts.deploy.failed | Number of times deploy command failed | COUNT |
-| sfpowerscripts.deploy.duration | Time spent on executing deploy command | GUAGE |
+| sfpowerscripts.deploy.duration | Time spent on executing deploy command | GAUGE |
 | sfpowerscripts.deploy.scheduled | Number of times deployment was scheduled to run | COUNT |
-| sfpowerscripts.deploy.scheduled.packages | Number of packages that were scheduled to be deployed by the deploy command | GUAGE |
+| sfpowerscripts.deploy.scheduled.packages | Number of packages that were scheduled to be deployed by the deploy command | GAUGE |
 | sfpowerscripts.deploy.succeeded | Number of succeeded deploy executions | COUNT |
-| sfpowerscripts.deploy.succeeded.packages | Number of packages that were successfully deployed | GUAGE |
+| sfpowerscripts.deploy.succeeded.packages | Number of packages that were successfully deployed | GAUGE |
 | sfpowerscripts.deploy.failed | Number of times deploy command failed to execute | COUNT |
-| sfpowerscripts.deploy.failed.packages | Number and details of packages that failed to deploy | GUAGE |
+| sfpowerscripts.deploy.failed.packages | Number and details of packages that failed to deploy | GAUGE |
 | sfpowerscripts.build.scheduled | Number of times build was scheduled to run | COUNT |
-| sfpowerscripts.build.duration | Time spent on executing build command | GUAGE |
-| sfpowerscripts.build.scheduled.packages | Number of packages being scheduled to build | GUAGE |
-| sfpowerscripts.build.succeeded.packages | Number of packages successfully built | GUAGE |
-| sfpowerscripts.build.failed.packages | Number of packages failed to build | GUAGE |
+| sfpowerscripts.build.duration | Time spent on executing build command | GAUGE |
+| sfpowerscripts.build.scheduled.packages | Number of packages being scheduled to build | GAUGE |
+| sfpowerscripts.build.succeeded.packages | Number of packages successfully built | GAUGE |
+| sfpowerscripts.build.failed.packages | Number of packages failed to build | GAUGE |
 | sfpowerscripts.validate.failed | Number of time validate failed to execute | COUNT |
-| sfpowerscripts.validate.duration | Time spent on executing validate command | GUAGE |
-| sfpowerscripts.publish.duration | Time spent on executing publish command | GUAGE |
+| sfpowerscripts.validate.duration | Time spent on executing validate command | GAUGE |
+| sfpowerscripts.publish.duration | Time spent on executing publish command | GAUGE |
 | sfpowerscripts.publish.succeeded | Number of succeeded publish executions | COUNT |
 | sfpowerscripts.package.installation | Number of times a package was installed | COUNT |
-| sfpowerscripts.package.installation.elapsed\_time | Time taken to install a package | GUAGE |
-| sfpowerscripts.package.elapsed | Time taken to create a package | GUAGE |
+| sfpowerscripts.package.installation.elapsed\_time | Time taken to install a package | GAUGE |
+| sfpowerscripts.package.elapsed | Time taken to create a package | GAUGE |
 | sfpowerscripts.package.created | Number of times a particular package was created | COUNT |
-| sfpowerscripts.package.metadatacount | Number of metadata in a package | GUAGE |
-| sfpowerscripts.package.testcoverage | Test Coverage of a package | GUAGE |
+| sfpowerscripts.package.metadatacount | Number of metadata in a package | GAUGE |
+| sfpowerscripts.package.testcoverage | Test Coverage of a package | GAUGE |
 | sfpowerscripts.apextests.triggered | Number of times apex tests were triggered for a package | COUNT |
-| sfpowerscripts.apextest.testtotal | Time taken for Apex Test Execution | GUAGE |
-| sfpowerscripts.apextest.command.time | Time taken for Apex Test  Execution \(Command Time\) | GUAGE |
-| sfpowerscripts.prepare.succeededorgs | Number of orgs that were succeeded during a run of prepare | GUAGE |
-| sfpowerscripts.prepare.failedorgs | Number of orgs that failed during a run of prepare | GUAGE |
-| sfpowerscripts.prepare.duration | Time take to prepare a  pool of scratchorgs | GUAGE |
-| sfpowerscripts.pool.remaining | Number of scratch orgs that are remaining in a pool after fetched by validate command | GUAGE |
+| sfpowerscripts.apextest.testtotal | Time taken for Apex Test Execution | GAUGE |
+| sfpowerscripts.apextest.command.time | Time taken for Apex Test  Execution \(Command Time\) | GAUGE |
+| sfpowerscripts.prepare.succeededorgs | Number of orgs that were succeeded during a run of prepare | GAUGE |
+| sfpowerscripts.prepare.failedorgs | Number of orgs that failed during a run of prepare | GAUGE |
+| sfpowerscripts.prepare.duration | Time take to prepare a  pool of scratchorgs | GAUGE |
+| sfpowerscripts.pool.remaining | Number of scratch orgs that are remaining in a pool after fetched by validate command | GAUGE |
 
 ## Sample Dashboards
 
