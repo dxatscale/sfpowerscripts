@@ -31,6 +31,10 @@ For eg: if you are using github actions
 ```
 {% endhint %}
 
+{% hint style="danger" %}
+Please note the build command should not be run concurrently. Ensure you design your pipeline in such a way that only one build stage is run at any given point in time. Running parallel build commands could result in package with incorrect dependencies. 
+{% endhint %}
+
 ## Determining Package to be built
 
 These commands follow the order of the the packages as ordered in your sfdx-project.json. The commands also read your dependencies property, and then when triggered, will wait till all its dependencies are resolved, before triggering the package creation command. For eg: provided the followings packages
