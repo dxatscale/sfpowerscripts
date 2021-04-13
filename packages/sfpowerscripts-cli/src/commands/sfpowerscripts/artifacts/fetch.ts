@@ -2,10 +2,7 @@ import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import FetchImpl from '../../../impl/artifacts/FetchImpl';
-const yaml = require('js-yaml');
-import * as fs from "fs-extra";
-import ReleaseDefinition from "../../../impl/release/ReleaseDefinitionInterface";
-import validateReleaseDefinition from "../../../impl/release/validateReleaseDefinition";
+import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
 import FetchArtifactsError from "../../../errors/FetchArtifactsError";
 
 Messages.importMessagesDirectory(__dirname);
@@ -58,10 +55,10 @@ export default class Fetch extends SfpowerscriptsCommand {
   public async execute(){
     this.validateFlags();
 
-    let releaseDefinition: ReleaseDefinition = yaml.load(
-      fs.readFileSync(this.flags.releasedefinition, 'utf8')
-    );
-    validateReleaseDefinition(releaseDefinition, this.flags.npm);
+    let releaseDefinition = new ReleaseDefinition(
+      this.flags.releasedefinition,
+      this.flags.npm
+    ).releaseDefinition;
 
     let result: {
       success: [string, string][],
@@ -70,6 +67,7 @@ export default class Fetch extends SfpowerscriptsCommand {
 
     let executionStartTime = Date.now();
     try {
+
       let fetchImpl: FetchImpl = new FetchImpl(
         releaseDefinition,
         this.flags.artifactdir,

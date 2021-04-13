@@ -9,6 +9,7 @@ import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcomman
 import ArtifactInstallationStatusChecker from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInstallationStatusChecker"
 import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher"
 import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
+import ArtifactInquirer from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInquirer";
 
 import fs = require("fs");
 import path = require("path");
@@ -49,6 +50,7 @@ export interface DeployProps {
   currentStage?: Stage;
   baselineOrg?:string;
   isCheckIfPackagesPromoted?: boolean;
+  isDryRun?: boolean;
 }
 
 export default class DeployImpl {
@@ -76,10 +78,13 @@ export default class DeployImpl {
           `No artifacts to deploy found in ${this.props.artifactDir}`
         );
 
-      this.validateArtifactsSourceRepository(artifacts);
-      let packageManifest = this.getLatestPackageManifest(artifacts);
+      let artifactInquirer: ArtifactInquirer = new ArtifactInquirer(
+        artifacts,
+        this.props.packageLogger
+      );
+      let packageManifest = artifactInquirer.latestPackageManifestFromArtifacts
 
-      if (packageManifest === null) {
+      if (packageManifest == null) {
         // If unable to find latest package manfest in artifacts, use package manifest in project directory
         packageManifest = ProjectConfig.getSFDXPackageManifest(null);
       }
@@ -679,73 +684,6 @@ export default class DeployImpl {
   }
 
   /**
-   * Verify that artifacts are from the same source repository
-   */
-  private validateArtifactsSourceRepository(
-    artifacts: ArtifactFilePaths[]
-  ): void {
-    let sourceRepository: string;
-    for (let artifact of artifacts) {
-      let packageMetadata: PackageMetadata = JSON.parse(
-        fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
-      );
-
-      if (sourceRepository == null)
-        sourceRepository = packageMetadata.repository_url;
-
-      if (sourceRepository !== packageMetadata.repository_url)
-        throw new Error(
-          "Artifacts must originate from the same source repository, for deployment to work"
-        );
-    }
-  }
-
-  /**
-   * Gets latest package manifest from artifacts
-   * Returns null if unable to find latest package manifest
-   * @param artifacts
-   */
-  private getLatestPackageManifest(artifacts: ArtifactFilePaths[]): any {
-    let latestPackageManifest: any;
-
-    let latestPackageMetadata: PackageMetadata;
-    for (let artifact of artifacts) {
-      let packageMetadata: PackageMetadata = JSON.parse(
-        fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
-      );
-
-      if (
-        latestPackageMetadata == null ||
-        latestPackageMetadata.creation_details.timestamp <
-          packageMetadata.creation_details.timestamp
-      ) {
-        latestPackageMetadata = packageMetadata;
-
-        let pathToPackageManifest = path.join(
-          artifact.sourceDirectoryPath,
-          "manifests",
-          "sfdx-project.json.ori"
-        );
-        if (fs.existsSync(pathToPackageManifest)) {
-          latestPackageManifest = JSON.parse(
-            fs.readFileSync(pathToPackageManifest, "utf8")
-          );
-        }
-      }
-    }
-
-    if (latestPackageManifest) {
-      SFPLogger.log(
-        `Found latest package manifest in ${latestPackageMetadata.package_name} artifact`,
-        null,
-        this.props.packageLogger,
-        LoggerLevel.INFO
-      );
-      return latestPackageManifest;
-    } else return null;
-  }
-
-  /**
    * Returns the packages in the project config that have an artifact
    */
   private getPackagesToDeploy(
@@ -789,4 +727,11 @@ interface PackageInfo {
   packageMetadata: PackageMetadata;
   versionInstalledInOrg?:string
   isPackageInstalled?:boolean;
+}
+
+export interface DeploymentResult {
+  deployed: string[];
+  failed: string[];
+  testFailure: string;
+  error: any;
 }
