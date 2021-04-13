@@ -1,4 +1,4 @@
-export default interface ReleaseDefinitionI {
+export default interface ReleaseDefinitionSchema {
   release: string,
   artifacts: {
     [p: string]: string

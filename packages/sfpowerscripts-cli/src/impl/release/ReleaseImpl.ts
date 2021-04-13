@@ -1,4 +1,4 @@
-import ReleaseDefinitionI from "./ReleaseDefinitionInterface";
+import ReleaseDefinitionSchema from "./ReleaseDefinitionSchema";
 import FetchImpl from "../artifacts/FetchImpl";
 import DeployImpl, { DeployProps , DeploymentMode, DeploymentResult } from "../deploy/DeployImpl";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
@@ -8,7 +8,7 @@ import ReleaseError from "../../errors/ReleaseError";
 
 export default class ReleaseImpl {
   constructor(
-    private releaseDefinition: ReleaseDefinitionI,
+    private releaseDefinition: ReleaseDefinitionSchema,
     private targetOrg: string,
     private fetchArtifactScript: string,
     private isNpm: boolean,
@@ -62,7 +62,7 @@ export default class ReleaseImpl {
   }
 
   private async deployArtifacts(
-    releaseDefinition: ReleaseDefinitionI
+    releaseDefinition: ReleaseDefinitionSchema
   ) {
 
     let deployProps: DeployProps = {

@@ -1,4 +1,4 @@
-import ReleaseDefinitionI from "./ReleaseDefinitionInterface";
+import ReleaseDefinitionSchema from "./ReleaseDefinitionSchema";
 const Validator = require('jsonschema').Validator;
 const yaml = require('js-yaml');
 import lodash = require("lodash");
@@ -6,7 +6,7 @@ import get18DigitSalesforceId from "../../utils/get18DigitSalesforceId";
 import * as fs from "fs-extra";
 
 export default class ReleaseDefinition {
-  private _releaseDefinition: ReleaseDefinitionI;
+  private _releaseDefinition: ReleaseDefinitionSchema;
 
   get releaseDefinition() {
     // Return clone of releaseDefinition for immutability
@@ -37,7 +37,7 @@ export default class ReleaseDefinition {
   }
 
   private validateReleaseDefinition(
-    releaseDefinition: ReleaseDefinitionI,
+    releaseDefinition: ReleaseDefinitionSchema,
     isNpm: boolean
   ): void {
     let v = new Validator();

@@ -3,12 +3,12 @@ import * as fs from "fs-extra";
 import path = require("path");
 import Git from "@dxatscale/sfpowerscripts.core/lib/utils/Git";
 import GitTags from "@dxatscale/sfpowerscripts.core/lib/utils/GitTags";
-import ReleaseDefinitionI from "../release/ReleaseDefinitionInterface";
+import ReleaseDefinitionSchema from "../release/ReleaseDefinitionSchema";
 import FetchArtifactsError from "../../errors/FetchArtifactsError";
 
 export default class FetchImpl {
   constructor(
-    private releaseDefinition: ReleaseDefinitionI,
+    private releaseDefinition: ReleaseDefinitionSchema,
     private artifactDirectory: string,
     private scriptPath: string,
     private isNpm: boolean,
@@ -46,7 +46,7 @@ export default class FetchImpl {
   }
 
   private async fetchArtifactsFromNpm(
-    releaseDefinition: ReleaseDefinitionI,
+    releaseDefinition: ReleaseDefinitionSchema,
     artifactDirectory: string,
     scope: string,
     npmrcPath: string
@@ -110,7 +110,7 @@ export default class FetchImpl {
   }
 
   private async fetchArtifactsFromScript(
-    releaseDefinition: ReleaseDefinitionI,
+    releaseDefinition: ReleaseDefinitionSchema,
     artifactDirectory: string
   ): Promise<{
     success: [string, string][],
