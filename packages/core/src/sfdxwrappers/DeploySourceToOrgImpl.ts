@@ -75,7 +75,6 @@ export default class DeploySourceToOrgImpl {
         let resultAsJSON = JSON.parse(result);
         deploy_id = resultAsJSON.result.id;
       } catch (error) {
-        console.log(error);
         deploySourceResult.result = false;
         deploySourceResult.message = error;
         return deploySourceResult;
@@ -113,8 +112,8 @@ export default class DeploySourceToOrgImpl {
           else SFPLogger.log(`Deployment Failed`, null, this.packageLogger);
           break;
         }
-        let resultAsJSON = JSON.parse(result);
 
+        let resultAsJSON = JSON.parse(result);
         if (resultAsJSON["status"] == 1) {
           SFPLogger.log(
             "Validation/Deployment Failed",
@@ -155,8 +154,11 @@ export default class DeploySourceToOrgImpl {
   }
 
   private async getFinalDeploymentStatus(deploy_id: string): Promise<string> {
-    let reportJson = "";
+    SFPLogger.log(`Gathering Final Deployment Status`, null, this.packageLogger);
+    let reportAsJSON="";
     try {
+      let filepath=`sfpowerscripts/mdapiDeployReports`;
+      fs.mkdirpSync(filepath);
       let child = child_process.exec(
         `sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org}`,
         {
@@ -167,25 +169,30 @@ export default class DeploySourceToOrgImpl {
       );
 
       child.stdout.on("data", (data) => {
-        reportJson += data.toString();
+        reportAsJSON += data.toString();
+      });
+
+
+      child.stderr.on("data", (data) => {
+        reportAsJSON += data.toString();
       });
 
       await onExit(child);
 
-      fs.mkdirpSync(`.sfpowerscripts/mdapiDeployReports`);
-      fs.writeFileSync(
-        `.sfpowerscripts/mdapiDeployReports/${deploy_id}.json`,
-        reportJson
-      );
-
-      // Return empty string for successful deployment
-      return "";
+      return "Succesfully Deployed";
     } catch (err) {
-      let report = JSON.parse(reportJson);
-      DeployErrorDisplayer.printMetadataFailedToDeploy(
-        report.result.details.componentFailures
-      );
-      return report.message;
+      let report = JSON.parse(reportAsJSON);
+      if(report.result.details.componentFailures && report.result.details.componentFailures.length>0)
+      {
+        DeployErrorDisplayer.printMetadataFailedToDeploy(
+          report.result.details.componentFailures,this.packageLogger
+        );
+        return report.message;
+      }
+      else
+      {
+        return "Unable to fetch report";
+      }
     }
   }
 
