@@ -104,16 +104,21 @@ export default class ChangelogImpl {
 
       console.log("Generating changelog...");
 
-      let prevReleaseLatestCommitId: {[P: string]: string} = {}
-      if (prevReleaseDefinition) {
-        for (let artifact of latestReleaseDefinition["artifacts"]) {
-          for (let prevReleaseArtifact of prevReleaseDefinition["artifacts"]) {
-            if (artifact["name"] === prevReleaseArtifact["name"]) {
-              artifact["from"] = prevReleaseArtifact["to"];
-              prevReleaseLatestCommitId[artifact["name"]] = prevReleaseArtifact["latestCommitId"];
-              break;
+      let artifactsToLatestCommitId: {[P: string]: string} = {}
+      if (releaseChangelog.releases.length > 0) {
+        for (let latestReleaseArtifact of latestReleaseDefinition.artifacts) {
+
+          loopThroughReleases:
+          for (let release of releaseChangelog.releases) {
+            for (let artifact of release.artifacts) {
+              if (artifact.name === latestReleaseArtifact.name) {
+                latestReleaseArtifact.from = artifact.to;
+                artifactsToLatestCommitId[latestReleaseArtifact.name] = artifact.latestCommitId;
+                break loopThroughReleases;
+              }
             }
           }
+
         }
       }
 
@@ -128,10 +133,10 @@ export default class ChangelogImpl {
         let fromIdx;
         if (artifact["from"]) {
           fromIdx = packageChangelog["commits"].findIndex( (commit) =>
-            commit["commitId"] === prevReleaseLatestCommitId[artifact["name"]]
+            commit["commitId"] === artifactsToLatestCommitId[artifact["name"]]
           );
           if (fromIdx === -1) {
-            console.log(`Cannot find commit Id ${prevReleaseLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
+            console.log(`Cannot find commit Id ${artifactsToLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
             console.log("Assuming that there are no changes...");
             artifact["commits"] = [];
             continue;
