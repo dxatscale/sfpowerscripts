@@ -31,6 +31,7 @@ export default class PrepareImpl {
   private _scope: string;
   private _npmTag: string;
   private _npmrcPath: string;
+  private _isRetryOnFailure:boolean;
 
   public constructor(
     private hubOrg: Org,
@@ -82,6 +83,11 @@ export default class PrepareImpl {
 
   public set npmrcPath(path: string) {
     this._npmrcPath = path;
+  }
+
+  public set retryOnFailure(isRetryOnFailure:boolean)
+  {
+    this._isRetryOnFailure=isRetryOnFailure;
   }
 
   public async poolScratchOrgs(): Promise< {
@@ -456,7 +462,8 @@ export default class PrepareImpl {
     let prepareASingleOrgImpl: PrepareASingleOrgImpl = new PrepareASingleOrgImpl(
       this.sfdx,
       scratchOrg,
-      hubOrgUserName
+      hubOrgUserName,
+      this._isRetryOnFailure
     );
 
     prepareASingleOrgImpl.setInstallationBehaviour(this.installAll,this.installAsSourcePackages,this.succeedOnDeploymentErrors);

@@ -17,11 +17,13 @@ export default class PrepareASingleOrgImpl {
   private installAll: boolean;
   private installAsSourcePackages: boolean;
   succeedOnDeploymentErrors: boolean;
+  
 
   public constructor(
     private sfdx: SfdxApi,
     private scratchOrg: ScratchOrg,
-    private hubOrg: string
+    private hubOrg: string,
+    private isRetryOnFailure?: boolean
   ) {}
 
 
@@ -96,7 +98,8 @@ export default class PrepareASingleOrgImpl {
           packageLogger:packageLogger,
           isTestsToBeTriggered:false,
           skipIfPackageInstalled:false,
-          deploymentMode: this.installAsSourcePackages? DeploymentMode.SOURCEPACKAGES:DeploymentMode.NORMAL
+          deploymentMode: this.installAsSourcePackages? DeploymentMode.SOURCEPACKAGES:DeploymentMode.NORMAL,
+          isRetryOnFailure:this.isRetryOnFailure
         }
 
         //Deploy the fetched artifacts to the org
