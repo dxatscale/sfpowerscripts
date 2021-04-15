@@ -6,6 +6,7 @@ import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/li
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import * as fs from "fs-extra"
 import path = require('path');
+import { string } from "@oclif/command/lib/flags";
 const tmp = require('tmp');
 
 export default class ChangelogImpl {
@@ -104,23 +105,13 @@ export default class ChangelogImpl {
 
       console.log("Generating changelog...");
 
-      let artifactsToLatestCommitId: {[P: string]: string} = {}
+      let artifactsToLatestCommitId: {[P: string]: string};
       if (releaseChangelog.releases.length > 0) {
-        for (let latestReleaseArtifact of latestReleaseDefinition.artifacts) {
-
-          loopThroughReleases:
-          for (let release of releaseChangelog.releases) {
-            for (let artifact of release.artifacts) {
-              if (artifact.name === latestReleaseArtifact.name) {
-                latestReleaseArtifact.from = artifact.to;
-                artifactsToLatestCommitId[latestReleaseArtifact.name] = artifact.latestCommitId;
-                break loopThroughReleases;
-              }
-            }
-          }
-
-        }
-      }
+        artifactsToLatestCommitId = this.getArtifactsToLatestCommitId(
+          releaseChangelog,
+          latestReleaseDefinition
+        );
+      };
 
       // Get commits for the latest release
       for (let artifact of latestReleaseDefinition["artifacts"]) {
@@ -128,15 +119,16 @@ export default class ChangelogImpl {
           fs.readFileSync(packageChangelogMap[artifact["name"]], 'utf8')
         );
 
+        // Set new latestCommitId
         artifact["latestCommitId"] = packageChangelog["commits"][0]["commitId"];
 
-        let fromIdx;
-        if (artifact["from"]) {
-          fromIdx = packageChangelog["commits"].findIndex( (commit) =>
-            commit["commitId"] === artifactsToLatestCommitId[artifact["name"]]
+        let indexOfLatestCommitId;
+        if (artifactsToLatestCommitId[artifact.name]) {
+          indexOfLatestCommitId = packageChangelog["commits"].findIndex( (commit) =>
+            commit["commitId"] === artifactsToLatestCommitId[artifact.name]
           );
-          if (fromIdx === -1) {
-            console.log(`Cannot find commit Id ${artifactsToLatestCommitId[artifact["name"]]} in ${artifact["name"]} changelog`);
+          if (indexOfLatestCommitId === -1) {
+            console.log(`Cannot find commit Id ${artifactsToLatestCommitId[artifact.name]} in ${artifact.name} changelog`);
             console.log("Assuming that there are no changes...");
             artifact["commits"] = [];
             continue;
@@ -144,14 +136,14 @@ export default class ChangelogImpl {
         }
 
 
-        if (fromIdx > 0) {
-          artifact["commits"] = packageChangelog["commits"].slice(0, fromIdx);
-        } else if (fromIdx === 0) {
+        if (indexOfLatestCommitId > 0) {
+          artifact["commits"] = packageChangelog["commits"].slice(0, indexOfLatestCommitId);
+        } else if (indexOfLatestCommitId === 0) {
           // Artifact verison has not changed
           artifact["commits"] = [];
           // Skip to next artifact
           continue;
-        } else if (fromIdx === undefined ) {
+        } else if (indexOfLatestCommitId === undefined ) {
           // Artifact was not in previous release
           artifact["commits"] = packageChangelog["commits"];
         }
@@ -224,5 +216,31 @@ export default class ChangelogImpl {
     } finally {
       tempDir.removeCallback();
     }
+  }
+
+  /**
+   * Get map of artifacts to the latest commit Id in past releases
+   * @param releaseChangelog
+   * @param latestReleaseDefinition
+   * @returns
+   */
+  private getArtifactsToLatestCommitId(releaseChangelog: ReleaseChangelog, latestReleaseDefinition: Release) {
+    let artifactsToLatestCommitId: { [P: string]: string; } = {};
+
+    for (let latestReleaseArtifact of latestReleaseDefinition.artifacts) {
+
+      loopThroughReleases: for (let release of releaseChangelog.releases) {
+        for (let artifact of release.artifacts) {
+          if (artifact.name === latestReleaseArtifact.name) {
+            latestReleaseArtifact.from = artifact.to;
+            artifactsToLatestCommitId[latestReleaseArtifact.name] = artifact.latestCommitId;
+            break loopThroughReleases;
+          }
+        }
+      }
+
+    }
+
+    return artifactsToLatestCommitId;
   }
 }
