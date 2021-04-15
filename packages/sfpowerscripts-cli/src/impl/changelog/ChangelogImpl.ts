@@ -6,7 +6,6 @@ import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/li
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import * as fs from "fs-extra"
 import path = require('path');
-import { string } from "@oclif/command/lib/flags";
 const tmp = require('tmp');
 
 export default class ChangelogImpl {
@@ -60,46 +59,21 @@ export default class ChangelogImpl {
         return;
       }
 
-      let packageChangelogMap: {[P:string]: string} = {};
-      let latestRelease: Release = {
-        name: this.releaseName,
-        workItems: {},
-        artifacts: []
-      };
 
-      // Read artifacts for latest release definition
-      let missingChangelogs: Error[] = [];
-      for (let artifactFilepaths of artifact_filepaths ) {
-
+      let artifactsToPackageMetadata: {[p: string]: PackageMetadata} = {};
+      let packagesToChangelogFilePaths: {[p:string]: string} = {};
+      for (let artifactFilepaths of artifact_filepaths) {
         let packageMetadata: PackageMetadata = JSON.parse(
           fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
         );
 
-        let artifact: Artifact = {
-          name: packageMetadata["package_name"],
-          from: undefined,
-          to: packageMetadata["sourceVersion"]?.slice(0,8) || packageMetadata["sourceVersionTo"]?.slice(0,8),
-          version: packageMetadata["package_version_number"],
-          latestCommitId: undefined,
-          commits: undefined
-        }
-
-        latestRelease["artifacts"].push(artifact);
-
-        if (!fs.existsSync(artifactFilepaths.changelogFilePath)) {
-          missingChangelogs.push(
-            new Error(`No changelog found in artifact ${packageMetadata["package_name"]} ${packageMetadata["package_version_number"]}`)
-          );
-        }
-
-        packageChangelogMap[packageMetadata["package_name"]] = artifactFilepaths.changelogFilePath;
-      }
-
-      if (missingChangelogs.length > 0) {
-        throw missingChangelogs;
+        artifactsToPackageMetadata[packageMetadata.package_name] = packageMetadata;
+        packagesToChangelogFilePaths[packageMetadata.package_name] = artifactFilepaths.changelogFilePath;
       }
 
       console.log("Generating changelog...");
+
+      let latestRelease: Release = this.initLatestRelease(this.releaseName, artifactsToPackageMetadata);
 
       let artifactsToLatestCommitId: {[P: string]: string};
       if (releaseChangelog?.releases.length > 0) {
@@ -109,68 +83,18 @@ export default class ChangelogImpl {
         );
       };
 
-      // Get commits for the latest release
-      for (let artifact of latestRelease["artifacts"]) {
-        let packageChangelog: PackageChangelog = JSON.parse(
-          fs.readFileSync(packageChangelogMap[artifact["name"]], 'utf8')
-        );
+      this.generateCommits(latestRelease, packagesToChangelogFilePaths, artifactsToLatestCommitId);
 
-        // Set new latestCommitId
-        artifact["latestCommitId"] = packageChangelog["commits"][0]["commitId"];
-
-        let indexOfLatestCommitId;
-        if (artifactsToLatestCommitId[artifact.name]) {
-          indexOfLatestCommitId = packageChangelog["commits"].findIndex( (commit) =>
-            commit["commitId"] === artifactsToLatestCommitId[artifact.name]
-          );
-          if (indexOfLatestCommitId === -1) {
-            console.log(`Cannot find commit Id ${artifactsToLatestCommitId[artifact.name]} in ${artifact.name} changelog`);
-            console.log("Assuming that there are no changes...");
-            artifact["commits"] = [];
-            continue;
-          }
-        }
-
-
-        if (indexOfLatestCommitId > 0) {
-          artifact["commits"] = packageChangelog["commits"].slice(0, indexOfLatestCommitId);
-        } else if (indexOfLatestCommitId === 0) {
-          // Artifact verison has not changed
-          artifact["commits"] = [];
-          // Skip to next artifact
-          continue;
-        } else if (indexOfLatestCommitId === undefined ) {
-          // Artifact was not in previous release
-          artifact["commits"] = packageChangelog["commits"];
-        }
-
-
-        // Compute work items for latest release
-        let workItemFilter: RegExp = RegExp(this.workItemFilter, 'gi');
-        for (let commit of artifact["commits"]) {
-          let commitMessage: String = commit["message"] + "\n" + commit["body"];
-          let workItems: RegExpMatchArray = commitMessage.match(workItemFilter);
-          if (workItems) {
-              for (let item of workItems) {
-                  if (latestRelease["workItems"][item] == null) {
-                      latestRelease["workItems"][item] = new Set<string>();
-                      latestRelease["workItems"][item].add(commit["commitId"].slice(0,8));
-                  } else {
-                      latestRelease["workItems"][item].add(commit["commitId"].slice(0,8));
-                  }
-              }
-          }
-        }
-      }
+      this.generateWorkItems(latestRelease, this.workItemFilter);
 
       // Convert each work item Set to Array
       // Enables JSON stringification of work item
       for (let key in latestRelease["workItems"]) {
-        latestRelease["workItems"][key] = Array.from(latestRelease["workItems"][key]);
+        latestRelease.workItems[key] = Array.from(latestRelease.workItems[key]);
       }
 
-      // Append results to release changelog
       if (releaseChangelog) {
+        // Append results to release changelog
         releaseChangelog["releases"].push(latestRelease);
       } else {
         releaseChangelog = {
@@ -215,7 +139,115 @@ export default class ChangelogImpl {
   }
 
   /**
+   * Generate work items in latest release
+   * @param latestRelease
+   * @param workItemPattern
+   */
+  private generateWorkItems(latestRelease: Release, workItemPattern: string) {
+    // Compute work items for latest release
+    let workItemFilter: RegExp = RegExp(workItemPattern, 'gi');
+
+    for (let artifact of latestRelease["artifacts"]) {
+      for (let commit of artifact["commits"]) {
+        let commitMessage: String = commit["message"] + "\n" + commit["body"];
+        let workItems: RegExpMatchArray = commitMessage.match(workItemFilter);
+        if (workItems) {
+            for (let item of workItems) {
+                if (latestRelease["workItems"][item] == null) {
+                    latestRelease["workItems"][item] = new Set<string>();
+                    latestRelease["workItems"][item].add(commit["commitId"].slice(0,8));
+                } else {
+                    latestRelease["workItems"][item].add(commit["commitId"].slice(0,8));
+                }
+            }
+        }
+      }
+    }
+  }
+
+  /**
+   * Generate commits in latest release, for each artifact
+   * Also sets new latestCommitId for artifacts
+   * @param latestRelease
+   * @param packagesToChangelogFilePaths
+   * @param artifactsToLatestCommitId
+   */
+  private generateCommits(
+    latestRelease: Release,
+    packagesToChangelogFilePaths: {[p:string]: string},
+    artifactsToLatestCommitId: {[p:string]: string}
+  ): void {
+    for (let artifact of latestRelease["artifacts"]) {
+      let packageChangelog: PackageChangelog = JSON.parse(
+        fs.readFileSync(packagesToChangelogFilePaths[artifact.name], 'utf8')
+      );
+
+      let indexOfLatestCommitId;
+      if (artifactsToLatestCommitId?.[artifact.name]) {
+        indexOfLatestCommitId = packageChangelog["commits"].findIndex( (commit) =>
+          commit["commitId"] === artifactsToLatestCommitId[artifact.name]
+        );
+        if (indexOfLatestCommitId === -1) {
+          console.log(`Cannot find commit Id ${artifactsToLatestCommitId[artifact.name]} in ${artifact.name} changelog`);
+          console.log("Assuming that there are no changes...");
+          artifact["commits"] = [];
+          continue;
+        }
+      }
+
+
+      if (indexOfLatestCommitId > 0) {
+        artifact["commits"] = packageChangelog["commits"].slice(0, indexOfLatestCommitId);
+      } else if (indexOfLatestCommitId === 0) {
+        // Artifact verison has not changed
+        artifact["commits"] = [];
+        // Skip to next artifact
+        continue;
+      } else if (indexOfLatestCommitId === undefined ) {
+        // Artifact was not in previous release
+        artifact["commits"] = packageChangelog["commits"];
+      }
+
+      // Set new latestCommitId
+      artifact["latestCommitId"] = packageChangelog["commits"][0]["commitId"];
+    }
+  }
+
+  /**
+   * Initalise latest release
+   * @param releaseName
+   * @param artifactsToPackageMetadata
+   * @returns
+   */
+  private initLatestRelease(
+    releaseName: string,
+    artifactsToPackageMetadata: { [p: string]: PackageMetadata; }
+  ): Release {
+    let latestRelease: Release = {
+      name: releaseName,
+      workItems: {},
+      artifacts: []
+    };
+
+    for (let packageMetadata of Object.values(artifactsToPackageMetadata)) {
+      let artifact: Artifact = {
+        name: packageMetadata["package_name"],
+        from: undefined,
+        to: packageMetadata["sourceVersion"]?.slice(0, 8) || packageMetadata["sourceVersionTo"]?.slice(0, 8),
+        version: packageMetadata["package_version_number"],
+        latestCommitId: undefined,
+        commits: undefined
+      };
+
+      latestRelease["artifacts"].push(artifact);
+    }
+
+    return latestRelease;
+  }
+
+  /**
    * Get map of artifacts to the latest commit Id in past releases
+   * Also sets artifact "from" property
    * @param releaseChangelog
    * @param latestRelease
    * @returns
