@@ -49,23 +49,19 @@ export default class ChangelogImpl {
         throw new Error(`No artifacts found at ${path.resolve(process.cwd(), this.artifactDir)}`);
       }
 
-      let prevReleaseDefinition: Release;
       let releaseChangelog: ReleaseChangelog;
       if (fs.existsSync(path.join(repoTempDir,`releasechangelog.json`))) {
         releaseChangelog = JSON.parse(fs.readFileSync(path.join(repoTempDir,`releasechangelog.json`), 'utf8'));
-        if (releaseChangelog["releases"].length > 0) {
-          prevReleaseDefinition = releaseChangelog["releases"][releaseChangelog["releases"].length - 1];
-        }
       }
 
-      if (prevReleaseDefinition?.name === this.releaseName) {
-        console.log(`The release named "${this.releaseName}" already exists.`);
-        console.log("Skipping changelog generation...");
+      let isRetriedRelease = this.releaseName === releaseChangelog?.releases[releaseChangelog.releases.length - 1].name;
+      if (isRetriedRelease) {
+        console.log("Skipping changelog generation for retried release...");
         return;
       }
 
       let packageChangelogMap: {[P:string]: string} = {};
-      let latestReleaseDefinition: Release = {
+      let latestRelease: Release = {
         name: this.releaseName,
         workItems: {},
         artifacts: []
@@ -88,7 +84,7 @@ export default class ChangelogImpl {
           commits: undefined
         }
 
-        latestReleaseDefinition["artifacts"].push(artifact);
+        latestRelease["artifacts"].push(artifact);
 
         if (!fs.existsSync(artifactFilepaths.changelogFilePath)) {
           missingChangelogs.push(
@@ -106,15 +102,15 @@ export default class ChangelogImpl {
       console.log("Generating changelog...");
 
       let artifactsToLatestCommitId: {[P: string]: string};
-      if (releaseChangelog.releases.length > 0) {
+      if (releaseChangelog?.releases.length > 0) {
         artifactsToLatestCommitId = this.getArtifactsToLatestCommitId(
           releaseChangelog,
-          latestReleaseDefinition
+          latestRelease
         );
       };
 
       // Get commits for the latest release
-      for (let artifact of latestReleaseDefinition["artifacts"]) {
+      for (let artifact of latestRelease["artifacts"]) {
         let packageChangelog: PackageChangelog = JSON.parse(
           fs.readFileSync(packageChangelogMap[artifact["name"]], 'utf8')
         );
@@ -156,11 +152,11 @@ export default class ChangelogImpl {
           let workItems: RegExpMatchArray = commitMessage.match(workItemFilter);
           if (workItems) {
               for (let item of workItems) {
-                  if (latestReleaseDefinition["workItems"][item] == null) {
-                      latestReleaseDefinition["workItems"][item] = new Set<string>();
-                      latestReleaseDefinition["workItems"][item].add(commit["commitId"].slice(0,8));
+                  if (latestRelease["workItems"][item] == null) {
+                      latestRelease["workItems"][item] = new Set<string>();
+                      latestRelease["workItems"][item].add(commit["commitId"].slice(0,8));
                   } else {
-                      latestReleaseDefinition["workItems"][item].add(commit["commitId"].slice(0,8));
+                      latestRelease["workItems"][item].add(commit["commitId"].slice(0,8));
                   }
               }
           }
@@ -169,16 +165,16 @@ export default class ChangelogImpl {
 
       // Convert each work item Set to Array
       // Enables JSON stringification of work item
-      for (let key in latestReleaseDefinition["workItems"]) {
-        latestReleaseDefinition["workItems"][key] = Array.from(latestReleaseDefinition["workItems"][key]);
+      for (let key in latestRelease["workItems"]) {
+        latestRelease["workItems"][key] = Array.from(latestRelease["workItems"][key]);
       }
 
       // Append results to release changelog
       if (releaseChangelog) {
-        releaseChangelog["releases"].push(latestReleaseDefinition);
+        releaseChangelog["releases"].push(latestRelease);
       } else {
         releaseChangelog = {
-          releases: [latestReleaseDefinition]
+          releases: [latestRelease]
         }
       }
 
@@ -221,13 +217,13 @@ export default class ChangelogImpl {
   /**
    * Get map of artifacts to the latest commit Id in past releases
    * @param releaseChangelog
-   * @param latestReleaseDefinition
+   * @param latestRelease
    * @returns
    */
-  private getArtifactsToLatestCommitId(releaseChangelog: ReleaseChangelog, latestReleaseDefinition: Release) {
+  private getArtifactsToLatestCommitId(releaseChangelog: ReleaseChangelog, latestRelease: Release) {
     let artifactsToLatestCommitId: { [P: string]: string; } = {};
 
-    for (let latestReleaseArtifact of latestReleaseDefinition.artifacts) {
+    for (let latestReleaseArtifact of latestRelease.artifacts) {
 
       loopThroughReleases: for (let release of releaseChangelog.releases) {
         for (let artifact of release.artifacts) {
