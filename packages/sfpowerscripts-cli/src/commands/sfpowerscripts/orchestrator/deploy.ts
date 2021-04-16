@@ -61,6 +61,10 @@ export default class Deploy extends SfpowerscriptsCommand {
     allowunpromotedpackages: flags.boolean({
       description: messages.getMessage("allowUnpromotedPackagesFlagDescription"),
       hidden: true
+    }),
+    retryonfailure:flags.boolean({
+      description: messages.getMessage('retryOnFailureFlagDescription'),
+      hidden:true
     })
   };
 
@@ -104,7 +108,8 @@ export default class Deploy extends SfpowerscriptsCommand {
       logsGroupSymbol:this.flags.logsgroupsymbol,
       currentStage:Stage.DEPLOY,
       baselineOrg: this.flags.baselineorg,
-      isCheckIfPackagesPromoted: !this.flags.allowunpromotedpackages
+      isCheckIfPackagesPromoted: !this.flags.allowunpromotedpackages,
+      isRetryOnFailure:this.flags.retryonfailure
     }
 
     try {
