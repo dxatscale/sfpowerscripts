@@ -7,6 +7,13 @@ import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/Gener
 import * as fs from "fs-extra"
 import path = require('path');
 const tmp = require('tmp');
+var marked = require('marked');
+var TerminalRenderer = require('marked-terminal');
+
+marked.setOptions({
+  // Define custom renderer
+  renderer: new TerminalRenderer()
+});
 
 export default class ChangelogImpl {
 
@@ -106,6 +113,8 @@ export default class ChangelogImpl {
         path.join(repoTempDir,`releasechangelog.json`),
         JSON.stringify(releaseChangelog, null, 4)
       );
+
+      console.log(marked(generateMarkdown(releaseChangelog, this.workItemUrl, 1, false)));
 
       let payload: string = generateMarkdown(
         releaseChangelog,

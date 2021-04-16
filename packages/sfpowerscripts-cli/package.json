@@ -26,6 +26,8 @@
     "js-yaml": "^4.0.0",
     "jsonschema": "^1.4.0",
     "lodash": "^4.17.21",
+    "marked": "^2.0.3",
+    "marked-terminal": "^4.1.1",
     "puppeteer": "^7.1.0",
     "rimraf": "^3.0.2",
     "salesforce-alm": "^50.6.0",
