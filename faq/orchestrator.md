@@ -12,7 +12,7 @@ description: The heart of sfpowerscripts
 
 To understand the orchestrator, let's take a look at a typical CI/CD pipeline for a package based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
-![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2824%29.png)
+![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2823%29.png)
 
 Let's dive into the pipeline depicted above, there are two basic pipelines in play
 
@@ -25,9 +25,9 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
 
   Each of this stage could have a pre-approval step modelled like the example shown below
 
-![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%287%29.png)
+![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%286%29.png)
 
-![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%288%29.png)
+![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%287%29.png)
 
 * **CD Pipeline**:  A Continuous Delivery Pipeline that gets triggered manually or automatically \(every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
   * Fetch the Artifacts from the artifact repository using the provided release definition
@@ -57,6 +57,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
   <thead>
     <tr>
       <th style="text-align:left">Modifier</th>
+      <th style="text-align:left">Type</th>
       <th style="text-align:left">Description</th>
       <th style="text-align:left">Stages Applied</th>
     </tr>
@@ -65,6 +66,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>aliasfy</b>
       </td>
+      <td style="text-align:left">boolean</td>
       <td style="text-align:left">Deploy a subfolder in a source package that matches the alias of the org</td>
       <td
       style="text-align:left"><b>deploy</b>
@@ -73,6 +75,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>alwaysDeploy</b>
       </td>
+      <td style="text-align:left">boolean</td>
       <td style="text-align:left">Deploys package, even if it&apos;s installed already in the org. The artifact
         has to be present in the artifact directory for this particular option
         to work</td>
@@ -82,6 +85,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>assignPermsetsPreDeployment</b>
       </td>
+      <td style="text-align:left">array</td>
       <td style="text-align:left">Apply permsets before deploying a package</td>
       <td style="text-align:left">
         <p><b>prepare,</b>
@@ -95,6 +99,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>assignPermsetsPostDeployment</b>
       </td>
+      <td style="text-align:left">array</td>
       <td style="text-align:left">Apply permsets after deploying a package</td>
       <td style="text-align:left">
         <p><b>prepare,</b>
@@ -108,6 +113,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>buildCollection</b>
       </td>
+      <td style="text-align:left">array</td>
       <td style="text-align:left">Utilize this to build packages in unison, it will build all packages in
         the collection, even if only one of them changes</td>
       <td style="text-align:left"><b>build</b>
@@ -116,6 +122,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>destructiveChangePath</b>
       </td>
+      <td style="text-align:left">string</td>
       <td style="text-align:left">Apply destructive changes during deployment</td>
       <td style="text-align:left"><b>deploy</b>
       </td>
@@ -123,6 +130,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>isOptimizedDeployment</b>
       </td>
+      <td style="text-align:left">true</td>
       <td style="text-align:left">Detects test classes in a source package automatically and utilize it
         to deploy the provided package</td>
       <td style="text-align:left"><b>deploy, validate</b>
@@ -131,12 +139,23 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>ignoreOnStage</b>
       </td>
-      <td style="text-align:left"></td>
-      <td style="text-align:left"></td>
+      <td style="text-align:left">array</td>
+      <td style="text-align:left">Ignore this package on a particular stage</td>
+      <td style="text-align:left">
+        <p><b>prepare,</b>
+        </p>
+        <p><b>build,</b>
+        </p>
+        <p><b>validate,</b>
+        </p>
+        <p><b>deploy</b>
+        </p>
+      </td>
     </tr>
     <tr>
       <td style="text-align:left"><b>postDeploymentScript</b>
       </td>
+      <td style="text-align:left">string</td>
       <td style="text-align:left">Run an executable script after deploying a package. User need to provide
         a path to the script file</td>
       <td style="text-align:left">
@@ -151,6 +170,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>preDeploymentScript</b>
       </td>
+      <td style="text-align:left">string</td>
       <td style="text-align:left">Run an executable script before deploying a package. User need to provide
         a path to the script file</td>
       <td style="text-align:left">
@@ -165,6 +185,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>reconcileProfiles</b>
       </td>
+      <td style="text-align:left">boolean</td>
       <td style="text-align:left">Reconcile Profiles during a deployment of source packages</td>
       <td style="text-align:left">
         <p><b>prepare,</b>
@@ -178,6 +199,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>type</b>
       </td>
+      <td style="text-align:left">string</td>
       <td style="text-align:left">Denotes the type of the package, accepted values are &quot;source&quot;,&quot;data&quot;</td>
       <td
       style="text-align:left">
@@ -192,6 +214,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>skipCoverageValidation</b>
       </td>
+      <td style="text-align:left">boolean</td>
       <td style="text-align:left">Skip the coverage validation of a package (unlocked/source)</td>
       <td style="text-align:left"><b>validate</b>
       </td>
@@ -199,6 +222,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>skipDeployOnOrgs</b>
       </td>
+      <td style="text-align:left">array</td>
       <td style="text-align:left">Skip deployment on a particular org or org(s). Take an array of aliases
         as the input</td>
       <td style="text-align:left">
@@ -213,6 +237,7 @@ Orchestrator utilizes additional properties mentioned along with each package in
     <tr>
       <td style="text-align:left"><b>skipTesting</b>
       </td>
+      <td style="text-align:left">boolean</td>
       <td style="text-align:left">Skip unit testing during validate or deployment (source packages)</td>
       <td
       style="text-align:left">

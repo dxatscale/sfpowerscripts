@@ -53,5 +53,3 @@ description: Learn about all the features in sfpowerscripts
 
 * All functionality instrumented with StatsD, as well as Log Based metrics\* to build dashboards the way you want it.
 
-
-
