@@ -81,7 +81,7 @@ export default class InstallSourcePackageImpl {
       );
 
       if (fs.existsSync(preDeploymentScript)) {
-        console.log("Executing preDeployment script");
+        SFPLogger.log("Executing preDeployment script",null,this.packageLogger,LoggerLevel.INFO);
         PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,
@@ -199,11 +199,8 @@ export default class InstallSourcePackageImpl {
           this.isPackageCheckHandledByCaller
         );
 
-
-
-
       } else if (result.result === false) {
-        throw new Error("Deployment failed with error:" + result.message);
+        throw new Error(result.message);
       }
       let elapsedTime = Date.now() - startTime;
 
@@ -257,11 +254,13 @@ export default class InstallSourcePackageImpl {
         deploy_id: result.deploy_id,
       };
     } catch (error) {
+
       SFPStatsSender.logCount("package.installation.failure", {
         package: this.sfdx_package,
         type: "source",
         target_org: this.targetusername,
       });
+
       return {
         result: PackageInstallationStatus.Failed,
         message: error,

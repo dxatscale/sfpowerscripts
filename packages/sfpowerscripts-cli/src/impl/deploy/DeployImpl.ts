@@ -9,6 +9,7 @@ import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcomman
 import ArtifactInstallationStatusChecker from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInstallationStatusChecker"
 import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher"
 import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
+import ArtifactInquirer from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInquirer";
 
 import fs = require("fs");
 import path = require("path");
@@ -29,6 +30,7 @@ import { RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/
 import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions";
 import semver = require("semver");
 const Table = require("cli-table");
+const retry = require("async-retry");
 
 export enum DeploymentMode {
   NORMAL,
@@ -47,13 +49,15 @@ export interface DeployProps {
   tags?: any;
   packageLogger?: any;
   currentStage?: Stage;
-  baselineOrg?:string;
+  baselineOrg?: string;
   isCheckIfPackagesPromoted?: boolean;
+  isDryRun?: boolean;
+  isRetryOnFailure?: boolean;
 }
 
 export default class DeployImpl {
-  constructor(private props: DeployProps) {}
-
+  constructor(private props: DeployProps) { }
+  // TODO: Refactor to use exception pattern
   public async exec(): Promise<{
     deployed: string[];
     failed: string[];
@@ -61,10 +65,8 @@ export default class DeployImpl {
     error: any;
   }> {
     let orgDetails = await OrgDetails.getOrgDetails(this.props.targetUsername);
-
     let deployed: string[] = [];
     let failed: string[] = [];
-
     let testFailure: string;
     try {
       let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
@@ -76,10 +78,13 @@ export default class DeployImpl {
           `No artifacts to deploy found in ${this.props.artifactDir}`
         );
 
-      this.validateArtifactsSourceRepository(artifacts);
-      let packageManifest = this.getLatestPackageManifest(artifacts);
+      let artifactInquirer: ArtifactInquirer = new ArtifactInquirer(
+        artifacts,
+        this.props.packageLogger
+      );
+      let packageManifest = artifactInquirer.latestPackageManifestFromArtifacts
 
-      if (packageManifest === null) {
+      if (packageManifest == null) {
         // If unable to find latest package manfest in artifacts, use package manifest in project directory
         packageManifest = ProjectConfig.getSFDXPackageManifest(null);
       }
@@ -92,27 +97,23 @@ export default class DeployImpl {
         packagesToPackageInfo
       );
 
-      if(this.props.skipIfPackageInstalled)
-      {
+      if (this.props.skipIfPackageInstalled) {
         //Filter the queue based on what is deployed in the target org
         let isBaselinOrgModeActivated: boolean;
-        if(this.props.baselineOrg)
-        {
-          isBaselinOrgModeActivated=true;
+        if (this.props.baselineOrg) {
+          isBaselinOrgModeActivated = true;
         }
-        else
-        {
-          isBaselinOrgModeActivated=false;
-          this.props.baselineOrg=this.props.targetUsername; //Change baseline to the target one itself
+        else {
+          isBaselinOrgModeActivated = false;
+          this.props.baselineOrg = this.props.targetUsername; //Change baseline to the target one itself
         }
 
-        let filteredDeploymentQueue =await this.filterByPackagesInstalledInTheOrg(packageManifest,queue,packagesToPackageInfo,this.props.baselineOrg);
-        this.printArtifactVersionsWhenSkipped(queue,packagesToPackageInfo,isBaselinOrgModeActivated);
+        let filteredDeploymentQueue = await this.filterByPackagesInstalledInTheOrg(packageManifest, queue, packagesToPackageInfo, this.props.baselineOrg);
+        this.printArtifactVersionsWhenSkipped(queue, packagesToPackageInfo, isBaselinOrgModeActivated);
         queue = filteredDeploymentQueue;
       }
-      else
-      {
-        this.printArtifactVersions(queue,packagesToPackageInfo);
+      else {
+        this.printArtifactVersions(queue, packagesToPackageInfo);
       }
 
       if (!orgDetails.IsSandbox) {
@@ -120,7 +121,7 @@ export default class DeployImpl {
           this.checkIfPackagesPromoted(queue, packagesToPackageInfo);
       }
 
-     
+
       SFPStatsSender.logGauge(
         "deploy.scheduled.packages",
         queue.length,
@@ -140,48 +141,48 @@ export default class DeployImpl {
         );
 
         this.printOpenLoggingGroup("Installing ", queue[i].package);
+        this.displayHeader(packageMetadata, pkgDescriptor, queue[i].package);
 
+        let packageInstallationResult = await retry(
+          async (bail,count) => {
 
-        let isApexFoundMessage: string =
-          packageMetadata.package_type === "unlocked"
-            ? ""
-            : `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}`;
+            try {
+              
+              this.displayRetryHeader(this.props.isRetryOnFailure,count);
 
-        let alwaysDeployMessage: string;
+              let installPackageResult = await this.installPackage(
+                packageType,
+                queue[i].package,
+                this.props.targetUsername,
+                packageInfo.sourceDirectory,
+                packageMetadata,
+                queue[i].skipTesting,
+                this.props.waitTime.toString(),
+                pkgDescriptor,
+                false
+              );
+              if (this.props.isRetryOnFailure && installPackageResult.result === PackageInstallationStatus.Failed && count ==1) {
+               {
+                  throw new Error(installPackageResult.message)}
+               }
+              else
+                return installPackageResult;
+            } catch (error) {
+              if (!this.props.isRetryOnFailure) // Any other exception, in regular cases dont retry, just bail out
+                 { 
+                  let failedPackageInstallationResult: PackageInstallationResult = {
+                      result : PackageInstallationStatus.Failed,
+                       message:error
+                  }
+                   return failedPackageInstallationResult;
+                 }
+              else
+                throw (error)
+            }
 
-        if (this.props.skipIfPackageInstalled) {
-          if (pkgDescriptor.alwaysDeploy)
-            alwaysDeployMessage = `Always Deploy: True ${EOL}`;
-          else
-            alwaysDeployMessage = `Always Deploy: False ${EOL}`;
-        } else alwaysDeployMessage = "";
+          }, { retries: 1, minTimeout: 2000 });
 
-        SFPLogger.log(
-          `-------------------------Installing Package------------------------------------${EOL}` +
-            `Name: ${queue[i].package}${EOL}` +
-            `Type: ${packageMetadata.package_type}${EOL}` +
-            `Version Number: ${packageMetadata.package_version_number}${EOL}` +
-            `Metadata Count: ${packageMetadata.metadataCount}${EOL}` +
-            isApexFoundMessage +
-            alwaysDeployMessage +
-            `-------------------------------------------------------------------------------${EOL}`,
-          null,
-          this.props.packageLogger,
-          LoggerLevel.INFO
-        );
-
-        let packageInstallationResult = await this.installPackage(
-          packageType,
-          queue[i].package,
-          this.props.targetUsername,
-          packageInfo.sourceDirectory,
-          packageMetadata,
-          queue[i].skipTesting,
-          this.props.waitTime.toString(),
-          pkgDescriptor,
-          false
-        );
-
+       
         if (
           packageInstallationResult.result ===
           PackageInstallationStatus.Succeeded
@@ -198,10 +199,7 @@ export default class DeployImpl {
         ) {
           failed = queue.slice(i).map((pkg) => pkg.package);
           throw new Error(packageInstallationResult.message);
-        } else
-          throw new Error(
-            `Unhandled PackageInstallationResult ${packageInstallationResult.result}`
-          );
+        }
 
         if (this.props.isTestsToBeTriggered) {
           if (packageMetadata.isApexFound) {
@@ -209,22 +207,20 @@ export default class DeployImpl {
               this.printOpenLoggingGroup("Trigger Tests for ", queue[i].package);
 
               let testResult;
-              try
-              {
-               testResult=await this.triggerApexTests(
-                queue[i].package,
-                this.props.targetUsername,
-                queue[i].skipCoverageValidation,
-                this.props.coverageThreshold
-              );
-              }catch(error)
-                {
-                  //Print Any errors, Report that as execution failed for reporting
-                  console.log(error);
-                  testResult={
+              try {
+                testResult = await this.triggerApexTests(
+                  queue[i].package,
+                  this.props.targetUsername,
+                  queue[i].skipCoverageValidation,
+                  this.props.coverageThreshold
+                );
+              } catch (error) {
+                //Print Any errors, Report that as execution failed for reporting
+                console.log(error);
+                testResult = {
                   result: false,
                   message: "Test Execution failed"
-                 };
+                };
               }
 
               if (!testResult.result) {
@@ -242,7 +238,7 @@ export default class DeployImpl {
                   LoggerLevel.INFO
                 );
 
-               this.printClosingLoggingGroup();
+                this.printClosingLoggingGroup();
               }
             } else {
               SFPLogger.log(
@@ -275,6 +271,58 @@ export default class DeployImpl {
   }
 
 
+  private displayRetryHeader(isRetryOnFailure:boolean,count:number) {
+    if (isRetryOnFailure && count>1) {
+      SFPLogger.log(
+        `-------------------------------------------------------------------------------${EOL}`, null,
+        this.props.packageLogger,
+        LoggerLevel.INFO
+      );
+
+      SFPLogger.log(
+        `Retrying On Failure`, `Attempt: ${count}`,
+        this.props.packageLogger,
+        LoggerLevel.INFO
+      );
+      SFPLogger.log(
+        `-------------------------------------------------------------------------------${EOL}`, null,
+        this.props.packageLogger,
+        LoggerLevel.INFO
+      );
+    }
+  }
+
+  private displayHeader(packageMetadata: PackageMetadata, pkgDescriptor: any, pkg: string) {
+    let isApexFoundMessage: string = packageMetadata.package_type === "unlocked"
+      ? ""
+      : `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}`;
+
+    let alwaysDeployMessage: string;
+
+    if (this.props.skipIfPackageInstalled) {
+      if (pkgDescriptor.alwaysDeploy)
+        alwaysDeployMessage = `Always Deploy: True ${EOL}`;
+
+      else
+        alwaysDeployMessage = `Always Deploy: False ${EOL}`;
+    } else
+      alwaysDeployMessage = "";
+
+    SFPLogger.log(
+      `-------------------------Installing Package------------------------------------${EOL}` +
+      `Name: ${pkg}${EOL}` +
+      `Type: ${packageMetadata.package_type}${EOL}` +
+      `Version Number: ${packageMetadata.package_version_number}${EOL}` +
+      `Metadata Count: ${packageMetadata.metadataCount}${EOL}` +
+      isApexFoundMessage +
+      alwaysDeployMessage +
+      `-------------------------------------------------------------------------------${EOL}`,
+      null,
+      this.props.packageLogger,
+      LoggerLevel.INFO
+    );
+  }
+
   private checkIfPackagesPromoted(queue: any[], packagesToPackageInfo: { [p: string]: PackageInfo; }) {
     let unpromotedPackages: string[] = [];
     queue.forEach((pkg) => {
@@ -286,18 +334,18 @@ export default class DeployImpl {
       throw new Error(`Packages must be promoted for deployments to production org: ${unpromotedPackages}`);
   }
 
-  private printArtifactVersionsWhenSkipped(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo},isBaselinOrgModeActivated:boolean) {
+  private printArtifactVersionsWhenSkipped(queue: any[], packagesToPackageInfo: { [p: string]: PackageInfo }, isBaselinOrgModeActivated: boolean) {
     this.printOpenLoggingGroup(`Full Deployment Breakdown`);
     let maxTable = new Table({
-      head: ["Package", "Incoming Version", isBaselinOrgModeActivated?"Version in baseline org":"Version in org","To be installed?"],
+      head: ["Package", "Incoming Version", isBaselinOrgModeActivated ? "Version in baseline org" : "Version in org", "To be installed?"],
     });
 
     queue.forEach((pkg) => {
       maxTable.push(
         [pkg.package,
-         packagesToPackageInfo[pkg.package].packageMetadata.package_version_number,
-         packagesToPackageInfo[pkg.package].versionInstalledInOrg?packagesToPackageInfo[pkg.package].versionInstalledInOrg:"N/A",
-         packagesToPackageInfo[pkg.package].isPackageInstalled?"No":"Yes"]
+        packagesToPackageInfo[pkg.package].packageMetadata.package_version_number,
+        packagesToPackageInfo[pkg.package].versionInstalledInOrg ? packagesToPackageInfo[pkg.package].versionInstalledInOrg : "N/A",
+        packagesToPackageInfo[pkg.package].isPackageInstalled ? "No" : "Yes"]
       );
     });
     console.log(maxTable.toString());
@@ -305,22 +353,22 @@ export default class DeployImpl {
 
     this.printOpenLoggingGroup(`Packages to be deployed`);
     let minTable = new Table({
-      head: ["Package", "Incoming Version", isBaselinOrgModeActivated?"Version in baseline org":"Version in org"],
+      head: ["Package", "Incoming Version", isBaselinOrgModeActivated ? "Version in baseline org" : "Version in org"],
     });
 
     queue.forEach((pkg) => {
-      if(!packagesToPackageInfo[pkg.package].isPackageInstalled)
+      if (!packagesToPackageInfo[pkg.package].isPackageInstalled)
         minTable.push(
           [pkg.package,
           packagesToPackageInfo[pkg.package].packageMetadata.package_version_number,
-          packagesToPackageInfo[pkg.package].versionInstalledInOrg?packagesToPackageInfo[pkg.package].versionInstalledInOrg:"N/A"]
+          packagesToPackageInfo[pkg.package].versionInstalledInOrg ? packagesToPackageInfo[pkg.package].versionInstalledInOrg : "N/A"]
         );
     });
     console.log(minTable.toString());
     this.printClosingLoggingGroup();
   }
 
-  private printArtifactVersions(queue:any[],packagesToPackageInfo:{[p: string]: PackageInfo}) {
+  private printArtifactVersions(queue: any[], packagesToPackageInfo: { [p: string]: PackageInfo }) {
     this.printOpenLoggingGroup(`Packages to be deployed`);
     let table = new Table({
       head: ["Package", "Version to be installed"],
@@ -328,13 +376,13 @@ export default class DeployImpl {
 
     queue.forEach((pkg) => {
       table.push([pkg.package,
-         packagesToPackageInfo[pkg.package].packageMetadata.package_version_number]);
+      packagesToPackageInfo[pkg.package].packageMetadata.package_version_number]);
     });
-    console.log(table.toString());
+    SFPLogger.log(table.toString(), null, this.props.packageLogger, LoggerLevel.INFO);
     this.printClosingLoggingGroup();
   }
 
-  private async filterByPackagesInstalledInTheOrg(packageManifest:any,queue:any[], packagesToPackageInfo:{[p: string]: PackageInfo} , targetUsername: string):Promise<any[]>{
+  private async filterByPackagesInstalledInTheOrg(packageManifest: any, queue: any[], packagesToPackageInfo: { [p: string]: PackageInfo }, targetUsername: string): Promise<any[]> {
 
     const clonedQueue = [];
     queue.forEach(val => clonedQueue.push(Object.assign({}, val)));
@@ -346,26 +394,24 @@ export default class DeployImpl {
         clonedQueue[i].package,
         packageManifest
       );
-      let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(targetUsername,packageMetadata,false);
-      if(packageInstalledInTheOrg.versionNumber)
+      let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(targetUsername, packageMetadata, false);
+      if (packageInstalledInTheOrg.versionNumber)
         packageInfo.versionInstalledInOrg = packageInstalledInTheOrg.versionNumber;
-      if(packageInstalledInTheOrg.isInstalled)
-      {
-        if(!pkgDescriptor.alwaysDeploy)
-         {
-         packageInfo.isPackageInstalled=true;
-         clonedQueue.splice(i,1);
-         }
+      if (packageInstalledInTheOrg.isInstalled) {
+        if (!pkgDescriptor.alwaysDeploy) {
+          packageInfo.isPackageInstalled = true;
+          clonedQueue.splice(i, 1);
+        }
       }
     }
 
     //Do a reset after this stage, as fetched artifacts are a static var, to reduce roundtrip, but this has side effects
-   InstalledAritfactsFetcher.resetFetchedArtifacts();
-   return clonedQueue;
+    InstalledAritfactsFetcher.resetFetchedArtifacts();
+    return clonedQueue;
 
   }
 
-  private printOpenLoggingGroup(message:string,pkg?:string) {
+  private printOpenLoggingGroup(message: string, pkg?: string) {
     if (this.props.logsGroupSymbol?.[0])
       SFPLogger.log(
         this.props.logsGroupSymbol[0],
@@ -437,7 +483,7 @@ export default class DeployImpl {
       convertedVersion =
         version.substring(0, indexOfBuildNumDelimiter) +
         "-" +
-        version.substring(indexOfBuildNumDelimiter+1);
+        version.substring(indexOfBuildNumDelimiter + 1);
     }
     return convertedVersion;
   }
@@ -449,7 +495,7 @@ export default class DeployImpl {
    */
   private getIndexOfBuildNumDelimeter(version: string) {
     let numOfDelimetersTraversed: number = 0;
-    for (let i=0; i < version.length; i++) {
+    for (let i = 0; i < version.length; i++) {
       if (!Number.isInteger(parseInt(version[i], 10))) {
         numOfDelimetersTraversed++
       }
@@ -679,78 +725,11 @@ export default class DeployImpl {
   }
 
   /**
-   * Verify that artifacts are from the same source repository
-   */
-  private validateArtifactsSourceRepository(
-    artifacts: ArtifactFilePaths[]
-  ): void {
-    let sourceRepository: string;
-    for (let artifact of artifacts) {
-      let packageMetadata: PackageMetadata = JSON.parse(
-        fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
-      );
-
-      if (sourceRepository == null)
-        sourceRepository = packageMetadata.repository_url;
-
-      if (sourceRepository !== packageMetadata.repository_url)
-        throw new Error(
-          "Artifacts must originate from the same source repository, for deployment to work"
-        );
-    }
-  }
-
-  /**
-   * Gets latest package manifest from artifacts
-   * Returns null if unable to find latest package manifest
-   * @param artifacts
-   */
-  private getLatestPackageManifest(artifacts: ArtifactFilePaths[]): any {
-    let latestPackageManifest: any;
-
-    let latestPackageMetadata: PackageMetadata;
-    for (let artifact of artifacts) {
-      let packageMetadata: PackageMetadata = JSON.parse(
-        fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
-      );
-
-      if (
-        latestPackageMetadata == null ||
-        latestPackageMetadata.creation_details.timestamp <
-          packageMetadata.creation_details.timestamp
-      ) {
-        latestPackageMetadata = packageMetadata;
-
-        let pathToPackageManifest = path.join(
-          artifact.sourceDirectoryPath,
-          "manifests",
-          "sfdx-project.json.ori"
-        );
-        if (fs.existsSync(pathToPackageManifest)) {
-          latestPackageManifest = JSON.parse(
-            fs.readFileSync(pathToPackageManifest, "utf8")
-          );
-        }
-      }
-    }
-
-    if (latestPackageManifest) {
-      SFPLogger.log(
-        `Found latest package manifest in ${latestPackageMetadata.package_name} artifact`,
-        null,
-        this.props.packageLogger,
-        LoggerLevel.INFO
-      );
-      return latestPackageManifest;
-    } else return null;
-  }
-
-  /**
    * Returns the packages in the project config that have an artifact
    */
   private getPackagesToDeploy(
     packageManifest: any,
-    packagesToPackageInfo: {[p:string]: PackageInfo}
+    packagesToPackageInfo: { [p: string]: PackageInfo }
   ): any[] {
     let packagesToDeploy: any[];
 
@@ -787,6 +766,16 @@ export default class DeployImpl {
 interface PackageInfo {
   sourceDirectory: string;
   packageMetadata: PackageMetadata;
-  versionInstalledInOrg?:string
-  isPackageInstalled?:boolean;
+  versionInstalledInOrg?: string
+  isPackageInstalled?: boolean;
 }
+
+export interface DeploymentResult {
+  deployed: string[];
+  failed: string[];
+  testFailure: string;
+  error: any;
+}
+
+
+

@@ -136,6 +136,8 @@ export default class CreateUnlockedPackageImpl {
     this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
     this.packageArtifactMetadata.assignPermSetsPreDeployment = sfppackage.assignPermSetsPreDeployment;
     this.packageArtifactMetadata.assignPermSetsPostDeployment = sfppackage.assignPermSetsPostDeployment;
+    this.packageArtifactMetadata.isApexFound = sfppackage.isApexInPackage
+    this.packageArtifactMetadata.isProfilesFound = sfppackage.isProfilesInPackage;
 
     let command = this.buildExecCommand();
     let output = "";
@@ -165,11 +167,11 @@ export default class CreateUnlockedPackageImpl {
 
 
     //Break if coverage is low
-    if (this.isCoverageEnabled) {
+    if (this.isCoverageEnabled && !this.isOrgDependentPackage) {
       if(!this.packageArtifactMetadata.has_passed_coverage_check)
        throw new Error("This package has not meet the minimum coverage requirement of 75%");
     }
-     
+
     //Generate Source Artifact
     let mdapiPackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
       this.project_directory,

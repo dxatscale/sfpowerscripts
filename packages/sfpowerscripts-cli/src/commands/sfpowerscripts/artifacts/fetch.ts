@@ -2,10 +2,8 @@ import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import FetchImpl from '../../../impl/artifacts/FetchImpl';
-const yaml = require('js-yaml');
-import * as fs from "fs-extra";
-import ReleaseDefinition from "../../../impl/release/ReleaseDefinitionInterface";
-import validateReleaseDefinition from "../../../impl/release/validateReleaseDefinition";
+import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
+import FetchArtifactsError from "../../../errors/FetchArtifactsError";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'fetch');
@@ -57,11 +55,18 @@ export default class Fetch extends SfpowerscriptsCommand {
   public async execute(){
     this.validateFlags();
 
+    let releaseDefinition = new ReleaseDefinition(
+      this.flags.releasedefinition,
+      this.flags.npm
+    ).releaseDefinition;
+
+    let result: {
+      success: [string, string][],
+      failed: [string, string][]
+    };
+
+    let executionStartTime = Date.now();
     try {
-      let releaseDefinition: ReleaseDefinition = yaml.load(
-        fs.readFileSync(this.flags.releasedefinition, 'utf8')
-      );
-      validateReleaseDefinition(releaseDefinition, this.flags.npm);
 
       let fetchImpl: FetchImpl = new FetchImpl(
         releaseDefinition,
@@ -71,13 +76,39 @@ export default class Fetch extends SfpowerscriptsCommand {
         this.flags.scope,
         this.flags.npmrcpath
       );
-      await fetchImpl.exec();
-    } catch (err) {
-      console.log(err.message);
 
-      // Fail the task when an error occurs
+      result = await fetchImpl.exec();
+
+    } catch (err) {
+
+      if (err instanceof FetchArtifactsError) {
+        result = err.data;
+      } else {
+        console.log(err.message);
+      }
+
       process.exitCode = 1;
+    } finally {
+      let totalElapsedTime: number = Date.now() - executionStartTime;
+
+      if (result)
+        this.printSummary(result, totalElapsedTime);
     }
+  }
+
+  private printSummary(result: { success: [string, string][]; failed: [string, string][]; }, totalElapsedTime: number) {
+    console.log(
+      `----------------------------------------------------------------------------------------------------`
+    );
+    console.log(`Fetched ${result.success.length} artifacts`);
+
+    if (result.failed.length > 0)
+      console.log(`Failed to fetch ${result.failed.length} artifacts`);
+
+    console.log(`Elapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11, 8)}`);
+    console.log(
+      `----------------------------------------------------------------------------------------------------`
+    );
   }
 
   protected validateFlags() {

@@ -19,18 +19,14 @@ describe("Fetch a list of sfpowerscripts artifacts from an org", () => {
         "result": {
           "totalSize": 0,
           "done": true,
-          "records": [
-            {
-            }
-          ]
+          "records": []
         }
       }`);
     });
     let artifacts = await InstalledAritfactsFetcher.getListofArtifacts(
       "testOrg"
     );
-    let expectedArtifact = {};
-    expect(artifacts).toEqual([expectedArtifact]);
+    expect(artifacts).toEqual([]);
   });
 
   it("Return a list of sfpowerscripts artifact, if there are previously installed artifacts ", async () => {
@@ -78,12 +74,141 @@ describe("Fetch a list of sfpowerscripts artifacts from an org", () => {
   it("When unable to fetch, it should throw an error", () => {
 
   expect(InstalledAritfactsFetcher.getListofArtifacts("testOrg2")).rejects.toThrow();
+  });
+
+  it("Should return artifacts from stored query result for repeated calls", async () => {
+    const child_processMock = jest.spyOn(child_process, "execSync");
+    child_processMock.mockImplementationOnce(() => {
+      return Buffer.from(`{
+        "status": 0,
+        "result": {
+          "totalSize": 1,
+          "done": true,
+          "records": [
+            {
+              "attributes": {
+                "type": "SfpowerscriptsArtifact__c",
+                "url": "/services/data/v50.0/sobjects/SfpowerscriptsArtifact__c/a0zR0000003F1FuIAK"
+              },
+              "Id": "a0zR0000003F1FuIAK",
+              "Name": "sfpowerscripts-artifact",
+              "CommitId__c": "0a516404aa92f02866f9d2725bda5b1b3f23547e",
+              "Version__c": "1.0.0.NEXT",
+              "Tag__c": "undefined"
+            }
+          ]
+        }
+      }`);
+    });
+    let artifacts = await InstalledAritfactsFetcher.getListofArtifacts(
+      "testOrg2"
+    );
+
+    // Repeat call
+    artifacts = await InstalledAritfactsFetcher.getListofArtifacts(
+      "testOrg2"
+    );
+
+    let expectedArtifact = {
+      attributes: {
+        type: "SfpowerscriptsArtifact__c",
+        url:
+          "/services/data/v50.0/sobjects/SfpowerscriptsArtifact__c/a0zR0000003F1FuIAK",
+      },
+      Id: "a0zR0000003F1FuIAK",
+      Name: "sfpowerscripts-artifact",
+      CommitId__c: "0a516404aa92f02866f9d2725bda5b1b3f23547e",
+      Version__c: "1.0.0.NEXT",
+      Tag__c: "undefined",
+    };
+    expect(artifacts).toEqual([expectedArtifact]);
+  });
+
+  it("Should get artifacts from the correct org", async () => {
+    const child_processMock = jest.spyOn(child_process, "execSync");
+    child_processMock.mockImplementationOnce(() => {
+      return Buffer.from(`{
+        "status": 0,
+        "result": {
+          "totalSize": 1,
+          "done": true,
+          "records": [
+            {
+              "attributes": {
+                "type": "SfpowerscriptsArtifact__c",
+                "url": "/services/data/v50.0/sobjects/SfpowerscriptsArtifact__c/a0zR0000003F1FuIAK"
+              },
+              "Id": "a0zR0000003F1FuIAK",
+              "Name": "sfpowerscripts-artifact",
+              "CommitId__c": "0a516404aa92f02866f9d2725bda5b1b3f23547e",
+              "Version__c": "1.0.0.NEXT",
+              "Tag__c": "undefined"
+            }
+          ]
+        }
+      }`);
+    }).mockImplementationOnce(() => {
+      return Buffer.from(`{
+        "status": 0,
+        "result": {
+          "totalSize": 1,
+          "done": true,
+          "records": [
+            {
+              "attributes": {
+                "type": "SfpowerscriptsArtifact__c",
+                "url": "/services/data/v50.0/sobjects/SfpowerscriptsArtifact__c/a4r4Y00000002VQQAY"
+              },
+              "Id": "a4r4Y00000002VQQAY",
+              "Name": "sfpowerscripts-artifact",
+              "CommitId__c": "0a516404aa92f02866f9d2725bda5b1b3f23547e",
+              "Version__c": "1.0.0.NEXT",
+              "Tag__c": "undefined"
+            }
+          ]
+        }
+      }`);
+    });
+
+    let artifactsTestOrg1 = await InstalledAritfactsFetcher.getListofArtifacts(
+      "testOrg1"
+    );
+
+    let expectedArtifactTestOrg1 = {
+      attributes: {
+        type: "SfpowerscriptsArtifact__c",
+        url:
+          "/services/data/v50.0/sobjects/SfpowerscriptsArtifact__c/a0zR0000003F1FuIAK",
+      },
+      Id: "a0zR0000003F1FuIAK",
+      Name: "sfpowerscripts-artifact",
+      CommitId__c: "0a516404aa92f02866f9d2725bda5b1b3f23547e",
+      Version__c: "1.0.0.NEXT",
+      Tag__c: "undefined",
+    };
+    expect(artifactsTestOrg1).toEqual([expectedArtifactTestOrg1]);
+
+    let artifactsTestOrg2 = await InstalledAritfactsFetcher.getListofArtifacts(
+      "testOrg2"
+    );
+    let expectedArtifactTestOrg2 = {
+      attributes: {
+        type: "SfpowerscriptsArtifact__c",
+        url:
+          "/services/data/v50.0/sobjects/SfpowerscriptsArtifact__c/a4r4Y00000002VQQAY",
+      },
+      Id: "a4r4Y00000002VQQAY",
+      Name: "sfpowerscripts-artifact",
+      CommitId__c: "0a516404aa92f02866f9d2725bda5b1b3f23547e",
+      Version__c: "1.0.0.NEXT",
+      Tag__c: "undefined",
+    };
+    expect(artifactsTestOrg2).toEqual([expectedArtifactTestOrg2]);
+  });
 });
 
-});
 
-
-describe("Update a sfpowerscripts artifact to  an org",()=>{
+describe("Update a sfpowerscripts artifact to an org",()=>{
 
   beforeEach(() => {
     jest.restoreAllMocks();
@@ -99,10 +224,7 @@ describe("Update a sfpowerscripts artifact to  an org",()=>{
         "result": {
           "totalSize": 0,
           "done": true,
-          "records": [
-            {
-            }
-          ]
+          "records": []
         }
       }`);
     }).mockImplementationOnce(()=>{
@@ -214,7 +336,7 @@ describe("Update a sfpowerscripts artifact to  an org",()=>{
 
 
    expect(ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false)).resolves.toBeFalsy;
-   
+
   });
 
 });

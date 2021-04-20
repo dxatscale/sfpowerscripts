@@ -93,6 +93,10 @@ export default class Prepare extends SfpowerscriptsCommand {
       description: messages.getMessage('npmrcPathFlagDescription'),
       dependsOn: ['npm'],
       required: false
+    }),
+    retryonfailure:flags.boolean({
+      description: messages.getMessage('retryOnFailureFlagDescription'),
+      hidden:true
     })
   };
 
@@ -147,6 +151,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     prepareImpl.scope = this.flags.scope;
     prepareImpl.npmTag = this.flags.npmtag;
     prepareImpl.npmrcPath = this.flags.npmrcpath;
+    prepareImpl.retryOnFailure = this.flags.retryonfailure;
 
     try {
       let results= await prepareImpl.poolScratchOrgs();
