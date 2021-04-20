@@ -7,7 +7,7 @@
 
 sfpowerscripts users typically utilize a [scaled trunk based branching model] (https://trunkbaseddevelopment.com/#scaled-trunk-based-development). In this model, packages would be built from both develop/master/main branches and then during the hardening phase from release branches. When using package registry such as Github Package Manager or Gitlab Package Manager which follow the concept of a package repository tied into the source code repository. These packages get intermingled and there is no easy mechanism to identify where the packages originated from. This becomes a prolem if the user wants to rollback to an older version of the package, the  current solution is to identify the package  manually by figuring the last released packages by checking in at the release deployment logs.
 
-## Options 
+## Options
 1. **Utilize two or more package feeds in  exclusive package registry**
 	  -  Simple approach, rather than using a single package repository, utilize two package registry (feeds) one for the normal development  and another for release candidates and utilize bash script along with different .npmrc file to switch feeds and then users could locate the package based on the branches in the correct feed.
 	  - This apporach wont scale, if the users deviates from scaled trunk based model and is still cumbersome to maintain as packages are stored elsewhere (it doesnt work with Github/Gitlab as a fork of the source code repository has to be created). This works exclusively only for dedicated package registry such as MyGet, Azure Artifacts or JFrog Artifactory where there is a concept for feeds.
@@ -25,11 +25,8 @@ sfpowerscripts users typically utilize a [scaled trunk based branching model] (h
     - This works well with LATEST_GIT_TAG already implemented by the fetch command, as it currently filters to the package generated only by the branch.
     - Tags could be deleted hampering the ability to use releases
     - There will be traceability impact as tag naming doesnt match with package names in artifactory.
+5. **Encode branch in package version number**
+    - Encode the source branch in package version build-metadata e.g. major.minor.patch-buildNumber+<branch>
+    - As a consequence, tags and artifact versions would also carry the branch information, allowing users to determine which stream artifacts versions belong to
 
-## Decision 
-
-### Combine Option 3 & 4- Use release identifier in package names in combination with git tags
-
-sfpowerscripts will utilize a convention based apporach as mentioned in option 3 (with backwards compatibility, existing packages will function exactly the same) and will be naming packages automatically during publish depending on the branch the artifacts are originating. This will be tagged as is in mentioned in option 4.  sfpowerscripts commands will also provide option to override this convention to provide alternate release identifiers if  the user want to move away from the scaled trunk model and adopts say gitflow. This implies commands such as prepare, publish, fetch and release will have an optional field called *releaseidentifier*  that can for providing an alternate identifer that need to be appended.  
-
-An environment variable 'SFPOWERSCRIPTS_RELEASE_IDENTIFIER' can be set to false to disable this option completely, as it would be helpful for users who are using dedicated package repositories and would like to publish to alternate feed instead.
+## Decision
