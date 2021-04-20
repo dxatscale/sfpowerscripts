@@ -1,5 +1,5 @@
 import ReleaseDefinitionSchema from "./ReleaseDefinitionSchema";
-const Validator = require('jsonschema').Validator;
+import Ajv from "ajv"
 const yaml = require('js-yaml');
 import lodash = require("lodash");
 import get18DigitSalesforceId from "../../utils/get18DigitSalesforceId";
@@ -40,14 +40,15 @@ export default class ReleaseDefinition {
     releaseDefinition: ReleaseDefinitionSchema,
     isNpm: boolean
   ): void {
-    let v = new Validator();
+    
 
-    let versionPattern: RegExp;
+    let versionPattern
     if (isNpm) {
-      versionPattern = /(^[0-9]+\.[0-9]+\.[0-9]+(-.+)?$)|^LATEST_TAG$|^[a-zA-Z0-9]+$/
+      versionPattern = "(^[0-9]+\\.[0-9]+\\.[0-9]+(-.+)?$)|^LATEST_TAG$|^[a-zA-Z0-9]+$"
     } else {
-      versionPattern = /(^[0-9]+\.[0-9]+\.[0-9]+(-.+)?$)|^LATEST_TAG$/
+      versionPattern = "(^[0-9]+\\.[0-9]+\\.[0-9]+(-.+)?$)|^LATEST_TAG$"
     }
+  
 
     const schema = {
         "type": "object",
@@ -69,7 +70,7 @@ export default class ReleaseDefinition {
               "patternProperties": {
                 ".+": {
                   "type": "string",
-                  "pattern": /^04t([a-zA-Z0-9]{12}|[a-zA-Z0-9]{15})$/
+                  "pattern": "^04t([a-zA-Z0-9]{15}|[a-zA-Z0-9]{12})$"
                 }
               }
             },
@@ -84,7 +85,7 @@ export default class ReleaseDefinition {
                 }
               },
               "dependencies": {
-                "baselineOrg": "skipIfAlreadyInstalled"
+                "baselineOrg": ["skipIfAlreadyInstalled"]
               },
               "additionalProperties": false
             }
@@ -96,18 +97,19 @@ export default class ReleaseDefinition {
         ]
     };
 
-    let validationResult = v.validate(releaseDefinition, schema);
-    if (validationResult.errors.length > 0) {
+    let validator = new Ajv().compile(schema);
+    let validationResult = validator(releaseDefinition)
+    if (!validationResult) {
         let errorMsg: string =
             `Release definition does not meet schema requirements, ` +
-            `found ${validationResult.errors.length} validation errors:\n`;
+            `found ${validator.errors.length} validation errors:\n`;
 
-        validationResult.errors.forEach( (error, errorNum) => {
-            errorMsg += `\n${errorNum+1}. ${error.stack}`;
-            if (error.instance != null)
-                errorMsg += `\nReceived: ${JSON.stringify(error.instance)}\n`;
-        });
+             validator.errors.forEach((error,errorNum) => {
+              errorMsg += `\n${errorNum+1}: ${error.instancePath}:${error.message}`;
+             });
         throw new Error(errorMsg);
     }
   }
 }
+
+

@@ -61,10 +61,11 @@ describe("Given a release definition, validateReleaseDefinition", () => {
     releaseDefinitionYaml = `
       release: "test-release"
       artifacts:
-        packageA: "3.0,5-10"
+        packageA: "3,0.5-10"
     `;
-    expect(() => { new ReleaseDefinition(null, false); }).toThrow();
+    
     expect(() => { new ReleaseDefinition(null, true); }).toThrow();
+    expect(() => { new ReleaseDefinition(null, false); }).toThrow();
   });
 
   it("should throw for incorrectly formatted LATEST_TAG", () => {
