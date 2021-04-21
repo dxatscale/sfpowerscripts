@@ -93,8 +93,7 @@ export default class Release extends SfpowerscriptsCommand {
     let executionStartTime = Date.now();
 
     let releaseDefinition = new ReleaseDefinition(
-      this.flags.releasedefinition,
-      this.flags.npm
+      this.flags.releasedefinition
     ).releaseDefinition;
 
     console.log("-----------sfpowerscripts orchestrator ------------------");
