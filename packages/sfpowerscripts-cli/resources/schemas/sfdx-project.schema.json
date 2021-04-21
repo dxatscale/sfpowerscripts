@@ -164,7 +164,12 @@
       "title": "CLI Plugins custom settings",
       "type": "object",
       "description": "Salesforce CLI plugin configurations used with this project.",
-      "additionalProperties": true
+      "additionalProperties": true,
+      "properties": {
+        "sfpowerscripts": {
+          "$ref": "#/definitions/plugins.sfpowerscripts"
+        }
+      }
     },
     "packageAliases": {
       "title": "Aliases for packaging ids",
@@ -406,6 +411,42 @@
       "type": "boolean",
       "title": "Skip Unit testing",
       "description": "Skip unit testing during validate or deployment (source packages)"
+    },
+    "plugins.sfpowerscripts": {
+      "type": "object",
+      "title": "sfpowerscripts plugin configuration",
+      "description": "Configuration for sfpowerscripts plugin",
+      "additionalProperties": false,
+      "properties": {
+        "ignoreFiles": {
+          "type": "object",
+          "title": "Ignore Files",
+          "description": "Map of stages to forceignore filepaths",
+          "additionalProperties": false,
+          "properties": {
+            "prepare": {
+              "type": "string",
+              "title": "Prepare stage",
+              "description": "Path to forceignore for prepare stage"
+            },
+            "validate": {
+              "type": "string",
+              "title": "Validate stage",
+              "description": "Path to forceignore for validate stage"
+            },
+            "quickbuild": {
+              "type": "string",
+              "title": "Quickbuild stage",
+              "description": "Path to forceignore for quickbuild stage"
+            },
+            "build": {
+              "type": "string",
+              "title": "Build stage",
+              "description": "Path to forceignore for build stage"
+            }
+          }
+        }
+      }
     }
   }
 }
