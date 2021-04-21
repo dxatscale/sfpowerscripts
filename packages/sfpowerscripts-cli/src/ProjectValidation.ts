@@ -11,7 +11,7 @@ export default class ProjectValidation {
 
   constructor(){
     this.projectConfig = ProjectConfig.getSFDXPackageManifest(null);
-    this.ajv=new Ajv();
+    this.ajv=new Ajv({allErrors: true});
     this.resourcesDir = path.join(
       __dirname,
       "..",
@@ -27,12 +27,13 @@ export default class ProjectValidation {
    let isSchemaValid = validator(this.projectConfig);
    if(!isSchemaValid)
    {
-    let errorMsg: string =`The sfdx-project.json is invalid, Please fix the following error\n`;
+    let errorMsg: string =`The sfdx-project.json is invalid, Please fix the following errors\n`;
+
     validator.errors.forEach((error,errorNum) => {
-      errorMsg += `\n${errorNum+1}: ${error.instancePath}:${error.message}`;
-     });
-     
-     throw new Error(errorMsg);
+      errorMsg += `\n${errorNum+1}: ${error.instancePath}: ${error.message} ${JSON.stringify(error.params, null, 4)}`;
+    });
+
+    throw new Error(errorMsg);
    }
  }
 

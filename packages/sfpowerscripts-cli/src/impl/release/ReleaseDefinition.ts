@@ -45,18 +45,19 @@ export default class ReleaseDefinition {
       {encoding: "UTF-8"}
     );
 
-    let validator = new Ajv().compile(schema);
+    let validator = new Ajv({allErrors: true}).compile(schema);
     let validationResult = validator(releaseDefinition);
 
     if (!validationResult) {
-        let errorMsg: string =
-            `Release definition does not meet schema requirements, ` +
-            `found ${validator.errors.length} validation errors:\n`;
+      let errorMsg: string =
+        `Release definition does not meet schema requirements, ` +
+        `found ${validator.errors.length} validation errors:\n`;
 
-             validator.errors.forEach((error,errorNum) => {
-              errorMsg += `\n${errorNum+1}: ${error.instancePath}:${error.message}`;
-             });
-        throw new Error(errorMsg);
+      validator.errors.forEach((error,errorNum) => {
+      errorMsg += `\n${errorNum+1}: ${error.instancePath}: ${error.message} ${JSON.stringify(error.params, null, 4)}`;
+      });
+
+      throw new Error(errorMsg);
     }
   }
 }
