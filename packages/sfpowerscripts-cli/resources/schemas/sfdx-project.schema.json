@@ -32,7 +32,7 @@
           "versionNumber": ["package"]
         },
         "required": ["path","package","versionNumber"],
-        "additionalProperties": true,
+        "additionalProperties": false,
         "properties": {
           "ancestorId": {
             "$ref": "#/definitions/packageDirectory.ancestorId"
