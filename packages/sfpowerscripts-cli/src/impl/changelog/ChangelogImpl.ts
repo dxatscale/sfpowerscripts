@@ -22,7 +22,6 @@ export default class ChangelogImpl {
     private releaseName: string,
     private workItemFilter: string,
     private repoUrl: string,
-    private branchName: string,
     private limit: number,
     private workItemUrl: string,
     private showAllArtifacts: boolean,
@@ -30,29 +29,61 @@ export default class ChangelogImpl {
   ){}
 
   async exec() {
-
     let tempDir = tmp.dirSync({unsafeCleanup: true});
 
     try {
-      let git: SimpleGit = simplegit();
-
-      console.log(`Cloning repository ${this.repoUrl}`);
-      await git.clone(
-        this.repoUrl,
-        tempDir.name
-      );
-      const repoTempDir = tempDir.name;
-
-      console.log(`Checking out branch ${this.branchName}`);
-      git = simplegit(repoTempDir);
-      await git.checkout(this.branchName);
-
       let artifact_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         this.artifactDir
       );
 
       if (artifact_filepaths.length === 0) {
         throw new Error(`No artifacts found at ${path.resolve(process.cwd(), this.artifactDir)}`);
+      }
+
+      let artifactsToPackageMetadata: {[p: string]: PackageMetadata} = {};
+      let packagesToChangelogFilePaths: {[p:string]: string} = {};
+      let artifactSourceBranch: string;
+      for (let artifactFilepaths of artifact_filepaths) {
+        let packageMetadata: PackageMetadata = JSON.parse(
+          fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
+        );
+
+        artifactsToPackageMetadata[packageMetadata.package_name] = packageMetadata;
+        packagesToChangelogFilePaths[packageMetadata.package_name] = artifactFilepaths.changelogFilePath;
+
+        if (artifactSourceBranch == null) {
+          if (packageMetadata.branch) {
+            artifactSourceBranch = packageMetadata.branch;
+          } else {
+            console.log(`${packageMetadata.package_name} artifact is missing branch information`);
+            console.log(`This will cause an error in the future. Re-create the artifact using the latest version of sfpowerscripts to maintain compatibility.`)
+          }
+        } else if (artifactSourceBranch !== packageMetadata.branch) {
+          // TODO: throw error
+          console.log("Artifacts must be created from the same branch");
+        }
+      }
+
+      if (!artifactSourceBranch)
+        throw new Error("Atleast one artifact must carry branch information");
+
+      const repoTempDir = tempDir.name;
+
+      let git: SimpleGit = simplegit(repoTempDir);
+
+      console.log(`Cloning repository ${this.repoUrl}`);
+      await git.clone(
+        this.repoUrl,
+        repoTempDir
+      );
+
+
+      const branch = `sfp_changelog_${artifactSourceBranch}`;
+      console.log(`Checking out branch ${branch}`);
+      if (this.isBranchExists(branch, git)) {
+        await git.checkout(branch);
+      } else {
+        await git.checkout(['-b', branch]);
       }
 
       let releaseChangelog: ReleaseChangelog;
@@ -66,17 +97,6 @@ export default class ChangelogImpl {
         return;
       }
 
-
-      let artifactsToPackageMetadata: {[p: string]: PackageMetadata} = {};
-      let packagesToChangelogFilePaths: {[p:string]: string} = {};
-      for (let artifactFilepaths of artifact_filepaths) {
-        let packageMetadata: PackageMetadata = JSON.parse(
-          fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
-        );
-
-        artifactsToPackageMetadata[packageMetadata.package_name] = packageMetadata;
-        packagesToChangelogFilePaths[packageMetadata.package_name] = artifactFilepaths.changelogFilePath;
-      }
 
       console.log("Generating changelog...");
 
@@ -128,23 +148,28 @@ export default class ChangelogImpl {
         payload
       );
 
-      console.log("Pushing changelog files to", this.repoUrl, this.branchName);
-      git = simplegit(repoTempDir);
+      console.log("Pushing changelog files to", this.repoUrl, branch);
       await git.addConfig("user.name", "sfpowerscripts");
       await git.addConfig("user.email", "sfpowerscripts@dxscale");
       await git.add([`releasechangelog.json`, `Release-Changelog.md`]);
       await git.commit(`[skip ci] Updated Changelog ${this.releaseName}`);
 
       if (this.forcePush) {
-        await git.push(`--force`);
+        await git.push("origin", branch, [`--force`]);
       } else {
-        await git.push();
+        await git.push("origin", branch);
       }
 
       console.log(`Successfully generated changelog`);
     } finally {
       tempDir.removeCallback();
     }
+  }
+
+  private async isBranchExists(branch: string, git: SimpleGit): Promise<boolean> {
+    const listOfBranches = await git.branch(['-la']);
+
+    return listOfBranches.all.find((elem) => elem.endsWith(branch)) ? true : false;
   }
 
   /**
