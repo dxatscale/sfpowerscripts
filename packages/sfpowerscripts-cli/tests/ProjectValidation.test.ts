@@ -143,8 +143,8 @@ describe("Given a sfdx-project.json, it should be validated against the scehma",
           "versionNumber": "1.0.0.0" ,
           "postDeploymentScript":"test/1.bat",
           "preDeploymentScript":"test/2.bat",
-          "assignPermsetsPreDeployment":["PS1","PS2"],
-          "assignPermsetsPostDeployment":["PS3","PS4"]
+          "assignPermSetsPreDeployment":["PS1","PS2"],
+          "assignPermSetsPostDeployment":["PS3","PS4"]
         },
         {
           "path": "packages/access-mgmt",
@@ -185,7 +185,7 @@ describe("Given a sfdx-project.json, it should be validated against the scehma",
     expect(() => { new ProjectValidation().validateSFDXProjectJSON(); }).not.toThrow();
   });
 
-  it("should  throw an error for a sfdx-project.json where various sfpowerscripts orchestrator properties are incorrectly used", () => {
+  it("should throw an error for a sfdx-project.json where various sfpowerscripts orchestrator properties are incorrectly used", () => {
 
     let sfdx_project={
       "packageDirectories": [
