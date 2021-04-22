@@ -43,7 +43,7 @@ Work items are identified by searching for the pattern, defined by the `--workit
 $ git commit -m "Implement user story APR-3035"
 ```
 
-The changelog can also automatically link work items to their corresponding user-story online. Just provide the general URL of work items for your project management tool, and the work-item number will be appended automatically. 
+The changelog can also automatically link work items to their corresponding user-story online. Just provide the general URL of work items for your project management tool, and the work-item number will be appended automatically.
 
 e.g. Work-item URL for JIRA
 

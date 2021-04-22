@@ -65,7 +65,7 @@ Alternatively, you could use our [docker](docker.md) image and we highly recomme
 
 sfpowerscripts need JWT based authentication setup in DevHub for the commands to work successfully. To setup JWT based authentication please follow the link [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_jwt_flow.htm).
 
-Once the authentication is setup, ensure the client id, jwt keyfile are stored as secrets in your CI/CD platform \(or a secrets manager connected to your CI/CD platform\) for authenticating your CI/CD agents to Salesforce org's  
+Once the authentication is setup, ensure the client id, jwt keyfile are stored as secrets in your CI/CD platform \(or a secrets manager connected to your CI/CD platform\) for authenticating your CI/CD agents to Salesforce org's
 
 ## **StatsD Server \(Highly Recommended\)**
 

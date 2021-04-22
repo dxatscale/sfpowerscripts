@@ -12,7 +12,7 @@ description: The heart of sfpowerscripts
 
 To understand the orchestrator, let's take a look at a typical CI/CD pipeline for a package based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
-![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2822%29.png)
+![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2824%29%20%281%29.png)
 
 Let's dive into the pipeline depicted above, there are two basic pipelines in play
 
@@ -25,9 +25,9 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
 
   Each of this stage could have a pre-approval step modelled like the example shown below
 
-![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%285%29.png)
+![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%2816%29%20%281%29.png)
 
-![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%286%29.png)
+![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%285%29.png)
 
 * **CD Pipeline**:  A Continuous Delivery Pipeline that gets triggered manually or automatically \(every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
   * Fetch the Artifacts from the artifact repository using the provided release definition
@@ -44,7 +44,7 @@ Take a note of each stage in the pipeline above and the key functionality requir
 2. [**validate**](../commands/validate.md) **\(sfdx sfpowerscripts:orchestrator:validate\)**: This command goes in pair with the prepare command. It fetches a scratch org from the pool already pre prepared \(by the prepare command\) and deploys/unit tests the changed packages.    
 3. [**build**](../commands/build-and-quickbuild.md) **\(sfdx sfpowerscripts:orchestrator:build/quickbuild\)** : This command builds all the packages in parallel wherever possible by understanding your manifest and dependency tree. Goodbye to the sequential builds, where you fail in the n-1th package and have to wait for the next hour. This command brings massive savings to your build \(package creation\) time. Also use the [**quickbuild**](../commands/build-and-quickbuild.md) variant, which builds unlocked package without dependency check in intermittent stages for faster feedback.   
 4. [**deploy**](../commands/deploy.md) **\(sfdx sfpowerscripts:orchestrator:deploy\)**: So you have built all the packages, now this command takes care of deploying it, by reading the order of installation as you have specified in your sfdx-project.json. Installs it one by one, deciding to trigger tests etc. and provide you with the logs if anything fails   
-5. [**promote**]() **\(sfdx sfpowerscripts:orchestrator:promote\)** : Promote enables the packages to be deployable to production. This explicit stage prevents incorrectly tested packages to reach production    
+5. [**promote**](orchestrator.md) **\(sfdx sfpowerscripts:orchestrator:promote\)** : Promote enables the packages to be deployable to production. This explicit stage prevents incorrectly tested packages to reach production    
 6. [**publish**](../commands/publish.md) **\(sfdx sfpowerscripts:orchestrator:publish\)** :  Publish lets you publish the built artifacts into an artifact registry during publish stages of your pipeline.
 
 ## Controlling Aspects of the Orchestrator

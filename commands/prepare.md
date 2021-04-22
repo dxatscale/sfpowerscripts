@@ -22,7 +22,7 @@ The Just-in-time aspect of creation and an org completely built from your source
 
 ## Building a pool of scratch org's
 
-As you try to automate more of your business processes in Salesforce, you cannot avoid adding third party managed packages as a dependency to your configuration metadata and code in your repository. The time required to spin up a just-in-time scratch org would increase and the value of having quick feedback dimnishes. This is the primary reason why scratch org pools pre-installed with managed packages and your custom configuration and code from your repository will enable you to immediately validate the PR check process without waiting for a single, new scratch org to be provisioned.
+As you try to automate more of your business processes in Salesforce, you cannot avoid adding third party managed packages as a dependency to your configuration metadata and code in your repository. The time required to spin up a just-in-time scratch org would increase and the value of having quick feedback diminishes. This is the primary reason why scratch org pools pre-installed with managed packages and your custom configuration and code from your repository will enable you to immediately validate the PR check process without waiting for a single, new scratch org to be provisioned.  If required, sample test data can be loaded to your scratch orgs was well to allow developers to effectively complete their user stories.
 
 {% hint style="info" %}
 The Prepare command was built primarily due to the delays from Salesforce to enable **snapshot** feature and make it GA to the public. However, even with snapshot feature, you might need to rebuild the snapshot every day, as we have noticed in a large mono repo scenario \(full deployment of metadata also takes long time\). We will modify the command as needed when this feature launches to utilize snapshot accordingly.
@@ -66,7 +66,7 @@ If **--installall** flag is utilized, sfpowerscripts would attempt to do a build
 
 ## Installing **pre-existing artifacts** as source packages
 
-If this flag \(**--installassourcepackages**\)   is used, we would attempt installing all packages as [source packages](../faq/package-types/source-packages.md), overriding the default package type \(so an [unlocked package ](../faq/package-types/unlocked-packages.md)will be installed as a source package\).
+If this flag \(**--installassourcepackages**\) is used, we would attempt installing all packages as [source packages](../faq/package-types/source-packages.md), overriding the default package type \(so an [unlocked package ](../faq/package-types/unlocked-packages.md)will be installed as a source package\).
 
 {% hint style="success" %}
 We typically recommend this option to install your packages in the repo as source packages, as often we have noticed, during the validation phase, where a package is installed as a source package often causes issues when deployed on top of an unlocked package.
@@ -134,7 +134,7 @@ Let's unpack the concepts utilizing the above example
 
 If any of the managed package has keys, it can be provided as an argument to the prepare command. Check the command's flag for more information
 
-#### Key Support for Managed Packages
+### Key Support for Managed Packages
 
 The format for the 'keys' parameter is a string of key-value pairs separated by spaces - where the key is the name of the package, the value is the protection key of the package, and the key-value pair itself is delimited by a colon .
 
@@ -146,7 +146,7 @@ The time taken by this command depends on how many managed packages and your pac
 
 ## Handling a change in shape of the scratch org's in pool
 
-If it is a change in settings, check out the [validate command's documentation](validate.md)  where you will find an option how to update settings of a scratch org from the pool. Otherwise you will have to delete the existing pool and recreate again.
+If it is a change in settings, check out the [validate command's documentation](validate.md) where you will find an option how to update settings of a scratch org from the pool. Otherwise you will have to delete the existing pool and recreate again.
 
 ## Managing the Scratch Org pool
 
