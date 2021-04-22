@@ -351,8 +351,9 @@ export default class CreateUnlockedPackageImpl {
     if (!isNullOrUndefined(this.packageArtifactMetadata.tag))
       command += ` -t ${this.packageArtifactMetadata.tag}`;
 
-    if (!isNullOrUndefined(this.packageArtifactMetadata.branch))
-      command += ` --branch ${this.packageArtifactMetadata.branch}`;
+    // Disabled temporarily until sfpowerkit dependencies list filters by branch
+    // if (!isNullOrUndefined(this.packageArtifactMetadata.branch))
+    //   command += ` --branch ${this.packageArtifactMetadata.branch}`;
 
     if (this.isCoverageEnabled && !this.isOrgDependentPackage) command += ` -c`;
 
