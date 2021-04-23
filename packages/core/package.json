@@ -15,7 +15,6 @@
     "test": "FORCE_COLOR=true jest --verbose --coverage --detectOpenHandles"
   },
   "dependencies": {
-    "@types/datadog-metrics": "^0.6.1",
     "adm-zip": "^0.5.4",
     "antlr4ts": "^0.5.0-alpha.3",
     "apex-parser": "^2.7.1",
@@ -37,6 +36,7 @@
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
+    "@types/datadog-metrics": "^0.6.1",
     "@types/async-retry": "^1.4.2",
     "@types/jest": "^26.0.19",
     "jest": "^26.6.3",
