@@ -13,7 +13,7 @@ export default class SFPStatsSender {
       host: host,
       port: port == null ? 8125 : Number(port),
       protocol: protocol == "tcp" ? "tcp" : "udp",
-      prefix: "sfpowerscripts.",
+      prefix: "sfpowerscripts."
     };
     SFPStatsSender.client = new StatsDClient(options);
   }
