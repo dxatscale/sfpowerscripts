@@ -37,6 +37,19 @@ A sample metric is shown below
 
 One could write a parse this file, and then send each individual entries to a logging system that allows JSON based logging.
 
+### Native Datadog Integration
+
+sfpowerscripts is also able to integrate into Datadog natively using HTTP/HTTPS integration. This feature allows one to directly post metrics to Datadog instance without using an intermittent StatsD server to aggregate metrics before reaching an analyzer. 
+
+To setup native DataDog integration, you need to set the following environment variables
+
+```text
+ # Set DATADOG Environment Variables for logging metrics natively to DataDog
+ export SFPOWERSCRIPTS_DATADOG=true
+ export SFPOWERSCRIPTS_DATADOG_HOST=app.datadoghq.com // Or equivalent datadog region
+ export SFPOWERSCRIPTS_DATADOG_API_KEY=<your api key> // Refer to datadog documentation 
+```
+
 ## Metrics available within sfpowerscripts
 
 The following are the list of metrics that are captured.
