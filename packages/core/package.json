@@ -15,12 +15,14 @@
     "test": "FORCE_COLOR=true jest --verbose --coverage --detectOpenHandles"
   },
   "dependencies": {
+    "@types/datadog-metrics": "^0.6.1",
     "adm-zip": "^0.5.4",
     "antlr4ts": "^0.5.0-alpha.3",
     "apex-parser": "^2.7.1",
     "async-retry": "^1.3.1",
     "bottleneck": "^2.19.5",
     "cli-table": "^0.3.6",
+    "datadog-metrics": "^0.9.3",
     "fs-extra": "^9.1.0",
     "glob": "^7.1.6",
     "hot-shots": "^8.3.0",
