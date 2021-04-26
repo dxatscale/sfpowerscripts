@@ -11,5 +11,6 @@
   "dryRunFlagDescription": "Perform dry-run of release. No artifacts are deployed to the target org.",
   "waitTimeFlagDescription": "Wait time for package installation",
   "keysFlagDescription": "Keys to be used while installing any managed package dependencies. Required format is a string of key-value pairs separated by spaces e.g. packageA:pw123 packageB:pw123 packageC:pw123",
+  "generateChangelogFlagDescription": "Create a release changelog",
   "allowUnpromotedPackagesFlagDescription": "Allow un-promoted packages to be installed in production"
 }

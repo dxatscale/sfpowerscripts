@@ -1,3 +1,4 @@
+import { URL } from "url";
 import { ReleaseChangelog, Release } from "./interfaces/ReleaseChangelogInterfaces"
 
 export default function generateMarkdown(releaseChangelog: ReleaseChangelog, workItemURL: string, limit: number, showAllArtifacts: boolean): string {
@@ -9,19 +10,25 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
   else
      limitReleases = 0;
 
+  const baseAddr = "https://img.shields.io/static/v1";
+  for (let org of releaseChangelog.orgs) {
+    let url = new URL(`?label=${org.name}&message=${org.release.name}-${org.release.buildNumber}(${org.retryCount})&color=green`, baseAddr);
+    payload += `[![${org.name}-${org.release.name}-${org.release.buildNumber}(${org.retryCount})-green](${url.toString()})](#${org.release.name}-${org.release.buildNumber}) `;
+  }
+
   // Start from latest Release
   for (let releaseNum = releaseChangelog["releases"].length - 1 ; releaseNum >= limitReleases ; releaseNum-- ) {
       let release: Release = releaseChangelog["releases"][releaseNum];
 
-      payload += `\n# ${release["name"]}\n`;
+      payload += `\n# ${release["name"]}-${release.buildNumber}\n`;
 
-      payload += "### Artifacts\n";
+      payload += "### Artifacts :package:\n";
       for (let artifactNum = 0 ; artifactNum < release["artifacts"].length ; artifactNum++) {
           if (release["artifacts"][artifactNum]["from"] !== release["artifacts"][artifactNum]["to"] || showAllArtifacts)
-            payload += `**${release["artifacts"][artifactNum]["name"]}**     v${release["artifacts"][artifactNum]["version"]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
+            payload += `- **${release["artifacts"][artifactNum]["name"]}**     v${release["artifacts"][artifactNum]["version"]} (${release["artifacts"][artifactNum]["to"]})\n\n`;
       }
 
-      payload += "### Work Items\n";
+      payload += "### Work Items :gem:\n";
       if (Object.keys(release["workItems"]).length > 0) {
         for (let workItem in release["workItems"]) {
             let specificWorkItemURL: string;
@@ -42,7 +49,7 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
       let versionChangeOnly: string[] = [];
       let noChangeInVersion: string[] = [];
       let isCommitsSectionEmpty: boolean = true;
-      payload += "\n### Commits\n";
+      payload += "\n### Commits :book:\n";
       for (let artifact of release["artifacts"]) {
           if (artifact["from"] !== artifact["to"]) {
               if (artifact["commits"].length > 0) {

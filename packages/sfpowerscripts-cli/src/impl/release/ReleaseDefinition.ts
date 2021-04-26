@@ -22,7 +22,7 @@ export default class ReleaseDefinition {
     this.validateReleaseDefinition(this._releaseDefinition, isNpm);
 
     // Workaround for jsonschema not supporting validation based on dependency value
-    if (this._releaseDefinition.releaseOptions?.baselineOrg && !this._releaseDefinition.releaseOptions?.skipIfAlreadyInstalled)
+    if (this._releaseDefinition.baselineOrg && !this._releaseDefinition.skipIfAlreadyInstalled)
       throw new Error("Release option 'skipIfAlreadyInstalled' must be true for 'baselineOrg'");
 
     if (this._releaseDefinition.packageDependencies) {
@@ -51,9 +51,18 @@ export default class ReleaseDefinition {
 
     const schema = {
         "type": "object",
+        "dependencies": {
+          "baselineOrg": "skipIfAlreadyInstalled"
+        },
         "properties": {
             "release": {
                 "type": "string"
+            },
+            "skipIfAlreadyInstalled": {
+              "type": "boolean"
+            },
+            "baselineOrg": {
+              "type": "string"
             },
             "artifacts": {
                 "type": "object",
@@ -73,26 +82,36 @@ export default class ReleaseDefinition {
                 }
               }
             },
-            "releaseOptions": {
+            "changelog": {
               "type": "object",
               "properties": {
-                "skipIfAlreadyInstalled": {
-                  "type": "boolean"
-                },
-                "baselineOrg": {
+                "repoUrl": {
                   "type": "string"
+                },
+                "workItemFilter": {
+                  "type": "string"
+                },
+                "workItemUrl": {
+                  "type": "string"
+                },
+                "limit": {
+                  "type": "integer"
+                },
+                "showAllArtifacts": {
+                  "type": "boolean"
                 }
               },
-              "dependencies": {
-                "baselineOrg": "skipIfAlreadyInstalled"
-              },
+              "required": [
+                "repoUrl",
+                "workItemFilter"
+              ],
               "additionalProperties": false
             }
         },
         "additionalProperties": false,
         "required": [
             "release",
-            "artifacts",
+            "artifacts"
         ]
     };
 

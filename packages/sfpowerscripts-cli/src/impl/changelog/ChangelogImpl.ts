@@ -9,6 +9,8 @@ import path = require('path');
 const tmp = require('tmp');
 var marked = require('marked');
 var TerminalRenderer = require('marked-terminal');
+var hash = require('object-hash');
+
 
 marked.setOptions({
   // Define custom renderer
@@ -25,8 +27,11 @@ export default class ChangelogImpl {
     private limit: number,
     private workItemUrl: string,
     private showAllArtifacts: boolean,
-    private forcePush: boolean
-  ){}
+    private forcePush: boolean,
+    private org?: string
+  ){
+    this.org = org?.toLowerCase();
+  }
 
   async exec() {
     let tempDir = tmp.dirSync({unsafeCleanup: true});
@@ -80,7 +85,7 @@ export default class ChangelogImpl {
 
       const branch = `sfp_changelog_${artifactSourceBranch}`;
       console.log(`Checking out branch ${branch}`);
-      if (this.isBranchExists(branch, git)) {
+      if (await this.isBranchExists(branch, git)) {
         await git.checkout(branch);
       } else {
         await git.checkout(['-b', branch]);
@@ -91,16 +96,26 @@ export default class ChangelogImpl {
         releaseChangelog = JSON.parse(fs.readFileSync(path.join(repoTempDir,`releasechangelog.json`), 'utf8'));
       }
 
-      let isRetriedRelease = this.releaseName === releaseChangelog?.releases[releaseChangelog.releases.length - 1].name;
-      if (isRetriedRelease) {
-        console.log("Skipping changelog generation for retried release...");
-        return;
-      }
-
 
       console.log("Generating changelog...");
 
-      let latestRelease: Release = this.initLatestRelease(this.releaseName, artifactsToPackageMetadata);
+      let buildNumber: number;
+      if (releaseChangelog?.releases[releaseChangelog.releases.length - 1].buildNumber) {
+        buildNumber = releaseChangelog.releases[releaseChangelog.releases.length - 1].buildNumber + 1;
+      } else {
+        buildNumber = 1;
+      }
+
+      let latestRelease: Release = this.initLatestRelease(
+        this.releaseName,
+        buildNumber,
+        artifactsToPackageMetadata
+      );
+
+      // Determine whether or not to create a new release entry
+      if (! await this.isNewRelease(releaseChangelog, latestRelease, repoTempDir, branch, git)) {
+        return;
+      }
 
       let artifactsToLatestCommitId: {[P: string]: string};
       if (releaseChangelog?.releases.length > 0) {
@@ -120,14 +135,7 @@ export default class ChangelogImpl {
         latestRelease.workItems[key] = Array.from(latestRelease.workItems[key]);
       }
 
-      if (releaseChangelog) {
-        // Append results to release changelog
-        releaseChangelog["releases"].push(latestRelease);
-      } else {
-        releaseChangelog = {
-          releases: [latestRelease]
-        }
-      }
+      releaseChangelog = this.addLatestReleaseToChangelog(latestRelease, releaseChangelog);
 
       fs.writeFileSync(
         path.join(repoTempDir,`releasechangelog.json`),
@@ -148,21 +156,121 @@ export default class ChangelogImpl {
         payload
       );
 
-      console.log("Pushing changelog files to", this.repoUrl, branch);
-      await git.addConfig("user.name", "sfpowerscripts");
-      await git.addConfig("user.email", "sfpowerscripts@dxscale");
-      await git.add([`releasechangelog.json`, `Release-Changelog.md`]);
-      await git.commit(`[skip ci] Updated Changelog ${this.releaseName}`);
-
-      if (this.forcePush) {
-        await git.push("origin", branch, [`--force`]);
-      } else {
-        await git.push("origin", branch);
-      }
+      await this.pushChangelogToBranch(branch, git, this.forcePush);
 
       console.log(`Successfully generated changelog`);
     } finally {
       tempDir.removeCallback();
+    }
+  }
+
+  private addLatestReleaseToChangelog(latestRelease: Release, releaseChangelog: ReleaseChangelog) {
+    if (releaseChangelog) {
+      // update org
+      if (releaseChangelog.orgs) {
+        let org = releaseChangelog.orgs.find((org) => org.name === this.org);
+
+        if (org) {
+          org.release = latestRelease;
+          org.retryCount = 1;
+        } else {
+          releaseChangelog.orgs.push({ name: this.org, release: latestRelease, retryCount: 1 });
+        }
+      } else {
+        // for backwards-compatibility with pre-existing changelogs
+        releaseChangelog.orgs = [{ name: this.org, release: latestRelease, retryCount: 1 }];
+      }
+
+      // Append results to release changelog
+      releaseChangelog["releases"].push(latestRelease);
+    } else {
+      releaseChangelog = {
+        orgs: [{ name: this.org, release: latestRelease, retryCount: 1 }],
+        releases: [latestRelease]
+      };
+    }
+    return releaseChangelog;
+  }
+
+  /**
+   * Determine whether new release based on hash Id
+   * @param releaseChangelog
+   * @param latestRelease
+   * @param repoTempDir
+   * @param branch
+   * @param git
+   * @returns
+   */
+  private async isNewRelease(
+    releaseChangelog: ReleaseChangelog,
+    latestRelease: Release,
+    repoTempDir: any,
+    branch: string,
+    git: SimpleGit
+  ) {
+    if (releaseChangelog?.releases.length > 0) {
+      for (let release of releaseChangelog.releases) {
+        if (release.hashId === latestRelease.hashId) {
+          console.log("Found previous release with identical hash Id");
+          console.log(`Updating ${this.org} org`);
+
+          let org = releaseChangelog.orgs?.find((org) => org.name === this.org);
+
+          if (org) {
+            if (org.release.name === release.name && org.release.buildNumber === release.buildNumber) {
+              // increment counter for retried release
+              org.retryCount++;
+            }
+            else {
+              org.release = release;
+              org.retryCount = 1;
+            }
+            console.log(org.release.name + "-" + org.release.buildNumber + `(${org.retryCount})`);
+          } else {
+            // new org
+            releaseChangelog.orgs.push({ name: this.org, release: release, retryCount: 1 });
+            console.log(`${release.name}-${release.buildNumber}(1)`);
+          }
+
+
+          fs.writeFileSync(
+            path.join(repoTempDir, `releasechangelog.json`),
+            JSON.stringify(releaseChangelog, null, 4)
+          );
+
+          let payload: string = generateMarkdown(
+            releaseChangelog,
+            this.workItemUrl,
+            this.limit,
+            this.showAllArtifacts
+          );
+
+          fs.writeFileSync(
+            path.join(repoTempDir, `Release-Changelog.md`),
+            payload
+          );
+
+          await this.pushChangelogToBranch(branch, git, this.forcePush);
+
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  private async pushChangelogToBranch(branch: string, git, isForce: boolean) {
+    console.log("Pushing changelog files to", this.repoUrl, branch);
+    await git.addConfig("user.name", "sfpowerscripts");
+    await git.addConfig("user.email", "sfpowerscripts@dxscale");
+    await git.add([`releasechangelog.json`, `Release-Changelog.md`]);
+    await git.commit(`[skip ci] Updated Changelog ${this.releaseName}`);
+
+    if (isForce) {
+      await git.push("origin", branch, [`--force`]);
+    } else {
+      await git.push("origin", branch);
     }
   }
 
@@ -255,12 +363,16 @@ export default class ChangelogImpl {
    */
   private initLatestRelease(
     releaseName: string,
-    artifactsToPackageMetadata: { [p: string]: PackageMetadata; }
+    buildNumber: number,
+    artifactsToPackageMetadata: { [p: string]: PackageMetadata; },
   ): Release {
+
     let latestRelease: Release = {
       name: releaseName,
+      buildNumber: buildNumber,
       workItems: {},
-      artifacts: []
+      artifacts: [],
+      hashId: undefined
     };
 
     for (let packageMetadata of Object.values(artifactsToPackageMetadata)) {
@@ -275,6 +387,9 @@ export default class ChangelogImpl {
 
       latestRelease["artifacts"].push(artifact);
     }
+
+    latestRelease.hashId = hash(latestRelease.artifacts);
+
 
     return latestRelease;
   }

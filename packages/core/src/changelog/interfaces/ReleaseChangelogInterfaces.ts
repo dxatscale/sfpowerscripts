@@ -2,12 +2,15 @@ import { Changelog, Commit } from "./GenericChangelogInterfaces";
 
 export interface ReleaseChangelog {
     releases: Release[]
+    orgs?: {name: string, release: Release, retryCount: number}[]
 }
 
 export interface Release {
     name: string,
-    workItems: any
-    artifacts: Artifact[]
+    buildNumber?: number,
+    workItems: any,
+    artifacts: Artifact[],
+    hashId?: string
 }
 
 export interface Artifact extends Changelog {
