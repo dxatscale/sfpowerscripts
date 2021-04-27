@@ -1,19 +1,21 @@
-import IncrementProjectBuildNumberImpl from "../../sfdxwrappers/IncrementProjectBuildNumberImpl";
 import { Changelog, Commit } from "./GenericChangelogInterfaces";
 
 export interface ReleaseChangelog {
     releases: Release[]
-    orgs?: {name: string, release: Release, retryCount: number}[]
+    orgs?: {name: string, releases: ReleaseId[], indexOfLatestRelease: number, retryCount: number}[]
 
 
 }
 
-export interface Release {
-    name: string[],
+export interface ReleaseId {
+    names: string[],
     buildNumber?: number,
-    workItems: any,
-    artifacts: Artifact[],
     hashId?: string
+}
+
+export interface Release extends ReleaseId{
+    workItems: any,
+    artifacts: Artifact[]
 }
 
 export interface Artifact extends Changelog {

@@ -1,7 +1,7 @@
 import simplegit, { SimpleGit } from "simple-git/promise";
 import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import { ReleaseChangelog, Release, Artifact } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { ReleaseChangelog, Release, ReleaseId, Artifact } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import * as fs from "fs-extra"
@@ -165,6 +165,20 @@ export default class ChangelogImpl {
     }
   }
 
+  /**
+   * Convert Release to Release Id
+   * @param release
+   * @returns
+   */
+  private convertReleaseToId(release: Release): ReleaseId {
+    let releaseNames = [...release.names]; // Shallow copy
+    return {
+      names: releaseNames,
+      buildNumber: release.buildNumber,
+      hashId: release.hashId
+    }
+  }
+
   private addLatestReleaseToChangelog(latestRelease: Release, releaseChangelog: ReleaseChangelog) {
     if (releaseChangelog) {
       // update org
@@ -172,21 +186,22 @@ export default class ChangelogImpl {
         let org = releaseChangelog.orgs.find((org) => org.name === this.org);
 
         if (org) {
-          org.release = latestRelease;
-          org.retryCount = 1;
+          org.releases.push(this.convertReleaseToId(latestRelease));
+          org.indexOfLatestRelease = org.releases.length - 1;
+          org.retryCount = 0;
         } else {
-          releaseChangelog.orgs.push({ name: this.org, release: latestRelease, retryCount: 1 });
+          releaseChangelog.orgs.push({ name: this.org, releases: [this.convertReleaseToId(latestRelease)], indexOfLatestRelease: 0, retryCount: 0 });
         }
       } else {
         // for backwards-compatibility with pre-existing changelogs
-        releaseChangelog.orgs = [{ name: this.org, release: latestRelease, retryCount: 1 }];
+        releaseChangelog.orgs = [{ name: this.org, releases: [this.convertReleaseToId(latestRelease)], indexOfLatestRelease: 0 ,retryCount: 0 }];
       }
 
       // Append results to release changelog
       releaseChangelog["releases"].push(latestRelease);
     } else {
       releaseChangelog = {
-        orgs: [{ name: this.org, release: latestRelease, retryCount: 1 }],
+        orgs: [{ name: this.org, releases: [this.convertReleaseToId(latestRelease)], indexOfLatestRelease: 0, retryCount: 0 }],
         releases: [latestRelease]
       };
     }
@@ -213,13 +228,13 @@ export default class ChangelogImpl {
       for (let release of releaseChangelog.releases) {
         if (release.hashId === latestRelease.hashId) {
           // Not a new release
-          console.log("Found previous release with identical hash Id");
+          console.log(`Found previous release with identical hash Id ${release.hashId}`);
           console.log(`Updating ${this.org} org`);
 
-
-          if (!this.containsLatestReleaseName(release.name, latestRelease.name[0])) {
+          let containsLatestReleaseName = this.containsLatestReleaseName(release.names, latestRelease.names[0]);
+          if (!containsLatestReleaseName) {
             // append latestReleaseName
-            release.name.push(latestRelease.name[0]);
+            release.names.push(latestRelease.names[0]);
           }
 
           // for (let org of releaseChangelog.orgs) {
@@ -233,18 +248,32 @@ export default class ChangelogImpl {
           let org = releaseChangelog.orgs.find((org) => org.name === this.org);
 
           if (org) {
-            if (org.release.hashId !== release.hashId) {
-              org.release = release;
-              org.retryCount = 1;
+            let latestReleaseToOrg = org.releases[org.indexOfLatestRelease];
+            if (latestReleaseToOrg.hashId !== release.hashId) {
+              let indexOfOrgRelease = org.releases.findIndex((orgRelease) => orgRelease.hashId === release.hashId);
+              if ( indexOfOrgRelease >= 0 ) {
+                // Update pointer to latest release
+                org.indexOfLatestRelease = indexOfOrgRelease;
+
+                org.releases[org.indexOfLatestRelease] = this.convertReleaseToId(release);
+              } else {
+                // Add releaseId to Org
+                org.releases.push(this.convertReleaseToId(release));
+                org.indexOfLatestRelease = org.releases.length - 1;
+              }
+              org.retryCount = 0;
             } else {
-              org.release = release;
-              org.retryCount++;
+              org.releases[org.indexOfLatestRelease] = this.convertReleaseToId(release);
+              if (!containsLatestReleaseName) org.retryCount = 0;
+              else org.retryCount++;
             }
-            console.log(org.release.name[org.release.name.length - 1] + "-" + org.release.buildNumber + `(${org.retryCount})`);
+
+            latestReleaseToOrg = org.releases[org.indexOfLatestRelease];
+            console.log(latestReleaseToOrg.names[latestReleaseToOrg.names.length - 1] + "-" + latestReleaseToOrg.buildNumber + `(${org.retryCount})`);
           } else {
             // new org
-            releaseChangelog.orgs.push({ name: this.org, release: release, retryCount: 1 });
-            console.log(`${release.name[release.name.length - 1]}-${release.buildNumber}(1)`);
+            releaseChangelog.orgs.push({ name: this.org, releases: [this.convertReleaseToId(release)], indexOfLatestRelease: 0, retryCount: 0 });
+            console.log(`${release.names[release.names.length - 1]}-${release.buildNumber}(0)`);
           }
 
           fs.writeFileSync(
@@ -389,7 +418,7 @@ export default class ChangelogImpl {
   ): Release {
 
     let latestRelease: Release = {
-      name: [releaseName],
+      names: [releaseName],
       buildNumber: buildNumber,
       workItems: {},
       artifacts: [],

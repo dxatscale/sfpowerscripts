@@ -12,8 +12,9 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
 
   const baseAddr = "https://img.shields.io/static/v1";
   for (let org of releaseChangelog.orgs) {
-    let url = new URL(`?label=${org.name}&message=${org.release.name[org.release.name.length - 1]}-${org.release.buildNumber}(${org.retryCount})&color=green`, baseAddr);
-    payload += `[![${org.name}-${org.release.name[org.release.name.length - 1]}-${org.release.buildNumber}(${org.retryCount})-green](${url.toString()})](#${org.release.hashId}) `;
+    let latestReleaseToOrg = org.releases[org.indexOfLatestRelease];
+    let url = new URL(`?label=${org.name}&message=${latestReleaseToOrg.names[latestReleaseToOrg.names.length - 1]}-${latestReleaseToOrg.buildNumber}(${org.retryCount})&color=green`, baseAddr);
+    payload += `[![${org.name}-${latestReleaseToOrg.names[latestReleaseToOrg.names.length - 1]}-${latestReleaseToOrg.buildNumber}(${org.retryCount})-green](${url.toString()})](#${latestReleaseToOrg.hashId}) `;
   }
 
   // Start from latest Release
@@ -21,7 +22,7 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
       let release: Release = releaseChangelog["releases"][releaseNum];
 
       payload += `\n<a id=${release.hashId}></a>\n`;
-      payload += `# ${concatReleaseNames(release.name, release.buildNumber)}\n`;
+      payload += `# ${concatReleaseNames(release.names, release.buildNumber)}\n`;
 
       payload += "### Artifacts :package:\n";
       for (let artifactNum = 0 ; artifactNum < release["artifacts"].length ; artifactNum++) {
