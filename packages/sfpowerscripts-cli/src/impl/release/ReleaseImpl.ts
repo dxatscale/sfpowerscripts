@@ -57,6 +57,8 @@ export default class ReleaseImpl {
       );
     } else {
       if (this.isGenerateChangelog) {
+        this.printOpenLoggingGroup("Release changelog");
+
         let changelogImpl: ChangelogImpl = new ChangelogImpl(
           "artifacts",
           this.releaseDefinition.release,
@@ -70,6 +72,7 @@ export default class ReleaseImpl {
         );
 
         await changelogImpl.exec();
+        this.printClosingLoggingGroup();
       }
 
       return {
