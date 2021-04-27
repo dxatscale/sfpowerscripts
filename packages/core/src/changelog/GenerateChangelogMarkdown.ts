@@ -1,5 +1,6 @@
 import { URL } from "url";
-import { ReleaseChangelog, Release } from "./interfaces/ReleaseChangelogInterfaces"
+import { ReleaseChangelog, Release } from "./interfaces/ReleaseChangelogInterfaces";
+const markdownTable = require("markdown-table");
 
 export default function generateMarkdown(releaseChangelog: ReleaseChangelog, workItemURL: string, limit: number, showAllArtifacts: boolean): string {
   let payload: string = "";
@@ -57,10 +58,13 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
               if (artifact["commits"].length > 0) {
                   isCommitsSectionEmpty = false;
                   payload += `\n#### ${artifact["name"]}\n`;
+
+                  let tableOfCommits = [["Date", "Time", "Commit ID", "Commit Message"]];
                   for (let commit of artifact["commits"]) {
                       let commitDate: Date = new Date(commit.date);
-                      payload += `  - ${getDate(commitDate)}, ${getTime(commitDate)}      ${commit.commitId}      ${commit.message}\n`;
+                    tableOfCommits.push([getDate(commitDate), getTime(commitDate), commit.commitId, commit.message]);
                   }
+                  payload += markdownTable(tableOfCommits) + "\n";
               } else {
                   versionChangeOnly.push(artifact["name"]);
               }
