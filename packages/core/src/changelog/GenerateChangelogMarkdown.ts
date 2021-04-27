@@ -12,15 +12,16 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
 
   const baseAddr = "https://img.shields.io/static/v1";
   for (let org of releaseChangelog.orgs) {
-    let url = new URL(`?label=${org.name}&message=${org.release.name}-${org.release.buildNumber}(${org.retryCount})&color=green`, baseAddr);
-    payload += `[![${org.name}-${org.release.name}-${org.release.buildNumber}(${org.retryCount})-green](${url.toString()})](#${org.release.name}-${org.release.buildNumber}) `;
+    let url = new URL(`?label=${org.name}&message=${org.release.name[org.release.name.length - 1]}-${org.release.buildNumber}(${org.retryCount})&color=green`, baseAddr);
+    payload += `[![${org.name}-${org.release.name[org.release.name.length - 1]}-${org.release.buildNumber}(${org.retryCount})-green](${url.toString()})](#${org.release.hashId}) `;
   }
 
   // Start from latest Release
   for (let releaseNum = releaseChangelog["releases"].length - 1 ; releaseNum >= limitReleases ; releaseNum-- ) {
       let release: Release = releaseChangelog["releases"][releaseNum];
 
-      payload += `\n# ${release["name"]}-${release.buildNumber}\n`;
+      payload += `\n<a id=${release.hashId}></a>\n`;
+      payload += `# ${concatReleaseNames(release.name, release.buildNumber)}\n`;
 
       payload += "### Artifacts :package:\n";
       for (let artifactNum = 0 ; artifactNum < release["artifacts"].length ; artifactNum++) {
@@ -87,6 +88,19 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
   return payload;
 }
 
+function generateValidAnchor(anchorVal: string) {
+	return anchorVal.toLowerCase().replace(/ /g,'-')
+		// single chars that are removed
+		.replace(/[`~!@#$%^&*()+=<>?,./:;"'|{}\[\]\\–—]/g, '')
+		// CJK punctuations that are removed
+		.replace(/[　。？！，、；：“”【】（）〔〕［］﹃﹄“”‘’﹁﹂—…－～《》〈〉「」]/g, '')
+}
+
+function concatReleaseNames(releaseNames: string[], buildNumber: number): string {
+    return releaseNames
+        .map((name) => name + "-" + buildNumber)
+        .join("/");
+}
 
 function getDate(date: Date): string {
  let day: number = date.getDate();

@@ -10,6 +10,7 @@ const tmp = require('tmp');
 var marked = require('marked');
 var TerminalRenderer = require('marked-terminal');
 var hash = require('object-hash');
+import lodash = require("lodash");
 
 
 marked.setOptions({
@@ -211,27 +212,40 @@ export default class ChangelogImpl {
     if (releaseChangelog?.releases.length > 0) {
       for (let release of releaseChangelog.releases) {
         if (release.hashId === latestRelease.hashId) {
+          // Not a new release
           console.log("Found previous release with identical hash Id");
           console.log(`Updating ${this.org} org`);
 
-          let org = releaseChangelog.orgs?.find((org) => org.name === this.org);
+
+          if (!this.containsLatestReleaseName(release.name, latestRelease.name[0])) {
+            // append latestReleaseName
+            release.name.push(latestRelease.name[0]);
+          }
+
+          // for (let org of releaseChangelog.orgs) {
+          //   if (org.release.hashId === release.hashId) {
+          //     // Update org release with newer release that contains additional release name
+          //     org.release = release;
+          //   }
+          // }
+
+          // Update orgs
+          let org = releaseChangelog.orgs.find((org) => org.name === this.org);
 
           if (org) {
-            if (org.release.name === release.name && org.release.buildNumber === release.buildNumber) {
-              // increment counter for retried release
-              org.retryCount++;
-            }
-            else {
+            if (org.release.hashId !== release.hashId) {
               org.release = release;
               org.retryCount = 1;
+            } else {
+              org.release = release;
+              org.retryCount++;
             }
-            console.log(org.release.name + "-" + org.release.buildNumber + `(${org.retryCount})`);
+            console.log(org.release.name[org.release.name.length - 1] + "-" + org.release.buildNumber + `(${org.retryCount})`);
           } else {
             // new org
             releaseChangelog.orgs.push({ name: this.org, release: release, retryCount: 1 });
-            console.log(`${release.name}-${release.buildNumber}(1)`);
+            console.log(`${release.name[release.name.length - 1]}-${release.buildNumber}(1)`);
           }
-
 
           fs.writeFileSync(
             path.join(repoTempDir, `releasechangelog.json`),
@@ -258,6 +272,13 @@ export default class ChangelogImpl {
     }
 
     return true;
+  }
+
+  private containsLatestReleaseName(
+    releaseNames: string[],
+    latestReleaseName: string
+  ): boolean {
+    return releaseNames.find((name) => name.toLowerCase() === latestReleaseName.toLowerCase()) ? true : false;
   }
 
   private async pushChangelogToBranch(branch: string, git, isForce: boolean) {
@@ -368,7 +389,7 @@ export default class ChangelogImpl {
   ): Release {
 
     let latestRelease: Release = {
-      name: releaseName,
+      name: [releaseName],
       buildNumber: buildNumber,
       workItems: {},
       artifacts: [],
