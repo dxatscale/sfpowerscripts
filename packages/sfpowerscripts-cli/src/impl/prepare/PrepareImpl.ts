@@ -397,7 +397,7 @@ export default class PrepareImpl {
         console.log(
           `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias} due to`
         );
-        console.log(`Error Reported:`+scratchOrg.failureMessage)
+        console.log(scratchOrg.failureMessage)
 
         try {
           //Delete scratchorgs that failed to execute script
