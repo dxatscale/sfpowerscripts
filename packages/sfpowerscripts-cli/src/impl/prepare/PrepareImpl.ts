@@ -32,6 +32,7 @@ export default class PrepareImpl {
   private _npmTag: string;
   private _npmrcPath: string;
   private _isRetryOnFailure:boolean;
+  private _anchorPackages:string[];
 
   public constructor(
     private hubOrg: Org,
@@ -162,6 +163,9 @@ export default class PrepareImpl {
        await this.getPackageArtifacts();
     }
 
+    //Get Anchor Packages
+    this._anchorPackages = this.getAnchorPackages();
+
     //Generate Scratch Orgs
     await this.generateScratchOrgs();
 
@@ -185,6 +189,19 @@ export default class PrepareImpl {
     let finalizedResults = await this.finalizeGeneratedScratchOrgs();
 
     return {totalallocated:this.totalToBeAllocated,success:finalizedResults.success,failed:finalizedResults.failed};
+  }
+  
+  
+  //Fetch all anchor packages 
+  private getAnchorPackages() {
+    console.log("Fetching Anchor Packages if any.....");
+    let projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+    let anchorPackages=[];
+    projectConfig["packageDirectories"].forEach((pkg) => {
+      if(pkg.anchorPackageForPrepare)
+        anchorPackages.push(pkg["package"])
+    });
+    return anchorPackages;
   }
 
   private async getPackageArtifacts() {
@@ -378,8 +395,9 @@ export default class PrepareImpl {
         }
 
         console.log(
-          `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias}.. Returning to Pool`
+          `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias} due to`
         );
+        console.log(`Error Reported:`+scratchOrg.failureMessage)
 
         try {
           //Delete scratchorgs that failed to execute script
@@ -466,6 +484,7 @@ export default class PrepareImpl {
       this._isRetryOnFailure
     );
 
+    prepareASingleOrgImpl.setAnchorPackages(this._anchorPackages);
     prepareASingleOrgImpl.setInstallationBehaviour(this.installAll,this.installAsSourcePackages,this.succeedOnDeploymentErrors);
     prepareASingleOrgImpl.setPackageKeys(this.keys);
 
@@ -488,6 +507,11 @@ export default class PrepareImpl {
         result.status = "failure";
         result.message = "Unable to set the scratch org record in Pool";
       }
+    }
+    else
+    {
+      scratchOrg.isScriptExecuted=false;
+      scratchOrg.failureMessage=result.message;
     }
 
     return result;
