@@ -2,9 +2,7 @@ import { Changelog, Commit } from "./GenericChangelogInterfaces";
 
 export interface ReleaseChangelog {
     releases: Release[]
-    orgs?: {name: string, releases: ReleaseId[], indexOfLatestRelease: number, retryCount: number}[]
-
-
+    orgs?: {name: string, releases: ReleaseId[], latestRelease: ReleaseId, retryCount: number}[]
 }
 
 export interface ReleaseId {

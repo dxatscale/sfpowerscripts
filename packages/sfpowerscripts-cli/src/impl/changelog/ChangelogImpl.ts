@@ -27,7 +27,7 @@ export default class ChangelogImpl {
     private repoUrl: string,
     private limit: number,
     private workItemUrl: string,
-    private showAllArtifacts: boolean,
+    private showAllArtifacts: boolean = true,
     private forcePush: boolean,
     private org?: string
   ){
@@ -187,21 +187,21 @@ export default class ChangelogImpl {
 
         if (org) {
           org.releases.push(this.convertReleaseToId(latestRelease));
-          org.indexOfLatestRelease = org.releases.length - 1;
+          org.latestRelease = org.releases[org.releases.length - 1];
           org.retryCount = 0;
         } else {
-          releaseChangelog.orgs.push({ name: this.org, releases: [this.convertReleaseToId(latestRelease)], indexOfLatestRelease: 0, retryCount: 0 });
+          releaseChangelog.orgs.push({ name: this.org, releases: [this.convertReleaseToId(latestRelease)], latestRelease: this.convertReleaseToId(latestRelease), retryCount: 0 });
         }
       } else {
         // for backwards-compatibility with pre-existing changelogs
-        releaseChangelog.orgs = [{ name: this.org, releases: [this.convertReleaseToId(latestRelease)], indexOfLatestRelease: 0 ,retryCount: 0 }];
+        releaseChangelog.orgs = [{ name: this.org, releases: [this.convertReleaseToId(latestRelease)], latestRelease: this.convertReleaseToId(latestRelease) ,retryCount: 0 }];
       }
 
       // Append results to release changelog
       releaseChangelog["releases"].push(latestRelease);
     } else {
       releaseChangelog = {
-        orgs: [{ name: this.org, releases: [this.convertReleaseToId(latestRelease)], indexOfLatestRelease: 0, retryCount: 0 }],
+        orgs: [{ name: this.org, releases: [this.convertReleaseToId(latestRelease)], latestRelease: this.convertReleaseToId(latestRelease), retryCount: 0 }],
         releases: [latestRelease]
       };
     }
@@ -209,6 +209,7 @@ export default class ChangelogImpl {
   }
 
   /**
+   * OrgReleaseUpdater
    * Determine whether new release based on hash Id
    * @param releaseChangelog
    * @param latestRelease
@@ -237,45 +238,40 @@ export default class ChangelogImpl {
             release.names.push(latestRelease.names[0]);
           }
 
-          // for (let org of releaseChangelog.orgs) {
-          //   if (org.release.hashId === release.hashId) {
-          //     // Update org release with newer release that contains additional release name
-          //     org.release = release;
-          //   }
-          // }
-
           // Update orgs
           let org = releaseChangelog.orgs.find((org) => org.name === this.org);
 
           if (org) {
-            let latestReleaseToOrg = org.releases[org.indexOfLatestRelease];
-            if (latestReleaseToOrg.hashId !== release.hashId) {
-              let indexOfOrgRelease = org.releases.findIndex((orgRelease) => orgRelease.hashId === release.hashId);
-              if ( indexOfOrgRelease >= 0 ) {
-                // Update pointer to latest release
-                org.indexOfLatestRelease = indexOfOrgRelease;
-
-                org.releases[org.indexOfLatestRelease] = this.convertReleaseToId(release);
+            let indexOfReleaseToOrg = org.releases.findIndex((orgRelease) => orgRelease.hashId === release.hashId);
+            if (org.latestRelease.hashId !== release.hashId) {
+              if ( indexOfReleaseToOrg >= 0 && !containsLatestReleaseName) {
+                // Update release names in releases to org
+                org.releases[indexOfReleaseToOrg] = this.convertReleaseToId(release);
               } else {
-                // Add releaseId to Org
+                // Add releaseId in releases to org
                 org.releases.push(this.convertReleaseToId(release));
-                org.indexOfLatestRelease = org.releases.length - 1;
               }
+
+              // Update latest release
+              org.latestRelease = this.convertReleaseToId(release);
               org.retryCount = 0;
             } else {
-              org.releases[org.indexOfLatestRelease] = this.convertReleaseToId(release);
-              if (!containsLatestReleaseName) org.retryCount = 0;
-              else org.retryCount++;
+              // Update releases names in releases to org & latestRelease
+              org.releases[indexOfReleaseToOrg] = this.convertReleaseToId(release);
+              org.latestRelease = this.convertReleaseToId(release);
+              if (!containsLatestReleaseName) {
+                org.retryCount = 0;
+              } else org.retryCount++;
             }
 
-            latestReleaseToOrg = org.releases[org.indexOfLatestRelease];
-            console.log(latestReleaseToOrg.names[latestReleaseToOrg.names.length - 1] + "-" + latestReleaseToOrg.buildNumber + `(${org.retryCount})`);
+            console.log(org.latestRelease.names[org.latestRelease.names.length - 1] + "-" + org.latestRelease.buildNumber + `(${org.retryCount})`);
           } else {
             // new org
-            releaseChangelog.orgs.push({ name: this.org, releases: [this.convertReleaseToId(release)], indexOfLatestRelease: 0, retryCount: 0 });
+            releaseChangelog.orgs.push({ name: this.org, releases: [this.convertReleaseToId(release)], latestRelease: this.convertReleaseToId(release), retryCount: 0 });
             console.log(`${release.names[release.names.length - 1]}-${release.buildNumber}(0)`);
           }
 
+          // TODO: ReleaseChangelogWriter
           fs.writeFileSync(
             path.join(repoTempDir, `releasechangelog.json`),
             JSON.stringify(releaseChangelog, null, 4)

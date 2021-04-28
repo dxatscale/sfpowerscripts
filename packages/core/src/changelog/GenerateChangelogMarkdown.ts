@@ -13,9 +13,8 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
 
   const baseAddr = "https://img.shields.io/static/v1";
   for (let org of releaseChangelog.orgs) {
-    let latestReleaseToOrg = org.releases[org.indexOfLatestRelease];
-    let url = new URL(`?label=${org.name}&message=${latestReleaseToOrg.names[latestReleaseToOrg.names.length - 1]}-${latestReleaseToOrg.buildNumber}(${org.retryCount})&color=green`, baseAddr);
-    payload += `[![${org.name}-${latestReleaseToOrg.names[latestReleaseToOrg.names.length - 1]}-${latestReleaseToOrg.buildNumber}(${org.retryCount})-green](${url.toString()})](#${latestReleaseToOrg.hashId}) `;
+    let url = new URL(`?label=${org.name}&message=${org.latestRelease.names[org.latestRelease.names.length - 1]}-${org.latestRelease.buildNumber}(${org.retryCount})&color=green`, baseAddr);
+    payload += `[![${org.name}-${org.latestRelease.names[org.latestRelease.names.length - 1]}-${org.latestRelease.buildNumber}(${org.retryCount})-green](${url.toString()})](#${org.latestRelease.hashId}) `;
   }
 
   // Start from latest Release
@@ -68,8 +67,8 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
               } else {
                   versionChangeOnly.push(artifact["name"]);
               }
-          }  else if (artifact["from"] === artifact["to"]) {
-              noChangeInVersion.push(artifact["name"]);
+          } else if (artifact["from"] === artifact["to"]) {
+            noChangeInVersion.push(artifact["name"]);
           }
       }
 
