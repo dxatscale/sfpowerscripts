@@ -15,6 +15,7 @@ import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { Stage } from "../Stage";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import { EOL } from "os";
 export default class PrepareImpl {
   private poolConfig: PoolConfig;
   private totalToBeAllocated: number;
@@ -394,6 +395,7 @@ export default class PrepareImpl {
           continue;
         }
 
+        console.log(EOL);
         console.log(
           `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias} due to`
         );
@@ -419,6 +421,7 @@ export default class PrepareImpl {
             `Unable to delete the scratchorg ${scratchOrg.username}..`
           );
         }
+        console.log(EOL);
 
         failed++;
       }
