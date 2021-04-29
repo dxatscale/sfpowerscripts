@@ -126,6 +126,9 @@
           },
           "skipTesting":{
             "$ref": "#/definitions/packageDirectory.skipTesting"
+          },
+          "checkpointForPrepare":{
+            "$ref": "#/definitions/packageDirectory.checkpointForPrepare"
           }
         }
       }
@@ -411,6 +414,11 @@
       "type": "boolean",
       "title": "Skip Unit testing",
       "description": "Skip unit testing during validate or deployment (source packages)"
+    },
+    "packageDirectory.checkpointForPrepare": {
+      "type": "boolean",
+      "title": "Is an Checkpoint Package?",
+      "description": "Fail the scratch org,if the any of the checkpoint package fails to deploy on prepare"
     },
     "plugins.sfpowerscripts": {
       "type": "object",
