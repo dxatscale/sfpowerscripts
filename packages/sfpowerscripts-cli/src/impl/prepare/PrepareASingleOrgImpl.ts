@@ -11,7 +11,6 @@ import SFPLogger, {
 import { Stage } from "../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 
-
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
 export default class PrepareASingleOrgImpl {
   private keys;
@@ -219,20 +218,22 @@ export default class PrepareASingleOrgImpl {
   ) {
     //Handle Deployment Failures
     if (deploymentResult.failed.length > 0 || deploymentResult.error) {
-      let isCheckPointFailed = this.checkPointPackages.some((pkg) =>
-        deploymentResult.deployed.includes(pkg)
-      );
-      if (isCheckPointFailed) {
-        SFPStatsSender.logCount("prepare.org.checkpointfailed");
-        SFPLogger.log(
-          `One or some of the check point packages ${this.checkPointPackages} failed to deploy, Deleting ${this.scratchOrg.alias}`,
-          null,
-          packageLogger,
-          LoggerLevel.INFO
+      if (this.checkPointPackages.length > 0) {
+        let isCheckPointSucceded = this.checkPointPackages.some((pkg) =>
+          deploymentResult.deployed.includes(pkg)
         );
-        throw new Error(
-          `One or some of the check point Packages ${this.checkPointPackages} failed to deploy`
-        );
+        if (!isCheckPointSucceded) {
+          SFPStatsSender.logCount("prepare.org.checkpointfailed");
+          SFPLogger.log(
+            `One or some of the check point packages ${this.checkPointPackages} failed to deploy, Deleting ${this.scratchOrg.alias}`,
+            null,
+            packageLogger,
+            LoggerLevel.INFO
+          );
+          throw new Error(
+            `One or some of the check point Packages ${this.checkPointPackages} failed to deploy`
+          );
+        }
       } else {
         SFPStatsSender.logCount("prepare.org.partial");
         SFPLogger.log(
