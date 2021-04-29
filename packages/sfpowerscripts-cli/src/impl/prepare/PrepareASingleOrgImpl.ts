@@ -18,7 +18,7 @@ export default class PrepareASingleOrgImpl {
   private installAll: boolean;
   private installAsSourcePackages: boolean;
   private succeedOnDeploymentErrors: boolean;
-  private anchorPackages: string[];
+  private checkPointPackages: string[];
 
   public constructor(
     private sfdx: SfdxApi,
@@ -31,8 +31,8 @@ export default class PrepareASingleOrgImpl {
     this.keys = keys;
   }
 
-  public setAnchorPackages(anchorPackages: string[]) {
-    this.anchorPackages = anchorPackages;
+  public setcheckPointPackages(checkPointPackages: string[]) {
+    this.checkPointPackages = checkPointPackages;
   }
   public setInstallationBehaviour(
     installAll: boolean,
@@ -219,19 +219,19 @@ export default class PrepareASingleOrgImpl {
   ) {
     //Handle Deployment Failures
     if (deploymentResult.failed.length > 0 || deploymentResult.error) {
-      let isAnchorPackageFailed = deploymentResult.failed.some((pkg) =>
-        this.anchorPackages.includes(pkg)
+      let isCheckPointFailed = this.checkPointPackages.some((pkg) =>
+        deploymentResult.deployed.includes(pkg)
       );
-      if (isAnchorPackageFailed) {
-        SFPStatsSender.logCount("prepare.org.anchorfailed");
+      if (isCheckPointFailed) {
+        SFPStatsSender.logCount("prepare.org.checkpointfailed");
         SFPLogger.log(
-          `One or some of the Anchor Packages ${this.anchorPackages} failed to deploy, Deleting ${this.scratchOrg.alias}`,
+          `One or some of the check point packages ${this.checkPointPackages} failed to deploy, Deleting ${this.scratchOrg.alias}`,
           null,
           packageLogger,
           LoggerLevel.INFO
         );
         throw new Error(
-          `One or some of the Anchor Packages ${this.anchorPackages} failed to deploy`
+          `One or some of the check point Packages ${this.checkPointPackages} failed to deploy`
         );
       } else {
         SFPStatsSender.logCount("prepare.org.partial");

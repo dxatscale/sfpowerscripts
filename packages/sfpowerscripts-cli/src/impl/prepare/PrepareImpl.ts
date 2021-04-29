@@ -33,7 +33,7 @@ export default class PrepareImpl {
   private _npmTag: string;
   private _npmrcPath: string;
   private _isRetryOnFailure:boolean;
-  private _anchorPackages:string[];
+  private _checkPointPackages:string[];
 
   public constructor(
     private hubOrg: Org,
@@ -164,8 +164,8 @@ export default class PrepareImpl {
        await this.getPackageArtifacts();
     }
 
-    //Get Anchor Packages
-    this._anchorPackages = this.getAnchorPackages();
+    //Get CheckPoint Packages
+    this._checkPointPackages = this.getcheckPointPackages();
 
     //Generate Scratch Orgs
     await this.generateScratchOrgs();
@@ -193,16 +193,16 @@ export default class PrepareImpl {
   }
   
   
-  //Fetch all anchor packages 
-  private getAnchorPackages() {
-    console.log("Fetching Anchor Packages if any.....");
+  //Fetch all checkpoints  
+  private getcheckPointPackages() {
+    console.log("Fetching checkpoints for prepare if any.....");
     let projectConfig = ProjectConfig.getSFDXPackageManifest(null);
-    let anchorPackages=[];
+    let checkPointPackages=[];
     projectConfig["packageDirectories"].forEach((pkg) => {
-      if(pkg.anchorPackageForPrepare)
-        anchorPackages.push(pkg["package"])
+      if(pkg.checkpointForPrepare)
+        checkPointPackages.push(pkg["package"])
     });
-    return anchorPackages;
+    return checkPointPackages;
   }
 
   private async getPackageArtifacts() {
@@ -487,7 +487,7 @@ export default class PrepareImpl {
       this._isRetryOnFailure
     );
 
-    prepareASingleOrgImpl.setAnchorPackages(this._anchorPackages);
+    prepareASingleOrgImpl.setcheckPointPackages(this._checkPointPackages);
     prepareASingleOrgImpl.setInstallationBehaviour(this.installAll,this.installAsSourcePackages,this.succeedOnDeploymentErrors);
     prepareASingleOrgImpl.setPackageKeys(this.keys);
 

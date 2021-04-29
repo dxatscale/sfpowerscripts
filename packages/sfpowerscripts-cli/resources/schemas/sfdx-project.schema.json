@@ -127,8 +127,8 @@
           "skipTesting":{
             "$ref": "#/definitions/packageDirectory.skipTesting"
           },
-          "anchorPackageForPrepare":{
-            "$ref": "#/definitions/packageDirectory.anchorPackageForPrepare"
+          "checkpointForPrepare":{
+            "$ref": "#/definitions/packageDirectory.checkpointForPrepare"
           }
         }
       }
@@ -415,10 +415,10 @@
       "title": "Skip Unit testing",
       "description": "Skip unit testing during validate or deployment (source packages)"
     },
-    "packageDirectory.anchorPackageForPrepare": {
+    "packageDirectory.checkpointForPrepare": {
       "type": "boolean",
-      "title": "Is an Anchor Package?",
-      "description": "Fail the scratch org,if the anchor package fails to deploy on prepare"
+      "title": "Is an Checkpoint Package?",
+      "description": "Fail the scratch org,if the any of the checkpoint package fails to deploy on prepare"
     },
     "plugins.sfpowerscripts": {
       "type": "object",
