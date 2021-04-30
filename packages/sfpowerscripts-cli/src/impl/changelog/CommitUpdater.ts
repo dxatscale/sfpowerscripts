@@ -1,14 +1,15 @@
 import { Release } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
-import * as fs from "fs-extra";
+import ReadPackageChangelog from "./ReadPackageChangelog";
 
 export default class CommitUpdater {
 
   constructor(
     private latestRelease: Release,
     private artifactsToLatestCommitId: {[p: string]: string},
-    private packagesToChangelogFilePaths: {[p: string]: string}
-  ){}
+    private packagesToChangelogFilePaths: {[p: string]: string},
+    private readPackageChangelog: ReadPackageChangelog
+  ) {}
 
   /**
    * Generate commits in latest release, for each artifact
@@ -17,9 +18,12 @@ export default class CommitUpdater {
    */
   update(): void {
     for (let artifact of this.latestRelease["artifacts"]) {
-      let packageChangelog: PackageChangelog = JSON.parse(
-        fs.readFileSync(this.packagesToChangelogFilePaths[artifact.name], 'utf8')
+      let packageChangelog: PackageChangelog = this.readPackageChangelog(
+        this.packagesToChangelogFilePaths[artifact.name]
       );
+
+      // Set new latestCommitId
+      artifact["latestCommitId"] = packageChangelog["commits"][0]["commitId"];
 
       let indexOfLatestCommitId;
       if (this.artifactsToLatestCommitId?.[artifact.name]) {
@@ -33,7 +37,6 @@ export default class CommitUpdater {
           continue;
         }
       }
-      console.log("indexOfLatestCommitId", indexOfLatestCommitId);
 
       if (indexOfLatestCommitId > 0) {
         artifact["commits"] = packageChangelog["commits"].slice(0, indexOfLatestCommitId);
@@ -46,9 +49,6 @@ export default class CommitUpdater {
         // Artifact was not in previous release
         artifact["commits"] = packageChangelog["commits"];
       }
-
-      // Set new latestCommitId
-      artifact["latestCommitId"] = packageChangelog["commits"][0]["commitId"];
     }
   }
 }
