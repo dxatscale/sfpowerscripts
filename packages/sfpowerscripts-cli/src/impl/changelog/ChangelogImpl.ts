@@ -1,8 +1,7 @@
 import simplegit, { SimpleGit } from "simple-git/promise";
 import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import { ReleaseChangelog, Release, ReleaseId, Artifact } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
-import { Changelog as PackageChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
+import { ReleaseChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
 import ReleaseChangelogUpdater from "./ReleaseChangelogUpdater";
 import * as fs from "fs-extra"
@@ -10,8 +9,6 @@ import path = require('path');
 const tmp = require('tmp');
 var marked = require('marked');
 var TerminalRenderer = require('marked-terminal');
-var hash = require('object-hash');
-import lodash = require("lodash");
 
 
 marked.setOptions({
