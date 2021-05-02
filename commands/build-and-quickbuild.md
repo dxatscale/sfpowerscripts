@@ -4,7 +4,8 @@ description: Build your packages in parallel
 
 # Build & QuickBuild
 
-{% embed url="https://youtu.be/sGjTfAzdXiI" caption="" %}
+{% embed url="https://www.youtube.com/watch?v=sGjTfAzdXiI" caption="" %}
+
 
 **Build and its variant quickbuild** are commands builds packages in your build stage of the pipeline. These commands provide the following benefits
 
