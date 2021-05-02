@@ -92,14 +92,6 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
   return payload;
 }
 
-function generateValidAnchor(anchorVal: string) {
-	return anchorVal.toLowerCase().replace(/ /g,'-')
-		// single chars that are removed
-		.replace(/[`~!@#$%^&*()+=<>?,./:;"'|{}\[\]\\–—]/g, '')
-		// CJK punctuations that are removed
-		.replace(/[　。？！，、；：“”【】（）〔〕［］﹃﹄“”‘’﹁﹂—…－～《》〈〉「」]/g, '')
-}
-
 function concatReleaseNames(releaseNames: string[], buildNumber: number): string {
     return releaseNames
         .map((name) => name + "-" + buildNumber)
