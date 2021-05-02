@@ -5,65 +5,82 @@ import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/pa
 import * as fs from "fs-extra";
 import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
 import { EOL } from "os";
-import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import SFPLogger, {
+  LoggerLevel,
+} from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { Stage } from "../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
 
-
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
 export default class PrepareASingleOrgImpl {
-
   private keys;
   private installAll: boolean;
   private installAsSourcePackages: boolean;
-  succeedOnDeploymentErrors: boolean;
+  private succeedOnDeploymentErrors: boolean;
+  private checkPointPackages: string[];
 
   public constructor(
     private sfdx: SfdxApi,
     private scratchOrg: ScratchOrg,
-    private hubOrg: string
+    private hubOrg: string,
+    private isRetryOnFailure?: boolean
   ) {}
 
-
   public setPackageKeys(keys: string) {
-   this.keys=keys;
-  }
-  public setInstallationBehaviour(installAll: boolean, installAsSourcePackages: boolean, succeedOnDeploymentErrors: boolean) {
-   this.installAll = installAll;
-   this.installAsSourcePackages=installAsSourcePackages;
-   this.succeedOnDeploymentErrors=succeedOnDeploymentErrors;
+    this.keys = keys;
   }
 
+  public setcheckPointPackages(checkPointPackages: string[]) {
+    this.checkPointPackages = checkPointPackages;
+  }
+  public setInstallationBehaviour(
+    installAll: boolean,
+    installAsSourcePackages: boolean,
+    succeedOnDeploymentErrors: boolean
+  ) {
+    this.installAll = installAll;
+    this.installAsSourcePackages = installAsSourcePackages;
+    this.succeedOnDeploymentErrors = succeedOnDeploymentErrors;
+  }
 
   public async prepare(): Promise<ScriptExecutionResult> {
     //Install sfpowerscripts Artifact
 
     try {
-
-
-       //Create file logger
-       fs.outputFileSync(
+      //Create file logger
+      fs.outputFileSync(
         `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`,
         `sfpowerscripts--log${EOL}`
       );
 
-      let packageLogger:any = `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`;
-      SFPLogger.log(`Installing sfpowerscripts_artifact package to the ${this.scratchOrg.alias}`,null,packageLogger);
+      let packageLogger: any = `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`;
+      SFPLogger.log(
+        `Installing sfpowerscripts_artifact package to the ${this.scratchOrg.alias}`,
+        null,
+        packageLogger
+      );
 
       await this.sfdx.force.package.install({
-        quiet:true,
+        quiet: true,
         targetusername: this.scratchOrg.username,
-        package: process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE ? process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE : SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
+        package: process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
+          ? process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
+          : SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
         apexcompile: "package",
         noprompt: true,
         wait: 60,
       });
 
-
-      SFPLogger.isSupressLogs=true;
-      let startTime=Date.now();
-      SFPLogger.log(`Installing package depedencies to the ${this.scratchOrg.alias}`,null,packageLogger);
-      SFPLogger.log(`Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`)
+      SFPLogger.isSupressLogs = true;
+      let startTime = Date.now();
+      SFPLogger.log(
+        `Installing package depedencies to the ${this.scratchOrg.alias}`,
+        null,
+        packageLogger
+      );
+      SFPLogger.log(
+        `Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`
+      );
 
       // Install Dependencies
       let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
@@ -80,69 +97,28 @@ export default class PrepareASingleOrgImpl {
         throw new Error(installationResult.message);
       }
 
-      console.log(`Successfully completed Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`)
+      console.log(
+        `Successfully completed Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`
+      );
 
       if (this.installAll) {
-
-        SFPLogger.log(`Deploying all packages in the repo to  ${this.scratchOrg.alias}`);
-        SFPLogger.log(`Deploying all packages in the repo to  ${this.scratchOrg.alias}`,null,packageLogger);
-
-
-        let deployProps:DeployProps = {
-          targetUsername: this.scratchOrg.username,
-          artifactDir:"artifacts",
-          waitTime:120,
-          currentStage:Stage.PREPARE,
-          packageLogger:packageLogger,
-          isTestsToBeTriggered:false,
-          skipIfPackageInstalled:false,
-          deploymentMode: this.installAsSourcePackages? DeploymentMode.SOURCEPACKAGES:DeploymentMode.NORMAL
-        }
-
-        //Deploy the fetched artifacts to the org
-        let deployImpl: DeployImpl = new DeployImpl(
-          deployProps
+        let deploymentResult = await this.deployAllPackagesInTheRepo(
+          packageLogger
         );
-
-
-        let deploymentResult = await deployImpl.exec();
-
-        if(deploymentResult.failed.length>0 || deploymentResult.error)
-        {
-          //Write to Scratch Org Logs
-          SFPLogger.log(`Following Packages failed to deploy in ${this.scratchOrg.alias}`,null,packageLogger,LoggerLevel.INFO);
-          SFPLogger.log(deploymentResult.failed,null,packageLogger,LoggerLevel.INFO);
-
-          //Write to console
-          SFPLogger.log(`Following Packages failed to deploy in ${this.scratchOrg.alias}`);
-          SFPLogger.log(deploymentResult.failed);
-
-          if(this.succeedOnDeploymentErrors)
-          {
-            SFPStatsSender.logCount("prepare.org.partial"); 
-            SFPLogger.log(`Cancelling any further packages to be deployed, Adding the scratchorg ${this.scratchOrg.alias} to the pool`)
-          }
-          else
-          {
-            SFPLogger.log(`Deployment of packages failed in ${this.scratchOrg.alias}, this scratch org will be deleted`)
-            throw new Error(
-              "Following Packages failed to deploy:" + deploymentResult.failed
+        this.succeedOnDeploymentErrors
+          ? this.handleDeploymentErrorsForPartialDeployment(
+              deploymentResult,
+              packageLogger
+            )
+          : this.handleDeploymentErrorsForFullDeployment(
+              deploymentResult,
+              packageLogger
             );
-          }
-        }
-        else
-        {
-          //Send succeeded metrics when everything is in
-          SFPStatsSender.logCount("prepare.org.succeeded"); 
-        }
-
-      }
-      else
-      {
+      } else {
         //Send succeeded metrics when everything is in when no install is activated
-        SFPStatsSender.logCount("prepare.org.succeeded"); 
+        SFPStatsSender.logCount("prepare.org.succeeded");
       }
-     
+
       return {
         status: "success",
         isSuccess: true,
@@ -150,13 +126,126 @@ export default class PrepareASingleOrgImpl {
         scratchOrgUsername: this.scratchOrg.username,
       };
     } catch (error) {
-      SFPStatsSender.logCount("prepare.org.failed"); 
+      SFPStatsSender.logCount("prepare.org.failed");
       return {
         status: "failure",
         isSuccess: false,
         message: error.message,
         scratchOrgUsername: this.scratchOrg.username,
       };
+    }
+  }
+
+  private async deployAllPackagesInTheRepo(packageLogger: any) {
+    SFPLogger.log(
+      `Deploying all packages in the repo to  ${this.scratchOrg.alias}`
+    );
+    SFPLogger.log(
+      `Deploying all packages in the repo to  ${this.scratchOrg.alias}`,
+      null,
+      packageLogger
+    );
+
+    let deployProps: DeployProps = {
+      targetUsername: this.scratchOrg.username,
+      artifactDir: "artifacts",
+      waitTime: 120,
+      currentStage: Stage.PREPARE,
+      packageLogger: packageLogger,
+      isTestsToBeTriggered: false,
+      skipIfPackageInstalled: false,
+      deploymentMode: this.installAsSourcePackages
+        ? DeploymentMode.SOURCEPACKAGES
+        : DeploymentMode.NORMAL,
+      isRetryOnFailure: this.isRetryOnFailure,
+    };
+
+    //Deploy the fetched artifacts to the org
+    let deployImpl: DeployImpl = new DeployImpl(deployProps);
+
+    let deploymentResult = await deployImpl.exec();
+
+    return deploymentResult;
+  }
+
+  private handleDeploymentErrorsForFullDeployment(
+    deploymentResult: {
+      deployed: string[];
+      failed: string[];
+      testFailure: string;
+      error: any;
+    },
+    packageLogger: any
+  ) {
+    //Handle Deployment Failures
+    if (deploymentResult.failed.length > 0 || deploymentResult.error) {
+      //Write to Scratch Org Logs
+      SFPLogger.log(
+        `Following Packages failed to deploy in ${this.scratchOrg.alias}`,
+        null,
+        packageLogger,
+        LoggerLevel.INFO
+      );
+      SFPLogger.log(
+        deploymentResult.failed,
+        null,
+        packageLogger,
+        LoggerLevel.INFO
+      );
+      SFPLogger.log(
+        `Deployment of packages failed in ${this.scratchOrg.alias}, this scratch org will be deleted`,
+        null,
+        packageLogger,
+        LoggerLevel.INFO
+      );
+      throw new Error(
+        "Following Packages failed to deploy:" + deploymentResult.failed
+      );
+    } else {
+      //All good send succeeded metrics
+      SFPStatsSender.logCount("prepare.org.succeeded");
+    }
+  }
+
+  private handleDeploymentErrorsForPartialDeployment(
+    deploymentResult: {
+      deployed: string[];
+      failed: string[];
+      testFailure: string;
+      error: any;
+    },
+    packageLogger: any
+  ) {
+    //Handle Deployment Failures
+    if (deploymentResult.failed.length > 0 || deploymentResult.error) {
+      if (this.checkPointPackages.length > 0) {
+        let isCheckPointSucceded = this.checkPointPackages.some((pkg) =>
+          deploymentResult.deployed.includes(pkg)
+        );
+        if (!isCheckPointSucceded) {
+          SFPStatsSender.logCount("prepare.org.checkpointfailed");
+          SFPLogger.log(
+            `One or some of the check point packages ${this.checkPointPackages} failed to deploy, Deleting ${this.scratchOrg.alias}`,
+            null,
+            packageLogger,
+            LoggerLevel.INFO
+          );
+          throw new Error(
+            `One or some of the check point Packages ${this.checkPointPackages} failed to deploy`
+          );
+        }
+      } else {
+        SFPStatsSender.logCount("prepare.org.partial");
+        SFPLogger.log(
+          `Cancelling any further packages to be deployed, Adding the scratchorg ${this.scratchOrg.alias} to the pool`,
+          null,
+          packageLogger,
+          LoggerLevel.INFO
+        );
+      }
+    } else {
+      //All good send succeeded metrics
+      SFPStatsSender.logCount("prepare.org.succeeded");
     }
   }
 }

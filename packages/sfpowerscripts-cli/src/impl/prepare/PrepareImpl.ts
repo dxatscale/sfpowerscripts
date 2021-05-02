@@ -15,6 +15,7 @@ import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
 import { Stage } from "../Stage";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import { EOL } from "os";
 export default class PrepareImpl {
   private poolConfig: PoolConfig;
   private totalToBeAllocated: number;
@@ -31,6 +32,8 @@ export default class PrepareImpl {
   private _scope: string;
   private _npmTag: string;
   private _npmrcPath: string;
+  private _isRetryOnFailure:boolean;
+  private _checkPointPackages:string[];
 
   public constructor(
     private hubOrg: Org,
@@ -82,6 +85,11 @@ export default class PrepareImpl {
 
   public set npmrcPath(path: string) {
     this._npmrcPath = path;
+  }
+
+  public set retryOnFailure(isRetryOnFailure:boolean)
+  {
+    this._isRetryOnFailure=isRetryOnFailure;
   }
 
   public async poolScratchOrgs(): Promise< {
@@ -156,6 +164,9 @@ export default class PrepareImpl {
        await this.getPackageArtifacts();
     }
 
+    //Get CheckPoint Packages
+    this._checkPointPackages = this.getcheckPointPackages();
+
     //Generate Scratch Orgs
     await this.generateScratchOrgs();
 
@@ -179,6 +190,19 @@ export default class PrepareImpl {
     let finalizedResults = await this.finalizeGeneratedScratchOrgs();
 
     return {totalallocated:this.totalToBeAllocated,success:finalizedResults.success,failed:finalizedResults.failed};
+  }
+  
+  
+  //Fetch all checkpoints  
+  private getcheckPointPackages() {
+    console.log("Fetching checkpoints for prepare if any.....");
+    let projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+    let checkPointPackages=[];
+    projectConfig["packageDirectories"].forEach((pkg) => {
+      if(pkg.checkpointForPrepare)
+        checkPointPackages.push(pkg["package"])
+    });
+    return checkPointPackages;
   }
 
   private async getPackageArtifacts() {
@@ -371,9 +395,11 @@ export default class PrepareImpl {
           continue;
         }
 
+        console.log(EOL);
         console.log(
-          `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias}.. Returning to Pool`
+          `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias} due to`
         );
+        console.log(scratchOrg.failureMessage)
 
         try {
           //Delete scratchorgs that failed to execute script
@@ -395,6 +421,7 @@ export default class PrepareImpl {
             `Unable to delete the scratchorg ${scratchOrg.username}..`
           );
         }
+        console.log(EOL);
 
         failed++;
       }
@@ -456,9 +483,11 @@ export default class PrepareImpl {
     let prepareASingleOrgImpl: PrepareASingleOrgImpl = new PrepareASingleOrgImpl(
       this.sfdx,
       scratchOrg,
-      hubOrgUserName
+      hubOrgUserName,
+      this._isRetryOnFailure
     );
 
+    prepareASingleOrgImpl.setcheckPointPackages(this._checkPointPackages);
     prepareASingleOrgImpl.setInstallationBehaviour(this.installAll,this.installAsSourcePackages,this.succeedOnDeploymentErrors);
     prepareASingleOrgImpl.setPackageKeys(this.keys);
 
@@ -481,6 +510,11 @@ export default class PrepareImpl {
         result.status = "failure";
         result.message = "Unable to set the scratch org record in Pool";
       }
+    }
+    else
+    {
+      scratchOrg.isScriptExecuted=false;
+      scratchOrg.failureMessage=result.message;
     }
 
     return result;
