@@ -3,7 +3,7 @@ import OrgsUpdater from "../../../src/impl/changelog/OrgsUpdater"
 import { ReleaseChangelog, Release, ReleaseId } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
 import lodash = require("lodash");
 
-describe("Given an OrgsUpdater,", () => {
+describe("Given an OrgsUpdater", () => {
   // new release, org & no org
   // old release, org-not current release (add/update org.releases), org-current release, & no org
 
@@ -55,22 +55,41 @@ describe("Given an OrgsUpdater,", () => {
     expect(releaseChangelog).toEqual(expectedResult);
   });
 
-  it("should add a new org, for an old release", () => {
+  it("should update an org with the release, for an old release", () => {
     let releaseIds: ReleaseId[] = [];
     releaseChangelog.releases.forEach((release) => {
       releaseIds.push(convertReleaseToId(release));
     });
 
-    let org = {
+    let org_dev = {
       name: "DEV",
       releases: releaseIds,
       latestRelease: releaseIds[releaseIds.length - 1],
       retryCount: 0
     };
 
-    releaseChangelog.orgs.push(org);
+    let org_sit = {
+      name: "SIT",
+      releases: [releaseIds[0]],
+      latestRelease: releaseIds[0],
+      retryCount: 0
+    };
 
-    expectedResult.orgs.push(lodash.cloneDeep(org));
+    releaseChangelog.orgs.push(org_dev);
+    releaseChangelog.orgs.push(org_sit);
+
+    expectedResult.orgs.push(lodash.cloneDeep(org_dev));
+
+    let expectedReleaseIds = lodash.cloneDeep(releaseIds);
+    // Add new release name
+    expectedReleaseIds[1].names.push("release-1.1");
+
+    expectedResult.orgs.push({
+      name: "SIT",
+      releases: expectedReleaseIds,
+      latestRelease: expectedReleaseIds[1],
+      retryCount: 0
+    });
 
     new OrgsUpdater(
       releaseChangelog,
@@ -78,11 +97,51 @@ describe("Given an OrgsUpdater,", () => {
       "SIT"
     ).update();
 
-    let oldReleaseId = convertReleaseToId(oldRelease);
-    expectedResult.orgs.push({name: "SIT", releases: [oldReleaseId], latestRelease: oldReleaseId, retryCount: 0});
+    expect(releaseChangelog).toEqual(expectedResult);
+  });
+
+  it("should update an org's retryCount, for an old release", () => {
+    let releaseId = convertReleaseToId(releaseChangelog.releases[0]);
+
+    let org = {
+      name: "DEV",
+      releases: [releaseId],
+      latestRelease: releaseId,
+      retryCount: 0
+    };
+
+    releaseChangelog.orgs.push(org);
+
+    expectedResult.orgs.push(lodash.cloneDeep(org));
+    expectedResult.orgs[0].retryCount++
+
+    new OrgsUpdater(
+      releaseChangelog,
+      oldRelease1,
+      "DEV"
+    ).update();
+
     expect(releaseChangelog).toEqual(expectedResult);
   });
 });
+
+
+const oldRelease1: Release = {
+  names: ["release-1"],
+  buildNumber: 2,
+  workItems: {},
+  artifacts: [
+    {
+      "name": "ESBaseCodeLWC",
+      "from": undefined,
+      "to": "2dbd257a",
+      "version": "50.0.5.5",
+      "latestCommitId": undefined,
+      "commits": []
+    }
+  ],
+  "hashId": "975c78d55ef4dce9621dfb61b6349d463e7003d0"
+}
 
 const oldRelease: Release = {
   names: ["release-1.1"],
