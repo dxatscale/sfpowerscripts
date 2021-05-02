@@ -155,7 +155,7 @@ describe("Given a release definition, validateReleaseDefinition", () => {
         showAllArtifacts: false
     `;
 
-    expect(() => { new ReleaseDefinition(null, false); }).not.toThrow();
+    expect(() => { new ReleaseDefinition(null); }).not.toThrow();
   });
 
   it("should throw an error if required changelog parameters are missing", () => {
@@ -170,7 +170,7 @@ describe("Given a release definition, validateReleaseDefinition", () => {
         showAllArtifacts: false
     `;
 
-    expect(() => { new ReleaseDefinition(null, false); }).toThrow();
+    expect(() => { new ReleaseDefinition(null); }).toThrow();
 
     releaseDefinitionYaml = `
       release: "test-release"
@@ -182,6 +182,6 @@ describe("Given a release definition, validateReleaseDefinition", () => {
         limit: 10
         showAllArtifacts: false
     `;
-    expect(() => { new ReleaseDefinition(null, false); }).toThrow();
+    expect(() => { new ReleaseDefinition(null); }).toThrow();
   });
 });
