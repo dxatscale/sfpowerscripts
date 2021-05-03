@@ -7,8 +7,8 @@ export interface ReleaseChangelog {
 
 export interface ReleaseId {
     names: string[],
-    buildNumber?: number,
-    hashId?: string
+    buildNumber: number,
+    hashId: string
 }
 
 export interface Release extends ReleaseId{

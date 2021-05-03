@@ -33,13 +33,16 @@ export default class ReleaseChangelogUpdater {
       this.artifactsToPackageMetadata
     );
 
-    new OrgsUpdater(
-      this.releaseChangelog,
-      latestRelease,
-      this.org
-    ).update();
+    if (this.org) {
+      new OrgsUpdater(
+        this.releaseChangelog,
+        latestRelease,
+        this.org
+      ).update();
+    }
 
-    if (this.isNewRelease(this.releaseChangelog, latestRelease)) {
+    let releaseWithMatchingHashId = this.findRelease(this.releaseChangelog.releases, latestRelease.hashId);
+    if (!releaseWithMatchingHashId) {
 
       let artifactsToLatestCommitId: {[P: string]: string};
       if (this.releaseChangelog.releases.length > 0) {
@@ -66,6 +69,12 @@ export default class ReleaseChangelogUpdater {
       ).update();
 
       this.releaseChangelog.releases.push(latestRelease);
+    } else {
+
+      if (!this.containsLatestReleaseName(releaseWithMatchingHashId.names, latestRelease.names[0])) {
+        // append latestReleaseName
+        releaseWithMatchingHashId.names.push(latestRelease.names[0]);
+      }
     }
 
     return this.releaseChangelog;
@@ -99,24 +108,25 @@ export default class ReleaseChangelogUpdater {
   }
 
   /**
-   * Determine whether new release based on hash Id
+   * Finds release with matching hash Id
+   * Returns null if match cannot be found
    * @param releaseChangelog
    * @param latestRelease
    * @returns
    */
-  private isNewRelease(
-    releaseChangelog: ReleaseChangelog,
-    latestRelease: Release
-  ): boolean {
-    if (releaseChangelog.releases.length > 0) {
-      for (let release of releaseChangelog.releases) {
-        if (release.hashId === latestRelease.hashId) {
-          return false;
+  private findRelease(
+    releases: Release[],
+    hashId: string
+  ): Release {
+    if (releases.length > 0) {
+      for (let release of releases) {
+        if (release.hashId === hashId) {
+          return release;
         }
       }
     }
 
-    return true;
+    return null;
   }
 
   /**
@@ -157,4 +167,11 @@ export default class ReleaseChangelogUpdater {
 
       return latestRelease;
     }
+
+  private containsLatestReleaseName(
+    releaseNames: string[],
+    latestReleaseName: string
+  ): boolean {
+    return releaseNames.find((name) => name.toLowerCase() === latestReleaseName.toLowerCase()) ? true : false;
+  }
 }

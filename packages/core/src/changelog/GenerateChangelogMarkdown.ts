@@ -11,10 +11,12 @@ export default function generateMarkdown(releaseChangelog: ReleaseChangelog, wor
   else
      limitReleases = 0;
 
-  const baseAddr = "https://img.shields.io/static/v1";
-  for (let org of releaseChangelog.orgs) {
-    let url = new URL(`?label=${org.name}&message=${org.latestRelease.names[org.latestRelease.names.length - 1]}-${org.latestRelease.buildNumber}(${org.retryCount})&color=green`, baseAddr);
-    payload += `[![${org.name}-${org.latestRelease.names[org.latestRelease.names.length - 1]}-${org.latestRelease.buildNumber}(${org.retryCount})-green](${url.toString()})](#${org.latestRelease.hashId}) `;
+  if (releaseChangelog.orgs) {
+    const baseAddr = "https://img.shields.io/static/v1";
+    for (let org of releaseChangelog.orgs) {
+      let url = new URL(`?label=${org.name}&message=${org.latestRelease.names[org.latestRelease.names.length - 1]}-${org.latestRelease.buildNumber}(${org.retryCount})&color=green`, baseAddr);
+      payload += `[![${org.name}-${org.latestRelease.names[org.latestRelease.names.length - 1]}-${org.latestRelease.buildNumber}(${org.retryCount})-green](${url.toString()})](#${org.latestRelease.hashId}) `;
+    }
   }
 
   // Start from latest Release
