@@ -81,8 +81,6 @@ describe("Given an OrgsUpdater", () => {
     expectedResult.orgs.push(lodash.cloneDeep(org_dev));
 
     let expectedReleaseIds = lodash.cloneDeep(releaseIds);
-    // Add new release name
-    expectedReleaseIds[1].names.push("release-1.1");
 
     expectedResult.orgs.push({
       name: "SIT",
@@ -93,7 +91,7 @@ describe("Given an OrgsUpdater", () => {
 
     new OrgsUpdater(
       releaseChangelog,
-      oldRelease,
+      oldRelease1,
       "SIT"
     ).update();
 
@@ -117,7 +115,7 @@ describe("Given an OrgsUpdater", () => {
 
     new OrgsUpdater(
       releaseChangelog,
-      oldRelease1,
+      oldRelease2,
       "DEV"
     ).update();
 
@@ -126,7 +124,26 @@ describe("Given an OrgsUpdater", () => {
 });
 
 
+
+
 const oldRelease1: Release = {
+  names: ["release-1"],
+  buildNumber: 3,
+  workItems: {},
+  artifacts: [
+    {
+      "name": "ESBaseCodeLWC",
+      "from": undefined,
+      "to": "3d45227b",
+      "version": "50.0.5.6",
+      "latestCommitId": undefined,
+      "commits": []
+    }
+  ],
+  "hashId": "c97e09b76f82d830731359abe1bab2c9c5be13a9"
+}
+
+const oldRelease2: Release = {
   names: ["release-1"],
   buildNumber: 2,
   workItems: {},
@@ -141,23 +158,6 @@ const oldRelease1: Release = {
     }
   ],
   "hashId": "975c78d55ef4dce9621dfb61b6349d463e7003d0"
-}
-
-const oldRelease: Release = {
-  names: ["release-1.1"],
-  buildNumber: 3,
-  workItems: {},
-  artifacts: [
-    {
-      "name": "ESBaseCodeLWC",
-      "from": undefined,
-      "to": "3d45227b",
-      "version": "50.0.5.6",
-      "latestCommitId": undefined,
-      "commits": []
-    }
-  ],
-  "hashId": "c97e09b76f82d830731359abe1bab2c9c5be13a9"
 }
 
 const newRelease: Release = {

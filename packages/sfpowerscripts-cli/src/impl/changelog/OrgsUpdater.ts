@@ -1,4 +1,5 @@
 import { ReleaseChangelog, Release, ReleaseId } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import lodash = require("lodash");
 
 export default class OrgsUpdater {
   private isNewRelease: boolean;
@@ -43,19 +44,13 @@ export default class OrgsUpdater {
       }
       console.log(`Updating ${this.org} org with`, this.latestRelease.names[this.latestRelease.names.length - 1] + "-" + this.latestRelease.buildNumber + `(0)`);
     } else {
-          let containsLatestReleaseName = this.containsLatestReleaseName(this.releaseWithMatchingHashId.names, this.latestRelease.names[0]);
-          if (!containsLatestReleaseName) {
-            // append latestReleaseName
-            this.releaseWithMatchingHashId.names.push(this.latestRelease.names[0]);
-          }
-
           // Update orgs
           let org = this.releaseChangelog.orgs.find((org) => org.name === this.org);
 
           if (org) {
             let indexOfReleaseToOrg = org.releases.findIndex((orgRelease) => orgRelease.hashId === this.releaseWithMatchingHashId.hashId);
             if (org.latestRelease.hashId !== this.releaseWithMatchingHashId.hashId) {
-              if ( indexOfReleaseToOrg >= 0 && !containsLatestReleaseName) {
+              if ( indexOfReleaseToOrg >= 0 ) {
                 // Update release names in releases to org
                 org.releases[indexOfReleaseToOrg] = this.releaseWithMatchingHashId;
               } else {
@@ -67,12 +62,15 @@ export default class OrgsUpdater {
               org.latestRelease = this.releaseWithMatchingHashId;
               org.retryCount = 0;
             } else {
+              if (lodash.isEqual(org.releases[indexOfReleaseToOrg], this.releaseWithMatchingHashId)) {
+                org.retryCount++;
+              } else {
+                org.retryCount = 0;
+              }
+
               // Update releases names in releases to org & latestRelease
               org.releases[indexOfReleaseToOrg] = this.releaseWithMatchingHashId;
               org.latestRelease = this.releaseWithMatchingHashId;
-              if (!containsLatestReleaseName) {
-                org.retryCount = 0;
-              } else org.retryCount++;
             }
 
             console.log(`Updating ${this.org} org with`, org.latestRelease.names[org.latestRelease.names.length - 1] + "-" + org.latestRelease.buildNumber + `(${org.retryCount})`);
@@ -82,13 +80,6 @@ export default class OrgsUpdater {
             console.log(`Updating ${this.org} org with`, `${this.releaseWithMatchingHashId.names[this.releaseWithMatchingHashId.names.length - 1]}-${this.releaseWithMatchingHashId.buildNumber}(0)`);
           }
     }
-  }
-
-  private containsLatestReleaseName(
-    releaseNames: string[],
-    latestReleaseName: string
-  ): boolean {
-    return releaseNames.find((name) => name.toLowerCase() === latestReleaseName.toLowerCase()) ? true : false;
   }
 
   /**

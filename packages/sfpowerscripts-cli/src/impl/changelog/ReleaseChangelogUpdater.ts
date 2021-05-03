@@ -33,14 +33,6 @@ export default class ReleaseChangelogUpdater {
       this.artifactsToPackageMetadata
     );
 
-    if (this.org) {
-      new OrgsUpdater(
-        this.releaseChangelog,
-        latestRelease,
-        this.org
-      ).update();
-    }
-
     let releaseWithMatchingHashId = this.findRelease(this.releaseChangelog.releases, latestRelease.hashId);
     if (!releaseWithMatchingHashId) {
 
@@ -75,6 +67,14 @@ export default class ReleaseChangelogUpdater {
         // append latestReleaseName
         releaseWithMatchingHashId.names.push(latestRelease.names[0]);
       }
+    }
+
+    if (this.org) {
+      new OrgsUpdater(
+        this.releaseChangelog,
+        latestRelease,
+        this.org
+      ).update();
     }
 
     return this.releaseChangelog;
