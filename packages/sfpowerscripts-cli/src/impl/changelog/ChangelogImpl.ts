@@ -9,7 +9,8 @@ import path = require('path');
 const tmp = require('tmp');
 var marked = require('marked');
 var TerminalRenderer = require('marked-terminal');
-
+const retry = require("async-retry");
+import { GitError } from "simple-git";
 
 marked.setOptions({
   // Define custom renderer
@@ -33,7 +34,33 @@ export default class ChangelogImpl {
   }
 
   async exec() {
-    let tempDir = tmp.dirSync({unsafeCleanup: true});
+    await retry(async (bail, retryNum) => {
+      try {
+        await this.execHandler();
+      } catch (err) {
+        if (err instanceof GitError) {
+          if (!err.message.includes('failed to push some refs')) {
+            // Do not retry for Git errors that are not related to push
+            bail(err);
+          } else {
+            console.log("Failed to push changelog");
+            console.log(`Retrying...(${retryNum})`);
+            throw err;
+          }
+        } else {
+          // Do not retry for non-Git errors
+          bail(err);
+        }
+      }
+    }, {
+      retries: 10,
+      minTimeout: 5,
+      randomize: true
+    });
+  }
+
+  private async execHandler() {
+    let tempDir = tmp.dirSync({ unsafeCleanup: true });
 
     try {
       let artifact_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
@@ -44,8 +71,8 @@ export default class ChangelogImpl {
         throw new Error(`No artifacts found at ${path.resolve(process.cwd(), this.artifactDir)}`);
       }
 
-      let artifactsToPackageMetadata: {[p: string]: PackageMetadata} = {};
-      let packagesToChangelogFilePaths: {[p:string]: string} = {};
+      let artifactsToPackageMetadata: { [p: string]: PackageMetadata; } = {};
+      let packagesToChangelogFilePaths: { [p: string]: string; } = {};
       let artifactSourceBranch: string;
       for (let artifactFilepaths of artifact_filepaths) {
         let packageMetadata: PackageMetadata = JSON.parse(
@@ -60,7 +87,7 @@ export default class ChangelogImpl {
             artifactSourceBranch = packageMetadata.branch;
           } else {
             console.log(`${packageMetadata.package_name} artifact is missing branch information`);
-            console.log(`This will cause an error in the future. Re-create the artifact using the latest version of sfpowerscripts to maintain compatibility.`)
+            console.log(`This will cause an error in the future. Re-create the artifact using the latest version of sfpowerscripts to maintain compatibility.`);
           }
         } else if (artifactSourceBranch !== packageMetadata.branch) {
           // TODO: throw error
@@ -91,13 +118,13 @@ export default class ChangelogImpl {
       }
 
       let releaseChangelog: ReleaseChangelog;
-      if (fs.existsSync(path.join(repoTempDir,`releasechangelog.json`))) {
-        releaseChangelog = JSON.parse(fs.readFileSync(path.join(repoTempDir,`releasechangelog.json`), 'utf8'));
+      if (fs.existsSync(path.join(repoTempDir, `releasechangelog.json`))) {
+        releaseChangelog = JSON.parse(fs.readFileSync(path.join(repoTempDir, `releasechangelog.json`), 'utf8'));
       } else {
         releaseChangelog = {
           orgs: [],
           releases: []
-        }
+        };
       }
 
       console.log("Generating changelog...");
@@ -114,7 +141,7 @@ export default class ChangelogImpl {
       console.log(marked(generateMarkdown(releaseChangelog, this.workItemUrl, 1, false)));
 
       fs.writeFileSync(
-        path.join(repoTempDir,`releasechangelog.json`),
+        path.join(repoTempDir, `releasechangelog.json`),
         JSON.stringify(releaseChangelog, null, 4)
       );
 
@@ -126,7 +153,7 @@ export default class ChangelogImpl {
       );
 
       fs.writeFileSync(
-        path.join(repoTempDir,`Release-Changelog.md`),
+        path.join(repoTempDir, `Release-Changelog.md`),
         payload
       );
 
