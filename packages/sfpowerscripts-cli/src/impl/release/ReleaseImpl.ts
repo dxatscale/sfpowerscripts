@@ -6,6 +6,8 @@ import { Stage } from "../Stage";
 import child_process = require("child_process");
 import ReleaseError from "../../errors/ReleaseError";
 import ChangelogImpl from "../../impl/changelog/ChangelogImpl";
+const retry = require("async-retry");
+import { GitError } from "simple-git";
 
 export default class ReleaseImpl {
   constructor(
@@ -59,19 +61,42 @@ export default class ReleaseImpl {
       if (this.isGenerateChangelog) {
         this.printOpenLoggingGroup("Release changelog");
 
-        let changelogImpl: ChangelogImpl = new ChangelogImpl(
-          "artifacts",
-          this.releaseDefinition.release,
-          this.releaseDefinition.changelog.workItemFilter,
-          this.releaseDefinition.changelog.repoUrl,
-          this.releaseDefinition.changelog.limit,
-          this.releaseDefinition.changelog.workItemUrl,
-          this.releaseDefinition.changelog.showAllArtifacts,
-          false,
-          this.targetOrg
-        );
+        await retry(async (bail, retryNum) => {
+          try {
+            let changelogImpl: ChangelogImpl = new ChangelogImpl(
+              "artifacts",
+              this.releaseDefinition.release,
+              this.releaseDefinition.changelog.workItemFilter,
+              this.releaseDefinition.changelog.repoUrl,
+              this.releaseDefinition.changelog.limit,
+              this.releaseDefinition.changelog.workItemUrl,
+              this.releaseDefinition.changelog.showAllArtifacts,
+              false,
+              this.targetOrg
+            );
 
-        await changelogImpl.exec();
+            await changelogImpl.exec();
+          } catch (err) {
+            if (err instanceof GitError) {
+              if (!err.message.includes('failed to push some refs')) {
+                // Do not retry for Git errors that are not related to push
+                bail(err);
+              } else {
+                console.log("Failed to push changelog");
+                console.log(`Retrying...(${retryNum})`);
+                throw err;
+              }
+            } else {
+              // Do not retry for non-Git errors
+              bail(err);
+            }
+          }
+        }, {
+          retries: 10,
+          minTimeout: 5,
+          randomize: true
+        });
+
         this.printClosingLoggingGroup();
       }
 
