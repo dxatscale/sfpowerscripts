@@ -9,9 +9,18 @@
       "artifacts"
   ],
   "additionalProperties": false,
+  "dependencies": {
+    "baselineOrg": ["skipIfAlreadyInstalled"]
+  },
   "properties": {
       "release": {
           "type": "string"
+      },
+      "skipIfAlreadyInstalled": {
+        "type": "boolean"
+      },
+      "baselineOrg": {
+        "type": "string"
       },
       "artifacts": {
           "type": "object",
@@ -31,19 +40,29 @@
           }
         }
       },
-      "releaseOptions": {
+      "changelog": {
         "type": "object",
         "properties": {
-          "skipIfAlreadyInstalled": {
-            "type": "boolean"
-          },
-          "baselineOrg": {
+          "repoUrl": {
             "type": "string"
+          },
+          "workItemFilter": {
+            "type": "string"
+          },
+          "workItemUrl": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "showAllArtifacts": {
+            "type": "boolean"
           }
         },
-        "dependencies": {
-          "baselineOrg": ["skipIfAlreadyInstalled"]
-        },
+        "required": [
+          "repoUrl",
+          "workItemFilter"
+        ],
         "additionalProperties": false
       }
   }
