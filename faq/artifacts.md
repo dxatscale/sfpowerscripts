@@ -11,7 +11,7 @@ sfpowerscripts operate on the concepts of artifacts. Artifacts are central to th
 Artifact registry allows you to split your CI and CD pipelines. We believe that this is essential for a smoother deployment model and allows you to better control what is being deployed to environments if you are using a **multi-speed deployment strategy.**  
   
   
-{% embed url="https://www.youtube.com/watch?v=1THxqw4XvrE" caption="" %}
+{% embed url="https://www.youtube.com/watch?v=Vrjl-ISUaC8" caption="" %}
   
 
 
