@@ -27,7 +27,6 @@
     "hot-shots": "^8.3.1",
     "ignore": "^5.1.6",
     "lodash": "^4.17.21",
-    "markdown-table": "^2.0.0",
     "rimraf": "^3.0.2",
     "semver": "^7.3.5",
     "shelljs": "^0.8.4",

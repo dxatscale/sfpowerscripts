@@ -1,4 +1,4 @@
-import { Release } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { Release } from "./ReleaseChangelogInterfaces";
 
 export default class WorkItemUpdater {
   constructor(

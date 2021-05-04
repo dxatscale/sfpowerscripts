@@ -1,4 +1,4 @@
-import { ReleaseChangelog, Release, Artifact } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { ReleaseChangelog, Release, Artifact } from "./ReleaseChangelogInterfaces";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import CommitUpdater from "./CommitUpdater";
 import WorkItemUpdater from "./WorkItemUpdater";

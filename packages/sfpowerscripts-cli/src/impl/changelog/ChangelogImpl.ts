@@ -1,8 +1,8 @@
 import simplegit, { SimpleGit } from "simple-git/promise";
 import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import { ReleaseChangelog } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
-import generateMarkdown from "@dxatscale/sfpowerscripts.core/lib/changelog/GenerateChangelogMarkdown";
+import { ReleaseChangelog } from "./ReleaseChangelogInterfaces";
+import ChangelogMarkdownGenerator from "./ChangelogMarkdownGenerator";
 import ReleaseChangelogUpdater from "./ReleaseChangelogUpdater";
 import * as fs from "fs-extra"
 import path = require('path');
@@ -138,19 +138,30 @@ export default class ChangelogImpl {
         this.org
       ).update();
 
-      console.log(marked(generateMarkdown(releaseChangelog, this.workItemUrl, 1, false)));
+      // Preview changelog in console
+      console.log(
+        marked(
+          new ChangelogMarkdownGenerator(
+            releaseChangelog,
+            this.workItemUrl,
+            1,
+            false
+          ).generate()
+        )
+      );
 
       fs.writeFileSync(
         path.join(repoTempDir, `releasechangelog.json`),
         JSON.stringify(releaseChangelog, null, 4)
       );
 
-      let payload: string = generateMarkdown(
+
+      let payload: string = new ChangelogMarkdownGenerator(
         releaseChangelog,
         this.workItemUrl,
         this.limit,
         this.showAllArtifacts
-      );
+      ).generate();
 
       fs.writeFileSync(
         path.join(repoTempDir, `Release-Changelog.md`),

@@ -1,6 +1,6 @@
 import { expect } from "@jest/globals";
 import WorkItemUpdater from "../../../src/impl/changelog/WorkItemUpdater";
-import { Release } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { Release } from "../../../src/impl/changelog/ReleaseChangelogInterfaces";
 const path = require("path");
 import * as fs from "fs-extra";
 

@@ -1,8 +1,30 @@
-import { Changelog, Commit } from "./GenericChangelogInterfaces";
+import { Changelog, Commit } from "@dxatscale/sfpowerscripts.core/src/changelog/interfaces/GenericChangelogInterfaces";
 
 export interface ReleaseChangelog {
     releases: Release[]
-    orgs?: {name: string, releases: ReleaseId[], latestRelease: ReleaseId, retryCount: number}[]
+    orgs?: org[]
+}
+
+export interface org {
+    /**
+     * Name of the org
+     */
+    name: string;
+
+    /**
+     * History of releases to the org
+     */
+    releases: ReleaseId[];
+
+    /**
+     * Latest release deployed to org
+     */
+    latestRelease: ReleaseId;
+
+    /**
+     * Number of consecutive deployments of the latest release to the org
+     */
+    retryCount: number;
 }
 
 export interface ReleaseId {

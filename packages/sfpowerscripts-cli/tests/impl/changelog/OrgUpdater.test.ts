@@ -1,6 +1,6 @@
 import { expect } from "@jest/globals";
 import OrgsUpdater from "../../../src/impl/changelog/OrgsUpdater"
-import { ReleaseChangelog, Release, ReleaseId } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { ReleaseChangelog, Release, ReleaseId } from "../../../src/impl/changelog/ReleaseChangelogInterfaces";
 import lodash = require("lodash");
 
 describe("Given an OrgsUpdater", () => {

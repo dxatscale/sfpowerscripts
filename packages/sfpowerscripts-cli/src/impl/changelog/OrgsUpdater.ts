@@ -1,4 +1,4 @@
-import { ReleaseChangelog, Release, ReleaseId } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/ReleaseChangelogInterfaces";
+import { ReleaseChangelog, Release, ReleaseId } from "./ReleaseChangelogInterfaces";
 import lodash = require("lodash");
 
 export default class OrgsUpdater {
