@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-![npm](https://img.shields.io/npm/dw/@dxatscale/sfpowerscripts)  ![Docker Pulls](https://img.shields.io/docker/pulls/dxatscale/sfpowerscripts)
+[![npm](https://img.shields.io/npm/dw/@dxatscale/sfpowerscripts)](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)  [![Docker Pulls](https://img.shields.io/docker/pulls/dxatscale/sfpowerscripts)](https://hub.docker.com/r/dxatscale/sfpowerscripts)
 
 
 
