@@ -1,5 +1,5 @@
 {
-  "commandDescription": "Release artifacts to an org",
+  "commandDescription": "Initiate a release to an org, according to the configuration defined in a release-definition YAML file",
   "releaseDefinitionFlagDescription": "Path to YAML file containing map of packages and package versions to download",
   "targetOrgFlagDescription": "Alias/User Name of the target environment",
   "scriptPathFlagDescription": "(Optional: no-NPM) Path to script that authenticates and downloads artifacts from the registry",
