@@ -4,11 +4,14 @@ description: Gather the release notes!
 
 # Changelog
 
-The `changelog:generate` command gives you a running history of artifacts, work items and commits that were deployed to an org, for a release. Simply attach the command to your deployment pipeline, and it will generate the changelog in mardown format `Release-Changelog.md` , which you can display in a VCS wiki or elsewhere.
+{% hint style="info" %}
+Did you know the changelog can now be generated as part of the `orchestrator:release` command? Switch over to begin tracking your orgs and which release they are currently on.
+{% endhint %}
+
+The `changelog:generate` command gives you a running history of artifacts, work items and commits that were introduced in a deployment. Simply attach the command to your deployment pipeline, and it will generate the changelog in mardown format `Release-Changelog.md` , on the branch `sfp_changelog_<artifact_source_branch>`, which you could display in a wiki.
 
 ```text
 OPTIONS
-  -b, --branchname=branchname                                                       (required) Repository branch in which the changelog files are located
   -d, --artifactdir=artifactdir                                                     (required) [default: artifacts] Directory containing sfpowerscripts artifacts
   -n, --releasename=releasename                                                     (required) Name of the release for which to generate changelog
 
@@ -38,8 +41,8 @@ Work items are identified by searching for the pattern, defined by the `--workit
 
 ```text
 # One possible regular expression that would match  the commit message below 
-# --workitemfilter "APR-[0-9]{3,4}"
+# --workitemfilter "BRO-[0-9]{3,4}"
 
-$ git commit -m "Implement user story APR-3035"
+$ git commit -m "Implement user story BRO-3035"
 ```
 

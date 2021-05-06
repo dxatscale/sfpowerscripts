@@ -452,9 +452,6 @@ USAGE
   $ sfdx sfpowerscripts:changelog:generate -d <directory> -n <string> -w <string> -r <string> -b <string> [--limit
   <integer>] [--workitemurl <string>] [--showallartifacts]
 OPTIONS
-  -b, --branchname=branchname                                                       (required) Repository branch in
-                                                                                    which the changelog files are
-                                                                                    located
 
   -d, --artifactdir=artifactdir                                                     (required) [default: artifacts]
                                                                                     Directory containing sfpowerscripts
