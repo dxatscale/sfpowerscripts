@@ -152,3 +152,5 @@ If it is a change in settings, check out the [validate command's documentation](
 
 You can use the **sfpowerscripts:pool** topic to manage the scratch org pools created by prepare command.
 
+## 
+
