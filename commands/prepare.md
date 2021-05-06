@@ -7,7 +7,7 @@ description: Prepare a pool of just in time CI server
 Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during validation process when a scratch org is used as Just-in-time CI environment.
 
 {% hint style="danger" %}
-Please note that you should still build your own pipeline to provision scratch orgs for your developers to work on stories by using **sfpowerkit pool** related commands.
+Please note that you should still build your own pipeline to provision scratch orgs for your developers to work on stories by using [**sfpowerkit pool**](https://github.com/Accenture/sfpowerkit#sfpowerkitpoolcreate) related commands.
 {% endhint %}
 
 ## Using scratch org's as CI environments
@@ -17,12 +17,12 @@ Scratch Org's are one of the best features that Salesforce released, when they r
 The Just-in-time aspect of creation and an org completely built from your source code repository, makes it an ideal candidate to validate changes before merging pull requests. In this process, a freshly spun up scratch org could be used to deploy the metadata in your repository with the changes \( a PR process creates a temporary merge of the incoming branch along with current head of the target branch\), run apex tests, run UI tests etc. This addresses the following problems compared to using a sandbox for validation, especially in large programs.
 
 * **Time consumed to spin a sandbox:** Developer sandbox still takes anywhere under 1 hour to create and activate a new environment. So it is not cost effective to provision sandboxes as a just-in-time disposable environment.   
-* **CI Org getting corrupted:**  Due to the time taken to spin a sandbox for every run,  often a  dedidicated CI sandbox or an existing sandbox is repurposed for validating incoming pull requests.  Due to the nature in software development for Salesforce, these sandbox typically tend to become corrupted due to unwanted deployments or configuration changes directly in the org.  As a result the changes must be manually fixed before being able to be use again as the CI org.   
+* **CI Org getting corrupted:**  Due to the time taken to spin a sandbox for every run,  often a dedicated CI sandbox or an existing sandbox is re-purposed for validating incoming pull requests.  Due to the nature in software development for Salesforce, these sandbox typically tend to become corrupted due to unwanted deployments or configuration changes directly in the org.  As a result the changes must be manually fixed before being able to be use again as the CI org.   
 * **Resource Contention:** Before scratch org's came into existence, typically a sandbox was used for validation run's. This means validation run's had to be queued up waiting for the CI environment to be free.  As a result, deployment queues on the sandbox may result in delays in validation error results.
 
 ## Building a pool of scratch org's
 
-As you try to automate more of your business processes in Salesforce, you cannot avoid adding third party managed packages as a dependency to your configuration metadata and code in your repository. The time required to spin up a just-in-time scratch org would increase and the value of having quick feedback dimnishes. This is the primary reason why scratch org pools pre-installed with managed packages and your custom configuration and code from your repository will enable you to immediately validate the PR check process without waiting for a single, new scratch org to be provisioned.
+As you try to automate more of your business processes in Salesforce, you cannot avoid adding third party managed packages as a dependency to your configuration metadata and code in your repository. The time required to spin up a just-in-time scratch org would increase and the value of having quick feedback diminishes. This is the primary reason why scratch org pools pre-installed with managed packages and your custom configuration and code from your repository will enable you to immediately validate the PR check process without waiting for a single, new scratch org to be provisioned.  If required, sample test data can be loaded to your scratch orgs was well to allow developers to effectively complete their user stories.
 
 {% hint style="info" %}
 The Prepare command was built primarily due to the delays from Salesforce to enable **snapshot** feature and make it GA to the public. However, even with snapshot feature, you might need to rebuild the snapshot every day, as we have noticed in a large mono repo scenario \(full deployment of metadata also takes long time\). We will modify the command as needed when this feature launches to utilize snapshot accordingly.
@@ -38,11 +38,11 @@ Please note before creating a pool you need to install the prerequisite fields t
 
 The prepare command does the following sequence of activities
 
-1. **Calculate the number of scratch orgs to be allocated** \(  Based on your requested number of scratch orgs and your org limits, we calculate what is the number of scratch orgs to be allocated at this point in time\)
+1. **Calculate the number of scratch orgs to be allocated** \(Based on your requested number of scratch orgs and your org limits, we calculate what is the number of scratch orgs to be allocated at this point in time\)
 2. **Fetch the artifacts from using "artifactFetchScript" if provided / Build all artifacts**
 3. **Create the scratch orgs, and update Allocation\_status\_c of each these orgs to "In Progress"**
 4. **On each scratch org, in parallel, do the following activities**
-   * Install SFPOWERSCRIPTS\_ARTIFACT\_PACKAGE \( 04t1P000000ka0fQAA\) for keeping track of all the packages which will be installed in the org. You could set an environment variable SFPOWERSCRIPTS\_ARTIFACT\_PACKAGE to override the installation with your own package id \(the source code is available [here](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/sfpowerscripts-artifact)\)
+   * Install SFPOWERSCRIPTS\_ARTIFACT\_PACKAGE \(04t1P000000ka0fQAA\) for keeping track of all the packages which will be installed in the org. You could set an environment variable SFPOWERSCRIPTS\_ARTIFACT\_PACKAGE to override the installation with your own package id \(the source code is available [here](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/sfpowerscripts-artifact)\)
    * Install all the dependencies of your packages, such as managed packages that are marked as dependencies in your sfdx-project.json
    * Install all the artifacts that is either built/fetched
 5. **Mark each completed scratch org as "Available"**
@@ -74,7 +74,7 @@ We typically recommend this option to install your packages in the repo as sourc
 
 ## Managing Package Dependencies
 
-prepare command utilizes \(**sfpowerkit:package:dependencies:install** \) under the hood to orchestrate installation of package dependencies. You can mark a dependency of package, as described in Salesforce [docs](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev2gp_config_file.htm)
+prepare command utilizes \(**sfpowerkit:package:dependencies:install**\) under the hood to orchestrate installation of package dependencies. You can mark a dependency of package, as described in Salesforce [docs](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev2gp_config_file.htm)
 
 ```javascript
 {
@@ -124,13 +124,13 @@ Let's unpack the concepts utilizing the above example
 * There are two unlocked packages
   * Expense Manager - Util is an unlocked package in your DevHub, identifiable by 0H in the packageAlias
   * Expense Manager - another unlocked package which is dependent on ' Expense Manager - Util', 'TriggerFramework' and  'External Apex Library - 1.0.0.4'
-* External Apex Library is an external dependency, It could be a managed  package or any unlocked package built on a different devhub. All external package dependencies have to be defined with 04t id. \( You get the 04t id of  a managed package from the installation URL from AppExchange or contact your vendor\)
+* External Apex Library is an external dependency, It could be a managed package or any unlocked package built on a different devhub. All external package dependencies have to be defined with 04t id. \( You get the 04t id of a managed package from the installation URL from AppExchange or contact your vendor\)
 * sfpowerscripts parses sfdx-project.json and does the following in order
-  * Skips  Expense manager - Util as it doesn't   have any dependencies
+  * Skips Expense manager - Util as it doesn't have any dependencies
   * For Expense manager
-    * Checks whether  any of the package is part of the same repo, in this example 'Expense Manager-Util' is part of the same repository and will not be installed as a dependency
+    * Checks whether any of the package is part of the same repo, in this example 'Expense Manager-Util' is part of the same repository and will not be installed as a dependency
     * Installs the latest version of TriggerFramework \( with major, minor and patch versions matching 1.7.0\) to the scratch org
-    * Install the 'External Apex Library - 1.0.0.4' by utilising the 04t id provided in the packageAliases
+    * Install the 'External Apex Library - 1.0.0.4' by utilizing the 04t id provided in the packageAliases
 
 If any of the managed package has keys, it can be provided as an argument to the prepare command. Check the command's flag for more information
 
@@ -151,4 +151,10 @@ If it is a change in settings, check out the [validate command's documentation](
 ## Managing the Scratch Org pool
 
 You can use the **sfpowerscripts:pool** topic to manage the scratch org pools created by prepare command.
+
+## Package checkpoints 
+
+Package checkpoints allow precise control over which scratch orgs are committed to a pool when there are deployment failures and the `--succeedondeploymenterrors` flag is activated. To designate a package as a checkpoint, add the property `checkpointForPrepare: true`  to the package in the sfdx-project.json. Only scratch orgs that satisfy at least one checkpoint will be committed to the pool. This provides more consistency in what you can expect from your scratch orgs.
+
+
 

@@ -4,6 +4,11 @@
 * [Principles](principles-1.md)
 * [Features](features.md)
 
+## GETTING STARTED
+
+* [Prerequisites](getting-started/prerequisites.md)
+* [Docker](getting-started/docker.md)
+
 ## CONCEPTS <a id="faq"></a>
 
 * [Artifacts](faq/artifacts.md)
@@ -21,19 +26,17 @@
 * [Build & QuickBuild](commands/build-and-quickbuild.md)
 * [Deploy](commands/deploy.md)
 * [Publish](commands/publish.md)
-* [Fetch](commands/fetch.md)
+* [Release](commands/release.md)
 * [Command Glossary](commands/command-glossary.md)
 
-## GETTING STARTED
+## FAQ <a id="faq-1"></a>
 
-* [Prerequisites](getting-started/prerequisites.md)
-* [Docker](getting-started/docker.md)
+* [Troubleshooting](faq-1/troubleshooting.md)
 
----
+## Community
 
-* [Troubleshooting](troubleshooting.md)
-* [Maintainers](maintainers.md)
-* [Contributors](contributors.md)
-* [Contributing to sfpowerscripts](contributing-to-sfpowerscripts.md)
-* [Support](support.md)
+* [Maintainers](community/maintainers.md)
+* [Contributors](community/contributors.md)
+* [Contributing to sfpowerscripts](community/contributing-to-sfpowerscripts.md)
+* [Support](community/support.md)
 

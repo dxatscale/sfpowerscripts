@@ -4,34 +4,36 @@ description: Commands in sfpowerscripts
 
 # Command Glossary
 
-* [Orchestrator Commands](../faq/orchestrator.md)
-  * [`sfdx sfpowerscripts:orchestrator:prepare`](command-glossary.md)
-  * [`sfdx sfpowerscripts:orchestrator:validate`](command-glossary.md)
-  * [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`](command-glossary.md)
-  * [`sfdx sfpowerscripts:orchestrator:quickbuild`](command-glossary.md)
-  * [`sfdx sfpowerscripts:orchestrator:build`](command-glossary.md)
-  * [`sfdx sfpowerscripts:orchestrator:deploy`](command-glossary.md)
-  * [`sfdx sfpowerscripts:orchestrator:promote`](command-glossary.md)
-  * [`sfdx sfpowerscripts:orchestrator:publish`](command-glossary.md)
+## Commands
+
+* Orchestrator Commands
+  * [`sfdx sfpowerscripts:orchestrator:prepare`](command-glossary.md#sfdx-sfpowerscriptsorchestratorprepare)
+  * [`sfdx sfpowerscripts:orchestrator:validate`](command-glossary.md#sfdx-sfpowerscriptsorchestratorvalidate)
+  * [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`](command-glossary.md#sfdx-sfpowerscriptsorchestratorvalidateagainstorg)
+  * [`sfdx sfpowerscripts:orchestrator:quickbuild`](command-glossary.md#sfdx-sfpowerscriptsorchestratorquickbuild)
+  * [`sfdx sfpowerscripts:orchestrator:build`](command-glossary.md#sfdx-sfpowerscriptsorchestratorbuild)
+  * [`sfdx sfpowerscripts:orchestrator:deploy`](command-glossary.md#sfdx-sfpowerscriptsorchestratordeploy)
+  * [`sfdx sfpowerscripts:orchestrator:promote`](command-glossary.md#sfdx-sfpowerscriptsorchestratorpromote)
+  * [`sfdx sfpowerscripts:orchestrator:publish`](command-glossary.md#sfdx-sfpowerscriptsorchestratorpublish)
 * Changelog \(Track Releases\)
-  * [`sfdx sfpowerscripts:changelog:generate`](command-glossary.md)
+  * [`sfdx sfpowerscripts:changelog:generate`](command-glossary.md#sfdx-sfpowerscriptschangeloggenerate)
 * Package Commands \( Build your own workflow\)
-  * [`sfdx sfpowerscripts:package:data:create`](command-glossary.md)
-  * [`sfdx sfpowerscripts:package:data:install`](command-glossary.md)
-  * [`sfdx sfpowerscripts:package:source:create`](command-glossary.md)
-  * [`sfdx sfpowerscripts:package:source:install`](command-glossary.md)
-  * [`sfdx sfpowerscripts:package:unlocked:create`](command-glossary.md)
-  * [`sfdx sfpowerscripts:package:unlocked:install`](command-glossary.md)
-  * [`sfdx sfpowerscripts:package:version:increment`](command-glossary.md)
+  * [`sfdx sfpowerscripts:package:data:create`](command-glossary.md#sfdx-sfpowerscriptspackagedatacreate)
+  * [`sfdx sfpowerscripts:package:data:install`](command-glossary.md#sfdx-sfpowerscriptspackagedatainstall)
+  * [`sfdx sfpowerscripts:package:source:create`](command-glossary.md#sfdx-sfpowerscriptspackagesourcecreate)
+  * [`sfdx sfpowerscripts:package:source:install`](command-glossary.md#sfdx-sfpowerscriptspackagesourceinstall)
+  * [`sfdx sfpowerscripts:package:unlocked:create`](command-glossary.md#sfdx-sfpowerscriptspackageunlockedcreate)
+  * [`sfdx sfpowerscripts:package:unlocked:install`](command-glossary.md#sfdx-sfpowerscriptspackageunlockedinstall)
+  * [`sfdx sfpowerscripts:package:version:increment`](command-glossary.md#sfdx-sfpowerscriptspackageversionincrement)
 * Pool Management
-  * [`sfdx sfpowerscripts:pool:delete`](command-glossary.md)
-  * [`sfdx sfpowerscripts:pool:fetch`](command-glossary.md)
-  * [`sfdx sfpowerscripts:pool:list`](command-glossary.md)
+  * [`sfdx sfpowerscripts:pool:delete`](command-glossary.md#sfdx-sfpowerscriptspooldelete)
+  * [`sfdx sfpowerscripts:pool:fetch`](command-glossary.md#sfdx-sfpowerscriptspoolfetch)
+  * [`sfdx sfpowerscripts:pool:list`](command-glossary.md#sfdx-sfpowerscriptspoollist)
 * Static Analysis
-  * [`sfdx sfpowerscripts:analyze:pmd`](command-glossary.md)
+  * [`sfdx sfpowerscripts:analyze:pmd`](command-glossary.md#sfdx-sfpowerscriptsanalyzepmd)
 * Apex tests
-  * [`sfdx sfpowerscripts:apextests:trigger`](command-glossary.md)
-  * [`sfdx sfpowerscripts:apextests:validate`](command-glossary.md)
+  * [`sfdx sfpowerscripts:apextests:trigger`](command-glossary.md#sfdx-sfpowerscriptsapexteststrigger)
+  * [`sfdx sfpowerscripts:apextests:validate`](command-glossary.md#sfdx-sfpowerscriptsapextestsvalidate)
 * Artifacts
   * \`\`[`sfdx sfpowerscripts:artifacts:fetch`](command-glossary.md#sfdx-sfpowerscripts-artifacts-fetch)\`\`
 
@@ -412,9 +414,6 @@ USAGE
   $ sfdx sfpowerscripts:changelog:generate -d <directory> -n <string> -w <string> -r <string> -b <string> [--limit
   <integer>] [--workitemurl <string>] [--showallartifacts]
 OPTIONS
-  -b, --branchname=branchname                                                       (required) Repository branch in
-                                                                                    which the changelog files are
-                                                                                    located
 
   -d, --artifactdir=artifactdir                                                     (required) [default: artifacts]
                                                                                     Directory containing sfpowerscripts

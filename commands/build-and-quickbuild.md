@@ -4,6 +4,8 @@ description: Build your packages in parallel
 
 # Build & QuickBuild
 
+{% embed url="https://www.youtube.com/watch?v=sGjTfAzdXiI" caption="Intro to Build" %}
+
 **Build and its variant quickbuild** are commands builds packages in your build stage of the pipeline. These commands provide the following benefits
 
 * Reduce time taken to build unlocked packages, by triggering the package creation commands in parallel provided dependencies are built  
@@ -16,6 +18,10 @@ We recommend using quickbuild, to generate packages upon every merge and then de
 {% endhint %}
 
 Both Build & Quickbuild is equipped with a diffcheck functionality, which os enabled when one utilizes **diffcheck** flag, A comparison \(using git diff\) is made between the latest source code and the previous version of the package, defined by a tag that follows semantic versioning. If any difference is detected in the **package directory**, **package version** or **scratch org definition file** \(applies to unlocked packages only\), then the package will be created - otherwise, it is skipped.
+
+{% hint style="danger" %}
+Please note the build command should not be run concurrently. Ensure you design your pipeline in such a way that only one build stage is run at any given point in time. Running parallel build commands could result in package with incorrect dependencies.
+{% endhint %}
 
 ## Determining Package to be built
 

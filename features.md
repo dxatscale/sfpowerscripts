@@ -17,7 +17,7 @@ description: Learn about all the features in sfpowerscripts
 
 ## **Instantaneous CI Environments!**
 
-* Prepare a pool of Scratch Org’s to act as a just in time CI  orgs, reducing a significant amount of time during  the validation phase
+* Prepare a pool of Scratch Org’s to act as a just in time CI orgs, reducing a significant amount of time during the validation phase
 
 ## **Shift Left... We got it Right!**
 
@@ -32,7 +32,7 @@ description: Learn about all the features in sfpowerscripts
 * Build packages that are only changed, saving significant amount of time
 * Automated resolution of package version numbers to ensure packages are built with the right versions during parallel builds
 * Handle multiple .forceignore files depending on stage \(development vs validation vs build\)
-* Bundled Package Builds \( build a group of package, if any one of them changes\)
+* Bundled Package Builds \(build a group of package, if any one of them changes\)
 
 ## **Deploy with confidence!**
 
@@ -52,6 +52,4 @@ description: Learn about all the features in sfpowerscripts
 ## **Observability at its Best**
 
 * All functionality instrumented with StatsD, as well as Log Based metrics\* to build dashboards the way you want it.
-
-\*Log Based Metrics are slated for release in March 2021
 
