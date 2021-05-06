@@ -142,8 +142,6 @@ export default class Promote extends SfpowerscriptsCommand {
         }
 
         try {
-          console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
-
           if (this.flags.npm) {
             this.publishUsingNpm(
               sourceDirectory,
@@ -283,9 +281,18 @@ export default class Promote extends SfpowerscriptsCommand {
 
     let cmd = `npm publish`;
 
-    if (this.flags.npmtag)
-      cmd += ` --tag ${this.flags.npmtag}`;
+    let tag: string;
+    if (this.flags.npmtag) {
+      tag = this.flags.npmtag;
+    } else if (packageMetadata.branch) {
+      tag = packageMetadata.branch
+    } else {
+      throw new Error(`Artifact ${packageName} ${packageVersionNumber} does not contain branch info. Please provide --npmtag flag explicitly, or re-build the artifact with the --branch flag.`);
+    }
 
+    cmd += ` --tag ${tag}`;
+
+    console.log(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`);
 
     child_process.execSync(
       cmd,
@@ -308,6 +315,7 @@ export default class Promote extends SfpowerscriptsCommand {
       cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
     }
 
+    console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
 
     child_process.execSync(
       cmd,
