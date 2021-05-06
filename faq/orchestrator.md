@@ -12,7 +12,7 @@ description: The heart of sfpowerscripts
 
 To understand the orchestrator, let's take a look at a typical CI/CD pipeline for a package based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
-![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2824%29%20%281%29.png)
+![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2827%29.png)
 
 Let's dive into the pipeline depicted above, there are two basic pipelines in play
 
@@ -25,7 +25,7 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
 
   Each of this stage could have a pre-approval step modelled like the example shown below
 
-![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%2816%29%20%281%29.png)
+![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%2816%29.png)
 
 ![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%285%29.png)
 

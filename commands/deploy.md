@@ -59,5 +59,5 @@ It is often a recommended practice to split CI/CD into [asynchronous pipelines](
 
 In this particular instance, this is a rough schematic for designing such pipelines are as follows. As you could see, from the below diagram, deploy could be used in the CD pipelines using only the artifacts from the artifact repository without the need for version control system to be hooked into the CD pipelines.
 
-![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2813%29%20%281%29.png)
+![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2815%29.png)
 
