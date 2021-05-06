@@ -152,5 +152,9 @@ If it is a change in settings, check out the [validate command's documentation](
 
 You can use the **sfpowerscripts:pool** topic to manage the scratch org pools created by prepare command.
 
-## 
+## Package checkpoints 
+
+Package checkpoints allow precise control over which scratch orgs are committed to a pool when there are deployment failures and the `--succeedondeploymenterrors` flag is activated. To designate a package as a checkpoint, add the property `checkpointForPrepare: true`  to the package in the sfdx-project.json. Only scratch orgs that satisfy at least one checkpoint will be committed to the pool. This provides more consistency in what you can expect from your scratch orgs.
+
+
 

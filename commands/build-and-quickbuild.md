@@ -4,6 +4,8 @@ description: Build your packages in parallel
 
 # Build & QuickBuild
 
+{% embed url="https://www.youtube.com/watch?v=sGjTfAzdXiI" caption="Intro to Build" %}
+
 **Build and its variant quickbuild** are commands builds packages in your build stage of the pipeline. These commands provide the following benefits
 
 * Reduce time taken to build unlocked packages, by triggering the package creation commands in parallel provided dependencies are built  
@@ -29,6 +31,10 @@ For eg: if you are using github actions
               with:
                 fetch-depth: 0
 ```
+{% endhint %}
+
+{% hint style="danger" %}
+Please note the build command should not be run concurrently. Ensure you design your pipeline in such a way that only one build stage is run at any given point in time. Running parallel build commands could result in package with incorrect dependencies.
 {% endhint %}
 
 ## Determining Package to be built
