@@ -8,12 +8,9 @@ sfpowerscripts operate on the concepts of artifacts. Artifacts are central to th
 
 ## Artifact Registries in the context of sfpowerscripts
 
-Artifact registry allows you to split your CI and CD pipelines. We believe that this is essential for a smoother deployment model and allows you to better control what is being deployed to environments if you are using a **multi-speed deployment strategy.**  
-  
-  
-{% embed url="https://www.youtube.com/watch?v=Vrjl-ISUaC8" caption="Why do you need an artifact registry?" %}
-  
+Artifact registry allows you to split your CI and CD pipelines. We believe that this is essential for a smoother deployment model and allows you to better control what is being deployed to environments if you are using a **multi-speed deployment strategy.**
 
+{% embed url="https://www.youtube.com/watch?v=Vrjl-ISUaC8" caption="Why do you need an artifact registry?" %}
 
 Let's have a look at the below example, here a CI pipeline creates a bunch of artifacts/packages, then the publish command is used to publish these artifacts into an Artifact Registry. This stage often gets repeated multiple times during a day.
 
