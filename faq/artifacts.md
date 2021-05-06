@@ -26,7 +26,7 @@ One approach to solve is to use branches, where a branch per environment is used
 
 This is where an artifact registry comes into play, it stores all the artifacts produced by the build stage into a repository, which allows you to consolidate all versions of your artifacts and then allowing you to decide which all packages/artifacts should be aggregated and released into production.
 
-The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and it's version number/tag as the input, such as by using a release definition used by the [fetch](../commands/fetch.md) command.
+The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and it's version number/tag as the input, such as by using a release definition used by the [fetch]() command.
 
 ## **Type of Artifact Registries supported**
 
@@ -51,5 +51,5 @@ Please refer to your artifact registry provider's documentation on how to set it
 
 ## Publishing/Fetching Packages  to or from Artifact Registry
 
-sfpowerscripts provides with functionality to help you [fetch](../commands/fetch.md) or [publish](../commands/publish.md) artifacts. Some orchestrator commands like [prepare](../commands/prepare.md) also fetches artifacts from the artifact registry.
+sfpowerscripts provides with functionality to help you [fetch]() or [publish](../commands/publish.md) artifacts. Some orchestrator commands like [prepare](../commands/prepare.md) also fetches artifacts from the artifact registry.
 
