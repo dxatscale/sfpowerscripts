@@ -1,4 +1,4 @@
-# Create a
+# Solve for artifact duplication
 
 * Status: Proposed  <!-- optional -->
 
