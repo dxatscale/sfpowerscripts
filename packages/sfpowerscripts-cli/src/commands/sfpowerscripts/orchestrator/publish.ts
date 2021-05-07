@@ -142,64 +142,21 @@ export default class Promote extends SfpowerscriptsCommand {
         }
 
         try {
-          console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
-
-          let cmd: string;
-          let childProcessCwd: string;
-
           if (this.flags.npm) {
-            let artifactRootDirectory = path.dirname(sourceDirectory);
-            childProcessCwd = artifactRootDirectory;
-
-            // NPM does not accept packages with uppercase characters
-            let name: string = packageName.toLowerCase() + "_sfpowerscripts_artifact"
-
-            if (this.flags.scope) name = `@${this.flags.scope}/` + name;
-
-            let packageJson = {
-              name: name,
-              version: packageVersionNumber,
-              repository: packageMetadata.repository_url
-            };
-
-            fs.writeFileSync(
-              path.join(artifactRootDirectory, "package.json"),
-              JSON.stringify(packageJson, null, 4)
+            this.publishUsingNpm(
+              sourceDirectory,
+              packageName,
+              packageVersionNumber,
+              packageMetadata,
+              npmrcFilesToCleanup
             );
-
-            if (this.flags.npmrcpath) {
-              fs.copyFileSync(
-                this.flags.npmrcpath,
-                path.join(artifactRootDirectory, ".npmrc")
-              );
-
-              npmrcFilesToCleanup.push(
-                path.join(artifactRootDirectory, ".npmrc")
-              );
-            }
-
-            cmd = `npm publish`;
-
-            if (this.flags.npmtag) cmd += ` --tag ${this.flags.npmtag}`;
-
           } else {
-            childProcessCwd = process.cwd();
-
-            if (process.platform !== 'win32') {
-              cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
-            } else {
-              cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
-            }
+            this.publishUsingScript(
+              packageName,
+              packageVersionNumber,
+              artifact
+            );
           }
-
-          child_process.execSync(
-            cmd,
-            {
-              cwd: childProcessCwd,
-              stdio: ['ignore', 'ignore', 'inherit']
-            }
-          );
-
 
           succesfullyPublishedPackageNamesForTagging.push({
             name:packageName,
@@ -283,6 +240,90 @@ export default class Promote extends SfpowerscriptsCommand {
         );
       }
     }
+  }
+
+  private publishUsingNpm(
+    sourceDirectory: string,
+    packageName: string,
+    packageVersionNumber: string,
+    packageMetadata: PackageMetadata,
+    npmrcFilesToCleanup: string[]
+  ) {
+    let artifactRootDirectory = path.dirname(sourceDirectory);
+
+    // NPM does not accept packages with uppercase characters
+    let name: string = packageName.toLowerCase() + "_sfpowerscripts_artifact";
+
+    if (this.flags.scope)
+      name = `@${this.flags.scope}/` + name;
+
+    let packageJson = {
+      name: name,
+      version: packageVersionNumber,
+      repository: packageMetadata.repository_url
+    };
+
+    fs.writeFileSync(
+      path.join(artifactRootDirectory, "package.json"),
+      JSON.stringify(packageJson, null, 4)
+    );
+
+    if (this.flags.npmrcpath) {
+      fs.copyFileSync(
+        this.flags.npmrcpath,
+        path.join(artifactRootDirectory, ".npmrc")
+      );
+
+      npmrcFilesToCleanup.push(
+        path.join(artifactRootDirectory, ".npmrc")
+      );
+    }
+
+    let cmd = `npm publish`;
+
+    let tag: string;
+    if (this.flags.npmtag) {
+      tag = this.flags.npmtag;
+    } else if (packageMetadata.branch) {
+      tag = packageMetadata.branch
+    } else {
+      throw new Error(`Artifact ${packageName} ${packageVersionNumber} does not contain branch info. Please provide --npmtag flag explicitly, or re-build the artifact with the --branch flag.`);
+    }
+
+    cmd += ` --tag ${tag}`;
+
+    console.log(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`);
+
+    child_process.execSync(
+      cmd,
+      {
+        cwd: artifactRootDirectory,
+        stdio: "pipe"
+      }
+    );
+  }
+
+  private publishUsingScript(
+    packageName: string,
+    packageVersionNumber: string,
+    artifact: string
+  ) {
+    let cmd: string;
+    if (process.platform !== 'win32') {
+      cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+    } else {
+      cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+    }
+
+    console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
+
+    child_process.execSync(
+      cmd,
+      {
+        cwd: process.cwd(),
+        stdio: ['ignore', 'inherit', 'inherit']
+      }
+    );
   }
 
   protected validateFlags() {

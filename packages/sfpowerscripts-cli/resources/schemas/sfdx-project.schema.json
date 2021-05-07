@@ -88,11 +88,11 @@
           "alwaysDeploy":{
             "$ref": "#/definitions/packageDirectory.alwaysDeploy"
           },
-          "assignPermsetsPreDeployment":{
-            "$ref": "#/definitions/packageDirectory.assignPermsetsPreDeployment"
+          "assignPermSetsPreDeployment":{
+            "$ref": "#/definitions/packageDirectory.assignPermSetsPreDeployment"
           },
-          "assignPermsetsPostDeployment":{
-            "$ref": "#/definitions/packageDirectory.assignPermsetsPostDeployment"
+          "assignPermSetsPostDeployment":{
+            "$ref": "#/definitions/packageDirectory.assignPermSetsPostDeployment"
           },
           "buildCollection":{
             "$ref": "#/definitions/packageDirectory.buildCollection"
@@ -126,6 +126,9 @@
           },
           "skipTesting":{
             "$ref": "#/definitions/packageDirectory.skipTesting"
+          },
+          "checkpointForPrepare":{
+            "$ref": "#/definitions/packageDirectory.checkpointForPrepare"
           }
         }
       }
@@ -330,17 +333,17 @@
       "title": "Always deploy the package",
       "description": "Deploys package, even if it's installed already in the org. The artifact has to be present in the artifact directory for this particular option to work"
     },
-    "packageDirectory.assignPermsetsPreDeployment": {
+    "packageDirectory.assignPermSetsPreDeployment": {
       "type": "array",
-      "title": "Apply Permsets Pre Deployment",
+      "title": "Apply Perm Sets Pre Deployment",
       "description": "Apply permsets before deploying a package",
       "items": {
         "type":"string"
       }
     },
-    "packageDirectory.assignPermsetsPostDeployment": {
+    "packageDirectory.assignPermSetsPostDeployment": {
       "type": "array",
-      "title": "Apply Permsets Post Deployment",
+      "title": "Apply Perm Sets Post Deployment",
       "description": "Apply permsets after deploying a package",
       "items": {
         "type":"string"
@@ -411,6 +414,11 @@
       "type": "boolean",
       "title": "Skip Unit testing",
       "description": "Skip unit testing during validate or deployment (source packages)"
+    },
+    "packageDirectory.checkpointForPrepare": {
+      "type": "boolean",
+      "title": "Is an Checkpoint Package?",
+      "description": "Fail the scratch org,if the any of the checkpoint package fails to deploy on prepare"
     },
     "plugins.sfpowerscripts": {
       "type": "object",

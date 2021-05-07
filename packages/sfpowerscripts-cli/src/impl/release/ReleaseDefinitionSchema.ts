@@ -1,13 +1,18 @@
 export default interface ReleaseDefinitionSchema {
   release: string,
+  skipIfAlreadyInstalled: boolean,
+  baselineOrg: string,
   artifacts: {
     [p: string]: string
   },
   packageDependencies: {
     [p: string]: string
   },
-  releaseOptions: {
-    skipIfAlreadyInstalled: boolean
-    baselineOrg: string
+  changelog: {
+    repoUrl: string,
+    workItemFilter: string,
+    workItemUrl: string,
+    limit: number,
+    showAllArtifacts: boolean
   }
 }

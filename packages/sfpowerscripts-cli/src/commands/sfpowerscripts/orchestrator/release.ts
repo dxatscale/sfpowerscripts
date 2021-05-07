@@ -15,7 +15,7 @@ export default class Release extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `sfdx sfpowerscripts:orchestrator:release -p path/to/releasedefinition.yml -u myorg --npm --scope myscope`
+    `sfdx sfpowerscripts:orchestrator:release -p path/to/releasedefinition.yml -u myorg --npm --scope myscope --generatechangelog`
   ];
 
   protected static requiresUsername = false;
@@ -72,6 +72,10 @@ export default class Release extends SfpowerscriptsCommand {
       required: false,
       description: messages.getMessage("keysFlagDescription")
     }),
+    generatechangelog: flags.boolean({
+      default: false,
+      description: messages.getMessage("generateChangelogFlagDescription")
+    }),
     allowunpromotedpackages: flags.boolean({
       description: messages.getMessage("allowUnpromotedPackagesFlagDescription"),
       hidden: true
@@ -93,18 +97,20 @@ export default class Release extends SfpowerscriptsCommand {
     let executionStartTime = Date.now();
 
     let releaseDefinition = new ReleaseDefinition(
-      this.flags.releasedefinition,
-      this.flags.npm
+      this.flags.releasedefinition
     ).releaseDefinition;
+
+    if (this.flags.generatechangelog && !releaseDefinition.changelog)
+      throw new Error("changelog parameters must be specified in release definition to generate changelog");
 
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: release");
     console.log(`Target Org: ${this.flags.targetorg}`);
     console.log(`Release Definition: ${this.flags.releasedefinition}`);
     console.log(`Artifact Directory: ${path.resolve("artifacts")}`);
-    console.log(`Skip Packages If Already Installed: ${releaseDefinition.releaseOptions?.skipIfAlreadyInstalled ? true : false}`);
-    if(releaseDefinition.releaseOptions?.baselineOrg)
-      console.log(`Baselined Against Org: ${releaseDefinition.releaseOptions.baselineOrg}`);
+    console.log(`Skip Packages If Already Installed: ${releaseDefinition.skipIfAlreadyInstalled ? true : false}`);
+    if(releaseDefinition.baselineOrg)
+      console.log(`Baselined Against Org: ${releaseDefinition.baselineOrg}`);
     console.log(`Dry-run: ${this.flags.dryrun}`);
     console.log("---------------------------------------------------------");
 
@@ -123,6 +129,7 @@ export default class Release extends SfpowerscriptsCommand {
         this.flags.dryrun,
         this.flags.waittime,
         this.flags.keys,
+        this.flags.generatechangelog,
         !this.flags.allowunpromotedpackages
       );
 
