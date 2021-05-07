@@ -71,11 +71,13 @@ export default class GenerateChangelog extends SfdxCommand {
         this.flags.artifactdir,
         this.flags.releasename,
         this.flags.workitemfilter,
-        this.flags.repourl,
         this.flags.limit,
         this.flags.workitemurl,
         this.flags.showallartifacts,
-        this.flags.forcepush
+        this.flags.forcepush,
+        null,
+        this.flags.repourl,
+        true
       );
 
       await changelogImpl.exec();

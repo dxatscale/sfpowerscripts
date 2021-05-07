@@ -23,12 +23,13 @@ export default class ChangelogImpl {
     private artifactDir: string,
     private releaseName: string,
     private workItemFilter: string,
-    private repoUrl: string,
     private limit: number,
     private workItemUrl: string,
     private showAllArtifacts: boolean = true,
     private forcePush: boolean,
-    private org?: string
+    private org?: string,
+    private repoUrl?: string,
+    private isCloneRepo?: boolean
   ){
     this.org = org?.toLowerCase();
   }
@@ -102,11 +103,15 @@ export default class ChangelogImpl {
 
       let git: SimpleGit = simplegit(repoTempDir);
 
-      console.log(`Cloning repository ${this.repoUrl}`);
-      await git.clone(
-        this.repoUrl,
-        repoTempDir
-      );
+      if (this.isCloneRepo) {
+        console.log(`Cloning repository ${this.repoUrl}`);
+        await git.clone(
+          this.repoUrl,
+          repoTempDir
+        );
+      } else {
+        fs.copySync(process.cwd(), repoTempDir);
+      }
 
 
       const branch = `sfp_changelog_${artifactSourceBranch}`;

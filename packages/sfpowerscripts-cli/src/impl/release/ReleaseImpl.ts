@@ -64,12 +64,11 @@ export default class ReleaseImpl {
           "artifacts",
           this.releaseDefinition.release,
           this.releaseDefinition.changelog.workItemFilter,
-          this.releaseDefinition.changelog.repoUrl,
           this.releaseDefinition.changelog.limit,
           this.releaseDefinition.changelog.workItemUrl,
           this.releaseDefinition.changelog.showAllArtifacts,
           false,
-          this.targetOrg
+          this.targetOrg,
         );
 
         await changelogImpl.exec();
