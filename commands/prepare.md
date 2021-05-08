@@ -22,7 +22,7 @@ The Just-in-time aspect of creation and an org completely built from your source
 
 ## Building a pool of scratch org's
 
-As you try to automate more of your business processes in Salesforce, you cannot avoid adding third party managed packages as a dependency to your configuration metadata and code in your repository. The time required to spin up a just-in-time scratch org would increase and the value of having quick feedback diminishes. This is the primary reason why scratch org pools pre-installed with managed packages and your custom configuration and code from your repository will enable you to immediately validate the PR check process without waiting for a single, new scratch org to be provisioned.  If required, sample test data can be loaded to your scratch orgs was well to allow developers to effectively complete their user stories.
+As you try to automate more of your business processes in Salesforce, you cannot avoid adding third party managed packages as a dependency to your configuration metadata and code in your repository. The time required to spin up a just-in-time scratch org would increase and the value of having quick feedback diminishes. This is the primary reason why scratch org pools pre-installed with managed packages and your custom configuration and code from your repository will enable you to immediately validate the PR check process without waiting for a single, new scratch org to be provisioned. If required, sample test data can be loaded to your scratch orgs was well to allow developers to effectively complete their user stories.
 
 {% hint style="info" %}
 The Prepare command was built primarily due to the delays from Salesforce to enable **snapshot** feature and make it GA to the public. However, even with snapshot feature, you might need to rebuild the snapshot every day, as we have noticed in a large mono repo scenario \(full deployment of metadata also takes long time\). We will modify the command as needed when this feature launches to utilize snapshot accordingly.
@@ -152,9 +152,7 @@ If it is a change in settings, check out the [validate command's documentation](
 
 You can use the **sfpowerscripts:pool** topic to manage the scratch org pools created by prepare command.
 
-## Package checkpoints 
+## Package checkpoints
 
-Package checkpoints allow precise control over which scratch orgs are committed to a pool when there are deployment failures and the `--succeedondeploymenterrors` flag is activated. To designate a package as a checkpoint, add the property `checkpointForPrepare: true`  to the package in the sfdx-project.json. Only scratch orgs that satisfy at least one checkpoint will be committed to the pool. This provides more consistency in what you can expect from your scratch orgs.
-
-
+Package checkpoints allow precise control over which scratch orgs are committed to a pool when there are deployment failures and the `--succeedondeploymenterrors` flag is activated. To designate a package as a checkpoint, add the property `checkpointForPrepare: true` to the package in the sfdx-project.json. Only scratch orgs that satisfy at least one checkpoint will be committed to the pool. This provides more consistency in what you can expect from your scratch orgs.
 
