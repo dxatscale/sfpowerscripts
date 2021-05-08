@@ -56,8 +56,7 @@ export default class Fetch extends SfpowerscriptsCommand {
     this.validateFlags();
 
     let releaseDefinition = new ReleaseDefinition(
-      this.flags.releasedefinition,
-      this.flags.npm
+      this.flags.releasedefinition
     ).releaseDefinition;
 
     let result: {

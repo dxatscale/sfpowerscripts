@@ -59,6 +59,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
     }),
     branch: flags.string({
       description: messages.getMessage("branchFlagDescription"),
+      required: true
     }),
     tag: flags.string({
       description: messages.getMessage("tagFlagDescription"),
@@ -90,7 +91,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
       let executionStartTime = Date.now();
 
-      
+
 
       buildExecResult = await this.getBuildImplementer().exec();
 
@@ -140,7 +141,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
       }
 
       SFPStatsSender.logCount("build.scheduled", tags);
-      
+
 
       SFPStatsSender.logGauge(
         "build.duration",

@@ -1,9 +1,10 @@
 import ReleaseDefinitionSchema from "./ReleaseDefinitionSchema";
-const Validator = require('jsonschema').Validator;
+import Ajv from "ajv"
 const yaml = require('js-yaml');
 import lodash = require("lodash");
 import get18DigitSalesforceId from "../../utils/get18DigitSalesforceId";
 import * as fs from "fs-extra";
+const path = require("path");
 
 export default class ReleaseDefinition {
   private _releaseDefinition: ReleaseDefinitionSchema;
@@ -13,16 +14,15 @@ export default class ReleaseDefinition {
     return lodash.cloneDeep(this._releaseDefinition);
   }
   constructor(
-    pathToReleaseDefinition: string,
-    isNpm: boolean
+    pathToReleaseDefinition: string
   ) {
     this._releaseDefinition = yaml.load(
       fs.readFileSync(pathToReleaseDefinition, 'utf8')
     );
-    this.validateReleaseDefinition(this._releaseDefinition, isNpm);
+    this.validateReleaseDefinition(this._releaseDefinition);
 
     // Workaround for jsonschema not supporting validation based on dependency value
-    if (this._releaseDefinition.releaseOptions?.baselineOrg && !this._releaseDefinition.releaseOptions?.skipIfAlreadyInstalled)
+    if (this._releaseDefinition.baselineOrg && !this._releaseDefinition.skipIfAlreadyInstalled)
       throw new Error("Release option 'skipIfAlreadyInstalled' must be true for 'baselineOrg'");
 
     if (this._releaseDefinition.packageDependencies) {
@@ -37,77 +37,27 @@ export default class ReleaseDefinition {
   }
 
   private validateReleaseDefinition(
-    releaseDefinition: ReleaseDefinitionSchema,
-    isNpm: boolean
+    releaseDefinition: ReleaseDefinitionSchema
   ): void {
-    let v = new Validator();
 
-    let versionPattern: RegExp;
-    if (isNpm) {
-      versionPattern = /(^[0-9]+\.[0-9]+\.[0-9]+(-.+)?$)|^LATEST_TAG$|^[a-zA-Z0-9]+$/
-    } else {
-      versionPattern = /(^[0-9]+\.[0-9]+\.[0-9]+(-.+)?$)|^LATEST_TAG$/
-    }
+    let schema = fs.readJSONSync(
+      path.join(__dirname, "..", "..", "..", "resources", "schemas", "releasedefinition.schema.json"),
+      {encoding: "UTF-8"}
+    );
 
-    const schema = {
-        "type": "object",
-        "properties": {
-            "release": {
-                "type": "string"
-            },
-            "artifacts": {
-                "type": "object",
-                "patternProperties": {
-                  ".+": {
-                    "type": "string",
-                    "pattern": versionPattern
-                  }
-                }
-            },
-            "packageDependencies": {
-              "type": "object",
-              "patternProperties": {
-                ".+": {
-                  "type": "string",
-                  "pattern": /^04t([a-zA-Z0-9]{12}|[a-zA-Z0-9]{15})$/
-                }
-              }
-            },
-            "releaseOptions": {
-              "type": "object",
-              "properties": {
-                "skipIfAlreadyInstalled": {
-                  "type": "boolean"
-                },
-                "baselineOrg": {
-                  "type": "string"
-                }
-              },
-              "dependencies": {
-                "baselineOrg": "skipIfAlreadyInstalled"
-              },
-              "additionalProperties": false
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "release",
-            "artifacts",
-        ]
-    };
+    let validator = new Ajv({allErrors: true}).compile(schema);
+    let validationResult = validator(releaseDefinition);
 
-    let validationResult = v.validate(releaseDefinition, schema);
-    if (validationResult.errors.length > 0) {
-        let errorMsg: string =
-            `Release definition does not meet schema requirements, ` +
-            `found ${validationResult.errors.length} validation errors:\n`;
+    if (!validationResult) {
+      let errorMsg: string =
+        `Release definition does not meet schema requirements, ` +
+        `found ${validator.errors.length} validation errors:\n`;
 
-        validationResult.errors.forEach( (error, errorNum) => {
-            errorMsg += `\n${errorNum+1}. ${error.stack}`;
-            if (error.instance != null)
-                errorMsg += `\nReceived: ${JSON.stringify(error.instance)}\n`;
-        });
-        throw new Error(errorMsg);
+      validator.errors.forEach((error,errorNum) => {
+      errorMsg += `\n${errorNum+1}: ${error.instancePath}: ${error.message} ${JSON.stringify(error.params, null, 4)}`;
+      });
+
+      throw new Error(errorMsg);
     }
   }
 }

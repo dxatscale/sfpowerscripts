@@ -5,6 +5,8 @@ import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils
 import { Stage } from "../Stage";
 import child_process = require("child_process");
 import ReleaseError from "../../errors/ReleaseError";
+import ChangelogImpl from "../../impl/changelog/ChangelogImpl";
+
 
 export default class ReleaseImpl {
   constructor(
@@ -19,6 +21,7 @@ export default class ReleaseImpl {
     private isDryRun: boolean,
     private waitTime: number,
     private keys: string,
+    private isGenerateChangelog: boolean,
     private isCheckIfPackagesPromoted: boolean
   ){}
 
@@ -54,6 +57,27 @@ export default class ReleaseImpl {
         {deploymentResult: deploymentResult, installDependenciesResult: installDependenciesResult}
       );
     } else {
+      if (this.isGenerateChangelog) {
+        this.printOpenLoggingGroup("Release changelog");
+
+        let changelogImpl: ChangelogImpl = new ChangelogImpl(
+          "artifacts",
+          this.releaseDefinition.release,
+          this.releaseDefinition.changelog.workItemFilter,
+          this.releaseDefinition.changelog.repoUrl,
+          this.releaseDefinition.changelog.limit,
+          this.releaseDefinition.changelog.workItemUrl,
+          this.releaseDefinition.changelog.showAllArtifacts,
+          false,
+          this.targetOrg
+        );
+
+        await changelogImpl.exec();
+
+
+        this.printClosingLoggingGroup();
+      }
+
       return {
         deploymentResult: deploymentResult,
         installDependenciesResult: installDependenciesResult
@@ -72,10 +96,10 @@ export default class ReleaseImpl {
       tags: this.tags,
       isTestsToBeTriggered: false,
       deploymentMode: DeploymentMode.NORMAL,
-      skipIfPackageInstalled: releaseDefinition.releaseOptions?.skipIfAlreadyInstalled,
+      skipIfPackageInstalled: releaseDefinition.skipIfAlreadyInstalled,
       logsGroupSymbol: this.logsGroupSymbol,
       currentStage: Stage.DEPLOY,
-      baselineOrg: releaseDefinition.releaseOptions?.baselineOrg,
+      baselineOrg: releaseDefinition.baselineOrg,
       isCheckIfPackagesPromoted: this.isCheckIfPackagesPromoted,
       isDryRun: this.isDryRun
     };
