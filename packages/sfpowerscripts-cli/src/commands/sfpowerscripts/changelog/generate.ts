@@ -48,7 +48,7 @@ export default class GenerateChangelog extends SfdxCommand {
       description: messages.getMessage('repoUrlFlagDescription')
     }),
     branchname: flags.string({
-      required: true,
+      required: false,
       char: "b",
       description: messages.getMessage('branchNameFlagDescription'),
       deprecated: { messageOverride: "--branchname has been deprecated" },
