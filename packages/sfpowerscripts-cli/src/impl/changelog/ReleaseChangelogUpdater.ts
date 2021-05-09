@@ -92,8 +92,8 @@ export default class ReleaseChangelogUpdater {
 
     for (let latestReleaseArtifact of latestRelease.artifacts) {
 
-      loopThroughReleases: for (let release of releaseChangelog.releases) {
-        for (let artifact of release.artifacts) {
+      loopThroughReleases: for (let i = releaseChangelog.releases.length - 1 ; i >= 0 ; i--) {
+        for (let artifact of releaseChangelog.releases[i].artifacts) {
           if (artifact.name === latestReleaseArtifact.name) {
             latestReleaseArtifact.from = artifact.to;
             artifactsToLatestCommitId[latestReleaseArtifact.name] = artifact.latestCommitId;
