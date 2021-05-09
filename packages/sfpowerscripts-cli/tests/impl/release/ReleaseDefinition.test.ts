@@ -83,7 +83,6 @@ describe("Given a release definition, validateReleaseDefinition", () => {
       artifacts:
         packageA: "3.0.5-13"
       changelog:
-        repoUrl: "https://github.com/dxatscale/easy-spaces-lwc.git"
         workItemFilter: "GOR-[0-9]{4}"
         workItemUrl: "https://www.atlassian.com/software/jira"
         limit: 10
@@ -99,24 +98,11 @@ describe("Given a release definition, validateReleaseDefinition", () => {
       artifacts:
         packageA: "3.0.5-13"
       changelog:
-        repoUrl: "https://github.com/dxatscale/easy-spaces-lwc.git"
         workItemUrl: "https://www.atlassian.com/software/jira"
         limit: 10
         showAllArtifacts: false
     `;
 
-    expect(() => { new ReleaseDefinition(null); }).toThrow();
-
-    releaseDefinitionYaml = `
-      release: "test-release"
-      artifacts:
-        packageA: "3.0.5-13"
-      changelog:
-        workItemFilter: "GOR-[0-9]{4}"
-        workItemUrl: "https://www.atlassian.com/software/jira"
-        limit: 10
-        showAllArtifacts: false
-    `;
     expect(() => { new ReleaseDefinition(null); }).toThrow();
   });
 });
