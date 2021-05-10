@@ -50,7 +50,7 @@ export default class GenerateChangelog extends SfdxCommand {
       hidden: true
     }),
     branchname: flags.string({
-      required: true,
+      required: false,
       char: "b",
       description: messages.getMessage('branchNameFlagDescription'),
       deprecated: { messageOverride: "--branchname has been deprecated" },
