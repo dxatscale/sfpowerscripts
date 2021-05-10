@@ -68,7 +68,7 @@ export default class ReleaseImpl {
           this.releaseDefinition.changelog.workItemUrl,
           this.releaseDefinition.changelog.showAllArtifacts,
           false,
-          this.targetOrg,
+          this.targetOrg
         );
 
         await changelogImpl.exec();

@@ -28,8 +28,6 @@ export default class ChangelogImpl {
     private showAllArtifacts: boolean = true,
     private forcePush: boolean,
     private org?: string,
-    private repoUrl?: string,
-    private isCloneRepo?: boolean
   ){
     this.org = org?.toLowerCase();
   }
@@ -103,15 +101,8 @@ export default class ChangelogImpl {
 
       let git: SimpleGit = simplegit(repoTempDir);
 
-      if (this.isCloneRepo) {
-        console.log(`Cloning repository ${this.repoUrl}`);
-        await git.clone(
-          this.repoUrl,
-          repoTempDir
-        );
-      } else {
-        fs.copySync(process.cwd(), repoTempDir);
-      }
+      // Copy source directory to temp dir
+      fs.copySync(process.cwd(), repoTempDir);
 
 
       const branch = `sfp_changelog_${artifactSourceBranch}`;
@@ -182,7 +173,7 @@ export default class ChangelogImpl {
   }
 
   private async pushChangelogToBranch(branch: string, git, isForce: boolean) {
-    console.log("Pushing changelog files to", this.repoUrl, branch);
+    console.log("Pushing changelog files to", branch);
     await git.addConfig("user.name", "sfpowerscripts");
     await git.addConfig("user.email", "sfpowerscripts@dxscale");
     await git.add([`releasechangelog.json`, `Release-Changelog.md`]);
