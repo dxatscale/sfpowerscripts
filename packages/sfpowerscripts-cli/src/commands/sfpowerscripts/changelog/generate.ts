@@ -43,9 +43,11 @@ export default class GenerateChangelog extends SfdxCommand {
       description: messages.getMessage('workItemUrlFlagDescription')
     }),
     repourl: flags.string({
-      required: true,
+      required: false,
       char: "r",
-      description: messages.getMessage('repoUrlFlagDescription')
+      description: messages.getMessage('repoUrlFlagDescription'),
+      deprecated: { messageOverride: "--repourl has been deprecated" },
+      hidden: true
     }),
     branchname: flags.string({
       required: false,
@@ -71,11 +73,11 @@ export default class GenerateChangelog extends SfdxCommand {
         this.flags.artifactdir,
         this.flags.releasename,
         this.flags.workitemfilter,
-        this.flags.repourl,
         this.flags.limit,
         this.flags.workitemurl,
         this.flags.showallartifacts,
-        this.flags.forcepush
+        this.flags.forcepush,
+        null
       );
 
       await changelogImpl.exec();
