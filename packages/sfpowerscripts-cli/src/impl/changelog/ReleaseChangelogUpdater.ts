@@ -62,7 +62,6 @@ export default class ReleaseChangelogUpdater {
 
       this.releaseChangelog.releases.push(latestRelease);
     } else {
-
       if (!this.containsLatestReleaseName(releaseWithMatchingHashId.names, latestRelease.names[0])) {
         // append latestReleaseName
         releaseWithMatchingHashId.names.push(latestRelease.names[0]);
@@ -73,7 +72,8 @@ export default class ReleaseChangelogUpdater {
       new OrgsUpdater(
         this.releaseChangelog,
         latestRelease,
-        this.org
+        this.org,
+        releaseWithMatchingHashId
       ).update();
     }
 
