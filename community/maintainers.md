@@ -20,3 +20,7 @@ Caitlyn is an Application Development Associate currently specialising in Salesf
 
 Vu is a Tech Architect with a broad range of experience across different technology platforms and software productivity tools. His recent areas of interest includes Salesforce DevOps, Cloud Native Architecture and General DevOps tooling, processes, and governance.
 
+![Manivasaga Murugesan](../.gitbook/assets/manivasaga-murugesan.png)
+
+Manivasaga is a certified System Architect who uses and contributes to DX@Scale tools. He is the lead developer for sfpowerkit, which lends a number of functions to sfpowerscripts. Locally in his company he is known as "Magic Mani" for his ability to come up with creative solutions.
+
