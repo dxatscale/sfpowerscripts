@@ -12,7 +12,7 @@ description: The heart of sfpowerscripts
 
 To understand the orchestrator, let's take a look at a typical CI/CD pipeline for a package based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
-![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2826%29.png)
+![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2815%29.png)
 
 Let's dive into the pipeline depicted above, there are two basic pipelines in play
 
@@ -27,7 +27,7 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
 
 ![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%286%29.png)
 
-![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%287%29.png)
+![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%284%29.png)
 
 * **CD Pipeline**:  A Continuous Delivery Pipeline that gets triggered manually or automatically \(every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
   * Fetch the Artifacts from the artifact repository using the provided release definition
