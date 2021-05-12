@@ -16,7 +16,7 @@ Alan is a software developer who is currently focused on DevOps and automation w
 
 Caitlyn is an Application Development Associate currently specialising in Salesforce DevOps Engineering. She has software degree in Game Design and is currently enjoying playing Luigi's Mansion, Diablo III and Just Dance.
 
-![](../.gitbook/assets/vu-ha.jpg)
+![Vu Ha](../.gitbook/assets/vu-ha.jpg)
 
 Vu is a Tech Architect with a broad range of experience across different technology platforms and software productivity tools. His recent areas of interest includes Salesforce DevOps, Cloud Native Architecture and General DevOps tooling, processes, and governance.
 
