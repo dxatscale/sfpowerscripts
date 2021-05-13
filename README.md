@@ -6,7 +6,7 @@
 
 [![npm](https://img.shields.io/npm/dw/@dxatscale/sfpowerscripts)](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)  [![Docker Pulls](https://img.shields.io/docker/pulls/dxatscale/sfpowerscripts)](https://hub.docker.com/r/dxatscale/sfpowerscripts)
 
-![](https://img.shields.io/badge/Compatible%20with%20sfdx--cli-7.96.1-green)
+![](https://img.shields.io/badge/Compatible%20with%20sfdx--cli-7.101.0-green)
 
 <p align="center">
   <img alt="sfpowerscripts" src="https://repository-images.githubusercontent.com/248449736/5d08c600-728e-11ea-8267-ae1aceebea60" width="480" height="400">
