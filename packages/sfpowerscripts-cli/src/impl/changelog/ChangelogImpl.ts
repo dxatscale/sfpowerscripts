@@ -99,16 +99,20 @@ export default class ChangelogImpl {
 
       const repoTempDir = tempDir.name;
 
-      let git: SimpleGit = simplegit(repoTempDir);
-
       // Copy source directory to temp dir
       fs.copySync(process.cwd(), repoTempDir);
 
+      let git: SimpleGit = simplegit(repoTempDir);
+      // Update local refs from remote
+      await git.fetch("origin");
 
       const branch = `sfp_changelog_${artifactSourceBranch}`;
       console.log(`Checking out branch ${branch}`);
       if (await this.isBranchExists(branch, git)) {
         await git.checkout(branch);
+
+        // For ease-of-use when running locally and local branch exists
+        await git.merge([`refs/remotes/origin/${branch}`]);
       } else {
         await git.checkout(['-b', branch]);
       }
