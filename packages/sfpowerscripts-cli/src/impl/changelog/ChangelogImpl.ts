@@ -140,14 +140,12 @@ export default class ChangelogImpl {
 
       // Preview changelog in console
       console.log(
-        marked(
           new ChangelogMarkdownGenerator(
             releaseChangelog,
             this.workItemUrl,
             1,
             false
           ).generate()
-        )
       );
 
       fs.writeFileSync(
