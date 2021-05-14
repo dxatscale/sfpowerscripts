@@ -6,15 +6,6 @@ import ReleaseImpl, { ReleaseResult } from "../../../impl/release/ReleaseImpl";
 import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
 import ReleaseError from "../../../errors/ReleaseError";
 import path = require("path");
-import * as fs from "fs-extra";
-var marked = require('marked');
-var TerminalRenderer = require('marked-terminal');
-import {delay} from "@dxatscale/sfpowerscripts.core/lib/utils/Delay";
-
-marked.setOptions({
-  // Define custom renderer
-  renderer: new TerminalRenderer()
-});
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'release');
@@ -93,59 +84,127 @@ export default class Release extends SfpowerscriptsCommand {
 
 
   public async execute(){
-    try {
-      const manifestPath: string = process.env.manifest;
+    this.validateFlags();
 
-      let manifest: Manifest = fs.readJSONSync(manifestPath, {"encoding": "UTF-8"});
-      for(let response of manifest.sequence) {
-        let ext = path.extname(response.filepath);
-        let data = fs.readFileSync(response.filepath, "utf8");
+    let tags = {
+      targetOrg: this.flags.targetorg
+    };
 
-        if (response.data) {
-          Object.entries(response.data).forEach((entry) => {
-            data = data.replace(`\$\{\{${entry[0]}\}\}`, entry[1]);
-          });
-        }
-
-        if (response.repeat) {
-          let count = 0;
-          while (count <= response.repeat) {
-            await delay(response.preDelay);
-            if (ext === ".md") {
-              console.log(marked(data));
-            } else {
-              console.log(data);
-            }
-            count++
-            await delay(response.postDelay);
-          }
-        } else {
-          await delay(response.preDelay);
-          if (ext === ".md") {
-            console.log(marked(data));
-          } else {
-            console.log(data);
-          }
-          await delay(response.postDelay);
-        }
-      }
-
-    } catch (err) {
-      console.log(err.message);
-      // Fail the task when an error occurs
-      process.exitCode = 1;
+    if (this.flags.tag != null) {
+      tags["tag"] = this.flags.tag;
     }
 
+    let executionStartTime = Date.now();
+
+    let releaseDefinition = new ReleaseDefinition(
+      this.flags.releasedefinition
+    ).releaseDefinition;
+
+    if (this.flags.generatechangelog && !releaseDefinition.changelog)
+      throw new Error("changelog parameters must be specified in release definition to generate changelog");
+
+    console.log("-----------sfpowerscripts orchestrator ------------------");
+    console.log("command: release");
+    console.log(`Target Org: ${this.flags.targetorg}`);
+    console.log(`Release Definition: ${this.flags.releasedefinition}`);
+    console.log(`Artifact Directory: ${path.resolve("artifacts")}`);
+    console.log(`Skip Packages If Already Installed: ${releaseDefinition.skipIfAlreadyInstalled ? true : false}`);
+    if(releaseDefinition.baselineOrg)
+      console.log(`Baselined Against Org: ${releaseDefinition.baselineOrg}`);
+    console.log(`Dry-run: ${this.flags.dryrun}`);
+    console.log("---------------------------------------------------------");
+
+    let releaseResult: ReleaseResult;
+    try {
+
+      let releaseImpl: ReleaseImpl = new ReleaseImpl(
+        releaseDefinition,
+        this.flags.targetorg,
+        this.flags.scriptpath,
+        this.flags.npm,
+        this.flags.scope,
+        this.flags.npmrcpath,
+        this.flags.logsgroupsymbol,
+        tags,
+        this.flags.dryrun,
+        this.flags.waittime,
+        this.flags.keys,
+        this.flags.generatechangelog,
+        !this.flags.allowunpromotedpackages
+      );
+
+      releaseResult = await releaseImpl.exec();
+
+      SFPStatsSender.logCount(
+        "release.succeeded",
+        tags
+      );
+
+    } catch (err) {
+
+      if (err instanceof ReleaseError) {
+        releaseResult = err.data;
+      } else console.log(err.message);
+
+      SFPStatsSender.logCount(
+        "release.failed",
+        tags
+      );
+
+      // Fail the task when an error occurs
+      process.exitCode = 1;
+    } finally {
+      let totalElapsedTime: number = Date.now() - executionStartTime;
+
+      if (releaseResult) {
+        this.printReleaseSummary(releaseResult, totalElapsedTime);
+      }
+
+      SFPStatsSender.logCount("release.scheduled",tags);
+
+      SFPStatsSender.logGauge(
+        "release.duration",
+        totalElapsedTime,
+        tags
+      );
+    }
   }
 
-}
+  private printReleaseSummary(
+    releaseResult: ReleaseResult,
+    totalElapsedTime: number
+  ): void {
+    if (this.flags.logsgroupsymbol?.[0])
+      console.log(this.flags.logsgroupsymbol[0], "Release Summary");
 
-interface Manifest {
-  sequence: {
-    filepath: string,
-    preDelay: number,
-    postDelay: number,
-    repeat: number,
-    data: {[p: string]: string}
-  }[]
+    console.log(
+      `----------------------------------------------------------------------------------------------------`
+    );
+    if (releaseResult.installDependenciesResult) {
+      console.log(`\nPackage Dependencies`);
+      console.log(`   ${releaseResult.installDependenciesResult.success.length} succeeded`);
+      console.log(`   ${releaseResult.installDependenciesResult.skipped.length} skipped`);
+      console.log(`   ${releaseResult.installDependenciesResult.failed.length} failed`);
+    }
+
+    if (releaseResult.deploymentResult) {
+      console.log(`\nDeployment`);
+      console.log(`   ${releaseResult.deploymentResult.deployed.length} succeeded`);
+      console.log(`   ${releaseResult.deploymentResult.failed.length} failed`);
+
+      if (releaseResult.deploymentResult.failed.length > 0) {
+        console.log(`\nPackages Failed to Deploy`, releaseResult.deploymentResult.failed);
+      }
+    }
+
+    console.log(`\nElapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11,8)}`);
+    console.log(
+      `----------------------------------------------------------------------------------------------------`
+    );
+  }
+
+  protected validateFlags() {
+    if (this.flags.npm && !this.flags.scope)
+      throw new Error("--scope parameter is required for NPM");
+  }
 }
