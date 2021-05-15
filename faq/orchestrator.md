@@ -8,7 +8,7 @@ description: The heart of sfpowerscripts
 
 **sfpowerscripts:orchestrator** is a group of commands \(or topic in the CLI parlance\) that enables one to work with multiple packages in a mono-repo through the development lifecycle or stages. The current version of the orchestrator features these commands
 
-{% embed url="https://youtu.be/-3_DHysV7os" caption="" %}
+{% embed url="https://youtu.be/-3\_DHysV7os" caption="" %}
 
 ### A typical pipeline
 
