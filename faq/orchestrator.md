@@ -51,7 +51,7 @@ Take a note of each stage in the pipeline above and the key functionality requir
 
 Orchestrator utilizes additional properties mentioned along with each package in your sfdx-project.json which can be used to control what the orchestrator should work with each package.
 
-![Skipping unit test for a package](../.gitbook/assets/screen-recording-2021-03-21-at-8.43.27-am.gif)
+{% embed url="https://youtu.be/c_E8fBIlFPo" caption="" %}
 
 <table>
   <thead>
