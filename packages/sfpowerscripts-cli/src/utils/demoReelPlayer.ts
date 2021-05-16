@@ -17,8 +17,8 @@ export default class DemoReelPlayer {
       encoding: "UTF-8",
     });
     for (let response of demoReel.sequence) {
-      let ext = path.extname(path.join(demoReelFolderPath,response.filepath));
-      let data = fs.readFileSync(path.join(demoReelFolderPath,response.filepath), "utf8");
+      let ext = path.extname(path.resolve(demoReelFolderPath,response.filepath));
+      let data = fs.readFileSync(path.resolve(demoReelFolderPath,response.filepath), "utf8");
 
       if (response.data) {
         Object.entries(response.data).forEach((entry) => {
