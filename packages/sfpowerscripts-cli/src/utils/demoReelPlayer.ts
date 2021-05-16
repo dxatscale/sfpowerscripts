@@ -6,50 +6,47 @@ import { delay } from "@dxatscale/sfpowerscripts.core/lib/utils/Delay";
 
 export default class DemoReelPlayer {
   public async execute(demoReelFolderPath: string) {
-    try {
-      //Define renderer
-      marked.setOptions({
-        // Define custom renderer
-        renderer: new TerminalRenderer(),
-      });
 
-      let demoReel: demoReel = fs.readJSONSync(path.join(demoReelFolderPath,"demo.json"), {
-        encoding: "UTF-8",
-      });
-      for (let response of demoReel.sequence) {
-        let ext = path.extname(path.join(demoReelFolderPath,response.filepath));
-        let data = fs.readFileSync(path.join(demoReelFolderPath,response.filepath), "utf8");
+    //Define renderer
+    marked.setOptions({
+      // Define custom renderer
+      renderer: new TerminalRenderer(),
+    });
 
-        if (response.data) {
-          Object.entries(response.data).forEach((entry) => {
-            data = data.replace(`\$\{\{${entry[0]}\}\}`, entry[1]);
-          });
-        }
+    let demoReel: demoReel = fs.readJSONSync(path.join(demoReelFolderPath,"demo.json"), {
+      encoding: "UTF-8",
+    });
+    for (let response of demoReel.sequence) {
+      let ext = path.extname(path.join(demoReelFolderPath,response.filepath));
+      let data = fs.readFileSync(path.join(demoReelFolderPath,response.filepath), "utf8");
 
-        if (response.repeat) {
-          let count = 0;
-          while (count <= response.repeat) {
-            await delay(response.preDelay);
-            if (ext === ".md") {
-              console.log(marked(data));
-            } else {
-              console.log(data);
-            }
-            count++;
-            await delay(response.postDelay);
-          }
-        } else {
+      if (response.data) {
+        Object.entries(response.data).forEach((entry) => {
+          data = data.replace(`\$\{\{${entry[0]}\}\}`, entry[1]);
+        });
+      }
+
+      if (response.repeat) {
+        let count = 0;
+        while (count <= response.repeat) {
           await delay(response.preDelay);
           if (ext === ".md") {
             console.log(marked(data));
           } else {
             console.log(data);
           }
+          count++;
           await delay(response.postDelay);
         }
+      } else {
+        await delay(response.preDelay);
+        if (ext === ".md") {
+          console.log(marked(data));
+        } else {
+          console.log(data);
+        }
+        await delay(response.postDelay);
       }
-    } catch (error) {
-      console.log(error);
     }
   }
 }
