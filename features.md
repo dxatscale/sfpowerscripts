@@ -51,5 +51,6 @@ description: Learn about all the features in sfpowerscripts
 
 ## **Observability at its Best**
 
-* All functionality instrumented with StatsD, as well as Log Based metrics\* to build dashboards the way you want it.
+* All functionality instrumented with StatsD, as well as Log Based metrics to build dashboards the way you want it.
+* Native integration with DataDog
 
