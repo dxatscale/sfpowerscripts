@@ -50,7 +50,13 @@ export default class ProjectValidation {
         pkg.versionNumber.match(pattern) &&
         (packageType === "Source" || packageType === "Data")
       ) {
-        throw new Error('The build-number keywords "NEXT" & "LATEST" are not supported for Source & Data packages. Please use 0 instead');
+        throw new Error(
+          'sfdx-project.json validation failed for package "'+pkg["package"]+ '".'
+          + ' Build-number keywords "NEXT" & "LATEST" are not supported for '+packageType+' packages.'
+          + '\nTry the following:'
+          + '\n - If package should be built as a '+packageType+' package, use 0 instead of NEXT/LATEST'
+          + '\n - If package should be built as an Unlocked package, ensure the package has been created in the Devhub and the ID included in packageAliases of sfdx-project.json'
+        );
       }
     });
   }
