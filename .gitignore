@@ -11,3 +11,4 @@ lerna-debug.log
 
 packages/core/coverage
 packages/sfpowerscripts-cli/coverage
+ .DS_Store
