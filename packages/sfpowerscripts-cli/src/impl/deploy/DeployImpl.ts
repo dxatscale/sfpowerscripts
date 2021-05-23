@@ -8,7 +8,6 @@ import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcomm
 import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl";
 import ArtifactInstallationStatusChecker from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInstallationStatusChecker"
 import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher"
-import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
 import ArtifactInquirer from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInquirer";
 
 import fs = require("fs");
@@ -64,7 +63,7 @@ export default class DeployImpl {
     testFailure: string;
     error: any;
   }> {
-    let orgDetails = await OrgDetails.getOrgDetails(this.props.targetUsername);
+  
     let deployed: string[] = [];
     let failed: string[] = [];
     let testFailure: string;
