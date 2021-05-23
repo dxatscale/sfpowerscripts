@@ -39,6 +39,9 @@
           }
         }
       },
+      "promotePackagesBeforeDeploymentToOrg":{
+        "type": "string"
+      },
       "changelog": {
         "type": "object",
         "properties": {
