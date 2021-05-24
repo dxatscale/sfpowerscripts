@@ -20,21 +20,21 @@ Let's have a look at the below example, here a CI pipeline creates a bunch of ar
 
 An important thing to note here is especially when a CI pipeline is enabled with '[diffcheck](../commands/build-and-quickbuild.md#how-does-build-and-quickbuild-know-what-to-build-when-using-diffcheck-flag)**'** functionality, it only builds packages for the particular build run. Unless you are immediately deploying these packages to production, there is no way to deploy an entire set of packages other than going through each of the build runs and immediately pushing them into production. You will need to aggregate packages before you proceed to the next stage.
 
-One approach to solve is to use branches, where a branch per environment is used to stage changes, and new builds are generated from this branch to deploy to the environment. We belive this practice is incorrect as they break the traceability chain and errors could be introduced, moreover it complicates your version control strategy. Our premise is rather to use the same set of artifacts that were built at one stage all the way to production.
+One approach to solve is to use branches, where a branch per environment is used to stage changes, and new builds are generated from this branch to deploy to the environment. We believe this practice is incorrect as they break the traceability chain and errors could be introduced, moreover it complicates your version control strategy. Our premise is rather to use the same set of artifacts that were built at one stage all the way to production.
 
 This is where an artifact registry comes into play, it stores all the artifacts produced by the build stage into a repository, which allows you to consolidate all versions of your artifacts and then allowing you to decide which all packages/artifacts should be aggregated and released into production.
 
-The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and it's version number/tag as the input, such as by using a release definition used by the [fetch](artifacts.md) command.
+The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and its version number/tag as the input, such as by using a release definition used by the [fetch](artifacts.md) command.
 
 ### **Type of Artifact Registries supported**
 
-Rather than lock everyone into a particular registry provider, sfpowerscripts supports artifact registries which support the following
+Rather than lock everyone into a particular registry provider, sfpowerscripts supports artifact registries which support the following:
 
 * **NPM compatible private registry** \(Almost every artifact registries supports NPM \)
-* **A registry that supports universal packages \(**JFrog Aritfactory, Azure Artifacts\)
+* **A registry that supports universal packages \(**JFrog Artifactory, Azure Artifacts\)
 
 {% hint style="danger" %}
-Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \( the default public npm registry\). It is against the terms of service for npm.js, as it only allows Javascript packages.
+Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \(the default public npm registry\). It is against the terms of service for npm.js, as it only allows JavaScript packages.
 {% endhint %}
 
 ### Setting up an Artifact Registry
