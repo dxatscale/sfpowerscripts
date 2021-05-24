@@ -42,7 +42,7 @@ Please ensure you are not publishing sfpowerscripts artifacts to npm.js, \(the d
 Please refer to your artifact registry provider's documentation on how to set it up. If you are planning to use npm compatible private registry, here are some links to get you started
 
 * [Github](https://docs.github.com/en/packages/guides/configuring-npm-for-use-with-github-packages)
-* [Gitlab](https://docs.gitlab.com/ee/user/packages/npm_registry/)
+* [GitLab](https://docs.gitlab.com/ee/user/packages/npm_registry/)
 * [Azure Artifacts](https://docs.microsoft.com/en-us/azure/devops/artifacts/get-started-npm?view=azure-devops%20)
 * [JFrog Artifactory](https://www.jfrog.com/confluence/display/JFROG/npm+Registry)
 * [MyGet](https://docs.myget.org/docs/reference/myget-npm-support)
