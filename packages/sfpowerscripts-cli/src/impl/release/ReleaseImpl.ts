@@ -6,10 +6,7 @@ import { Stage } from "../Stage";
 import child_process = require("child_process");
 import ReleaseError from "../../errors/ReleaseError";
 import ChangelogImpl from "../../impl/changelog/ChangelogImpl";
-import ArtifactFilePathFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import * as fs from "fs-extra";
-import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
+ 
 
 
 export default class ReleaseImpl {
@@ -27,7 +24,7 @@ export default class ReleaseImpl {
     private keys: string,
     private isGenerateChangelog: boolean,
     private isCheckIfPackagesPromoted: boolean,
-    private devhubAlias?: string
+    private devhubUserName?: string
   ){}
 
   public async exec(): Promise<ReleaseResult> {
@@ -45,7 +42,7 @@ export default class ReleaseImpl {
     this.printClosingLoggingGroup();
 
 
-   await this.promotePackagesIfEnabled();
+  
 
     let installDependenciesResult: InstallDependenciesResult;
     if (this.releaseDefinition.packageDependencies) {
@@ -92,42 +89,6 @@ export default class ReleaseImpl {
     }
   }
 
-  private async promotePackagesIfEnabled() {
-    if (this.releaseDefinition.promotePackagesBeforeDeploymentToOrg && this.targetOrg === this.releaseDefinition.promotePackagesBeforeDeploymentToOrg) {
-     this.printOpenLoggingGroup("Promote Packages")
-      let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths("artifacts");
-      if (artifacts.length === 0) {
-        throw new Error(`No artifacts found at artifacts`);
-      }
-     
-      let promotedPackages: string[] = [];
-      for (let artifact of artifacts) {
-        let packageMetadata: PackageMetadata = JSON.parse(
-          fs.readFileSync(artifact.packageMetadataFilePath, 'utf8')
-        );
-
-        try {
-          if (packageMetadata.package_type === "unlocked") {
-            let promoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
-              artifact.sourceDirectoryPath,
-              packageMetadata.package_version_id,
-              this.devhubAlias
-            );
-            await promoteUnlockedPackageImpl.exec();
-          }
-          promotedPackages.push(packageMetadata.package_name);
-        } catch (err) {
-          console.log(`Unable to promote package ${packageMetadata.package_name}`)
-          throw err;
-        }
-        finally
-        {
-          console.log(`Promoted packages:`, promotedPackages);
-          this.printClosingLoggingGroup();
-        }
-      }
-    }
-  }
 
   private async deployArtifacts(
     releaseDefinition: ReleaseDefinitionSchema
@@ -145,7 +106,9 @@ export default class ReleaseImpl {
       currentStage: Stage.DEPLOY,
       baselineOrg: releaseDefinition.baselineOrg,
       isCheckIfPackagesPromoted: this.isCheckIfPackagesPromoted,
-      isDryRun: this.isDryRun
+      isDryRun: this.isDryRun,
+      promotePackagesBeforeDeploymentToOrg: this.releaseDefinition.promotePackagesBeforeDeploymentToOrg,
+      devhubUserName: this.devhubUserName
     };
 
     let deployImpl: DeployImpl = new DeployImpl(

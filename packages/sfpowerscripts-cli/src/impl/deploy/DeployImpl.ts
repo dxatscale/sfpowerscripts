@@ -28,6 +28,7 @@ import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/package/Indi
 import { RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions";
 import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions";
 import semver = require("semver");
+import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
 const Table = require("cli-table");
 const retry = require("async-retry");
 
@@ -52,6 +53,8 @@ export interface DeployProps {
   isCheckIfPackagesPromoted?: boolean;
   isDryRun?: boolean;
   isRetryOnFailure?: boolean;
+  promotePackagesBeforeDeploymentToOrg?:string,
+  devhubUserName?:string
 }
 
 export default class DeployImpl {
@@ -134,14 +137,22 @@ export default class DeployImpl {
           packageManifest
         );
 
+       
+       
+
         this.printOpenLoggingGroup("Installing ", queue[i].package);
         this.displayHeader(packageMetadata, pkgDescriptor, queue[i].package);
+
+
+   
 
         let packageInstallationResult = await retry(
           async (bail,count) => {
 
             try {
               
+              await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory,packageMetadata);
+
               this.displayRetryHeader(this.props.isRetryOnFailure,count);
 
               let installPackageResult = await this.installPackage(
@@ -264,6 +275,16 @@ export default class DeployImpl {
     }
   }
 
+
+  private async promotePackagesBeforeInstallation( sourceDirectory:string,packageMetadata: any) {
+    if (this.props.promotePackagesBeforeDeploymentToOrg === this.props.targetUsername) {
+      if (packageMetadata.package_type === 'unlocked') {
+        console.log(`Attempting to promote package ${packageMetadata.package_name} before installation`);
+        let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(sourceDirectory, packageMetadata.package_version_id, this.props.devhubUserName);
+        await promoteUnlockedPackageImpl.exec();
+      }
+    }
+  }
 
   private displayRetryHeader(isRetryOnFailure:boolean,count:number) {
     if (isRetryOnFailure && count>1) {
