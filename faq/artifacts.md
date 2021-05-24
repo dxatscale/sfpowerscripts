@@ -47,7 +47,7 @@ Please refer to your artifact registry provider's documentation on how to set it
 * [JFrog Artifactory](https://www.jfrog.com/confluence/display/JFROG/npm+Registry)
 * [MyGet](https://docs.myget.org/docs/reference/myget-npm-support)
 
-### Publishing/Fetching Packages  to or from Artifact Registry
+### Publishing/Fetching Packages to or from Artifact Registry
 
 sfpowerscripts provides with functionality to help you [fetch](artifacts.md) or [publish](../commands/publish.md) artifacts. Some orchestrator commands like [prepare](../commands/prepare.md) also fetches artifacts from the artifact registry.
 
