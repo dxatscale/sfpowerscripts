@@ -135,7 +135,8 @@ export default class Release extends SfpowerscriptsCommand {
         this.flags.waittime,
         this.flags.keys,
         this.flags.generatechangelog,
-        !this.flags.allowunpromotedpackages
+        !this.flags.allowunpromotedpackages,
+        this.flags.branchname
       );
 
       releaseResult = await releaseImpl.exec();
