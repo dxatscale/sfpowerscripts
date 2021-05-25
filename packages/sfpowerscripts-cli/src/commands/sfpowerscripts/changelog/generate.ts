@@ -50,11 +50,9 @@ export default class GenerateChangelog extends SfdxCommand {
       hidden: true
     }),
     branchname: flags.string({
-      required: false,
+      required: true,
       char: "b",
-      description: messages.getMessage('branchNameFlagDescription'),
-      deprecated: { messageOverride: "--branchname has been deprecated" },
-      hidden: true
+      description: messages.getMessage('branchNameFlagDescription')
     }),
     showallartifacts: flags.boolean({
       required: false,
@@ -77,6 +75,7 @@ export default class GenerateChangelog extends SfdxCommand {
         this.flags.workitemurl,
         this.flags.showallartifacts,
         this.flags.forcepush,
+        this.flags.branchname,
         null
       );
 
