@@ -2,7 +2,7 @@ import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
-import ReleaseImpl, { ReleaseResult } from "../../../impl/release/ReleaseImpl";
+import ReleaseImpl, { ReleaseProps, ReleaseResult } from "../../../impl/release/ReleaseImpl";
 import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
 import ReleaseError from "../../../errors/ReleaseError";
 import path = require("path");
@@ -122,21 +122,26 @@ export default class Release extends SfpowerscriptsCommand {
     let releaseResult: ReleaseResult;
     try {
 
+      let props:ReleaseProps = {
+        releaseDefinition:releaseDefinition,
+        targetOrg: this.flags.targetorg,
+        fetchArtifactScript:this.flags.scriptpath,
+        isNpm:this.flags.npm,
+        scope: this.flags.scope,
+        npmrcPath: this.flags.npmrcpath,
+        logsGroupSymbol: this.flags.logsgroupsymbol,
+        tags: tags,
+        isDryRun: this.flags.dryrun,
+        waitTime: this.flags.waittime,
+        keys: this.flags.keys,
+        isGenerateChangelog: this.flags.generatechangelog,
+        isCheckIfPackagesPromoted: !this.flags.allowunpromotedpackages,
+        branch: this.flags.branchname
+      }
+
+
       let releaseImpl: ReleaseImpl = new ReleaseImpl(
-        releaseDefinition,
-        this.flags.targetorg,
-        this.flags.scriptpath,
-        this.flags.npm,
-        this.flags.scope,
-        this.flags.npmrcpath,
-        this.flags.logsgroupsymbol,
-        tags,
-        this.flags.dryrun,
-        this.flags.waittime,
-        this.flags.keys,
-        this.flags.generatechangelog,
-        !this.flags.allowunpromotedpackages,
-        this.flags.branchname
+       props
       );
 
       releaseResult = await releaseImpl.exec();
