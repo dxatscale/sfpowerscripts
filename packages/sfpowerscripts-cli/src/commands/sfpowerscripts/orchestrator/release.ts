@@ -76,6 +76,11 @@ export default class Release extends SfpowerscriptsCommand {
       default: false,
       description: messages.getMessage("generateChangelogFlagDescription")
     }),
+    branchname: flags.string({
+      dependsOn: ['generatechangelog'],
+      char: "b",
+      description: messages.getMessage('branchNameFlagDescription')
+    }),
     allowunpromotedpackages: flags.boolean({
       description: messages.getMessage("allowUnpromotedPackagesFlagDescription"),
       hidden: true

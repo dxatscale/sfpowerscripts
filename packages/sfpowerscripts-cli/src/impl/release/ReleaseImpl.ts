@@ -22,7 +22,8 @@ export default class ReleaseImpl {
     private waitTime: number,
     private keys: string,
     private isGenerateChangelog: boolean,
-    private isCheckIfPackagesPromoted: boolean
+    private isCheckIfPackagesPromoted: boolean,
+    private branch:string
   ){}
 
   public async exec(): Promise<ReleaseResult> {
@@ -68,6 +69,7 @@ export default class ReleaseImpl {
           this.releaseDefinition.changelog.workItemUrl,
           this.releaseDefinition.changelog.showAllArtifacts,
           false,
+          this.branch,
           this.targetOrg
         );
 
