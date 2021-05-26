@@ -13,7 +13,7 @@ An end to end build and deployment orchestrator for package based development on
 * Integrate with any CI/CD system of choice
 * All commands are enabled with [statsD](https://www.datadoghq.com/blog/statsd/), for collecting metrics about your pipeline
 
-{% embed url="https://www.youtube.com/watch?v=-3\_DHysV7os" caption="" %}
+{% embed url="https://www.youtube.com/watch?v=4og4gR6s0tY" caption="" %}
 
 ## History
 
