@@ -19,7 +19,8 @@ describe("Given an OrgsUpdater", () => {
     new OrgsUpdater(
       releaseChangelog,
       newRelease,
-      "DEV"
+      "DEV",
+      null
     ).update()
 
     let newReleaseId = convertReleaseToId(newRelease);
@@ -46,7 +47,8 @@ describe("Given an OrgsUpdater", () => {
     new OrgsUpdater(
       releaseChangelog,
       newRelease,
-      "DEV"
+      "DEV",
+      null
     ).update();
 
     let newReleaseId = convertReleaseToId(newRelease);
@@ -92,7 +94,8 @@ describe("Given an OrgsUpdater", () => {
     new OrgsUpdater(
       releaseChangelog,
       oldRelease1,
-      "SIT"
+      "SIT",
+      releaseChangelog.releases[1]
     ).update();
 
     expect(releaseChangelog).toEqual(expectedResult);
@@ -116,7 +119,8 @@ describe("Given an OrgsUpdater", () => {
     new OrgsUpdater(
       releaseChangelog,
       oldRelease2,
-      "DEV"
+      "DEV",
+      releaseChangelog.releases[0]
     ).update();
 
     expect(releaseChangelog).toEqual(expectedResult);

@@ -23,12 +23,12 @@ export default class ChangelogImpl {
     private artifactDir: string,
     private releaseName: string,
     private workItemFilter: string,
-    private repoUrl: string,
     private limit: number,
     private workItemUrl: string,
     private showAllArtifacts: boolean = true,
     private forcePush: boolean,
-    private org?: string
+    private branch:string,
+    private org?: string,
   ){
     this.org = org?.toLowerCase();
   }
@@ -100,21 +100,22 @@ export default class ChangelogImpl {
 
       const repoTempDir = tempDir.name;
 
+      // Copy source directory to temp dir
+      fs.copySync(process.cwd(), repoTempDir);
+
       let git: SimpleGit = simplegit(repoTempDir);
+      // Update local refs from remote
+      await git.fetch("origin");
 
-      console.log(`Cloning repository ${this.repoUrl}`);
-      await git.clone(
-        this.repoUrl,
-        repoTempDir
-      );
+    
+      console.log(`Checking out branch ${this.branch}`);
+      if (await this.isBranchExists(this.branch, git)) {
+        await git.checkout(this.branch);
 
-
-      const branch = `sfp_changelog_${artifactSourceBranch}`;
-      console.log(`Checking out branch ${branch}`);
-      if (await this.isBranchExists(branch, git)) {
-        await git.checkout(branch);
+        // For ease-of-use when running locally and local branch exists
+        await git.merge([`refs/remotes/origin/${this.branch}`]);
       } else {
-        await git.checkout(['-b', branch]);
+        await git.checkout(['-b', this.branch]);
       }
 
       let releaseChangelog: ReleaseChangelog;
@@ -168,7 +169,7 @@ export default class ChangelogImpl {
         payload
       );
 
-      await this.pushChangelogToBranch(branch, git, this.forcePush);
+      await this.pushChangelogToBranch(this.branch, git, this.forcePush);
 
       console.log(`Successfully generated changelog`);
     } finally {
@@ -177,7 +178,7 @@ export default class ChangelogImpl {
   }
 
   private async pushChangelogToBranch(branch: string, git, isForce: boolean) {
-    console.log("Pushing changelog files to", this.repoUrl, branch);
+    console.log("Pushing changelog files to", branch);
     await git.addConfig("user.name", "sfpowerscripts");
     await git.addConfig("user.email", "sfpowerscripts@dxscale");
     await git.add([`releasechangelog.json`, `Release-Changelog.md`]);
