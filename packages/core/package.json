@@ -23,7 +23,7 @@
     "cli-table": "^0.3.6",
     "datadog-metrics": "^0.9.3",
     "fs-extra": "^9.1.0",
-    "glob": "^7.1.6",
+    "glob": "^7.1.7",
     "hot-shots": "^8.3.1",
     "ignore": "^5.1.6",
     "lodash": "^4.17.21",
