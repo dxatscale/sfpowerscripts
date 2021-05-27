@@ -14,7 +14,7 @@ description: The heart of sfpowerscripts
 
 To understand the orchestrator, let's look at a typical CI/CD pipeline for a package-based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
-![](../.gitbook/assets/flowdiagram.png)
+![](../.gitbook/assets/flowdiagram-1-.png)
 
 
 
