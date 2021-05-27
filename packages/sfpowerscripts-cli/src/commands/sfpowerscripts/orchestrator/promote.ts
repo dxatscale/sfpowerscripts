@@ -30,7 +30,8 @@ export default class Promote extends SfpowerscriptsCommand {
     outputdir: flags.directory({
       required: false,
       char: 'o',
-      description: "This flag is deprecated, Artifacts are no longer modified after promote",
+      description: messages.getMessage('outputDirectoryFlagDescription'),
+      hidden: true,
       deprecated: {messageOverride:"--outputdir is deprecated, Artifacts are no longer modified after promote"}
     })
   };
