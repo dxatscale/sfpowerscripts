@@ -1,7 +1,6 @@
 # Overview
 
-An end to end build and deployment orchestrator for package based development on Salesforce that can be implemented in any CI/CD platform of choice.
-sfpowerscripts is part of the **DX@Scale** initiative, productivity boosters for engineering teams on Salesforce.
+An end to end build and deployment orchestrator for package based development on Salesforce that can be implemented in any CI/CD platform of choice. sfpowerscripts is part of the **DX@Scale** initiative, productivity boosters for engineering teams on Salesforce.
 
 ## **Key Features**
 
@@ -15,6 +14,8 @@ sfpowerscripts is part of the **DX@Scale** initiative, productivity boosters for
 * All commands are enabled with [statsD](https://www.datadoghq.com/blog/statsd/), for collecting metrics about your pipeline
 
 {% embed url="https://youtu.be/4og4gR6s0tY" %}
+
+
 
 ## History
 
