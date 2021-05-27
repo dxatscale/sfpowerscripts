@@ -5,6 +5,7 @@ import Git from "@dxatscale/sfpowerscripts.core/lib/utils/Git";
 import GitTags from "@dxatscale/sfpowerscripts.core/lib/utils/GitTags";
 import ReleaseDefinitionSchema from "../release/ReleaseDefinitionSchema";
 import FetchArtifactsError from "../../errors/FetchArtifactsError";
+import * as rimraf from "rimraf";
 
 export default class FetchImpl {
   constructor(
@@ -20,7 +21,13 @@ export default class FetchImpl {
     success: [string, string][],
     failed: [string, string][]
   }> {
-    fs.mkdirpSync(this.artifactDirectory);
+
+
+
+
+    //Create Artifact Directory
+    rimraf.sync("artifacts");
+    fs.mkdirpSync("artifacts");
 
     let fetchedArtifacts: {
       success: [string, string][],
@@ -79,7 +86,7 @@ export default class FetchImpl {
       artifacts = Object.entries(releaseDefinition.artifacts);
       for (i = 0; i < artifacts.length; i++) {
         let version: string;
-        if (artifacts[i][1] === "LATEST_TAG") {
+        if (artifacts[i][1] === "LATEST_TAG" ||artifacts[i][1] === "LATEST_GIT_TAG"  ) {
           version = await this.getVersionFromLatestTag(git, artifacts[i][0]);
         } else
           version = artifacts[i][1];
@@ -129,7 +136,7 @@ export default class FetchImpl {
       artifacts = Object.entries(releaseDefinition.artifacts);
       for (i = 0; i < artifacts.length; i++) {
         let version: string;
-        if (artifacts[i][1] === "LATEST_TAG") {
+        if (artifacts[i][1] === "LATEST_TAG"||artifacts[i][1] === "LATEST_GIT_TAG") {
           version = await this.getVersionFromLatestTag(git, artifacts[i][0]);
         } else
           version = artifacts[i][1];
