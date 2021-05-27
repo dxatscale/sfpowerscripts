@@ -1,6 +1,6 @@
 # Process for creating parallel development streams
 
-* Status: Proposed  <!-- optional -->
+* Status: Rejected  <!-- optional -->
 
 
 ## Context and Problem Statement
@@ -22,3 +22,5 @@ When creating a parallel development streams (e.g. release), there are a list of
     - Document the process for creating parallel development streams in Gitbook
 
 ## Decision
+
+All this issues arised from the fact that with the assumption of using multiple feeds. As we are moving to ask users to utilize a single feed/artifact repository and how it is in most platforms like GitHub or GitLab, there is no specific need for a helper tool. Users should be versioning their artifacts using semantic version when dealing with multiple development streams
