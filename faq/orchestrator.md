@@ -14,7 +14,9 @@ description: The heart of sfpowerscripts
 
 To understand the orchestrator, let's take a look at a typical CI/CD pipeline for a package based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
-![](../.gitbook/assets/image%20%2813%29%20%281%29%20%282%29%20%282%29%20%283%29%20%285%29%20%282%29%20%281%29%20%2841%29.png)
+![](../.gitbook/assets/flowdiagram.png)
+
+
 
 Let's dive into the pipeline depicted above, there are two basic pipelines in play
 
@@ -31,10 +33,10 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
 
 * **CD Pipeline**:  A Continuous Delivery Pipeline that gets triggered manually or automatically \(every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
   * Fetch the Artifacts from the artifact repository using the provided release definition
-  * [Deploy](../commands/deploy.md) the set of packages say to System Testing environment
+  * Deploy the set of packages say to System Testing environment
   * Upon successful testing, the same set of packages progress to the System Integration Test environment and so forth
   * If the packages are successful in all of the testing, the packages are marked for promotion
-  * The promoted packages are then [deployed](../commands/deploy.md) to production.
+  * The promoted packages are then deployed to production.
 
 Take a note of each stage in the pipeline above and the key functionality required, such as build, deploy, fetch etc, this is typically done by inserting the equivalent sfdx commands into your CI/CD pipeline definition. As your number of packages grow, it not only is hard to maintain but is error prone. This is where sfpowerscripts orchestrator simplifies the pipeline to a one time setup. All the stages are driven by sfdx-project.json, which ensures zero maintenance to the pipelines. Each stage of the above pipeline could be modelled by using equivalent sfpowerscripts orchestrator commands
 
@@ -46,6 +48,7 @@ Take a note of each stage in the pipeline above and the key functionality requir
 4. [**deploy**](../commands/deploy.md) **\(sfdx sfpowerscripts:orchestrator:deploy\)**: So you have built all the packages, now this command takes care of deploying it, by reading the order of installation as you have specified in your sfdx-project.json. Installs it one by one, deciding to trigger tests etc. and provide you with the logs if anything fails   
 5. [**promote**](orchestrator.md) **\(sfdx sfpowerscripts:orchestrator:promote\)** : Promote enables the packages to be deployable to production. This explicit stage prevents incorrectly tested packages to reach production    
 6. [**publish**](../commands/publish.md) **\(sfdx sfpowerscripts:orchestrator:publish\)** :  Publish lets you publish the built artifacts into an artifact registry during publish stages of your pipeline.
+7. [**release**](../commands/release.md) \(**sfdx sfpowerscripts:orchestrator:release**\) : Release commands orchestrate fetching of artifacts from an artifact repository, deploying to an environment including any external dependencies and generating changelog all driven by a release definition file.
 
 ### Controlling Aspects of the Orchestrator
 
