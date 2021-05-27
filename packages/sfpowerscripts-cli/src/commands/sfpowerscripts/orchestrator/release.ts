@@ -7,10 +7,13 @@ import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
 import ReleaseError from "../../../errors/ReleaseError";
 import path = require("path");
 
+
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'release');
 
 export default class Release extends SfpowerscriptsCommand {
+
+
 
   public static description = messages.getMessage('commandDescription');
 
@@ -83,8 +86,14 @@ export default class Release extends SfpowerscriptsCommand {
     }),
     allowunpromotedpackages: flags.boolean({
       description: messages.getMessage("allowUnpromotedPackagesFlagDescription"),
-      hidden: true
-    })
+      hidden: true,
+      deprecated: {messageOverride:"--allowunpromotedpackages is deprecated, All packages are allowed"}
+    }),
+    devhubalias: flags.string({
+      char: "v",
+      description: messages.getMessage("devhubAliasFlagDescription"),
+      default: "HubOrg",
+    }),
   };
 
 
@@ -122,6 +131,11 @@ export default class Release extends SfpowerscriptsCommand {
     let releaseResult: ReleaseResult;
     try {
 
+      if(releaseDefinition.promotePackagesBeforeDeploymentToOrg && !this.flags.devhubalias)
+      {
+         throw new Error("DevHub is mandatory when promote is used within release defintion")
+      }
+
       let props:ReleaseProps = {
         releaseDefinition:releaseDefinition,
         targetOrg: this.flags.targetorg,
@@ -135,7 +149,7 @@ export default class Release extends SfpowerscriptsCommand {
         waitTime: this.flags.waittime,
         keys: this.flags.keys,
         isGenerateChangelog: this.flags.generatechangelog,
-        isCheckIfPackagesPromoted: !this.flags.allowunpromotedpackages,
+        devhubUserName: this.flags.devhubalias,
         branch: this.flags.branchname
       }
 

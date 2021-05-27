@@ -8,6 +8,7 @@ import ReleaseError from "../../errors/ReleaseError";
 import ChangelogImpl from "../../impl/changelog/ChangelogImpl";
 
 
+
 export interface ReleaseProps
 {
   releaseDefinition: ReleaseDefinitionSchema,
@@ -22,13 +23,13 @@ export interface ReleaseProps
   waitTime: number,
   keys: string,
   isGenerateChangelog: boolean,
-  isCheckIfPackagesPromoted: boolean,
+  devhubUserName: string,
   branch:string
 }
 
 
 export default class ReleaseImpl {
-  
+
   constructor(
     private props: ReleaseProps
   ){}
@@ -46,7 +47,8 @@ export default class ReleaseImpl {
     );
     await fetchImpl.exec();
     this.printClosingLoggingGroup();
-  
+
+
     let installDependenciesResult: InstallDependenciesResult;
     if (this.props.releaseDefinition.packageDependencies) {
       installDependenciesResult = this.installPackageDependencies(
@@ -93,6 +95,7 @@ export default class ReleaseImpl {
     }
   }
 
+
   private async deployArtifacts(
     releaseDefinition: ReleaseDefinitionSchema
   ) {
@@ -108,8 +111,9 @@ export default class ReleaseImpl {
       logsGroupSymbol: this.props.logsGroupSymbol,
       currentStage: Stage.DEPLOY,
       baselineOrg: releaseDefinition.baselineOrg,
-      isCheckIfPackagesPromoted: this.props.isCheckIfPackagesPromoted,
-      isDryRun: this.props.isDryRun
+      isDryRun: this.props.isDryRun,
+      promotePackagesBeforeDeploymentToOrg: releaseDefinition.promotePackagesBeforeDeploymentToOrg,
+      devhubUserName: this.props.devhubUserName
     };
 
     let deployImpl: DeployImpl = new DeployImpl(

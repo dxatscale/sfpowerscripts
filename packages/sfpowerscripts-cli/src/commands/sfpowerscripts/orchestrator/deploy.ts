@@ -60,6 +60,7 @@ export default class Deploy extends SfpowerscriptsCommand {
     }),
     allowunpromotedpackages: flags.boolean({
       description: messages.getMessage("allowUnpromotedPackagesFlagDescription"),
+      deprecated: {messageOverride:"--allowunpromotedpackages is deprecated, All packages are allowed"},
       hidden: true
     }),
     retryonfailure:flags.boolean({
@@ -108,7 +109,6 @@ export default class Deploy extends SfpowerscriptsCommand {
       logsGroupSymbol:this.flags.logsgroupsymbol,
       currentStage:Stage.DEPLOY,
       baselineOrg: this.flags.baselineorg,
-      isCheckIfPackagesPromoted: !this.flags.allowunpromotedpackages,
       isRetryOnFailure:this.flags.retryonfailure
     }
 
@@ -152,7 +152,7 @@ export default class Deploy extends SfpowerscriptsCommand {
       if (this.flags.logsgroupsymbol?.[1])
         console.log(this.flags.logsgroupsymbol[1]);
 
-     SFPStatsSender.logCount("deploy.scheduled",tags);   
+     SFPStatsSender.logCount("deploy.scheduled",tags);
 
       SFPStatsSender.logGauge(
         "deploy.duration",
@@ -174,7 +174,7 @@ export default class Deploy extends SfpowerscriptsCommand {
       );
 
       if (deploymentResult.failed.length > 0) {
-        
+
         SFPStatsSender.logCount(
           "deploy.failed",
           tags
