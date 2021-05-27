@@ -27,6 +27,7 @@ export default class ChangelogImpl {
     private workItemUrl: string,
     private showAllArtifacts: boolean = true,
     private forcePush: boolean,
+    private branch:string,
     private org?: string,
   ){
     this.org = org?.toLowerCase();
@@ -106,15 +107,15 @@ export default class ChangelogImpl {
       // Update local refs from remote
       await git.fetch("origin");
 
-      const branch = `sfp_changelog_${artifactSourceBranch}`;
-      console.log(`Checking out branch ${branch}`);
-      if (await this.isBranchExists(branch, git)) {
-        await git.checkout(branch);
+    
+      console.log(`Checking out branch ${this.branch}`);
+      if (await this.isBranchExists(this.branch, git)) {
+        await git.checkout(this.branch);
 
         // For ease-of-use when running locally and local branch exists
-        await git.merge([`refs/remotes/origin/${branch}`]);
+        await git.merge([`refs/remotes/origin/${this.branch}`]);
       } else {
-        await git.checkout(['-b', branch]);
+        await git.checkout(['-b', this.branch]);
       }
 
       let releaseChangelog: ReleaseChangelog;
@@ -168,7 +169,7 @@ export default class ChangelogImpl {
         payload
       );
 
-      await this.pushChangelogToBranch(branch, git, this.forcePush);
+      await this.pushChangelogToBranch(this.branch, git, this.forcePush);
 
       console.log(`Successfully generated changelog`);
     } finally {

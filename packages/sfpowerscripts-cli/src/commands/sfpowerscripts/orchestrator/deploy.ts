@@ -109,7 +109,6 @@ export default class Deploy extends SfpowerscriptsCommand {
       logsGroupSymbol:this.flags.logsgroupsymbol,
       currentStage:Stage.DEPLOY,
       baselineOrg: this.flags.baselineorg,
-      isCheckIfPackagesPromoted: !this.flags.allowunpromotedpackages,
       isRetryOnFailure:this.flags.retryonfailure
     }
 

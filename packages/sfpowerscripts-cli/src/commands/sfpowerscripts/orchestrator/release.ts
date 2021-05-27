@@ -2,7 +2,7 @@ import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
-import ReleaseImpl, { ReleaseResult } from "../../../impl/release/ReleaseImpl";
+import ReleaseImpl, { ReleaseProps, ReleaseResult } from "../../../impl/release/ReleaseImpl";
 import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
 import ReleaseError from "../../../errors/ReleaseError";
 import path = require("path");
@@ -13,8 +13,8 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'release');
 
 export default class Release extends SfpowerscriptsCommand {
 
-  
- 
+
+
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
@@ -79,6 +79,11 @@ export default class Release extends SfpowerscriptsCommand {
       default: false,
       description: messages.getMessage("generateChangelogFlagDescription")
     }),
+    branchname: flags.string({
+      dependsOn: ['generatechangelog'],
+      char: "b",
+      description: messages.getMessage('branchNameFlagDescription')
+    }),
     allowunpromotedpackages: flags.boolean({
       description: messages.getMessage("allowUnpromotedPackagesFlagDescription"),
       hidden: true,
@@ -131,21 +136,26 @@ export default class Release extends SfpowerscriptsCommand {
          throw new Error("DevHub is mandatory when promote is used within release defintion")
       }
 
+      let props:ReleaseProps = {
+        releaseDefinition:releaseDefinition,
+        targetOrg: this.flags.targetorg,
+        fetchArtifactScript:this.flags.scriptpath,
+        isNpm:this.flags.npm,
+        scope: this.flags.scope,
+        npmrcPath: this.flags.npmrcpath,
+        logsGroupSymbol: this.flags.logsgroupsymbol,
+        tags: tags,
+        isDryRun: this.flags.dryrun,
+        waitTime: this.flags.waittime,
+        keys: this.flags.keys,
+        isGenerateChangelog: this.flags.generatechangelog,
+        devhubUserName: this.flags.devhubalias,
+        branch: this.flags.branchname
+      }
+
+
       let releaseImpl: ReleaseImpl = new ReleaseImpl(
-        releaseDefinition,
-        this.flags.targetorg,
-        this.flags.scriptpath,
-        this.flags.npm,
-        this.flags.scope,
-        this.flags.npmrcpath,
-        this.flags.logsgroupsymbol,
-        tags,
-        this.flags.dryrun,
-        this.flags.waittime,
-        this.flags.keys,
-        this.flags.generatechangelog,
-        false,
-        this.flags.devhubalias
+       props
       );
 
       releaseResult = await releaseImpl.exec();

@@ -50,7 +50,6 @@ export interface DeployProps {
   packageLogger?: any;
   currentStage?: Stage;
   baselineOrg?: string;
-  isCheckIfPackagesPromoted?: boolean;
   isDryRun?: boolean;
   isRetryOnFailure?: boolean;
   promotePackagesBeforeDeploymentToOrg?:string,
@@ -66,7 +65,7 @@ export default class DeployImpl {
     testFailure: string;
     error: any;
   }> {
-  
+
     let deployed: string[] = [];
     let failed: string[] = [];
     let testFailure: string;
@@ -137,20 +136,20 @@ export default class DeployImpl {
           packageManifest
         );
 
-       
-       
+
+
 
         this.printOpenLoggingGroup("Installing ", queue[i].package);
         this.displayHeader(packageMetadata, pkgDescriptor, queue[i].package);
 
 
-   
+
 
         let packageInstallationResult = await retry(
           async (bail,count) => {
 
             try {
-              
+
               await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory,packageMetadata);
 
               this.displayRetryHeader(this.props.isRetryOnFailure,count);
@@ -174,7 +173,7 @@ export default class DeployImpl {
                 return installPackageResult;
             } catch (error) {
               if (!this.props.isRetryOnFailure) // Any other exception, in regular cases dont retry, just bail out
-                 { 
+                 {
                   let failedPackageInstallationResult: PackageInstallationResult = {
                       result : PackageInstallationStatus.Failed,
                        message:error
@@ -187,7 +186,7 @@ export default class DeployImpl {
 
           }, { retries: 1, minTimeout: 2000 });
 
-       
+
         if (
           packageInstallationResult.result ===
           PackageInstallationStatus.Succeeded
@@ -782,6 +781,3 @@ export interface DeploymentResult {
   testFailure: string;
   error: any;
 }
-
-
-
