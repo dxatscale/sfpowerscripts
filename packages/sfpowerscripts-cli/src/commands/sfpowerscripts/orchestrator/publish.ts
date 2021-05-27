@@ -36,12 +36,11 @@ export default class Promote extends SfpowerscriptsCommand {
     publishpromotedonly: flags.boolean({
       char: 'p',
       description: messages.getMessage('publishPromotedOnlyFlagDescription'),
-      default: false
+      dependsOn: ['devhubalias'],
     }),
     devhubalias: flags.string({
       char: 'v',
       description: messages.getMessage('devhubAliasFlagDescription'),
-      deprecated: {messageOverride:"--devhubalias has been deprecated"}
     }),
     scriptpath: flags.filepath({
       char: 'f',
@@ -105,7 +104,19 @@ export default class Promote extends SfpowerscriptsCommand {
     console.log(`Publish promoted artifacts only: ${this.flags.publishpromotedonly ? true : false}`);
     console.log("---------------------------------------------------------");
 
-
+      let packageVersionList: any;
+      if (this.flags.publishpromotedonly) {
+        let packageVersionListJson: string = child_process.execSync(
+          `sfdx force:package:version:list --released -v ${this.flags.devhubalias} --json`,
+          {
+            cwd: process.cwd(),
+            stdio: ['ignore', 'pipe', 'pipe'],
+            encoding: 'utf8',
+            maxBuffer: 5*1024*1024
+          }
+        );
+        packageVersionList = JSON.parse(packageVersionListJson);
+      }
 
       let artifacts = ArtifactFilePathFetcher.findArtifacts(this.flags.artifactdir);
       let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);
@@ -132,79 +143,41 @@ export default class Promote extends SfpowerscriptsCommand {
           packageVersionNumber
         );
 
-        if (this.flags.publishpromotedonly) {
-          if (!packageMetadata.isPromoted) {
+        let packageType = packageMetadata.package_type;
+        let packageVersionId = packageMetadata.package_version_id;
+
+        if (this.flags.publishpromotedonly && packageType === "unlocked") {
+          let isReleased = this.isPackageVersionIdReleased(packageVersionList, packageVersionId);
+
+          if (!isReleased) {
             failedArtifacts.push(`${packageName} v${packageVersionNumber}`);
-            console.log(`Skipping ${packageName} Version ${packageVersionNumber} as it has not been promoted.`);
+            console.log(`Skipping ${packageName} Version ${packageVersionNumber}. Package Version Id ${packageVersionId} has not been promoted.`);
             process.exitCode = 1;
             continue;
           }
         }
 
         try {
-          console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
-
-          let cmd: string;
-          let childProcessCwd: string;
-
           if (this.flags.npm) {
-            let artifactRootDirectory = path.dirname(sourceDirectory);
-            childProcessCwd = artifactRootDirectory;
-
-            // NPM does not accept packages with uppercase characters
-            let name: string = packageName.toLowerCase() + "_sfpowerscripts_artifact"
-
-            if (this.flags.scope) name = `@${this.flags.scope}/` + name;
-
-            let packageJson = {
-              name: name,
-              version: packageVersionNumber,
-              repository: packageMetadata.repository_url
-            };
-
-            fs.writeFileSync(
-              path.join(artifactRootDirectory, "package.json"),
-              JSON.stringify(packageJson, null, 4)
+            this.publishUsingNpm(
+              sourceDirectory,
+              packageName,
+              packageVersionNumber,
+              packageMetadata,
+              npmrcFilesToCleanup
             );
-
-            if (this.flags.npmrcpath) {
-              fs.copyFileSync(
-                this.flags.npmrcpath,
-                path.join(artifactRootDirectory, ".npmrc")
-              );
-
-              npmrcFilesToCleanup.push(
-                path.join(artifactRootDirectory, ".npmrc")
-              );
-            }
-
-            cmd = `npm publish`;
-
-            if (this.flags.npmtag) cmd += ` --tag ${this.flags.npmtag}`;
-
           } else {
-            childProcessCwd = process.cwd();
-
-            if (process.platform !== 'win32') {
-              cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
-            } else {
-              cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
-            }
+            this.publishUsingScript(
+              packageName,
+              packageVersionNumber,
+              artifact
+            );
           }
-
-          child_process.execSync(
-            cmd,
-            {
-              cwd: childProcessCwd,
-              stdio: ['ignore', 'ignore', 'inherit']
-            }
-          );
-
 
           succesfullyPublishedPackageNamesForTagging.push({
             name:packageName,
             version:packageVersionNumber.replace("-", "."),
-            type: packageMetadata.package_type,
+            type: packageType,
             tag:`${packageName}_v${packageVersionNumber.replace("-", ".")}`
           });
 
@@ -285,6 +258,90 @@ export default class Promote extends SfpowerscriptsCommand {
     }
   }
 
+  private publishUsingNpm(
+    sourceDirectory: string,
+    packageName: string,
+    packageVersionNumber: string,
+    packageMetadata: PackageMetadata,
+    npmrcFilesToCleanup: string[]
+  ) {
+    let artifactRootDirectory = path.dirname(sourceDirectory);
+
+    // NPM does not accept packages with uppercase characters
+    let name: string = packageName.toLowerCase() + "_sfpowerscripts_artifact";
+
+    if (this.flags.scope)
+      name = `@${this.flags.scope}/` + name;
+
+    let packageJson = {
+      name: name,
+      version: packageVersionNumber,
+      repository: packageMetadata.repository_url
+    };
+
+    fs.writeFileSync(
+      path.join(artifactRootDirectory, "package.json"),
+      JSON.stringify(packageJson, null, 4)
+    );
+
+    if (this.flags.npmrcpath) {
+      fs.copyFileSync(
+        this.flags.npmrcpath,
+        path.join(artifactRootDirectory, ".npmrc")
+      );
+
+      npmrcFilesToCleanup.push(
+        path.join(artifactRootDirectory, ".npmrc")
+      );
+    }
+
+    let cmd = `npm publish`;
+
+    let tag: string;
+    if (this.flags.npmtag) {
+      tag = this.flags.npmtag;
+    } else if (packageMetadata.branch) {
+      tag = packageMetadata.branch
+    } else {
+      throw new Error(`Artifact ${packageName} ${packageVersionNumber} does not contain branch info. Please provide --npmtag flag explicitly, or re-build the artifact with the --branch flag.`);
+    }
+
+    cmd += ` --tag ${tag}`;
+
+    console.log(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`);
+
+    child_process.execSync(
+      cmd,
+      {
+        cwd: artifactRootDirectory,
+        stdio: "pipe"
+      }
+    );
+  }
+
+  private publishUsingScript(
+    packageName: string,
+    packageVersionNumber: string,
+    artifact: string
+  ) {
+    let cmd: string;
+    if (process.platform !== 'win32') {
+      cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+    } else {
+      cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+    }
+
+    console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
+
+    child_process.execSync(
+      cmd,
+      {
+        cwd: process.cwd(),
+        stdio: ['ignore', 'inherit', 'inherit']
+      }
+    );
+  }
+
   protected validateFlags() {
     if (this.flags.scriptpath === undefined && this.flags.npm === undefined)
       throw new Error("Either --scriptpath or --npm flag must be provided");
@@ -324,6 +381,17 @@ export default class Promote extends SfpowerscriptsCommand {
         );
       }
 
+  }
+
+  private isPackageVersionIdReleased(packageVersionList: any, packageVersionId: string): boolean {
+    let packageVersion = packageVersionList.result.find((pkg) => {
+      return pkg.SubscriberPackageVersionId === packageVersionId;
+    });
+
+    if (packageVersion)
+      return true
+    else
+      return false
   }
 
   /**

@@ -1,5 +1,5 @@
 {
-  "commandDescription": "Release artifacts to an org",
+  "commandDescription": "Initiate a release to an org, according to the configuration defined in a release-definition YAML file",
   "releaseDefinitionFlagDescription": "Path to YAML file containing map of packages and package versions to download",
   "targetOrgFlagDescription": "Alias/User Name of the target environment",
   "scriptPathFlagDescription": "(Optional: no-NPM) Path to script that authenticates and downloads artifacts from the registry",
@@ -11,5 +11,8 @@
   "dryRunFlagDescription": "Perform dry-run of release. No artifacts are deployed to the target org.",
   "waitTimeFlagDescription": "Wait time for package installation",
   "keysFlagDescription": "Keys to be used while installing any managed package dependencies. Required format is a string of key-value pairs separated by spaces e.g. packageA:pw123 packageB:pw123 packageC:pw123",
-  "allowUnpromotedPackagesFlagDescription": "Allow un-promoted packages to be installed in production"
+  "generateChangelogFlagDescription": "Create a release changelog",
+  "allowUnpromotedPackagesFlagDescription": "Allow un-promoted packages to be installed in production",
+  "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg",
+  "branchNameFlagDescription": "Repository branch in which the changelog files are located"
 }
