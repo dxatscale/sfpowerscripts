@@ -12,8 +12,8 @@
 
 ## CONCEPTS <a id="faq"></a>
 
-* [Artifacts](faq/artifacts.md)
 * [Orchestrator](faq/orchestrator.md)
+* [Artifacts](faq/artifacts.md)
 * [Metrics and Dashboards](faq/metrics-and-dashboards.md)
 * [Package Types](faq/package-types/README.md)
   * [Unlocked Packages](faq/package-types/unlocked-packages.md)
