@@ -22,7 +22,7 @@ export default class ReleaseDefinition {
     this.validateReleaseDefinition(this._releaseDefinition);
 
     // Workaround for jsonschema not supporting validation based on dependency value
-    if (this._releaseDefinition.releaseOptions?.baselineOrg && !this._releaseDefinition.releaseOptions?.skipIfAlreadyInstalled)
+    if (this._releaseDefinition.baselineOrg && !this._releaseDefinition.skipIfAlreadyInstalled)
       throw new Error("Release option 'skipIfAlreadyInstalled' must be true for 'baselineOrg'");
 
     if (this._releaseDefinition.packageDependencies) {

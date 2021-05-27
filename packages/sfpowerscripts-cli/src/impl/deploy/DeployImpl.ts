@@ -8,7 +8,6 @@ import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcomm
 import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl";
 import ArtifactInstallationStatusChecker from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInstallationStatusChecker"
 import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher"
-import OrgDetails from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetails";
 import ArtifactInquirer from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInquirer";
 
 import fs = require("fs");
@@ -29,6 +28,7 @@ import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/package/Indi
 import { RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions";
 import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions";
 import semver = require("semver");
+import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
 const Table = require("cli-table");
 const retry = require("async-retry");
 
@@ -50,9 +50,10 @@ export interface DeployProps {
   packageLogger?: any;
   currentStage?: Stage;
   baselineOrg?: string;
-  isCheckIfPackagesPromoted?: boolean;
   isDryRun?: boolean;
   isRetryOnFailure?: boolean;
+  promotePackagesBeforeDeploymentToOrg?:string,
+  devhubUserName?:string
 }
 
 export default class DeployImpl {
@@ -64,7 +65,7 @@ export default class DeployImpl {
     testFailure: string;
     error: any;
   }> {
-    let orgDetails = await OrgDetails.getOrgDetails(this.props.targetUsername);
+
     let deployed: string[] = [];
     let failed: string[] = [];
     let testFailure: string;
@@ -116,11 +117,6 @@ export default class DeployImpl {
         this.printArtifactVersions(queue, packagesToPackageInfo);
       }
 
-      if (!orgDetails.IsSandbox) {
-        if (this.props.isCheckIfPackagesPromoted)
-          this.checkIfPackagesPromoted(queue, packagesToPackageInfo);
-      }
-
 
       SFPStatsSender.logGauge(
         "deploy.scheduled.packages",
@@ -140,14 +136,22 @@ export default class DeployImpl {
           packageManifest
         );
 
+
+
+
         this.printOpenLoggingGroup("Installing ", queue[i].package);
         this.displayHeader(packageMetadata, pkgDescriptor, queue[i].package);
+
+
+
 
         let packageInstallationResult = await retry(
           async (bail,count) => {
 
             try {
-              
+
+              await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory,packageMetadata);
+
               this.displayRetryHeader(this.props.isRetryOnFailure,count);
 
               let installPackageResult = await this.installPackage(
@@ -169,7 +173,7 @@ export default class DeployImpl {
                 return installPackageResult;
             } catch (error) {
               if (!this.props.isRetryOnFailure) // Any other exception, in regular cases dont retry, just bail out
-                 { 
+                 {
                   let failedPackageInstallationResult: PackageInstallationResult = {
                       result : PackageInstallationStatus.Failed,
                        message:error
@@ -182,7 +186,7 @@ export default class DeployImpl {
 
           }, { retries: 1, minTimeout: 2000 });
 
-       
+
         if (
           packageInstallationResult.result ===
           PackageInstallationStatus.Succeeded
@@ -271,6 +275,16 @@ export default class DeployImpl {
   }
 
 
+  private async promotePackagesBeforeInstallation( sourceDirectory:string,packageMetadata: any) {
+    if (this.props.promotePackagesBeforeDeploymentToOrg === this.props.targetUsername) {
+      if (packageMetadata.package_type === 'unlocked') {
+        console.log(`Attempting to promote package ${packageMetadata.package_name} before installation`);
+        let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(sourceDirectory, packageMetadata.package_version_id, this.props.devhubUserName);
+        await promoteUnlockedPackageImpl.exec();
+      }
+    }
+  }
+
   private displayRetryHeader(isRetryOnFailure:boolean,count:number) {
     if (isRetryOnFailure && count>1) {
       SFPLogger.log(
@@ -323,16 +337,7 @@ export default class DeployImpl {
     );
   }
 
-  private checkIfPackagesPromoted(queue: any[], packagesToPackageInfo: { [p: string]: PackageInfo; }) {
-    let unpromotedPackages: string[] = [];
-    queue.forEach((pkg) => {
-      if (!packagesToPackageInfo[pkg.package].packageMetadata.isPromoted)
-        unpromotedPackages.push(pkg.package);
-    });
 
-    if (unpromotedPackages.length > 0)
-      throw new Error(`Packages must be promoted for deployments to production org: ${unpromotedPackages}`);
-  }
 
   private printArtifactVersionsWhenSkipped(queue: any[], packagesToPackageInfo: { [p: string]: PackageInfo }, isBaselinOrgModeActivated: boolean) {
     this.printOpenLoggingGroup(`Full Deployment Breakdown`);
@@ -776,6 +781,3 @@ export interface DeploymentResult {
   testFailure: string;
   error: any;
 }
-
-
-

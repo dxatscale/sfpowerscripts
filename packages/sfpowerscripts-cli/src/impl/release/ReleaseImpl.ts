@@ -5,48 +5,61 @@ import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils
 import { Stage } from "../Stage";
 import child_process = require("child_process");
 import ReleaseError from "../../errors/ReleaseError";
+import ChangelogImpl from "../../impl/changelog/ChangelogImpl";
+
+
+
+export interface ReleaseProps
+{
+  releaseDefinition: ReleaseDefinitionSchema,
+  targetOrg: string,
+  fetchArtifactScript: string,
+  isNpm: boolean,
+  scope: string,
+  npmrcPath: string,
+  logsGroupSymbol: string[],
+  tags: any,
+  isDryRun: boolean,
+  waitTime: number,
+  keys: string,
+  isGenerateChangelog: boolean,
+  devhubUserName: string,
+  branch:string
+}
+
 
 export default class ReleaseImpl {
+
   constructor(
-    private releaseDefinition: ReleaseDefinitionSchema,
-    private targetOrg: string,
-    private fetchArtifactScript: string,
-    private isNpm: boolean,
-    private scope: string,
-    private npmrcPath: string,
-    private logsGroupSymbol: string[],
-    private tags: any,
-    private isDryRun: boolean,
-    private waitTime: number,
-    private keys: string,
-    private isCheckIfPackagesPromoted: boolean
+    private props: ReleaseProps
   ){}
 
   public async exec(): Promise<ReleaseResult> {
 
     this.printOpenLoggingGroup("Fetching artifacts");
     let fetchImpl: FetchImpl = new FetchImpl(
-      this.releaseDefinition,
+      this.props.releaseDefinition,
       "artifacts",
-      this.fetchArtifactScript,
-      this.isNpm,
-      this.scope,
-      this.npmrcPath
+      this.props.fetchArtifactScript,
+      this.props.isNpm,
+      this.props.scope,
+      this.props.npmrcPath
     );
     await fetchImpl.exec();
     this.printClosingLoggingGroup();
 
+
     let installDependenciesResult: InstallDependenciesResult;
-    if (this.releaseDefinition.packageDependencies) {
+    if (this.props.releaseDefinition.packageDependencies) {
       installDependenciesResult = this.installPackageDependencies(
-        this.releaseDefinition.packageDependencies,
-        this.targetOrg,
-        this.keys,
-        this.waitTime
+        this.props.releaseDefinition.packageDependencies,
+        this.props.targetOrg,
+        this.props.keys,
+        this.props.waitTime
       );
     }
 
-    let deploymentResult = await this.deployArtifacts(this.releaseDefinition);
+    let deploymentResult = await this.deployArtifacts(this.props.releaseDefinition);
 
     if (deploymentResult.failed.length > 0 || deploymentResult.error) {
       throw new ReleaseError(
@@ -54,6 +67,27 @@ export default class ReleaseImpl {
         {deploymentResult: deploymentResult, installDependenciesResult: installDependenciesResult}
       );
     } else {
+      if (this.props.isGenerateChangelog) {
+        this.printOpenLoggingGroup("Release changelog");
+
+        let changelogImpl: ChangelogImpl = new ChangelogImpl(
+          "artifacts",
+          this.props.releaseDefinition.release,
+          this.props.releaseDefinition.changelog.workItemFilter,
+          this.props.releaseDefinition.changelog.limit,
+          this.props.releaseDefinition.changelog.workItemUrl,
+          this.props.releaseDefinition.changelog.showAllArtifacts,
+          false,
+          this.props.branch,
+          this.props.targetOrg
+        );
+
+        await changelogImpl.exec();
+
+
+        this.printClosingLoggingGroup();
+      }
+
       return {
         deploymentResult: deploymentResult,
         installDependenciesResult: installDependenciesResult
@@ -61,23 +95,25 @@ export default class ReleaseImpl {
     }
   }
 
+
   private async deployArtifacts(
     releaseDefinition: ReleaseDefinitionSchema
   ) {
 
     let deployProps: DeployProps = {
-      targetUsername: this.targetOrg,
+      targetUsername: this.props.targetOrg,
       artifactDir: "artifacts",
-      waitTime: this.waitTime,
-      tags: this.tags,
+      waitTime: this.props.waitTime,
+      tags: this.props.tags,
       isTestsToBeTriggered: false,
       deploymentMode: DeploymentMode.NORMAL,
-      skipIfPackageInstalled: releaseDefinition.releaseOptions?.skipIfAlreadyInstalled,
-      logsGroupSymbol: this.logsGroupSymbol,
+      skipIfPackageInstalled: releaseDefinition.skipIfAlreadyInstalled,
+      logsGroupSymbol: this.props.logsGroupSymbol,
       currentStage: Stage.DEPLOY,
-      baselineOrg: releaseDefinition.releaseOptions?.baselineOrg,
-      isCheckIfPackagesPromoted: this.isCheckIfPackagesPromoted,
-      isDryRun: this.isDryRun
+      baselineOrg: releaseDefinition.baselineOrg,
+      isDryRun: this.props.isDryRun,
+      promotePackagesBeforeDeploymentToOrg: releaseDefinition.promotePackagesBeforeDeploymentToOrg,
+      devhubUserName: this.props.devhubUserName
     };
 
     let deployImpl: DeployImpl = new DeployImpl(
@@ -199,9 +235,9 @@ export default class ReleaseImpl {
   }
 
   private printOpenLoggingGroup(message:string) {
-    if (this.logsGroupSymbol?.[0])
+    if (this.props.logsGroupSymbol?.[0])
       SFPLogger.log(
-        this.logsGroupSymbol[0],
+        this.props.logsGroupSymbol[0],
         `${message}`,
         null,
         LoggerLevel.INFO
@@ -209,9 +245,9 @@ export default class ReleaseImpl {
   }
 
   private printClosingLoggingGroup() {
-    if (this.logsGroupSymbol?.[1])
+    if (this.props.logsGroupSymbol?.[1])
       SFPLogger.log(
-        this.logsGroupSymbol[1],
+        this.props.logsGroupSymbol[1],
         null,
         null,
         LoggerLevel.INFO

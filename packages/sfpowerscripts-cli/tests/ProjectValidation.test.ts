@@ -251,4 +251,81 @@ describe("Given a sfdx-project.json, it should be validated against the scehma",
     expect(() => { new ProjectValidation().validateSFDXProjectJSON(); }).toThrow();
   });
 
+
+  it("should not throw an package-specific error for sfdx-project.json when version number is used correctly", () => {
+
+    // sfdx-project.json includes one source package with specific build number (valid) and one unlocked package using NEXT keyword (also valid)
+    let sfdx_project={
+      "packageDirectories": [
+        {
+          "path": "packages/temp",
+          "default": true,
+          "package": "temp",
+          "type": "source",
+          "versionName": "temp",
+          "versionNumber": "1.0.0.0"
+        },
+        {
+          "path": "packages/domains/core",
+          "package": "core",
+          "default": false,
+          "versionName": "core",
+          "versionNumber": "1.0.0.NEXT"
+        }
+      ],
+      "namespace": "",
+      "sfdcLoginUrl": "https://login.salesforce.com",
+      "sourceApiVersion": "50.0",
+       "packageAliases":
+        { "core":"04t000000000000" }
+    };
+
+    const projectConfigMock = jest.spyOn(ProjectConfig, "getSFDXPackageManifest");
+    projectConfigMock.mockImplementation(()=>{return sfdx_project})
+    expect(() => { new ProjectValidation().validatePackageBuildNumbers(); }).not.toThrow();
+  });
+
+
+  it("should throw a package-specific error for sfdx-project.json when version number is used incorrectly", () => {
+
+    // sfdx-project.json includes two source packages. One with specific build number (valid), one using NEXT keyword (invalid)
+    let sfdx_project={
+      "packageDirectories": [
+        {
+          "path": "packages/temp",
+          "default": true,
+          "package": "temp",
+          "type": "source",
+          "versionName": "temp",
+          "versionNumber": "1.0.0.0"
+        },
+        {
+          "path": "packages/domains/core",
+          "package": "invalid_core_pkg",
+          "default": false,
+          "type": "source",
+          "versionName": "core",
+          "versionNumber": "1.0.0.NEXT"
+        }
+      ],
+      "namespace": "",
+      "sfdcLoginUrl": "https://login.salesforce.com",
+      "sourceApiVersion": "50.0"
+    };
+
+    const projectConfigMock = jest.spyOn(ProjectConfig, "getSFDXPackageManifest");
+    projectConfigMock.mockImplementation(()=>{return sfdx_project});
+
+    let excep;
+    try {
+      new ProjectValidation().validatePackageBuildNumbers();
+    }
+    catch(error) {
+      excep = error;
+    }
+
+    expect(excep);
+    expect(excep.message).toContain('invalid_core_pkg');
+  });
+  
 });
