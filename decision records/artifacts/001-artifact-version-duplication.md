@@ -1,6 +1,6 @@
 # Solve for artifact duplication
 
-* Status: Proposed  <!-- optional -->
+* Status: Accepted  <!-- optional -->
 
 
 ## Context and Problem Statement
@@ -21,5 +21,10 @@ This is a problem for source & data packages only. Unlocked package versions are
     - Clients may be reluctant to store package versions in Dev Hub
 4. **Add branch to package version number for uniqueness**
     - Add the branch to the package version, as build metadata, so that artifacts versions are unique to the branch e.g. major.minor.patch-buildNumber+<branch>
+5. **Prevent publishing of new packages with lower build numbers**
+    - sfpowerscripts:orchestrator:publish could feature a new functionality that checks the artifact repository whether a package with higher build number (of the same major.minor.patch) already exists. If it exists, it would prevent the package to be published
+    - This would result in concurrency issues, as it prevents concurrent publish pipelines to publish artifacts.
 
 ## Decision
+
+Due to various complexities, it is better to utilize #2, user's has to follow semantic version rather than sfpowerscripts doing any form of automation
