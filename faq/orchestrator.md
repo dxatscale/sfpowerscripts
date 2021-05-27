@@ -12,7 +12,7 @@ description: The heart of sfpowerscripts
 
 ### A typical pipeline
 
-To understand the orchestrator, let's take a look at a typical CI/CD pipeline for a package based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
+To understand the orchestrator, let's look at a typical CI/CD pipeline for a package-based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
 ![](../.gitbook/assets/flowdiagram.png)
 
