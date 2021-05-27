@@ -1,6 +1,6 @@
 # Cutting release branch does not create a set of rc artifacts
 
-* Status: Proposed  <!-- optional -->
+* Status: Rejected  <!-- optional -->
 
 
 ## Context and Problem Statement
@@ -20,3 +20,5 @@ This process might be made simpler for the end-user, so that intervention is not
     - User is responsible for toggling `--diffcheck` when cutting release branches, so that a set of rc artifacts is created
 
 ## Decision
+
+We move away from recommending multiple feeds, rather to use a single feed originating from the trunk, and release definitions will utilize the LATEST_TAG or LATEST_GIT_TAG to do a release from the from the release branch. Users are expected to follow semantic versioning to prevent conflicts. In the case of parallel development, it is still possible to use semantic versioning in a single artifact repository.
