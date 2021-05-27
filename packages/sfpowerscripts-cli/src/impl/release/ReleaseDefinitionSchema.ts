@@ -8,6 +8,7 @@ export default interface ReleaseDefinitionSchema {
   packageDependencies: {
     [p: string]: string
   },
+  promotePackagesBeforeDeploymentToOrg:string,
   changelog: {
     repoUrl: string,
     workItemFilter: string,

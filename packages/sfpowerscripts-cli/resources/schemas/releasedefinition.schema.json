@@ -39,12 +39,12 @@
           }
         }
       },
+      "promotePackagesBeforeDeploymentToOrg":{
+        "type": "string"
+      },
       "changelog": {
         "type": "object",
         "properties": {
-          "repoUrl": {
-            "type": "string"
-          },
           "workItemFilter": {
             "type": "string"
           },
@@ -59,7 +59,6 @@
           }
         },
         "required": [
-          "repoUrl",
           "workItemFilter"
         ],
         "additionalProperties": false
