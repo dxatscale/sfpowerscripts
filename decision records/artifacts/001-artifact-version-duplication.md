@@ -1,6 +1,6 @@
 # Solve for artifact duplication
 
-* Status: Accepted  <!-- optional -->
+* Status: Rejected  <!-- optional -->
 
 
 ## Context and Problem Statement
