@@ -28,8 +28,8 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
       default: false,
     }),
     gittag: flags.boolean({
-      description: "This flag is deprecated, Please utilize git tags on publish stage",
-      default: false,
+      description: messages.getMessage("gitTagFlagDescription"),
+      hidden: true,
       deprecated: {messageOverride:"--gittag is deprecated, Please utilize git tags on publish stage"}
     }),
     repourl: flags.string({

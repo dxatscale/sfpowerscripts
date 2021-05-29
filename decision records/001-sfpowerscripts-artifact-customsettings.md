@@ -1,6 +1,6 @@
 # Migrate sfpowerscripts artifact to utilize custom settings instead of a custom object
 
-* Status: Proposal  <!-- optional -->
+* Status: Accepted  <!-- optional -->
 * Deciders: Azlam, Alan <!-- optional -->
 * Date:  <!-- optional -->
 
