@@ -25,7 +25,7 @@ export default class ChangelogImpl {
     private workItemFilter: string,
     private limit: number,
     private workItemUrl: string,
-    private showAllArtifacts: boolean = true,
+    private showAllArtifacts: boolean,
     private forcePush: boolean,
     private branch:string,
     private org?: string,
@@ -107,7 +107,7 @@ export default class ChangelogImpl {
       // Update local refs from remote
       await git.fetch("origin");
 
-    
+
       console.log(`Checking out branch ${this.branch}`);
       if (await this.isBranchExists(this.branch, git)) {
         await git.checkout(this.branch);
