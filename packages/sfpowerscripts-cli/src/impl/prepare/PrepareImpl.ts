@@ -337,7 +337,6 @@ export default class PrepareImpl {
         );
         try {
           let scratchOrg: ScratchOrg = await ScratchOrgUtils.createScratchOrg(
-            this.sfdx,
             count,
             poolUser.username,
             this.poolConfig.pool.config_file_path,
@@ -412,7 +411,6 @@ export default class PrepareImpl {
 
           await ScratchOrgUtils.deleteScratchOrg(
             this.hubOrg,
-            this.apiversion,
             activeScratchOrgRecordId
           );
           console.log(`Succesfully deleted scratchorg  ${scratchOrg.username}`);

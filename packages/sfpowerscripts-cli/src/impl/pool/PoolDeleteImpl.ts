@@ -67,7 +67,6 @@ export default class PoolDeleteImpl {
           for (let ScratchOrg of activeScrathOrgs.records) {
             await ScratchOrgUtils.deleteScratchOrg(
               this.hubOrg,
-              this.apiversion,
               ScratchOrg.Id
             );
             SFPLogger.log(
