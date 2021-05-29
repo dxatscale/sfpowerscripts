@@ -1,6 +1,6 @@
 import path from "path";
 import { SFDXCommand } from "../SFDXCommand";
-import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 
 export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
 

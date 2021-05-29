@@ -1,5 +1,5 @@
-import Git from "@dxatscale/sfpowerscripts.core/lib/utils/Git";
-import IgnoreFiles from "@dxatscale/sfpowerscripts.core/lib/utils/IgnoreFiles";
+import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
+import IgnoreFiles from "@dxatscale/sfpowerscripts.core/lib/ignore/IgnoreFiles";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import MetadataFiles from "@dxatscale/sfpowerscripts.core/lib/metadata/metadataFiles";
 const sfdcSoup = require("sfdc-soup");

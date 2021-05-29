@@ -1,6 +1,6 @@
 import { ArtifactFilePaths } from "./ArtifactFilePathFetcher";
 import PackageMetadata from "../PackageMetadata";
-import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 import * as fs from "fs-extra";
 import path = require("path");
 import lodash = require("lodash");

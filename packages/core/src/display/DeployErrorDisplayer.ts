@@ -1,5 +1,5 @@
 const Table = require("cli-table");
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 
 export default class DeployErrorDisplayer {
 

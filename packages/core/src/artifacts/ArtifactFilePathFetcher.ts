@@ -1,6 +1,6 @@
 import path = require("path");
 import * as fs from "fs-extra";
-import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 const glob = require("glob");
 import AdmZip = require("adm-zip");
 import semver = require("semver");

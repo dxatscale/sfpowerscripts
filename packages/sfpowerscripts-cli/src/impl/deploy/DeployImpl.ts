@@ -2,7 +2,7 @@ import ArtifactFilePathFetcher, {
   ArtifactFilePaths,
 } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl";
 import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallSourcePackageImpl";
 import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl";
@@ -18,7 +18,7 @@ import {
 } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import SFPLogger, {
   LoggerLevel,
-} from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { EOL } from "os";
 import { Stage } from "../Stage";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";

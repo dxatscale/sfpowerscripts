@@ -1,6 +1,6 @@
 import { SfdxCommand } from "@salesforce/command";
 import { OutputFlags } from "@oclif/parser";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender"
 import * as rimraf from "rimraf";
 import ProjectValidation from "./ProjectValidation";
 import DemoReelPlayer from "./impl/demoreelplayer/DemoReelPlayer";

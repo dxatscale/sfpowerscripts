@@ -1,6 +1,6 @@
 import child_process = require("child_process");
 import PackageMetadata from "../PackageMetadata";
-import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
 const retry = require("async-retry");
 

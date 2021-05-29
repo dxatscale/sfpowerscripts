@@ -5,9 +5,9 @@ import Bottleneck from "bottleneck";
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import { exec } from "shelljs";
 import IncrementProjectBuildNumberImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { EOL } from "os";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { Stage } from "../Stage";
 import * as fs from "fs-extra"
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";

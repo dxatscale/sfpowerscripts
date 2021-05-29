@@ -1,6 +1,6 @@
 import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
 import PackageMetadata from "../PackageMetadata";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 
 export default class ArtifactInstallationStatusChecker {
 

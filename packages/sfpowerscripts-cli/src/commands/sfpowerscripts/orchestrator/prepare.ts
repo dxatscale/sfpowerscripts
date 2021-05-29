@@ -4,7 +4,7 @@ import { flags } from "@salesforce/command";
 import { sfdx } from "../../../impl/pool/sfdxnode/parallel";
 import PrepareImpl from "../../../impl/prepare/PrepareImpl";
 import { loadSFDX } from "../../../impl/pool/sfdxnode/GetNodeWrapper";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { Stage } from "../../../impl/Stage";
 import * as fs from "fs-extra"
 import ScratchOrgUtils from "../../../impl/pool/utils/ScratchOrgUtils";

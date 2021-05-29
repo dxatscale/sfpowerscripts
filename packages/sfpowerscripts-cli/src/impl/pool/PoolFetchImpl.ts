@@ -1,5 +1,5 @@
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { Org } from "@salesforce/core";
 import ScratchOrgUtils, { ScratchOrg } from "./utils/ScratchOrgUtils";
 

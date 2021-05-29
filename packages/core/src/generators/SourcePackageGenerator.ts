@@ -1,6 +1,6 @@
 import ProjectConfig from "../project/ProjectConfig";
 import * as rimraf from "rimraf";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 import { mkdirpSync } from "fs-extra";
 import * as fs from "fs-extra";
 let path = require("path");

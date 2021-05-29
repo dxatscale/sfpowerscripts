@@ -7,9 +7,9 @@ import IndividualClassCoverage, {
 } from "../../package/IndividualClassCoverage";
 import { TestReportDisplayer } from "./TestReportDisplayer";
 import PackageTestCoverage from "../../package/PackageTestCoverage";
-import SFPLogger from "../../utils/SFPLogger";
+import SFPLogger from "../../logger/SFPLogger";
 import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
-import SFPStatsSender from "../../utils/SFPStatsSender";
+import SFPStatsSender from "../../stats/SFPStatsSender";
 
 export default class TriggerApexTests {
   public constructor(

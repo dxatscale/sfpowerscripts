@@ -3,12 +3,12 @@ import { isNullOrUndefined } from "util";
 import { onExit } from "../../utils/OnExit";
 import PackageMetadata from "../../PackageMetadata";
 import { PackageInstallationResult, PackageInstallationStatus } from "../../package/PackageInstallationResult";
-import SFPLogger from "../../utils/SFPLogger";
-import PackageInstallationHelpers from "../../utils/PackageInstallationHelpers";
+import SFPLogger from "../../logger/SFPLogger";
+import PackageInstallationHelpers from "./PackageInstallationHelpers";
 import path = require("path");
 import fs = require("fs");
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
-import SFPStatsSender from "../../utils/SFPStatsSender";
+import SFPStatsSender from "../../stats/SFPStatsSender";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
 
 export default class InstallUnlockedPackageImpl {

@@ -1,10 +1,10 @@
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger from "../../utils/SFPLogger";
+import SFPLogger from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
-import SFPStatsSender from "../../utils/SFPStatsSender";
+import SFPStatsSender from "../../stats/SFPStatsSender";
 import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 
 export default class CreateDataPackageImpl {

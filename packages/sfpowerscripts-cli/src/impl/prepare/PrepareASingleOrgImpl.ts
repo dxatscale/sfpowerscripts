@@ -7,9 +7,9 @@ import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
 import { EOL } from "os";
 import SFPLogger, {
   LoggerLevel,
-} from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Stage } from "../Stage";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
 export default class PrepareASingleOrgImpl {

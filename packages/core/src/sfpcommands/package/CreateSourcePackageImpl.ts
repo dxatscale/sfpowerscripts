@@ -1,4 +1,4 @@
-import SFPLogger from "../../utils/SFPLogger";
+import SFPLogger from "../../logger/SFPLogger";
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
@@ -6,7 +6,7 @@ import { EOL } from "os";
 import * as fs from "fs-extra";
 import path = require("path");
 import  { ApexSortedByType, FileDescriptor } from "../../parser/ApexTypeFetcher";
-import SFPStatsSender from "../../utils/SFPStatsSender";
+import SFPStatsSender from "../../stats/SFPStatsSender";
 import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 import SFPPackage  from "../../package/SFPPackage";
 const Table = require("cli-table");

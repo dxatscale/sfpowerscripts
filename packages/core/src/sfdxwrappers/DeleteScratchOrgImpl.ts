@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 
 export default class DeleteScratchOrgImpl {
   

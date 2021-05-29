@@ -1,6 +1,6 @@
 import child_process = require("child_process");
 import { isNullOrUndefined, isNumber } from "util";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 const fs = require("fs");
 const path = require("path");
 

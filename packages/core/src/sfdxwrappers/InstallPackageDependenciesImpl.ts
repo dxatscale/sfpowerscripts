@@ -5,7 +5,7 @@ import {
   PackageInstallationStatus,
 } from "../package/PackageInstallationResult";
 import { onExit } from "../utils/OnExit";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 
 export default class InstallPackageDependenciesImpl {
   public constructor(

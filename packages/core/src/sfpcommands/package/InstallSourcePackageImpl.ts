@@ -1,18 +1,18 @@
-import DeploySourceToOrgImpl, { DeploySourceResult } from "../../sfdxwrappers/DeploySourceToOrgImpl";
-import ReconcileProfileAgainstOrgImpl from "../../sfdxwrappers/ReconcileProfileAgainstOrgImpl";
-import DeployDestructiveManifestToOrgImpl from "../../sfdxwrappers/DeployDestructiveManifestToOrgImpl";
+import DeploySourceToOrgImpl, { DeploySourceResult } from "../source/DeploySourceToOrgImpl";
+import ReconcileProfileAgainstOrgImpl from "../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl";
+import DeployDestructiveManifestToOrgImpl from "../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl";
 import PackageMetadata from "../../PackageMetadata";
 import ProjectConfig from "../../project/ProjectConfig";
 import OrgDetails from "../../org/OrgDetails";
-import SFPStatsSender from "../../utils/SFPStatsSender";
+import SFPStatsSender from "../../stats/SFPStatsSender";
 import {
   PackageInstallationResult,
   PackageInstallationStatus,
 } from "../../package/PackageInstallationResult";
-import SFPLogger, {LoggerLevel} from "../../utils/SFPLogger";
+import SFPLogger, {LoggerLevel} from "../../logger/SFPLogger";
 
 import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
-import PackageInstallationHelpers from "../../utils/PackageInstallationHelpers";
+import PackageInstallationHelpers from "./PackageInstallationHelpers";
 
 import * as fs from "fs-extra";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";

@@ -2,7 +2,7 @@ import {
   RunApexTestSuitesOption,
   TestOptions,
 } from "../../sfdxwrappers/TestOptions";
-import SFPLogger from "../../utils/SFPLogger";
+import SFPLogger from "../../logger/SFPLogger";
 import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
 
 const Table = require("cli-table");

@@ -4,12 +4,12 @@ import { onExit } from "../../utils/OnExit";
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger from "../../utils/SFPLogger";
+import SFPLogger from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import { delay } from "../../utils/Delay";
 import PackageVersionListImpl from "../../sfdxwrappers/PackageVersionListImpl";
-import SFPStatsSender from "../../utils/SFPStatsSender";
+import SFPStatsSender from "../../stats/SFPStatsSender";
 import SFPPackage  from "../../package/SFPPackage";
 const path = require("path");
 

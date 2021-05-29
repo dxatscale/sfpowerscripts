@@ -1,6 +1,6 @@
 import { jest, expect } from "@jest/globals";
-import GitTags from "../../src/utils/GitTags";
-import Git from "../../src/utils/Git";
+import GitTags from "../../src/git/GitTags";
+import Git from "../../src/git/Git";
 
 import child_process = require("child_process");
 
