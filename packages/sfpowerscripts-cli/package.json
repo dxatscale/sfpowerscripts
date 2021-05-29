@@ -32,7 +32,7 @@
     "object-hash": "^2.1.1",
     "puppeteer": "^7.1.0",
     "rimraf": "^3.0.2",
-    "salesforce-alm": "^50.6.0",
+    "salesforce-alm": "^51.6.26",
     "semver": "^7.3.4",
     "sfdc-soup": "^1.0.1",
     "shelljs": "0.8.4",
@@ -43,6 +43,7 @@
   "devDependencies": {
     "@types/adm-zip": "^0.4.33",
     "@types/jest": "^26.0.20",
+    "dependency-cruiser": "^10.0.1",
     "jest": "^26.6.3",
     "ts-jest": "^26.5.0",
     "typescript": "^4.1.3"
