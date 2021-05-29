@@ -7,7 +7,7 @@ let gitTags: string[] = [];
 let gitDiff: string[] = [];
 let gitShow: string = '';
 
-jest.mock("../../src/utils/Git", () => {
+jest.mock("../../src/git/Git", () => {
   class Git {
     diff = jest.fn().mockReturnValue(gitDiff);
     show = jest.fn().mockReturnValue(gitShow);
@@ -16,7 +16,7 @@ jest.mock("../../src/utils/Git", () => {
   return Git;
 });
 
-jest.mock("../../src/utils/GitTags", () => {
+jest.mock("../../src/git/GitTags", () => {
   class GitTags {
     async listTagsOnBranch(): Promise<string[]>{
       return gitTags;
@@ -27,7 +27,7 @@ jest.mock("../../src/utils/GitTags", () => {
 });
 
 let ignoreFilterResult: string[] = [];
-jest.mock("../../src/utils/IgnoreFiles", () => {
+jest.mock("../../src/ignore/IgnoreFiles", () => {
   class IgnoreFiles {
 
     filter = jest.fn().mockReturnValue(ignoreFilterResult);
