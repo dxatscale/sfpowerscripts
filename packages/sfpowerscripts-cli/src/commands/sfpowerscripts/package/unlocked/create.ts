@@ -49,7 +49,7 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
     buildartifactenabled: flags.boolean({
       char: "b",
       description: messages.getMessage("buildArtifactEnabledFlagDescription"),
-      default: true,
+      deprecated: {messageOverride:"--buildartifactenabled is deprecated. Artifacts are always created"}
     }),
     installationkey: flags.string({
       char: "k",
