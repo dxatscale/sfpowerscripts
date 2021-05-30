@@ -2,7 +2,7 @@ import FetchAnArtifact from "./FetchAnArtifact";
 import { FetchAnArtifactFromNPM } from "./FetchAnArtifactFromNPM";
 import { FetchAnArtifactUsingScript } from "./FetchAnArtifactUsingScript";
 
-export class FetchArtifactSelector {
+export default class FetchArtifactSelector {
   constructor(
     private fetchArtifactScript: string,
     private scope: string,

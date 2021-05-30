@@ -5,7 +5,7 @@ import { isNullOrUndefined } from "util";
 import PasswordGenerateImpl from "./PasswordGenerateImpl";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import CreateScratchOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateScratchOrgImpl";
-import { ScratchOrg } from "../ScratchOrg";
+import ScratchOrg from "../ScratchOrg";
 
 const ORDER_BY_FILTER = " ORDER BY CreatedDate ASC";
 export default class ScratchOrgUtils {

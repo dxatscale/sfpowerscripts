@@ -2,7 +2,7 @@ import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { fs, LoggerLevel, Org, SfdxError } from "@salesforce/core";
 import child_process = require("child_process");
 import { PoolBaseImpl } from "./PoolBaseImpl";
-import { ScratchOrg } from "./ScratchOrg";
+import ScratchOrg from "./ScratchOrg";
 import { getUserEmail } from "./utils/GetUserEmail";
 import ScratchOrgUtils from "./utils/ScratchOrgUtils";
 

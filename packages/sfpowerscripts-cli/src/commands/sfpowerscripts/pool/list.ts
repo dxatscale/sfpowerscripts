@@ -2,7 +2,7 @@ import { core, flags, SfdxCommand } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import poolListImpl from "../../../impl/pool/PoolListImpl";
 import { isNullOrUndefined } from "util";
-import { ScratchOrg } from "../../../impl/pool/ScratchOrg";
+import ScratchOrg from "../../../impl/pool/ScratchOrg";
 
 
 

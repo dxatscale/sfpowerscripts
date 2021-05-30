@@ -10,7 +10,7 @@ import SFPLogger, {
 import { Stage } from "../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl"
-import { ScratchOrg } from "../pool/ScratchOrg";
+import ScratchOrg from "../pool/ScratchOrg";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
 export default class PrepareASingleOrgImpl {

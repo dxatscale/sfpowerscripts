@@ -12,7 +12,7 @@ import PoolFetchImpl from "../pool/PoolFetchImpl";
 import { Org } from "@salesforce/core";
 
 import DependencyAnalysis from "./DependencyAnalysis";
-import { ScratchOrg } from "../pool/ScratchOrg";
+import ScratchOrg from "../pool/ScratchOrg";
 const Table = require("cli-table");
 
 export enum ValidateMode {

@@ -1,4 +1,4 @@
-export interface ScratchOrg {
+export default interface ScratchOrg {
   failureMessage?: string;
   tag?: string;
   recordId?: string;

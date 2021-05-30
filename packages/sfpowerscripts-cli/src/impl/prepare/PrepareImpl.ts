@@ -13,10 +13,9 @@ import { Stage } from "../Stage";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { EOL } from "os";
 import { PreRequisiteCheck } from "../pool/prequisitecheck/PreRequisiteCheck";
-import { ScratchOrg } from "../pool/ScratchOrg";
-import { FetchAnArtifactFromNPM } from "../artifacts/FetchAnArtifactFromNPM";
+import ScratchOrg  from "../pool/ScratchOrg";
 import FetchAnArtifact from "../artifacts/FetchAnArtifact";
-import { FetchArtifactSelector } from "../artifacts/FetchArtifactSelector";
+import FetchArtifactSelector  from "../artifacts/FetchArtifactSelector";
 
 
 

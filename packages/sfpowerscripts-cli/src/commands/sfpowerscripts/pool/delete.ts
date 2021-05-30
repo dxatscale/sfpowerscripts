@@ -1,7 +1,7 @@
 import { core, flags, SfdxCommand } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import PoolDeleteImpl from "../../../impl/pool/PoolDeleteImpl";
-import { ScratchOrg } from "../../../impl/pool/ScratchOrg";
+import ScratchOrg from "../../../impl/pool/ScratchOrg";
 
 // Initialize Messages with the current plugin directory
 core.Messages.importMessagesDirectory(__dirname);
