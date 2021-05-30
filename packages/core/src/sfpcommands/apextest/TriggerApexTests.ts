@@ -4,9 +4,9 @@ import TriggerApexTestImpl from "../../sfdxwrappers/TriggerApexTestImpl";
 import { TestOptions } from "../../sfdxwrappers/TestOptions";
 import IndividualClassCoverage, {
   CoverageOptions,
-} from "../../package/IndividualClassCoverage";
+} from "../../coverage/IndividualClassCoverage";
 import { TestReportDisplayer } from "./TestReportDisplayer";
-import PackageTestCoverage from "../../package/PackageTestCoverage";
+import PackageTestCoverage from "../../package/coverage/PackageTestCoverage";
 import SFPLogger from "../../logger/SFPLogger";
 import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
 import SFPStatsSender from "../../stats/SFPStatsSender";

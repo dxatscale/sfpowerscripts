@@ -179,7 +179,7 @@ export default class ScratchOrgUtils {
     );
 
     //Generate Password
-    let passwordData = await PasswordGenerateImpl.run(scratchOrg.username);
+    let passwordData = await new PasswordGenerateImpl().exec(scratchOrg.username);
 
     scratchOrg.password = passwordData.password;
 

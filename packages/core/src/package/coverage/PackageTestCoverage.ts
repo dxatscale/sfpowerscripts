@@ -1,6 +1,6 @@
-import SFPLogger from "../logger/SFPLogger";
-import IndividualClassCoverage from "./IndividualClassCoverage";
-import  SFPPackage  from "./SFPPackage";
+import SFPLogger from "../../logger/SFPLogger";
+import IndividualClassCoverage from "../../coverage/IndividualClassCoverage";
+import  SFPPackage  from "../SFPPackage";
 
 export default class PackageTestCoverage {
   private individualClassCoverage: IndividualClassCoverage;

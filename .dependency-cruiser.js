@@ -224,13 +224,13 @@ module.exports = {
           leave out if you want to exclude neither (recommended!)
     */
      exclude : {
-       path: '^(coverage|test|node_modules|lib|dist|tests)',
+       path: '^(packages/core/coverage|packages/sfpowerscripts-cli/resources|packages/sfpowerscripts-cli/coverage|packages/core/tests|packages/sfpowerscripts-cli/tests|packages/sfpowerscripts-cli/lib|packages/core/lib|coverage|test|packages/sfpowerscripts-cli/node_modules|packages/core/node_modules|lib|dist|tests)',
      },
 
     /* pattern specifying which files to include (regular expression)
        dependency-cruiser will skip everything not matching this pattern
     */
-    includeOnly : '^(packages/core/src|packages/sfpowerscripts-cli/src)',
+    //includeOnly : '^(packages/core/src|packages/sfpowerscripts-cli/src)',
 
     /* dependency-cruiser will include modules matching against the focus
        regular expression in its output, as well as their neighbours (direct

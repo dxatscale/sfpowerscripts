@@ -1,9 +1,7 @@
 import { Messages, SfdxError } from "@salesforce/core";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from "@salesforce/command";
-import { sfdx } from "../../../impl/pool/sfdxnode/parallel";
 import PrepareImpl from "../../../impl/prepare/PrepareImpl";
-import { loadSFDX } from "../../../impl/pool/sfdxnode/GetNodeWrapper";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { Stage } from "../../../impl/Stage";
 import * as fs from "fs-extra"
@@ -132,12 +130,10 @@ export default class Prepare extends SfpowerscriptsCommand {
     this.flags.apiversion =
       this.flags.apiversion || (await hubConn.retrieveMaxApiVersion());
 
-    loadSFDX();
 
     let prepareImpl = new PrepareImpl(
       this.hubOrg,
       this.flags.apiversion,
-      sfdx,
       this.flags.tag,
       this.flags.expiry,
       this.flags.maxallocation,

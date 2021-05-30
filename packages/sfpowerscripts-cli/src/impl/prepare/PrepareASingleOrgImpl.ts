@@ -1,4 +1,3 @@
-import { SfdxApi } from "../pool/sfdxnode/types";
 import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
 import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
@@ -10,6 +9,7 @@ import SFPLogger, {
 } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Stage } from "../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl"
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
 export default class PrepareASingleOrgImpl {
@@ -20,7 +20,6 @@ export default class PrepareASingleOrgImpl {
   private checkPointPackages: string[];
 
   public constructor(
-    private sfdx: SfdxApi,
     private scratchOrg: ScratchOrg,
     private hubOrg: string,
     private isRetryOnFailure?: boolean
@@ -60,16 +59,14 @@ export default class PrepareASingleOrgImpl {
         packageLogger
       );
 
-      await this.sfdx.force.package.install({
-        quiet: true,
-        targetusername: this.scratchOrg.username,
-        package: process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
+      let installUnlockedPackageImpl:InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(null,
+               this.scratchOrg.username,
+               process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
           ? process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
           : SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
-        apexcompile: "package",
-        noprompt: true,
-        wait: 60,
-      });
+           "60");
+
+     await installUnlockedPackageImpl.exec(true);
 
       SFPLogger.isSupressLogs = true;
       let startTime = Date.now();

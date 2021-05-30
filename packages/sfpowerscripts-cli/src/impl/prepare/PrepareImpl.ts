@@ -4,7 +4,6 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/Art
 import * as fs from "fs-extra";
 import Bottleneck from "bottleneck";
 import * as rimraf from "rimraf";
-import { SfdxApi } from "../pool/sfdxnode/types";
 import PrepareASingleOrgImpl, {
   ScriptExecutionResult,
 } from "./PrepareASingleOrgImpl";
@@ -38,7 +37,6 @@ export default class PrepareImpl {
   public constructor(
     private hubOrg: Org,
     private apiversion: string,
-    private sfdx: SfdxApi,
     private tag: string,
     private expiry: number,
     private max_allocation: number,
@@ -479,7 +477,6 @@ export default class PrepareImpl {
     SFPLogger.isSupressLogs=true;
 
     let prepareASingleOrgImpl: PrepareASingleOrgImpl = new PrepareASingleOrgImpl(
-      this.sfdx,
       scratchOrg,
       hubOrgUserName,
       this._isRetryOnFailure

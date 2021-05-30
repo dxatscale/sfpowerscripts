@@ -350,7 +350,7 @@ export default class ValidateImpl {
       try {
         let hubOrg:Org = await Org.create({aliasOrUsername:devHubUsername,isDevHub:true});
 
-        let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false);
+        let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false); 
         scratchOrg = await poolFetchImpl.execute();
 
       } catch (error) {}

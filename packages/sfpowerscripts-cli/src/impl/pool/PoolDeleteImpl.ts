@@ -3,7 +3,6 @@ import {Org } from "@salesforce/core";
 import ScratchOrgUtils, { ScratchOrg } from "./utils/ScratchOrgUtils";
 export default class PoolDeleteImpl {
   private hubOrg: Org;
-  private apiversion: string;
   private tag: string;
   private mypool: boolean;
   private allScratchOrgs: boolean;
@@ -18,7 +17,6 @@ export default class PoolDeleteImpl {
     inprogressonly: boolean
   ) {
     this.hubOrg = hubOrg;
-    this.apiversion = apiversion;
     this.tag = tag;
     this.mypool = mypool;
     this.allScratchOrgs = allScratchOrgs;

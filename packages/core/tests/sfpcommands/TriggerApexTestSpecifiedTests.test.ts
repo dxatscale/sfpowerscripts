@@ -2,7 +2,7 @@
 import { jest, expect } from "@jest/globals";
 import { RunSpecifiedTestsOption, TestOptions } from "../../src/sfdxwrappers/TestOptions";
 import fs from "fs-extra";
-import { CoverageOptions } from "../../src/package/IndividualClassCoverage";
+import { CoverageOptions } from "../../src/coverage/IndividualClassCoverage";
 import TriggerApexTests from "../../src/sfpcommands/apextest/TriggerApexTests";
 
 

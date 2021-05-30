@@ -3,7 +3,7 @@ import ConvertSourceToMDAPIImpl from "../../src/sfdxwrappers/ConvertSourceToMDAP
 import path from "path";
 
 let commmandOutput: string = "";
-jest.mock("../../src/commandExecutor/ExecuteCommand", () => {
+jest.mock("../../src/command/commandExecutor/ExecuteCommand", () => {
   class ExecuteCommand {
     constructor() {}
     execCommand = function (

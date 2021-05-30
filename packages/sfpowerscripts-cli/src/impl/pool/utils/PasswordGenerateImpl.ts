@@ -5,7 +5,9 @@ import { Connection, User, AuthInfo,LoggerLevel } from "@salesforce/core";
 
 
 export default class PasswordGenerateImpl {
-  public static async run(userName: string) {
+
+
+  public async exec(userName: string) {
     const query = `SELECT id FROM User WHERE username = '${userName}'`;
 
     const authInfo = await AuthInfo.create({ username: userName });

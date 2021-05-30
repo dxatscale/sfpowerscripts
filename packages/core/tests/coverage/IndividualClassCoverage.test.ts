@@ -1,4 +1,4 @@
-import IndividualClassCoverage from "../../src/package/IndividualClassCoverage";
+import IndividualClassCoverage from "../../src/coverage/IndividualClassCoverage";
 import { expect } from "@jest/globals";
 
 

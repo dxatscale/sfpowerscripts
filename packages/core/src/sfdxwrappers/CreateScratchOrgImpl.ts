@@ -1,8 +1,9 @@
 
-import { SFDXCommand } from "../SFDXCommand";
+import { SFDXCommand } from "../command/SFDXCommand";
 
 
 export default class CreateScratchOrgImpl extends SFDXCommand {
+
   public constructor(
     working_directory: string,
     private config_file_path: string,
@@ -23,13 +24,14 @@ export default class CreateScratchOrgImpl extends SFDXCommand {
   getCommandName(): string {
     return "CreateScratchOrg"
   }
-  
-  getGeneratedSFDXCommandWithParams(): string {
-    let command = `sfdx force:org:create -v ${this.devhub} -s -f ${this.config_file_path} --json -a ${this.alias} -d ${this.daysToMaintain}`;
+
+  getSFDXCommand(): string {
+    return `sfdx force:org:create`
+  }
+  getGeneratedParams(): string {
+    let command = `-v ${this.devhub} -s -f ${this.config_file_path}  -a ${this.alias} -d ${this.daysToMaintain}`;
     if(this.adminEmail)
      command+= ` adminEmail=${this.adminEmail}`
     return command;
-  }
-
-  
+  } 
 }

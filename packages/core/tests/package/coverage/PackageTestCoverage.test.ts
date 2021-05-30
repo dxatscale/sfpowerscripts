@@ -1,11 +1,11 @@
-import  SFPPackage  from "../../src/package/SFPPackage";
-import PackageTestCoverage from "../../src/package/PackageTestCoverage"
+import  SFPPackage  from "../../../src/package/SFPPackage";
+import PackageTestCoverage from "../../../src/package/coverage/PackageTestCoverage"
 
 import { jest, expect } from "@jest/globals";
 
 
 let packageType="Unlocked";
-jest.mock("../../src/package/SFPPackage",()=>{
+jest.mock("../../../src/package/SFPPackage",()=>{
    class SFPPackage
    {
      get apexClassWithOutTestClasses()

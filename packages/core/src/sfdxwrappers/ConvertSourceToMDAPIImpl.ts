@@ -1,5 +1,5 @@
 import path from "path";
-import { SFDXCommand } from "../SFDXCommand";
+import { SFDXCommand } from "../command/SFDXCommand";
 import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 
 export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
@@ -22,7 +22,7 @@ export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
 
     try
     {
-    await super.exec(quiet);
+    await super.exec(false);
     let mdapiDirPath;
       if (this.project_directory != null)
            mdapiDirPath = path.resolve(this.project_directory, this.mdapiDir);
@@ -48,8 +48,11 @@ export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
     return "ConvertSourceToMDAPI";
   }
 
+  getSFDXCommand(): string {
+    return `sfdx force:source:convert`
+  }
 
-  getGeneratedSFDXCommandWithParams(): string {
+  getGeneratedParams(): string {
     try {
       this.mdapiDir = `.sfpowerscripts/${this.makefolderid(5)}_mdapi`;
 
@@ -68,7 +71,7 @@ export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
           LoggerLevel.DEBUG
         );
 
-      return `sfdx force:source:convert -r ${this.sourceDirectory}  -d ${this.mdapiDir}`;
+      return `-r ${this.sourceDirectory}  -d ${this.mdapiDir}`;
     } catch (error) {
       SFPLogger.log(
         `Unable to generate command for converting ${this.sourceDirectory}`
@@ -76,6 +79,9 @@ export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
       throw error;
     }
   }
+
+
+
 
   private makefolderid(length): string {
     var result = "";
