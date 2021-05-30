@@ -1,10 +1,14 @@
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { fs, LoggerLevel, Org, SfdxError } from "@salesforce/core";
 import child_process = require("child_process");
+import { PoolBaseImpl } from "./PoolBaseImpl";
+import { ScratchOrg } from "./ScratchOrg";
 import { getUserEmail } from "./utils/GetUserEmail";
-import ScratchOrgUtils, { ScratchOrg } from "./utils/ScratchOrgUtils";
-export default class PoolFetchImpl {
-  private hubOrg: Org;
+import ScratchOrgUtils from "./utils/ScratchOrgUtils";
+
+
+export default class PoolFetchImpl extends PoolBaseImpl{
+
   private tag: string;
   private mypool: boolean;
   private sendToUser: string;
@@ -19,7 +23,7 @@ export default class PoolFetchImpl {
     alias?: string,
     setdefaultusername?:boolean
   ) {
-    this.hubOrg = hubOrg;
+    super(hubOrg);
     this.tag = tag;
     this.mypool = mypool;
     this.sendToUser = sendToUser;
@@ -27,10 +31,8 @@ export default class PoolFetchImpl {
     this.setdefaultusername = setdefaultusername;
   }
 
-  public async execute(): Promise<ScratchOrg> {
-    let isNewVersionCompatible = await ScratchOrgUtils.checkForNewVersionCompatible(
-      this.hubOrg
-    );
+  protected async onExec(): Promise<ScratchOrg> {
+   
     const results = (await ScratchOrgUtils.getScratchOrgsByTag(
       this.tag,
       this.hubOrg,
@@ -40,9 +42,7 @@ export default class PoolFetchImpl {
 
     let availableSo = [];
     if (results.records.length > 0) {
-      availableSo = !isNewVersionCompatible
-        ? results.records
-        : results.records.filter(
+      availableSo = results.records.filter(
             (soInfo) => soInfo.Allocation_status__c === "Available"
           );
     }

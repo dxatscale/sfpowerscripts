@@ -10,8 +10,9 @@ import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/s
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import PoolFetchImpl from "../pool/PoolFetchImpl";
 import { Org } from "@salesforce/core";
-import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
+
 import DependencyAnalysis from "./DependencyAnalysis";
+import { ScratchOrg } from "../pool/ScratchOrg";
 const Table = require("cli-table");
 
 export enum ValidateMode {
@@ -351,7 +352,7 @@ export default class ValidateImpl {
         let hubOrg:Org = await Org.create({aliasOrUsername:devHubUsername,isDevHub:true});
 
         let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false); 
-        scratchOrg = await poolFetchImpl.execute();
+        scratchOrg = await poolFetchImpl.execute() as ScratchOrg;
 
       } catch (error) {}
 

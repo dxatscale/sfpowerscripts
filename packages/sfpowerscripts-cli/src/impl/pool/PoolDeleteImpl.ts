@@ -1,8 +1,10 @@
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import {Org } from "@salesforce/core";
-import ScratchOrgUtils, { ScratchOrg } from "./utils/ScratchOrgUtils";
-export default class PoolDeleteImpl {
-  private hubOrg: Org;
+import { PoolBaseImpl } from "./PoolBaseImpl";
+import { ScratchOrg } from "./ScratchOrg";
+import ScratchOrgUtils from "./utils/ScratchOrgUtils";
+export default class PoolDeleteImpl extends PoolBaseImpl {
+
   private tag: string;
   private mypool: boolean;
   private allScratchOrgs: boolean;
@@ -10,12 +12,12 @@ export default class PoolDeleteImpl {
 
   public constructor(
     hubOrg: Org,
-    apiversion: string,
     tag: string,
     mypool: boolean,
     allScratchOrgs: boolean,
     inprogressonly: boolean
   ) {
+    super(hubOrg);
     this.hubOrg = hubOrg;
     this.tag = tag;
     this.mypool = mypool;
@@ -23,8 +25,7 @@ export default class PoolDeleteImpl {
     this.inprogressonly = inprogressonly;
   }
 
-  public async execute(): Promise<ScratchOrg[]> {
-    await ScratchOrgUtils.checkForNewVersionCompatible(this.hubOrg);
+  protected async onExec(): Promise<ScratchOrg[]> {
     const results = (await ScratchOrgUtils.getScratchOrgsByTag(
       this.tag,
       this.hubOrg,
@@ -34,10 +35,7 @@ export default class PoolDeleteImpl {
 
     let scratchOrgToDelete: ScratchOrg[] = new Array<ScratchOrg>();
     if (results.records.length > 0) {
-
-
       let scrathOrgIds: string[] = [];
-
       for (let element of results.records) {
         if (
           !this.inprogressonly ||
@@ -77,4 +75,5 @@ export default class PoolDeleteImpl {
 
     return scratchOrgToDelete;
   }
+
 }

@@ -1,4 +1,4 @@
-import ScratchOrgUtils, { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
+import ScratchOrgUtils from "../pool/utils/ScratchOrgUtils";
 import { Org } from "@salesforce/core";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import * as fs from "fs-extra";
@@ -7,14 +7,20 @@ import * as rimraf from "rimraf";
 import PrepareASingleOrgImpl, {
   ScriptExecutionResult,
 } from "./PrepareASingleOrgImpl";
-import path = require("path");
-
-import child_process = require("child_process");
 import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Stage } from "../Stage";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { EOL } from "os";
+import { PreRequisiteCheck } from "../pool/prequisitecheck/PreRequisiteCheck";
+import { ScratchOrg } from "../pool/ScratchOrg";
+import { FetchAnArtifactFromNPM } from "../artifacts/FetchAnArtifactFromNPM";
+import FetchAnArtifact from "../artifacts/FetchAnArtifact";
+import { FetchArtifactSelector } from "../artifacts/FetchArtifactSelector";
+
+
+
+
 export default class PrepareImpl {
   private poolConfig: PoolConfig;
   private totalToBeAllocated: number;
@@ -23,16 +29,16 @@ export default class PrepareImpl {
   private limiter;
   private scriptExecutorWrappedForBottleneck;
   private fetchArtifactScript: string;
-  private keys: string
-  private installAll:boolean;
+  private keys: string;
+  private installAll: boolean;
   private installAsSourcePackages: boolean;
   private succeedOnDeploymentErrors: boolean;
   private _isNpm: boolean;
   private _scope: string;
   private _npmTag: string;
   private _npmrcPath: string;
-  private _isRetryOnFailure:boolean;
-  private _checkPointPackages:string[];
+  private _isRetryOnFailure: boolean;
+  private _checkPointPackages: string[];
 
   public constructor(
     private hubOrg: Org,
@@ -52,21 +58,22 @@ export default class PrepareImpl {
     );
   }
 
-  public setArtifactFetchScript(fetchArtifactScript:string)
-  {
-      this.fetchArtifactScript=fetchArtifactScript;
+  public setArtifactFetchScript(fetchArtifactScript: string) {
+    this.fetchArtifactScript = fetchArtifactScript;
   }
 
-  public setInstallationBehaviour(installAll:boolean,installAsSourcePackages:boolean,succeedOnDeploymentErrors:boolean)
-  {
-    this.installAll =installAll;
-    this.installAsSourcePackages=installAsSourcePackages;
-    this.succeedOnDeploymentErrors=succeedOnDeploymentErrors;
+  public setInstallationBehaviour(
+    installAll: boolean,
+    installAsSourcePackages: boolean,
+    succeedOnDeploymentErrors: boolean
+  ) {
+    this.installAll = installAll;
+    this.installAsSourcePackages = installAsSourcePackages;
+    this.succeedOnDeploymentErrors = succeedOnDeploymentErrors;
   }
 
-  public setPackageKeys(keys:string)
-  {
-    this.keys=keys;
+  public setPackageKeys(keys: string) {
+    this.keys = keys;
   }
 
   public set isNpm(npm: boolean) {
@@ -85,33 +92,23 @@ export default class PrepareImpl {
     this._npmrcPath = path;
   }
 
-  public set retryOnFailure(isRetryOnFailure:boolean)
-  {
-    this._isRetryOnFailure=isRetryOnFailure;
+  public set retryOnFailure(isRetryOnFailure: boolean) {
+    this._isRetryOnFailure = isRetryOnFailure;
   }
 
-  public async poolScratchOrgs(): Promise< {
-    totalallocated:number,
-    success: number,
-    failed: number,
-    errorCode?: string
+  public async poolScratchOrgs(): Promise<{
+    totalallocated: number;
+    success: number;
+    failed: number;
+    errorCode?: string;
   }> {
-    await ScratchOrgUtils.checkForNewVersionCompatible(this.hubOrg);
-    let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
-
     await this.hubOrg.refreshAuth();
 
-    let preRequisiteCheck = await ScratchOrgUtils.checkForPreRequisite(
-      this.hubOrg
-    );
+    await new PreRequisiteCheck(this.hubOrg).checkForPrerequisites();
 
-    if (!preRequisiteCheck) {
-      console.log(
-        "Required Prerequisite fields are missing in the DevHub, Please look into the wiki to getting the fields deployed in DevHub"
-      );
-      return {totalallocated:this.totalAllocated,success:0,failed:this.totalToBeAllocated, errorCode:"Fields_Missing"};
-    }
+    let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
 
+  
     //Set Pool Config Option
     this.poolConfig = {
       pool: {
@@ -133,21 +130,28 @@ export default class PrepareImpl {
     this.totalToBeAllocated = await this.computeAllocation();
 
     if (this.totalToBeAllocated === 0) {
-      if (this.limits.ActiveScratchOrgs.Remaining > 0)
-      {
+      if (this.limits.ActiveScratchOrgs.Remaining > 0) {
         console.log(
           `The tag provided ${this.poolConfig.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`
         );
-         return {totalallocated:this.totalToBeAllocated,success:0,failed:0, errorCode:"Max_Capacity"};
-      }
-      else
-      {  console.log(
+        return {
+          totalallocated: this.totalToBeAllocated,
+          success: 0,
+          failed: 0,
+          errorCode: "Max_Capacity",
+        };
+      } else {
+        console.log(
           `There is no capacity to create a pool at this time, Please try again later`
         );
-      return {totalallocated:this.totalToBeAllocated,success:0,failed:0, errorCode:"No_Capacity"};
+        return {
+          totalallocated: this.totalToBeAllocated,
+          success: 0,
+          failed: 0,
+          errorCode: "No_Capacity",
+        };
       }
     }
-
 
     // Setup Logging Directory
     rimraf.sync("script_exec_outputs");
@@ -159,7 +163,7 @@ export default class PrepareImpl {
 
     //Fetch Latest Artifacts to Artifact Directory
     if (this.installAll) {
-       await this.getPackageArtifacts();
+      await this.getPackageArtifacts();
     }
 
     //Get CheckPoint Packages
@@ -172,8 +176,6 @@ export default class PrepareImpl {
 
     for (let poolUser of this.poolConfig.poolUsers) {
       for (let scratchOrg of poolUser.scratchOrgs) {
-
-
         let result = this.scriptExecutorWrappedForBottleneck(
           scratchOrg,
           this.hubOrg.getUsername()
@@ -182,23 +184,24 @@ export default class PrepareImpl {
       }
     }
 
-     await Promise.all(scriptExecPromises);
-
+    await Promise.all(scriptExecPromises);
 
     let finalizedResults = await this.finalizeGeneratedScratchOrgs();
 
-    return {totalallocated:this.totalToBeAllocated,success:finalizedResults.success,failed:finalizedResults.failed};
+    return {
+      totalallocated: this.totalToBeAllocated,
+      success: finalizedResults.success,
+      failed: finalizedResults.failed,
+    };
   }
-  
-  
-  //Fetch all checkpoints  
+
+  //Fetch all checkpoints
   private getcheckPointPackages() {
     console.log("Fetching checkpoints for prepare if any.....");
     let projectConfig = ProjectConfig.getSFDXPackageManifest(null);
-    let checkPointPackages=[];
+    let checkPointPackages = [];
     projectConfig["packageDirectories"].forEach((pkg) => {
-      if(pkg.checkpointForPrepare)
-        checkPointPackages.push(pkg["package"])
+      if (pkg.checkpointForPrepare) checkPointPackages.push(pkg["package"]);
     });
     return checkPointPackages;
   }
@@ -208,66 +211,62 @@ export default class PrepareImpl {
       "packageDirectories"
     ];
 
-    if (this._isNpm) {
-      if (this._npmrcPath) {
-        fs.copyFileSync(
-          this._npmrcPath,
-          path.resolve(".npmrc")
-        );
+    packages.forEach((pkg) => {
+      artifactFetcher.fetchArtifact(
+        pkg.package,
+        "artifacts"
+      );
+    });
 
-        if (!fs.existsSync("package.json")) {
-          // package json is required in the same directory as .npmrc
-          fs.writeFileSync("package.json", "{}");
-        }
-      }
-
+    let artifactFetcher:FetchAnArtifact;
+    if (this._isNpm || this.fetchArtifactScript) {
+      artifactFetcher = new FetchArtifactSelector(this.fetchArtifactScript,this._scope,this._npmTag,this._npmrcPath).getArtifactFetcher();  
       packages.forEach((pkg) => {
-        this.fetchArtifactFromNpmRegistry(
+        artifactFetcher.fetchArtifact(
           pkg.package,
-          this._scope,
-          this._npmTag,
           "artifacts"
-        );
-      });
-    } else if (fs.existsSync(this.fetchArtifactScript)) {
-      packages.forEach((pkg) => {
-        this.fetchArtifactFromRepositoryUsingProvidedScript(
-          pkg.package,
-          "artifacts",
-          this.fetchArtifactScript
         );
       });
     } else {
       //Build All Artifacts
       console.log("\n");
-      console.log("-------------------------------WARNING!!!!------------------------------------------------")
-      console.log("Building packages, as script to fetch artifacts was not provided");
-      console.log("This is not ideal, as the artifacts are  built from the current head of the provided branch" );
-      console.log("Pools should be prepared with previously validated packages");
-      console.log("---------------------------------------------------------------------------------------------")
+      console.log(
+        "-------------------------------WARNING!!!!------------------------------------------------"
+      );
+      console.log(
+        "Building packages, as script to fetch artifacts was not provided"
+      );
+      console.log(
+        "This is not ideal, as the artifacts are  built from the current head of the provided branch"
+      );
+      console.log(
+        "Pools should be prepared with previously validated packages"
+      );
+      console.log(
+        "---------------------------------------------------------------------------------------------"
+      );
 
-      let buildProps:BuildProps = {
-
-        configFilePath:this.configFilePath,
-        devhubAlias:this.hubOrg.getUsername(),
-        waitTime:120,
-        isQuickBuild:true,
-        isDiffCheckEnabled:false,
-        buildNumber:1,
-        executorcount:10,
-        isBuildAllAsSourcePackages:true,
-        branch:null,
-        currentStage:Stage.PREPARE
-    }
-
-
+      let buildProps: BuildProps = {
+        configFilePath: this.configFilePath,
+        devhubAlias: this.hubOrg.getUsername(),
+        waitTime: 120,
+        isQuickBuild: true,
+        isDiffCheckEnabled: false,
+        buildNumber: 1,
+        executorcount: 10,
+        isBuildAllAsSourcePackages: true,
+        branch: null,
+        currentStage: Stage.PREPARE,
+      };
 
       let buildImpl = new BuildImpl(buildProps);
       let { generatedPackages, failedPackages } = await buildImpl.exec();
 
-
-      if(failedPackages.length>0)
-       throw new Error("Unable to build packages, Following packages failed to build"+failedPackages);
+      if (failedPackages.length > 0)
+        throw new Error(
+          "Unable to build packages, Following packages failed to build" +
+            failedPackages
+        );
 
       for (let generatedPackage of generatedPackages) {
         await ArtifactGenerator.generateArtifact(
@@ -355,24 +354,22 @@ export default class PrepareImpl {
         this.hubOrg
       );
 
-      if (ScratchOrgUtils.isNewVersionCompatible) {
-        let scratchOrgInprogress = [];
+      let scratchOrgInprogress = [];
 
-        poolUser.scratchOrgs.forEach((scratchOrg) => {
-          scratchOrgInprogress.push({
-            Id: scratchOrg.recordId,
-            Pooltag__c: this.poolConfig.pool.tag,
-            Allocation_status__c: "In Progress",
-          });
+      poolUser.scratchOrgs.forEach((scratchOrg) => {
+        scratchOrgInprogress.push({
+          Id: scratchOrg.recordId,
+          Pooltag__c: this.poolConfig.pool.tag,
+          Allocation_status__c: "In Progress",
         });
+      });
 
-        if (scratchOrgInprogress.length > 0) {
-          //set pool tag
-          await ScratchOrgUtils.setScratchOrgInfo(
-            scratchOrgInprogress,
-            this.hubOrg
-          );
-        }
+      if (scratchOrgInprogress.length > 0) {
+        //set pool tag
+        await ScratchOrgUtils.setScratchOrgInfo(
+          scratchOrgInprogress,
+          this.hubOrg
+        );
       }
     }
   }
@@ -396,7 +393,7 @@ export default class PrepareImpl {
         console.log(
           `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias} due to`
         );
-        console.log(scratchOrg.failureMessage)
+        console.log(scratchOrg.failureMessage);
 
         try {
           //Delete scratchorgs that failed to execute script
@@ -432,7 +429,6 @@ export default class PrepareImpl {
     tag: string,
     poolUser: PoolUser
   ) {
-
     poolUser.current_allocation = countOfActiveScratchOrgs;
     poolUser.to_allocate = 0;
     poolUser.to_satisfy_max =
@@ -452,9 +448,13 @@ export default class PrepareImpl {
       poolUser.to_allocate = remainingScratchOrgs;
     }
 
-
-    console.log(`Current Allocation of ScratchOrgs in the pool ${this.tag}: `+poolUser.current_allocation)
-    console.log("Remaining Active scratchOrgs in the org: " + remainingScratchOrgs);
+    console.log(
+      `Current Allocation of ScratchOrgs in the pool ${this.tag}: ` +
+        poolUser.current_allocation
+    );
+    console.log(
+      "Remaining Active scratchOrgs in the org: " + remainingScratchOrgs
+    );
     console.log("ScratchOrgs to be allocated: " + poolUser.to_allocate);
 
     return poolUser.to_allocate;
@@ -462,7 +462,7 @@ export default class PrepareImpl {
 
   private async scriptExecutor(
     scratchOrg: ScratchOrg,
-    hubOrgUserName:string
+    hubOrgUserName: string
   ): Promise<ScriptExecutionResult> {
     //Need to call PrepareAnOrgImpl
 
@@ -474,7 +474,7 @@ export default class PrepareImpl {
       `Script Execution result is being written to .sfpowerscripts/prepare_logs/${scratchOrg.alias}.log, Please note this will take a significant time depending on the  script being executed`
     );
 
-    SFPLogger.isSupressLogs=true;
+    SFPLogger.isSupressLogs = true;
 
     let prepareASingleOrgImpl: PrepareASingleOrgImpl = new PrepareASingleOrgImpl(
       scratchOrg,
@@ -483,20 +483,22 @@ export default class PrepareImpl {
     );
 
     prepareASingleOrgImpl.setcheckPointPackages(this._checkPointPackages);
-    prepareASingleOrgImpl.setInstallationBehaviour(this.installAll,this.installAsSourcePackages,this.succeedOnDeploymentErrors);
+    prepareASingleOrgImpl.setInstallationBehaviour(
+      this.installAll,
+      this.installAsSourcePackages,
+      this.succeedOnDeploymentErrors
+    );
     prepareASingleOrgImpl.setPackageKeys(this.keys);
 
     let result = await prepareASingleOrgImpl.prepare();
 
     if (result.isSuccess) {
-      scratchOrg.isScriptExecuted=true;
+      scratchOrg.isScriptExecuted = true;
       let submitInfoToPool = await ScratchOrgUtils.setScratchOrgInfo(
         {
           Id: scratchOrg.recordId,
           Pooltag__c: this.poolConfig.pool.tag,
-          Allocation_status__c: ScratchOrgUtils.isNewVersionCompatible
-            ? "Available"
-            : ""
+          Allocation_status__c:  "Available"
         },
         this.hubOrg
       );
@@ -505,64 +507,16 @@ export default class PrepareImpl {
         result.status = "failure";
         result.message = "Unable to set the scratch org record in Pool";
       }
-    }
-    else
-    {
-      scratchOrg.isScriptExecuted=false;
-      scratchOrg.failureMessage=result.message;
+    } else {
+      scratchOrg.isScriptExecuted = false;
+      scratchOrg.failureMessage = result.message;
     }
 
     return result;
   }
 
-  /**
-   * Fetch un/scoped package from pre-authenticated NPM registry
-   * @param packageName
-   * @param scope
-   * @param artifactDirectory
-   */
-  private fetchArtifactFromNpmRegistry(
-    packageName: string,
-    scope: string,
-    npmTag: string,
-    artifactDirectory: string
-  ) {
-    // NPM package names must be lowercase
-    packageName = packageName.toLowerCase();
+  
 
-    let cmd: string;
-    if (scope)
-      cmd= `npm pack @${scope}/${packageName}_sfpowerscripts_artifact`;
-    else
-      cmd = `npm pack ${packageName}_sfpowerscripts_artifact`;
-
-    if (npmTag)
-      cmd += `@${npmTag}`;
-
-    child_process.execSync(cmd, {
-      cwd: artifactDirectory,
-      stdio: ["ignore", "inherit", "inherit"],
-    });
-  }
-
-  private fetchArtifactFromRepositoryUsingProvidedScript(
-    packageName: string,
-    artifactDirectory: string,
-    scriptPath: string
-  ) {
-
-    let cmd: string;
-    if (process.platform !== "win32") {
-      cmd = `bash -e ${scriptPath} ${packageName} ${artifactDirectory}`;
-    } else {
-      cmd = `cmd.exe /c ${scriptPath} ${packageName}  ${artifactDirectory}`;
-    }
-
-    child_process.execSync(cmd, {
-      cwd: process.cwd(),
-      stdio: ["ignore", "inherit", "inherit"],
-    });
-  }
 }
 
 export interface PoolConfig {
