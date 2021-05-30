@@ -1,5 +1,5 @@
 import { Org } from "@salesforce/core";
-import { PreRequisiteCheck } from "./prequisitecheck/PreRequisiteCheck";
+import PreRequisiteCheck from "./prequisitecheck/PreRequisiteCheck";
 import ScratchOrg from "./ScratchOrg";
 
 

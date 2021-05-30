@@ -1,9 +1,8 @@
-import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Org } from "@salesforce/core";
 import PreRequisiteCheckError from "./PreRequisiteCheckError";
 const retry = require("async-retry");
 
-export class PreRequisiteCheck {
+export default class PreRequisiteCheck {
 
   private static isPrerequisiteChecked: boolean = false;
   private static isPrerequisiteMet = false;
