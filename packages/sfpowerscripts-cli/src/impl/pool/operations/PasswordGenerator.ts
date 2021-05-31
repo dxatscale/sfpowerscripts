@@ -4,7 +4,7 @@ import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Connection, User, AuthInfo,LoggerLevel } from "@salesforce/core";
 
 
-export default class PasswordGenerateImpl {
+export default class PasswordGenerator {
 
 
   public async exec(userName: string) {

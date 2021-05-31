@@ -2,7 +2,11 @@ import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import {Org } from "@salesforce/core";
 import { PoolBaseImpl } from "./PoolBaseImpl";
 import ScratchOrg from "./ScratchOrg";
-import ScratchOrgUtils from "./utils/ScratchOrgUtils";
+import DeleteScratchOrg from "./operations/DeleteScratchOrg";
+import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
+
+
+
 export default class PoolDeleteImpl extends PoolBaseImpl {
 
   private tag: string;
@@ -26,9 +30,8 @@ export default class PoolDeleteImpl extends PoolBaseImpl {
   }
 
   protected async onExec(): Promise<ScratchOrg[]> {
-    const results = (await ScratchOrgUtils.getScratchOrgsByTag(
+    const results = (await new ScratchOrgInfoFetcher(this.hubOrg).getScratchOrgsByTag(
       this.tag,
-      this.hubOrg,
       this.mypool,
       !this.allScratchOrgs
     )) as any;
@@ -54,15 +57,14 @@ export default class PoolDeleteImpl extends PoolBaseImpl {
       }
 
       if (scrathOrgIds.length > 0) {
-        let activeScrathOrgs = await ScratchOrgUtils.getActiveScratchOrgsByInfoId(
-          this.hubOrg,
+        let activeScrathOrgs = await new ScratchOrgInfoFetcher(this.hubOrg).getActiveScratchOrgsByInfoId(
           scrathOrgIds.join(",")
         );
 
         if (activeScrathOrgs.records.length > 0) {
           for (let ScratchOrg of activeScrathOrgs.records) {
-            await ScratchOrgUtils.deleteScratchOrg(
-              this.hubOrg,
+            
+            await new DeleteScratchOrg(this.hubOrg).deleteScratchOrg(
               ScratchOrg.Id
             );
             SFPLogger.log(

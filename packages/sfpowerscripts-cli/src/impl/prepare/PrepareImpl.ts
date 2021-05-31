@@ -1,32 +1,24 @@
-import ScratchOrgUtils from "../pool/utils/ScratchOrgUtils";
+
 import { Org } from "@salesforce/core";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
-import * as fs from "fs-extra";
-import Bottleneck from "bottleneck";
-import * as rimraf from "rimraf";
-import PrepareASingleOrgImpl, {
-  ScriptExecutionResult,
-} from "./PrepareASingleOrgImpl";
+import PrepareASingleCIOrgImpl from "./PrepareASingleCIOrgImpl";
 import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Stage } from "../Stage";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
-import { EOL } from "os";
-import PreRequisiteCheck from "../pool/prequisitecheck/PreRequisiteCheck";
-import ScratchOrg  from "../pool/ScratchOrg";
 import FetchAnArtifact from "../artifacts/FetchAnArtifact";
 import FetchArtifactSelector  from "../artifacts/FetchArtifactSelector";
-
+import * as rimraf from "rimraf";
+import * as fs from "fs-extra";
+import PoolCreateImpl from "../pool/PoolCreateImpl";
+import { Pool } from "../pool/Pool";
 
 
 
 export default class PrepareImpl {
-  private poolConfig: PoolConfig;
-  private totalToBeAllocated: number;
-  private limits;
-  private totalAllocated: number = 0;
-  private limiter;
-  private scriptExecutorWrappedForBottleneck;
+  
+
+
+
   private fetchArtifactScript: string;
   private keys: string;
   private installAll: boolean;
@@ -39,6 +31,8 @@ export default class PrepareImpl {
   private _isRetryOnFailure: boolean;
   private _checkPointPackages: string[];
 
+
+
   public constructor(
     private hubOrg: Org,
     private apiversion: string,
@@ -48,13 +42,7 @@ export default class PrepareImpl {
     private configFilePath: string,
     private batchSize: number
   ) {
-    this.limiter = new Bottleneck({
-      maxConcurrent: this.batchSize,
-    });
-
-    this.scriptExecutorWrappedForBottleneck = this.limiter.wrap(
-      this.scriptExecutor
-    );
+   
   }
 
   public setArtifactFetchScript(fetchArtifactScript: string) {
@@ -101,97 +89,47 @@ export default class PrepareImpl {
     failed: number;
     errorCode?: string;
   }> {
-    await this.hubOrg.refreshAuth();
-
-    await new PreRequisiteCheck(this.hubOrg).checkForPrerequisites();
-
-    let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
-
-  
-    //Set Pool Config Option
-    this.poolConfig = {
-      pool: {
-        expiry: this.expiry,
-        config_file_path: this.configFilePath,
-        tag: this.tag,
-        max_allocation: this.max_allocation,
-        user_mode: false,
-      },
-    };
-
-    //Set Tag Only mode activated for the default use case
-    this.setASingleUserForTagOnlyMode();
-
-    //fetch current status limits
-    await this.fetchCurrentLimits();
-
-    //Compute allocation
-    this.totalToBeAllocated = await this.computeAllocation();
-
-    if (this.totalToBeAllocated === 0) {
-      if (this.limits.ActiveScratchOrgs.Remaining > 0) {
-        console.log(
-          `The tag provided ${this.poolConfig.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`
-        );
-        return {
-          totalallocated: this.totalToBeAllocated,
-          success: 0,
-          failed: 0,
-          errorCode: "Max_Capacity",
-        };
-      } else {
-        console.log(
-          `There is no capacity to create a pool at this time, Please try again later`
-        );
-        return {
-          totalallocated: this.totalToBeAllocated,
-          success: 0,
-          failed: 0,
-          errorCode: "No_Capacity",
-        };
-      }
-    }
-
-    // Setup Logging Directory
-    rimraf.sync("script_exec_outputs");
-    fs.mkdirpSync("script_exec_outputs");
-
-    //Create Artifact Directory
-    rimraf.sync("artifacts");
-    fs.mkdirpSync("artifacts");
-
-    //Fetch Latest Artifacts to Artifact Directory
-    if (this.installAll) {
-      await this.getPackageArtifacts();
-    }
-
-    //Get CheckPoint Packages
-    this._checkPointPackages = this.getcheckPointPackages();
-
-    //Generate Scratch Orgs
-    await this.generateScratchOrgs();
-
-    // Assign workers to executed scripts
-
-    for (let poolUser of this.poolConfig.poolUsers) {
-      for (let scratchOrg of poolUser.scratchOrgs) {
-        let result = this.scriptExecutorWrappedForBottleneck(
-          scratchOrg,
-          this.hubOrg.getUsername()
-        );
-        scriptExecPromises.push(result);
-      }
-    }
-
-    await Promise.all(scriptExecPromises);
-
-    let finalizedResults = await this.finalizeGeneratedScratchOrgs();
-
+   
+    let pool = await this.createCIPools();
+   
     return {
-      totalallocated: this.totalToBeAllocated,
-      success: finalizedResults.success,
-      failed: finalizedResults.failed,
+      totalallocated: pool.to_allocate,
+      success:pool.scratchOrgs.length,
+      failed: pool.failedToCreate
     };
+  }
+
+
+  private async createCIPools():Promise<Pool>
+  {
+     //Create Artifact Directory
+     rimraf.sync("artifacts");
+     fs.mkdirpSync("artifacts");
+ 
+     //Fetch Latest Artifacts to Artifact Directory
+     if (this.installAll) {
+       await this.getPackageArtifacts();
+     }
+ 
+     //Get CheckPoint Packages
+     this._checkPointPackages = this.getcheckPointPackages();
+ 
+ 
+     let prepareASingleOrgImpl: PrepareASingleCIOrgImpl = new PrepareASingleCIOrgImpl(
+       this._isRetryOnFailure
+     );
+ 
+     prepareASingleOrgImpl.setcheckPointPackages(this._checkPointPackages);
+     prepareASingleOrgImpl.setInstallationBehaviour(
+       this.installAll,
+       this.installAsSourcePackages,
+       this.succeedOnDeploymentErrors
+     );
+     prepareASingleOrgImpl.setPackageKeys(this.keys);
+ 
+     let createPool:PoolCreateImpl = new PoolCreateImpl(this.hubOrg,this.tag,this.expiry,this.max_allocation,this.configFilePath,this.batchSize,prepareASingleOrgImpl);
+     let pool = await createPool.execute() as Pool;
+     return pool;
   }
 
   //Fetch all checkpoints
@@ -219,11 +157,13 @@ export default class PrepareImpl {
 
     let artifactFetcher:FetchAnArtifact;
     if (this._isNpm || this.fetchArtifactScript) {
-      artifactFetcher = new FetchArtifactSelector(this.fetchArtifactScript,this._scope,this._npmTag,this._npmrcPath).getArtifactFetcher();  
+      let version= this._npmTag;
+      artifactFetcher = new FetchArtifactSelector(this.fetchArtifactScript,this._scope,this._npmrcPath).getArtifactFetcher();  
       packages.forEach((pkg) => {
         artifactFetcher.fetchArtifact(
           pkg.package,
-          "artifacts"
+          "artifacts",
+          version
         );
       });
     } else {
@@ -278,271 +218,16 @@ export default class PrepareImpl {
     }
   }
 
-  private setASingleUserForTagOnlyMode() {
-    //Remove any existing pool Config for pool users
-    if (this.poolConfig.poolUsers) delete this.poolConfig.poolUsers;
 
-    let poolUser: PoolUser = {
-      min_allocation: this.poolConfig.pool.max_allocation,
-      max_allocation: this.poolConfig.pool.max_allocation,
-      is_build_pooluser: false,
-      expiry: this.poolConfig.pool.expiry,
-      priority: 1,
-    };
-    //Add a single user
-    this.poolConfig.poolUsers = [];
-    this.poolConfig.poolUsers.push(poolUser);
-    this.poolConfig.pool.user_mode = false;
-  }
 
-  private async fetchCurrentLimits() {
-    try {
-      this.limits = await ScratchOrgUtils.getScratchOrgLimits(
-        this.hubOrg,
-        this.apiversion
-      );
-    } catch (error) {
-      console.log("Unable to connect to DevHub");
-      return;
-    }
-  }
 
-  private async computeAllocation(): Promise<number> {
-    //Compute current pool requirement
 
-    let activeCount = await ScratchOrgUtils.getCountOfActiveScratchOrgsByTag(
-      this.poolConfig.pool.tag,
-      this.hubOrg
-    );
-    return this.allocateScratchOrgsPerTag(
-      this.limits.ActiveScratchOrgs.Remaining,
-      activeCount,
-      this.poolConfig.pool.tag,
-      this.poolConfig.poolUsers[0]
-    );
-  }
+ 
 
-  private async generateScratchOrgs() {
-    //Generate Scratch Orgs
-    for (let poolUser of this.poolConfig.poolUsers) {
-      let count = 1;
-      poolUser.scratchOrgs = new Array<ScratchOrg>();
-      for (let i = 0; i < poolUser.to_allocate; i++) {
-        console.log(
-          `Creating Scratch  Org  ${count} of ${this.totalToBeAllocated}..`
-        );
-        try {
-          let scratchOrg: ScratchOrg = await ScratchOrgUtils.createScratchOrg(
-            count,
-            poolUser.username,
-            this.poolConfig.pool.config_file_path,
-            poolUser.expiry ? poolUser.expiry : this.poolConfig.pool.expiry,
-            this.hubOrg
-          );
-          poolUser.scratchOrgs.push(scratchOrg);
-          this.totalAllocated++;
-        } catch (error) {
-          console.log(error);
-          console.log(`Unable to provision scratch org  ${count} ..   `);
-        }
-        count++;
-      }
 
-      await ScratchOrgUtils.getScratchOrgRecordId(
-        poolUser.scratchOrgs,
-        this.hubOrg
-      );
-
-      let scratchOrgInprogress = [];
-
-      poolUser.scratchOrgs.forEach((scratchOrg) => {
-        scratchOrgInprogress.push({
-          Id: scratchOrg.recordId,
-          Pooltag__c: this.poolConfig.pool.tag,
-          Allocation_status__c: "In Progress",
-        });
-      });
-
-      if (scratchOrgInprogress.length > 0) {
-        //set pool tag
-        await ScratchOrgUtils.setScratchOrgInfo(
-          scratchOrgInprogress,
-          this.hubOrg
-        );
-      }
-    }
-  }
-
-  private async finalizeGeneratedScratchOrgs(): Promise<{
-    success: number;
-    failed: number;
-  }> {
-    //Store Username Passwords
-    let failed = 0;
-    let success = 0;
-
-    for (let poolUser of this.poolConfig.poolUsers) {
-      for (let scratchOrg of poolUser.scratchOrgs) {
-        if (scratchOrg.isScriptExecuted) {
-          success++;
-          continue;
-        }
-
-        console.log(EOL);
-        console.log(
-          `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias} due to`
-        );
-        console.log(scratchOrg.failureMessage);
-
-        try {
-          //Delete scratchorgs that failed to execute script
-
-          let activeScratchOrgRecordId = await ScratchOrgUtils.getActiveScratchOrgRecordIdGivenScratchOrg(
-            this.hubOrg,
-            this.apiversion,
-            scratchOrg.orgId
-          );
-
-          await ScratchOrgUtils.deleteScratchOrg(
-            this.hubOrg,
-            activeScratchOrgRecordId
-          );
-          console.log(`Succesfully deleted scratchorg  ${scratchOrg.username}`);
-        } catch (error) {
-          console.log(
-            `Unable to delete the scratchorg ${scratchOrg.username}..`
-          );
-        }
-        console.log(EOL);
-
-        failed++;
-      }
-    }
-
-    return { success: success, failed: failed };
-  }
-
-  private allocateScratchOrgsPerTag(
-    remainingScratchOrgs: number,
-    countOfActiveScratchOrgs: number,
-    tag: string,
-    poolUser: PoolUser
-  ) {
-    poolUser.current_allocation = countOfActiveScratchOrgs;
-    poolUser.to_allocate = 0;
-    poolUser.to_satisfy_max =
-      poolUser.max_allocation - poolUser.current_allocation > 0
-        ? poolUser.max_allocation - poolUser.current_allocation
-        : 0;
-
-    if (
-      poolUser.to_satisfy_max > 0 &&
-      poolUser.to_satisfy_max <= remainingScratchOrgs
-    ) {
-      poolUser.to_allocate = poolUser.to_satisfy_max;
-    } else if (
-      poolUser.to_satisfy_max > 0 &&
-      poolUser.to_satisfy_max > remainingScratchOrgs
-    ) {
-      poolUser.to_allocate = remainingScratchOrgs;
-    }
-
-    console.log(
-      `Current Allocation of ScratchOrgs in the pool ${this.tag}: ` +
-        poolUser.current_allocation
-    );
-    console.log(
-      "Remaining Active scratchOrgs in the org: " + remainingScratchOrgs
-    );
-    console.log("ScratchOrgs to be allocated: " + poolUser.to_allocate);
-
-    return poolUser.to_allocate;
-  }
-
-  private async scriptExecutor(
-    scratchOrg: ScratchOrg,
-    hubOrgUserName: string
-  ): Promise<ScriptExecutionResult> {
-    //Need to call PrepareAnOrgImpl
-
-    console.log(
-      `Executing script for ${scratchOrg.alias} with username: ${scratchOrg.username}`
-    );
-
-    console.log(
-      `Script Execution result is being written to .sfpowerscripts/prepare_logs/${scratchOrg.alias}.log, Please note this will take a significant time depending on the  script being executed`
-    );
-
-    SFPLogger.isSupressLogs = true;
-
-    let prepareASingleOrgImpl: PrepareASingleOrgImpl = new PrepareASingleOrgImpl(
-      scratchOrg,
-      hubOrgUserName,
-      this._isRetryOnFailure
-    );
-
-    prepareASingleOrgImpl.setcheckPointPackages(this._checkPointPackages);
-    prepareASingleOrgImpl.setInstallationBehaviour(
-      this.installAll,
-      this.installAsSourcePackages,
-      this.succeedOnDeploymentErrors
-    );
-    prepareASingleOrgImpl.setPackageKeys(this.keys);
-
-    let result = await prepareASingleOrgImpl.prepare();
-
-    if (result.isSuccess) {
-      scratchOrg.isScriptExecuted = true;
-      let submitInfoToPool = await ScratchOrgUtils.setScratchOrgInfo(
-        {
-          Id: scratchOrg.recordId,
-          Pooltag__c: this.poolConfig.pool.tag,
-          Allocation_status__c:  "Available"
-        },
-        this.hubOrg
-      );
-      if (!submitInfoToPool) {
-        result.isSuccess = false;
-        result.status = "failure";
-        result.message = "Unable to set the scratch org record in Pool";
-      }
-    } else {
-      scratchOrg.isScriptExecuted = false;
-      scratchOrg.failureMessage = result.message;
-    }
-
-    return result;
-  }
 
   
 
 }
 
-export interface PoolConfig {
-  pool: Pool;
-  poolUsers?: PoolUser[];
-}
 
-export interface Pool {
-  expiry: number;
-  config_file_path: string;
-  script_file_path?: string;
-  tag: string;
-  user_mode: boolean;
-  max_allocation: number;
-}
-
-export interface PoolUser {
-  max_allocation: number;
-  min_allocation: number;
-  is_build_pooluser: boolean;
-  username?: string;
-  expiry?: number;
-  priority: number;
-  scripts?: string[];
-  current_allocation?: number;
-  to_allocate?: number;
-  to_satisfy_min?: number;
-  to_satisfy_max?: number;
-  scratchOrgs?: ScratchOrg[];
-}

@@ -7,7 +7,6 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
   
   constructor(
     private scope: string,
-    private npmTag: string,
     private npmrcPath: string
   ) {
     if (this.npmrcPath) {
@@ -23,7 +22,8 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
 
   public fetchArtifact(
     packageName: string,
-    artifactDirectory: string
+    artifactDirectory: string,
+    version?:string
   ) {
     // NPM package names must be lowercase
     packageName = packageName.toLowerCase();
@@ -33,11 +33,15 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
       cmd = `npm pack @${this.scope}/${packageName}_sfpowerscripts_artifact`;
     else cmd = `npm pack ${packageName}_sfpowerscripts_artifact`;
 
-    if (this.npmTag) cmd += `@${this.npmTag}`;
+    if(version)
+       cmd += `@${version}`
+  
+
+    console.log(`Fetching ${packageName} using ${cmd}`);
 
     child_process.execSync(cmd, {
       cwd: artifactDirectory,
-      stdio: ["ignore", "inherit", "inherit"],
+      stdio: "pipe",
     });
   }
 }

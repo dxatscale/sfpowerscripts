@@ -1,7 +1,7 @@
 import { Org } from "@salesforce/core";
 import { PoolBaseImpl } from "./PoolBaseImpl";
 import ScratchOrg from "./ScratchOrg";
-import ScratchOrgUtils from "./utils/ScratchOrgUtils";
+import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 
 export default class PoolListImpl extends PoolBaseImpl {
   private tag: string;
@@ -15,9 +15,8 @@ export default class PoolListImpl extends PoolBaseImpl {
   }
 
   protected async onExec(): Promise<ScratchOrg[]> {
-    const results = (await ScratchOrgUtils.getScratchOrgsByTag(
+    const results = (await new ScratchOrgInfoFetcher(this.hubOrg).getScratchOrgsByTag(
       this.tag,
-      this.hubOrg,
       null,
       !this.allScratchOrgs
     )) as any;

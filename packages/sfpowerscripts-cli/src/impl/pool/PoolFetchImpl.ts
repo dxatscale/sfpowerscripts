@@ -1,10 +1,13 @@
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { fs, LoggerLevel, Org, SfdxError } from "@salesforce/core";
 import child_process = require("child_process");
+import ShareScratchOrg from "./operations/ShareScratchOrg";
 import { PoolBaseImpl } from "./PoolBaseImpl";
 import ScratchOrg from "./ScratchOrg";
-import { getUserEmail } from "./utils/GetUserEmail";
-import ScratchOrgUtils from "./utils/ScratchOrgUtils";
+import { getUserEmail } from "./services/fetchers/GetUserEmail";
+import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
+import ScratchOrgInfoAssigner from "./services/updaters/ScratchOrgInfoAssigner";
+
 
 
 export default class PoolFetchImpl extends PoolBaseImpl{
@@ -33,9 +36,8 @@ export default class PoolFetchImpl extends PoolBaseImpl{
 
   protected async onExec(): Promise<ScratchOrg> {
    
-    const results = (await ScratchOrgUtils.getScratchOrgsByTag(
+    const results = (await new ScratchOrgInfoFetcher(this.hubOrg).getScratchOrgsByTag(
       this.tag,
-      this.hubOrg,
       this.mypool,
       true
     )) as any;
@@ -72,9 +74,8 @@ export default class PoolFetchImpl extends PoolBaseImpl{
       );
 
       for (let element of availableSo) {
-        let allocateSO = await ScratchOrgUtils.setScratchOrgInfo(
-          { Id: element.Id, Allocation_status__c: "Allocate" },
-          this.hubOrg
+        let allocateSO = await new ScratchOrgInfoAssigner(this.hubOrg).setScratchOrgInfo(
+          { Id: element.Id, Allocation_status__c: "Allocate" }
         );
         if (allocateSO === true) {
           SFPLogger.log(
@@ -113,10 +114,8 @@ export default class PoolFetchImpl extends PoolBaseImpl{
       //Fetch the email for user id
       try {
         //Send an email for username
-        await ScratchOrgUtils.shareScratchOrgThroughEmail(
-          emaiId,
-          soDetail,
-          this.hubOrg
+        await new ShareScratchOrg(this.hubOrg,soDetail).shareScratchOrgThroughEmail(
+          emaiId
         );
       } catch (error) {
         SFPLogger.log(

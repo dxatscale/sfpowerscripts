@@ -6,7 +6,6 @@ export default class FetchArtifactSelector {
   constructor(
     private fetchArtifactScript: string,
     private scope: string,
-    private npmTag: string,
     private npmrcPath: string
   ) {}
 
@@ -16,7 +15,6 @@ export default class FetchArtifactSelector {
     } else {
       return new FetchAnArtifactFromNPM(
         this.scope,
-        this.npmTag,
         this.npmrcPath
       );
     }

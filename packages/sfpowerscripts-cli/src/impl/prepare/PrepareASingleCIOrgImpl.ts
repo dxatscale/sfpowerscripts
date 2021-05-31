@@ -11,9 +11,12 @@ import { Stage } from "../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl"
 import ScratchOrg from "../pool/ScratchOrg";
+import { ScriptExecutionResult } from "../pool/ScriptExecutionResult";
+import PoolScriptExecutor from "../pool/PoolScriptExecutor";
+import { Org } from "@salesforce/core";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
-export default class PrepareASingleOrgImpl {
+export default class PrepareASingleCIOrgImpl  implements PoolScriptExecutor {
   private keys;
   private installAll: boolean;
   private installAsSourcePackages: boolean;
@@ -21,10 +24,9 @@ export default class PrepareASingleOrgImpl {
   private checkPointPackages: string[];
 
   public constructor(
-    private scratchOrg: ScratchOrg,
-    private hubOrg: string,
     private isRetryOnFailure?: boolean
   ) {}
+
 
   public setPackageKeys(keys: string) {
     this.keys = keys;
@@ -43,25 +45,28 @@ export default class PrepareASingleOrgImpl {
     this.succeedOnDeploymentErrors = succeedOnDeploymentErrors;
   }
 
-  public async prepare(): Promise<ScriptExecutionResult> {
+
+ 
+
+  public async execute(scratchOrg:ScratchOrg,hubOrg:Org): Promise<ScriptExecutionResult> {
     //Install sfpowerscripts Artifact
 
     try {
       //Create file logger
       fs.outputFileSync(
-        `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`,
+        `.sfpowerscripts/prepare_logs/${scratchOrg.alias}.log`,
         `sfpowerscripts--log${EOL}`
       );
 
-      let packageLogger: any = `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`;
+      let packageLogger: any = `.sfpowerscripts/prepare_logs/${scratchOrg.alias}.log`;
       SFPLogger.log(
-        `Installing sfpowerscripts_artifact package to the ${this.scratchOrg.alias}`,
+        `Installing sfpowerscripts_artifact package to the ${scratchOrg.alias}`,
         null,
         packageLogger
       );
 
       let installUnlockedPackageImpl:InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(null,
-               this.scratchOrg.username,
+               scratchOrg.username,
                process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
           ? process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
           : SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
@@ -72,18 +77,18 @@ export default class PrepareASingleOrgImpl {
       SFPLogger.isSupressLogs = true;
       let startTime = Date.now();
       SFPLogger.log(
-        `Installing package depedencies to the ${this.scratchOrg.alias}`,
+        `Installing package depedencies to the ${scratchOrg.alias}`,
         null,
         packageLogger
       );
       SFPLogger.log(
-        `Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`
+        `Installing Package Dependencies of this repo in ${scratchOrg.alias}`
       );
 
       // Install Dependencies
       let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
-        this.scratchOrg.username,
-        this.hubOrg,
+        scratchOrg.username,
+        hubOrg.getUsername(),
         120,
         null,
         this.keys,
@@ -96,19 +101,22 @@ export default class PrepareASingleOrgImpl {
       }
 
       console.log(
-        `Successfully completed Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`
+        `Successfully completed Installing Package Dependencies of this repo in ${scratchOrg.alias}`
       );
 
       if (this.installAll) {
         let deploymentResult = await this.deployAllPackagesInTheRepo(
+          scratchOrg,
           packageLogger
         );
         this.succeedOnDeploymentErrors
           ? this.handleDeploymentErrorsForPartialDeployment(
+              scratchOrg,
               deploymentResult,
               packageLogger
             )
           : this.handleDeploymentErrorsForFullDeployment(
+              scratchOrg,
               deploymentResult,
               packageLogger
             );
@@ -121,7 +129,7 @@ export default class PrepareASingleOrgImpl {
         status: "success",
         isSuccess: true,
         message: "Succesfully Created Scratch Org",
-        scratchOrgUsername: this.scratchOrg.username,
+        scratchOrgUsername: scratchOrg.username,
       };
     } catch (error) {
       SFPStatsSender.logCount("prepare.org.failed");
@@ -129,23 +137,23 @@ export default class PrepareASingleOrgImpl {
         status: "failure",
         isSuccess: false,
         message: error.message,
-        scratchOrgUsername: this.scratchOrg.username,
+        scratchOrgUsername: scratchOrg.username,
       };
     }
   }
 
-  private async deployAllPackagesInTheRepo(packageLogger: any) {
+  private async deployAllPackagesInTheRepo(scratchOrg:ScratchOrg,packageLogger: any) {
     SFPLogger.log(
-      `Deploying all packages in the repo to  ${this.scratchOrg.alias}`
+      `Deploying all packages in the repo to  ${scratchOrg.alias}`
     );
     SFPLogger.log(
-      `Deploying all packages in the repo to  ${this.scratchOrg.alias}`,
+      `Deploying all packages in the repo to  ${scratchOrg.alias}`,
       null,
       packageLogger
     );
 
     let deployProps: DeployProps = {
-      targetUsername: this.scratchOrg.username,
+      targetUsername: scratchOrg.username,
       artifactDir: "artifacts",
       waitTime: 120,
       currentStage: Stage.PREPARE,
@@ -167,6 +175,7 @@ export default class PrepareASingleOrgImpl {
   }
 
   private handleDeploymentErrorsForFullDeployment(
+    scratchOrg:ScratchOrg,
     deploymentResult: {
       deployed: string[];
       failed: string[];
@@ -179,7 +188,7 @@ export default class PrepareASingleOrgImpl {
     if (deploymentResult.failed.length > 0 || deploymentResult.error) {
       //Write to Scratch Org Logs
       SFPLogger.log(
-        `Following Packages failed to deploy in ${this.scratchOrg.alias}`,
+        `Following Packages failed to deploy in ${scratchOrg.alias}`,
         null,
         packageLogger,
         LoggerLevel.INFO
@@ -191,7 +200,7 @@ export default class PrepareASingleOrgImpl {
         LoggerLevel.INFO
       );
       SFPLogger.log(
-        `Deployment of packages failed in ${this.scratchOrg.alias}, this scratch org will be deleted`,
+        `Deployment of packages failed in ${scratchOrg.alias}, this scratch org will be deleted`,
         null,
         packageLogger,
         LoggerLevel.INFO
@@ -206,6 +215,7 @@ export default class PrepareASingleOrgImpl {
   }
 
   private handleDeploymentErrorsForPartialDeployment(
+    scratchOrg:ScratchOrg,
     deploymentResult: {
       deployed: string[];
       failed: string[];
@@ -223,7 +233,7 @@ export default class PrepareASingleOrgImpl {
         if (!isCheckPointSucceded) {
           SFPStatsSender.logCount("prepare.org.checkpointfailed");
           SFPLogger.log(
-            `One or some of the check point packages ${this.checkPointPackages} failed to deploy, Deleting ${this.scratchOrg.alias}`,
+            `One or some of the check point packages ${this.checkPointPackages} failed to deploy, Deleting ${scratchOrg.alias}`,
             null,
             packageLogger,
             LoggerLevel.INFO
@@ -235,7 +245,7 @@ export default class PrepareASingleOrgImpl {
       } else {
         SFPStatsSender.logCount("prepare.org.partial");
         SFPLogger.log(
-          `Cancelling any further packages to be deployed, Adding the scratchorg ${this.scratchOrg.alias} to the pool`,
+          `Cancelling any further packages to be deployed, Adding the scratchorg ${scratchOrg.alias} to the pool`,
           null,
           packageLogger,
           LoggerLevel.INFO
@@ -248,9 +258,4 @@ export default class PrepareASingleOrgImpl {
   }
 }
 
-export interface ScriptExecutionResult {
-  status: string;
-  message: string;
-  scratchOrgUsername: string;
-  isSuccess: boolean;
-}
+

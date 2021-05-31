@@ -13,12 +13,12 @@ export  abstract class PoolBaseImpl
     this.hubOrg = hubOrg;
   }
 
-  public async execute():Promise<ScratchOrg|ScratchOrg[]> {
+  public async execute():Promise<any> {
     new PreRequisiteCheck(this.hubOrg).checkForPrerequisites();
     return this.onExec();
   }
 
-  protected abstract onExec():Promise<ScratchOrg|ScratchOrg[]>;
+  protected abstract onExec():Promise<any>;
 
  
 }

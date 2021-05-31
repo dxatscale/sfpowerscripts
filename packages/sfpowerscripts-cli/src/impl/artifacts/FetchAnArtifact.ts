@@ -1,4 +1,4 @@
 export default interface FetchAnArtifact
 {
-   fetchArtifact(packageName: string,artifactDirectory: string):void
+   fetchArtifact(packageName: string,artifactDirectory: string,version?:string):void
 }

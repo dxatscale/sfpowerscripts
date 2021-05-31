@@ -5,7 +5,7 @@ import PrepareImpl from "../../../impl/prepare/PrepareImpl";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { Stage } from "../../../impl/Stage";
 import * as fs from "fs-extra"
-import ScratchOrgUtils from "../../../impl/pool/utils/ScratchOrgUtils";
+import ScratchOrgInfoFetcher from "../../../impl/pool/services/fetchers/ScratchOrgInfoFetcher";
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -218,9 +218,8 @@ export default class Prepare extends SfpowerscriptsCommand {
   private async getCurrentRemainingNumberOfOrgsInPoolAndReport() {
     try
     {
-    const results = await ScratchOrgUtils.getScratchOrgsByTag(
+    const results = await new ScratchOrgInfoFetcher(this.hubOrg).getScratchOrgsByTag(
       this.flags.tag,
-      this.hubOrg,
       false,
       true
     )
