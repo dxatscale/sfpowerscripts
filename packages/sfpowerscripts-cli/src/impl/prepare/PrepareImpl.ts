@@ -562,7 +562,7 @@ export default class PrepareImpl {
     if (process.platform !== "win32") {
       cmd = `bash -e "${scriptPath}" "${packageName}" "${artifactDirectory}"`;
     } else {
-      cmd = `cmd.exe /c "${scriptPath}" "${packageName}"  "${artifactDirectory}"`;
+      cmd = `cmd.exe /c "${scriptPath}" "${packageName}" "${artifactDirectory}"`;
     }
 
     child_process.execSync(cmd, {

@@ -1,5 +1,4 @@
 import child_process = require("child_process");
-import { isNullOrUndefined } from "util";
 import { onExit } from "../../utils/OnExit";
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";

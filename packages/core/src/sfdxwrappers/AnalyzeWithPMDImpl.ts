@@ -1,6 +1,5 @@
 import child_process = require("child_process");
 import { onExit } from "../utils/OnExit";
-import { isNullOrUndefined } from "util";
 import SFPLogger from "../utils/SFPLogger";
 
 
