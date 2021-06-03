@@ -25,11 +25,11 @@ export default class ValidateDXUnlockedPackageImpl {
         command = `sfdx sfpowerkit:package:valid`;
 
 
-    if(!isNullOrUndefined(this.validate_package))
-    command+=` -n  ${this.validate_package}`;
+    if(this.validate_package)
+    command+=` -n "${this.validate_package}"`;
 
-    if(!isNullOrUndefined(this.bypass))
-    command+=` -b  ${this.bypass}`;
+    if(this.bypass)
+    command+=` -b "${this.bypass}"`;
 
 
     return command;

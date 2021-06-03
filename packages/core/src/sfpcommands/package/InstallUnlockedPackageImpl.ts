@@ -62,12 +62,12 @@ export default class InstallUnlockedPackageImpl {
               this.sourceDirectory
             );
           }
-          
+
         }
 
             //Print Metadata carried in the package
          PackageMetadataPrinter.printMetadataToDeploy(this.packageMetadata?.payload);
- 
+
         let command = this.buildPackageInstallCommand();
         let child = child_process.exec(command);
 
@@ -160,7 +160,7 @@ export default class InstallUnlockedPackageImpl {
 
 
   private buildPackageInstallCommand(): string {
-    let command = `sfdx force:package:install --package ${this.package_version_id} -u ${this.targetusername} --noprompt`;
+    let command = `sfdx force:package:install --package ${this.package_version_id} -u "${this.targetusername}" --noprompt`;
 
     command += ` --publishwait=${this.publish_wait_time}`;
     command += ` --wait=${this.wait_time}`;
@@ -168,7 +168,7 @@ export default class InstallUnlockedPackageImpl {
     command += ` --upgradetype=${this.options["upgradetype"]}`;
     command += ` --apexcompile=${this.options["apexcompile"]}`;
 
-    if (!isNullOrUndefined(this.options["installationkey"]))
+    if (this.options["installationkey"])
       command += ` --installationkey=${this.options["installationkey"]}`;
 
     SFPLogger.log(`Generated Command ${command}`,null,this.packageLogger);
@@ -178,7 +178,7 @@ export default class InstallUnlockedPackageImpl {
   private checkWhetherPackageIsIntalledInOrg(): boolean {
     try {
       SFPLogger.log(`Checking Whether Package with ID ${this.package_version_id} is installed in  ${this.targetusername}`,null,this.packageLogger);
-      let command = `sfdx sfpowerkit:package:version:info  -u ${this.targetusername} --json`;
+      let command = `sfdx sfpowerkit:package:version:info  -u "${this.targetusername}" --json`;
       let result = JSON.parse(child_process.execSync(command).toString());
       if (result.status == 0) {
         let packageInfos: PackageInfo[] = result.result;
