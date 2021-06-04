@@ -75,7 +75,5 @@ You will need a StatsD server reachable from your CI/CD agent to report the metr
 
 ## **Artifact Registry**
 
-sfpowerscripts is designed to work with [asynchronous pipelines](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator#is-there-a-pipeline-schematic-diagram-that-i-can-understand), where CI and CD is separated into two distinct pipelines. This means an artifact repository/registry such as Azure Artifacts, Jfrog Artifactory is essential to store the built artifacts.
-
-A linear pipeline can also be used on smaller projects where a CI/CD pipeline is a single synchronous pipeline. In this case you do not need an artifact repository. Read more about artifact registries [here](../faq/artifacts.md)
+sfpowerscripts is designed to work with [asynchronous pipelines](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator#is-there-a-pipeline-schematic-diagram-that-i-can-understand), where CI and CD is separated into two distinct pipelines. This means an artifact repository/registry such as Azure Artifacts, Jfrog Artifactory is essential to store the built artifacts
 
