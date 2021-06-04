@@ -2,56 +2,40 @@
 import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import * as fs from "fs-extra";
-import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
+import DeployImpl, { DeploymentMode, DeployProps } from "../../deploy/DeployImpl";
 import { EOL } from "os";
 import SFPLogger, {
   LoggerLevel,
 } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import { Stage } from "../Stage";
+import { Stage } from "../../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl"
-import ScratchOrg from "../pool/ScratchOrg";
-import { ScriptExecutionResult } from "../pool/ScriptExecutionResult";
-import PoolScriptExecutor from "../pool/PoolScriptExecutor";
+import ScratchOrg from "../../pool/ScratchOrg";
+import PoolJobExecutor, { ScriptExecutionResult }  from "../../pool/PoolJobExecutor";
 import { Org } from "@salesforce/core";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import { PoolConfig } from "../../pool/PoolConfig";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
-export default class PrepareASingleCIOrgImpl  implements PoolScriptExecutor {
-  private keys;
-  private installAll: boolean;
-  private installAsSourcePackages: boolean;
-  private succeedOnDeploymentErrors: boolean;
-  private checkPointPackages: string[];
+
+
+export default class PrepareCIOrgJob  implements PoolJobExecutor {
+  checkPointPackages: any[];
+
 
   public constructor(
-    private isRetryOnFailure?: boolean
+    private pool:PoolConfig
   ) {}
 
 
-  public setPackageKeys(keys: string) {
-    this.keys = keys;
-  }
-
-  public setcheckPointPackages(checkPointPackages: string[]) {
-    this.checkPointPackages = checkPointPackages;
-  }
-  public setInstallationBehaviour(
-    installAll: boolean,
-    installAsSourcePackages: boolean,
-    succeedOnDeploymentErrors: boolean
-  ) {
-    this.installAll = installAll;
-    this.installAsSourcePackages = installAsSourcePackages;
-    this.succeedOnDeploymentErrors = succeedOnDeploymentErrors;
-  }
-
-
- 
 
   public async execute(scratchOrg:ScratchOrg,hubOrg:Org): Promise<ScriptExecutionResult> {
     //Install sfpowerscripts Artifact
 
     try {
+
+      this.checkPointPackages=this.getcheckPointPackages();
+
       //Create file logger
       fs.outputFileSync(
         `.sfpowerscripts/prepare_logs/${scratchOrg.alias}.log`,
@@ -91,7 +75,7 @@ export default class PrepareASingleCIOrgImpl  implements PoolScriptExecutor {
         hubOrg.getUsername(),
         120,
         null,
-        this.keys,
+        this.pool.keys,
         true,
         packageLogger
       );
@@ -104,12 +88,12 @@ export default class PrepareASingleCIOrgImpl  implements PoolScriptExecutor {
         `Successfully completed Installing Package Dependencies of this repo in ${scratchOrg.alias}`
       );
 
-      if (this.installAll) {
+      if (this.pool.cipool.installAll) {
         let deploymentResult = await this.deployAllPackagesInTheRepo(
           scratchOrg,
           packageLogger
         );
-        this.succeedOnDeploymentErrors
+        this.pool.succeedOnDeploymentErrors
           ? this.handleDeploymentErrorsForPartialDeployment(
               scratchOrg,
               deploymentResult,
@@ -160,10 +144,10 @@ export default class PrepareASingleCIOrgImpl  implements PoolScriptExecutor {
       packageLogger: packageLogger,
       isTestsToBeTriggered: false,
       skipIfPackageInstalled: false,
-      deploymentMode: this.installAsSourcePackages
+      deploymentMode: this.pool.cipool.installAsSourcePackages
         ? DeploymentMode.SOURCEPACKAGES
         : DeploymentMode.NORMAL,
-      isRetryOnFailure: this.isRetryOnFailure,
+      isRetryOnFailure: this.pool.cipool.retryOnFailure,
     };
 
     //Deploy the fetched artifacts to the org
@@ -255,6 +239,17 @@ export default class PrepareASingleCIOrgImpl  implements PoolScriptExecutor {
       //All good send succeeded metrics
       SFPStatsSender.logCount("prepare.org.succeeded");
     }
+  }
+
+   //Fetch all checkpoints
+   private getcheckPointPackages() {
+    console.log("Fetching checkpoints for prepare if any.....");
+    let projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+    let checkPointPackages = [];
+    projectConfig["packageDirectories"].forEach((pkg) => {
+      if (pkg.checkpointForPrepare) checkPointPackages.push(pkg["package"]);
+    });
+    return checkPointPackages;
   }
 }
 

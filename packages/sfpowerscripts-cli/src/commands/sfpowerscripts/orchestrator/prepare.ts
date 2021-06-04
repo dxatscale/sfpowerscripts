@@ -6,6 +6,8 @@ import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import { Stage } from "../../../impl/Stage";
 import * as fs from "fs-extra"
 import ScratchOrgInfoFetcher from "../../../impl/pool/services/fetchers/ScratchOrgInfoFetcher";
+import path from "path";
+import Ajv from "ajv"
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -16,86 +18,12 @@ export default class Prepare extends SfpowerscriptsCommand {
   protected static requiresProject = true;
 
   protected static flagsConfig = {
-    tag: flags.string({
-      required: true,
-      char: "t",
-      description: messages.getMessage("tagDescription"),
-    }),
-    expiry: flags.number({
+    poolconfig: flags.filepath({
       required: false,
-      default: 2,
-      char: "e",
-      description: messages.getMessage("expiryDescription"),
-    }),
-    maxallocation: flags.number({
-      required: false,
-      default: 10,
-      char: "m",
-      description: messages.getMessage("maxallocationDescription"),
-    }),
-    config: flags.filepath({
-      required: false,
-      default: "config/project-scratch-def.json",
+      default: "config/cipoolconfig.json",
       char: "f",
       description: messages.getMessage("configDescription"),
     }),
-    installall: flags.boolean({
-      required: false,
-      default: false,
-      description: messages.getMessage("installallDescription"),
-    }),
-    installassourcepackages: flags.boolean({
-      required: false,
-      description: messages.getMessage("installationModeDescription"),
-      dependsOn: ["installall"]
-    }),
-    artifactfetchscript: flags.filepath({
-      required: false,
-      char: "s",
-      description: messages.getMessage("artifactfetchscriptDescription"),
-    }),
-     succeedondeploymenterrors:flags.boolean({
-      required: false,
-      default:false,
-      description: messages.getMessage("succeedondeploymenterrorsDescription"),
-    }),
-    keys: flags.string({
-      required: false,
-      description: messages.getMessage("keysDescription"),
-    }),
-    batchsize: flags.number({
-      required: false,
-      default: 10,
-      hidden: true,
-      description: messages.getMessage("batchsize"),
-    }),
-    apiversion: flags.builtin({
-      description: messages.getMessage("apiversion"),
-    }),
-    npm: flags.boolean({
-      description: messages.getMessage('npmFlagDescription'),
-      exclusive: ['artifactfetchscript'],
-      required: false
-    }),
-    scope: flags.string({
-      description: messages.getMessage('scopeFlagDescription'),
-      dependsOn: ['npm'],
-      parse: (scope) => scope.replace(/@/g,"").toLowerCase()
-    }),
-    npmtag: flags.string({
-      description: messages.getMessage('npmTagFlagDescription'),
-      dependsOn: ['npm'],
-      required: false
-    }),
-    npmrcpath: flags.string({
-      description: messages.getMessage('npmrcPathFlagDescription'),
-      dependsOn: ['npm'],
-      required: false
-    }),
-    retryonfailure:flags.boolean({
-      description: messages.getMessage('retryOnFailureFlagDescription'),
-      hidden:true
-    })
   };
 
   public static description = messages.getMessage("commandDescription");
@@ -104,19 +32,40 @@ export default class Prepare extends SfpowerscriptsCommand {
     `$ sfdx sfpowerscripts:orchestrator:prepare -t CI_1  -v <devhub>`,
   ];
 
+
+
   public async execute(): Promise<any> {
+
+
     let executionStartTime = Date.now();
 
     console.log("-----------sfpowerscripts orchestrator ------------------");
     console.log("command: prepare");
-    console.log(`Pool Name: ${this.flags.tag}`);
-    console.log(`Requested Count of Orgs: ${this.flags.maxallocation}`);
-    console.log(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`);
-    console.log(`Fetch artifacts from pre-authenticated NPM registry: ${this.flags.npm ? "true" : "false"}`);
-    if(this.flags.npm && this.flags.npmtag)
+
+   //Read pool config
+   try {
+   let poolConfig = fs.readJSONSync(this.flags.poolconfig);
+   this.validatePoolConfig(poolConfig);
+
+
+    console.log(`Pool Name: ${poolConfig.tag}`);
+    console.log(`Type of Pool: ${poolConfig.cipool?"ci":"dev"}`);
+    console.log(`Requested Count of Orgs: ${poolConfig.maxallocation}`);
+    console.log(`Scratch Orgs to be submitted to pool in case of failures: ${poolConfig.succeedOnDeploymentErrors}`)
+    
+    if(poolConfig.cipool)
+    {
+    console.log(`All packages in the repo to be installed: ${poolConfig.cipool.installAll}`);
+    if(poolConfig.fetchArtifacts)
+    {
+    console.log(`Script provided to fetch artifacts: ${poolConfig.fetchArtifacts.artifactfetchscript?'true':'false'}`);
+    console.log(`Fetch artifacts from pre-authenticated NPM registry: ${poolConfig.fetchArtifacts.npm ? "true" : "false"}`);
+    if(poolConfig.fetchArtifacts.npm?.npmtag)
       console.log(`Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`);
-    console.log(`All packages in the repo to be installed: ${this.flags.installall}`);
-    console.log(`Scratch Orgs to be submitted to pool in case of failures: ${this.flags.succeedondeploymenterrors}`)
+    }
+    }
+
+
     console.log("---------------------------------------------------------");
 
     let tags = {
@@ -130,27 +79,19 @@ export default class Prepare extends SfpowerscriptsCommand {
     this.flags.apiversion =
       this.flags.apiversion || (await hubConn.retrieveMaxApiVersion());
 
+     
 
     let prepareImpl = new PrepareImpl(
       this.hubOrg,
-      this.flags.apiversion,
-      this.flags.tag,
-      this.flags.expiry,
-      this.flags.maxallocation,
-      this.flags.config,
-      this.flags.batchsize
+      poolConfig
     );
-    prepareImpl.setArtifactFetchScript(this.flags.artifactfetchscript);
-    prepareImpl.setInstallationBehaviour(this.flags.installall,this.flags.installassourcepackages,this.flags.succeedondeploymenterrors);
-    prepareImpl.setPackageKeys(this.flags.keys);
-    prepareImpl.isNpm = this.flags.npm;
-    prepareImpl.scope = this.flags.scope;
-    prepareImpl.npmTag = this.flags.npmtag;
-    prepareImpl.npmrcPath = this.flags.npmrcpath;
-    prepareImpl.retryOnFailure = this.flags.retryonfailure;
 
-    try {
-      let results= await prepareImpl.poolScratchOrgs();
+    
+
+  
+
+
+      let results= await prepareImpl.exec();
 
       let totalElapsedTime=Date.now()-executionStartTime;
       console.log(
@@ -206,14 +147,6 @@ export default class Prepare extends SfpowerscriptsCommand {
     }
   }
 
-  protected validateFlags() {
-    if (this.flags.artifactfetchscript && !fs.existsSync(this.flags.artifactfetchscript)) {
-      throw new Error(`Script path ${this.flags.scriptpath} does not exist, Please provide a valid path to the script file`);
-    }
-
-    if (this.flags.npm && !this.flags.scope)
-      throw new Error("--scope parameter is required for NPM");
-  }
 
   private async getCurrentRemainingNumberOfOrgsInPoolAndReport() {
     try
@@ -237,5 +170,32 @@ export default class Prepare extends SfpowerscriptsCommand {
     let timeString = date.toISOString().substr(11, 8);
     return timeString;
   }
+
+
+
+ public validatePoolConfig(poolConfig:any)
+ {
+  let resourcesDir = path.join(
+    __dirname,
+    "..",
+    "resources",
+    "schemas"
+  );
+   let ajv=new Ajv({allErrors: true});
+   let schema = fs.readJSONSync(path.join(resourcesDir,`pooldefinition.schema.json`), {encoding:'UTF-8'})
+   let validator = ajv.compile(schema);
+   let isSchemaValid = validator(poolConfig);
+   if(!isSchemaValid)
+   {
+    let errorMsg: string =`The pool configuration is invalid, Please fix the following errors\n`;
+
+    validator.errors.forEach((error,errorNum) => {
+      errorMsg += `\n${errorNum+1}: ${error.instancePath}: ${error.message} ${JSON.stringify(error.params, null, 4)}`;
+    });
+
+    throw new Error(errorMsg);
+   }
+ }
+
 
 }

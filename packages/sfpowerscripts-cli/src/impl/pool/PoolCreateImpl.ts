@@ -3,17 +3,16 @@ import Bottleneck from "bottleneck";
 import { EOL } from "os";
 import CreateScratchOrg from "./operations/CreateScratchOrg";
 import DeleteScratchOrg from "./operations/DeleteScratchOrg";
-import { Pool} from "./Pool";
+import { PoolConfig} from "./PoolConfig";
 import { PoolBaseImpl } from "./PoolBaseImpl";
 import ScratchOrg from "./ScratchOrg";
-import { ScriptExecutionResult } from "./ScriptExecutionResult";
 import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 import ScratchOrgLimitsFetcher from "./services/fetchers/ScratchOrgLimitsFetcher";
 import ScratchOrgInfoAssigner from "./services/updaters/ScratchOrgInfoAssigner";
 import * as rimraf from "rimraf";
 import * as fs from "fs-extra";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import PoolScriptExecutor from "./PoolScriptExecutor";
+import PoolJobExecutor, { ScriptExecutionResult } from "./PoolJobExecutor";
 
 
 
@@ -23,9 +22,8 @@ export default class PoolCreateImpl extends PoolBaseImpl
 
   private limiter;
   private scriptExecutorWrappedForBottleneck;
-  private pool: Pool;
   private limits: any;
-  private scratchOrgInfoFetcher: any;
+  private scratchOrgInfoFetcher: ScratchOrgInfoFetcher;
   private scratchOrgInfoAssigner: ScratchOrgInfoAssigner;
   private createScratchOrgOperator: CreateScratchOrg;
   private deleteScratchOrgOperator: any;
@@ -35,16 +33,12 @@ export default class PoolCreateImpl extends PoolBaseImpl
 
   public constructor(
     hubOrg: Org,
-    private tag: string,
-    private expiry: number,
-    private max_allocation: number,
-    private configFilePath: string,
-    private batchSize: number,
-    private poolScriptExecutor:PoolScriptExecutor
+    private pool:PoolConfig,
+    private poolScriptExecutor:PoolJobExecutor
   ) {
     super(hubOrg);
     this.limiter = new Bottleneck({
-      maxConcurrent: this.batchSize,
+      maxConcurrent: this.pool.batchsize,
     });
 
     this.scriptExecutorWrappedForBottleneck = this.limiter.wrap(
@@ -53,21 +47,14 @@ export default class PoolCreateImpl extends PoolBaseImpl
   }
 
 
-  protected async onExec(): Promise<Pool> {
+  protected async onExec(): Promise<PoolConfig> {
 
      await this.hubOrg.refreshAuth();
 
     let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
 
 
-    //Set Pool Config Option
-    this.pool= {
-        expiry: this.expiry,
-        config_file_path: this.configFilePath,
-        tag: this.tag,
-        max_allocation: this.max_allocation,
-        min_allocation:this.max_allocation
-      };
+  
 
 
     //fetch current status limits
@@ -153,13 +140,13 @@ export default class PoolCreateImpl extends PoolBaseImpl
   private allocateScratchOrgsPerTag(
     remainingScratchOrgs: number,
     countOfActiveScratchOrgs: number,
-    pool:Pool
+    pool:PoolConfig
   ) {
     pool.current_allocation = countOfActiveScratchOrgs;
     pool.to_allocate = 0;
     pool.to_satisfy_max =
-        pool.max_allocation - pool.current_allocation > 0
-        ? pool.max_allocation - pool.current_allocation
+        pool.maxallocation - pool.current_allocation > 0
+        ? pool.maxallocation - pool.current_allocation
         : 0;
 
     if (
@@ -175,7 +162,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
     }
 
     console.log(
-      `Current Allocation of ScratchOrgs in the pool ${this.tag}: ` +
+      `Current Allocation of ScratchOrgs in the pool ${this.pool.tag}: ` +
       pool.current_allocation
     );
     console.log(
@@ -199,7 +186,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
           let scratchOrg: ScratchOrg = await this.createScratchOrgOperator.createScratchOrg(
             count,
             null,
-            this.pool.config_file_path,
+            this.pool.configFilePath,
             this.pool.expiry
           );
           this.pool.scratchOrgs.push(scratchOrg);
@@ -211,6 +198,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
         count++;
       }
 
+     this.pool.scratchOrgs= await this.scratchOrgInfoFetcher.getScratchOrgRecordId(this.pool.scratchOrgs);
 
       let scratchOrgInprogress = [];
 
