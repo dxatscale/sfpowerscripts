@@ -6,7 +6,7 @@ import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
 export async function getUserEmail(username: string, hubOrg: Org) {
   let hubConn = hubOrg.getConnection();
 
-  return await retry(
+  return  retry(
     async bail => {
       if (isNullOrUndefined(username)) {
         bail(new Error("username cannot be null. provide a valid username"));

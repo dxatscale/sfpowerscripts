@@ -26,7 +26,7 @@ export default class ScratchOrgInfoFetcher {
     let query = `SELECT Id, ScratchOrg FROM ScratchOrgInfo WHERE ScratchOrg IN ( ${scratchOrgIds} )`;
     SFPLogger.log("QUERY:" + query, null,null, LoggerLevel.TRACE);
 
-    return await retry(
+    return  retry(
       async (bail) => {
         const results = (await hubConn.query(query)) as any;
         let resultAsObject = this.arrayToObject(results.records, "ScratchOrg");
@@ -50,7 +50,7 @@ export default class ScratchOrgInfoFetcher {
   ) {
     let hubConn = this.hubOrg.getConnection();
 
-    return await retry(
+    return  retry(
       async (bail) => {
         let query;
 
@@ -81,7 +81,7 @@ export default class ScratchOrgInfoFetcher {
   public async getActiveScratchOrgsByInfoId(scrathOrgIds: string) {
     let hubConn = this.hubOrg.getConnection();
 
-    return await retry(
+    return  retry(
       async (bail) => {
         let query = `SELECT Id, SignupUsername FROM ActiveScratchOrg WHERE ScratchOrgInfoId IN (${scrathOrgIds}) `;
 
@@ -96,7 +96,7 @@ export default class ScratchOrgInfoFetcher {
   public async getCountOfActiveScratchOrgsByTag(tag: string): Promise<number> {
     let hubConn = this.hubOrg.getConnection();
 
-    return await retry(
+    return  retry(
       async (bail) => {
         let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
         SFPLogger.log("QUERY:" + query, null, null,LoggerLevel.TRACE);
@@ -118,7 +118,7 @@ export default class ScratchOrgInfoFetcher {
   ): Promise<number> {
     let hubConn = this.hubOrg.getConnection();
 
-    return await retry(
+    return  retry(
       async (bail) => {
         let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
         SFPLogger.log("QUERY:" + query, null, null,LoggerLevel.TRACE);
@@ -135,7 +135,7 @@ export default class ScratchOrgInfoFetcher {
     let hubConn = this.hubOrg.getConnection();
     let apiVersion = this.hubOrg.getConnection().retrieveMaxApiVersion();
 
-    return await retry(
+    return  retry(
       async (bail) => {
         var query_uri = `${hubConn.instanceUrl}/services/data/v${apiVersion}/query?q=SELECT+Id+FROM+ActiveScratchOrg+WHERE+ScratchOrg+=+'${scratchOrgId}'`;
 

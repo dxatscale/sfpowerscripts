@@ -12,7 +12,7 @@ export default class ScratchOrgInfoAssigner {
   ): Promise<boolean> {
     let hubConn = this.hubOrg.getConnection();
 
-    return await retry(
+    return  retry(
       async (bail) => {
         try {
           let result = await hubConn.sobject("ScratchOrgInfo").update(soInfo);
