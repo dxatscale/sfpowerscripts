@@ -1,4 +1,4 @@
-import { PoolConfig } from "../pool/PoolConfig";
+
 
 
 export interface PreparePool

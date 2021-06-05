@@ -1,4 +1,4 @@
-import { LoggerLevel, Org, AuthInfo } from "@salesforce/core";
+import { LoggerLevel, Org } from "@salesforce/core";
 let retry = require("async-retry");
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
