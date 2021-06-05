@@ -17,8 +17,8 @@ export default class CreateScratchOrgImpl extends SFDXCommand {
 
 
   public async exec(quiet?: boolean): Promise<any> {
-    let result =JSON.parse( await super.exec(quiet));
-    return result.result;
+    let result = await super.exec(quiet);
+    return result;
   }
 
   getCommandName(): string {

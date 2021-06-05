@@ -24,20 +24,20 @@ export default class ScratchOrgInfoFetcher {
       .join(",");
 
     let query = `SELECT Id, ScratchOrg FROM ScratchOrgInfo WHERE ScratchOrg IN ( ${scratchOrgIds} )`;
-    SFPLogger.log("QUERY:" + query, null, LoggerLevel.TRACE);
+    SFPLogger.log("QUERY:" + query, null,null, LoggerLevel.TRACE);
 
     return await retry(
       async (bail) => {
         const results = (await hubConn.query(query)) as any;
         let resultAsObject = this.arrayToObject(results.records, "ScratchOrg");
 
-        SFPLogger.log(JSON.stringify(resultAsObject), LoggerLevel.TRACE);
+        SFPLogger.log(JSON.stringify(resultAsObject), null,null,LoggerLevel.TRACE);
 
         scratchOrgs.forEach((scratchOrg) => {
           scratchOrg.recordId = resultAsObject[scratchOrg.orgId]["Id"];
         });
 
-        return results;
+        return scratchOrgs;
       },
       { retries: 3, minTimeout: 3000 }
     );
@@ -70,7 +70,7 @@ export default class ScratchOrgInfoFetcher {
             `AND ( Allocation_status__c ='Available' OR Allocation_status__c = 'In Progress' ) `;
         }
         query = query + ORDER_BY_FILTER;
-        SFPLogger.log("QUERY:" + query, null, LoggerLevel.TRACE);
+        SFPLogger.log("QUERY:" + query, null,null, LoggerLevel.TRACE);
         const results = (await hubConn.query(query)) as any;
         return results;
       },
@@ -99,10 +99,11 @@ export default class ScratchOrgInfoFetcher {
     return await retry(
       async (bail) => {
         let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
-        SFPLogger.log("QUERY:" + query, null, LoggerLevel.TRACE);
+        SFPLogger.log("QUERY:" + query, null, null,LoggerLevel.TRACE);
         const results = (await hubConn.query(query)) as any;
         SFPLogger.log(
           "RESULT:" + JSON.stringify(results),
+          null,
           null,
           LoggerLevel.TRACE
         );
@@ -120,7 +121,7 @@ export default class ScratchOrgInfoFetcher {
     return await retry(
       async (bail) => {
         let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
-        SFPLogger.log("QUERY:" + query, null, LoggerLevel.TRACE);
+        SFPLogger.log("QUERY:" + query, null, null,LoggerLevel.TRACE);
         const results = (await hubConn.query(query)) as any;
         return results.totalSize;
       },
@@ -150,6 +151,7 @@ export default class ScratchOrgInfoFetcher {
         SFPLogger.log(
           "Retrieve Active ScratchOrg Id:" + JSON.stringify(result),
           null,
+          null,
           LoggerLevel.TRACE
         );
         return result.records[0].Id;
@@ -165,6 +167,7 @@ export default class ScratchOrgInfoFetcher {
     const results = (await conn.query(query)) as any;
     SFPLogger.log(
       `Info Fetched: ${JSON.stringify(results)}`,
+      null,
       null,
       LoggerLevel.DEBUG
     );

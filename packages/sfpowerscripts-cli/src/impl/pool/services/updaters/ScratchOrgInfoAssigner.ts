@@ -12,7 +12,6 @@ export default class ScratchOrgInfoAssigner {
   ): Promise<boolean> {
     let hubConn = this.hubOrg.getConnection();
 
-    SFPLogger.log(JSON.stringify(soInfo), LoggerLevel.TRACE);
     return await retry(
       async (bail) => {
         try {
@@ -20,12 +19,14 @@ export default class ScratchOrgInfoAssigner {
           SFPLogger.log(
             "Setting Scratch Org Info:" + JSON.stringify(result),
             null,
+            null,
             LoggerLevel.TRACE
           );
           return result.constructor !== Array ? result.success : true;
         } catch (err) {
           SFPLogger.log(
             "Failure at setting ScratchOrg Info" + err,
+            null,
             null,
             LoggerLevel.TRACE
           );

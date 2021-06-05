@@ -6,8 +6,8 @@ import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import { Stage } from "../../../impl/Stage";
 import * as fs from "fs-extra"
 import ScratchOrgInfoFetcher from "../../../impl/pool/services/fetchers/ScratchOrgInfoFetcher";
-import path from "path";
 import Ajv from "ajv"
+import path = require("path");
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -70,7 +70,7 @@ export default class Prepare extends SfpowerscriptsCommand {
 
     let tags = {
       stage: Stage.PREPARE,
-      poolName:this.flags.tag
+      poolName:poolConfig.tag
     }
 
     await this.hubOrg.refreshAuth();
@@ -175,8 +175,13 @@ export default class Prepare extends SfpowerscriptsCommand {
 
  public validatePoolConfig(poolConfig:any)
  {
+
+  console.log("...",__dirname);
   let resourcesDir = path.join(
     __dirname,
+    "..",
+    "..",
+    "..",
     "..",
     "resources",
     "schemas"

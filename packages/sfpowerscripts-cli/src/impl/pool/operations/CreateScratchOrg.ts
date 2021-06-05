@@ -26,6 +26,7 @@ export default class CreateScratchOrg {
         expiry +
         " ",
       null,
+      null,
       LoggerLevel.TRACE
     );
 
@@ -40,13 +41,13 @@ export default class CreateScratchOrg {
         expiry,
         adminEmail
       );
-      result = await createScratchOrgImpl.exec(false);
+      result = await createScratchOrgImpl.exec(true);
     } catch (error) {
       //Poolcreateimpl to handle
       throw error;
     }
 
-    SFPLogger.log(JSON.stringify(result), null, LoggerLevel.TRACE);
+    SFPLogger.log(JSON.stringify(result), null, null,LoggerLevel.TRACE);
 
     let scratchOrg: ScratchOrg = {
       alias: `SO${id}`,
@@ -57,6 +58,7 @@ export default class CreateScratchOrg {
 
     //Get FrontDoor URL
     scratchOrg.loginURL = await this.getScratchOrgLoginURL(scratchOrg.username);
+
 
     //Generate Password
     let passwordData = await new PasswordGenerator().exec(
@@ -76,6 +78,7 @@ export default class CreateScratchOrg {
       SFPLogger.log(
         `Password successfully set for ${passwordData.username}`,
         null,
+        null,
         LoggerLevel.INFO
       );
     }
@@ -87,12 +90,13 @@ export default class CreateScratchOrg {
     let conn = this.hubOrg.getConnection();
 
     let query = `SELECT Id, SignupUsername, LoginUrl FROM ScratchOrgInfo WHERE SignupUsername = '${username}'`;
-    SFPLogger.log("QUERY:" + query, null, LoggerLevel.DEBUG);
+    SFPLogger.log("QUERY:" + query, null,null, LoggerLevel.TRACE);
     const results = (await conn.query(query)) as any;
     SFPLogger.log(
       `Login URL Fetched: ${JSON.stringify(results)}`,
       null,
-      LoggerLevel.DEBUG
+      null,
+      LoggerLevel.TRACE
     );
 
     return results.records[0].LoginUrl;

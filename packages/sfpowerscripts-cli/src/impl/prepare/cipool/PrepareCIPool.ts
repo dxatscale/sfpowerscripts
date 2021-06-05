@@ -70,15 +70,9 @@ export default class PrepareCIPool implements PreparePool  {
       "packageDirectories"
     ];
 
-    packages.forEach((pkg) => {
-      artifactFetcher.fetchArtifact(
-        pkg.package,
-        "artifacts"
-      );
-    });
 
     let artifactFetcher:FetchAnArtifact;
-    if (this.pool.cipool.fetchArtifacts.npm || this.pool.cipool.fetchArtifacts.artifactFetchScript) {
+    if (this.pool.cipool.fetchArtifacts?.npm || this.pool.cipool.fetchArtifacts?.artifactFetchScript) {
       let version= this.pool.cipool.fetchArtifacts.npm.npmtag;
       artifactFetcher = new FetchArtifactSelector(this.pool.cipool.fetchArtifacts.artifactFetchScript,this.pool.cipool.fetchArtifacts.npm.scope,this.pool.cipool.fetchArtifacts.npm.npmrcPath).getArtifactFetcher();  
       packages.forEach((pkg) => {

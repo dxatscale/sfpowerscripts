@@ -18,8 +18,8 @@ export default class InstallUnlockedPackageImpl extends SFDXCommand {
 
 
   public async exec(quiet?: boolean): Promise<any> {
-    let result =JSON.parse( await super.exec(quiet));
-    return result.result;
+    let result=await super.exec(quiet);
+    return result;
   }
 
   getCommandName(): string {
@@ -32,7 +32,7 @@ export default class InstallUnlockedPackageImpl extends SFDXCommand {
   
   
   getGeneratedParams(): string {
-    let command = `--targetusername ${this.targetUserName} --package ${this.packageId} --apexcompile --noprompt --wait ${this.waitTime}`;
+    let command = `--targetusername ${this.targetUserName} --package ${this.packageId} --apexcompile=package --noprompt --wait ${this.waitTime}`;
     if(this.installationkey)
      command+=` --installationkey=${this.installationkey}`;
     if(this.securityType)

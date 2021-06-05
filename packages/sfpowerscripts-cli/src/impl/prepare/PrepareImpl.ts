@@ -33,7 +33,7 @@ export default class PrepareImpl {
     {
       poolPreparer = new PrepareCIPool(this.hubOrg,this.pool);
     }
-    else (this.pool.devpool)
+    else
     {
       poolPreparer = new PrepareDevPool(this.hubOrg,this.pool);
     }

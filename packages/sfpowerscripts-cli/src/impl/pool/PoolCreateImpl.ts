@@ -26,7 +26,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
   private scratchOrgInfoFetcher: ScratchOrgInfoFetcher;
   private scratchOrgInfoAssigner: ScratchOrgInfoAssigner;
   private createScratchOrgOperator: CreateScratchOrg;
-  private deleteScratchOrgOperator: any;
+  private deleteScratchOrgOperator: DeleteScratchOrg;
   private totalToBeAllocated: number;
   private totalAllocated: number=0;
 
@@ -49,13 +49,9 @@ export default class PoolCreateImpl extends PoolBaseImpl
 
   protected async onExec(): Promise<PoolConfig> {
 
-     await this.hubOrg.refreshAuth();
+    await this.hubOrg.refreshAuth();
 
     let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
-
-
-  
-
 
     //fetch current status limits
    this.limits = await new ScratchOrgLimitsFetcher(this.hubOrg).getScratchOrgLimits()
@@ -202,6 +198,8 @@ export default class PoolCreateImpl extends PoolBaseImpl
 
       let scratchOrgInprogress = [];
 
+   
+
       this.pool.scratchOrgs.forEach((scratchOrg) => {
         scratchOrgInprogress.push({
           Id: scratchOrg.recordId,
@@ -243,8 +241,10 @@ export default class PoolCreateImpl extends PoolBaseImpl
             scratchOrg.orgId
           );
 
+          console.log("Accc",activeScratchOrgRecordId)
+
           await this.deleteScratchOrgOperator.deleteScratchOrg(
-            activeScratchOrgRecordId
+            [activeScratchOrgRecordId]
           );
           console.log(`Succesfully deleted scratchorg  ${scratchOrg.username}`);
         } catch (error) {

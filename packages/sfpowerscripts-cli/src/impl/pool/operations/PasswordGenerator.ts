@@ -12,7 +12,7 @@ export default class PasswordGenerator {
 
     const authInfo = await AuthInfo.create({ username: userName });
     const userConnection = await Connection.create({ authInfo: authInfo });
-    let userRecord =  (await userConnection.query(query)) as any;
+    let userRecord =  (await userConnection.query(query)).records as any;
     let passwordBuffer = User.generatePasswordUtf8();
     let pwd;
 
@@ -25,15 +25,17 @@ export default class PasswordGenerator {
         const soap = userConnection.soap;
         await soap.setPassword(userRecord[0].Id, pwd);
       } catch (e) {
+        console.log(e);
         pwd = undefined;
         if (e.message === "INSUFFICIENT_ACCESS: Cannot set password for self") {
           SFPLogger.log(
             `${e.message}. Incase of scratch org, Add "features": ["EnableSetPasswordInApi"] in your project-scratch-def.json then create your scratch org.`,
             null,
+            null,
             LoggerLevel.WARN
           );
         } else {
-          SFPLogger.log(`${e.message}`,null, LoggerLevel.WARN);
+          SFPLogger.log(`${e.message}`,null,null, LoggerLevel.WARN);
         }
       }
     });
