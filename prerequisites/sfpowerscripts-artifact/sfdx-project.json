@@ -2,7 +2,7 @@
     "packageDirectories": [
         {
             "path": "force-app",
-            "package": "sfpowerscripts-artifact",
+            "package": "sfpowerscripts-artifact-2",
             "versionNumber": "1.0.0.NEXT",
             "default": true
         }
