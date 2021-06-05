@@ -85,7 +85,7 @@ export default class ScratchOrgInfoFetcher {
       async (bail) => {
         let query = `SELECT Id, SignupUsername FROM ActiveScratchOrg WHERE ScratchOrgInfoId IN (${scrathOrgIds}) `;
 
-        SFPLogger.log("QUERY:" + query, null, LoggerLevel.TRACE);
+        SFPLogger.log("QUERY:" + query, null, null,LoggerLevel.TRACE);
         const results = (await hubConn.query(query)) as any;
         return results;
       },

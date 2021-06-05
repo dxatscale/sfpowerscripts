@@ -67,10 +67,13 @@ export default class CreateScratchOrg {
 
     scratchOrg.password = passwordData.password;
 
+
+
     //Get Sfdx Auth URL
     const authInfo = await AuthInfo.create({ username: scratchOrg.username });
 
     scratchOrg.sfdxAuthUrl = authInfo.getSfdxAuthUrl();
+
 
     if (!passwordData.password) {
       throw new Error("Unable to setup password to scratch org");

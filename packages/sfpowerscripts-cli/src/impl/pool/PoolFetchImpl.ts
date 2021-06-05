@@ -48,15 +48,14 @@ export default class PoolFetchImpl extends PoolBaseImpl{
             (soInfo) => soInfo.Allocation_status__c === "Available"
           );
     }
-
     let emaiId;
-
     if (this.sendToUser) {
       try {
         emaiId = await getUserEmail(this.sendToUser, this.hubOrg);
       } catch (error) {
         SFPLogger.log(
           "Unable to fetch details of the specified user, Check whether the user exists in the org ",
+          null,
           null,
           LoggerLevel.ERROR
         );
@@ -70,6 +69,7 @@ export default class PoolFetchImpl extends PoolBaseImpl{
       SFPLogger.log(
         `${this.tag} pool has ${availableSo.length} Scratch orgs available`,
         null,
+        null,
         LoggerLevel.TRACE
       );
 
@@ -80,6 +80,7 @@ export default class PoolFetchImpl extends PoolBaseImpl{
         if (allocateSO === true) {
           SFPLogger.log(
             `Scratch org ${element.SignupUsername} is allocated from the pool. Expiry date is ${element.ExpirationDate}`,
+            null,
             null,
             LoggerLevel.TRACE
           );
@@ -97,6 +98,7 @@ export default class PoolFetchImpl extends PoolBaseImpl{
         } else {
           SFPLogger.log(
             `Scratch org ${element.SignupUsername} allocation failed. trying to get another Scratch org from ${this.tag} pool`,
+            null,
             null,
             LoggerLevel.TRACE
           );
@@ -121,6 +123,7 @@ export default class PoolFetchImpl extends PoolBaseImpl{
         SFPLogger.log(
           "Unable to send the scratchorg details to specified user. Check whether the user exists in the org",
           null,
+          null,
           LoggerLevel.ERROR
         );
       }
@@ -142,6 +145,7 @@ export default class PoolFetchImpl extends PoolBaseImpl{
 
       SFPLogger.log(
         `Initiating Auto Login for Scratch Org with ${soDetail.username}`,
+        null,
         null,
         LoggerLevel.INFO
       );
@@ -188,4 +192,6 @@ export default class PoolFetchImpl extends PoolBaseImpl{
       }
     }
   }
+
+  
 }

@@ -13,6 +13,7 @@ import * as rimraf from "rimraf";
 import * as fs from "fs-extra";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import PoolJobExecutor, { ScriptExecutionResult } from "./PoolJobExecutor";
+import src from "../..";
 
 
 
@@ -204,6 +205,8 @@ export default class PoolCreateImpl extends PoolBaseImpl
         scratchOrgInprogress.push({
           Id: scratchOrg.recordId,
           Pooltag__c: this.pool.tag,
+          Password__c: scratchOrg.password,
+          SfdxAuthUrl__c:scratchOrg.sfdxAuthUrl,
           Allocation_status__c: "In Progress",
         });
       });
