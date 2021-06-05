@@ -762,6 +762,15 @@ export default class DeployImpl {
       else return true;
     });
 
+    // Ignore aliasfied packages on validate & prepare stages
+    packagesToDeploy = packagesToDeploy.filter((pkg) => {
+      return !(
+        (this.props.currentStage === "prepare" ||
+          this.props.currentStage === "validate") &&
+        pkg.aliasfy
+      );
+    });
+
     if (packagesToDeploy == null || packagesToDeploy.length === 0)
       throw new Error(`No artifacts from project config to be deployed`);
     else return packagesToDeploy;
