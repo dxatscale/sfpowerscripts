@@ -23,7 +23,7 @@ If applicable, add screenshots to help explain your problem.
 **Platform Details (please complete the following information):**
  - OS: 
  - Version [e.g. CLI Version  eg: 1.6.6]
- - Salesforce Version:
+ - Salesforce CLI(sfdx cli) Version:
  - CI Platform: 
 
 
