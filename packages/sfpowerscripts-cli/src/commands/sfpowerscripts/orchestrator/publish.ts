@@ -326,9 +326,9 @@ export default class Promote extends SfpowerscriptsCommand {
   ) {
     let cmd: string;
     if (process.platform !== 'win32') {
-      cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+      cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
     } else {
-      cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+      cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
     }
 
     console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
