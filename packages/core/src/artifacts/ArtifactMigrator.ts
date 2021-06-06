@@ -18,6 +18,7 @@ export default class ArtifactMigrator {
           ArtifactMigrator.sfpowerscriptsArtifactRecords.length > 0
         ) {
           // Migrate records
+          console.log("Migrating records to SfpowerscriptsArtifact2__c...");
 
           let recordsToImport = {records: []};
           ArtifactMigrator.sfpowerscriptsArtifactRecords.forEach((record, idx) => {
