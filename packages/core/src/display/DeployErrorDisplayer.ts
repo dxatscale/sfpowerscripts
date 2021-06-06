@@ -31,9 +31,8 @@ export default class DeployErrorDisplayer {
     }
     SFPLogger.log(
       "The following components resulted in failures:",
-      null,
       packageLogger
     );
-    SFPLogger.log(table.toString(), null, packageLogger);
+    SFPLogger.log(table.toString(), packageLogger);
   }
 }

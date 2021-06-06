@@ -4,7 +4,7 @@ import { onExit } from "../../utils/OnExit";
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger from "../../logger/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import { delay } from "../../utils/Delay";
@@ -74,7 +74,7 @@ export default class CreateUnlockedPackageImpl {
 
 
 
-    SFPLogger.log("Package Directory", packageDirectory, this.packageLogger);
+    SFPLogger.log(`Package Directory:, ${packageDirectory}`, this.packageLogger);
 
     //Get Type of Package
     SFPLogger.log(
@@ -141,7 +141,7 @@ export default class CreateUnlockedPackageImpl {
 
     let command = this.buildExecCommand();
     let output = "";
-    SFPLogger.log("Package Creation Command", command, this.packageLogger);
+    SFPLogger.log(`Package Creation Command, ${command}`, this.packageLogger);
     let child = child_process.exec(command, {
       cwd: workingDirectory,
       encoding: "utf8",
@@ -288,8 +288,8 @@ export default class CreateUnlockedPackageImpl {
         );
 
         SFPLogger.log(
-          "Package Info Fetched",
-          pkgInfoResultAsJSON,
+          `Package Info Fetched: ${JSON.stringify(pkgInfoResultAsJSON)}`,
+          LoggerLevel.INFO,
           this.packageLogger
         );
 
@@ -336,7 +336,7 @@ export default class CreateUnlockedPackageImpl {
       { cwd: workingDirectory, encoding: "utf8" }
     );
 
-    SFPLogger.log("Resolved Depenendecies", resolveResult, this.packageLogger);
+    SFPLogger.log(`Resolved Depenendecies: ${resolveResult}`,LoggerLevel.INFO,this.packageLogger);
   }
 
   private buildExecCommand(): string {

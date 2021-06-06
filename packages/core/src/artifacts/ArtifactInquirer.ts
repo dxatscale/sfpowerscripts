@@ -84,9 +84,8 @@ export default class ArtifactInquirer {
     if (latestPackageManifest) {
       SFPLogger.log(
         `Found latest package manifest in ${latestPackageMetadata.package_name} artifact`,
-        null,
+        LoggerLevel.INFO,
         this.packageLogger,
-        LoggerLevel.INFO
       );
 
       return { latestPackageManifest, pathToLatestPackageManifest };

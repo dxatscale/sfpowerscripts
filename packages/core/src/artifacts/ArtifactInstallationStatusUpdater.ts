@@ -23,7 +23,7 @@ export default class ArtifactInstallationStatusUpdater {
       return  await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata, packageLogger);
     } catch (error) {
       SFPLogger.log(
-        "Unable to update details about artifacts to the org",error,packageLogger,LoggerLevel.DEBUG
+        `Unable to update details about artifacts to the org: ${error}`,LoggerLevel.DEBUG,packageLogger
       );
       return false;
     }
@@ -49,7 +49,7 @@ export default class ArtifactInstallationStatusUpdater {
 
         let cmdOutput;
         let packageName= packageMetadata.package_name;
-        SFPLogger.log("Updating Org with new Artifacts "+packageName+" "+packageMetadata.package_version_number+" "+(artifactId?artifactId:""), null, packageLogger, LoggerLevel.INFO);
+        SFPLogger.log(`Updating Org with new Artifacts "+${packageName}+" "+${packageMetadata.package_version_number}+" "+${(artifactId?artifactId:"")}`, LoggerLevel.INFO,packageLogger);
         if (artifactId == null) {
           cmdOutput = child_process.execSync(
             `sfdx force:data:record:create --json -s SfpowerscriptsArtifact__c -u ${username}  -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}"`,

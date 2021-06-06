@@ -30,9 +30,7 @@ export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
        mdapiDirPath = path.resolve(this.mdapiDir);
       SFPLogger.log(
         `Converting to MDAPI  Format Completed at ${mdapiDirPath}`,
-        null,
-        null,
-        LoggerLevel.DEBUG
+        LoggerLevel.INFO
       );
       return mdapiDirPath
       }
@@ -55,23 +53,18 @@ export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
 
       if (this.project_directory != null)
         SFPLogger.log(
-          `Converting to MDAPI Format ${this.sourceDirectory} in project directory ${this.project_directory}`,
-          null,
-          null,
-          LoggerLevel.DEBUG
+          `Converting to MDAPI Format ${this.sourceDirectory} in project directory ${this.project_directory}`
         );
       else
         SFPLogger.log(
-          `Converting to MDAPI Format ${this.sourceDirectory} in project directory`,
-          null,
-          null,
-          LoggerLevel.DEBUG
+          `Converting to MDAPI Format ${this.sourceDirectory} in project directory`
         );
 
       return `sfdx force:source:convert -r ${this.sourceDirectory}  -d ${this.mdapiDir}`;
     } catch (error) {
       SFPLogger.log(
-        `Unable to generate command for converting ${this.sourceDirectory}`
+        `Unable to generate command for converting ${this.sourceDirectory}`,
+        LoggerLevel.ERROR
       );
       throw error;
     }

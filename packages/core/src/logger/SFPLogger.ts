@@ -1,5 +1,6 @@
 import * as fs from "fs-extra";
 import { EOL } from "os";
+import chalk = require("chalk");
 
 export enum LoggerLevel {
   TRACE = 10,
@@ -7,29 +8,61 @@ export enum LoggerLevel {
   INFO = 30,
   WARN = 40,
   ERROR = 50,
-  FATAL = 60
+  FATAL = 60,
 }
+const error = chalk.bold.red;
+const warning = chalk.keyword('orange');
+const info = chalk.green;
+const trace=chalk.blue;
+const debug=chalk.gray;
+
 
 export default class SFPLogger {
-  public static isSupressLogs = false;
-  public static logLevel: LoggerLevel = LoggerLevel.DEBUG;
+  public static logLevel: LoggerLevel = LoggerLevel.INFO;
 
-  static log(key: any, value?: any, logger?:any, logLevel: LoggerLevel = LoggerLevel.INFO) {
-    if (logger) {
-      if (value)
-        try {
-          fs.appendFileSync(logger, `${key}  :  ${JSON.stringify(value)} ${EOL}`, 'utf8')
-        } catch (error) {
-          fs.appendFileSync(logger, `${key}  :  ${value} ${EOL}`, 'utf8')
+
+
+  static log(
+    message: string,
+    logLevel = LoggerLevel.INFO, 
+    logger: string = "console"
+  ) {
+
+    if(logLevel==null)
+      logLevel=LoggerLevel.INFO;
+
+    if (logLevel <= this.logLevel) {
+      if (logger && logger !== "console" ) {
+        fs.appendFileSync(logger, message, "utf8");
+      } else {
+        switch(logLevel)
+        {
+          case LoggerLevel.TRACE:
+            console.log(trace(message));
+            break;
+
+          case LoggerLevel.DEBUG:
+            console.log(debug(message));
+            break;
+
+          case LoggerLevel.INFO:
+            console.log(info(message));
+            break;
+
+          case LoggerLevel.WARN:
+            console.log(warning(message));
+            break;
+
+          case LoggerLevel.ERROR:
+            console.log(error(message));
+            break;
+
+          case LoggerLevel.ERROR:
+             console.log(error(message));
+             break;
+         
         }
-      else
-      fs.appendFileSync(logger, `${key}${EOL}`, 'utf8')
-    }
-
-    if (!SFPLogger.isSupressLogs && SFPLogger.logLevel <= logLevel) {
-      if (value && (typeof jest == 'undefined'))  console.log(key, value);
-      else 
-       if(typeof jest == 'undefined') console.log(key);
+      }
     }
   }
 }

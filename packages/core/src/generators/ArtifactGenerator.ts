@@ -74,11 +74,11 @@ export default class ArtifactGenerator {
         JSON.stringify(packageChangelog, null, 4)
       );
 
-      SFPLogger.log("Artifact Copy Completed", null, null, LoggerLevel.DEBUG);
+      SFPLogger.log("Artifact Copy Completed");
 
       let zip = new AdmZip();
       zip.addLocalFolder(artifactFilepath, artifactFolder);
-      SFPLogger.log(`Zipping ${artifactFolder}`, null, null, LoggerLevel.DEBUG);
+      SFPLogger.log(`Zipping ${artifactFolder}`);
 
       let packageVersionNumber: string = ArtifactGenerator.substituteBuildNumberWithPreRelease(
         packageArtifactMetadata.package_version_number

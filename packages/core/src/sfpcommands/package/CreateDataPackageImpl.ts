@@ -1,7 +1,7 @@
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger from "../../logger/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import SFPStatsSender from "../../stats/SFPStatsSender";
@@ -32,15 +32,12 @@ export default class CreateDataPackageImpl {
       this.packageLogger
     );
     SFPLogger.log(
-      "Project Directory",
-      this.projectDirectory,
+      `Project Directory ${this.projectDirectory}`,
       this.packageLogger
     );
-    SFPLogger.log("sfdx_package", this.sfdx_package, this.packageLogger);
+    SFPLogger.log(`sfdx_package ${this.sfdx_package}`, LoggerLevel.INFO,this.packageLogger);
     SFPLogger.log(
-      "packageArtifactMetadata",
-      this.packageArtifactMetadata,
-      this.packageLogger
+      `packageArtifactMetadata ${this.packageArtifactMetadata}`,LoggerLevel.INFO,this.packageLogger
     );
 
     let startTime = Date.now();

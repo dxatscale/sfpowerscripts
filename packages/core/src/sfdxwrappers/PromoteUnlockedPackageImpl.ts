@@ -8,7 +8,7 @@ export default class PromoteUnlockedPackageImpl {
   public async exec(): Promise<void> {
 
     let command = this.buildExecCommand();
-    SFPLogger.log("Executing command",command);
+    SFPLogger.log(`Executing command: ${command}`);
     let child = child_process.exec(command, { cwd: this.project_directory, encoding: "utf8" });
 
     child.stdout.on("data", data => {

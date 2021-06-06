@@ -48,9 +48,8 @@ export default class DeploySourceToOrgImpl {
     } else {
       SFPLogger.log(
         "Converting source to mdapi",
-        null,
+        LoggerLevel.DEBUG,
         this.packageLogger,
-        LoggerLevel.DEBUG
       );
 
       this.mdapiDir = await new ConvertSourceToMDAPIImpl(

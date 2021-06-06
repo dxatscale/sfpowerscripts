@@ -32,10 +32,9 @@ export default class PackageMetadataPrinter {
     }
     SFPLogger.log(
       "The following metadata will be deployed:",
-      null,
       packageLogger
     );
-    SFPLogger.log(table.toString(), null, packageLogger);
+    SFPLogger.log(table.toString(),packageLogger);
   }
 
 

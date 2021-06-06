@@ -81,8 +81,8 @@ export default class BuildImpl {
 
     this.validatePackageNames(this.packagesToBeBuilt);
 
-    SFPLogger.isSupressLogs = true;
 
+  
     // Read Manifest
     this.projectConfig = ProjectConfig.getSFDXPackageManifest(
       this.props.projectDirectory

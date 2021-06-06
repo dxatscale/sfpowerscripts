@@ -84,7 +84,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
     let nPublishedArtifacts: number = 0;
     let failedArtifacts: string[] = [];
-    SFPLogger.isSupressLogs = true;
+
 
     let executionStartTime = Date.now();
 

@@ -27,11 +27,10 @@ export default class PasswordGenerateImpl {
         if (e.message === "INSUFFICIENT_ACCESS: Cannot set password for self") {
           SFPLogger.log(
             `${e.message}. Incase of scratch org, Add "features": ["EnableSetPasswordInApi"] in your project-scratch-def.json then create your scratch org.`,
-            null,
             LoggerLevel.WARN
           );
         } else {
-          SFPLogger.log(`${e.message}`,null, LoggerLevel.WARN);
+          SFPLogger.log(`${e.message}`, LoggerLevel.WARN);
         }
       }
     });

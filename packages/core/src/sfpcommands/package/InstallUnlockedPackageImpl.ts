@@ -3,7 +3,7 @@ import { isNullOrUndefined } from "util";
 import { onExit } from "../../utils/OnExit";
 import PackageMetadata from "../../PackageMetadata";
 import { PackageInstallationResult, PackageInstallationStatus } from "../../package/PackageInstallationResult";
-import SFPLogger from "../../logger/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
 import PackageInstallationHelpers from "./PackageInstallationHelpers";
 import path = require("path");
 import fs = require("fs");
@@ -188,8 +188,8 @@ export default class InstallUnlockedPackageImpl {
         });
         if (packageFound) {
           SFPLogger.log(
-            "Package To be installed was found in the target org",
-            packageFound,
+            `Package To be installed was found in the target org ${packageFound}`,
+            LoggerLevel.INFO,
             this.packageLogger
           );
           return true;
@@ -197,7 +197,7 @@ export default class InstallUnlockedPackageImpl {
       }
     } catch (error) {
       SFPLogger.log(
-        "Unable to check whether this package is installed in the target org",null,this.packageLogger
+        "Unable to check whether this package is installed in the target org",LoggerLevel.INFO,this.packageLogger
       );
       return false;
     }
