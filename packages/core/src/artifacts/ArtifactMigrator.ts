@@ -53,7 +53,10 @@ export default class ArtifactMigrator {
                 let importResult = JSON.parse(importResultJson);
                 if (importResult.status === 1) {
                   throw new Error("Failed to migrate records from SfpowerscriptsArtifact__c to SfpowerscriptsArtifact2__c");
-                } else return;
+                } else {
+                  ArtifactMigrator.isMigrated = true;
+                  return;
+                }
               },
               { retries: 3, minTimeout: 2000 }
             );
