@@ -51,7 +51,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     console.log(`Pool Name: ${poolConfig.tag}`);
     console.log(`Type of Pool: ${poolConfig.cipool?"ci":"dev"}`);
     console.log(`Requested Count of Orgs: ${poolConfig.maxallocation}`);
-    console.log(`Scratch Orgs to be submitted to pool in case of failures: ${poolConfig.succeedOnDeploymentErrors}`)
+    console.log(`Scratch Orgs to be submitted to pool in case of failures: ${poolConfig.succeedOnDeploymentErrors?"true":"false"}`)
     
     if(poolConfig.cipool)
     {

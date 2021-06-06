@@ -133,7 +133,7 @@ export default class ScratchOrgInfoFetcher {
     scratchOrgId: string
   ): Promise<any> {
     let hubConn = this.hubOrg.getConnection();
-    let apiVersion = this.hubOrg.getConnection().retrieveMaxApiVersion();
+    let apiVersion = await this.hubOrg.getConnection().retrieveMaxApiVersion();
 
     return  retry(
       async (bail) => {

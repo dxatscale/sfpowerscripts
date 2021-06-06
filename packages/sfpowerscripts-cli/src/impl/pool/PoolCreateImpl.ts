@@ -201,6 +201,8 @@ export default class PoolCreateImpl extends PoolBaseImpl
 
    
 
+      if(this.pool.scratchOrgs)
+      {
       this.pool.scratchOrgs.forEach((scratchOrg) => {
         scratchOrgInprogress.push({
           Id: scratchOrg.recordId,
@@ -217,7 +219,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
           scratchOrgInprogress
         );
       }
-    
+    }
   }
 
 
@@ -244,15 +246,13 @@ export default class PoolCreateImpl extends PoolBaseImpl
             scratchOrg.orgId
           );
 
-          console.log("Accc",activeScratchOrgRecordId)
-
-          await this.deleteScratchOrgOperator.deleteScratchOrg(
-            [activeScratchOrgRecordId]
-          );
+          // await this.deleteScratchOrgOperator.deleteScratchOrg(
+          //   [activeScratchOrgRecordId]
+          // );
           console.log(`Succesfully deleted scratchorg  ${scratchOrg.username}`);
         } catch (error) {
           console.log(
-            `Unable to delete the scratchorg ${scratchOrg.username}..`
+            `Unable to delete the scratchorg ${scratchOrg.username}.. due to\n`,error
           );
         }
         console.log(EOL);

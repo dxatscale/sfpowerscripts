@@ -7,7 +7,7 @@ import ScratchOrg from "../../pool/ScratchOrg";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import path from "path";
+import path = require ("path");
 import { exec } from "child_process";
 import RelaxIPRange from "../../pool/operations/RelaxIPRange";
 import ScratchOrgInfoAssigner from "../../pool/services/updaters/ScratchOrgInfoAssigner";
