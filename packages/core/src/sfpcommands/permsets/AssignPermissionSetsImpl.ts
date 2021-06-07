@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import SFPLogger from "../../logger/SFPLogger";
+import SFPLogger, { Logger } from "../../logger/SFPLogger";
 import AliasListImpl from "../../sfdxwrappers/AliasListImpl";
 import PermsetListImpl from "../../sfdxwrappers/PermsetListImpl";
 const Table = require("cli-table");
@@ -9,7 +9,7 @@ export default class AssignPermissionSetsImpl {
     private target_org: string,
     private permSets: string[],
     private project_directory: string,
-    private packageLogger?: string
+    private packageLogger?: Logger
   ) {}
 
   public exec(): {

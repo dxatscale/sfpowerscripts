@@ -1,9 +1,10 @@
 import { ArtifactFilePaths } from "./ArtifactFilePathFetcher";
 import PackageMetadata from "../PackageMetadata";
-import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 import * as fs from "fs-extra";
 import path = require("path");
 import lodash = require("lodash");
+
 
 /**
  * Methods for getting information about artifacts
@@ -25,7 +26,7 @@ export default class ArtifactInquirer {
 
   constructor(
     private readonly artifacts: ArtifactFilePaths[],
-    private packageLogger?: any
+    private packageLogger?: Logger
   ) {
     let latestPackageManifest = this.getLatestPackageManifestFromArtifacts(this.artifacts);
 

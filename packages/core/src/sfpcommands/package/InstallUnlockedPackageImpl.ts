@@ -3,13 +3,14 @@ import { isNullOrUndefined } from "util";
 import { onExit } from "../../utils/OnExit";
 import PackageMetadata from "../../PackageMetadata";
 import { PackageInstallationResult, PackageInstallationStatus } from "../../package/PackageInstallationResult";
-import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
 import PackageInstallationHelpers from "./PackageInstallationHelpers";
 import path = require("path");
 import fs = require("fs");
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
+
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -21,7 +22,7 @@ export default class InstallUnlockedPackageImpl {
     private skip_if_package_installed: boolean,
     private packageMetadata:PackageMetadata,
     private sourceDirectory?:string,
-    private packageLogger?:any
+    private packageLogger?:Logger
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {

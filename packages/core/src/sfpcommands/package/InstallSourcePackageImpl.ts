@@ -9,7 +9,7 @@ import {
   PackageInstallationResult,
   PackageInstallationStatus,
 } from "../../package/PackageInstallationResult";
-import SFPLogger, {LoggerLevel} from "../../logger/SFPLogger";
+import SFPLogger, {Logger, LoggerLevel} from "../../logger/SFPLogger";
 
 import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
 import PackageInstallationHelpers from "./PackageInstallationHelpers";
@@ -32,7 +32,7 @@ export default class InstallSourcePackageImpl {
     private skip_if_package_installed: boolean,
     private packageMetadata: PackageMetadata,
     private isPackageCheckHandledByCaller?: boolean,
-    private packageLogger?:any,
+    private packageLogger?:Logger,
     private pathToReplacementForceIgnore?: string
   ) {}
 

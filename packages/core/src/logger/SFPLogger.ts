@@ -10,58 +10,69 @@ export enum LoggerLevel {
   ERROR = 50,
   FATAL = 60,
 }
-const error = chalk.bold.red;
-const warning = chalk.keyword('orange');
-const info = chalk.green;
-const trace=chalk.blue;
-const debug=chalk.gray;
 
+const enum LoggerType
+{
+  console=1,
+  file=2,
+  void=3
+}
+export class ConsoleLogger implements Logger  {public logType:LoggerType; constructor(){this.logType=LoggerType.console;} }
+export class VoidLogger  implements Logger  {public logType:LoggerType;  constructor(){this.logType=LoggerType.void;} }
+export class FileLogger implements Logger { public logType:LoggerType; constructor(public path:string){ this.logType=LoggerType.file;} };     
+export interface Logger { logType:LoggerType; path?:string}
+
+const error = chalk.bold.red;
+const warning = chalk.keyword("orange");
+const info = chalk.green;
+const trace = chalk.blue;
+const debug = chalk.gray;
 
 export default class SFPLogger {
   public static logLevel: LoggerLevel = LoggerLevel.INFO;
 
-
-
   static log(
     message: string,
-    logLevel = LoggerLevel.INFO, 
-    logger: string = "console"
+    logLevel = LoggerLevel.INFO,
+    logger?:Logger
   ) {
+    if (logLevel == null) logLevel = LoggerLevel.INFO;
 
-    if(logLevel==null)
-      logLevel=LoggerLevel.INFO;
+    if(logLevel < this.logLevel) return;
 
-    if (logLevel <= this.logLevel) {
-      if (logger && logger !== "console" ) {
-        fs.appendFileSync(logger, message, "utf8");
-      } else {
-        switch(logLevel)
-        {
-          case LoggerLevel.TRACE:
-            console.log(trace(message));
-            break;
+    if (logger) {
+      if (logger.logType===LoggerType.void) {
+        return;
+      } else if (logger.logType===LoggerType.file) {
+        let fileLogger = logger as FileLogger;
+        fs.appendFileSync(fileLogger.path, message + EOL, "utf8");
+      }
+    } else {
+      switch (logLevel) {
+        
+        case LoggerLevel.TRACE:
+          console.log(trace(message));
+          break;
 
-          case LoggerLevel.DEBUG:
-            console.log(debug(message));
-            break;
+        case LoggerLevel.DEBUG:
+          console.log(debug(message));
+          break;
 
-          case LoggerLevel.INFO:
-            console.log(info(message));
-            break;
+        case LoggerLevel.INFO:
+          console.log(info(message));
+          break;
 
-          case LoggerLevel.WARN:
-            console.log(warning(message));
-            break;
+        case LoggerLevel.WARN:
+          console.log(warning(message));
+          break;
 
-          case LoggerLevel.ERROR:
-            console.log(error(message));
-            break;
+        case LoggerLevel.ERROR:
+          console.log(error(message));
+          break;
 
-          case LoggerLevel.ERROR:
-             console.log(error(message));
-             break;
-         
-        }
+        case LoggerLevel.ERROR:
+          console.log(error(message));
+          break;
       }
     }
   }

@@ -5,7 +5,7 @@ import {
   PackageInstallationStatus,
 } from "../package/PackageInstallationResult";
 import { onExit } from "../utils/OnExit";
-import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
 export default class InstallPackageDependenciesImpl {
   public constructor(
@@ -15,7 +15,7 @@ export default class InstallPackageDependenciesImpl {
     private working_directory: string,
     private keys: string,
     private apexcompileonlypackage: boolean,
-    private packageLogger?:any
+    private packageLogger?:Logger
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {

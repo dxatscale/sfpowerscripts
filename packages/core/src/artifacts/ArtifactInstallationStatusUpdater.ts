@@ -1,6 +1,6 @@
 import child_process = require("child_process");
 import PackageMetadata from "../PackageMetadata";
-import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
 const retry = require("async-retry");
 
@@ -14,7 +14,7 @@ export default class ArtifactInstallationStatusUpdater {
     target_org: string,
     packageMetadata: PackageMetadata,
     isHandledByCaller: boolean,
-    packageLogger?:any
+    packageLogger?:Logger
   ):Promise<boolean> {
     if (isHandledByCaller) return true; //This is to be handled by the caller, in that case if it reached here, we should
                                         //just ignore
@@ -33,7 +33,7 @@ export default class ArtifactInstallationStatusUpdater {
   private static async updateArtifact(
     username: string,
     packageMetadata: PackageMetadata,
-    packageLogger?:any
+    packageLogger?:Logger
   ): Promise<boolean> {
 
 

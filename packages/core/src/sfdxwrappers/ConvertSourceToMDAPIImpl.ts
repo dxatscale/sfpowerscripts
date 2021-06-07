@@ -1,6 +1,6 @@
 import path from "path";
 import { SFDXCommand } from "../SFDXCommand";
-import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
 export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
 
@@ -11,7 +11,7 @@ export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
   public constructor(
     project_directory:string,
     sourceDirectory: string,
-    packageLogger?: any,
+    packageLogger?: Logger,
     logLevel?: LoggerLevel
   ) {
     super(null, project_directory, packageLogger, logLevel);
@@ -30,13 +30,17 @@ export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
        mdapiDirPath = path.resolve(this.mdapiDir);
       SFPLogger.log(
         `Converting to MDAPI  Format Completed at ${mdapiDirPath}`,
-        LoggerLevel.INFO
+        LoggerLevel.INFO,
+        this.logFile
+        
       );
       return mdapiDirPath
       }
       catch (error) {
         SFPLogger.log(
-          `Unable to convert source for directory ${this.sourceDirectory}`
+          `Unable to convert source for directory ${this.sourceDirectory}`,
+          LoggerLevel.ERROR,
+          this.logFile
         );
         throw error;
       }
@@ -53,18 +57,23 @@ export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
 
       if (this.project_directory != null)
         SFPLogger.log(
-          `Converting to MDAPI Format ${this.sourceDirectory} in project directory ${this.project_directory}`
+          `Converting to MDAPI Format ${this.sourceDirectory} in project directory ${this.project_directory}`,
+          LoggerLevel.INFO,
+          this.logFile
         );
       else
         SFPLogger.log(
-          `Converting to MDAPI Format ${this.sourceDirectory} in project directory`
+          `Converting to MDAPI Format ${this.sourceDirectory} in project directory`,
+          LoggerLevel.INFO,
+          this.logFile
         );
 
       return `sfdx force:source:convert -r ${this.sourceDirectory}  -d ${this.mdapiDir}`;
     } catch (error) {
       SFPLogger.log(
         `Unable to generate command for converting ${this.sourceDirectory}`,
-        LoggerLevel.ERROR
+        LoggerLevel.ERROR,
+        this.logFile
       );
       throw error;
     }
