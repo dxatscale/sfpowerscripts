@@ -79,15 +79,23 @@ export default class ArtifactMigrator {
         );
 
         let queryResult = JSON.parse(queryResultJson);
-        if (queryResult.status === 1) return false;
-        else {
+        if (
+          queryResult.status === 1 &&
+          queryResult.message.includes("sObject type 'SfpowerscriptsArtifact2__c' is not supported")
+        ) {
+          return false;
+        } else if (queryResult.status === 1) {
+          throw new Error(queryResult.message);
+        } else {
           ArtifactMigrator.sfpowerscriptsArtifact2Records = queryResult.result.records;
           ArtifactMigrator.objectApiName = "SfpowerscriptsArtifact2__c";
           return true;
         }
 
-      } catch {
-        return false;
+      } catch (error) {
+        if (error.message.includes("sObject type 'SfpowerscriptsArtifact2__c' is not supported")) {
+          return false;
+        } else throw error;
       }
   }
 
@@ -102,8 +110,14 @@ export default class ArtifactMigrator {
       );
 
       let queryResult = JSON.parse(queryResultJson);
-      if (queryResult.status === 1) return false;
-      else {
+      if (
+        queryResult.status === 1 &&
+        queryResult.message.includes("sObject type 'SfpowerscriptsArtifact__c' is not supported")
+      ) {
+        return false;
+      } else if (queryResult.status === 1) {
+        throw new Error(queryResult.message);
+      } else {
         ArtifactMigrator.sfpowerscriptsArtifactRecords = queryResult.result.records;
         if (ArtifactMigrator.objectApiName !== "SfpowerscriptsArtifact2__c") {
           console.log("The custom object SfpowerscriptsArtifact__c will be deprecated in future release. Move to the new version of SfpowerscriptsArtifact to maintain compatibility.");
@@ -111,8 +125,10 @@ export default class ArtifactMigrator {
         }
         return true;
       }
-    } catch {
-      return false;
+    } catch (error) {
+      if (error.message.includes("sObject type 'SfpowerscriptsArtifact__c' is not supported")) {
+        return false;
+      } else throw error;
     }
   }
 
