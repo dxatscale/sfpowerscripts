@@ -1,5 +1,6 @@
 import child_process = require("child_process");
 const retry = require("async-retry");
+import ArtifactMigrator from "./ArtifactMigrator";
 
 //Fetch sfpowerscripts Artifats installed in an Org
 export default class InstalledAritfactsFetcher {
@@ -10,7 +11,7 @@ export default class InstalledAritfactsFetcher {
       return await retry(
         async (bail) => {
           let cmdOutput = child_process.execSync(
-            `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c" -r json -u ${username}`,
+            `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM ${ArtifactMigrator.objectApiName}" -r json -u ${username}`,
             { encoding: "utf8", stdio:"pipe" }
           );
           let result = JSON.parse(cmdOutput);
