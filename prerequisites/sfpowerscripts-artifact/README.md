@@ -1,9 +1,9 @@
 # sfpowerscripts-artifact
 
-Install the 'sfpowerscripts-artifact-2' unlocked package to your orgs using the SFDX CLI:
+Install the 'sfpowerscripts-artifact' unlocked package to your orgs using the SFDX CLI:
 
 ```bash
-  sfdx package --package 04t1P000000ka0fQAA -u <org> --securitytype=AdminsOnly --wait=120
+  sfdx package --package 04t1P000000ka9mQAA -u <org> --securitytype=AdminsOnly --wait=120
 ```
 
 The sfpowerscripts-artifact package is a lightweight unlocked package consisting of a custom setting `SfpowerscriptsArtifact2__c` that is used to keep record of the artifacts that have been installed in the org. This enables package installation, using sfpowerscripts, to be skipped if the same artifact version already exists in the org.
