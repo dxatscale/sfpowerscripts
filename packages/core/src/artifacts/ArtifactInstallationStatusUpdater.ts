@@ -21,7 +21,7 @@ export default class ArtifactInstallationStatusUpdater {
                                         //just ignore
 
     try {
-      ArtifactMigrator.exec(target_org);
+      await ArtifactMigrator.exec(target_org);
 
       return  await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata, packageLogger);
     } catch (error) {

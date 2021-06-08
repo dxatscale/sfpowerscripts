@@ -3,10 +3,13 @@ import * as fs from "fs-extra";
 const retry = require("async-retry");
 
 export default class ArtifactMigrator {
+
   /**
    * API name of latest SfpowerscriptsArtifact object installed in org
    */
   public static objectApiName: string = null;
+
+  private static isMigrated: boolean = false;
 
   private static isSfpowerscriptsArtifact2Exist: boolean;
   private static isSfpowerscriptsArtifactExist: boolean;
@@ -36,7 +39,8 @@ export default class ArtifactMigrator {
     ) {
       if (
         ArtifactMigrator.sfpowerscriptsArtifact2Records.length === 0 &&
-        ArtifactMigrator.sfpowerscriptsArtifactRecords.length > 0
+        ArtifactMigrator.sfpowerscriptsArtifactRecords.length > 0 &&
+        !ArtifactMigrator.isMigrated
       ) {
         await ArtifactMigrator.migrate(username);
       }
@@ -83,6 +87,7 @@ export default class ArtifactMigrator {
           if (importResult.status === 1) {
             throw new Error("Failed to migrate records from SfpowerscriptsArtifact__c to SfpowerscriptsArtifact2__c");
           } else {
+            ArtifactMigrator.isMigrated = true;
             return;
           }
         },
@@ -125,10 +130,11 @@ export default class ArtifactMigrator {
         }
 
       } catch (error) {
-        if (error.message.includes("sObject type 'SfpowerscriptsArtifact2__c' is not supported")) {
+        let errorMsg = JSON.parse(error.stdout).message;
+        if (errorMsg.includes("sObject type 'SfpowerscriptsArtifact2__c' is not supported")) {
           ArtifactMigrator.isSfpowerscriptsArtifact2Exist = false;
         } else {
-          console.log(error.message);
+          console.log(errorMsg);
           throw error;
         }
       }
@@ -162,10 +168,11 @@ export default class ArtifactMigrator {
         ArtifactMigrator.isSfpowerscriptsArtifactExist = true;
       }
     } catch (error) {
-      if (error.message.includes("sObject type 'SfpowerscriptsArtifact__c' is not supported")) {
+      let errorMsg = JSON.parse(error.stdout).message;
+      if (errorMsg.includes("sObject type 'SfpowerscriptsArtifact__c' is not supported")) {
         ArtifactMigrator.isSfpowerscriptsArtifactExist = false;
       } else {
-        console.log(error.message);
+        console.log(errorMsg);
         throw error;
       };
     }
