@@ -89,7 +89,7 @@ export default class BuildImpl {
     );
 
 
-   
+
 
     //Do a diff Impl
     let table;
@@ -107,7 +107,7 @@ export default class BuildImpl {
     console.log(table.toString());
 
     for await (const pkg of this.packagesToBeBuilt) {
-        
+
       let type = this.getPriorityandTypeOfAPackage(
         this.projectConfig,
         pkg
@@ -250,7 +250,7 @@ export default class BuildImpl {
               packagesToBeBuilt.set(packageInCollection, {reason:"Part of a build collection"});
             }
           });
-        } 
+        }
       }
     }
     return packagesToBeBuilt;
@@ -283,6 +283,15 @@ export default class BuildImpl {
           return false;
         else
           return true;
+      });
+
+      // Ignore aliasfied packages on validate & prepare stages
+      packageDescriptors = packageDescriptors.filter((pkg) => {
+        return !(
+          (this.props.currentStage === "prepare" ||
+            this.props.currentStage === "validate") &&
+          pkg.aliasfy
+        );
       });
 
       for (const pkg of packageDescriptors) {
