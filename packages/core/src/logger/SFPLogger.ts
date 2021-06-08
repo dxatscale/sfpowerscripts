@@ -73,10 +73,6 @@ export default class SFPLogger {
         case LoggerLevel.ERROR:
           console.log(error(message));
           break;
-
-        case LoggerLevel.ERROR:
-          console.log(error(message));
-          break;
       }
     }
   }
