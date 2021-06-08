@@ -4,7 +4,7 @@ import PackageMetadata from "../PackageMetadata";
 import GeneratePackageChangelog from "../changelog/GeneratePackageChangelog";
 import { Changelog } from "../changelog/interfaces/GenericChangelogInterfaces";
 import * as rimraf from "rimraf";
-import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 import AdmZip = require("adm-zip");
 
 export default class ArtifactGenerator {

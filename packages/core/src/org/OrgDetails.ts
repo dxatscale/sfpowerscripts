@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 const retry = require("async-retry");
 
 export default class OrgDetails {

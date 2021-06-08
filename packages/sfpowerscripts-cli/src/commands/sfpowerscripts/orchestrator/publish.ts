@@ -7,7 +7,7 @@ import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscri
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import child_process = require("child_process");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
