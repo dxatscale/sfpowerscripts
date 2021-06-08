@@ -11,7 +11,7 @@ import SFPLogger, {
 import { Stage } from "../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 
-const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
+const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
 export default class PrepareASingleOrgImpl {
   private keys;
   private installAll: boolean;
