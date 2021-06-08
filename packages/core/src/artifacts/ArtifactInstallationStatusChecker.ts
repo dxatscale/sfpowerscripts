@@ -1,6 +1,8 @@
 import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
 import PackageMetadata from "../PackageMetadata";
 import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import ArtifactMigrator from "./ArtifactMigrator";
+
 
 export default class ArtifactInstallationStatusChecker {
 
@@ -10,10 +12,12 @@ export default class ArtifactInstallationStatusChecker {
     packageMetadata: PackageMetadata,
     isHandledByCaller: boolean
   ): Promise<{isInstalled:boolean,versionNumber?:string}> {
-    if (isHandledByCaller) return {isInstalled:false}; //This is already handled by the caller, in that case if it reached here, we should 
+    if (isHandledByCaller) return {isInstalled:false}; //This is already handled by the caller, in that case if it reached here, we should
                                          //always install
     let result:{isInstalled:boolean,versionNumber?:string}={isInstalled:false};
     try {
+      await ArtifactMigrator.exec(target_org);
+
       SFPLogger.log(`Querying for version of  ${packageMetadata.package_name} in the Org..`);
       result.isInstalled=false;
       let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(
