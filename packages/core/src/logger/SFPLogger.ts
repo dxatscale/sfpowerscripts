@@ -36,6 +36,10 @@ export default class SFPLogger {
     logLevel = LoggerLevel.INFO,
     logger?:Logger
   ) {
+
+    if (typeof jest == 'undefined')
+    {
+
     if (logLevel == null) logLevel = LoggerLevel.INFO;
 
     if(logLevel < this.logLevel) return;
@@ -76,4 +80,5 @@ export default class SFPLogger {
       }
     }
   }
+ }
 }

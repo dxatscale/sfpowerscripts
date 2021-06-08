@@ -105,7 +105,7 @@ describe("Given a sfdx package, build a sfpowerscripts package", () => {
 
 
 
-     let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"ESBaseCodeLWC");
+     let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,null,"ESBaseCodeLWC");
      expect(sfpPackage.isProfilesInPackage).toStrictEqual(false);
      expect(sfpPackage.isApexInPackage).toStrictEqual(true);
      expect(sfpPackage.triggers).toBeUndefined();

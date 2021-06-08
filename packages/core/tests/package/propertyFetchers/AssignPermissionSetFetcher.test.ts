@@ -33,14 +33,14 @@ describe(
   () => {
   it("Should set assignPermSetsPreDeployment property in SFPPackage", async () => {
     let assignPermissionSetFetcher: AssignPermissionSetFetcher = new AssignPermissionSetFetcher();
-    let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null, null);
+    let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,null, null);
     assignPermissionSetFetcher.getSfpowerscriptsProperties(sfpPackage);
     expect(sfpPackage.assignPermSetsPreDeployment).toStrictEqual(["PermSetB"]);
   });
 
   it("Should set assignPermSetsPostDeployment property in SFPPackage", async () => {
     let assignPermissionSetFetcher: AssignPermissionSetFetcher = new AssignPermissionSetFetcher();
-    let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null, null);
+    let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,null, null);
     assignPermissionSetFetcher.getSfpowerscriptsProperties(sfpPackage);
     expect(sfpPackage.assignPermSetsPostDeployment).toStrictEqual(["PermSetA"]);
   });
