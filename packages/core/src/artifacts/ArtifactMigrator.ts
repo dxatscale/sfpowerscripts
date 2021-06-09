@@ -130,10 +130,10 @@ export default class ArtifactMigrator {
         }
 
       } catch (error) {
-        if (error.stdout.includes("sObject type 'SfpowerscriptsArtifact2__c' is not supported")) {
+        if (error.output.toString().includes("sObject type 'SfpowerscriptsArtifact2__c' is not supported")) {
           ArtifactMigrator.isSfpowerscriptsArtifact2Exist = false;
         } else {
-          console.log(error.stdout);
+          console.log(error.output.toString());
           throw error;
         }
       }
@@ -167,10 +167,10 @@ export default class ArtifactMigrator {
         ArtifactMigrator.isSfpowerscriptsArtifactExist = true;
       }
     } catch (error) {
-      if (error.stdout.includes("sObject type 'SfpowerscriptsArtifact__c' is not supported")) {
+      if (error.output.toString().includes("sObject type 'SfpowerscriptsArtifact__c' is not supported")) {
         ArtifactMigrator.isSfpowerscriptsArtifactExist = false;
       } else {
-        console.log(error.stdout);
+        console.log(error.output.toString());
         throw error;
       };
     }
