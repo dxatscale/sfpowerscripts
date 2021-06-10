@@ -21,8 +21,6 @@ export default class ArtifactInstallationStatusUpdater {
                                         //just ignore
 
     try {
-      await ArtifactMigrator.exec(target_org);
-
       return  await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata, packageLogger);
     } catch (error) {
       SFPLogger.log(

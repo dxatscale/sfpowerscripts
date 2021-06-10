@@ -15,7 +15,6 @@ export default class ArtifactInstallationStatusChecker {
                                          //always install
     let result:{isInstalled:boolean,versionNumber?:string}={isInstalled:false};
     try {
-      await ArtifactMigrator.exec(target_org);
 
       SFPLogger.log(`Querying for version of  ${packageMetadata.package_name} in the Org..`);
       result.isInstalled=false;
