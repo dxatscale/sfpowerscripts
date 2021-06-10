@@ -1,14 +1,44 @@
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import Ajv from "ajv"
+import path = require("path");
+import * as fs from "fs-extra";
 
 export default class ProjectValidation {
 
   private readonly projectConfig;
+  private ajv:Ajv;
+  resourcesDir: string;
 
   constructor(){
     this.projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+    this.ajv=new Ajv({allErrors: true});
+    this.resourcesDir = path.join(
+      __dirname,
+      "..",
+      "resources",
+      "schemas"
+    );
   }
 
-  validatePackageBuildNumbers() {
+ public validateSFDXProjectJSON()
+ {
+   let schema = fs.readJSONSync(path.join(this.resourcesDir,`sfdx-project.schema.json`), {encoding:'UTF-8'})
+   let validator = this.ajv.compile(schema);
+   let isSchemaValid = validator(this.projectConfig);
+   if(!isSchemaValid)
+   {
+    let errorMsg: string =`The sfdx-project.json is invalid, Please fix the following errors\n`;
+
+    validator.errors.forEach((error,errorNum) => {
+      errorMsg += `\n${errorNum+1}: ${error.instancePath}: ${error.message} ${JSON.stringify(error.params, null, 4)}`;
+    });
+
+    throw new Error(errorMsg);
+   }
+ }
+
+
+  public validatePackageBuildNumbers() {
     this.projectConfig.packageDirectories.forEach((pkg) => {
       let packageType = ProjectConfig.getPackageType(
         this.projectConfig,
@@ -20,7 +50,13 @@ export default class ProjectValidation {
         pkg.versionNumber.match(pattern) &&
         (packageType === "Source" || packageType === "Data")
       ) {
-        throw new Error('The build-number keywords "NEXT" & "LATEST" are not supported for Source & Data packages. Please use 0 instead');
+        throw new Error(
+          'sfdx-project.json validation failed for package "'+pkg["package"]+ '".'
+          + ' Build-number keywords "NEXT" & "LATEST" are not supported for '+packageType+' packages.'
+          + '\nTry the following:'
+          + '\n - If package should be built as a '+packageType+' package, use 0 instead of NEXT/LATEST'
+          + '\n - If package should be built as an Unlocked package, ensure the package has been created in the Devhub and the ID included in packageAliases of sfdx-project.json'
+        );
       }
     });
   }

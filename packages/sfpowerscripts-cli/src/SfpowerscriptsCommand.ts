@@ -3,6 +3,8 @@ import { OutputFlags } from "@oclif/parser";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender"
 import * as rimraf from "rimraf";
 import ProjectValidation from "./ProjectValidation";
+import DemoReelPlayer from "./impl/demoreelplayer/DemoReelPlayer";
+import { fs } from "@salesforce/core";
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -34,6 +36,14 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
      * Entry point of all commands
      */
     async run(): Promise<any> {
+       
+        //If demo mode, display demo reel and return
+        if(process.env.SFPOWERSCRIPTS_DEMO_MODE)
+        {
+            await this.executeDemoMode();
+            return;
+        }
+
         this.loadSfpowerscriptsVariables(this.flags);
 
 
@@ -41,6 +51,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
         if (this.statics.requiresProject) {
             let projectValidation = new ProjectValidation();
+            projectValidation.validateSFDXProjectJSON();
             projectValidation.validatePackageBuildNumbers();
         }
 
@@ -93,6 +104,25 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         {
             SFPStatsSender.initialize(process.env.SFPOWERSCRIPTS_STATSD_PORT,process.env.SFPOWERSCRIPTS_STATSD_HOST,process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL);
         }
+        if(process.env.SFPOWERSCRIPTS_DATADOG)
+        {
+            SFPStatsSender.initializeNativeDataDogMetrics(process.env.SFPOWERSCRIPTS_DATADOG_HOST,process.env.SFPOWERSCRIPTS_DATADOG_API_KEY);
+        }
+
         SFPStatsSender.initializeLogBasedMetrics();
+    }
+
+    private async executeDemoMode()
+    {
+           
+            if(fs.existsSync(process.env.SFPOWERSCRIPTS_DEMOREEL_FOLDER_PATH))
+            {
+            let player:DemoReelPlayer = new DemoReelPlayer();
+            await player.execute(process.env.SFPOWERSCRIPTS_DEMOREEL_FOLDER_PATH);
+            }
+            else
+            {
+                console.log("Demo reel doesnt exist, Please check the path and try again");
+            }
     }
 }

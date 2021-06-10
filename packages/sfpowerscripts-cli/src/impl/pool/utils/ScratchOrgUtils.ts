@@ -386,4 +386,5 @@ export interface ScratchOrg {
   accessToken?: string;
   instanceURL?: string;
   status?: string;
+  failureMessage?: string;
 }

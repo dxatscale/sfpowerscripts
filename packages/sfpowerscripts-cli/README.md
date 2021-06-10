@@ -145,6 +145,7 @@ utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
    - [`sfdx sfpowerscripts:orchestrator:quickbuild`](#sfdx-sfpowerscriptsorchestratorquickbuild)
    - [`sfdx sfpowerscripts:orchestrator:build`](#sfdx-sfpowerscriptsorchestratorbuild)
    - [`sfdx sfpowerscripts:orchestrator:deploy`](#sfdx-sfpowerscriptsorchestratordeploy)
+   - [`sfdx sfpowerscripts:orchestrator:release`](#sfdx-sfpowerscriptsorchestratorrelease)
    - [`sfdx sfpowerscripts:orchestrator:promote`](#sfdx-sfpowerscriptsorchestratorpromote)
    - [`sfdx sfpowerscripts:orchestrator:publish`](#sfdx-sfpowerscriptsorchestratorpublish)
 
@@ -389,9 +390,6 @@ OPTIONS
   --executorcount=executorcount                                                     [default: 5] Number of parallel
                                                                                     package task schedulors
 
-  --gittag                                                                          This flag is deprecated, Please
-                                                                                    utilize git tags on publish stage
-
   --tag=tag                                                                         Tag the build with a label, useful
                                                                                     to identify in metrics
 
@@ -451,9 +449,6 @@ OPTIONS
   --executorcount=executorcount                                                     [default: 5] Number of parallel
                                                                                     package task schedulors
 
-  --gittag                                                                          This flag is deprecated,
-                                                                                    Please utilize git tags on publish stage
-
   --tag=tag                                                                         Tag the build with a label, useful
                                                                                     to identify in metrics
 
@@ -509,6 +504,42 @@ EXAMPLE
 
 _See code: [commands/sfpowerscripts/orchestrator/deploy.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/deploy.ts)_
 
+## `sfdx sfpowerscripts:orchestrator:release`
+
+Initiate a release to an org, according to the configuration defined in a release-definition YAML file
+
+```
+USAGE
+  $ sfdx sfpowerscripts:orchestrator:release -u <string> [-p <filepath>] [--scope <string> [--npm | -f <filepath>]] [--npmrcpath <filepath> undefined] [-g <array>] [-t <string>] [--waittime <number>] [--keys <string>] [--generatechangelog]
+  [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -f, --scriptpath=scriptpath                                                       (Optional: no-NPM) Path to script that authenticates and downloads artifacts from the registry
+  -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.
+  -p, --releasedefinition=releasedefinition                                         Path to YAML file containing map of packages and package versions to download
+  -t, --tag=tag                                                                     Tag the release with a label, useful for identification in metrics
+  -u, --targetorg=targetorg                                                         (required) [default: scratchorg] Alias/User Name of the target environment
+  --generatechangelog                                                               Create a release changelog
+  --json                                                                            format output as json
+
+  --keys=keys                                                                       Keys to be used while installing any managed package dependencies. Required format is a string of key-value pairs separated by spaces e.g. packageA:pw123
+                                                                                    packageB:pw123 packageC:pw123
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for this command invocation
+
+  --npm                                                                             Download artifacts from a pre-authenticated private npm registry
+
+  --npmrcpath=npmrcpath                                                             Path to .npmrc file used for authentication to registry. If left blank, defaults to home directory
+
+  --scope=scope                                                                     (required for NPM) User or Organisation scope of the NPM package
+
+  --waittime=waittime                                                               [default: 120] Wait time for package installation
+
+EXAMPLE
+  sfdx sfpowerscripts:orchestrator:release -p path/to/releasedefinition.yml -u myorg --npm --scope myscope --generatechangelog
+```
+
+_See code: [commands/sfpowerscripts/orchestrator/release.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/release.ts)_
 
 ## `sfdx sfpowerscripts:orchestrator:promote`
 
@@ -601,9 +632,6 @@ USAGE
   $ sfdx sfpowerscripts:changelog:generate -d <directory> -n <string> -w <string> -r <string> -b <string> [--limit
   <integer>] [--workitemurl <string>] [--showallartifacts]
 OPTIONS
-  -b, --branchname=branchname                                                       (required) Repository branch in
-                                                                                    which the changelog files are
-                                                                                    located
 
   -d, --artifactdir=artifactdir                                                     (required) [default: artifacts]
                                                                                     Directory containing sfpowerscripts
@@ -1009,9 +1037,6 @@ USAGE
   <string>] [--tag <string>] [--waittime <string>] [--refname <string>] [-v <string>] [--apiversion <string>]
 
 OPTIONS
-  -b, --buildartifactenabled
-      [DEPRECATED - always generate artifact] Create a build artifact, so that this pipeline can be consumed by a release
-      pipeline
 
   -f, --configfilepath=configfilepath
       [default: config/project-scratch-def.json] Path in the current project directory containing  config file for the
