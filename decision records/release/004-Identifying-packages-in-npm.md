@@ -1,6 +1,6 @@
 # Provide a way to identify packages when using a  npm repository tied to repository
 
-* Status: Proposed  <!-- optional -->
+* Status: Rejected  <!-- optional -->
 
 
 ## Context and Problem Statement
@@ -30,3 +30,4 @@ sfpowerscripts users typically utilize a [scaled trunk based branching model] (h
     - As a consequence, tags and artifact versions would also carry the branch information, allowing users to determine which stream artifacts versions belong to
 
 ## Decision
+All the above solutions make it complicated and not necessary, as  changelog has more accurate details. It is better to use changelog to identify the packages
