@@ -10,6 +10,7 @@ The `orchestrator:release` command brings uniformity to the CICD landscape, allo
 release: "release-1.0"
 skipIfAlreadyInstalled: true
 baselineOrg: "myorg"
+promotePackagesBeforeDeploymentToOrg:"SIT"
 artifacts:
   mypackageA: alpha # Supports NPM tags
   mypackageB: LATEST_TAG # Substituted with version from latest git tag at runtime
@@ -30,6 +31,7 @@ changelog:
 | skipIfAlreadyInstalled | No | boolean | Skip installation of artifact if it's already installed in target org |
 | baselineOrg | No | string | The org used to decide whether or not to skip installation of an artifact.  Defaults to the target org when not provided. |
 | artifacts | Yes | Object | Map of artifacts to deploy and their corresponding version |
+| promotePackagesBeforeDeploymentToOrg | No | string | Promote packages before they are installed into an org that matches alias of the org |
 | packageDependencies | No | Object | Packages dependencies \(e.g. managed packages\) to install as part of the release. Provide the 04t subscriber package version Id. |
 | changelog.repoUrl | No | Prop | The URL of the version control system to push changelog files |
 | changelog.workItemFilter | No | Prop | A regular expression used to identify work items in your commit messages |
