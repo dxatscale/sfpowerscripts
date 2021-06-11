@@ -4,7 +4,7 @@ import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { Stage } from "../Stage";
-import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import fs = require("fs");
 import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
@@ -83,7 +83,6 @@ export default class ValidateImpl {
       await this.buildChangedSourcePackages(packagesToCommits);
 
       // Un-suppress logs for deployment
-      SFPLogger.isSupressLogs = false;
       SFPLogger.logLevel = LoggerLevel.INFO;
 
       let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
@@ -124,7 +123,7 @@ export default class ValidateImpl {
 
   private async installPackageDependencies(scratchOrgUsername: string) {
     this.printOpenLoggingGroup(`Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
-    SFPLogger.isSupressLogs=false;
+
     // Install Dependencies
     let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
       scratchOrgUsername,
@@ -396,9 +395,7 @@ export default class ValidateImpl {
   private printOpenLoggingGroup(message:string) {
     if (this.props.logsGroupSymbol?.[0])
       SFPLogger.log(
-        this.props.logsGroupSymbol[0],
-        `${message}`,
-        null,
+        `${this.props.logsGroupSymbol[0]} ${message}`,
         LoggerLevel.INFO
       );
   }
@@ -407,8 +404,6 @@ export default class ValidateImpl {
     if (this.props.logsGroupSymbol?.[1])
       SFPLogger.log(
         this.props.logsGroupSymbol[1],
-        null,
-        null,
         LoggerLevel.INFO
       );
   }

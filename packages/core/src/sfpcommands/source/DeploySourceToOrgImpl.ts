@@ -1,12 +1,12 @@
 import child_process = require("child_process");
-import { delay } from "../utils/Delay";
-import { onExit } from "../utils/OnExit";
-import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
-import PackageEmptyChecker from "../package/PackageEmptyChecker";
-import PackageMetadataPrinter from "../display/PackageMetadataPrinter";
-import ConvertSourceToMDAPIImpl from "./ConvertSourceToMDAPIImpl";
-import PackageManifest from "../package/PackageManifest";
-import DeployErrorDisplayer from "../display/DeployErrorDisplayer";
+import { delay } from "../../utils/Delay";
+import { onExit } from "../../utils/OnExit";
+import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
+import PackageEmptyChecker from "../../package/PackageEmptyChecker";
+import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
+import ConvertSourceToMDAPIImpl from "../../sfdxwrappers/ConvertSourceToMDAPIImpl";
+import PackageManifest from "../../package/PackageManifest";
+import DeployErrorDisplayer from "../../display/DeployErrorDisplayer";
 import * as fs from "fs-extra";
 
 export interface DeploySourceResult {
@@ -48,9 +48,8 @@ export default class DeploySourceToOrgImpl {
     } else {
       SFPLogger.log(
         "Converting source to mdapi",
-        null,
+        LoggerLevel.DEBUG,
         this.packageLogger,
-        LoggerLevel.DEBUG
       );
 
       this.mdapiDir = await new ConvertSourceToMDAPIImpl(

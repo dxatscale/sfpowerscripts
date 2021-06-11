@@ -1,9 +1,9 @@
 const Table = require("cli-table");
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
 export default class DeployErrorDisplayer {
 
-  public static printMetadataFailedToDeploy(componentFailures: any, packageLogger?: any) {
+  public static printMetadataFailedToDeploy(componentFailures: any, packageLogger?: Logger) {
 
     if (componentFailures === null || componentFailures === undefined) return;
 
@@ -31,9 +31,8 @@ export default class DeployErrorDisplayer {
     }
     SFPLogger.log(
       "The following components resulted in failures:",
-      null,
-      packageLogger
+      LoggerLevel.WARN
     );
-    SFPLogger.log(table.toString(), null, packageLogger);
+    SFPLogger.log(table.toString(), LoggerLevel.WARN);
   }
 }

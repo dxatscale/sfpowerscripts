@@ -2,7 +2,7 @@ import { Messages } from "@salesforce/core";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from '@salesforce/command';
 import ValidateImpl, {ValidateMode, ValidateProps} from "../../../impl/validate/ValidateImpl";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');

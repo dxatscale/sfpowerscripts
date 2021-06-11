@@ -1,7 +1,8 @@
 import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
 import PackageMetadata from "../PackageMetadata";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 import ArtifactMigrator from "./ArtifactMigrator";
+
 
 export default class ArtifactInstallationStatusChecker {
 
@@ -36,7 +37,7 @@ export default class ArtifactInstallationStatusChecker {
     } catch (error) {
       SFPLogger.log("Unable to fetch any sfpowerscripts artifacts in the org\n" +
       "1. sfpowerscripts package is not installed in the org\n" +
-      "2. The required prerequisite object is not deployed to this org\n");
+      "2. The required prerequisite object is not deployed to this org\n",LoggerLevel.WARN)
     }
     return result;
   }

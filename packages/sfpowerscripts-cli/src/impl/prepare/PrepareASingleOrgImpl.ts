@@ -7,9 +7,9 @@ import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
 import { EOL } from "os";
 import SFPLogger, {
   LoggerLevel,
-} from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Stage } from "../Stage";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
 export default class PrepareASingleOrgImpl {
@@ -71,7 +71,7 @@ export default class PrepareASingleOrgImpl {
         wait: 60,
       });
 
-      SFPLogger.isSupressLogs = true;
+
       let startTime = Date.now();
       SFPLogger.log(
         `Installing package depedencies to the ${this.scratchOrg.alias}`,
@@ -182,21 +182,18 @@ export default class PrepareASingleOrgImpl {
       //Write to Scratch Org Logs
       SFPLogger.log(
         `Following Packages failed to deploy in ${this.scratchOrg.alias}`,
-        null,
+        LoggerLevel.INFO,
         packageLogger,
-        LoggerLevel.INFO
       );
       SFPLogger.log(
-        deploymentResult.failed,
-        null,
-        packageLogger,
-        LoggerLevel.INFO
+        JSON.stringify(deploymentResult.failed),
+        LoggerLevel.INFO,
+        packageLogger
       );
       SFPLogger.log(
         `Deployment of packages failed in ${this.scratchOrg.alias}, this scratch org will be deleted`,
-        null,
-        packageLogger,
-        LoggerLevel.INFO
+        LoggerLevel.INFO,
+        packageLogger
       );
       throw new Error(
         "Following Packages failed to deploy:" + deploymentResult.failed
@@ -226,9 +223,8 @@ export default class PrepareASingleOrgImpl {
           SFPStatsSender.logCount("prepare.org.checkpointfailed");
           SFPLogger.log(
             `One or some of the check point packages ${this.checkPointPackages} failed to deploy, Deleting ${this.scratchOrg.alias}`,
-            null,
-            packageLogger,
-            LoggerLevel.INFO
+            LoggerLevel.INFO,
+            packageLogger
           );
           throw new Error(
             `One or some of the check point Packages ${this.checkPointPackages} failed to deploy`
@@ -238,9 +234,8 @@ export default class PrepareASingleOrgImpl {
         SFPStatsSender.logCount("prepare.org.partial");
         SFPLogger.log(
           `Cancelling any further packages to be deployed, Adding the scratchorg ${this.scratchOrg.alias} to the pool`,
-          null,
-          packageLogger,
-          LoggerLevel.INFO
+          LoggerLevel.INFO,
+          packageLogger
         );
       }
     } else {
