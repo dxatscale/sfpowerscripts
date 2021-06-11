@@ -13,6 +13,7 @@ import { Org } from "@salesforce/core";
 import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
 import DependencyAnalysis from "./DependencyAnalysis";
 const Table = require("cli-table");
+import InstalledArtifactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
 
 export enum ValidateMode {
   ORG,
@@ -64,21 +65,19 @@ export default class ValidateImpl {
         await this.installPackageDependencies(scratchOrgUsername);
       } else throw new Error(`Unknown mode ${this.props.validateMode}`);
 
-
+      let installedArtifacts;
+      try {
+        installedArtifacts = await InstalledArtifactsFetcher.getListofArtifacts(scratchOrgUsername);
+      } catch {
+        console.log("Failed to query org for Sfpowerscripts Artifacts");
+        console.log("Building all packages");
+      }
 
       let packagesToCommits: {[p: string]: string} = {};
 
-      let queryResult = this.querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername);
-      if (queryResult) {
-        if (queryResult.status === 0) {
-          packagesToCommits = this.getPackagesToCommits(queryResult);
-          this.printArtifactVersions(queryResult);
-        } else {
-          console.log("Failed to query org for Sfpowerscripts Artifacts");
-          console.log("Building all packages...");
-        }
-      } else {
-        console.log("Building all packages...");
+      if (installedArtifacts != null) {
+        packagesToCommits = this.getPackagesToCommits(installedArtifacts);
+        this.printArtifactVersions(installedArtifacts);
       }
 
       await this.buildChangedSourcePackages(packagesToCommits);
@@ -266,57 +265,30 @@ export default class ValidateImpl {
     return generatedPackages;
   }
 
-  private getPackagesToCommits(queryResult: any): {[p: string]: string} {
+  private getPackagesToCommits(installedArtifacts: any): {[p: string]: string} {
     let packagesToCommits: {[p: string]: string} = {};
 
     // Construct map of artifact and associated commit Id
-    queryResult.result.records.forEach((artifact) => {
+    installedArtifacts.forEach((artifact) => {
       packagesToCommits[artifact.Name] = artifact.CommitId__c;
     });
 
     return packagesToCommits;
   }
 
-  private printArtifactVersions(queryResult: any) {
+  private printArtifactVersions(installedArtifacts: any) {
     this.printOpenLoggingGroup(`Artifacts installed in the Scratch Org`);
     let table = new Table({
       head: ["Artifact", "Version", "Commit Id"],
     });
 
-    queryResult.result.records.forEach((artifact) => {
+    installedArtifacts.forEach((artifact) => {
       table.push([artifact.Name, artifact.Version__c, artifact.CommitId__c]);
     });
 
     console.log(`Artifacts installed in scratch org:`);
     console.log(table.toString());
     this.printClosingLoggingGroup();
-  }
-
-  /**
-   * Query SfpowerscriptsArtifact__c records in scratch org. Returns query result as JSON if records are found,
-   * otherwise returns null.
-   * @param scratchOrgUsername
-   */
-  private querySfpowerscriptsArtifactsInScratchOrg(scratchOrgUsername): any {
-    let queryResultJson: string;
-    try {
-
-      queryResultJson = child_process.execSync(
-        `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c" -r json -u ${scratchOrgUsername}`,
-        {
-          stdio: "pipe",
-          encoding: "utf8"
-        }
-      );
-    } catch (error) {}
-
-    if (queryResultJson) {
-      return JSON.parse(queryResultJson);
-    } else {
-      console.log("Failed to query org for Sfpowerscripts Artifacts");
-      return null;
-    }
-
   }
 
   /**

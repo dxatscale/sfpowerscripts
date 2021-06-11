@@ -7,6 +7,8 @@ export default class InstalledAritfactsFetcher {
   private static usernamesToArtifacts: {[p: string]: any} = {};
 
   public static async getListofArtifacts(username: string): Promise<any> {
+    await ArtifactMigrator.exec(username);
+
     if (InstalledAritfactsFetcher.usernamesToArtifacts[username] == null) {
       return await retry(
         async (bail) => {
