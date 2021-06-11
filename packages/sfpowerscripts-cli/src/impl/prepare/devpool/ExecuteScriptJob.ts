@@ -51,8 +51,6 @@ export default class ExecuteScriptJob implements PoolJobExecutor {
           if (error) {
             SFPLogger.log(
               `Failed to execute script for ${scratchOrg.username}`,
-              null,
-              null,
               LoggerLevel.WARN
             );
             scratchOrg.isScriptExecuted = false;
@@ -69,8 +67,6 @@ export default class ExecuteScriptJob implements PoolJobExecutor {
           scratchOrg.isScriptExecuted = true;
           SFPLogger.log(
               `Script Execution completed for ${scratchOrg.username} with alias ${scratchOrg.alias}`,
-              null,
-              null,
               LoggerLevel.INFO
             );
             new ScratchOrgInfoAssigner(hubOrg).setScratchOrgInfo(
@@ -136,8 +132,6 @@ export default class ExecuteScriptJob implements PoolJobExecutor {
   ): Promise<{ username: string; success: boolean }> {
     SFPLogger.log(
       `Relaxing ip ranges for scratchOrg with user ${scratchOrg.username}`,
-      null,
-      null,
       LoggerLevel.INFO
     );
     const connection = await Connection.create({

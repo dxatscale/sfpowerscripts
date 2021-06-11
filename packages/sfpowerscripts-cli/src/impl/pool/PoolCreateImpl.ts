@@ -276,7 +276,6 @@ export default class PoolCreateImpl extends PoolBaseImpl
       `Script Execution result is being written to .sfpowerscripts/prepare_logs/${scratchOrg.alias}.log, Please note this will take a significant time depending on the  script being executed`
     );
 
-    SFPLogger.isSupressLogs = true;
 
   
     let result = await this.poolScriptExecutor.execute(scratchOrg,this.hubOrg);

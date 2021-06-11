@@ -43,7 +43,6 @@ export default class ShareScratchOrg {
 
     SFPLogger.log(
       `Succesfully send email to ${emailId} for ${this.scratchOrg.username}`,
-      null,
       LoggerLevel.INFO
     );
   }

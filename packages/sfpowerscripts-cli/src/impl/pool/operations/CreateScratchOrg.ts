@@ -25,8 +25,6 @@ export default class CreateScratchOrg {
         " " +
         expiry +
         " ",
-      null,
-      null,
       LoggerLevel.TRACE
     );
 
@@ -47,7 +45,7 @@ export default class CreateScratchOrg {
       throw error;
     }
 
-    SFPLogger.log(JSON.stringify(result), null, null,LoggerLevel.TRACE);
+    SFPLogger.log(JSON.stringify(result), LoggerLevel.TRACE);
 
     let scratchOrg: ScratchOrg = {
       alias: `SO${id}`,
@@ -80,8 +78,6 @@ export default class CreateScratchOrg {
     } else {
       SFPLogger.log(
         `Password successfully set for ${passwordData.username}`,
-        null,
-        null,
         LoggerLevel.INFO
       );
     }
@@ -93,12 +89,10 @@ export default class CreateScratchOrg {
     let conn = this.hubOrg.getConnection();
 
     let query = `SELECT Id, SignupUsername, LoginUrl FROM ScratchOrgInfo WHERE SignupUsername = '${username}'`;
-    SFPLogger.log("QUERY:" + query, null,null, LoggerLevel.TRACE);
+    SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
     const results = (await conn.query(query)) as any;
     SFPLogger.log(
       `Login URL Fetched: ${JSON.stringify(results)}`,
-      null,
-      null,
       LoggerLevel.TRACE
     );
 

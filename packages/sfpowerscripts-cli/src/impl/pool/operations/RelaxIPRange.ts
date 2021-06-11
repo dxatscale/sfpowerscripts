@@ -1,17 +1,15 @@
 import * as fs from "fs-extra";
 import { AsyncResult, DeployResult } from "jsforce";
 import { Connection } from "@salesforce/core";
-import SFPLogger, {
-  LoggerLevel,
-} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import AdmZip = require("adm-zip");
 import path = require("path");
 import xml2json from "@dxatscale/sfpowerscripts.core/lib/utils/xml2json";
 import { delay } from "@dxatscale/sfpowerscripts.core/lib/utils/Delay";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 const xml2js = require("xml2js");
 
 export default class RelaxIPRange {
-  public constructor(private logger: any) {}
+  public constructor(private logger: Logger) {}
 
   public async setIp(
     conn: Connection,
@@ -39,9 +37,8 @@ export default class RelaxIPRange {
       //Deploy Component
       SFPLogger.log(
         ` Relaxing Ip range  in  ${conn.getUsername()}`,
-        null,
-        this.logger,
-        LoggerLevel.DEBUG
+        LoggerLevel.DEBUG,
+        this.logger
       );
       let metadata_deploy_result: DeployResult = await this.deployPackage(
         conn,
@@ -52,17 +49,15 @@ export default class RelaxIPRange {
       if (!metadata_deploy_result.success) {
         SFPLogger.log(
           `Unable to  set ip range : ${metadata_deploy_result.details["componentFailures"]["problem"]}`,
-          null,
-          this.logger,
-          LoggerLevel.ERROR
+          LoggerLevel.ERROR,
+          this.logger
         );
         return { username: username, success: false };
       } else {
         SFPLogger.log(
           `IP Ranges relaxed succesfully`,
-          null,
-          this.logger,
-          LoggerLevel.INFO
+          LoggerLevel.INFO,
+          this.logger
         );
         return { username: username, success: true };
       }
@@ -71,9 +66,8 @@ export default class RelaxIPRange {
     {
       SFPLogger.log(
         `Unable to  set ip range`,
-        null,
-        this.logger,
-        LoggerLevel.ERROR
+        LoggerLevel.ERROR,
+        this.logger
       );
       return { username: username, success: false };
     }
@@ -102,9 +96,8 @@ export default class RelaxIPRange {
     });
     SFPLogger.log(
       `Fetching  metadata from ${conn.getUsername()}`,
-      null,
-      null,
-      LoggerLevel.DEBUG
+      LoggerLevel.DEBUG,
+      this.logger
     );
 
     let metadata_retrieve_result = await this.checkRetrievalStatus(
@@ -114,9 +107,8 @@ export default class RelaxIPRange {
     if (!metadata_retrieve_result.zipFile)
       SFPLogger.log(
         "Unable to find the requested metadata",
-        null,
-        null,
-        LoggerLevel.ERROR
+        LoggerLevel.ERROR,
+        this.logger
       );
 
     let retriveLocation = `.sfpowerscripts/retrieved/${retrievedId}`;
@@ -191,9 +183,8 @@ export default class RelaxIPRange {
         if (isToBeLoggedToConsole)
           SFPLogger.log(
             `Polling for Retrieval Status`,
-            null,
-            this.logger,
-            LoggerLevel.INFO
+            LoggerLevel.INFO,
+            this.logger
           );
         await delay(5000);
       } else {
@@ -236,9 +227,8 @@ export default class RelaxIPRange {
       if (!metadata_result.done) {
         SFPLogger.log(
           "Polling for Deployment Status",
-          null,
-          this.logger,
-          LoggerLevel.INFO
+          LoggerLevel.INFO,
+          this.logger
         );
         await delay(5000);
       } else {
@@ -262,16 +252,14 @@ export default class RelaxIPRange {
       ipRangeToSet = this.getFullRange();
       SFPLogger.log(
         `Ip range to set : 0.0.0.0-255.255.255.255`,
-        null,
-        null,
-        LoggerLevel.INFO
+        LoggerLevel.INFO,
+        this.logger
       );
     } else if (ipRangeToSet.length > 0) {
       SFPLogger.log(
         `Ip range to set :` + JSON.stringify(ipRangeToSet),
-        null,
-        this.logger,
-        LoggerLevel.INFO
+        LoggerLevel.INFO,
+        this.logger
       );
     }
 
@@ -286,9 +274,8 @@ export default class RelaxIPRange {
       SFPLogger.log(
         `Org ${conn.getUsername()} has current range : ` +
           JSON.stringify(currentRange),
-        null,
-        this.logger,
-        LoggerLevel.DEBUG
+        LoggerLevel.DEBUG,
+        this.logger
       );
 
       if (!addall) {

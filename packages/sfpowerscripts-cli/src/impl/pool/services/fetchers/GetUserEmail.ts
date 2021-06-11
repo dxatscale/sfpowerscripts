@@ -14,7 +14,7 @@ export async function getUserEmail(username: string, hubOrg: Org) {
       }
       let query = `SELECT email FROM user WHERE username='${username}'`;
 
-      SFPLogger.log("QUERY:" + query,null, LoggerLevel.TRACE);
+      SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
       const results = (await hubConn.query(query)) as any;
 
       if (results.records.size < 1) {

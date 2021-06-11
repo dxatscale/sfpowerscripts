@@ -18,10 +18,8 @@ import { PoolConfig } from "../../pool/PoolConfig";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
 export default class PrepareASingleOrgImpl {
-  private keys;
-  private installAll: boolean;
-  private installAsSourcePackages: boolean;
-  private succeedOnDeploymentErrors: boolean;
+ 
+  
   private checkPointPackages: string[];
 
   public constructor(

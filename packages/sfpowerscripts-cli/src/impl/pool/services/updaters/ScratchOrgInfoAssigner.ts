@@ -18,16 +18,12 @@ export default class ScratchOrgInfoAssigner {
           let result = await hubConn.sobject("ScratchOrgInfo").update(soInfo);
           SFPLogger.log(
             "Setting Scratch Org Info:" + JSON.stringify(result),
-            null,
-            null,
             LoggerLevel.TRACE
           );
           return result.constructor !== Array ? result.success : true;
         } catch (err) {
           SFPLogger.log(
             "Failure at setting ScratchOrg Info" + err,
-            null,
-            null,
             LoggerLevel.TRACE
           );
           return false;

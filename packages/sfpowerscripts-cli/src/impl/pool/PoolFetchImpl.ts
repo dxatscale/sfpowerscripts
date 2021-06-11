@@ -55,8 +55,6 @@ export default class PoolFetchImpl extends PoolBaseImpl{
       } catch (error) {
         SFPLogger.log(
           "Unable to fetch details of the specified user, Check whether the user exists in the org ",
-          null,
-          null,
           LoggerLevel.ERROR
         );
         throw new SfdxError("Failed to fetch user details");
@@ -68,8 +66,6 @@ export default class PoolFetchImpl extends PoolBaseImpl{
     if (availableSo.length > 0) {
       SFPLogger.log(
         `${this.tag} pool has ${availableSo.length} Scratch orgs available`,
-        null,
-        null,
         LoggerLevel.TRACE
       );
 
@@ -80,8 +76,6 @@ export default class PoolFetchImpl extends PoolBaseImpl{
         if (allocateSO === true) {
           SFPLogger.log(
             `Scratch org ${element.SignupUsername} is allocated from the pool. Expiry date is ${element.ExpirationDate}`,
-            null,
-            null,
             LoggerLevel.TRACE
           );
           soDetail = {};
@@ -98,8 +92,6 @@ export default class PoolFetchImpl extends PoolBaseImpl{
         } else {
           SFPLogger.log(
             `Scratch org ${element.SignupUsername} allocation failed. trying to get another Scratch org from ${this.tag} pool`,
-            null,
-            null,
             LoggerLevel.TRACE
           );
         }
@@ -122,8 +114,6 @@ export default class PoolFetchImpl extends PoolBaseImpl{
       } catch (error) {
         SFPLogger.log(
           "Unable to send the scratchorg details to specified user. Check whether the user exists in the org",
-          null,
-          null,
           LoggerLevel.ERROR
         );
       }
@@ -145,8 +135,6 @@ export default class PoolFetchImpl extends PoolBaseImpl{
 
       SFPLogger.log(
         `Initiating Auto Login for Scratch Org with ${soDetail.username}`,
-        null,
-        null,
         LoggerLevel.INFO
       );
 
