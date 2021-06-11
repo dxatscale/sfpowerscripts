@@ -15,9 +15,10 @@ import { ScriptExecutionResult }  from "../../pool/PoolJobExecutor";
 import { Org } from "@salesforce/core";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { PoolConfig } from "../../pool/PoolConfig";
+import PoolJobExecutor from "../../../../lib/impl/pool/PoolJobExecutor";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
-export default class PrepareASingleOrgImpl {
+export default class PrepareASingleOrgImpl implements PoolJobExecutor {
  
   
   private checkPointPackages: string[];

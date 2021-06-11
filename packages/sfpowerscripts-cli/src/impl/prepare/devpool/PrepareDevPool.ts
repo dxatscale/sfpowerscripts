@@ -2,7 +2,7 @@
 import { Org } from "@salesforce/core";
 import PoolCreateImpl from "../../pool/PoolCreateImpl";
 import { PoolConfig } from "../../pool/PoolConfig";
-import ExecuteScriptJob from "./ExecuteScriptJob";
+import PrepareDevOrgWithScript from "./PrepareDevOrgWithScript";
 import { PreparePool } from "../PreparePool";
 
 
@@ -41,7 +41,7 @@ export default class PrepareDevPool implements PreparePool {
     let prepareASingleOrgImpl;
 
     if(this.pool.devpool.scriptToExecute)
-      prepareASingleOrgImpl = new ExecuteScriptJob(this.pool);
+      prepareASingleOrgImpl = new PrepareDevOrgWithScript(this.pool);
  
      let createPool:PoolCreateImpl = new PoolCreateImpl(this.hubOrg,this.pool,prepareASingleOrgImpl);
      let pool = await createPool.execute() as PoolConfig;

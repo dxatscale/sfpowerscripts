@@ -13,7 +13,7 @@ import RelaxIPRange from "../../pool/operations/RelaxIPRange";
 import ScratchOrgInfoAssigner from "../../pool/services/updaters/ScratchOrgInfoAssigner";
 import { PoolConfig } from "../../pool/PoolConfig";
 
-export default class ExecuteScriptJob implements PoolJobExecutor {
+export default class PrepareDevOrgWithScript implements PoolJobExecutor {
   constructor(private pool:PoolConfig) {}
 
   async execute(
