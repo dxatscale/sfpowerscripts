@@ -40,8 +40,8 @@ export default class TriggerApexTests {
       );
 
       SFPLogger.log(
-        "Executing Command",
-        triggerApexTestImpl.getGeneratedSFDXCommandWithParams(),
+        `Executing Command 
+        ${triggerApexTestImpl.getGeneratedSFDXCommandWithParams()}`,
         this.fileLogger
       );
 
@@ -219,7 +219,7 @@ export default class TriggerApexTests {
     let test_id = fs
       .readFileSync(path.join(this.testOptions.outputdir, "test-run-id.txt"))
       .toString();
-    SFPLogger.log("test_id", test_id);
+    SFPLogger.log(`test_id ${test_id}`);
     return test_id;
   }
 

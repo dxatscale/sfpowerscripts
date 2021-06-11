@@ -1,8 +1,9 @@
 import child_process = require("child_process");
 import PackageMetadata from "../PackageMetadata";
-import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
 const retry = require("async-retry");
+import ArtifactMigrator from "./ArtifactMigrator";
 
 //Update sfpowerscripts Artifats installed in an Org
 export default class ArtifactInstallationStatusUpdater {
@@ -14,7 +15,7 @@ export default class ArtifactInstallationStatusUpdater {
     target_org: string,
     packageMetadata: PackageMetadata,
     isHandledByCaller: boolean,
-    packageLogger?:any
+    packageLogger?:Logger
   ):Promise<boolean> {
     if (isHandledByCaller) return true; //This is to be handled by the caller, in that case if it reached here, we should
                                         //just ignore
@@ -23,7 +24,7 @@ export default class ArtifactInstallationStatusUpdater {
       return  await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata, packageLogger);
     } catch (error) {
       SFPLogger.log(
-        "Unable to update details about artifacts to the org",error,packageLogger,LoggerLevel.DEBUG
+        `Unable to update details about artifacts to the org: ${error}`,LoggerLevel.DEBUG,packageLogger
       );
       return false;
     }
@@ -33,7 +34,7 @@ export default class ArtifactInstallationStatusUpdater {
   private static async updateArtifact(
     username: string,
     packageMetadata: PackageMetadata,
-    packageLogger?:any
+    packageLogger?:Logger
   ): Promise<boolean> {
 
 
@@ -49,15 +50,15 @@ export default class ArtifactInstallationStatusUpdater {
 
         let cmdOutput;
         let packageName= packageMetadata.package_name;
-        SFPLogger.log("Updating Org with new Artifacts "+packageName+" "+packageMetadata.package_version_number+" "+(artifactId?artifactId:""), null, packageLogger, LoggerLevel.INFO);
+        SFPLogger.log(`Updating Org with new Artifacts "+${packageName}+" "+${packageMetadata.package_version_number}+" "+${(artifactId?artifactId:"")}`, LoggerLevel.INFO,packageLogger);
         if (artifactId == null) {
           cmdOutput = child_process.execSync(
-            `sfdx force:data:record:create --json -s SfpowerscriptsArtifact__c -u ${username}  -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}"`,
+            `sfdx force:data:record:create --json -s ${ArtifactMigrator.objectApiName} -u ${username}  -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}"`,
             { encoding: "utf8",stdio:"pipe"}
           );
         } else if (artifactId) {
           cmdOutput = child_process.execSync(
-            `sfdx force:data:record:update --json -s SfpowerscriptsArtifact__c -u ${username} -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}" -i ${artifactId}`,
+            `sfdx force:data:record:update --json -s ${ArtifactMigrator.objectApiName} -u ${username} -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}" -i ${artifactId}`,
             { encoding: "utf8" ,stdio:"pipe"}
           );
         }

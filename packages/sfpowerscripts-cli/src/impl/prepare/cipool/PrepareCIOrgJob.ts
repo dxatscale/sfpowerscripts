@@ -11,17 +11,18 @@ import { Stage } from "../../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl"
 import ScratchOrg from "../../pool/ScratchOrg";
-import PoolJobExecutor, { ScriptExecutionResult }  from "../../pool/PoolJobExecutor";
+import { ScriptExecutionResult }  from "../../pool/PoolJobExecutor";
 import { Org } from "@salesforce/core";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { PoolConfig } from "../../pool/PoolConfig";
 
-const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
-
-
-export default class PrepareCIOrgJob  implements PoolJobExecutor {
-  checkPointPackages: any[];
-
+const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
+export default class PrepareASingleOrgImpl {
+  private keys;
+  private installAll: boolean;
+  private installAsSourcePackages: boolean;
+  private succeedOnDeploymentErrors: boolean;
+  private checkPointPackages: string[];
 
   public constructor(
     private pool:PoolConfig
@@ -58,7 +59,7 @@ export default class PrepareCIOrgJob  implements PoolJobExecutor {
 
      await installUnlockedPackageImpl.exec(true);
 
-      SFPLogger.isSupressLogs = true;
+
       let startTime = Date.now();
       SFPLogger.log(
         `Installing package depedencies to the ${scratchOrg.alias}`,
@@ -173,21 +174,18 @@ export default class PrepareCIOrgJob  implements PoolJobExecutor {
       //Write to Scratch Org Logs
       SFPLogger.log(
         `Following Packages failed to deploy in ${scratchOrg.alias}`,
-        null,
+        LoggerLevel.INFO,
         packageLogger,
-        LoggerLevel.INFO
       );
       SFPLogger.log(
-        deploymentResult.failed,
-        null,
-        packageLogger,
-        LoggerLevel.INFO
+        JSON.stringify(deploymentResult.failed),
+        LoggerLevel.INFO,
+        packageLogger
       );
       SFPLogger.log(
         `Deployment of packages failed in ${scratchOrg.alias}, this scratch org will be deleted`,
-        null,
-        packageLogger,
-        LoggerLevel.INFO
+        LoggerLevel.INFO,
+        packageLogger
       );
       throw new Error(
         "Following Packages failed to deploy:" + deploymentResult.failed
@@ -218,9 +216,8 @@ export default class PrepareCIOrgJob  implements PoolJobExecutor {
           SFPStatsSender.logCount("prepare.org.checkpointfailed");
           SFPLogger.log(
             `One or some of the check point packages ${this.checkPointPackages} failed to deploy, Deleting ${scratchOrg.alias}`,
-            null,
-            packageLogger,
-            LoggerLevel.INFO
+            LoggerLevel.INFO,
+            packageLogger
           );
           throw new Error(
             `One or some of the check point Packages ${this.checkPointPackages} failed to deploy`
@@ -230,9 +227,8 @@ export default class PrepareCIOrgJob  implements PoolJobExecutor {
         SFPStatsSender.logCount("prepare.org.partial");
         SFPLogger.log(
           `Cancelling any further packages to be deployed, Adding the scratchorg ${scratchOrg.alias} to the pool`,
-          null,
-          packageLogger,
-          LoggerLevel.INFO
+          LoggerLevel.INFO,
+          packageLogger
         );
       }
     } else {

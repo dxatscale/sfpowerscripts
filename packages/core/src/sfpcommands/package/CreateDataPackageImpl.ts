@@ -1,14 +1,14 @@
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger from "../../logger/SFPLogger";
+import SFPLogger, { FileLogger, LoggerLevel } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 
 export default class CreateDataPackageImpl {
-  private packageLogger;
+  private packageLogger:FileLogger;
 
   public constructor(
     private projectDirectory: string,
@@ -20,7 +20,7 @@ export default class CreateDataPackageImpl {
       `.sfpowerscripts/logs/${sfdx_package}`,
       `sfpowerscripts--log${EOL}`
     );
-    this.packageLogger = `.sfpowerscripts/logs/${sfdx_package}`;
+    this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
   }
 
   public async exec(): Promise<PackageMetadata> {
@@ -32,15 +32,13 @@ export default class CreateDataPackageImpl {
       this.packageLogger
     );
     SFPLogger.log(
-      "Project Directory",
-      this.projectDirectory,
+      `Project Directory ${this.projectDirectory}`,
+      LoggerLevel.INFO,
       this.packageLogger
     );
-    SFPLogger.log("sfdx_package", this.sfdx_package, this.packageLogger);
+    SFPLogger.log(`sfdx_package ${this.sfdx_package}`, LoggerLevel.INFO,this.packageLogger);
     SFPLogger.log(
-      "packageArtifactMetadata",
-      this.packageArtifactMetadata,
-      this.packageLogger
+      `packageArtifactMetadata ${this.packageArtifactMetadata}`,LoggerLevel.INFO,this.packageLogger
     );
 
     let startTime = Date.now();
@@ -65,6 +63,7 @@ export default class CreateDataPackageImpl {
 
     //Get Artifact Detailes
     let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
+      this.packageLogger,
       this.projectDirectory,
       this.sfdx_package,
       packageDirectory

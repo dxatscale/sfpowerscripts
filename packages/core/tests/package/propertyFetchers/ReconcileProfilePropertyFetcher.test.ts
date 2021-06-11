@@ -33,7 +33,7 @@ describe(
   () => {
   it("Should set reconcileProfiles property in SFPPackage", async () => {
     let reconcileProfilePropertyFetcher: ReconcileProfilePropertyFetcher = new ReconcileProfilePropertyFetcher();
-    let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null, null);
+    let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null, null, null);
     reconcileProfilePropertyFetcher.getSfpowerscriptsProperties(sfpPackage);
     expect(sfpPackage.reconcileProfiles).toBe(false);
   });

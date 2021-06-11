@@ -1,4 +1,4 @@
-import SFPLogger from "../../logger/SFPLogger";
+import SFPLogger, { FileLogger, LoggerLevel } from "../../logger/SFPLogger";
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
@@ -12,7 +12,7 @@ import SFPPackage  from "../../package/SFPPackage";
 const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl {
-  private packageLogger;
+  private packageLogger:FileLogger;
 
   public constructor(
     private projectDirectory: string,
@@ -25,7 +25,7 @@ export default class CreateSourcePackageImpl {
       `.sfpowerscripts/logs/${sfdx_package}`,
       `sfpowerscripts--log${EOL}`
     );
-    this.packageLogger = `.sfpowerscripts/logs/${sfdx_package}`;
+    this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
   }
 
   public async exec(): Promise<PackageMetadata> {
@@ -42,15 +42,14 @@ export default class CreateSourcePackageImpl {
       this.packageLogger
     );
     SFPLogger.log(
-      "Project Directory",
-      this.projectDirectory,
+      `Project Directory: ${this.projectDirectory}`,LoggerLevel.INFO,
       this.packageLogger
     );
-    SFPLogger.log("sfdx_package", this.sfdx_package, this.packageLogger);
+    SFPLogger.log(`sfdx_package: ${this.sfdx_package}`,LoggerLevel.INFO ,this.packageLogger);
 
     SFPLogger.log(
-      "packageArtifactMetadata",
-      this.packageArtifactMetadata,
+      `packageArtifactMetadata: ${JSON.stringify(this.packageArtifactMetadata)}`,
+      LoggerLevel.INFO,
       this.packageLogger
     );
 
@@ -86,10 +85,10 @@ export default class CreateSourcePackageImpl {
 
     if (isBuildSfpPackage) {
       sfppackage = await SFPPackage.buildPackageFromProjectConfig(
+        this.packageLogger,
         this.projectDirectory,
         this.sfdx_package,
         null,
-        this.packageLogger,
         this.pathToReplacementForceIgnore
       );
 
@@ -111,6 +110,7 @@ export default class CreateSourcePackageImpl {
 
     //Get Artifact Details
     let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
+      this.packageLogger,
       this.projectDirectory,
       this.sfdx_package,
       packageDirectory,
@@ -169,8 +169,8 @@ export default class CreateSourcePackageImpl {
         path.join(pathToSourceFolder, ".forceignore")
       );
     else {
-      SFPLogger.log(`${path.join(pathToSourceFolder, stageForceIgnorePath)} does not exist`, null, this.packageLogger);
-      SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory", null, this.packageLogger);
+      SFPLogger.log(`${path.join(pathToSourceFolder, stageForceIgnorePath)} does not exist`, LoggerLevel.INFO, this.packageLogger);
+      SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory", LoggerLevel.INFO, this.packageLogger);
     }
   }
 
@@ -192,12 +192,12 @@ export default class CreateSourcePackageImpl {
         if (classTypes?.parseError?.length > 0) {
           SFPLogger.log(
             "---------------------------------------------------------------------------------------",
-            null,
+            LoggerLevel.INFO,
             this.packageLogger
           );
           SFPLogger.log(
             "Unable to parse these classes to correctly identify test classes, Its not your issue, its ours! Please raise a issue in our repo!",
-            null,
+            LoggerLevel.INFO,
             this.packageLogger
           );
           this.printClassesIdentified(classTypes?.parseError);
@@ -233,7 +233,7 @@ export default class CreateSourcePackageImpl {
     );
     SFPLogger.log(
       "---------------------------------------------------------------------------------------",
-      null,
+      LoggerLevel.INFO,
       this.packageLogger
     );
   }
@@ -253,7 +253,7 @@ export default class CreateSourcePackageImpl {
     );
     SFPLogger.log(
       `-----------------------------------------------------------------------------------------------`,
-      null,
+      LoggerLevel.INFO,
       this.packageLogger
     );
   }
@@ -261,7 +261,7 @@ export default class CreateSourcePackageImpl {
   private printSlowDeploymentWarning() {
     SFPLogger.log(
       `-------WARNING! YOU MIGHT NOT BE ABLE TO DEPLOY OR WILL HAVE A SLOW DEPLOYMENT---------------`,
-      null,
+      LoggerLevel.INFO,
       this.packageLogger
     );
     SFPLogger.log(
@@ -273,7 +273,7 @@ export default class CreateSourcePackageImpl {
     );
     SFPLogger.log(
       `---------------------------------------------------------------------------------------------`,
-      null,
+      LoggerLevel.INFO,
       this.packageLogger
     );
   }
@@ -295,9 +295,9 @@ export default class CreateSourcePackageImpl {
     }
     SFPLogger.log(
       "Following apex test classes were identified",
-      null,
+      LoggerLevel.INFO,
       this.packageLogger
     );
-    SFPLogger.log(table.toString(), null, this.packageLogger);
+    SFPLogger.log(table.toString(), LoggerLevel.INFO, this.packageLogger);
   }
 }

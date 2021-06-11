@@ -1,11 +1,11 @@
-import child_process = require("child_process");
 import { isNullOrUndefined, isNumber } from "util";
-import SFPLogger from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 const fs = require("fs");
 const path = require("path");
 
 export default class IncrementProjectBuildNumberImpl {
   public constructor(
+    private logger:Logger,
     private project_directory: string,
     private sfdx_package: string,
     private segment: string,
@@ -43,8 +43,8 @@ export default class IncrementProjectBuildNumberImpl {
     }
 
 
-    SFPLogger.log(`Package : ${selected_package["package"]}`);
-    SFPLogger.log(`Version : ${selected_package["versionNumber"]}`);
+    SFPLogger.log(`Package : ${selected_package["package"]}`,LoggerLevel.INFO,this.logger);
+    SFPLogger.log(`Version : ${selected_package["versionNumber"]}`,LoggerLevel.INFO,this.logger);
 
     let segments = (selected_package["versionNumber"] as String).split(".");
 
@@ -55,8 +55,8 @@ export default class IncrementProjectBuildNumberImpl {
     //Don't do anything, just return let the platform take care of the increment
     if (segments[3] == "NEXT" && this.segment == "BuildNumber") {
 
-      SFPLogger.log("NEXT encountered in segment, will ignore all the option set in the task")
-      SFPLogger.log(`Version : ${selected_package["versionNumber"]}`);
+      SFPLogger.log("NEXT encountered in segment, will ignore all the option set in the task",LoggerLevel.INFO,this.logger)
+      SFPLogger.log(`Version : ${selected_package["versionNumber"]}`,LoggerLevel.INFO,this.logger);
       return {status:true, ignore:true,versionNumber:selected_package["versionNumber"]};
     }
 
@@ -75,7 +75,7 @@ export default class IncrementProjectBuildNumberImpl {
       "versionNumber"
     ] = `${segments[0]}.${segments[1]}.${segments[2]}.${segments[3]}`;
 
-    SFPLogger.log(`Updated Version : ${selected_package["versionNumber"]}`);
+    SFPLogger.log(`Updated Version : ${selected_package["versionNumber"]}`,LoggerLevel.INFO,this.logger);
 
     if (!this.appendBuildNumber) {
       fs.writeFileSync(

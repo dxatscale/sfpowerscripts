@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 const retry = require("async-retry");
 
 export default class OrgDetails {
@@ -8,7 +8,7 @@ export default class OrgDetails {
 
       return await retry(
         async bail => {
-           SFPLogger.log("Querying Org Details", null, null, LoggerLevel.DEBUG);
+           SFPLogger.log("Querying Org Details");
 
             let cmdOutput = child_process.execSync(
               `sfdx force:data:soql:query -q "SELECT Id, InstanceName, IsSandbox, Name, OrganizationType FROM Organization" -u ${username} --json`,
@@ -16,7 +16,7 @@ export default class OrgDetails {
             );
             let result = JSON.parse(cmdOutput);
             if (result["status"] == 0) {
-              SFPLogger.log(result["result"]["records"][0], null, null, LoggerLevel.DEBUG);
+              SFPLogger.log(result["result"]["records"][0]);
               return result["result"]["records"][0];
             }
             else

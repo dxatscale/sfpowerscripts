@@ -1,8 +1,8 @@
 const Table = require("cli-table");
-import SFPLogger from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
 export default class PackageMetadataPrinter {
-  public static printMetadataToDeploy(payload: any, packageLogger?: any) {
+  public static printMetadataToDeploy(payload: any, packageLogger?: Logger) {
     //If Manifest is null, just return
     if (payload === null || payload === undefined) return;
 
@@ -32,10 +32,9 @@ export default class PackageMetadataPrinter {
     }
     SFPLogger.log(
       "The following metadata will be deployed:",
-      null,
-      packageLogger
+      LoggerLevel.INFO
     );
-    SFPLogger.log(table.toString(), null, packageLogger);
+    SFPLogger.log(table.toString(),LoggerLevel.INFO);
   }
 
 

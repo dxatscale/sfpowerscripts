@@ -5,6 +5,7 @@ import { Messages } from '@salesforce/core';
 import { isNullOrUndefined } from 'util';
 const fs = require("fs");
 import child_process = require("child_process");
+import { ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -51,6 +52,7 @@ export default class IncrementBuildNumber extends SfpowerscriptsCommand {
       const runNumber: string = this.flags.runnumber;
 
       let incrementProjectBuildNumberImpl: IncrementProjectBuildNumberImpl = new IncrementProjectBuildNumberImpl(
+        new ConsoleLogger(),
         project_directory,
         sfdx_package,
         segment,

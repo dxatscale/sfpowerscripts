@@ -14,7 +14,7 @@ import {
   CaseInsensitiveInputStream,
   ThrowingErrorListener,
 } from "apex-parser";
-import SFPLogger from "../logger/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 import { ApexClasses } from "../package/SFPPackage";
 
 
@@ -64,8 +64,8 @@ export default class ApexTypeFetcher {
 
         compilationUnitContext = parser.compilationUnit();
       } catch (err) {
-        SFPLogger.log(`Failed to parse ${clsFile}`);
-        SFPLogger.log(err);
+        SFPLogger.log(`Failed to parse ${clsFile}`,LoggerLevel.WARN);
+        SFPLogger.log(err,LoggerLevel.WARN);
 
         fileDescriptor["error"] = err;
         this.apexSortedByType["parseError"].push(fileDescriptor);

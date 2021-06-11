@@ -43,14 +43,14 @@ describe(
 
   it("Should set destructiveChangesPath property in SFPPackage", async () => {
     let destructiveManifestPathFetcher: DestructiveManifestPathFetcher = new DestructiveManifestPathFetcher();
-    let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null, null);
+    let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,null, null);
     await destructiveManifestPathFetcher.getSfpowerscriptsProperties(sfpPackage);
     expect(sfpPackage.destructiveChangesPath).toBe("destructiveChanges.xml");
   });
 
   it("Should set destructiveChanges property in SFPPackage", async () => {
     let destructiveManifestPathFetcher: DestructiveManifestPathFetcher = new DestructiveManifestPathFetcher();
-    let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null, null);
+    let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,null, null);
     await destructiveManifestPathFetcher.getSfpowerscriptsProperties(sfpPackage);
     expect(sfpPackage.destructiveChanges).toStrictEqual(destructiveChanges);
   });

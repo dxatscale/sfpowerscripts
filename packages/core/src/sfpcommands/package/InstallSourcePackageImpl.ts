@@ -9,7 +9,7 @@ import {
   PackageInstallationResult,
   PackageInstallationStatus,
 } from "../../package/PackageInstallationResult";
-import SFPLogger, {LoggerLevel} from "../../logger/SFPLogger";
+import SFPLogger, {Logger, LoggerLevel} from "../../logger/SFPLogger";
 
 import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
 import PackageInstallationHelpers from "./PackageInstallationHelpers";
@@ -32,7 +32,7 @@ export default class InstallSourcePackageImpl {
     private skip_if_package_installed: boolean,
     private packageMetadata: PackageMetadata,
     private isPackageCheckHandledByCaller?: boolean,
-    private packageLogger?:any,
+    private packageLogger?:Logger,
     private pathToReplacementForceIgnore?: string
   ) {}
 
@@ -59,7 +59,7 @@ export default class InstallSourcePackageImpl {
       );
       isPackageInstalled = installationStatus.isInstalled;
       if (isPackageInstalled) {
-        SFPLogger.log("Skipping Package Installation",null,this.packageLogger, LoggerLevel.INFO);
+        SFPLogger.log("Skipping Package Installation", LoggerLevel.INFO,this.packageLogger);
         return { result: PackageInstallationStatus.Skipped };
       }
     }
@@ -81,7 +81,7 @@ export default class InstallSourcePackageImpl {
       );
 
       if (fs.existsSync(preDeploymentScript)) {
-        SFPLogger.log("Executing preDeployment script",null,this.packageLogger,LoggerLevel.INFO);
+        SFPLogger.log("Executing preDeployment script",LoggerLevel.INFO,this.packageLogger);
         PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,
@@ -99,9 +99,8 @@ export default class InstallSourcePackageImpl {
       if (this.packageMetadata.assignPermSetsPreDeployment) {
         SFPLogger.log(
           "Assigning permission sets before deployment:",
-          null,
+          LoggerLevel.INFO,
           this.packageLogger,
-          LoggerLevel.DEBUG
         );
 
         PackageInstallationHelpers.applyPermsets(
@@ -139,7 +138,7 @@ export default class InstallSourcePackageImpl {
 
         //Reconcile Failed, Bring back the original profiles
         if (isReconcileErrored && profileFolders.length > 0) {
-          SFPLogger.log("Restoring original profiles as preprocessing failed",null,this.packageLogger, LoggerLevel.DEBUG);
+          SFPLogger.log("Restoring original profiles as preprocessing failed",LoggerLevel.INFO,this.packageLogger);
           profileFolders.forEach((folder) => {
             fs.copySync(
               path.join(tempDir, folder),
@@ -187,7 +186,7 @@ export default class InstallSourcePackageImpl {
           }
         } catch (error) {
           SFPLogger.log(
-            "Failed to apply reconcile the second time, Partial Metadata applied",null,this.packageLogger, LoggerLevel.DEBUG
+            "Failed to apply reconcile the second time, Partial Metadata applied",LoggerLevel.INFO,this.packageLogger
           );
         }
 
@@ -237,9 +236,8 @@ export default class InstallSourcePackageImpl {
       if (this.packageMetadata.assignPermSetsPostDeployment) {
         SFPLogger.log(
           "Assigning permission sets after deployment:",
-          null,
-          this.packageLogger,
-          LoggerLevel.DEBUG
+          LoggerLevel.INFO,
+          this.packageLogger
         );
 
         PackageInstallationHelpers.applyPermsets(
@@ -274,7 +272,7 @@ export default class InstallSourcePackageImpl {
   private async applyDestructiveChanges() {
     try {
       SFPLogger.log(
-        "Attempt to delete components mentioned in destructive manifest",null,this.packageLogger, LoggerLevel.DEBUG
+        "Attempt to delete components mentioned in destructive manifest",LoggerLevel.INFO,this.packageLogger
       );
       let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
         this.targetusername,
@@ -285,9 +283,8 @@ export default class InstallSourcePackageImpl {
     } catch (error) {
       SFPLogger.log(
         "We attempted a deletion of components, However were are not succesfull. Either the components are already deleted or there are components which have dependency to components in the manifest, Please check whether this manifest works!",
-        null,
-        this.packageLogger,
-        LoggerLevel.DEBUG
+        LoggerLevel.INFO,
+        this.packageLogger
       );
     }
   }
@@ -322,9 +319,8 @@ export default class InstallSourcePackageImpl {
           `75% test coverage, However being a dynamically generated delta package, we will deploying via triggering all local tests${EOL}` +
           `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}` +
           `-------------------------------------------------------------------------------------------------------------`,
-          null,
-          this.packageLogger,
-          LoggerLevel.DEBUG
+          LoggerLevel.INFO,
+          this.packageLogger
       );
       return true;
     } else if (
@@ -339,9 +335,8 @@ export default class InstallSourcePackageImpl {
           `via triggering all local tests,This definitely is not optimal approach on large orgs` +
           `Please consider adding test classes for the classes in the package ${EOL}` +
           `-------------------------------------------------------------------------------------------------------------`,
-          null,
-          this.packageLogger,
-          LoggerLevel.DEBUG
+          LoggerLevel.INFO,
+          this.packageLogger
       );
       return true;
     } else return false;
@@ -356,7 +351,7 @@ export default class InstallSourcePackageImpl {
     let isReconcileActivated: boolean = false;
     let isReconcileErrored: boolean = false;
     try {
-      SFPLogger.log("Attempting reconcile to profiles",null,this.packageLogger, LoggerLevel.DEBUG);
+      SFPLogger.log("Attempting reconcile to profiles",LoggerLevel.INFO,this.packageLogger);
       //copy the original profiles to temporary location
       profileFolders = glob.sync("**/profiles", {
         cwd: path.join(sourceDirectoryPath),
@@ -377,7 +372,7 @@ export default class InstallSourcePackageImpl {
       await reconcileProfileAgainstOrg.exec();
       isReconcileActivated = true;
     } catch (err) {
-      SFPLogger.log("Failed to reconcile profiles:" + err,null,this.packageLogger, LoggerLevel.DEBUG);
+      SFPLogger.log("Failed to reconcile profiles:" + err,   LoggerLevel.INFO,this.packageLogger);
       isReconcileErrored = true;
     }
     return { profileFolders, isReconcileActivated, isReconcileErrored };
@@ -439,7 +434,7 @@ export default class InstallSourcePackageImpl {
       let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
 
       if (!profileReconcile.result) {
-        SFPLogger.log("Unable to deploy reconciled  profiles",null,this.packageLogger, LoggerLevel.DEBUG);
+        SFPLogger.log("Unable to deploy reconciled  profiles",   LoggerLevel.INFO,this.packageLogger);
       }
     }
   }
@@ -466,9 +461,8 @@ export default class InstallSourcePackageImpl {
             `Tests are mandatory for deployments to production and cannot be skipped. This deployment might fail as org${EOL}` +
             `type cannot be determined` +
             `-------------------------------------------------------------------------------------------------------------${EOL}`,
-            null,
-            null,
-            LoggerLevel.DEBUG
+            LoggerLevel.WARN,
+            this.packageLogger
         );
 
         mdapi_options["testlevel"] = "NoTestRun";
@@ -480,9 +474,8 @@ export default class InstallSourcePackageImpl {
           ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
             `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
             `-------------------------------------------------------------------------------------------------------------`,
-            null,
-            null,
-            LoggerLevel.DEBUG
+            LoggerLevel.WARN,
+            this.packageLogger
         );
         mdapi_options["testlevel"] = "NoTestRun";
       } else {
@@ -490,9 +483,8 @@ export default class InstallSourcePackageImpl {
           ` -------------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
             `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
             `-------------------------------------------------------------------------------------------------------------`,
-            null,
-            null,
-            LoggerLevel.DEBUG
+            LoggerLevel.WARN,
+            this.packageLogger
         );
         mdapi_options["testlevel"] = "RunLocalTests";
       }
