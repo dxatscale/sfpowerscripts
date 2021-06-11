@@ -36,8 +36,8 @@
 
 ## Community
 
-* [Maintainers](community/maintainers.md)
-* [Contributors](community/contributors.md)
 * [Contributing to sfpowerscripts](community/contributing-to-sfpowerscripts.md)
+* [Maintainers](https://docs.dxatscale.io/about-us/meet-our-team)
+* [Contributors](https://docs.dxatscale.io/about-us/contributors)
 * [Support](community/support.md)
 
