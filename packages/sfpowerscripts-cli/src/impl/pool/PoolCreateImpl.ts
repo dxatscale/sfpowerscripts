@@ -11,9 +11,7 @@ import ScratchOrgLimitsFetcher from "./services/fetchers/ScratchOrgLimitsFetcher
 import ScratchOrgInfoAssigner from "./services/updaters/ScratchOrgInfoAssigner";
 import * as rimraf from "rimraf";
 import * as fs from "fs-extra";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import PoolJobExecutor, { ScriptExecutionResult } from "./PoolJobExecutor";
-import src from "../..";
 
 
 
@@ -246,9 +244,9 @@ export default class PoolCreateImpl extends PoolBaseImpl
             scratchOrg.orgId
           );
 
-          // await this.deleteScratchOrgOperator.deleteScratchOrg(
-          //   [activeScratchOrgRecordId]
-          // );
+          await this.deleteScratchOrgOperator.deleteScratchOrg(
+            [activeScratchOrgRecordId]
+          );
           console.log(`Succesfully deleted scratchorg  ${scratchOrg.username}`);
         } catch (error) {
           console.log(
