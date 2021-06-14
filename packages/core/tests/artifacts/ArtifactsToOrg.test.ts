@@ -3,6 +3,7 @@ import child_process = require("child_process");
 import ArtifactInstallationStatusUpdater from "../../src/artifacts/ArtifactInstallationStatusUpdater";
 import ArtifactMigrator from "../../src/artifacts/ArtifactMigrator";
 import InstalledAritfactsFetcher from "../../src/artifacts/InstalledAritfactsFetcher";
+import { ConsoleLogger } from "../../src/logger/SFPLogger";
 import PackageMetadata from "../../src/PackageMetadata";
 
 describe("Fetch a list of sfpowerscripts artifacts from an org", () => {
@@ -247,7 +248,7 @@ describe("Update a sfpowerscripts artifact to an org",()=>{
      sourceVersion:"3232x232xc3e"
    }
 
-   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false);
+   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false,new ConsoleLogger());
    expect(result).toEqual(true);
 
   });
@@ -294,7 +295,7 @@ describe("Update a sfpowerscripts artifact to an org",()=>{
      sourceVersion:"3232x232xc3e"
    }
 
-   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false);
+   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false,new ConsoleLogger());
    expect(result).toEqual(true);
 
   });
@@ -337,7 +338,7 @@ describe("Update a sfpowerscripts artifact to an org",()=>{
    }
 
 
-   expect(ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false)).resolves.toBeFalsy;
+   expect(ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false,new ConsoleLogger())).resolves.toBeFalsy;
 
   });
 

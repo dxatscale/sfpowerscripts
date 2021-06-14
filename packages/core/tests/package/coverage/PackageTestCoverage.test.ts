@@ -2,6 +2,7 @@ import  SFPPackage  from "../../../src/package/SFPPackage";
 import PackageTestCoverage from "../../../src/package/coverage/PackageTestCoverage"
 
 import { jest, expect } from "@jest/globals";
+import { ConsoleLogger } from "../../../src/logger/SFPLogger";
 
 
 let packageType="Unlocked";
@@ -37,14 +38,14 @@ describe("Given a sfpowerscripts package andcode coverage report, a package cove
 
   it("should be able to provide the coverage of a provided unlocked package",async ()=>{  
          let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-         let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
+         let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage,new ConsoleLogger());
          expect (packageTestCoverage.getCurrentPackageTestCoverage()).toBe(88);
   });
 
 
   it("should able to validate whether the coverage of unlocked  package is above a certain threshold",async ()=>{  
     let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-    let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
+    let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage,new ConsoleLogger());
     let requiredCoverage=80;
     let result=packageTestCoverage.validateTestCoverage(requiredCoverage);
     expect (result.result).toBe(true);
@@ -59,7 +60,7 @@ describe("Given a sfpowerscripts package andcode coverage report, a package cove
 
 it("should able to validate whether the coverage of unlocked  package is above mandatory threshold",async ()=>{  
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage,new ConsoleLogger());
   let requiredCoverage=75;
   let result=packageTestCoverage.validateTestCoverage();
   expect (result.result).toBe(true);
@@ -76,7 +77,7 @@ it("should able to validate whether the coverage of unlocked  package is above m
 it("should be able to provide the coverage of a provided source package",async ()=>{  
   packageType="Source";
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage,new ConsoleLogger());
   expect (packageTestCoverage.getCurrentPackageTestCoverage()).toBe(88);
 });
 
@@ -84,7 +85,7 @@ it("should be able to provide the coverage of a provided source package",async (
 it("should able to validate whether the coverage of source  package is above a certain threshold",async ()=>{  
   packageType="Source";
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage,new ConsoleLogger());
   let requiredCoverage=80;
   let result=packageTestCoverage.validateTestCoverage(requiredCoverage);
   expect (result.result).toBe(true);
@@ -101,7 +102,7 @@ it("should able to validate whether the coverage of source  package is above a c
 it("should able to validate whether the coverage of source  package is above mandatory threshold",async ()=>{  
   packageType="Source";
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage,new ConsoleLogger());
   let requiredCoverage=75;
   let result=packageTestCoverage.validateTestCoverage();
   expect (result.result).toBe(true);

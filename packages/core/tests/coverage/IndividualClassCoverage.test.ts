@@ -1,17 +1,18 @@
 import IndividualClassCoverage from "../../src/coverage/IndividualClassCoverage";
 import { expect } from "@jest/globals";
+import { ConsoleLogger } from "../../src/logger/SFPLogger";
 
 
 describe("Given a test coverage report", () => {
 
  it("should be able to get a list of all classes and its test coverage",()=>{
-    let individualClasCoverage:IndividualClassCoverage = new IndividualClassCoverage(testCoverage);
+    let individualClasCoverage:IndividualClassCoverage = new IndividualClassCoverage(testCoverage,new ConsoleLogger());
     let expectedValue=[{"name":"CustomerServices","coveredPercent":87},{"name":"MarketServices","coveredPercent":100},{"name":"ReservationManagerController","coveredPercent":72},{"name":"ReservationManager","coveredPercent":93}];    
     expect(individualClasCoverage.getIndividualClassCoverage()).toEqual(expectedValue);
  });
 
  it("given a coverage threshold, provide a list of classes that do not satisfy the threshold",()=>{
-  let individualClasCoverage:IndividualClassCoverage = new IndividualClassCoverage(testCoverage);
+  let individualClasCoverage:IndividualClassCoverage = new IndividualClassCoverage(testCoverage,new ConsoleLogger());
   let validationResult = individualClasCoverage.validateIndividualClassCoverage(individualClasCoverage.getIndividualClassCoverage(),75);
   expect(validationResult.classesWithInvalidCoverage).toContainEqual({"name":"ReservationManagerController","coveredPercent":72});
  });
