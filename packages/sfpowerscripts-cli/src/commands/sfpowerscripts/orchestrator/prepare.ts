@@ -8,7 +8,7 @@ import * as fs from "fs-extra";
 import ScratchOrgInfoFetcher from "../../../impl/pool/services/fetchers/ScratchOrgInfoFetcher";
 import Ajv from "ajv";
 import path = require("path");
-import { PoolError, PoolErrorCodes } from "../../../impl/pool/PoolError";
+import { PoolErrorCodes } from "../../../impl/pool/PoolError";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 Messages.importMessagesDirectory(__dirname);

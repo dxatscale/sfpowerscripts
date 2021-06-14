@@ -13,7 +13,7 @@ import { PoolConfig } from "../../pool/PoolConfig";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import { PreparePool } from "../PreparePool";
 import { PoolError } from "../../pool/PoolError";
-import { Result ,ok,err} from "neverthrow"
+import { Result} from "neverthrow"
 
 
 

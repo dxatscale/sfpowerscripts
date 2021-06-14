@@ -1,5 +1,4 @@
 import { Org } from "@salesforce/core";
-import PreRequisiteCheckError from "./PreRequisiteCheckError";
 const retry = require("async-retry");
 import { Result,ok,err} from "neverthrow"
 import { PoolError, PoolErrorCodes } from "../PoolError";

@@ -280,7 +280,7 @@ export default class RelaxIPRange {
 
       if (!addall) {
         if (currentRange.constructor === Array) {
-          ipRangeToSet.concat(currentRange);
+          ipRangeToSet=ipRangeToSet.concat(currentRange);
         } else {
           ipRangeToSet.push(currentRange);
         }
