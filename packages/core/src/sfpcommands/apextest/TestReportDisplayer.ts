@@ -2,7 +2,7 @@ import {
   RunApexTestSuitesOption,
   TestOptions,
 } from "../../sfdxwrappers/TestOptions";
-import SFPLogger from "../../logger/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
 import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
 
 const Table = require("cli-table");
@@ -12,7 +12,7 @@ export class TestReportDisplayer {
 
   public printTestSummary(packageCoverage?: number): string {
     let apexTestReport = { ...this.apexTestReport };
-    SFPLogger.log("\n\n\n=== Test Summary");
+    SFPLogger.log("\n\n\n=== Test Summary",LoggerLevel.INFO,this.fileLogger);
     let table = new Table({
       head: ["Name", "Value"],
     });
@@ -41,7 +41,7 @@ export class TestReportDisplayer {
   }
 
   public printTestResults(): string {
-    SFPLogger.log("=== Test Results");
+    SFPLogger.log("=== Test Results",LoggerLevel.INFO,this.fileLogger);
 
     let table = new Table({
       head: ["Test Name", "Outcome", "Message", "Runtime (ms)"],
@@ -56,7 +56,7 @@ export class TestReportDisplayer {
       ]);
     });
 
-    SFPLogger.log(table.toString(),this.fileLogger);
+    SFPLogger.log(table.toString(),LoggerLevel.INFO,this.fileLogger);
     return table.toString();
   }
 
@@ -65,7 +65,7 @@ export class TestReportDisplayer {
     classesCovered?: { name: string; coveredPercent: number }[],
     classesWithInvalidCoverage?: { name: string; coveredPercent: number }[]
   ): { classesCoveredTable: string; classInvalidCoverageTable?: string } {
-    SFPLogger.log("\n\n=== Test Coverage",this.fileLogger);
+    SFPLogger.log("\n\n=== Test Coverage",LoggerLevel.INFO,this.fileLogger);
     let classesCoveredTable
     if(classesCovered) {
      classesCoveredTable = this.printIndividualClassCoverage(classesCovered); }
@@ -84,6 +84,8 @@ export class TestReportDisplayer {
   ): string {
     SFPLogger.log(
       `The following classes do not satisfy the ${coverageThreshold}% code coverage requirement:`,
+      LoggerLevel.INFO,
+      this.fileLogger
     );
 
     return this.printIndividualClassCoverage(classesWithInvalidCoverage);
@@ -100,7 +102,7 @@ export class TestReportDisplayer {
       table.push([cls.name || "", cls.coveredPercent !== null ? cls.coveredPercent : "N/A"]);
     });
 
-    SFPLogger.log(table.toString(),this.fileLogger);
+    SFPLogger.log(table.toString(),LoggerLevel.INFO,this.fileLogger);
     return table.toString();
   }
 }

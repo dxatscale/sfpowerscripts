@@ -9,7 +9,7 @@
       "title": "Tag of the pool",
       "type": "string",
       "description": "Tag or name to identify the scratch org pool"
-    }, 
+    },
     "expiry": {
       "title": "expiry",
       "type": "integer",
@@ -45,100 +45,95 @@
     },
     "cipool": {
       "type": "object",
-      "properties":
-      {
-      "installAll": {
+      "properties": {
+        "installAll": {
           "type": "boolean"
-      },  
-      "installAsSourcePackages": {
-      "type": "boolean"
-       },
-       
-        "retryOnFailure": {
-            "type": "boolean"
-        },  
-      "fetchArtifacts": {
-      "type": "object",
-      "title": "Fetch Artifacts using below mechanism",
-      "properties": 
-        {
-          "artifactFetchScript": {
-            "type": "string",
-             "title": "Path to the script to fetch artifacts"
-          },
-          "npm": {
-            "type": "object",
-            "properties": {
-              "scope": {
-                "type": "string",
-                "title": "Scope of your npm packages"
-              },
-              "npmtag": {
-                "type": "string",
-                "title": "Tag of your npm packages, such as LATEST, develop, alpha etc"
-              },
-              "npmrcPath": {
-                "type": "string",
-                "title": "Path to npmrc file"
-              }
-            },
-            "required": ["scope", "npmtag","npmrc"]
-          }
         },
-        "oneOf": [
-          { "required":["artifactFetchScript"]},
-          { "required":["npm"]}
-        ]
-       }
-      
+        "installAsSourcePackages": {
+          "type": "boolean"
+        },
+
+        "retryOnFailure": {
+          "type": "boolean"
+        },
+        "fetchArtifacts": {
+          "type": "object",
+          "title": "Fetch Artifacts using below mechanism",
+          "properties": {
+            "artifactFetchScript": {
+              "type": "string",
+              "title": "Path to the script to fetch artifacts"
+            },
+            "npm": {
+              "type": "object",
+              "properties": {
+                "scope": {
+                  "type": "string",
+                  "title": "Scope of your npm packages"
+                },
+                "npmtag": {
+                  "type": "string",
+                  "title": "Tag of your npm packages, such as LATEST, develop, alpha etc"
+                },
+                "npmrcPath": {
+                  "type": "string",
+                  "title": "Path to npmrc file"
+                }
+              },
+              "required": ["scope", "npmtag", "npmrc"]
+            }
+          },
+          "oneOf": [
+            { "required": ["artifactFetchScript"] },
+            { "required": ["npm"] }
+          ]
+        }
       }
     },
-   "devpool":
-   {
-    "type": "object",
-    "properties":
-    {
-      "relaxAllIPRanges": {
-        "type": "boolean",
-        "title": "Relax all IP Ranges"
+    "devpool": {
+      "type": "object",
+      "properties": {
+        "relaxAllIPRanges": {
+          "type": "boolean",
+          "title": "Relax all IP Ranges"
+        },
+        "ipRangesToBeRelaxed": {
+          "type": "array",
+          "title": "ip ranges to be relaxed"
+        },
+        "scriptToExecute": {
+          "type": "string",
+          "title": "Path to the script to be executed"
+        },
+        "pushSource": {
+          "type": "boolean",
+          "title": "Push source to the scratch org using source:push"
+        }
       },
-      "ipRangesToBeRelaxed": {
-        "type": "array",
-        "title": "ip ranges to be relaxed"
-      },
-      "scriptToExecute": {
-        "type": "string",
-        "title": "Path to the script to be executed"
-      },
-      "pushSource": {
-        "type": "boolean",
-        "title": "Push source to the scratch org using source:push"
-      }
-    },
-    "oneOf": [ 
-      {
-       "required":["scriptToExecute","relaxAllIPRanges"]
-      },
-      {
-        "required":["scriptToExecute","ipRangesToBeRelaxed"]
-       },
-      {
-        "required":["pushSource","relaxAllIPRanges"]
-      },
-      {
-        "required":["pushSource","ipRangesToBeRelaxed"]
-      }
-    ]
-   }
+      "oneOf": [
+        {
+          "required": ["scriptToExecute", "relaxAllIPRanges"]
+        },
+        {
+          "required": ["scriptToExecute", "ipRangesToBeRelaxed"]
+        },
+        {
+          "required": ["pushSource", "relaxAllIPRanges"]
+        },
+        {
+          "required": ["pushSource", "ipRangesToBeRelaxed"]
+        }
+      ]
+    }
   },
- 
-  "oneOf": [ 
+
+  "oneOf": [
     {
-     "required":["cipool"]
+      "required": ["cipool"]
     },
     {
-      "required":["devpool"]
+      "required": ["devpool"]
     }
   ],
-  "required": ["tag","maxallocation"]
+  "required": ["tag", "maxallocation"]
 }

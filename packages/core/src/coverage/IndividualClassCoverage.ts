@@ -1,7 +1,7 @@
-import SFPLogger from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
 export default class IndividualClassCoverage {
-  public constructor(private codeCoverage: any) {}
+  public constructor(private codeCoverage: any,private logger:Logger) {}
 
   public getIndividualClassCoverage(): ClassCoverage[] {
     let individualClassCoverage: {
@@ -26,12 +26,14 @@ export default class IndividualClassCoverage {
     classesWithInvalidCoverage?: ClassCoverage[];
   } {
     if (coverageThreshold < 75) {
-      SFPLogger.log("Setting minimum coverage percentage to 75%.");
+      SFPLogger.log("Setting minimum coverage percentage to 75%.",LoggerLevel.INFO,this.logger);
       coverageThreshold = 75;
     }
 
     SFPLogger.log(
-      `Validating individual classes for code coverage greater than ${coverageThreshold} percent`
+      `Validating individual classes for code coverage greater than ${coverageThreshold} percent`,
+      LoggerLevel.INFO,
+      this.logger
     );
     let classesWithInvalidCoverage = individualClassCoverage.filter((cls) => {
       return cls.coveredPercent < coverageThreshold;

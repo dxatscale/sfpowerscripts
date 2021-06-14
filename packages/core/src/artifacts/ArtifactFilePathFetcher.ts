@@ -1,6 +1,6 @@
 import path = require("path");
 import * as fs from "fs-extra";
-import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 const glob = require("glob");
 import AdmZip = require("adm-zip");
 import semver = require("semver");
@@ -15,7 +15,9 @@ export default class ArtifactFilePathFetcher {
    */
   public static fetchArtifactFilePaths(
     artifactDirectory: string,
-    sfdx_package?: string
+    sfdx_package?: string,
+    logger?:Logger
+
   ): ArtifactFilePaths[] {
     let result: ArtifactFilePaths[] = [];
 
@@ -30,7 +32,7 @@ export default class ArtifactFilePathFetcher {
       artifacts = ArtifactFilePathFetcher.findArtifactMetadata(artifactDirectory, sfdx_package);
     }
 
-    SFPLogger.log(`Artifacts: ${JSON.stringify(artifacts)}`,LoggerLevel.INFO);
+    SFPLogger.log(`Artifacts: ${JSON.stringify(artifacts)}`,LoggerLevel.INFO,logger);
 
     for(let artifact of artifacts) {
       let artifactFilePaths: ArtifactFilePaths

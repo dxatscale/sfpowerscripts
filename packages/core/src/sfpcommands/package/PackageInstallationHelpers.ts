@@ -1,11 +1,13 @@
 import child_process = require("child_process");
+import { Logger } from "../../logger/SFPLogger";
 import AssignPermissionSetsImpl from "../permsets/AssignPermissionSetsImpl";
 
 export default class PackageInstallationHelpers {
   static executeScript(
     script: string,
     sfdx_package: string,
-    targetOrg: string
+    targetOrg: string,
+    packageLogger:Logger
   ) {
     let cmd: string;
     if (process.platform !== "win32") {
@@ -23,12 +25,14 @@ export default class PackageInstallationHelpers {
   static applyPermsets(
     permsets: string[],
     targetusername: string,
-    sourceDirectory: string
+    sourceDirectory: string,
+    packageLogger:Logger
   ) {
     let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
       targetusername,
       permsets,
-      sourceDirectory
+      sourceDirectory,
+      packageLogger
     );
 
     let results = assignPermissionSetsImpl.exec();

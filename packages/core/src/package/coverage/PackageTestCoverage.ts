@@ -1,4 +1,4 @@
-import SFPLogger from "../../logger/SFPLogger";
+import SFPLogger, { Logger } from "../../logger/SFPLogger";
 import IndividualClassCoverage from "../../coverage/IndividualClassCoverage";
 import  SFPPackage  from "../SFPPackage";
 
@@ -8,10 +8,12 @@ export default class PackageTestCoverage {
 
   public constructor(
     private pkg: SFPPackage,
-    private codeCoverage: any
+    private codeCoverage: any,
+    private logger:Logger
   ) {
     this.individualClassCoverage = new IndividualClassCoverage(
-      this.codeCoverage
+      this.codeCoverage,
+      this.logger
     );
   }
 

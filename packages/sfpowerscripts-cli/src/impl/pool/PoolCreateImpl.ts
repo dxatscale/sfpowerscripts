@@ -1,6 +1,5 @@
 import { Org } from "@salesforce/core";
 import Bottleneck from "bottleneck";
-import { EOL } from "os";
 import CreateScratchOrg from "./operations/CreateScratchOrg";
 import DeleteScratchOrg from "./operations/DeleteScratchOrg";
 import { PoolConfig} from "./PoolConfig";
@@ -12,6 +11,11 @@ import ScratchOrgInfoAssigner from "./services/updaters/ScratchOrgInfoAssigner";
 import * as rimraf from "rimraf";
 import * as fs from "fs-extra";
 import PoolJobExecutor, { ScriptExecutionResult } from "./PoolJobExecutor";
+import { PoolError, PoolErrorCodes } from "./PoolError";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { Result ,ok,err} from "neverthrow"
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import { EOL } from "os";
 
 
 
@@ -46,7 +50,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
   }
 
 
-  protected async onExec(): Promise<PoolConfig> {
+  protected async onExec(): Promise<Result<PoolConfig,PoolError>> {
 
     await this.hubOrg.refreshAuth();
 
@@ -69,28 +73,21 @@ export default class PoolCreateImpl extends PoolBaseImpl
 
     if (this.totalToBeAllocated === 0) {
       if (this.limits.ActiveScratchOrgs.Remaining > 0) {
-        console.log(
-          `The tag provided ${this.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`
-        );
+        
+        return err({
+          success: 0,
+          failed: 0,
+          message: `The tag provided ${this.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`,
+          errorCode: PoolErrorCodes.Max_Capacity,
+        });
 
-        //throw MaxCapacityError
-        // return {
-        //   totalallocated: this.totalToBeAllocated,
-        //   success: 0,
-        //   failed: 0,
-        //   errorCode: "Max_Capacity",
-        // };
       } else {
-        console.log(
-          `There is no capacity to create a pool at this time, Please try again later`
-        );
-        // throw NoCapacityError
-        // return {
-        //   totalallocated: this.totalToBeAllocated,
-        //   success: 0,
-        //   failed: 0,
-        //   errorCode: "No_Capacity",
-        // };
+        return err({
+          success: 0,
+          failed: 0,
+          message: `There is no capacity to create a pool at this time, Please try again later`,
+          errorCode: PoolErrorCodes.No_Capacity
+        });
       }
     }
 
@@ -111,11 +108,22 @@ export default class PoolCreateImpl extends PoolBaseImpl
          );
          scriptExecPromises.push(result);
        }
+
+  
      await Promise.all(scriptExecPromises);
  
      await this.finalizeGeneratedScratchOrgs();
- 
-     return this.pool;
+
+     if(this.pool.scratchOrgs.length==0)
+     {
+       return err({
+        success: 0,
+        failed: this.pool.failedToCreate,
+        message: `All requested scratch orgs failed to provision, Please check your code or config`,
+        errorCode: PoolErrorCodes.UnableToProvisionAny,
+      });
+     }
+     return ok(this.pool);
   }
 
  
@@ -156,15 +164,14 @@ export default class PoolCreateImpl extends PoolBaseImpl
       pool.to_allocate = remainingScratchOrgs;
     }
 
-    console.log(
-      `Current Allocation of ScratchOrgs in the pool ${this.pool.tag}: ` +
-      pool.current_allocation
+    SFPLogger.log(
+      `${EOL}Current Allocation of ScratchOrgs in the pool ${this.pool.tag}: ` +
+      pool.current_allocation, LoggerLevel.INFO
     );
-    console.log(
-      "Remaining Active scratchOrgs in the org: " + remainingScratchOrgs
+    SFPLogger.log(
+      "Remaining Active scratchOrgs in the org: " + remainingScratchOrgs,LoggerLevel.INFO
     );
-    console.log("ScratchOrgs to be allocated: " + pool.to_allocate);
-
+    SFPLogger.log("ScratchOrgs to be allocated: " + pool.to_allocate,LoggerLevel.INFO);
     return pool.to_allocate;
   }
 
@@ -173,8 +180,9 @@ export default class PoolCreateImpl extends PoolBaseImpl
   
       let count = 1;
       this.pool.scratchOrgs = new Array<ScratchOrg>();
+     
       for (let i = 0; i < this.pool.to_allocate; i++) {
-        console.log(
+        SFPLogger.log(
           `Creating Scratch  Org  ${count} of ${this.totalToBeAllocated}..`
         );
         try {
@@ -187,8 +195,8 @@ export default class PoolCreateImpl extends PoolBaseImpl
           this.pool.scratchOrgs.push(scratchOrg);
           this.totalAllocated++;
         } catch (error) {
-          console.log(error);
-          console.log(`Unable to provision scratch org  ${count} ..   `);
+          SFPLogger.log(error,LoggerLevel.ERROR);
+          SFPLogger.log(`Unable to provision scratch org  ${count} ..   `,LoggerLevel.ERROR);
         }
         count++;
       }
@@ -231,12 +239,11 @@ export default class PoolCreateImpl extends PoolBaseImpl
           continue;
         }
 
-        console.log(EOL);
-        console.log(
-          `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias} due to`
-        );
-        console.log(scratchOrg.failureMessage);
 
+        SFPLogger.log(
+          `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias} due to ${scratchOrg.failureMessage}`,LoggerLevel.ERROR
+        );
+  
         try {
           //Delete scratchorgs that failed to execute script
 
@@ -249,11 +256,12 @@ export default class PoolCreateImpl extends PoolBaseImpl
           );
           console.log(`Succesfully deleted scratchorg  ${scratchOrg.username}`);
         } catch (error) {
-          console.log(
-            `Unable to delete the scratchorg ${scratchOrg.username}.. due to\n`,error
+          SFPLogger.log(
+            `Unable to delete the scratchorg ${scratchOrg.username}.. due to\n`+error,
+            LoggerLevel.ERROR
           );
         }
-        console.log(EOL);
+
         this.pool.failedToCreate+=1;
         this.pool.scratchOrgs.splice(i,1);
       }
@@ -266,34 +274,37 @@ export default class PoolCreateImpl extends PoolBaseImpl
     scratchOrg: ScratchOrg
   ): Promise<ScratchOrg> {
     
-    console.log(
-      `Executing script for ${scratchOrg.alias} with username: ${scratchOrg.username}`
+    SFPLogger.log(
+      `Executing Preparation Job ${scratchOrg.alias} with username: ${scratchOrg.username}`,LoggerLevel.INFO
     );
 
-    console.log(
-      `Script Execution result is being written to .sfpowerscripts/prepare_logs/${scratchOrg.alias}.log, Please note this will take a significant time depending on the  script being executed`
-    );
-
-
-  
+    let startTime = Date.now();
     let result = await this.poolScriptExecutor.execute(scratchOrg,this.hubOrg);
 
-    if (result.isSuccess) {
+    if (result.isOk()) {
       scratchOrg.isScriptExecuted = true;
       let submitInfoToPool = await this.scratchOrgInfoAssigner.setScratchOrgInfo(
         {
           Id: scratchOrg.recordId,
-          Pooltag__c: this.pool.tag,
           Allocation_status__c:  "Available"
         }
       );
       if (!submitInfoToPool) {
         scratchOrg.isScriptExecuted = false;
         scratchOrg.failureMessage = "Unable to set the scratch org record in Pool";
+        SFPStatsSender.logCount("prepare.org.succeeded");
       }
+      else
+      {
+        SFPStatsSender.logCount("prepare.org.failure");
+      }
+
+
+      SFPStatsSender.logElapsedTime("prepare.org.singlejob",Date.now()-startTime);
     } else {
       scratchOrg.isScriptExecuted = false;
-      scratchOrg.failureMessage = result.message;
+      scratchOrg.failureMessage = result.error.message;
+      SFPStatsSender.logCount("prepare.org.failed");
     }
     
     return scratchOrg;

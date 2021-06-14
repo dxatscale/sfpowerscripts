@@ -23,7 +23,6 @@
     "fs-extra": "^9.0.1",
     "glob": "^7.1.6",
     "handlebars": "^4.7.7",
-    "hook-std": "^2.0.0",
     "js-yaml": "^4.0.0",
     "lodash": "^4.17.21",
     "markdown-table": "^2.0.0",
@@ -32,13 +31,13 @@
     "object-hash": "^2.1.1",
     "puppeteer": "^7.1.0",
     "rimraf": "^3.0.2",
-    "salesforce-alm": "^51.6.26",
     "semver": "^7.3.4",
     "sfdc-soup": "^1.0.1",
     "shelljs": "0.8.4",
     "simple-git": "^2.31.0",
     "snyk": "^1.586.0",
-    "ts-node": "^9.0.0"
+    "ts-node": "^9.0.0",
+    "neverthrow": "^4.2.1"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.4.33",

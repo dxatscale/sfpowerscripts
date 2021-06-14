@@ -83,8 +83,6 @@ export default class ValidateImpl {
 
       await this.buildChangedSourcePackages(packagesToCommits);
 
-      // Un-suppress logs for deployment
-      SFPLogger.logLevel = LoggerLevel.INFO;
 
       let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 

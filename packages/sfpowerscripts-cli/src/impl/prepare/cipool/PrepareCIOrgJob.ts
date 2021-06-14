@@ -1,68 +1,66 @@
-
 import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
-import * as fs from "fs-extra";
-import DeployImpl, { DeploymentMode, DeployProps } from "../../deploy/DeployImpl";
-import { EOL } from "os";
+import DeployImpl, {
+  DeploymentMode,
+  DeployProps,
+} from "../../deploy/DeployImpl";
 import SFPLogger, {
+  FileLogger,
   LoggerLevel,
 } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Stage } from "../../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
-import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl"
+import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
 import ScratchOrg from "../../pool/ScratchOrg";
-import { ScriptExecutionResult }  from "../../pool/PoolJobExecutor";
+import PoolJobExecutor, {
+  JobError,
+  ScriptExecutionResult,
+} from "../../pool/PoolJobExecutor";
 import { Org } from "@salesforce/core";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { PoolConfig } from "../../pool/PoolConfig";
-import PoolJobExecutor from "../../../../lib/impl/pool/PoolJobExecutor";
+import { Result, ok, err } from "neverthrow";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
-export default class PrepareASingleOrgImpl implements PoolJobExecutor {
- 
-  
+export default class PrepareCIOrgJob extends PoolJobExecutor {
   private checkPointPackages: string[];
 
-  public constructor(
-    private pool:PoolConfig
-  ) {}
+  public constructor(protected pool: PoolConfig) {
+    super(pool);
+  }
 
-
-
-  public async execute(scratchOrg:ScratchOrg,hubOrg:Org): Promise<ScriptExecutionResult> {
+  async executeJob(
+    scratchOrg: ScratchOrg,
+    hubOrg: Org,
+    logToFilePath: string
+  ): Promise<Result<ScriptExecutionResult, JobError>> {
     //Install sfpowerscripts Artifact
 
     try {
+      
+      let packageLogger: FileLogger = new FileLogger(logToFilePath);
+      this.checkPointPackages = this.getcheckPointPackages(packageLogger);
 
-      this.checkPointPackages=this.getcheckPointPackages();
-
-      //Create file logger
-      fs.outputFileSync(
-        `.sfpowerscripts/prepare_logs/${scratchOrg.alias}.log`,
-        `sfpowerscripts--log${EOL}`
-      );
-
-      let packageLogger: any = `.sfpowerscripts/prepare_logs/${scratchOrg.alias}.log`;
       SFPLogger.log(
         `Installing sfpowerscripts_artifact package to the ${scratchOrg.alias}`,
         null,
         packageLogger
       );
 
-      let installUnlockedPackageImpl:InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(null,
-               scratchOrg.username,
-               process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
+      let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
+        null,
+        scratchOrg.username,
+        process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
           ? process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
           : SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
-           "60");
+        "60"
+      );
 
-     await installUnlockedPackageImpl.exec(true);
+      await installUnlockedPackageImpl.exec(true);
 
-
-      let startTime = Date.now();
       SFPLogger.log(
         `Installing package depedencies to the ${scratchOrg.alias}`,
-        null,
+        LoggerLevel.INFO,
         packageLogger
       );
       SFPLogger.log(
@@ -84,7 +82,7 @@ export default class PrepareASingleOrgImpl implements PoolJobExecutor {
         throw new Error(installationResult.message);
       }
 
-      console.log(
+      SFPLogger.log(
         `Successfully completed Installing Package Dependencies of this repo in ${scratchOrg.alias}`
       );
 
@@ -104,35 +102,25 @@ export default class PrepareASingleOrgImpl implements PoolJobExecutor {
               deploymentResult,
               packageLogger
             );
-      } else {
-        //Send succeeded metrics when everything is in when no install is activated
-        SFPStatsSender.logCount("prepare.org.succeeded");
       }
 
-      return {
-        status: "success",
-        isSuccess: true,
-        message: "Succesfully Created Scratch Org",
-        scratchOrgUsername: scratchOrg.username,
-      };
+      return ok({ scratchOrgUsername: scratchOrg.username });
     } catch (error) {
-      SFPStatsSender.logCount("prepare.org.failed");
-      return {
-        status: "failure",
-        isSuccess: false,
+      return err({
         message: error.message,
         scratchOrgUsername: scratchOrg.username,
-      };
+      });
     }
   }
 
-  private async deployAllPackagesInTheRepo(scratchOrg:ScratchOrg,packageLogger: any) {
-    SFPLogger.log(
-      `Deploying all packages in the repo to  ${scratchOrg.alias}`
-    );
+  private async deployAllPackagesInTheRepo(
+    scratchOrg: ScratchOrg,
+    packageLogger: any
+  ) {
+    SFPLogger.log(`Deploying all packages in the repo to  ${scratchOrg.alias}`);
     SFPLogger.log(
       `Deploying all packages in the repo to  ${scratchOrg.alias}`,
-      null,
+      LoggerLevel.INFO,
       packageLogger
     );
 
@@ -159,7 +147,7 @@ export default class PrepareASingleOrgImpl implements PoolJobExecutor {
   }
 
   private handleDeploymentErrorsForFullDeployment(
-    scratchOrg:ScratchOrg,
+    scratchOrg: ScratchOrg,
     deploymentResult: {
       deployed: string[];
       failed: string[];
@@ -174,7 +162,7 @@ export default class PrepareASingleOrgImpl implements PoolJobExecutor {
       SFPLogger.log(
         `Following Packages failed to deploy in ${scratchOrg.alias}`,
         LoggerLevel.INFO,
-        packageLogger,
+        packageLogger
       );
       SFPLogger.log(
         JSON.stringify(deploymentResult.failed),
@@ -189,14 +177,11 @@ export default class PrepareASingleOrgImpl implements PoolJobExecutor {
       throw new Error(
         "Following Packages failed to deploy:" + deploymentResult.failed
       );
-    } else {
-      //All good send succeeded metrics
-      SFPStatsSender.logCount("prepare.org.succeeded");
     }
   }
 
   private handleDeploymentErrorsForPartialDeployment(
-    scratchOrg:ScratchOrg,
+    scratchOrg: ScratchOrg,
     deploymentResult: {
       deployed: string[];
       failed: string[];
@@ -230,15 +215,12 @@ export default class PrepareASingleOrgImpl implements PoolJobExecutor {
           packageLogger
         );
       }
-    } else {
-      //All good send succeeded metrics
-      SFPStatsSender.logCount("prepare.org.succeeded");
     }
   }
 
-   //Fetch all checkpoints
-   private getcheckPointPackages() {
-    console.log("Fetching checkpoints for prepare if any.....");
+  //Fetch all checkpoints
+  private getcheckPointPackages(logger:FileLogger) {
+    SFPLogger.log("Fetching checkpoints for prepare if any.....",LoggerLevel.INFO,logger);
     let projectConfig = ProjectConfig.getSFDXPackageManifest(null);
     let checkPointPackages = [];
     projectConfig["packageDirectories"].forEach((pkg) => {
@@ -247,5 +229,3 @@ export default class PrepareASingleOrgImpl implements PoolJobExecutor {
     return checkPointPackages;
   }
 }
-
-

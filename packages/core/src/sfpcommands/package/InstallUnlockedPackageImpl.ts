@@ -46,38 +46,40 @@ export default class InstallUnlockedPackageImpl {
             PackageInstallationHelpers.executeScript(
               preDeploymentScript,
               this.packageMetadata.package_name,
-              this.targetusername
+              this.targetusername,
+              this.packageLogger
             );
           }
 
           if (this.packageMetadata.assignPermSetsPreDeployment) {
             SFPLogger.log(
               "Assigning permission sets before deployment:",
-              null,
+              LoggerLevel.INFO,
               this.packageLogger
             );
 
             PackageInstallationHelpers.applyPermsets(
               this.packageMetadata.assignPermSetsPreDeployment,
               this.targetusername,
-              this.sourceDirectory
+              this.sourceDirectory,
+              this.packageLogger
             );
           }
           
         }
 
             //Print Metadata carried in the package
-         PackageMetadataPrinter.printMetadataToDeploy(this.packageMetadata?.payload);
+         PackageMetadataPrinter.printMetadataToDeploy(this.packageMetadata?.payload,this.packageLogger);
  
         let command = this.buildPackageInstallCommand();
         let child = child_process.exec(command);
 
         child.stderr.on("data", (data) => {
-          SFPLogger.log(data.toString(),null,this.packageLogger);
+          SFPLogger.log(data.toString(),LoggerLevel.INFO,this.packageLogger);
         });
 
         child.stdout.on("data", (data) => {
-          SFPLogger.log(data.toString(),null,this.packageLogger);
+          SFPLogger.log(data.toString(),LoggerLevel.INFO,this.packageLogger);
         });
 
 
@@ -96,21 +98,23 @@ export default class InstallUnlockedPackageImpl {
             PackageInstallationHelpers.executeScript(
               postDeploymentScript,
               this.packageMetadata.package_name,
-              this.targetusername
+              this.targetusername,
+              this.packageLogger
             );
           }
 
           if (this.packageMetadata.assignPermSetsPostDeployment) {
             SFPLogger.log(
               "Assigning permission sets after deployment:",
-              null,
+              LoggerLevel.INFO,
               this.packageLogger
             );
 
             PackageInstallationHelpers.applyPermsets(
               this.packageMetadata.assignPermSetsPostDeployment,
               this.targetusername,
-              this.sourceDirectory
+              this.sourceDirectory,
+              this.packageLogger
             )
           }
         }
@@ -119,7 +123,8 @@ export default class InstallUnlockedPackageImpl {
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
           this.targetusername,
           this.packageMetadata,
-          false
+          false,
+          this.packageLogger
         );
 
 

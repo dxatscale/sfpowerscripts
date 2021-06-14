@@ -15,7 +15,7 @@ import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcomma
 import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateDataPackageImpl"
 import BuildCollections from "./BuildCollections";
 const Table = require("cli-table");
-import { VoidLogger} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
+import { ConsoleLogger, VoidLogger} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -233,6 +233,7 @@ export default class BuildImpl {
       ).type;
 
       let diffImpl: PackageDiffImpl = new PackageDiffImpl(
+        new ConsoleLogger(),
         pkg,
         this.props.projectDirectory,
         type == "Data" || type == "Source" ? null : this.props.configFilePath,

@@ -8,6 +8,7 @@ import { exec } from "shelljs";
 import * as fs from "fs-extra"
 import path = require("path");
 import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateUnlockedPackageImpl";
+import { ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -131,6 +132,7 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
       let runBuild: boolean;
       if (this.flags.diffcheck) {
         let packageDiffImpl = new PackageDiffImpl(
+          new ConsoleLogger(),
           sfdx_package,
           null,
           config_file_path

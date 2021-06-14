@@ -5,7 +5,7 @@ import fs = require("fs");
 import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
 import { PackageInstallationResult, PackageInstallationStatus } from "../../package/PackageInstallationResult";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger, { Logger } from "../../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
 import PackageInstallationHelpers from "./PackageInstallationHelpers";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
 import SFPStatsSender from "../../stats/SFPStatsSender";
@@ -74,7 +74,8 @@ export default class InstallDataPackageImpl {
         PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,
-          this.targetusername
+          this.targetusername,
+          this.packageLogger
         );
       }
 
@@ -88,7 +89,8 @@ export default class InstallDataPackageImpl {
         PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPreDeployment,
           this.targetusername,
-          this.sourceDirectory
+          this.sourceDirectory,
+          this.packageLogger
         );
       }
 
@@ -120,28 +122,31 @@ export default class InstallDataPackageImpl {
         PackageInstallationHelpers.executeScript(
           postDeploymentScript,
           this.sfdx_package,
-          this.targetusername
+          this.targetusername,
+          this.packageLogger
         );
       }
 
       if (this.packageMetadata.assignPermSetsPostDeployment) {
         SFPLogger.log(
           "Assigning permission sets after deployment:",
-          null,
+          LoggerLevel.INFO,
           this.packageLogger
         );
 
         PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPostDeployment,
           this.targetusername,
-          this.sourceDirectory
+          this.sourceDirectory,
+          this.packageLogger
         );
       }
 
       await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
         this.targetusername,
         this.packageMetadata,
-        this.isPackageCheckHandledByCaller
+        this.isPackageCheckHandledByCaller,
+        this.packageLogger
       );
 
       let elapsedTime = Date.now() - startTime;

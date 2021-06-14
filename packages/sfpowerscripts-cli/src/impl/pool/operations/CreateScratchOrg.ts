@@ -42,6 +42,7 @@ export default class CreateScratchOrg {
       result = await createScratchOrgImpl.exec(true);
     } catch (error) {
       //Poolcreateimpl to handle
+      console.log("EE",error);
       throw error;
     }
 

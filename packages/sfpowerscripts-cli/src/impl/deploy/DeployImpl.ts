@@ -17,6 +17,7 @@ import {
   PackageInstallationStatus,
 } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import SFPLogger, {
+  Logger,
   LoggerLevel,
 } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { EOL } from "os";
@@ -47,7 +48,7 @@ export interface DeployProps {
   coverageThreshold?: number;
   waitTime: number;
   tags?: any;
-  packageLogger?: any;
+  packageLogger?: Logger;
   currentStage?: Stage;
   baselineOrg?: string;
   isDryRun?: boolean;
@@ -71,7 +72,9 @@ export default class DeployImpl {
     let testFailure: string;
     try {
       let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-        this.props.artifactDir
+        this.props.artifactDir,
+        null,
+        this.props.packageLogger
       );
 
       if (artifacts.length === 0)
@@ -414,15 +417,15 @@ export default class DeployImpl {
 
   private printOpenLoggingGroup(message: string, pkg?: string) {
     if (this.props.logsGroupSymbol?.[0])
-      console.log(
-        `${this.props.logsGroupSymbol[0]} ${message}   ${(pkg ? pkg : "")}`
+      SFPLogger.log(
+        `${this.props.logsGroupSymbol[0]} ${message}   ${(pkg ? pkg : "")}`,LoggerLevel.INFO,this.props.packageLogger
       );
   }
 
   private printClosingLoggingGroup() {
     if (this.props.logsGroupSymbol?.[1])
-      console.log(
-        this.props.logsGroupSymbol[1])
+      SFPLogger.log(
+        this.props.logsGroupSymbol[1],LoggerLevel.INFO,this.props.packageLogger)
   }
 
   /**
@@ -670,10 +673,10 @@ export default class DeployImpl {
     message: string;
   }> {
     let sfPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
+      this.props.packageLogger,
       null,
       sfdx_package,
-      null,
-      this.props.packageLogger
+      null
     );
     let testOptions: TestOptions = new RunAllTestsInPackageOptions(
       sfPackage,
@@ -690,7 +693,8 @@ export default class DeployImpl {
       targetUsername,
       testOptions,
       testCoverageOptions,
-      null
+      null,
+      this.props.packageLogger
     );
 
     return triggerApexTests.exec();

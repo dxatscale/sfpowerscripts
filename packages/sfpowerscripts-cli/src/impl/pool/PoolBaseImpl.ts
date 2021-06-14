@@ -3,6 +3,8 @@ import PreRequisiteCheck from "./prequisitecheck/PreRequisiteCheck";
 
 
 
+
+
 export  abstract class PoolBaseImpl
 {
 
@@ -14,8 +16,11 @@ export  abstract class PoolBaseImpl
   }
 
   public async execute():Promise<any> {
-    new PreRequisiteCheck(this.hubOrg).checkForPrerequisites();
-    return this.onExec();
+    let prerequisiteResult = new PreRequisiteCheck(this.hubOrg).checkForPrerequisites();
+    if((await prerequisiteResult).isErr())
+     return prerequisiteResult;
+    else
+      return this.onExec();
   }
 
   protected abstract onExec():Promise<any>;

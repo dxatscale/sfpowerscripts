@@ -85,7 +85,8 @@ export default class InstallSourcePackageImpl {
         PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,
-          this.targetusername
+          this.targetusername,
+          this.packageLogger
         );
       }
 
@@ -106,7 +107,8 @@ export default class InstallSourcePackageImpl {
         PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPreDeployment,
           this.targetusername,
-          this.sourceDirectory
+          this.sourceDirectory,
+          this.packageLogger
         );
       }
 
@@ -195,7 +197,8 @@ export default class InstallSourcePackageImpl {
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
           this.targetusername,
           this.packageMetadata,
-          this.isPackageCheckHandledByCaller
+          this.isPackageCheckHandledByCaller,
+          this.packageLogger
         );
 
       } else if (result.result === false) {
@@ -229,7 +232,8 @@ export default class InstallSourcePackageImpl {
         PackageInstallationHelpers.executeScript(
           postDeploymentScript,
           this.sfdx_package,
-          this.targetusername
+          this.targetusername,
+          this.packageLogger
         );
       }
 
@@ -243,7 +247,8 @@ export default class InstallSourcePackageImpl {
         PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPostDeployment,
           this.targetusername,
-          this.sourceDirectory
+          this.sourceDirectory,
+          this.packageLogger
         );
       }
 
@@ -454,7 +459,7 @@ export default class InstallSourcePackageImpl {
     if (skipTest) {
       let result;
       try {
-        result = await OrgDetails.getOrgDetails(target_org);
+        result = await OrgDetails.getOrgDetails(target_org,this.packageLogger);
       } catch (err) {
         SFPLogger.log(
           ` -------------------------WARNING! SKIPPING TESTS AS ORG TYPE CANNOT BE DETERMINED! ------------------------------------${EOL}` +
@@ -530,7 +535,7 @@ export default class InstallSourcePackageImpl {
         path.join(sourceDirectory, ".forceignore")
       );
     else {
-      SFPLogger.log(`${pathToReplacementForceIgnore} does not exist`, null, this.packageLogger);
+      SFPLogger.log(`${pathToReplacementForceIgnore} does not exist`, LoggerLevel.INFO, this.packageLogger);
       SFPLogger.log("Package installation will continue using the unchanged forceignore in the source directory", null, this.packageLogger);
     }
   }

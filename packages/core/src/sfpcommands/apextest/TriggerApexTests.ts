@@ -17,7 +17,7 @@ export default class TriggerApexTests {
     private testOptions: TestOptions,
     private coverageOptions: CoverageOptions,
     private project_directory: string,
-    private fileLogger?: any
+    private fileLogger: any
   ) { }
 
   public async exec(): Promise<{
@@ -179,7 +179,8 @@ export default class TriggerApexTests {
 
       let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
         this.testOptions.sfppackage,
-        this.getCoverageReport()
+        this.getCoverageReport(),
+        this.fileLogger
       );
 
       return packageTestCoverage.validateTestCoverage(
@@ -188,7 +189,8 @@ export default class TriggerApexTests {
     } else {
       if (this.coverageOptions.isIndividualClassCoverageToBeValidated) {
         let coverageValidator: IndividualClassCoverage = new IndividualClassCoverage(
-          this.getCoverageReport()
+          this.getCoverageReport(),
+          this.fileLogger
         );
         return coverageValidator.validateIndividualClassCoverage(
           coverageValidator.getIndividualClassCoverage(),
@@ -196,7 +198,8 @@ export default class TriggerApexTests {
         );
       } else {
         let coverageValidator: IndividualClassCoverage = new IndividualClassCoverage(
-          this.getCoverageReport()
+          this.getCoverageReport(),
+          this.fileLogger
         );
         return coverageValidator.validateIndividualClassCoverage(
           coverageValidator.getIndividualClassCoverage()

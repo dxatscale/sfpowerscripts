@@ -15,7 +15,7 @@ export default class ArtifactInstallationStatusUpdater {
     target_org: string,
     packageMetadata: PackageMetadata,
     isHandledByCaller: boolean,
-    packageLogger?:Logger
+    packageLogger:Logger
   ):Promise<boolean> {
     if (isHandledByCaller) return true; //This is to be handled by the caller, in that case if it reached here, we should
                                         //just ignore
@@ -24,7 +24,7 @@ export default class ArtifactInstallationStatusUpdater {
       return  await ArtifactInstallationStatusUpdater.updateArtifact(target_org, packageMetadata, packageLogger);
     } catch (error) {
       SFPLogger.log(
-        `Unable to update details about artifacts to the org: ${error}`,LoggerLevel.DEBUG,packageLogger
+        `Unable to update details about artifacts to the org: ${error}`,LoggerLevel.WARN,packageLogger
       );
       return false;
     }
@@ -50,7 +50,7 @@ export default class ArtifactInstallationStatusUpdater {
 
         let cmdOutput;
         let packageName= packageMetadata.package_name;
-        SFPLogger.log(`Updating Org with new Artifacts "+${packageName}+" "+${packageMetadata.package_version_number}+" "+${(artifactId?artifactId:"")}`, LoggerLevel.INFO,packageLogger);
+        SFPLogger.log(`Updating Org with new Artifacts ${packageName} ${packageMetadata.package_version_number} ${(artifactId?artifactId:"")}`, LoggerLevel.INFO,packageLogger);
         if (artifactId == null) {
           cmdOutput = child_process.execSync(
             `sfdx force:data:record:create --json -s ${ArtifactMigrator.objectApiName} -u ${username}  -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}"`,

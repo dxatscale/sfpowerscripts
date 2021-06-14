@@ -58,7 +58,7 @@ export default class DeploySourceToOrgImpl {
         this.packageLogger
       ).exec(true);
       PackageMetadataPrinter.printMetadataToDeploy(
-        await new PackageManifest(this.mdapiDir).getManifest()
+        await new PackageManifest(this.mdapiDir).getManifest(),this.packageLogger
       );
 
       //Get Deploy ID

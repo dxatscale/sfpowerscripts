@@ -5,6 +5,7 @@ import * as rimraf from "rimraf";
 import ProjectValidation from "./ProjectValidation";
 import DemoReelPlayer from "./impl/demoreelplayer/DemoReelPlayer";
 import { fs } from "@salesforce/core";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -37,6 +38,9 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
      */
     async run(): Promise<any> {
        
+
+        this.setLogLevel();
+
         //If demo mode, display demo reel and return
         if(process.env.SFPOWERSCRIPTS_DEMO_MODE)
         {
@@ -110,6 +114,26 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         }
 
         SFPStatsSender.initializeLogBasedMetrics();
+    }
+
+ 
+    private  setLogLevel()
+    {
+      if(this.flags.loglevel==="trace" || this.flags.loglevel==="TRACE")
+        SFPLogger.logLevel = LoggerLevel.TRACE
+      else if(this.flags.loglevel==="debug" || this.flags.loglevel==="DEBUG")
+        SFPLogger.logLevel = LoggerLevel.DEBUG
+      else if(this.flags.loglevel==="info" || this.flags.loglevel==="INFO")
+        SFPLogger.logLevel = LoggerLevel.INFO
+      else if(this.flags.loglevel==="warn" || this.flags.loglevel==="WARN")
+        SFPLogger.logLevel = LoggerLevel.WARN
+      else if(this.flags.loglevel==="error" || this.flags.loglevel==="ERROR")
+        SFPLogger.logLevel = LoggerLevel.ERROR
+      else if(this.flags.loglevel==="FATAL" || this.flags.loglevel==="FATAL")
+        SFPLogger.logLevel = LoggerLevel.FATAL
+      else
+        SFPLogger.logLevel = LoggerLevel.INFO
+
     }
 
     private async executeDemoMode()

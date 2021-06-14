@@ -4,7 +4,7 @@ import PackageMetadata from "../PackageMetadata";
 import GeneratePackageChangelog from "../changelog/GeneratePackageChangelog";
 import { Changelog } from "../changelog/interfaces/GenericChangelogInterfaces";
 import * as rimraf from "rimraf";
-import SFPLogger from "../logger/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 import AdmZip = require("adm-zip");
 
 export default class ArtifactGenerator {
@@ -74,11 +74,11 @@ export default class ArtifactGenerator {
         JSON.stringify(packageChangelog, null, 4)
       );
 
-      SFPLogger.log("Artifact Copy Completed");
+    
 
       let zip = new AdmZip();
       zip.addLocalFolder(artifactFilepath, artifactFolder);
-      SFPLogger.log(`Zipping ${artifactFolder}`);
+      SFPLogger.log(`Zipping ${artifactFolder}`,LoggerLevel.TRACE);
 
       let packageVersionNumber: string = ArtifactGenerator.substituteBuildNumberWithPreRelease(
         packageArtifactMetadata.package_version_number
@@ -87,6 +87,8 @@ export default class ArtifactGenerator {
       let zipArtifactFilepath: string =
         artifactFilepath + `_` + packageVersionNumber + `.zip`;
       zip.writeZip(zipArtifactFilepath);
+
+      SFPLogger.log(`Artifact Generation Completed for ${sfdx_package} to ${zipArtifactFilepath}`,LoggerLevel.INFO);
 
       // Cleanup unzipped artifact
       rimraf.sync(artifactFilepath);

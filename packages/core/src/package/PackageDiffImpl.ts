@@ -2,13 +2,14 @@ const fs = require("fs");
 const path = require("path");
 import Git from "../git/Git";
 import IgnoreFiles from "../ignore/IgnoreFiles";
-import SFPLogger from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 import ProjectConfig from "../project/ProjectConfig";
 import GitTags from "../git/GitTags";
 import lodash = require("lodash");
 
 export default class PackageDiffImpl {
   public constructor(
+    private logger:Logger,
     private sfdx_package: string,
     private project_directory: string,
     private config_file_path?: string,
@@ -25,7 +26,9 @@ export default class PackageDiffImpl {
     let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(this.sfdx_package, projectConfig);
 
     SFPLogger.log(
-      `Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`
+      `Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`,
+       LoggerLevel.INFO,
+       this.logger
     );
 
     let tag: string;
@@ -36,7 +39,7 @@ export default class PackageDiffImpl {
     }
 
     if (tag) {
-      SFPLogger.log(`\nUtilizing tag ${tag} for ${this.sfdx_package}`);
+      SFPLogger.log(`\nUtilizing tag ${tag} for ${this.sfdx_package}`,LoggerLevel.INFO,this.logger);
 
       // Get the list of modified files between the tag and HEAD refs
       let modified_files: string[] = await git.diff([
@@ -54,9 +57,9 @@ export default class PackageDiffImpl {
       const isUnlockedAndConfigFilePath = packageType === "Unlocked" && config_file_path != null;
 
       if (isUnlockedAndConfigFilePath)
-        SFPLogger.log(`Checking for changes to ${config_file_path}`);
+        SFPLogger.log(`Checking for changes to ${config_file_path}`,LoggerLevel.INFO,this.logger);
 
-      SFPLogger.log(`Checking for changes in source directory ${path.normalize(pkgDescriptor.path)}`);
+      SFPLogger.log(`Checking for changes in source directory ${path.normalize(pkgDescriptor.path)}`,LoggerLevel.INFO,this.logger);
 
       // Check whether the package has been modified
 
@@ -66,18 +69,18 @@ export default class PackageDiffImpl {
               filename.includes(path.normalize(pkgDescriptor.path)) ||
               filename === config_file_path
           ) {
-              SFPLogger.log(`Found change(s) in ${filename}`);
+              SFPLogger.log(`Found change(s) in ${filename}`,LoggerLevel.INFO,this.logger);
               return {isToBeBuilt:true,reason:`Found change(s) in package/config`,tag:tag};
           }
         } else {
           if (filename.includes(path.normalize(pkgDescriptor.path))) {
-            SFPLogger.log(`Found change(s) in ${filename}`);
+            SFPLogger.log(`Found change(s) in ${filename}`,LoggerLevel.INFO,this.logger);
             return {isToBeBuilt:true,reason:`Found change(s) in package`,tag:tag};
           }
         }
       }
 
-      SFPLogger.log(`Checking for changes to package descriptor in sfdx-project.json`);
+      SFPLogger.log(`Checking for changes to package descriptor in sfdx-project.json`,LoggerLevel.INFO,this.logger);
       let isPackageDescriptorChanged = await this.isPackageDescriptorChanged(
         git,
         tag,
@@ -87,7 +90,9 @@ export default class PackageDiffImpl {
         return  {isToBeBuilt:true,reason:`Package Descriptor Changed`,tag:tag};
     } else {
       SFPLogger.log(
-        `Tag missing for ${this.sfdx_package}...marking package for build anyways`
+        `Tag missing for ${this.sfdx_package}...marking package for build anyways`,
+        LoggerLevel.INFO,
+        this.logger
       );
       return  {isToBeBuilt:true,reason:`Previous version not found`};
     }
@@ -116,11 +121,11 @@ export default class PackageDiffImpl {
     const gitTags: GitTags = new GitTags(git, sfdx_package);
     let tags: string[] = await gitTags.listTagsOnBranch();
 
-    SFPLogger.log("Analysing tags:");
+    SFPLogger.log("Analysing tags:",LoggerLevel.INFO,this.logger);
     if (tags.length > 10) {
-      SFPLogger.log(tags.slice(-10).toString().replace(/,/g, "\n"));
+      SFPLogger.log(tags.slice(-10).toString().replace(/,/g, "\n"),LoggerLevel.INFO,this.logger);
     } else {
-      SFPLogger.log(tags.toString().replace(/,/g, "\n"));
+      SFPLogger.log(tags.toString().replace(/,/g, "\n"),LoggerLevel.INFO,this.logger);
     }
 
     return tags.pop();
@@ -145,7 +150,8 @@ export default class PackageDiffImpl {
 
     if(!lodash.isEqual(packageDescriptor, packageDescriptorFromLatestTag)) {
       SFPLogger.log(
-        `Found change in ${this.sfdx_package} package descriptor`
+        `Found change in ${this.sfdx_package} package descriptor`,
+        LoggerLevel.INFO,this.logger
       );
       return true;
     } else return false;

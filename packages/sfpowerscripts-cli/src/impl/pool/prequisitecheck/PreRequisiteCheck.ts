@@ -1,6 +1,9 @@
 import { Org } from "@salesforce/core";
 import PreRequisiteCheckError from "./PreRequisiteCheckError";
 const retry = require("async-retry");
+import { Result,ok,err} from "neverthrow"
+import { PoolError, PoolErrorCodes } from "../PoolError";
+
 
 export default class PreRequisiteCheck {
 
@@ -16,7 +19,7 @@ export default class PreRequisiteCheck {
   }
 
   
-  public async checkForPrerequisites() {
+  public async checkForPrerequisites():Promise<Result<boolean,PoolError>> {
  
     let sfdxAuthUrlFieldExists=false;
     let conn = this.hubOrg.getConnection();
@@ -66,12 +69,20 @@ export default class PreRequisiteCheck {
     }
 
     if (!PreRequisiteCheck.isPrerequisiteMet) {
-      throw new PreRequisiteCheckError(
-         `Required Prerequisite values in ScratchOrgInfo is missing in the DevHub` +
-         `For more information Please refer https://github.com/Accenture/SFPLogger/blob/main/src_saleforce_packages/scratchorgpool/force-app/main/default/objects/ScratchOrgInfo/fields/Allocation_status__c.field-meta.xml \n`,
-          PreRequisiteCheck.describeResult.fields,
-       );
-     }
+      return err({
+        success: 0,
+        failed: 0,
+        message:  `Required Prerequisite values in ScratchOrgInfo is missing in the DevHub` +
+        `For more information Please refer https://github.com/Accenture/SFPLogger/blob/main/src_saleforce_packages/scratchorgpool/force-app/main/default/objects/ScratchOrgInfo/fields/Allocation_status__c.field-meta.xml \n`+PreRequisiteCheck.describeResult.fields,
+        errorCode: PoolErrorCodes.PrerequisiteMissing,
+      });
+    }
+    else
+    {
+      return ok(PreRequisiteCheck.isPrerequisiteChecked);
+    }
+
+
   }
 
 }

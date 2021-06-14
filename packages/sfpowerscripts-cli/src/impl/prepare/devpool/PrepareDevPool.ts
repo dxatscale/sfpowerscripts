@@ -4,6 +4,9 @@ import PoolCreateImpl from "../../pool/PoolCreateImpl";
 import { PoolConfig } from "../../pool/PoolConfig";
 import PrepareDevOrgWithScript from "./PrepareDevOrgWithScript";
 import { PreparePool } from "../PreparePool";
+import { PoolError } from "../../pool/PoolError";
+import { Result} from "neverthrow"
+import PrepareDevOrgWithPush from "./PrepareDevOrgWithPush";
 
 
 
@@ -19,33 +22,25 @@ export default class PrepareDevPool implements PreparePool {
   }
 
   
-  public async poolScratchOrgs(): Promise<{
-    totalallocated: number;
-    success: number;
-    failed: number;
-    errorCode?: string;
-  }> {
+  public async poolScratchOrgs(): Promise<Result<PoolConfig,PoolError>> {
    
     let pool = await this.createPool();
-   
-    return {
-      totalallocated: pool.to_allocate,
-      success:pool.scratchOrgs.length,
-      failed: pool.failedToCreate
-    };
+    return pool;
   }
 
 
-  private async createPool():Promise<PoolConfig>
+  private async createPool():Promise<Result<PoolConfig,PoolError>>
   {
-    let prepareASingleOrgImpl;
+    let prepareASingleOrgJob;
 
     if(this.pool.devpool.scriptToExecute)
-      prepareASingleOrgImpl = new PrepareDevOrgWithScript(this.pool);
- 
-     let createPool:PoolCreateImpl = new PoolCreateImpl(this.hubOrg,this.pool,prepareASingleOrgImpl);
-     let pool = await createPool.execute() as PoolConfig;
-     return pool;
+      prepareASingleOrgJob = new PrepareDevOrgWithScript(this.pool);
+    else
+       prepareASingleOrgJob = new PrepareDevOrgWithPush(this.pool);
+
+      let createPool:PoolCreateImpl = new PoolCreateImpl(this.hubOrg,this.pool,prepareASingleOrgJob);
+      let pool = await createPool.execute();
+      return pool;
   }
 
 

@@ -8,6 +8,7 @@ import { exec } from "shelljs";
 import * as fs from "fs-extra"
 import path = require("path");
 import CreateSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateSourcePackageImpl';
+import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_source_package');
@@ -58,7 +59,7 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
-        let packageDiffImpl = new PackageDiffImpl(sfdx_package, null);
+        let packageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),sfdx_package, null);
 
         runBuild = (await packageDiffImpl.exec()).isToBeBuilt;
 

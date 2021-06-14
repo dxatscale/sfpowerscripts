@@ -167,7 +167,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       }
 
 
-      const triggerApexTests: TriggerApexTests = new TriggerApexTests(this.org.getUsername(),testOptions,coverageOptions,null);
+      const triggerApexTests: TriggerApexTests = new TriggerApexTests(this.org.getUsername(),testOptions,coverageOptions,null,null);
       let result = await triggerApexTests.exec();
 
       if (!result.result) {

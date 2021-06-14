@@ -12,6 +12,9 @@ import PoolCreateImpl from "../../pool/PoolCreateImpl";
 import { PoolConfig } from "../../pool/PoolConfig";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import { PreparePool } from "../PreparePool";
+import { PoolError } from "../../pool/PoolError";
+import { Result ,ok,err} from "neverthrow"
+
 
 
 
@@ -27,24 +30,15 @@ export default class PrepareCIPool implements PreparePool  {
   }
 
   
-  public async poolScratchOrgs(): Promise<{
-    totalallocated: number;
-    success: number;
-    failed: number;
-    errorCode?: string;
-  }> {
+  public async poolScratchOrgs(): Promise<Result<PoolConfig,PoolError>>{
    
     let pool = await this.createCIPools();
    
-    return {
-      totalallocated: pool.to_allocate,
-      success:pool.scratchOrgs.length,
-      failed: pool.failedToCreate
-    };
+     return pool;
   }
 
 
-  private async createCIPools():Promise<PoolConfig>
+  private async createCIPools():Promise<Result<PoolConfig,PoolError>>
   {
      //Create Artifact Directory
      rimraf.sync("artifacts");
@@ -59,8 +53,8 @@ export default class PrepareCIPool implements PreparePool  {
      );
  
      let createPool:PoolCreateImpl = new PoolCreateImpl(this.hubOrg,this.pool,prepareASingleOrgImpl);
-     let pool = await createPool.execute() as PoolConfig;
-     return pool;
+     let pool = await createPool.execute();
+     return pool
   }
 
  
