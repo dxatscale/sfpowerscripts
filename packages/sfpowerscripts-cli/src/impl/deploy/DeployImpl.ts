@@ -2,7 +2,7 @@ import ArtifactFilePathFetcher, {
   ArtifactFilePaths,
 } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl";
 import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallSourcePackageImpl";
 import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl";
@@ -18,7 +18,7 @@ import {
 } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import SFPLogger, {
   LoggerLevel,
-} from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { EOL } from "os";
 import { Stage } from "../Stage";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
@@ -237,9 +237,8 @@ export default class DeployImpl {
               } else {
                 SFPLogger.log(
                   testResult.message,
-                  null,
-                  this.props.packageLogger,
-                  LoggerLevel.INFO
+                  LoggerLevel.INFO,
+                  this.props.packageLogger
                 );
 
                 this.printClosingLoggingGroup();
@@ -247,9 +246,8 @@ export default class DeployImpl {
             } else {
               SFPLogger.log(
                 `Skipping testing of ${queue[i].package}\n`,
-                null,
-                this.props.packageLogger,
-                LoggerLevel.INFO
+                LoggerLevel.INFO,
+                this.props.packageLogger
               );
             }
           }
@@ -263,7 +261,7 @@ export default class DeployImpl {
         error: null,
       };
     } catch (err) {
-      SFPLogger.log(err, null, this.props.packageLogger, LoggerLevel.INFO);
+      SFPLogger.log(JSON.stringify(err),LoggerLevel.ERROR, this.props.packageLogger);
 
       return {
         deployed: deployed,
@@ -288,20 +286,18 @@ export default class DeployImpl {
   private displayRetryHeader(isRetryOnFailure:boolean,count:number) {
     if (isRetryOnFailure && count>1) {
       SFPLogger.log(
-        `-------------------------------------------------------------------------------${EOL}`, null,
-        this.props.packageLogger,
-        LoggerLevel.INFO
+        `-------------------------------------------------------------------------------${EOL}`, LoggerLevel.INFO,
+        this.props.packageLogger
       );
 
       SFPLogger.log(
-        `Retrying On Failure`, `Attempt: ${count}`,
-        this.props.packageLogger,
-        LoggerLevel.INFO
+        `Retrying On Failure Attempt: ${count}`,
+        LoggerLevel.INFO,
+        this.props.packageLogger
       );
       SFPLogger.log(
-        `-------------------------------------------------------------------------------${EOL}`, null,
-        this.props.packageLogger,
-        LoggerLevel.INFO
+        `-------------------------------------------------------------------------------${EOL}`, LoggerLevel.INFO,
+        this.props.packageLogger
       );
     }
   }
@@ -331,9 +327,9 @@ export default class DeployImpl {
       isApexFoundMessage +
       alwaysDeployMessage +
       `-------------------------------------------------------------------------------${EOL}`,
-      null,
+      LoggerLevel.INFO,
       this.props.packageLogger,
-      LoggerLevel.INFO
+
     );
   }
 
@@ -383,7 +379,7 @@ export default class DeployImpl {
       table.push([pkg.package,
       packagesToPackageInfo[pkg.package].packageMetadata.package_version_number]);
     });
-    SFPLogger.log(table.toString(), null, this.props.packageLogger, LoggerLevel.INFO);
+    SFPLogger.log(table.toString(), LoggerLevel.INFO, this.props.packageLogger);
     this.printClosingLoggingGroup();
   }
 
@@ -418,22 +414,15 @@ export default class DeployImpl {
 
   private printOpenLoggingGroup(message: string, pkg?: string) {
     if (this.props.logsGroupSymbol?.[0])
-      SFPLogger.log(
-        this.props.logsGroupSymbol[0],
-        message + (pkg ? pkg : ""),
-        this.props.packageLogger,
-        LoggerLevel.INFO
+      console.log(
+        `${this.props.logsGroupSymbol[0]} ${message}   ${(pkg ? pkg : "")}`
       );
   }
 
   private printClosingLoggingGroup() {
     if (this.props.logsGroupSymbol?.[1])
-      SFPLogger.log(
-        this.props.logsGroupSymbol[1],
-        null,
-        this.props.packageLogger,
-        LoggerLevel.INFO
-      );
+      console.log(
+        this.props.logsGroupSymbol[1])
   }
 
   /**

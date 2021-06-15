@@ -5,7 +5,7 @@ import {
   PackageInstallationStatus,
 } from "../package/PackageInstallationResult";
 import { onExit } from "../utils/OnExit";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
 export default class InstallPackageDependenciesImpl {
   public constructor(
@@ -15,7 +15,7 @@ export default class InstallPackageDependenciesImpl {
     private working_directory: string,
     private keys: string,
     private apexcompileonlypackage: boolean,
-    private packageLogger?:any
+    private packageLogger?:Logger
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -24,7 +24,7 @@ export default class InstallPackageDependenciesImpl {
     if (this.keys != null && this.keys.length > 0)
       command += ` -k "${this.keys}"`;
 
-    SFPLogger.log("Executing Command:", command,this.packageLogger);
+    SFPLogger.log(`Executing Command: ${command}`,LoggerLevel.INFO,this.packageLogger);
 
     let child = child_process.exec(command, {
       cwd: this.working_directory,
@@ -32,11 +32,11 @@ export default class InstallPackageDependenciesImpl {
     });
 
     child.stderr.on("data", (data) => {
-      SFPLogger.log(data.toString(),null,this.packageLogger);
+      SFPLogger.log(data.toString(),LoggerLevel.INFO,this.packageLogger);
     });
 
     child.stdout.on("data", (data) => {
-      SFPLogger.log(data.toString(),null,this.packageLogger);
+      SFPLogger.log(data.toString(),LoggerLevel.INFO,this.packageLogger);
     });
 
     await onExit(child);

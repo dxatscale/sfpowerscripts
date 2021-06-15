@@ -1,6 +1,6 @@
 import ProjectConfig from "../project/ProjectConfig";
 import * as rimraf from "rimraf";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, {Logger, LoggerLevel } from "../logger/SFPLogger";
 import { mkdirpSync } from "fs-extra";
 import * as fs from "fs-extra";
 let path = require("path");
@@ -12,12 +12,13 @@ export default class SourcePackageGenerator {
 
 
   public static generateSourcePackageArtifact(
+    logger:Logger,
     projectDirectory: string,
     sfdx_package: string,
     packageDirectory:string,
     destructiveManifestFilePath?: string,
     configFilePath?:string,
-    pathToReplacementForceIgnore?: string
+    pathToReplacementForceIgnore?: string,
   ): string {
 
     let artifactDirectory: string = `.sfpowerscripts/${this.makefolderid(5)}_source`, rootDirectory: string;
@@ -49,13 +50,13 @@ export default class SourcePackageGenerator {
       SourcePackageGenerator.replaceRootForceIgnore(artifactDirectory, pathToReplacementForceIgnore);
 
     if (destructiveManifestFilePath) {
-      SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory);
+      SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory,logger);
     }
 
 
     if(configFilePath)
     {
-      SourcePackageGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory);
+      SourcePackageGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory,logger);
     }
 
     fs.copySync(
@@ -175,7 +176,8 @@ export default class SourcePackageGenerator {
    */
   private static replaceRootForceIgnore(
     artifactDirectory: string,
-    pathToReplacementForceIgnore: string
+    pathToReplacementForceIgnore: string,
+    logger?:Logger
   ): void {
     if (fs.existsSync(pathToReplacementForceIgnore))
       fs.copySync(
@@ -183,12 +185,12 @@ export default class SourcePackageGenerator {
         path.join(artifactDirectory, ".forceignore")
       );
     else {
-      SFPLogger.log(`${pathToReplacementForceIgnore} does not exist`);
-      SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory");
+      SFPLogger.log(`${pathToReplacementForceIgnore} does not exist`,LoggerLevel.INFO,logger);
+      SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory",LoggerLevel.INFO,logger);
     }
   }
 
-  private static copyDestructiveManifests(destructiveManifestFilePath: string, artifactDirectory: string, projectDirectory: any) {
+  private static copyDestructiveManifests(destructiveManifestFilePath: string, artifactDirectory: string, projectDirectory: any,logger:Logger) {
     if (fs.existsSync(destructiveManifestFilePath)) {
       try {
         fs.mkdirsSync(path.join(artifactDirectory, "destructive"));
@@ -198,13 +200,13 @@ export default class SourcePackageGenerator {
         );
       }
       catch (error) {
-        SFPLogger.log("Unable to read/parse destructive manifest, Please check your artifacts, Will result in an error while deploying");
+        SFPLogger.log("Unable to read/parse destructive manifest, Please check your artifacts, Will result in an error while deploying",LoggerLevel.WARN,logger);
       }
 
     }
   }
-
-  private static copyConfigFilePath(configFilePath: string, artifactDirectory: string, projectDirectory: any) {
+ 
+  private static copyConfigFilePath(configFilePath: string, artifactDirectory: string, projectDirectory: any,logger:Logger) {
     if (fs.existsSync(configFilePath)) {
       try {
         fs.mkdirsSync(path.join(artifactDirectory, "config"));
@@ -214,9 +216,9 @@ export default class SourcePackageGenerator {
         );
       }
       catch (error) {
-        SFPLogger.log("Unable to read/parse the config file path");
+        console.log(error);
+        SFPLogger.log("Unable to read/parse the config file path",LoggerLevel.WARN,logger);
       }
-
     }
   }
 

@@ -1,4 +1,4 @@
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 import IndividualClassCoverage from "./IndividualClassCoverage";
 import  SFPPackage  from "./SFPPackage";
 

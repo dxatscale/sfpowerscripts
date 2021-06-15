@@ -4,8 +4,8 @@ import {
   METADATA_INFO,
   MetadataDescribe,
   SOURCE_EXTENSION_REGEX
-} from "./metadataInfo";
-import FileUtils from "../utils/fileutils";
+} from "./MetadataInfo";
+import FileUtils from "../utils/Fileutils";
 import * as _ from "lodash";
 import ignore from "ignore";
 import * as fs from "fs-extra";

@@ -4,17 +4,17 @@ import { onExit } from "../../utils/OnExit";
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger from "../../utils/SFPLogger";
+import SFPLogger, { FileLogger, LoggerLevel } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import { delay } from "../../utils/Delay";
 import PackageVersionListImpl from "../../sfdxwrappers/PackageVersionListImpl";
-import SFPStatsSender from "../../utils/SFPStatsSender";
+import SFPStatsSender from "../../stats/SFPStatsSender";
 import SFPPackage  from "../../package/SFPPackage";
 const path = require("path");
 
 export default class CreateUnlockedPackageImpl {
-  private packageLogger;
+  private packageLogger:FileLogger;
   private static packageTypeInfos: any[];
   private isOrgDependentPackage: boolean = false;
 
@@ -36,7 +36,7 @@ export default class CreateUnlockedPackageImpl {
       `.sfpowerscripts/logs/${sfdx_package}`,
       `sfpowerscripts--log${EOL}`
     );
-    this.packageLogger = `.sfpowerscripts/logs/${sfdx_package}`;
+    this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
   }
 
   public async exec(): Promise<PackageMetadata> {
@@ -50,10 +50,10 @@ export default class CreateUnlockedPackageImpl {
 
 
     let sfppackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
+      this.packageLogger,
       this.project_directory,
       this.sfdx_package,
       this.config_file_path,
-      this.packageLogger,
       this.pathToReplacementForceIgnore
     );
     let packageDirectory: string =sfppackage.packageDescriptor.path;
@@ -74,12 +74,12 @@ export default class CreateUnlockedPackageImpl {
 
 
 
-    SFPLogger.log("Package Directory", packageDirectory, this.packageLogger);
+    SFPLogger.log(`Package Directory: ${packageDirectory}`, LoggerLevel.INFO,this.packageLogger);
 
     //Get Type of Package
     SFPLogger.log(
       "Fetching Package Type Info from DevHub",
-      null,
+      LoggerLevel.INFO,
       this.packageLogger
     );
     let packageTypeInfos = await this.getPackageTypeInfos();
@@ -89,22 +89,22 @@ export default class CreateUnlockedPackageImpl {
 
     if(packageTypeInfo==null)
     {
-      SFPLogger.log("Unable to find a package info for this particular package, Are you sure you created this package?");
+      SFPLogger.log("Unable to find a package info for this particular package, Are you sure you created this package?",LoggerLevel.WARN,this.packageLogger);
     }
 
 
     if (packageTypeInfo?.IsOrgDependent == "Yes")
       this.isOrgDependentPackage = true;
 
-    SFPLogger.log("-------------------------", null, this.packageLogger);
-    SFPLogger.log("Package", packageTypeInfo.Name, this.packageLogger);
+    SFPLogger.log("-------------------------", LoggerLevel.INFO, this.packageLogger);
+    SFPLogger.log(`Package  ${packageTypeInfo.Name}`,LoggerLevel.INFO, this.packageLogger);
     SFPLogger.log(
-      "IsOrgDependent",
-      packageTypeInfo.IsOrgDependent,
+      `IsOrgDependent ${packageTypeInfo.IsOrgDependent}`,
+       LoggerLevel.INFO,
       this.packageLogger
     );
-    SFPLogger.log("Package Id", packageTypeInfo.Id, this.packageLogger);
-    SFPLogger.log("-------------------------", null, this.packageLogger);
+    SFPLogger.log(`Package Id  ${packageTypeInfo.Id}`, LoggerLevel.INFO,this.packageLogger);
+    SFPLogger.log("-------------------------", LoggerLevel.INFO, this.packageLogger);
 
 
 
@@ -141,7 +141,7 @@ export default class CreateUnlockedPackageImpl {
 
     let command = this.buildExecCommand();
     let output = "";
-    SFPLogger.log("Package Creation Command", command, this.packageLogger);
+    SFPLogger.log(`Package Creation Command, ${command}`, LoggerLevel.INFO,this.packageLogger);
     let child = child_process.exec(command, {
       cwd: workingDirectory,
       encoding: "utf8",
@@ -174,6 +174,7 @@ export default class CreateUnlockedPackageImpl {
 
     //Generate Source Artifact
     let mdapiPackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
+      this.packageLogger,
       this.project_directory,
       this.sfdx_package,
       ProjectConfig.getSFDXPackageDescriptor(
@@ -288,8 +289,8 @@ export default class CreateUnlockedPackageImpl {
         );
 
         SFPLogger.log(
-          "Package Info Fetched",
-          pkgInfoResultAsJSON,
+          `Package Info Fetched: ${JSON.stringify(pkgInfoResultAsJSON)}`,
+          LoggerLevel.INFO,
           this.packageLogger
         );
 
@@ -336,7 +337,7 @@ export default class CreateUnlockedPackageImpl {
       { cwd: workingDirectory, encoding: "utf8" }
     );
 
-    SFPLogger.log("Resolved Depenendecies", resolveResult, this.packageLogger);
+    SFPLogger.log(`Resolved Depenendecies: ${resolveResult}`,LoggerLevel.INFO,this.packageLogger);
   }
 
   private buildExecCommand(): string {

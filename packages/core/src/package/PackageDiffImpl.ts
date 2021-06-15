@@ -1,10 +1,10 @@
 const fs = require("fs");
 const path = require("path");
-import Git from "../utils/Git";
-import IgnoreFiles from "../utils/IgnoreFiles";
-import SFPLogger from "../utils/SFPLogger";
+import Git from "../git/Git";
+import IgnoreFiles from "../ignore/IgnoreFiles";
+import SFPLogger from "../logger/SFPLogger";
 import ProjectConfig from "../project/ProjectConfig";
-import GitTags from "../utils/GitTags";
+import GitTags from "../git/GitTags";
 import lodash = require("lodash");
 
 export default class PackageDiffImpl {
