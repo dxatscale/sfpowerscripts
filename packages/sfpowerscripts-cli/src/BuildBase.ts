@@ -5,7 +5,7 @@ import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "./SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import fs = require("fs");
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import BuildImpl from "./impl/parallelBuilder/BuildImpl";
 import { Stage } from "./impl/Stage";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";

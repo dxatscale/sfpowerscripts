@@ -13,7 +13,9 @@ import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import SFPPackage from "@dxatscale/sfpowerscripts.core/lib/package/SFPPackage";
 import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/package/IndividualClassCoverage";
+import { ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 const path = require("path");
+
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -110,6 +112,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
           );
         }
         let pkg: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
+          new ConsoleLogger(),
           null,
           this.flags.package
         );

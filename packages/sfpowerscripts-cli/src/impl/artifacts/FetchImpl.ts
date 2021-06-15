@@ -1,8 +1,8 @@
 import child_process = require("child_process");
 import * as fs from "fs-extra";
 import path = require("path");
-import Git from "@dxatscale/sfpowerscripts.core/lib/utils/Git";
-import GitTags from "@dxatscale/sfpowerscripts.core/lib/utils/GitTags";
+import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
+import GitTags from "@dxatscale/sfpowerscripts.core/lib/git/GitTags";
 import ReleaseDefinitionSchema from "../release/ReleaseDefinitionSchema";
 import FetchArtifactsError from "../../errors/FetchArtifactsError";
 import * as rimraf from "rimraf";

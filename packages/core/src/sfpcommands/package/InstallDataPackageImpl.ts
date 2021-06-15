@@ -5,10 +5,10 @@ import fs = require("fs");
 import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
 import { PackageInstallationResult, PackageInstallationStatus } from "../../package/PackageInstallationResult";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger from "../../utils/SFPLogger";
-import PackageInstallationHelpers from "../../utils/PackageInstallationHelpers";
+import SFPLogger, { Logger } from "../../logger/SFPLogger";
+import PackageInstallationHelpers from "./PackageInstallationHelpers";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
-import SFPStatsSender from "../../utils/SFPStatsSender";
+import SFPStatsSender from "../../stats/SFPStatsSender";
 const path = require("path");
 
 export default class InstallDataPackageImpl {
@@ -19,7 +19,7 @@ export default class InstallDataPackageImpl {
     private packageMetadata: PackageMetadata,
     private skip_if_package_installed: boolean,
     private isPackageCheckHandledByCaller?:boolean,
-    private packageLogger?:any
+    private packageLogger?:Logger
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {

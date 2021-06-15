@@ -1,4 +1,4 @@
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import {Org } from "@salesforce/core";
 import ScratchOrgUtils, { ScratchOrg } from "./utils/ScratchOrgUtils";
 export default class PoolDeleteImpl {

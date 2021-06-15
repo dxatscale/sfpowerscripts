@@ -2,7 +2,7 @@ import ProjectConfig from "../project/ProjectConfig";
 import simplegit, { SimpleGit, LogOptions } from "simple-git/promise";
 import { ListLogSummary } from "simple-git/typings/response";
 import { Changelog } from "./interfaces/GenericChangelogInterfaces";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 import { DefaultLogFields } from "simple-git";
 
 /**

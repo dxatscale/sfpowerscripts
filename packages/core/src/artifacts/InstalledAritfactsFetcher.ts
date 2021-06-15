@@ -1,16 +1,19 @@
 import child_process = require("child_process");
 const retry = require("async-retry");
+import ArtifactMigrator from "./ArtifactMigrator";
 
 //Fetch sfpowerscripts Artifats installed in an Org
 export default class InstalledAritfactsFetcher {
   private static usernamesToArtifacts: {[p: string]: any} = {};
 
   public static async getListofArtifacts(username: string): Promise<any> {
+    await ArtifactMigrator.exec(username);
+
     if (InstalledAritfactsFetcher.usernamesToArtifacts[username] == null) {
       return await retry(
         async (bail) => {
           let cmdOutput = child_process.execSync(
-            `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c" -r json -u ${username}`,
+            `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM ${ArtifactMigrator.objectApiName}" -r json -u ${username}`,
             { encoding: "utf8", stdio:"pipe" }
           );
           let result = JSON.parse(cmdOutput);
