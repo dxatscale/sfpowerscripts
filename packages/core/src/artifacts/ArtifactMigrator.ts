@@ -1,6 +1,7 @@
 import child_process = require("child_process");
 import * as fs from "fs-extra";
 const retry = require("async-retry");
+import { Org } from "@salesforce/core";
 
 export default class ArtifactMigrator {
 
@@ -19,16 +20,18 @@ export default class ArtifactMigrator {
 
   public static async exec(username: string): Promise<void> {
     if (
-      ArtifactMigrator.isSfpowerscriptsArtifact2Exist === undefined &&
+      ArtifactMigrator.isSfpowerscriptsArtifact2Exist === undefined ||
       ArtifactMigrator.isSfpowerscriptsArtifactExist === undefined
     ) {
-      ArtifactMigrator.querySfpowerscriptsArtifact2(username);
-      ArtifactMigrator.querySfpowerscriptsArtifact(username);
+      await ArtifactMigrator.querySfpowerscriptsArtifact2(username);
+      await ArtifactMigrator.querySfpowerscriptsArtifact(username);
 
       if (ArtifactMigrator.isSfpowerscriptsArtifact2Exist) {
         ArtifactMigrator.objectApiName = "SfpowerscriptsArtifact2__c";
-      } else {
+      } else if (ArtifactMigrator.isSfpowerscriptsArtifactExist) {
         console.log("The custom object SfpowerscriptsArtifact__c will be deprecated in future release. Move to the new version of SfpowerscriptsArtifact to maintain compatibility.");
+        ArtifactMigrator.objectApiName = "SfpowerscriptsArtifact__c";
+      } else {
         ArtifactMigrator.objectApiName = "SfpowerscriptsArtifact__c";
       }
     }
@@ -105,35 +108,20 @@ export default class ArtifactMigrator {
    * Sets properties for records and existence of SfpowerscriptsArtifact2
    * @param username
    */
-  private static querySfpowerscriptsArtifact2(username): void {
+  private static async querySfpowerscriptsArtifact2(username): Promise<void> {
       try {
-        let queryResultJson = child_process.execSync(
-          `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c" -r json -u ${username}`,
-          {
-            encoding: "utf8",
-            stdio:"pipe"
-          }
-        );
+        const conn = await (await Org.create({ aliasOrUsername: username })).getConnection();
+        let records = (await conn.autoFetchQuery("SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c")).records;
 
-        let queryResult = JSON.parse(queryResultJson);
-        if (
-          queryResult.status === 1 &&
-          queryResult.message.includes("sObject type 'SfpowerscriptsArtifact2__c' is not supported")
-        ) {
-          ArtifactMigrator.isSfpowerscriptsArtifact2Exist = false;
-        } else if (queryResult.status === 1) {
-          console.log(queryResult.message);
-          throw new Error(queryResult.message);
-        } else {
-          ArtifactMigrator.sfpowerscriptsArtifact2Records = queryResult.result.records;
+        if (records) {
           ArtifactMigrator.isSfpowerscriptsArtifact2Exist = true;
+          ArtifactMigrator.sfpowerscriptsArtifact2Records = records;
         }
-
       } catch (error) {
-        if (error.output.toString().includes("sObject type 'SfpowerscriptsArtifact2__c' is not supported")) {
+        if (error.errorCode === "INVALID_TYPE") {
           ArtifactMigrator.isSfpowerscriptsArtifact2Exist = false;
         } else {
-          console.log(error.output.toString());
+          console.log(error.message);
           throw error;
         }
       }
@@ -143,36 +131,22 @@ export default class ArtifactMigrator {
    * Set properties for records and existence of SfpowerscriptsArtifact
    * @param username
    */
-  private static querySfpowerscriptsArtifact(username): void {
+  private static async querySfpowerscriptsArtifact(username): Promise<void> {
     try {
-      let queryResultJson = child_process.execSync(
-        `sfdx force:data:soql:query -q "SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c" -r json -u ${username}`,
-        {
-          encoding: "utf8",
-          stdio:"pipe"
-        }
-      );
+      const conn = await (await Org.create({ aliasOrUsername: username })).getConnection();
+      let records = (await conn.autoFetchQuery("SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c")).records;
 
-      let queryResult = JSON.parse(queryResultJson);
-      if (
-        queryResult.status === 1 &&
-        queryResult.message.includes("sObject type 'SfpowerscriptsArtifact__c' is not supported")
-      ) {
-        ArtifactMigrator.isSfpowerscriptsArtifactExist = false;
-      } else if (queryResult.status === 1) {
-        console.log(queryResult.message);
-        throw new Error(queryResult.message);
-      } else {
-        ArtifactMigrator.sfpowerscriptsArtifactRecords = queryResult.result.records;
+      if (records) {
         ArtifactMigrator.isSfpowerscriptsArtifactExist = true;
+        ArtifactMigrator.sfpowerscriptsArtifactRecords = records;
       }
     } catch (error) {
-      if (error.output.toString().includes("sObject type 'SfpowerscriptsArtifact__c' is not supported")) {
+      if (error.errorCode === "INVALID_TYPE") {
         ArtifactMigrator.isSfpowerscriptsArtifactExist = false;
       } else {
-        console.log(error.output.toString());
+        console.log(error.message);
         throw error;
-      };
+      }
     }
   }
 
