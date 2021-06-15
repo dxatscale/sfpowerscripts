@@ -111,7 +111,7 @@ export default class ArtifactMigrator {
   private static async querySfpowerscriptsArtifact2(username): Promise<void> {
       try {
         const conn = await (await Org.create({ aliasOrUsername: username })).getConnection();
-        let records = (await conn.query("SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c")).records;
+        let records = (await conn.autoFetchQuery("SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c")).records;
 
         if (records) {
           ArtifactMigrator.isSfpowerscriptsArtifact2Exist = true;
@@ -134,7 +134,7 @@ export default class ArtifactMigrator {
   private static async querySfpowerscriptsArtifact(username): Promise<void> {
     try {
       const conn = await (await Org.create({ aliasOrUsername: username })).getConnection();
-      let records = (await conn.query("SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c")).records;
+      let records = (await conn.autoFetchQuery("SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact__c")).records;
 
       if (records) {
         ArtifactMigrator.isSfpowerscriptsArtifactExist = true;
