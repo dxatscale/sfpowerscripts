@@ -1,5 +1,4 @@
-import child_process = require("child_process");
-import * as fs from "fs-extra";
+import child_process = require("child_process"); 
 
 export default class ExecuteCommand
 {
