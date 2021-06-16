@@ -11,7 +11,7 @@ import SFPLogger, {
 import path = require("path");
 import RelaxIPRange from "../../pool/operations/RelaxIPRange";
 import { PoolConfig } from "../../pool/PoolConfig";
-import ExecuteCommand from "@dxatscale/sfpowerscripts.core/lib/command/commandExecutor/ExecuteCommand";
+import SpawnCommand from "@dxatscale/sfpowerscripts.core/lib/command/commandExecutor/SpawnCommand";
 import { Result, ok, err } from "neverthrow";
 
 export default class PrepareDevOrgWithScript extends PoolJobExecutor {
@@ -45,7 +45,7 @@ export default class PrepareDevOrgWithScript extends PoolJobExecutor {
       SFPLogger.log(`Executing command: ${cmd} ${[ this.pool.devpool.scriptToExecute, scratchOrg.username,hubOrg.getUsername()]}`);
       SFPLogger.log(`Logs for preparing org ${scratchOrg.username} written to ${logToFilePath}`);
 
-      let executor: ExecuteCommand = new ExecuteCommand();
+      let executor: SpawnCommand = new SpawnCommand();
       await executor.execCommand(cmd, null,[ this.pool.devpool.scriptToExecute, scratchOrg.username,hubOrg.getUsername()],logToFilePath);
 
 
