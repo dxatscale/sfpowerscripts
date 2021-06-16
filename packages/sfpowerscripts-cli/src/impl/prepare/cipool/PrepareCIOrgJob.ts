@@ -11,7 +11,7 @@ import SFPLogger, {
 import { Stage } from "../../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
-import ScratchOrg from "../../pool/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
 import PoolJobExecutor, {
   JobError,
   ScriptExecutionResult,

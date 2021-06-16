@@ -1,8 +1,8 @@
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import {Org } from "@salesforce/core";
 import { PoolBaseImpl } from "./PoolBaseImpl";
-import ScratchOrg from "./ScratchOrg";
-import DeleteScratchOrg from "./operations/DeleteScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import DeleteScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/DeleteScratchOrg";
 import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 
 

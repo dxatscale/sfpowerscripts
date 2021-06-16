@@ -1,4 +1,4 @@
-import ScratchOrg from "./ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
 
 export interface PoolConfig {
   tag: string,

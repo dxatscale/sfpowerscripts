@@ -1,8 +1,7 @@
-import SFPLogger, {
-  LoggerLevel,
-} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import { Org } from "@salesforce/core";
-import ScratchOrg from "../ScratchOrg";
+import { LoggerLevel, Org } from "@salesforce/core";
+import SFPLogger from "../logger/SFPLogger";
+import ScratchOrg from "./ScratchOrg";
+
 let retry = require("async-retry");
 
 export default class ShareScratchOrg {

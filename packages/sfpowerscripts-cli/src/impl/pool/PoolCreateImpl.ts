@@ -1,10 +1,10 @@
 import { Org } from "@salesforce/core";
 import Bottleneck from "bottleneck";
-import CreateScratchOrg from "./operations/CreateScratchOrg";
-import DeleteScratchOrg from "./operations/DeleteScratchOrg";
+import CreateScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/CreateScratchOrg";
+import DeleteScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/DeleteScratchOrg";
 import { PoolConfig} from "./PoolConfig";
 import { PoolBaseImpl } from "./PoolBaseImpl";
-import ScratchOrg from "./ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
 import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 import ScratchOrgLimitsFetcher from "./services/fetchers/ScratchOrgLimitsFetcher";
 import ScratchOrgInfoAssigner from "./services/updaters/ScratchOrgInfoAssigner";
@@ -16,6 +16,7 @@ import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logge
 import { Result ,ok,err} from "neverthrow"
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { EOL } from "os";
+
 
 
 

@@ -3,16 +3,17 @@ import PoolJobExecutor, {
   JobError,
   ScriptExecutionResult,
 } from "../../pool/PoolJobExecutor";
-import ScratchOrg from "../../pool/ScratchOrg";
 import SFPLogger, {
   FileLogger,
   Logger,
 } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import path = require("path");
-import RelaxIPRange from "../../pool/operations/RelaxIPRange";
 import { PoolConfig } from "../../pool/PoolConfig";
 import SpawnCommand from "@dxatscale/sfpowerscripts.core/lib/command/commandExecutor/SpawnCommand";
 import { Result, ok, err } from "neverthrow";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import RelaxIPRange from "@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange"
+
 
 export default class PrepareDevOrgWithScript extends PoolJobExecutor {
   constructor(protected pool: PoolConfig) {

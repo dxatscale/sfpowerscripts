@@ -1,10 +1,11 @@
-import SFPLogger, {
-  LoggerLevel,
-} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import CreateScratchOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateScratchOrgImpl";
+
 import { AuthInfo, Org } from "@salesforce/core";
-import ScratchOrg from "../ScratchOrg";
+import ScratchOrg from "./ScratchOrg";
 import PasswordGenerator from "./PasswordGenerator";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import CreateScratchOrgImpl from "../sfdxwrappers/CreateScratchOrgImpl";
+
+
 
 export default class CreateScratchOrg {
   constructor(private hubOrg: Org) {}

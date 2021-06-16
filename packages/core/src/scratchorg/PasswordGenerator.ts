@@ -1,7 +1,6 @@
-// tslint:disable-next-line:ordered-imports
-// eslint-disable-next-line no-useless-escape
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+
 import { Connection, User, AuthInfo,LoggerLevel } from "@salesforce/core";
+import SFPLogger from "../logger/SFPLogger";
 
 
 export default class PasswordGenerator {

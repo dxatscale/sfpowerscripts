@@ -1,6 +1,6 @@
 import { Org } from "@salesforce/core";
 import { PoolBaseImpl } from "./PoolBaseImpl";
-import ScratchOrg from "./ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
 import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 
 export default class PoolListImpl extends PoolBaseImpl {

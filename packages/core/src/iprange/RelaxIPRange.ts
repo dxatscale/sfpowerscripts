@@ -3,9 +3,9 @@ import { AsyncResult, DeployResult } from "jsforce";
 import { Connection } from "@salesforce/core";
 import AdmZip = require("adm-zip");
 import path = require("path");
-import xml2json from "@dxatscale/sfpowerscripts.core/lib/utils/xml2json";
-import { delay } from "@dxatscale/sfpowerscripts.core/lib/utils/Delay";
-import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
+import { delay } from "../utils/Delay";
+import xml2json from "../utils/xml2json";
 const xml2js = require("xml2js");
 
 export default class RelaxIPRange {

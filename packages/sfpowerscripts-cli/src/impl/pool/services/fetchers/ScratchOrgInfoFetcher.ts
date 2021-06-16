@@ -1,7 +1,7 @@
 
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Org } from "@salesforce/core";
-import ScratchOrg from "../../ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
 const retry = require("async-retry");
 const request = require("request-promise-native");
 const ORDER_BY_FILTER = " ORDER BY CreatedDate ASC";

@@ -2,7 +2,7 @@ import { Org } from "@salesforce/core";
 import { Result } from "neverthrow";
 import { PoolConfig } from "../../pool/PoolConfig";
 import PoolJobExecutor, { JobError, ScriptExecutionResult } from "../../pool/PoolJobExecutor";
-import ScratchOrg from "../../pool/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
 
 export default class PrepareDevOrgWithPush extends PoolJobExecutor {
 
