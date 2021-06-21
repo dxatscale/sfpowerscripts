@@ -37,7 +37,7 @@ export default class PackageTestCoverage {
     }
 
     let listOfApexClassOrTriggerId: string[] = [];
-    const conn = await (await Org.create({ aliasOrUsername: this.target_org })).getConnection();
+    const conn = (await Org.create({ aliasOrUsername: this.target_org })).getConnection();
 
     let classesNotTouchedByTestClass = this.getClassesNotTouchedByTestClass(packageClasses, this.codeCoverage);
     if (classesNotTouchedByTestClass.length > 0) {
