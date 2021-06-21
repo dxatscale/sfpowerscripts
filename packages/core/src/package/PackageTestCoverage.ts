@@ -285,7 +285,7 @@ export default class PackageTestCoverage {
       let collection = listOfApexClassOrTriggerId.map((ApexClassOrTriggerId) => `'${ApexClassOrTriggerId}'`).toString();
       let query = `SELECT ApexClassorTriggerId, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassorTriggerId IN (${collection})`;
 
-      return await(
+      return (
         await conn.tooling.query<{
           ApexClassOrTriggerId: string;
           NumLinesCovered: number;
@@ -304,13 +304,13 @@ export default class PackageTestCoverage {
      */
     private async queryTriggerIdByName(
       conn: Connection,
-      triggersNotTouchedByTestClass: string[]
+      triggers: string[]
     ): Promise<string[]> {
       let triggerIds: string[] = [];
 
-      let collection = triggersNotTouchedByTestClass.map((trigger) => `'${trigger}'`).toString(); // transform into formatted string for query
+      let collection = triggers.map((trigger) => `'${trigger}'`).toString(); // transform into formatted string for query
       let query = `SELECT ID, Name FROM ApexTrigger WHERE Name IN (${collection})`;
-      let records = await (await conn.query<{ Id: string; Name: string; }>(query)).records;
+      let records = (await conn.query<{ Id: string; Name: string; }>(query)).records;
 
       if (records.length > 0) {
         records.forEach((record) => { triggerIds.push(record.Id); });
@@ -334,7 +334,7 @@ export default class PackageTestCoverage {
 
       let collection = classes.map((cls) => `'${cls}'`).toString(); // transform into formatted string for query
       let query = `SELECT ID, Name FROM ApexClass WHERE Name IN (${collection})`;
-      let records = await (await conn.query<{ Id: string; Name: string; }>(query)).records;
+      let records = (await conn.query<{ Id: string; Name: string; }>(query)).records;
 
       if (records.length > 0) {
         records.forEach((record) => { apexClassIds.push(record.Id); });
