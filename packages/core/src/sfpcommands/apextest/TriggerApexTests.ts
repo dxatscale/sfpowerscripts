@@ -40,7 +40,7 @@ export default class TriggerApexTests {
       );
 
       SFPLogger.log(
-        `Executing Command 
+        `Executing Command
         ${triggerApexTestImpl.getGeneratedSFDXCommandWithParams()}`,
         this.fileLogger
       );
@@ -179,10 +179,11 @@ export default class TriggerApexTests {
 
       let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
         this.testOptions.sfppackage,
-        this.getCoverageReport()
+        this.getCoverageReport(),
+        this.target_org
       );
 
-      return packageTestCoverage.validateTestCoverage(
+      return await packageTestCoverage.validateTestCoverage(
         this.coverageOptions.coverageThreshold
       );
     } else {
