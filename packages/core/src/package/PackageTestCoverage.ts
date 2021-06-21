@@ -1,7 +1,7 @@
 import SFPLogger from "../logger/SFPLogger";
 import IndividualClassCoverage from "./IndividualClassCoverage";
 import  SFPPackage  from "./SFPPackage";
-import { Connection, Org } from "@salesforce/core";
+import { Connection } from "@salesforce/core";
 
 export default class PackageTestCoverage {
   private individualClassCoverage: IndividualClassCoverage;
@@ -10,7 +10,7 @@ export default class PackageTestCoverage {
   public constructor(
     private pkg: SFPPackage,
     private codeCoverage: any,
-    private target_org: string
+    private readonly conn: Connection
   ) {
     this.individualClassCoverage = new IndividualClassCoverage(
       this.codeCoverage
@@ -37,22 +37,21 @@ export default class PackageTestCoverage {
     }
 
     let listOfApexClassOrTriggerId: string[] = [];
-    const conn = (await Org.create({ aliasOrUsername: this.target_org })).getConnection();
 
     let classesNotTouchedByTestClass = this.getClassesNotTouchedByTestClass(packageClasses, this.codeCoverage);
     if (classesNotTouchedByTestClass.length > 0) {
-      let apexClassIds = await this.queryApexClassIdByName(conn, classesNotTouchedByTestClass);
+      let apexClassIds = await this.queryApexClassIdByName(classesNotTouchedByTestClass);
       listOfApexClassOrTriggerId = listOfApexClassOrTriggerId.concat(apexClassIds);
     }
 
     let triggersNotTouchedByTestClass = this.getTriggersNotTouchedByTestClass(triggers, this.codeCoverage);
     if (triggersNotTouchedByTestClass.length > 0) {
-      let triggerIds = await this.queryTriggerIdByName(conn, triggersNotTouchedByTestClass);
+      let triggerIds = await this.queryTriggerIdByName(triggersNotTouchedByTestClass);
       listOfApexClassOrTriggerId = listOfApexClassOrTriggerId.concat(triggerIds);
     }
 
     if (listOfApexClassOrTriggerId.length > 0) {
-      let recordsOfApexCodeCoverageAggregate = await this.queryApexCodeCoverageAggregateById(conn, listOfApexClassOrTriggerId);
+      let recordsOfApexCodeCoverageAggregate = await this.queryApexCodeCoverageAggregateById(listOfApexClassOrTriggerId);
 
       if (recordsOfApexCodeCoverageAggregate.length > 0) {
         let numLinesUncovered: number = 0; // aggregate number of unconvered lines for classes & triggers that are not touched by any test classes
@@ -274,19 +273,17 @@ export default class PackageTestCoverage {
 
     /**
    * Query ApexCodeCoverageAggregate by list of ApexClassorTriggerId
-   * @param conn
    * @param listOfApexClassOrTriggerId
    * @returns
    */
      private async queryApexCodeCoverageAggregateById(
-      conn: Connection,
       listOfApexClassOrTriggerId: string[]
     ) {
       let collection = listOfApexClassOrTriggerId.map((ApexClassOrTriggerId) => `'${ApexClassOrTriggerId}'`).toString();
       let query = `SELECT ApexClassorTriggerId, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassorTriggerId IN (${collection})`;
 
       return (
-        await conn.tooling.query<{
+        await this.conn.tooling.query<{
           ApexClassOrTriggerId: string;
           NumLinesCovered: number;
           NumLinesUncovered: number;
@@ -298,19 +295,17 @@ export default class PackageTestCoverage {
     /**
      * Query Ids of Triggers by Name
      * Returns empty array if no Id's are found
-     * @param conn
      * @param triggersNotTouchedByTestClass
      * @returns
      */
     private async queryTriggerIdByName(
-      conn: Connection,
       triggers: string[]
     ): Promise<string[]> {
       let triggerIds: string[] = [];
 
       let collection = triggers.map((trigger) => `'${trigger}'`).toString(); // transform into formatted string for query
       let query = `SELECT ID, Name FROM ApexTrigger WHERE Name IN (${collection})`;
-      let records = (await conn.query<{ Id: string; Name: string; }>(query)).records;
+      let records = (await this.conn.query<{ Id: string; Name: string; }>(query)).records;
 
       if (records.length > 0) {
         records.forEach((record) => { triggerIds.push(record.Id); });
@@ -322,19 +317,17 @@ export default class PackageTestCoverage {
     /**
      * Query Ids of Apex Classes by Name
      * Returns empty array if no Id's are found
-     * @param conn
      * @param classes
      * @returns
      */
     private async queryApexClassIdByName(
-      conn: Connection,
       classes: string[],
     ): Promise<string[]> {
       let apexClassIds: string[] = [];
 
       let collection = classes.map((cls) => `'${cls}'`).toString(); // transform into formatted string for query
       let query = `SELECT ID, Name FROM ApexClass WHERE Name IN (${collection})`;
-      let records = (await conn.query<{ Id: string; Name: string; }>(query)).records;
+      let records = (await this.conn.query<{ Id: string; Name: string; }>(query)).records;
 
       if (records.length > 0) {
         records.forEach((record) => { apexClassIds.push(record.Id); });

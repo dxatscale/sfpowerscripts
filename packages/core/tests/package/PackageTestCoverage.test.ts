@@ -1,6 +1,6 @@
 import  SFPPackage  from "../../src/package/SFPPackage";
 import PackageTestCoverage from "../../src/package/PackageTestCoverage"
-import { Org } from "@salesforce/core";
+import { Connection } from "@salesforce/core";
 import { jest, expect } from "@jest/globals";
 
 
@@ -32,6 +32,7 @@ jest.mock("../../src/package/SFPPackage",()=>{
    return SFPPackage;
 })
 
+
 describe("Given a sfpowerscripts package andcode coverage report, a package coverage calculator",()=>{
 
   it("should be able to provide the coverage of a provided unlocked package",async ()=>{
@@ -39,7 +40,7 @@ describe("Given a sfpowerscripts package andcode coverage report, a package cove
     let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
       sfpPackage,
       succesfulTestCoverage,
-      "test-0qcc1h1o0lkn@example.com"
+      {} as Connection
     );
     expect (await packageTestCoverage.getCurrentPackageTestCoverage()).toBe(88);
   });
@@ -50,7 +51,7 @@ describe("Given a sfpowerscripts package andcode coverage report, a package cove
     let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
       sfpPackage,
       succesfulTestCoverage,
-      "test-0qcc1h1o0lkn@example.com"
+      {} as Connection
     );
     let requiredCoverage = 80;
     let result = await packageTestCoverage.validateTestCoverage(requiredCoverage);
@@ -69,7 +70,7 @@ it("should able to validate whether the coverage of unlocked  package is above m
   let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
     sfpPackage,
     succesfulTestCoverage,
-    "test-0qcc1h1o0lkn@example.com"
+    {} as Connection
   );
   let requiredCoverage = 75;
   let result = await packageTestCoverage.validateTestCoverage();
@@ -90,7 +91,7 @@ it("should be able to provide the coverage of a provided source package",async (
   let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
     sfpPackage,
     succesfulTestCoverage,
-    "test-0qcc1h1o0lkn@example.com"
+    {} as Connection
   );
   expect (await packageTestCoverage.getCurrentPackageTestCoverage()).toBe(88);
 });
@@ -102,7 +103,7 @@ it("should able to validate whether the coverage of source  package is above a c
   let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
     sfpPackage,
     succesfulTestCoverage,
-    "test-0qcc1h1o0lkn@example.com"
+    {} as Connection
   );
   let requiredCoverage = 80;
   let result = await packageTestCoverage.validateTestCoverage(requiredCoverage);
@@ -123,7 +124,7 @@ it("should able to validate whether the coverage of source  package is above man
   let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
     sfpPackage,
     succesfulTestCoverage,
-    "test-0qcc1h1o0lkn@example.com"
+    {} as Connection
   );
   let requiredCoverage = 75;
   let result = await packageTestCoverage.validateTestCoverage();

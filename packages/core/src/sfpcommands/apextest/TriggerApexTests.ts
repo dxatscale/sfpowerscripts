@@ -10,21 +10,25 @@ import PackageTestCoverage from "../../package/PackageTestCoverage";
 import SFPLogger from "../../logger/SFPLogger";
 import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
 import SFPStatsSender from "../../stats/SFPStatsSender";
+import { Connection, Org } from "@salesforce/core";
 
 export default class TriggerApexTests {
+  private conn: Connection;
+
   public constructor(
     private target_org: string,
     private testOptions: TestOptions,
     private coverageOptions: CoverageOptions,
     private project_directory: string,
     private fileLogger?: any
-  ) { }
+  ) {}
 
   public async exec(): Promise<{
     id: string;
     result: boolean;
     message: string;
   }> {
+    this.conn = (await Org.create({aliasOrUsername: this.target_org})).getConnection();
 
     let startTime = Date.now();
     let testExecutionResult: boolean = false;
@@ -32,7 +36,6 @@ export default class TriggerApexTests {
     let testsRan;
 
     try {
-
       let triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
         this.target_org,
         this.project_directory,
@@ -180,7 +183,7 @@ export default class TriggerApexTests {
       let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
         this.testOptions.sfppackage,
         this.getCoverageReport(),
-        this.target_org
+        this.conn
       );
 
       return await packageTestCoverage.validateTestCoverage(
