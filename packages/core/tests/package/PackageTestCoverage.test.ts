@@ -1,6 +1,6 @@
 import  SFPPackage  from "../../src/package/SFPPackage";
 import PackageTestCoverage from "../../src/package/PackageTestCoverage"
-
+import { Org } from "@salesforce/core";
 import { jest, expect } from "@jest/globals";
 
 
@@ -32,21 +32,28 @@ jest.mock("../../src/package/SFPPackage",()=>{
    return SFPPackage;
 })
 
-
 describe("Given a sfpowerscripts package andcode coverage report, a package coverage calculator",()=>{
 
-  it("should be able to provide the coverage of a provided unlocked package",async ()=>{  
-         let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-         let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
-         expect (packageTestCoverage.getCurrentPackageTestCoverage()).toBe(88);
+  it("should be able to provide the coverage of a provided unlocked package",async ()=>{
+    let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
+    let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
+      sfpPackage,
+      succesfulTestCoverage,
+      "test-0qcc1h1o0lkn@example.com"
+    );
+    expect (await packageTestCoverage.getCurrentPackageTestCoverage()).toBe(88);
   });
 
 
-  it("should able to validate whether the coverage of unlocked  package is above a certain threshold",async ()=>{  
+  it("should able to validate whether the coverage of unlocked  package is above a certain threshold",async ()=>{
     let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-    let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
-    let requiredCoverage=80;
-    let result=packageTestCoverage.validateTestCoverage(requiredCoverage);
+    let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
+      sfpPackage,
+      succesfulTestCoverage,
+      "test-0qcc1h1o0lkn@example.com"
+    );
+    let requiredCoverage = 80;
+    let result = await packageTestCoverage.validateTestCoverage(requiredCoverage);
     expect (result.result).toBe(true);
     expect (result.packageTestCoverage).toBe(88);
     expect (result.message).toStrictEqual(`Package overall coverage is greater than ${requiredCoverage}%`);
@@ -54,14 +61,18 @@ describe("Given a sfpowerscripts package andcode coverage report, a package cove
       { name: 'CustomerServices', coveredPercent: 87.09677419354838 },
       { name: 'MarketServices', coveredPercent: 100 }
     ]);
-    expect(result.classesWithInvalidCoverage).toBeUndefined();  
+    expect(result.classesWithInvalidCoverage).toBeUndefined();
 });
 
-it("should able to validate whether the coverage of unlocked  package is above mandatory threshold",async ()=>{  
+it("should able to validate whether the coverage of unlocked  package is above mandatory threshold",async ()=>{
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
-  let requiredCoverage=75;
-  let result=packageTestCoverage.validateTestCoverage();
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
+    sfpPackage,
+    succesfulTestCoverage,
+    "test-0qcc1h1o0lkn@example.com"
+  );
+  let requiredCoverage = 75;
+  let result = await packageTestCoverage.validateTestCoverage();
   expect (result.result).toBe(true);
   expect (result.packageTestCoverage).toBe(88);
   expect (result.message).toStrictEqual(`Package overall coverage is greater than ${requiredCoverage}%`);
@@ -69,24 +80,32 @@ it("should able to validate whether the coverage of unlocked  package is above m
     { name: 'CustomerServices', coveredPercent: 87.09677419354838 },
     { name: 'MarketServices', coveredPercent: 100 }
   ]);
-  expect(result.classesWithInvalidCoverage).toBeUndefined();  
+  expect(result.classesWithInvalidCoverage).toBeUndefined();
 });
 
 
-it("should be able to provide the coverage of a provided source package",async ()=>{  
+it("should be able to provide the coverage of a provided source package",async ()=>{
   packageType="Source";
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
-  expect (packageTestCoverage.getCurrentPackageTestCoverage()).toBe(88);
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
+    sfpPackage,
+    succesfulTestCoverage,
+    "test-0qcc1h1o0lkn@example.com"
+  );
+  expect (await packageTestCoverage.getCurrentPackageTestCoverage()).toBe(88);
 });
 
 
-it("should able to validate whether the coverage of source  package is above a certain threshold",async ()=>{  
+it("should able to validate whether the coverage of source  package is above a certain threshold",async ()=>{
   packageType="Source";
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
-  let requiredCoverage=80;
-  let result=packageTestCoverage.validateTestCoverage(requiredCoverage);
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
+    sfpPackage,
+    succesfulTestCoverage,
+    "test-0qcc1h1o0lkn@example.com"
+  );
+  let requiredCoverage = 80;
+  let result = await packageTestCoverage.validateTestCoverage(requiredCoverage);
   expect (result.result).toBe(true);
   expect (result.packageTestCoverage).toBe(88);
   expect (result.message).toStrictEqual(`Individidual coverage of classes is greater than ${requiredCoverage}%`);
@@ -94,16 +113,20 @@ it("should able to validate whether the coverage of source  package is above a c
     { name: 'CustomerServices', coveredPercent: 87.09677419354838 },
     { name: 'MarketServices', coveredPercent: 100 }
   ]);
-  expect(result.classesWithInvalidCoverage).toBeUndefined();  
+  expect(result.classesWithInvalidCoverage).toBeUndefined();
 });
 
 
-it("should able to validate whether the coverage of source  package is above mandatory threshold",async ()=>{  
+it("should able to validate whether the coverage of source  package is above mandatory threshold",async ()=>{
   packageType="Source";
   let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,"es-base-code",null,null);
-  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(sfpPackage,succesfulTestCoverage);
-  let requiredCoverage=75;
-  let result=packageTestCoverage.validateTestCoverage();
+  let packageTestCoverage:PackageTestCoverage = new PackageTestCoverage(
+    sfpPackage,
+    succesfulTestCoverage,
+    "test-0qcc1h1o0lkn@example.com"
+  );
+  let requiredCoverage = 75;
+  let result = await packageTestCoverage.validateTestCoverage();
   expect (result.result).toBe(true);
   expect (result.packageTestCoverage).toBe(88);
   expect (result.message).toStrictEqual(`Individidual coverage of classes is greater than ${requiredCoverage}%`);
@@ -111,7 +134,7 @@ it("should able to validate whether the coverage of source  package is above man
     { name: 'CustomerServices', coveredPercent: 87.09677419354838 },
     { name: 'MarketServices', coveredPercent: 100 }
   ]);
-  expect(result.classesWithInvalidCoverage).toBeUndefined();  
+  expect(result.classesWithInvalidCoverage).toBeUndefined();
 });
 
 });
