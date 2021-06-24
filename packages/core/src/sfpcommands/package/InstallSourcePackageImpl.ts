@@ -474,7 +474,7 @@ export default class InstallSourcePackageImpl {
           ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
             `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
             `-------------------------------------------------------------------------------------------------------------`,
-            LoggerLevel.WARN,
+            LoggerLevel.DEBUG,
             this.packageLogger
         );
         mdapi_options["testlevel"] = "NoTestRun";

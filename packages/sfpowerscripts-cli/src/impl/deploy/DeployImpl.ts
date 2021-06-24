@@ -205,6 +205,8 @@ export default class DeployImpl {
           throw new Error(packageInstallationResult.message);
         }
 
+
+        //Trigger Tests for Validate Deployment
         if (this.props.isTestsToBeTriggered) {
           if (packageMetadata.isApexFound) {
             if (!queue[i].skipTesting) {
@@ -214,6 +216,7 @@ export default class DeployImpl {
               try {
                 testResult = await this.triggerApexTests(
                   queue[i].package,
+                  packageInfo.sourceDirectory,
                   this.props.targetUsername,
                   queue[i].skipCoverageValidation,
                   this.props.coverageThreshold
@@ -252,6 +255,8 @@ export default class DeployImpl {
             }
           }
         }
+
+        
       }
 
       return {
@@ -661,6 +666,7 @@ export default class DeployImpl {
 
   private async triggerApexTests(
     sfdx_package: string,
+    projectDirectory:string,
     targetUsername: string,
     skipCoverageValidation: boolean,
     coverageThreshold: number
@@ -670,10 +676,10 @@ export default class DeployImpl {
     message: string;
   }> {
     let sfPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
-      null,
+      this.props.packageLogger,
+      projectDirectory,
       sfdx_package,
-      null,
-      this.props.packageLogger
+      null
     );
     let testOptions: TestOptions = new RunAllTestsInPackageOptions(
       sfPackage,
