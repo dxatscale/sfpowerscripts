@@ -186,7 +186,7 @@ export default class TriggerApexTests {
         this.conn
       );
 
-      return await packageTestCoverage.validateTestCoverage(
+      return packageTestCoverage.validateTestCoverage(
         this.coverageOptions.coverageThreshold
       );
     } else {
