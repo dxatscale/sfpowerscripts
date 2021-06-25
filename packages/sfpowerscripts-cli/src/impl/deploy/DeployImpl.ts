@@ -216,7 +216,6 @@ export default class DeployImpl {
               try {
                 testResult = await this.triggerApexTests(
                   queue[i].package,
-                  packageInfo.sourceDirectory,
                   this.props.targetUsername,
                   queue[i].skipCoverageValidation,
                   this.props.coverageThreshold
@@ -256,7 +255,7 @@ export default class DeployImpl {
           }
         }
 
-        
+
       }
 
       return {
@@ -666,7 +665,6 @@ export default class DeployImpl {
 
   private async triggerApexTests(
     sfdx_package: string,
-    projectDirectory:string,
     targetUsername: string,
     skipCoverageValidation: boolean,
     coverageThreshold: number
@@ -677,7 +675,7 @@ export default class DeployImpl {
   }> {
     let sfPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
       this.props.packageLogger,
-      projectDirectory,
+      null,
       sfdx_package,
       null
     );
