@@ -4,6 +4,7 @@ import { Messages } from "@salesforce/core";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import DeployImpl, { DeploymentMode, DeployProps } from "../../../impl/deploy/DeployImpl";
 import { Stage } from "../../../impl/Stage";
+import { COLOR_ERROR, COLOR_HEADER,COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
 
 
 // Initialize Messages with the current plugin directory
@@ -72,13 +73,13 @@ export default class Deploy extends SfpowerscriptsCommand {
   public async execute() {
     let executionStartTime = Date.now();
 
-    console.log("-----------sfpowerscripts orchestrator ------------------");
-    console.log("command: deploy");
-    console.log(`Skip Packages If Already Installed: ${this.flags.skipifalreadyinstalled}`);
-    console.log(`Artifact Directory: ${this.flags.artifactdir}`);
+    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
+    console.log(COLOR_HEADER("command: deploy"));
+    console.log(COLOR_HEADER(`Skip Packages If Already Installed: ${this.flags.skipifalreadyinstalled}`));
+    console.log(COLOR_HEADER(`Artifact Directory: ${this.flags.artifactdir}`));
     if(this.flags.baselineorg)
-      console.log(`Baselined Against Org: ${this.flags.baselineorg}`)
-    console.log("---------------------------------------------------------");
+      console.log(COLOR_HEADER(`Baselined Against Org: ${this.flags.baselineorg}`))
+    console.log(COLOR_HEADER("---------------------------------------------------------"));
 
 
 
@@ -134,16 +135,16 @@ export default class Deploy extends SfpowerscriptsCommand {
       console.log(
         `----------------------------------------------------------------------------------------------------`
       );
-      console.log(
+      console.log(COLOR_SUCCESS(
         `${deploymentResult.deployed.length} packages deployed in ${this.getFormattedTime(
           totalElapsedTime
-        )} with {${deploymentResult.failed.length}} errors`
+        )} with {${deploymentResult.failed.length}} errors`)
       );
 
 
 
       if (deploymentResult.failed.length > 0) {
-        console.log(`\nPackages Failed to Deploy`, deploymentResult.failed);
+        console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, deploymentResult.failed));
       }
       console.log(
         `----------------------------------------------------------------------------------------------------`
