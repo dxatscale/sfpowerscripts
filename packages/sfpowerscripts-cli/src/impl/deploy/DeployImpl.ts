@@ -399,7 +399,7 @@ export default class DeployImpl {
         clonedQueue[i].package,
         packageManifest
       );
-      let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(targetUsername, packageMetadata, false);
+      let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(this.props.packageLogger,targetUsername, packageMetadata);
       if (packageInstalledInTheOrg.versionNumber)
         packageInfo.versionInstalledInOrg = packageInstalledInTheOrg.versionNumber;
       if (packageInstalledInTheOrg.isInstalled) {
@@ -634,7 +634,6 @@ export default class DeployImpl {
       wait_time,
       skip_if_package_installed,
       packageMetadata,
-      false,
       this.props.packageLogger,
       this.props.currentStage == "prepare"
         ? path.join(sourceDirectoryPath, "forceignores", ".prepareignore")
@@ -657,7 +656,6 @@ export default class DeployImpl {
       sourceDirectoryPath,
       packageMetadata,
       skip_if_package_installed,
-      false,
       this.props.packageLogger
     );
     return installDataPackageImpl.exec();

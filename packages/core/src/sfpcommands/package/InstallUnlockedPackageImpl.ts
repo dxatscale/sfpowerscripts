@@ -117,9 +117,9 @@ export default class InstallUnlockedPackageImpl {
 
 
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
+          this.packageLogger,
           this.targetusername,
-          this.packageMetadata,
-          false
+          this.packageMetadata
         );
 
 

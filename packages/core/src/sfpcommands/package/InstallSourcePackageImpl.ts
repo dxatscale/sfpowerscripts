@@ -31,7 +31,6 @@ export default class InstallSourcePackageImpl {
     private wait_time: string,
     private skip_if_package_installed: boolean,
     private packageMetadata: PackageMetadata,
-    private isPackageCheckHandledByCaller?: boolean,
     private packageLogger?:Logger,
     private pathToReplacementForceIgnore?: string
   ) {}
@@ -53,9 +52,9 @@ export default class InstallSourcePackageImpl {
     if (this.skip_if_package_installed) {
 
       let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+        this.packageLogger,
         this.targetusername,
-        this.packageMetadata,
-        this.isPackageCheckHandledByCaller
+        this.packageMetadata
       );
       isPackageInstalled = installationStatus.isInstalled;
       if (isPackageInstalled) {
@@ -190,12 +189,10 @@ export default class InstallSourcePackageImpl {
           );
         }
 
-
-
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
+          this.packageLogger,
           this.targetusername,
           this.packageMetadata,
-          this.isPackageCheckHandledByCaller
         );
 
       } else if (result.result === false) {
