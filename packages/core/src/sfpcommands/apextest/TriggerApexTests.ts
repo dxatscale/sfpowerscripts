@@ -7,7 +7,7 @@ import IndividualClassCoverage, {
 } from "../../package/IndividualClassCoverage";
 import { TestReportDisplayer } from "./TestReportDisplayer";
 import PackageTestCoverage from "../../package/PackageTestCoverage";
-import SFPLogger from "../../logger/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
 import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import { Connection, Org } from "@salesforce/core";
@@ -43,8 +43,8 @@ export default class TriggerApexTests {
       );
 
       SFPLogger.log(
-        `Executing Command
-        ${triggerApexTestImpl.getGeneratedSFDXCommandWithParams()}`,
+        `Executing Command: ${triggerApexTestImpl.getGeneratedSFDXCommandWithParams()}`,
+        LoggerLevel.INFO,
         this.fileLogger
       );
 
