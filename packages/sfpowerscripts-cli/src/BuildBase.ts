@@ -9,6 +9,7 @@ import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import BuildImpl from "./impl/parallelBuilder/BuildImpl";
 import { Stage } from "./impl/Stage";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
+import { COLOR_ERROR, COLOR_HEADER,COLOR_INFO,COLOR_TIME,COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -82,12 +83,12 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
       const diffcheck: boolean = this.flags.diffcheck;
       const branch: string = this.flags.branch;
 
-      console.log("-----------sfpowerscripts orchestrator ------------------");
-      console.log(`command: ${this.getStage()}`);
-      console.log(`Build Packages Only Changed: ${this.flags.diffcheck}`);
-      console.log(`Config File Path: ${this.flags.configfilepath}`);
-      console.log(`Artifact Directory: ${this.flags.artifactdir}`);
-      console.log("---------------------------------------------------------");
+      console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
+      console.log(COLOR_HEADER(`command: ${this.getStage()}`));
+      console.log(COLOR_HEADER(`Build Packages Only Changed: ${this.flags.diffcheck}`));
+      console.log(COLOR_HEADER(`Config File Path: ${this.flags.configfilepath}`));
+      console.log(COLOR_HEADER(`Artifact Directory: ${this.flags.artifactdir}`));
+      console.log(COLOR_HEADER("---------------------------------------------------------"));
 
       let executionStartTime = Date.now();
 
@@ -101,7 +102,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         buildExecResult.failedPackages.length === 0
       ) {
         console.log(`${EOL}${EOL}`);
-        console.log("No packages found to be built.. .. ");
+        console.log(COLOR_INFO("No packages found to be built.. Exiting.. "));
         return;
       }
 
@@ -150,30 +151,26 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
       );
 
     } catch (error) {
-      console.log(error);
+      console.log(COLOR_ERROR(error));
       process.exitCode = 1;
     } finally {
-      console.log(
+      console.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`
-      );
-      console.log(
-        `${
-          buildExecResult.generatedPackages.length
-        } packages created in ${this.getFormattedTime(
-          totalElapsedTime
-        )} minutes with {${buildExecResult.failedPackages.length}} errors`
-      );
+      ));
+      console.log(COLOR_SUCCESS(
+        `${buildExecResult.generatedPackages.length} packages created in ${COLOR_TIME(this.getFormattedTime(totalElapsedTime))} minutes with {${COLOR_ERROR(buildExecResult.failedPackages.length)}} errors}`
+      ));
 
       if (buildExecResult.failedPackages.length > 0)
-        console.log(`Packages Failed To Build`, buildExecResult.failedPackages);
+        console.log(COLOR_ERROR(`Packages Failed To Build`, buildExecResult.failedPackages));
 
 
       if (artifactCreationErrors.length > 0)
-        console.log(`Failed To Create Artifacts`, artifactCreationErrors);
+        console.log(COLOR_ERROR(`Failed To Create Artifacts`, artifactCreationErrors));
 
       console.log(
-        `----------------------------------------------------------------------------------------------------`
-      );
+        COLOR_HEADER(`----------------------------------------------------------------------------------------------------`
+      ));
 
       const buildResult: BuildResult = {
         packages: [],
@@ -242,3 +239,5 @@ interface BuildResult {
     failed: number;
   };
 }
+
+
