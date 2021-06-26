@@ -5,6 +5,8 @@ import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import DeployImpl, { DeploymentMode, DeployProps } from "../../../impl/deploy/DeployImpl";
 import { Stage } from "../../../impl/Stage";
 import { COLOR_ERROR, COLOR_HEADER,COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
+import { COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import getFormattedTime from "../../../utils/GetFormattedTime";
 
 
 // Initialize Messages with the current plugin directory
@@ -130,15 +132,13 @@ export default class Deploy extends SfpowerscriptsCommand {
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
       if (this.flags.logsgroupsymbol?.[0])
-        console.log(this.flags.logsgroupsymbol[0], "Deployment Summary");
+        console.log(COLOR_HEADER(this.flags.logsgroupsymbol[0], "Deployment Summary"));
 
-      console.log(
+      console.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`
-      );
+      ));
       console.log(COLOR_SUCCESS(
-        `${deploymentResult.deployed.length} packages deployed in ${this.getFormattedTime(
-          totalElapsedTime
-        )} with {${deploymentResult.failed.length}} errors`)
+        `${deploymentResult.deployed.length} packages deployed in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} with {${deploymentResult.failed.length}} errors`)
       );
 
 
@@ -146,12 +146,12 @@ export default class Deploy extends SfpowerscriptsCommand {
       if (deploymentResult.failed.length > 0) {
         console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, deploymentResult.failed));
       }
-      console.log(
+      console.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`
-      );
+      ));
 
       if (this.flags.logsgroupsymbol?.[1])
-        console.log(this.flags.logsgroupsymbol[1]);
+        console.log(COLOR_HEADER(this.flags.logsgroupsymbol[1]));
 
      SFPStatsSender.logCount("deploy.scheduled",tags);
 
@@ -191,10 +191,5 @@ export default class Deploy extends SfpowerscriptsCommand {
     }
   }
 
-  private getFormattedTime(milliseconds: number): string {
-    let date = new Date(0);
-    date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
-    let timeString = date.toISOString().substr(11, 8);
-    return timeString;
-  }
+
 }
