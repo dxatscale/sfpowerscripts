@@ -29,6 +29,7 @@ export const COLOR_TRACE = chalk.gray;
 export const COLOR_DEBUG = chalk.blue;
 export const COLOR_HEADER = chalk.yellowBright.bold;
 export const COLOR_SUCCESS = chalk.green.bold;
+export const COLOR_TIME=chalk.magentaBright
 
 export default class SFPLogger {
   public static logLevel: LoggerLevel = LoggerLevel.INFO;
