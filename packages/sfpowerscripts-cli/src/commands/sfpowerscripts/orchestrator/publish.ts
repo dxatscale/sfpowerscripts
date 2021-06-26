@@ -7,6 +7,8 @@ import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscri
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import child_process = require("child_process");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import { COLOR_ERROR, COLOR_HEADER,COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import getFormattedTime from '../../../utils/GetFormattedTime';
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -98,11 +100,11 @@ export default class Promote extends SfpowerscriptsCommand {
     let npmrcFilesToCleanup: string[] = [];
 
     try {
-    console.log("-----------sfpowerscripts orchestrator ------------------");
-    console.log("command: publish");
-    console.log(`target: ${this.flags.scriptpath ? this.flags.scriptpath : "NPM"}`);
-    console.log(`Publish promoted artifacts only: ${this.flags.publishpromotedonly ? true : false}`);
-    console.log("---------------------------------------------------------");
+    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
+    console.log(COLOR_HEADER("command: publish"));
+    console.log(COLOR_HEADER(`target: ${this.flags.scriptpath ? this.flags.scriptpath : "NPM"}`));
+    console.log(COLOR_HEADER(`Publish promoted artifacts only: ${this.flags.publishpromotedonly ? true : false}`));
+    console.log(COLOR_HEADER("---------------------------------------------------------"));
 
       let packageVersionList: any;
       if (this.flags.publishpromotedonly) {
@@ -210,23 +212,21 @@ export default class Promote extends SfpowerscriptsCommand {
 
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
-      console.log(
+      console.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`
-      );
-      console.log(
-        `${nPublishedArtifacts} artifacts published in ${this.getFormattedTime(
-          totalElapsedTime
-        )} with {${failedArtifacts.length}} errors`
-      );
+      ));
+      console.log(COLOR_SUCCESS(
+        `${nPublishedArtifacts} artifacts published in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} with {${COLOR_ERROR(failedArtifacts.length)}} errors`
+      ));
 
 
 
       if (failedArtifacts.length > 0) {
-        console.log(`Packages Failed to Publish`, failedArtifacts);
+        console.log(COLOR_ERROR(`Packages Failed to Publish`, failedArtifacts));
       }
-      console.log(
+      console.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`
-      );
+      ));
 
       let tags = {
         publish_promoted_only: this.flags.publishpromotedonly ? "true" : "false"
@@ -308,7 +308,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
     cmd += ` --tag ${tag}`;
 
-    console.log(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`);
+    console.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`));
 
     child_process.execSync(
       cmd,
@@ -331,7 +331,7 @@ export default class Promote extends SfpowerscriptsCommand {
       cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
     }
 
-    console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
+    console.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber}...`));
 
     child_process.execSync(
       cmd,
@@ -354,7 +354,7 @@ export default class Promote extends SfpowerscriptsCommand {
   }
 
   private pushGitTags() {
-    console.log("Pushing Git Tags to Repo");
+    console.log(COLOR_KEY_MESSAGE("Pushing Git Tags to Repo"));
     if(this.flags.pushgittag)
     {
       child_process.execSync(
@@ -371,7 +371,7 @@ export default class Promote extends SfpowerscriptsCommand {
       tag: string
     }[]
   ) {
-      console.log("Creating Git Tags in Repo");
+      console.log(COLOR_KEY_MESSAGE("Creating Git Tags in Repo"));
       child_process.execSync(`git config --global user.email "sfpowerscripts@dxscale"`);
       child_process.execSync(`git config --global user.name "sfpowerscripts"`);
 
@@ -418,10 +418,7 @@ export default class Promote extends SfpowerscriptsCommand {
     throw new Error(`Unable to find artifact metadata for ${packageName} Version ${packageVersionNumber.replace("-", ".")}`);
   }
 
-  private getFormattedTime(milliseconds: number): string {
-    let date = new Date(0);
-    date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
-    let timeString = date.toISOString().substr(11, 8);
-    return timeString;
-  }
+
 }
+
+
