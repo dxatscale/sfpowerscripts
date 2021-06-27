@@ -16,6 +16,10 @@ import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommand
 import BuildCollections from "./BuildCollections";
 const Table = require("cli-table");
 import { VoidLogger} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
+import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { COLOR_ERROR } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -103,7 +107,7 @@ export default class BuildImpl {
       table = this.createAllPackageScheduledDisplayedAsATable();
     }
     //Log Packages to be built
-    console.log(EOL+"Packages scheduled for build")
+    console.log(COLOR_KEY_MESSAGE("Packages scheduled for build"))
     console.log(table.toString());
 
     for await (const pkg of this.packagesToBeBuilt) {
@@ -312,8 +316,8 @@ export default class BuildImpl {
   }
 
   private handlePackageError(reason: any, pkg: string): any {
-    console.log(`${EOL}-----------------------------------------`);
-    console.log(`Package Creation Failed for ${pkg}`);
+    console.log(COLOR_HEADER(`${EOL}-----------------------------------------`));
+    console.log(COLOR_ERROR(`Package Creation Failed for ${pkg}`));
     try {
       // Append error to log file
       fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, 'utf8');
@@ -348,8 +352,8 @@ export default class BuildImpl {
         return false;
       }
     });
-    console.log(`${EOL}Removed all childs of ${pkg} from queue`);
-    console.log(`${EOL}-----------------------------------------`);
+    console.log(COLOR_KEY_MESSAGE(`${EOL}Removed all childs of ${pkg} from queue`));
+    console.log(COLOR_HEADER(`${EOL}-----------------------------------------`));
   }
 
   private queueChildPackages(packageMetadata: PackageMetadata): any {
@@ -405,10 +409,10 @@ export default class BuildImpl {
     });
 
     if (pushedPackages.length > 0) {
-      console.log(
+      console.log(COLOR_KEY_MESSAGE(
         `${EOL}Packages being pushed to the queue:{${pushedPackages.length}} `,
         `${pushedPackages}`
-      );
+      ));
     }
     //Remove Pushed Packages from the packages array
     this.packagesToBeBuilt = this.packagesToBeBuilt.filter((el) => {
@@ -445,45 +449,45 @@ export default class BuildImpl {
 
   private printPackageDetails(packageMetadata: PackageMetadata) {
     console.log(
-      `${EOL}${
+      COLOR_HEADER(`${EOL}${
         packageMetadata.package_name
       } package created in ${this.getFormattedTime(
         packageMetadata.creation_details.creation_time
       )}`
-    );
-    console.log(`-- Package Details:--`);
+    ));
+    console.log(COLOR_HEADER(`-- Package Details:--`));
     console.log(
-      `-- Package Version Number:        `,
-      packageMetadata.package_version_number
+      COLOR_HEADER(`-- Package Version Number:        `),
+      COLOR_KEY_MESSAGE(packageMetadata.package_version_number)
     );
 
     if (packageMetadata.package_type !== "data") {
       if (packageMetadata.package_type == "unlocked") {
         console.log(
-          `-- Package Version Id:             `,
-          packageMetadata.package_version_id
+          COLOR_HEADER(`-- Package Version Id:             `),
+          COLOR_KEY_MESSAGE(packageMetadata.package_version_id)
         );
         console.log(
-          `-- Package Test Coverage:          `,
-          packageMetadata.test_coverage
+          COLOR_HEADER(`-- Package Test Coverage:          `),
+          COLOR_KEY_MESSAGE(packageMetadata.test_coverage)
         );
         console.log(
-          `-- Package Coverage Check Passed:  `,
-          packageMetadata.has_passed_coverage_check
+          COLOR_HEADER(`-- Package Coverage Check Passed:  `),
+          COLOR_KEY_MESSAGE(packageMetadata.has_passed_coverage_check)
         );
       }
 
       console.log(
-        `-- Apex In Package:             `,
-        packageMetadata.isApexFound ? "Yes" : "No"
+        COLOR_HEADER(`-- Apex In Package:             `),
+        COLOR_KEY_MESSAGE(packageMetadata.isApexFound ? "Yes" : "No")
       );
       console.log(
-        `-- Profiles In Package:         `,
-        packageMetadata.isProfilesFound ? "Yes" : "No"
+        COLOR_HEADER(`-- Profiles In Package:         `),
+        COLOR_KEY_MESSAGE(packageMetadata.isProfilesFound ? "Yes" : "No")
       );
       console.log(
-        `-- Metadata Count:         `,
-        packageMetadata.metadataCount
+        COLOR_HEADER(`-- Metadata Count:         `),
+        COLOR_KEY_MESSAGE(packageMetadata.metadataCount)
       );
     }
   }
@@ -510,7 +514,7 @@ export default class BuildImpl {
       silent: true,
     });
 
-    console.log(`Package creation initiated for  ${sfdx_package}`);
+    console.log(COLOR_KEY_MESSAGE(`Package creation initiated for  ${sfdx_package}`));
 
     let result;
     if (!isValidateMode) {
