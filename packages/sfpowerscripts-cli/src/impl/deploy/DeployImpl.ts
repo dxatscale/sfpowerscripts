@@ -29,6 +29,9 @@ import { RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/
 import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions";
 import semver = require("semver");
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
+import { COLOR_ERROR } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 const Table = require("cli-table");
 const retry = require("async-retry");
 
@@ -222,7 +225,7 @@ export default class DeployImpl {
                 );
               } catch (error) {
                 //Print Any errors, Report that as execution failed for reporting
-                console.log(error);
+                console.log(COLOR_ERROR(error.message));
                 testResult = {
                   result: false,
                   message: "Test Execution failed"
@@ -280,7 +283,7 @@ export default class DeployImpl {
   private async promotePackagesBeforeInstallation( sourceDirectory:string,packageMetadata: any) {
     if (this.props.promotePackagesBeforeDeploymentToOrg === this.props.targetUsername) {
       if (packageMetadata.package_type === 'unlocked') {
-        console.log(`Attempting to promote package ${packageMetadata.package_name} before installation`);
+        console.log(COLOR_KEY_MESSAGE(`Attempting to promote package ${packageMetadata.package_name} before installation`));
         let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(sourceDirectory, packageMetadata.package_version_id, this.props.devhubUserName);
         await promoteUnlockedPackageImpl.exec();
       }
@@ -309,28 +312,28 @@ export default class DeployImpl {
   private displayHeader(packageMetadata: PackageMetadata, pkgDescriptor: any, pkg: string) {
     let isApexFoundMessage: string = packageMetadata.package_type === "unlocked"
       ? ""
-      : `Contains Apex Classes/Triggers: ${packageMetadata.isApexFound}${EOL}`;
+      : `Contains Apex Classes/Triggers: ${COLOR_KEY_MESSAGE(packageMetadata.isApexFound)}${EOL}`;
 
     let alwaysDeployMessage: string;
 
     if (this.props.skipIfPackageInstalled) {
       if (pkgDescriptor.alwaysDeploy)
-        alwaysDeployMessage = `Always Deploy: True ${EOL}`;
+        alwaysDeployMessage = `Always Deploy: ${COLOR_KEY_MESSAGE(`True`)} ${EOL}`;
 
       else
-        alwaysDeployMessage = `Always Deploy: False ${EOL}`;
+        alwaysDeployMessage = `Always Deploy: ${COLOR_KEY_MESSAGE(`False`)} ${EOL}`;
     } else
       alwaysDeployMessage = "";
 
-    SFPLogger.log(
+    SFPLogger.log(COLOR_HEADER(
       `-------------------------Installing Package------------------------------------${EOL}` +
-      `Name: ${pkg}${EOL}` +
-      `Type: ${packageMetadata.package_type}${EOL}` +
-      `Version Number: ${packageMetadata.package_version_number}${EOL}` +
-      `Metadata Count: ${packageMetadata.metadataCount}${EOL}` +
+      `Name: ${COLOR_KEY_MESSAGE(pkg)}${EOL}` +
+      `Type: ${COLOR_KEY_MESSAGE(packageMetadata.package_type)}${EOL}` +
+      `Version Number: ${COLOR_KEY_MESSAGE(packageMetadata.package_version_number)}${EOL}` +
+      `Metadata Count: ${COLOR_KEY_MESSAGE(packageMetadata.metadataCount)}${EOL}` +
       isApexFoundMessage +
       alwaysDeployMessage +
-      `-------------------------------------------------------------------------------${EOL}`,
+      `-------------------------------------------------------------------------------${EOL}`),
       LoggerLevel.INFO,
       this.props.packageLogger,
 
