@@ -10,6 +10,7 @@ import BuildImpl from "./impl/parallelBuilder/BuildImpl";
 import { Stage } from "./impl/Stage";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { COLOR_ERROR, COLOR_HEADER,COLOR_INFO,COLOR_TIME,COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
+import getFormattedTime from "./utils/GetFormattedTime";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -158,7 +159,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         `----------------------------------------------------------------------------------------------------`
       ));
       console.log(COLOR_SUCCESS(
-        `${buildExecResult.generatedPackages.length} packages created in ${COLOR_TIME(this.getFormattedTime(totalElapsedTime))} minutes with {${COLOR_ERROR(buildExecResult.failedPackages.length)}} errors}`
+        `${buildExecResult.generatedPackages.length} packages created in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} minutes with {${COLOR_ERROR(buildExecResult.failedPackages.length)}} errors}`
       ));
 
       if (buildExecResult.failedPackages.length > 0)
@@ -215,12 +216,6 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
   abstract getStage(): Stage;
 
-  private getFormattedTime(milliseconds: number): string {
-    let date = new Date(0);
-    date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
-    let timeString = date.toISOString().substr(11, 8);
-    return timeString;
-  }
 
   abstract getBuildImplementer(): BuildImpl;
 }
