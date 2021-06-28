@@ -1,6 +1,6 @@
 import child_process = require("child_process");
 import PackageMetadata from "../PackageMetadata";
-import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from "../logger/SFPLogger";
 import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
 const retry = require("async-retry");
 import ArtifactMigrator from "./ArtifactMigrator";
@@ -47,7 +47,7 @@ export default class ArtifactInstallationStatusUpdater {
 
         let cmdOutput;
         let packageName= packageMetadata.package_name;
-        SFPLogger.log(`Updating Org with new Artifacts "+${packageName}+" "+${packageMetadata.package_version_number}+" "+${(artifactId?artifactId:"")}`, LoggerLevel.INFO,logger);
+        SFPLogger.log(COLOR_KEY_MESSAGE(`Updating Org with new Artifacts ${packageName} ${packageMetadata.package_version_number} ${(artifactId?artifactId:"")}`), LoggerLevel.INFO,logger);
         if (artifactId == null) {
           cmdOutput = child_process.execSync(
             `sfdx force:data:record:create --json -s ${ArtifactMigrator.objectApiName} -u ${username}  -v "Name=${packageName} Tag__c=${packageMetadata.tag} Version__c=${packageMetadata.package_version_number} CommitId__c=${packageMetadata.sourceVersion}"`,
