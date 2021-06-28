@@ -1,7 +1,7 @@
 import child_process = require("child_process");
 import { delay } from "../../utils/Delay";
 import { onExit } from "../../utils/OnExit";
-import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_SUCCESS, LoggerLevel } from "../../logger/SFPLogger";
 import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import ConvertSourceToMDAPIImpl from "../../sfdxwrappers/ConvertSourceToMDAPIImpl";
@@ -132,8 +132,8 @@ export default class DeploySourceToOrgImpl {
           );
         } else if (resultAsJSON["result"]["status"] == "Succeeded") {
           SFPLogger.log(
-            "Validation/Deployment Succeeded",
-            null,
+            COLOR_SUCCESS("Deployment Succeeded"),
+            LoggerLevel.INFO,
             this.packageLogger
           );
           commandExecStatus = true;
