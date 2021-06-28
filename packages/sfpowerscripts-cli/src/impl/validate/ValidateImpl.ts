@@ -355,12 +355,8 @@ export default class ValidateImpl {
       `----------------------------------------------------------------------------------------------------`
     ));
     console.log(COLOR_SUCCESS(
-      `${
-        generatedPackages.length
-      } packages created in ${COLOR_TIME(getFormattedTime(totalElapsedTime))}
-      } with {${COLOR_ERROR(failedPackages.length)}} errors`
+      `${generatedPackages.length} packages created in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} with {${COLOR_ERROR(failedPackages.length)}} errors`
     ));
-
 
 
     if (failedPackages.length > 0) {
