@@ -84,7 +84,8 @@ export default class InstallSourcePackageImpl {
         PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,
-          this.targetusername
+          this.targetusername,
+          this.packageLogger
         );
       }
 
@@ -105,7 +106,8 @@ export default class InstallSourcePackageImpl {
         PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPreDeployment,
           this.targetusername,
-          this.sourceDirectory
+          this.sourceDirectory,
+          this.packageLogger
         );
       }
 
@@ -222,11 +224,12 @@ export default class InstallSourcePackageImpl {
       );
 
       if (fs.existsSync(postDeploymentScript)) {
-        console.log("Executing postDeployment script");
+        console.log("Executing postDeployment script",LoggerLevel.INFO, this.packageLogger);
         PackageInstallationHelpers.executeScript(
           postDeploymentScript,
           this.sfdx_package,
-          this.targetusername
+          this.targetusername,
+          this.packageLogger
         );
       }
 
@@ -240,7 +243,8 @@ export default class InstallSourcePackageImpl {
         PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPostDeployment,
           this.targetusername,
-          this.sourceDirectory
+          this.sourceDirectory,
+          this.packageLogger
         );
       }
 
@@ -451,7 +455,7 @@ export default class InstallSourcePackageImpl {
     if (skipTest) {
       let result;
       try {
-        result = await OrgDetails.getOrgDetails(target_org);
+        result = await OrgDetails.getOrgDetails(target_org,this.packageLogger);
       } catch (err) {
         SFPLogger.log(
           ` -------------------------WARNING! SKIPPING TESTS AS ORG TYPE CANNOT BE DETERMINED! ------------------------------------${EOL}` +

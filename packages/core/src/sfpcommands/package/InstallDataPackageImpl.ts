@@ -73,21 +73,23 @@ export default class InstallDataPackageImpl {
         PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,
-          this.targetusername
+          this.targetusername,
+          this.packageLogger
         );
       }
 
       if (this.packageMetadata.assignPermSetsPreDeployment) {
         SFPLogger.log(
           "Assigning permission sets before deployment:",
-          null,
+          LoggerLevel.INFO,
           this.packageLogger
         );
 
         PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPreDeployment,
           this.targetusername,
-          this.sourceDirectory
+          this.sourceDirectory,
+          this.packageLogger
         );
       }
 
@@ -119,21 +121,23 @@ export default class InstallDataPackageImpl {
         PackageInstallationHelpers.executeScript(
           postDeploymentScript,
           this.sfdx_package,
-          this.targetusername
+          this.targetusername,
+          this.packageLogger
         );
       }
 
       if (this.packageMetadata.assignPermSetsPostDeployment) {
         SFPLogger.log(
           "Assigning permission sets after deployment:",
-          null,
+          LoggerLevel.INFO,
           this.packageLogger
         );
 
         PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPostDeployment,
           this.targetusername,
-          this.sourceDirectory
+          this.sourceDirectory,
+          this.packageLogger
         );
       }
 
