@@ -5,7 +5,7 @@ import fs = require("fs");
 import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
 import { PackageInstallationResult, PackageInstallationStatus } from "../../package/PackageInstallationResult";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger, { Logger } from "../../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
 import PackageInstallationHelpers from "./PackageInstallationHelpers";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
 import SFPStatsSender from "../../stats/SFPStatsSender";
@@ -18,7 +18,6 @@ export default class InstallDataPackageImpl {
     private sourceDirectory: string,
     private packageMetadata: PackageMetadata,
     private skip_if_package_installed: boolean,
-    private isPackageCheckHandledByCaller?:boolean,
     private packageLogger?:Logger
   ) {}
 
@@ -50,9 +49,9 @@ export default class InstallDataPackageImpl {
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
         let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+          this.packageLogger,
           this.targetusername,
-          this.packageMetadata,
-          this.isPackageCheckHandledByCaller
+          this.packageMetadata
         );
         isPackageInstalled = installationStatus.isInstalled;
 
@@ -74,21 +73,23 @@ export default class InstallDataPackageImpl {
         PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,
-          this.targetusername
+          this.targetusername,
+          this.packageLogger
         );
       }
 
       if (this.packageMetadata.assignPermSetsPreDeployment) {
         SFPLogger.log(
           "Assigning permission sets before deployment:",
-          null,
+          LoggerLevel.INFO,
           this.packageLogger
         );
 
         PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPreDeployment,
           this.targetusername,
-          this.sourceDirectory
+          this.sourceDirectory,
+          this.packageLogger
         );
       }
 
@@ -120,28 +121,30 @@ export default class InstallDataPackageImpl {
         PackageInstallationHelpers.executeScript(
           postDeploymentScript,
           this.sfdx_package,
-          this.targetusername
+          this.targetusername,
+          this.packageLogger
         );
       }
 
       if (this.packageMetadata.assignPermSetsPostDeployment) {
         SFPLogger.log(
           "Assigning permission sets after deployment:",
-          null,
+          LoggerLevel.INFO,
           this.packageLogger
         );
 
         PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPostDeployment,
           this.targetusername,
-          this.sourceDirectory
+          this.sourceDirectory,
+          this.packageLogger
         );
       }
 
       await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
+        this.packageLogger,
         this.targetusername,
-        this.packageMetadata,
-        this.isPackageCheckHandledByCaller
+        this.packageMetadata
       );
 
       let elapsedTime = Date.now() - startTime;
@@ -173,8 +176,8 @@ export default class InstallDataPackageImpl {
     } finally {
       let csvIssuesReportFilepath: string = path.join(this.sourceDirectory, packageDirectory, `CSVIssuesReport.csv`)
       if (fs.existsSync(csvIssuesReportFilepath)) {
-        SFPLogger.log(`\n---------------------WARNING: SFDMU detected CSV issues, verify the following files -------------------------------`,null,this.packageLogger);
-        SFPLogger.log(fs.readFileSync(csvIssuesReportFilepath, 'utf8'),null,this.packageLogger);
+        SFPLogger.log(`\n---------------------WARNING: SFDMU detected CSV issues, verify the following files -------------------------------`,LoggerLevel.WARN,this.packageLogger);
+        SFPLogger.log(fs.readFileSync(csvIssuesReportFilepath, 'utf8'),LoggerLevel.INFO,this.packageLogger);
       }
     }
   }

@@ -216,8 +216,8 @@ export default class SourcePackageGenerator {
         );
       }
       catch (error) {
-        console.log(error);
-        SFPLogger.log("Unable to read/parse the config file path",LoggerLevel.WARN,logger);
+        SFPLogger.log(error,LoggerLevel.TRACE,logger);
+        SFPLogger.log("Utilizing default config file path",LoggerLevel.INFO,logger);
       }
     }
   }
