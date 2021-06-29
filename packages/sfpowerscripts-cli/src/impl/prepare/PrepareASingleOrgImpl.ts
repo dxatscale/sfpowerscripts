@@ -56,7 +56,7 @@ export default class PrepareASingleOrgImpl {
         `sfpowerscripts--log${EOL}`
       );
 
-      let scratchOrgLogger: Logger = new FileLogger(`.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`);
+      let scratchOrgLogger: FileLogger = new FileLogger(`.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`);
       SFPLogger.log(
         `Installing sfpowerscripts_artifact package to the ${this.scratchOrg.alias}`,
         LoggerLevel.INFO,
