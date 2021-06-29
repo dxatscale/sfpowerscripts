@@ -2,7 +2,8 @@ import { Messages } from "@salesforce/core";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from '@salesforce/command';
 import ValidateImpl, {ValidateMode, ValidateProps} from "../../../impl/validate/ValidateImpl";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
@@ -71,12 +72,12 @@ export default class Validate extends SfpowerscriptsCommand {
   async execute(): Promise<void> {
     let executionStartTime = Date.now();
 
-    console.log("-----------sfpowerscripts orchestrator ------------------");
-    console.log("command: validate");
-    console.log(`Pools being used: ${this.flags.pools}`);
-    console.log(`Coverage Percentage: ${this.flags.coveragepercent}`);
-    console.log(`Using shapefile to override existing shape of the org: ${this.flags.shapefile?'true':'false'}`);
-    console.log("---------------------------------------------------------");
+    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
+    console.log(COLOR_HEADER("command: validate"));
+    console.log(COLOR_HEADER(`Pools being used: ${this.flags.pools}`));
+    console.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
+    console.log(COLOR_HEADER(`Using shapefile to override existing shape of the org: ${this.flags.shapefile?'true':'false'}`));
+    console.log(COLOR_HEADER("---------------------------------------------------------"));
 
 
     let validateResult: boolean = false;

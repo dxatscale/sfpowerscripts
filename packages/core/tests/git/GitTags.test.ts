@@ -1,11 +1,11 @@
 import { jest, expect } from "@jest/globals";
-import GitTags from "../../src/utils/GitTags";
-import Git from "../../src/utils/Git";
+import GitTags from "../../src/git/GitTags";
+import Git from "../../src/git/Git";
 
 import child_process = require("child_process");
 
 let tags: string[];
-jest.mock("../../src/utils/Git", () => {
+jest.mock("../../src/git/Git", () => {
   class Git {
     tag = jest.fn().mockReturnValue(tags);
     log = jest.fn().mockReturnValue(gitLog);

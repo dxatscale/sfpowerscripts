@@ -2,7 +2,7 @@ import ReleaseDefinitionSchema from "./ReleaseDefinitionSchema";
 import Ajv from "ajv"
 const yaml = require('js-yaml');
 import lodash = require("lodash");
-import get18DigitSalesforceId from "../../utils/get18DigitSalesforceId";
+import get18DigitSalesforceId from "../../utils/Get18DigitSalesforceId";
 import * as fs from "fs-extra";
 const path = require("path");
 

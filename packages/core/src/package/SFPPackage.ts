@@ -9,6 +9,7 @@ import PropertyFetcher from "./propertyFetchers/PropertyFetcher";
 import AssignPermissionSetFetcher from "./propertyFetchers/AssignPermissionSetFetcher";
 import DestructiveManifestPathFetcher from "./propertyFetchers/DestructiveManifestPathFetcher";
 import ReconcilePropertyFetcher from "./propertyFetchers/ReconcileProfilePropertyFetcher";
+import { Logger } from "../logger/SFPLogger";
 
 export type ApexClasses = Array<string>;
 export default class SFPPackage {
@@ -42,7 +43,7 @@ export default class SFPPackage {
   public postDeploymentScript: string;
   public preDeploymentScript: string;
 
-  private constructor() {}
+  private constructor(private _logger:Logger) {}
 
   public get configFilePath() {
     return this._configFilePath;
@@ -100,13 +101,13 @@ export default class SFPPackage {
   }
 
   public static async buildPackageFromProjectConfig(
+    packageLogger: Logger,
     projectDirectory: string,
     sfdx_package: string,
     configFilePath?: string,
-    packageLogger?: any,
     pathToReplacementForceIgnore?: string
   ) {
-    let sfpPackage: SFPPackage = new SFPPackage();
+    let sfpPackage: SFPPackage = new SFPPackage(packageLogger);
     sfpPackage._package_name = sfdx_package;
     sfpPackage._packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
       projectDirectory,
@@ -126,6 +127,7 @@ export default class SFPPackage {
 
     // Requires destructiveChangesPath which is set by the property fetcher
     sfpPackage._workingDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
+      sfpPackage._logger, 
       sfpPackage._projectDirectory,
       sfpPackage._package_name,
       sfpPackage._packageDescriptor.path,

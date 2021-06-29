@@ -3,7 +3,7 @@ let request = require("request-promise-native");
 import { SfdxApi } from "../sfdxnode/types";
 let retry = require("async-retry");
 import { isNullOrUndefined } from "util";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 const ORDER_BY_FILTER = " ORDER BY CreatedDate ASC";
 export default class ScratchOrgUtils {

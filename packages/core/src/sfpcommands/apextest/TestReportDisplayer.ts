@@ -2,7 +2,7 @@ import {
   RunApexTestSuitesOption,
   TestOptions,
 } from "../../sfdxwrappers/TestOptions";
-import SFPLogger from "../../utils/SFPLogger";
+import SFPLogger from "../../logger/SFPLogger";
 import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
 
 const Table = require("cli-table");
@@ -84,7 +84,6 @@ export class TestReportDisplayer {
   ): string {
     SFPLogger.log(
       `The following classes do not satisfy the ${coverageThreshold}% code coverage requirement:`,
-      SFPLogger
     );
 
     return this.printIndividualClassCoverage(classesWithInvalidCoverage);

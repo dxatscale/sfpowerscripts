@@ -1,7 +1,9 @@
 import { jest,expect } from "@jest/globals";
 import child_process = require("child_process");
 import ArtifactInstallationStatusUpdater from "../../src/artifacts/ArtifactInstallationStatusUpdater";
+import ArtifactMigrator from "../../src/artifacts/ArtifactMigrator";
 import InstalledAritfactsFetcher from "../../src/artifacts/InstalledAritfactsFetcher";
+import { VoidLogger } from "../../src/logger/SFPLogger";
 import PackageMetadata from "../../src/PackageMetadata";
 
 describe("Fetch a list of sfpowerscripts artifacts from an org", () => {
@@ -9,6 +11,7 @@ describe("Fetch a list of sfpowerscripts artifacts from an org", () => {
 
   beforeEach(() => {
     InstalledAritfactsFetcher.resetFetchedArtifacts();
+    jest.spyOn(ArtifactMigrator, "exec").mockResolvedValue();
   });
 
   it("Return a  blank list of sfpowerscripts artifact, if there are no previously installed artifacts ", async () => {
@@ -213,10 +216,10 @@ describe("Update a sfpowerscripts artifact to an org",()=>{
   beforeEach(() => {
     jest.restoreAllMocks();
     InstalledAritfactsFetcher.resetFetchedArtifacts();
+    jest.spyOn(ArtifactMigrator, "exec").mockResolvedValue();
   });
 
   it("Update a sfpowerscripts artifact, installing it the first time",async ()=>{
-
     const child_processMock = jest.spyOn(child_process, "execSync");
     child_processMock.mockImplementationOnce(() => {
       return Buffer.from(`{
@@ -245,7 +248,7 @@ describe("Update a sfpowerscripts artifact to an org",()=>{
      sourceVersion:"3232x232xc3e"
    }
 
-   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false);
+   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(new VoidLogger(),"testorg",packageMetadata);
    expect(result).toEqual(true);
 
   });
@@ -292,7 +295,7 @@ describe("Update a sfpowerscripts artifact to an org",()=>{
      sourceVersion:"3232x232xc3e"
    }
 
-   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false);
+   let result = await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(new VoidLogger(),"testorg",packageMetadata);
    expect(result).toEqual(true);
 
   });
@@ -335,7 +338,7 @@ describe("Update a sfpowerscripts artifact to an org",()=>{
    }
 
 
-   expect(ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg("testorg",packageMetadata,false)).resolves.toBeFalsy;
+   expect(ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(new VoidLogger(),"testorg",packageMetadata)).resolves.toBeFalsy;
 
   });
 

@@ -1,6 +1,6 @@
 import path = require("path");
 import * as fs from "fs-extra";
-import SFPLogger, { LoggerLevel } from "../utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 const glob = require("glob");
 import AdmZip = require("adm-zip");
 import semver = require("semver");
@@ -30,7 +30,7 @@ export default class ArtifactFilePathFetcher {
       artifacts = ArtifactFilePathFetcher.findArtifactMetadata(artifactDirectory, sfdx_package);
     }
 
-    SFPLogger.log("Artifacts", artifacts, null, LoggerLevel.DEBUG);
+    SFPLogger.log(`Artifacts: ${JSON.stringify(artifacts)}`,LoggerLevel.DEBUG);
 
     for(let artifact of artifacts) {
       let artifactFilePaths: ArtifactFilePaths
@@ -208,9 +208,9 @@ export default class ArtifactFilePathFetcher {
     );
 
     if (sfdx_package && artifacts.length > 1) {
-      SFPLogger.log(`Found more than one artifact for ${sfdx_package}`, null, null, LoggerLevel.DEBUG);
+      SFPLogger.log(`Found more than one artifact for ${sfdx_package}`,LoggerLevel.INFO);
       let latestArtifact: string = ArtifactFilePathFetcher.getLatestArtifact(artifacts);
-      SFPLogger.log(`Using latest artifact ${latestArtifact}`, null, null, LoggerLevel.DEBUG);
+      SFPLogger.log(`Using latest artifact ${latestArtifact}`,LoggerLevel.INFO);
       return [latestArtifact];
     } else
       return artifacts;
@@ -302,10 +302,7 @@ export default class ArtifactFilePathFetcher {
       artifacts.length === 0 && isToSkipOnMissingArtifact
     ) {
       SFPLogger.log(
-        `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${isToSkipOnMissingArtifact}`,
-        null,
-        null,
-        LoggerLevel.DEBUG
+        `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${isToSkipOnMissingArtifact}`
       );
       return true;
     }

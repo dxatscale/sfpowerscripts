@@ -1,20 +1,22 @@
 import InstalledAritfactsFetcher from "./InstalledAritfactsFetcher";
 import PackageMetadata from "../PackageMetadata";
-import SFPLogger from "../utils/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
+import ArtifactMigrator from "./ArtifactMigrator";
+
 
 export default class ArtifactInstallationStatusChecker {
 
 
   public static async checkWhetherPackageIsIntalledInOrg(
+    logger:Logger,
     target_org: string,
     packageMetadata: PackageMetadata,
-    isHandledByCaller: boolean
   ): Promise<{isInstalled:boolean,versionNumber?:string}> {
-    if (isHandledByCaller) return {isInstalled:false}; //This is already handled by the caller, in that case if it reached here, we should 
-                                         //always install
+  
     let result:{isInstalled:boolean,versionNumber?:string}={isInstalled:false};
     try {
-      SFPLogger.log(`Querying for version of  ${packageMetadata.package_name} in the Org..`);
+
+      SFPLogger.log(`Querying for version of  ${packageMetadata.package_name} in the Org..`,LoggerLevel.INFO,logger);
       result.isInstalled=false;
       let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(
         target_org
@@ -34,7 +36,7 @@ export default class ArtifactInstallationStatusChecker {
     } catch (error) {
       SFPLogger.log("Unable to fetch any sfpowerscripts artifacts in the org\n" +
       "1. sfpowerscripts package is not installed in the org\n" +
-      "2. The required prerequisite object is not deployed to this org\n");
+      "2. The required prerequisite object is not deployed to this org\n",LoggerLevel.WARN,logger)
     }
     return result;
   }

@@ -1,3 +1,4 @@
+import { Logger } from "../../logger/SFPLogger";
 import SFPPackage  from "../SFPPackage";
 import PropertyFetcher from "./PropertyFetcher"
 
@@ -6,7 +7,7 @@ export default class AssignPermissionSetFetcher implements PropertyFetcher {
 
   public getSfpowerscriptsProperties(
     packageContents: SFPPackage,
-    packageLogger?: any
+    packageLogger?: Logger
   ) {
     if (packageContents.packageDescriptor.assignPermSetsPreDeployment) {
       if (

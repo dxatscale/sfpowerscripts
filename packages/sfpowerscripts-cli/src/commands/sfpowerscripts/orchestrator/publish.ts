@@ -6,8 +6,10 @@ import path = require("path");
 import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import child_process = require("child_process");
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import { COLOR_ERROR, COLOR_HEADER,COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import getFormattedTime from '../../../utils/GetFormattedTime';
+
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
@@ -36,12 +38,11 @@ export default class Promote extends SfpowerscriptsCommand {
     publishpromotedonly: flags.boolean({
       char: 'p',
       description: messages.getMessage('publishPromotedOnlyFlagDescription'),
-      default: false
+      dependsOn: ['devhubalias'],
     }),
     devhubalias: flags.string({
       char: 'v',
       description: messages.getMessage('devhubAliasFlagDescription'),
-      deprecated: {messageOverride:"--devhubalias has been deprecated"}
     }),
     scriptpath: flags.filepath({
       char: 'f',
@@ -85,7 +86,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
     let nPublishedArtifacts: number = 0;
     let failedArtifacts: string[] = [];
-    SFPLogger.isSupressLogs = true;
+
 
     let executionStartTime = Date.now();
 
@@ -99,13 +100,25 @@ export default class Promote extends SfpowerscriptsCommand {
     let npmrcFilesToCleanup: string[] = [];
 
     try {
-    console.log("-----------sfpowerscripts orchestrator ------------------");
-    console.log("command: publish");
-    console.log(`target: ${this.flags.scriptpath ? this.flags.scriptpath : "NPM"}`);
-    console.log(`Publish promoted artifacts only: ${this.flags.publishpromotedonly ? true : false}`);
-    console.log("---------------------------------------------------------");
+    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
+    console.log(COLOR_HEADER("command: publish"));
+    console.log(COLOR_HEADER(`target: ${this.flags.scriptpath ? this.flags.scriptpath : "NPM"}`));
+    console.log(COLOR_HEADER(`Publish promoted artifacts only: ${this.flags.publishpromotedonly ? true : false}`));
+    console.log(COLOR_HEADER("---------------------------------------------------------"));
 
-
+      let packageVersionList: any;
+      if (this.flags.publishpromotedonly) {
+        let packageVersionListJson: string = child_process.execSync(
+          `sfdx force:package:version:list --released -v ${this.flags.devhubalias} --json`,
+          {
+            cwd: process.cwd(),
+            stdio: ['ignore', 'pipe', 'pipe'],
+            encoding: 'utf8',
+            maxBuffer: 5*1024*1024
+          }
+        );
+        packageVersionList = JSON.parse(packageVersionListJson);
+      }
 
       let artifacts = ArtifactFilePathFetcher.findArtifacts(this.flags.artifactdir);
       let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);
@@ -132,10 +145,15 @@ export default class Promote extends SfpowerscriptsCommand {
           packageVersionNumber
         );
 
-        if (this.flags.publishpromotedonly) {
-          if (!packageMetadata.isPromoted) {
+        let packageType = packageMetadata.package_type;
+        let packageVersionId = packageMetadata.package_version_id;
+
+        if (this.flags.publishpromotedonly && packageType === "unlocked") {
+          let isReleased = this.isPackageVersionIdReleased(packageVersionList, packageVersionId);
+
+          if (!isReleased) {
             failedArtifacts.push(`${packageName} v${packageVersionNumber}`);
-            console.log(`Skipping ${packageName} Version ${packageVersionNumber} as it has not been promoted.`);
+            console.log(`Skipping ${packageName} Version ${packageVersionNumber}. Package Version Id ${packageVersionId} has not been promoted.`);
             process.exitCode = 1;
             continue;
           }
@@ -161,7 +179,7 @@ export default class Promote extends SfpowerscriptsCommand {
           succesfullyPublishedPackageNamesForTagging.push({
             name:packageName,
             version:packageVersionNumber.replace("-", "."),
-            type: packageMetadata.package_type,
+            type: packageType,
             tag:`${packageName}_v${packageVersionNumber.replace("-", ".")}`
           });
 
@@ -194,23 +212,21 @@ export default class Promote extends SfpowerscriptsCommand {
 
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
-      console.log(
+      console.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`
-      );
-      console.log(
-        `${nPublishedArtifacts} artifacts published in ${this.getFormattedTime(
-          totalElapsedTime
-        )} with {${failedArtifacts.length}} errors`
-      );
+      ));
+      console.log(COLOR_SUCCESS(
+        `${nPublishedArtifacts} artifacts published in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} with {${COLOR_ERROR(failedArtifacts.length)}} errors`
+      ));
 
 
 
       if (failedArtifacts.length > 0) {
-        console.log(`Packages Failed to Publish`, failedArtifacts);
+        console.log(COLOR_ERROR(`Packages Failed to Publish`, failedArtifacts));
       }
-      console.log(
+      console.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`
-      );
+      ));
 
       let tags = {
         publish_promoted_only: this.flags.publishpromotedonly ? "true" : "false"
@@ -292,7 +308,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
     cmd += ` --tag ${tag}`;
 
-    console.log(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`);
+    console.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`));
 
     child_process.execSync(
       cmd,
@@ -310,12 +326,12 @@ export default class Promote extends SfpowerscriptsCommand {
   ) {
     let cmd: string;
     if (process.platform !== 'win32') {
-      cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+      cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
     } else {
-      cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly}`;
+      cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
     }
 
-    console.log(`Publishing ${packageName} Version ${packageVersionNumber}...`);
+    console.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber}...`));
 
     child_process.execSync(
       cmd,
@@ -338,7 +354,7 @@ export default class Promote extends SfpowerscriptsCommand {
   }
 
   private pushGitTags() {
-    console.log("Pushing Git Tags to Repo");
+    console.log(COLOR_KEY_MESSAGE("Pushing Git Tags to Repo"));
     if(this.flags.pushgittag)
     {
       child_process.execSync(
@@ -355,7 +371,7 @@ export default class Promote extends SfpowerscriptsCommand {
       tag: string
     }[]
   ) {
-      console.log("Creating Git Tags in Repo");
+      console.log(COLOR_KEY_MESSAGE("Creating Git Tags in Repo"));
       child_process.execSync(`git config --global user.email "sfpowerscripts@dxscale"`);
       child_process.execSync(`git config --global user.name "sfpowerscripts"`);
 
@@ -365,6 +381,17 @@ export default class Promote extends SfpowerscriptsCommand {
         );
       }
 
+  }
+
+  private isPackageVersionIdReleased(packageVersionList: any, packageVersionId: string): boolean {
+    let packageVersion = packageVersionList.result.find((pkg) => {
+      return pkg.SubscriberPackageVersionId === packageVersionId;
+    });
+
+    if (packageVersion)
+      return true
+    else
+      return false
   }
 
   /**
@@ -391,10 +418,7 @@ export default class Promote extends SfpowerscriptsCommand {
     throw new Error(`Unable to find artifact metadata for ${packageName} Version ${packageVersionNumber.replace("-", ".")}`);
   }
 
-  private getFormattedTime(milliseconds: number): string {
-    let date = new Date(0);
-    date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
-    let timeString = date.toISOString().substr(11, 8);
-    return timeString;
-  }
+
 }
+
+

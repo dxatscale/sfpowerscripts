@@ -390,9 +390,6 @@ OPTIONS
   --executorcount=executorcount                                                     [default: 5] Number of parallel
                                                                                     package task schedulors
 
-  --gittag                                                                          This flag is deprecated, Please
-                                                                                    utilize git tags on publish stage
-
   --tag=tag                                                                         Tag the build with a label, useful
                                                                                     to identify in metrics
 
@@ -451,9 +448,6 @@ OPTIONS
 
   --executorcount=executorcount                                                     [default: 5] Number of parallel
                                                                                     package task schedulors
-
-  --gittag                                                                          This flag is deprecated,
-                                                                                    Please utilize git tags on publish stage
 
   --tag=tag                                                                         Tag the build with a label, useful
                                                                                     to identify in metrics
@@ -1043,9 +1037,6 @@ USAGE
   <string>] [--tag <string>] [--waittime <string>] [--refname <string>] [-v <string>] [--apiversion <string>]
 
 OPTIONS
-  -b, --buildartifactenabled
-      [DEPRECATED - always generate artifact] Create a build artifact, so that this pipeline can be consumed by a release
-      pipeline
 
   -f, --configfilepath=configfilepath
       [default: config/project-scratch-def.json] Path in the current project directory containing  config file for the

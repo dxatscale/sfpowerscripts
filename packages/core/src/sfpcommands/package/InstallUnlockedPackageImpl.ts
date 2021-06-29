@@ -3,13 +3,14 @@ import { isNullOrUndefined } from "util";
 import { onExit } from "../../utils/OnExit";
 import PackageMetadata from "../../PackageMetadata";
 import { PackageInstallationResult, PackageInstallationStatus } from "../../package/PackageInstallationResult";
-import SFPLogger from "../../utils/SFPLogger";
-import PackageInstallationHelpers from "../../utils/PackageInstallationHelpers";
+import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
+import PackageInstallationHelpers from "./PackageInstallationHelpers";
 import path = require("path");
 import fs = require("fs");
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
-import SFPStatsSender from "../../utils/SFPStatsSender";
+import SFPStatsSender from "../../stats/SFPStatsSender";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
+
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -21,7 +22,7 @@ export default class InstallUnlockedPackageImpl {
     private skip_if_package_installed: boolean,
     private packageMetadata:PackageMetadata,
     private sourceDirectory?:string,
-    private packageLogger?:any
+    private packageLogger?:Logger
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -41,32 +42,34 @@ export default class InstallUnlockedPackageImpl {
           );
 
           if (fs.existsSync(preDeploymentScript)) {
-            console.log("Executing preDeployment script");
+            console.log("Executing preDeployment script",LoggerLevel.INFO,this.packageLogger);
             PackageInstallationHelpers.executeScript(
               preDeploymentScript,
               this.packageMetadata.package_name,
-              this.targetusername
+              this.targetusername,
+              this.packageLogger
             );
           }
 
           if (this.packageMetadata.assignPermSetsPreDeployment) {
             SFPLogger.log(
               "Assigning permission sets before deployment:",
-              null,
+              LoggerLevel.INFO,
               this.packageLogger
             );
 
             PackageInstallationHelpers.applyPermsets(
               this.packageMetadata.assignPermSetsPreDeployment,
               this.targetusername,
-              this.sourceDirectory
+              this.sourceDirectory,
+              this.packageLogger
             );
           }
           
         }
 
             //Print Metadata carried in the package
-         PackageMetadataPrinter.printMetadataToDeploy(this.packageMetadata?.payload);
+         PackageMetadataPrinter.printMetadataToDeploy(this.packageMetadata?.payload,this.packageLogger);
  
         let command = this.buildPackageInstallCommand();
         let child = child_process.exec(command);
@@ -91,11 +94,12 @@ export default class InstallUnlockedPackageImpl {
           );
 
           if (fs.existsSync(postDeploymentScript)) {
-            console.log("Executing postDeployment script");
+            console.log("Executing postDeployment script",LoggerLevel.INFO,this.packageLogger);
             PackageInstallationHelpers.executeScript(
               postDeploymentScript,
               this.packageMetadata.package_name,
-              this.targetusername
+              this.targetusername,
+              this.packageLogger
             );
           }
 
@@ -109,16 +113,17 @@ export default class InstallUnlockedPackageImpl {
             PackageInstallationHelpers.applyPermsets(
               this.packageMetadata.assignPermSetsPostDeployment,
               this.targetusername,
-              this.sourceDirectory
+              this.sourceDirectory,
+              this.packageLogger
             )
           }
         }
 
 
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
+          this.packageLogger,
           this.targetusername,
-          this.packageMetadata,
-          false
+          this.packageMetadata
         );
 
 
@@ -188,8 +193,8 @@ export default class InstallUnlockedPackageImpl {
         });
         if (packageFound) {
           SFPLogger.log(
-            "Package To be installed was found in the target org",
-            packageFound,
+            `Package To be installed was found in the target org ${packageFound}`,
+            LoggerLevel.INFO,
             this.packageLogger
           );
           return true;
@@ -197,7 +202,7 @@ export default class InstallUnlockedPackageImpl {
       }
     } catch (error) {
       SFPLogger.log(
-        "Unable to check whether this package is installed in the target org",null,this.packageLogger
+        "Unable to check whether this package is installed in the target org",LoggerLevel.INFO,this.packageLogger
       );
       return false;
     }

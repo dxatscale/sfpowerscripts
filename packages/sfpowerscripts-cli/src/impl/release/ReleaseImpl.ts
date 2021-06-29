@@ -1,7 +1,7 @@
 import ReleaseDefinitionSchema from "./ReleaseDefinitionSchema";
 import FetchImpl from "../artifacts/FetchImpl";
 import DeployImpl, { DeployProps , DeploymentMode, DeploymentResult } from "../deploy/DeployImpl";
-import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Stage } from "../Stage";
 import child_process = require("child_process");
 import ReleaseError from "../../errors/ReleaseError";
@@ -156,8 +156,6 @@ export default class ReleaseImpl {
 
           SFPLogger.log(
             `Installing package dependency ${pkg}: ${packageDependencies[pkg]}`,
-            null,
-            null,
             LoggerLevel.INFO
           );
           child_process.execSync(
@@ -237,9 +235,7 @@ export default class ReleaseImpl {
   private printOpenLoggingGroup(message:string) {
     if (this.props.logsGroupSymbol?.[0])
       SFPLogger.log(
-        this.props.logsGroupSymbol[0],
-        `${message}`,
-        null,
+        `${this.props.logsGroupSymbol[0]} ${message}`,
         LoggerLevel.INFO
       );
   }
@@ -248,8 +244,6 @@ export default class ReleaseImpl {
     if (this.props.logsGroupSymbol?.[1])
       SFPLogger.log(
         this.props.logsGroupSymbol[1],
-        null,
-        null,
         LoggerLevel.INFO
       );
   }

@@ -7,11 +7,14 @@ import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
 import { EOL } from "os";
 import SFPLogger, {
   LoggerLevel,
-} from "@dxatscale/sfpowerscripts.core/lib/utils/SFPLogger";
+} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Stage } from "../Stage";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/utils/SFPStatsSender";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import { Logger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { FileLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
-const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka0fQAA";
+
+const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
 export default class PrepareASingleOrgImpl {
   private keys;
   private installAll: boolean;
@@ -53,11 +56,11 @@ export default class PrepareASingleOrgImpl {
         `sfpowerscripts--log${EOL}`
       );
 
-      let packageLogger: any = `.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`;
+      let scratchOrgLogger: FileLogger = new FileLogger(`.sfpowerscripts/prepare_logs/${this.scratchOrg.alias}.log`);
       SFPLogger.log(
         `Installing sfpowerscripts_artifact package to the ${this.scratchOrg.alias}`,
-        null,
-        packageLogger
+        LoggerLevel.INFO,
+        scratchOrgLogger
       );
 
       await this.sfdx.force.package.install({
@@ -71,12 +74,12 @@ export default class PrepareASingleOrgImpl {
         wait: 60,
       });
 
-      SFPLogger.isSupressLogs = true;
+
       let startTime = Date.now();
       SFPLogger.log(
         `Installing package depedencies to the ${this.scratchOrg.alias}`,
-        null,
-        packageLogger
+        LoggerLevel.INFO,
+        scratchOrgLogger
       );
       SFPLogger.log(
         `Installing Package Dependencies of this repo in ${this.scratchOrg.alias}`
@@ -90,7 +93,7 @@ export default class PrepareASingleOrgImpl {
         null,
         this.keys,
         true,
-        packageLogger
+        scratchOrgLogger
       );
       let installationResult = await installDependencies.exec();
       if (installationResult.result == PackageInstallationStatus.Failed) {
@@ -103,16 +106,16 @@ export default class PrepareASingleOrgImpl {
 
       if (this.installAll) {
         let deploymentResult = await this.deployAllPackagesInTheRepo(
-          packageLogger
+          scratchOrgLogger
         );
         this.succeedOnDeploymentErrors
           ? this.handleDeploymentErrorsForPartialDeployment(
               deploymentResult,
-              packageLogger
+              scratchOrgLogger
             )
           : this.handleDeploymentErrorsForFullDeployment(
               deploymentResult,
-              packageLogger
+              scratchOrgLogger
             );
       } else {
         //Send succeeded metrics when everything is in when no install is activated
@@ -136,14 +139,14 @@ export default class PrepareASingleOrgImpl {
     }
   }
 
-  private async deployAllPackagesInTheRepo(packageLogger: any) {
+  private async deployAllPackagesInTheRepo(logger: Logger) {
     SFPLogger.log(
       `Deploying all packages in the repo to  ${this.scratchOrg.alias}`
     );
     SFPLogger.log(
       `Deploying all packages in the repo to  ${this.scratchOrg.alias}`,
       null,
-      packageLogger
+      logger
     );
 
     let deployProps: DeployProps = {
@@ -151,7 +154,7 @@ export default class PrepareASingleOrgImpl {
       artifactDir: "artifacts",
       waitTime: 120,
       currentStage: Stage.PREPARE,
-      packageLogger: packageLogger,
+      packageLogger: logger,
       isTestsToBeTriggered: false,
       skipIfPackageInstalled: false,
       deploymentMode: this.installAsSourcePackages
@@ -175,28 +178,25 @@ export default class PrepareASingleOrgImpl {
       testFailure: string;
       error: any;
     },
-    packageLogger: any
+    logger: Logger
   ) {
     //Handle Deployment Failures
     if (deploymentResult.failed.length > 0 || deploymentResult.error) {
       //Write to Scratch Org Logs
       SFPLogger.log(
         `Following Packages failed to deploy in ${this.scratchOrg.alias}`,
-        null,
-        packageLogger,
-        LoggerLevel.INFO
+        LoggerLevel.INFO,
+        logger,
       );
       SFPLogger.log(
-        deploymentResult.failed,
-        null,
-        packageLogger,
-        LoggerLevel.INFO
+        JSON.stringify(deploymentResult.failed),
+        LoggerLevel.INFO,
+        logger
       );
       SFPLogger.log(
         `Deployment of packages failed in ${this.scratchOrg.alias}, this scratch org will be deleted`,
-        null,
-        packageLogger,
-        LoggerLevel.INFO
+        LoggerLevel.INFO,
+        logger
       );
       throw new Error(
         "Following Packages failed to deploy:" + deploymentResult.failed
@@ -214,7 +214,7 @@ export default class PrepareASingleOrgImpl {
       testFailure: string;
       error: any;
     },
-    packageLogger: any
+    logger: Logger
   ) {
     //Handle Deployment Failures
     if (deploymentResult.failed.length > 0 || deploymentResult.error) {
@@ -226,9 +226,8 @@ export default class PrepareASingleOrgImpl {
           SFPStatsSender.logCount("prepare.org.checkpointfailed");
           SFPLogger.log(
             `One or some of the check point packages ${this.checkPointPackages} failed to deploy, Deleting ${this.scratchOrg.alias}`,
-            null,
-            packageLogger,
-            LoggerLevel.INFO
+            LoggerLevel.INFO,
+            logger
           );
           throw new Error(
             `One or some of the check point Packages ${this.checkPointPackages} failed to deploy`
@@ -238,9 +237,8 @@ export default class PrepareASingleOrgImpl {
         SFPStatsSender.logCount("prepare.org.partial");
         SFPLogger.log(
           `Cancelling any further packages to be deployed, Adding the scratchorg ${this.scratchOrg.alias} to the pool`,
-          null,
-          packageLogger,
-          LoggerLevel.INFO
+          LoggerLevel.INFO,
+          logger
         );
       }
     } else {
