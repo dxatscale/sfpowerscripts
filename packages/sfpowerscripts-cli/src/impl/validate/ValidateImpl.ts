@@ -313,7 +313,7 @@ export default class ValidateImpl {
         }
       );
       let grant = JSON.parse(grantJson);
-      console.log(COLOR_KEY_MESSAGE(`Successfully authorized ${grant.username} with org ID ${grant.orgId}`));
+      console.log(COLOR_KEY_MESSAGE(`Successfully authorized ${grant.result.username} with org ID ${grant.result.orgId}`));
       return grant.result;
     } catch (err) {
       throw new Error(`Failed to authenticate to ${scratchOrgUsername}`);
