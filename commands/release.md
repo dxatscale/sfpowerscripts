@@ -80,7 +80,7 @@ When the `--generatechangelog` flag is passed to the command, a changelog will a
 To generate a changelog, the`changelog.repoUrl` and `changelog.workItemFilter` parameters must be configured in the release definition file.
 {% endhint %}
 
-A changelog is generated in markdown format and pushed to the repo, defined in the release definition, under the branch "sfp\_changelog_\_&lt;artifact\_source\_branch&gt;"\_.
+A changelog is generated in markdown format and pushed to the repo, utilizing the `branchname` flag provided to the release command. If the command finds a previous changelog files, it will utilize to generate an incremental changelog
 
 ![Release changelog](../.gitbook/assets/changelog%20%281%29.png)
 
