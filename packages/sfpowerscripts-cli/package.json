@@ -20,7 +20,7 @@
     "bottleneck": "^2.19.5",
     "cli-table": "^0.3.6",
     "dotenv": "^8.2.0",
-    "fs-extra": "^9.0.1",
+    "fs-extra": "^9.1.0",
     "glob": "^7.1.6",
     "handlebars": "^4.7.7",
     "hook-std": "^2.0.0",
