@@ -14,6 +14,13 @@ import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
 import DependencyAnalysis from "./DependencyAnalysis";
 const Table = require("cli-table");
 import InstalledArtifactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
+import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { COLOR_ERROR } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import getFormattedTime from "../../utils/GetFormattedTime";
+import { COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 export enum ValidateMode {
   ORG,
@@ -69,8 +76,8 @@ export default class ValidateImpl {
       try {
         installedArtifacts = await InstalledArtifactsFetcher.getListofArtifacts(scratchOrgUsername);
       } catch {
-        console.log("Failed to query org for Sfpowerscripts Artifacts");
-        console.log("Building all packages");
+        console.log(COLOR_ERROR("Failed to query org for Sfpowerscripts Artifacts"));
+        console.log(COLOR_KEY_MESSAGE("Building all packages"));
       }
 
       let packagesToCommits: {[p: string]: string} = {};
@@ -138,7 +145,7 @@ export default class ValidateImpl {
     if (installationResult.result == PackageInstallationStatus.Failed) {
       throw new Error(installationResult.message);
     }
-    console.log(`Successfully completed Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
+    console.log(COLOR_KEY_MESSAGE(`Successfully completed Installing Package Dependencies of this repo in ${scratchOrgUsername}`));
     this.printClosingLoggingGroup();
   }
 
@@ -155,7 +162,7 @@ export default class ValidateImpl {
           );
       }
     } catch (error) {
-      console.log(error.message);
+      console.log(COLOR_WARNING(error.message));
     }
   }
 
@@ -170,7 +177,7 @@ export default class ValidateImpl {
   }
 
   private deployShapeFile(shapeFile: string, scratchOrgUsername: string): void {
-    console.log(`Deploying scratch org shape`, shapeFile);
+    console.log(COLOR_KEY_MESSAGE(`Deploying scratch org shape`), shapeFile);
     child_process.execSync(
       `sfdx force:mdapi:deploy -f ${shapeFile} -u ${scratchOrgUsername} -w 30 --ignorewarnings`,
       {
@@ -253,7 +260,7 @@ export default class ValidateImpl {
         );
       } catch (error) {
         console.log(
-          `Unable to create artifact for ${generatedPackage.package_name}`
+          COLOR_ERROR(`Unable to create artifact for ${generatedPackage.package_name}`)
         );
         throw error;
       }
@@ -286,7 +293,7 @@ export default class ValidateImpl {
       table.push([artifact.Name, artifact.Version__c, artifact.CommitId__c]);
     });
 
-    console.log(`Artifacts installed in scratch org:`);
+    console.log(COLOR_KEY_MESSAGE(`Artifacts installed in scratch org:`));
     console.log(table.toString());
     this.printClosingLoggingGroup();
   }
@@ -306,7 +313,7 @@ export default class ValidateImpl {
         }
       );
       let grant = JSON.parse(grantJson);
-      console.log(`Successfully authorized ${grant.username} with org ID ${grant.orgId}`);
+      console.log(COLOR_KEY_MESSAGE(`Successfully authorized ${grant.result.username} with org ID ${grant.result.orgId}`));
       return grant.result;
     } catch (err) {
       throw new Error(`Failed to authenticate to ${scratchOrgUsername}`);
@@ -344,24 +351,20 @@ export default class ValidateImpl {
     failedPackages: string[],
     totalElapsedTime: number
   ): void {
-    console.log(
+    console.log(COLOR_HEADER(
       `----------------------------------------------------------------------------------------------------`
-    );
-    console.log(
-      `${
-        generatedPackages.length
-      } packages created in ${new Date(totalElapsedTime).toISOString().substr(11,8)
-      } with {${failedPackages.length}} errors`
-    );
-
+    ));
+    console.log(COLOR_SUCCESS(
+      `${generatedPackages.length} packages created in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} with {${COLOR_ERROR(failedPackages.length)}} errors`
+    ));
 
 
     if (failedPackages.length > 0) {
-      console.log(`Packages Failed To Build`, failedPackages);
+      console.log(COLOR_ERROR(`Packages Failed To Build`, failedPackages));
     }
-    console.log(
+    console.log(COLOR_HEADER(
       `----------------------------------------------------------------------------------------------------`
-    );
+    ));
   }
 
   private printDeploySummary(
@@ -371,24 +374,24 @@ export default class ValidateImpl {
     if (this.props.logsGroupSymbol?.[0])
       console.log(this.props.logsGroupSymbol[0], "Deployment Summary");
 
-    console.log(
+    console.log(COLOR_HEADER(
       `----------------------------------------------------------------------------------------------------`
-    );
-    console.log(
-      `${deploymentResult.deployed.length} packages deployed in ${new Date(totalElapsedTime).toISOString().substr(11,8)
-      } with {${deploymentResult.failed.length}} failed deployments`
-    );
+    ));
+    console.log(COLOR_SUCCESS(
+      `${deploymentResult.deployed.length} packages deployed in ${COLOR_TIME(getFormattedTime(totalElapsedTime)
+      )} with {${COLOR_ERROR(deploymentResult.failed.length)}} failed deployments`
+    ));
 
     if (deploymentResult.testFailure)
-      console.log(`\nTests failed for`, deploymentResult.testFailure);
+      console.log(COLOR_ERROR(`\nTests failed for`, deploymentResult.testFailure));
 
 
     if (deploymentResult.failed.length > 0) {
-      console.log(`\nPackages Failed to Deploy`, deploymentResult.failed);
+      console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, deploymentResult.failed));
     }
-    console.log(
+    console.log(COLOR_HEADER(
       `----------------------------------------------------------------------------------------------------`
-    );
+    ));
     this.printClosingLoggingGroup();
   }
 

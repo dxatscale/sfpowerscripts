@@ -9,7 +9,7 @@ export default class AssignPermissionSetsImpl {
     private target_org: string,
     private permSets: string[],
     private project_directory: string,
-    private packageLogger?: Logger
+    private packageLogger: Logger
   ) {}
 
   public exec(): {
