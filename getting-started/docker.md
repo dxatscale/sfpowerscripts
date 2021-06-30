@@ -33,7 +33,7 @@ container: dxatscale/sfpowerscripts:latest
 ```
 {% endtab %}
 
-{% tab title="Github Actions" %}
+{% tab title="GitHub Actions" %}
 ```text
 name: sfpowerscripts prepare
 
