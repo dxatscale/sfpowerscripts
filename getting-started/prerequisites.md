@@ -16,7 +16,7 @@ To get the maximum benefit out of sfpowerscripts, you need a good understanding 
 [Additional fields for pooling: ](https://github.com/Accenture/sfpowerkit/tree/main/src_saleforce_packages/scratchorgpool) prepare functionality in the orchestrator needs additional fields to be deployed on DevHub. These fields store information regarding scratch org's. You need to install the package on your production/devhub environment. The command for installing this package is as follows
 
 ```text
-sfdx force:package:install -p 04t1P000000gOkXQAU -u Devhub -r -a package -s AdminsOnly -w 30
+sfdx force:package:install -p 04t1P000000gOqzQAE -u Devhub -r -a package -s AdminsOnly -w 30
 ```
 
 If you prefer to install using source code instead or to create your own package, the source code is available at this [link](https://github.com/Accenture/sfpowerkit/tree/main/src_saleforce_packages/scratchorgpool)
@@ -73,9 +73,7 @@ Metrics should be a key part of your DevOps process. It is through these metrics
 
 You will need a StatsD server reachable from your CI/CD agent to report the metrics. Read more on supported metrics and dashboards [here](../faq/metrics-and-dashboards.md).
 
-## **Artifact Registry \(Highly recommended\)**
+## **Artifact Registry**
 
-sfpowerscripts is designed to work with [asynchronous pipelines](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator#is-there-a-pipeline-schematic-diagram-that-i-can-understand), where CI and CD is separated into two distinct pipelines. This means an artifact repository/registry such as Azure Artifacts, Jfrog Artifactory is essential to store the built artifacts.
-
-A linear pipeline can also be used on smaller projects where a CI/CD pipeline is a single synchronous pipeline. In this case you do not need an artifact repository. Read more about artifact registries [here](../faq/artifacts.md)
+sfpowerscripts is designed to work with [asynchronous pipelines](https://dxatscale.gitbook.io/sfpowerscripts/faq/orchestrator#is-there-a-pipeline-schematic-diagram-that-i-can-understand), where CI and CD is separated into two distinct pipelines. This means an artifact repository/registry such as Azure Artifacts, Jfrog Artifactory is essential to store the built artifacts
 

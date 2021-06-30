@@ -8,11 +8,12 @@
 
 * [Prerequisites](getting-started/prerequisites.md)
 * [Docker](getting-started/docker.md)
+* [Sample Repository](https://github.com/dxatscale/easy-spaces-lwc)
 
 ## CONCEPTS <a id="faq"></a>
 
-* [Artifacts](faq/artifacts.md)
 * [Orchestrator](faq/orchestrator.md)
+* [Artifacts](faq/artifacts.md)
 * [Metrics and Dashboards](faq/metrics-and-dashboards.md)
 * [Package Types](faq/package-types/README.md)
   * [Unlocked Packages](faq/package-types/unlocked-packages.md)
@@ -35,8 +36,8 @@
 
 ## Community
 
-* [Maintainers](community/maintainers.md)
-* [Contributors](community/contributors.md)
 * [Contributing to sfpowerscripts](community/contributing-to-sfpowerscripts.md)
+* [Maintainers](https://docs.dxatscale.io/about-us/meet-our-team)
+* [Contributors](https://docs.dxatscale.io/about-us/contributors)
 * [Support](community/support.md)
 

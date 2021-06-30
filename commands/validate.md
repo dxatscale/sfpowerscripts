@@ -76,12 +76,6 @@ Source packages have a more stringent validation \(for an optimized deployment, 
   "skipCoverageValidation":<boolean> //default:false, skip apex coverage validation during validation phase,
 ```
 
-### How is code coverage calculated?
-
-For unlocked packages, the code coverage is of the entire package, calculated as the 'total lines covered' divided by the 'total number of lines' in the package.
-
-Code coverage for source packages is calculated differently, as they are not 'legitimate' packages and are deployed using the MDAPI. For source packages, the code coverage is determined for individual classes. Each class must have a code coverage that is greater than the threshold set by the user.
-
 ### I am getting "bad object:xxxyyy" error during validate command, What am I doing wrong?
 
 Validate commands compare the incoming commit, with what is installed in the scratch org, and what is in the repos to figure out which packages are to be built and validated in the scratch org. CI Build systems especially like **Github Actions** by default only do a fetch of the tip of the Pull Request branch, and hence validate command will not be able to reach out the ancestors to do a diff. We recommend you to check the CI/CD platform docs to do a more deeper fetch of the repo. Here is how is it in Github

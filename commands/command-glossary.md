@@ -35,7 +35,7 @@ description: Commands in sfpowerscripts
   * [`sfdx sfpowerscripts:apextests:trigger`](command-glossary.md#sfdx-sfpowerscriptsapexteststrigger)
   * [`sfdx sfpowerscripts:apextests:validate`](command-glossary.md#sfdx-sfpowerscriptsapextestsvalidate)
 * Artifacts
-  * [`sfdx sfpowerscripts:artifacts:fetch`](command-glossary.md#sfdx-sfpowerscriptsartifactsfetch)
+  * \`\`[`sfdx sfpowerscripts:artifacts:fetch`](command-glossary.md#sfdx-sfpowerscripts-artifacts-fetch)\`\`
 
 ## `sfdx sfpowerscripts:orchestrator:prepare`
 
@@ -83,27 +83,13 @@ OPTIONS
 
 
   --keys=keys                                                                       Keys to be used while installing any
-                                                                                    managed package dependencies.
-                                                                                    Required format is a string of
-                                                                                    key-value pairs separated by spaces
-                                                                                    e.g. packageA:pw123 packageB:pw123
-                                                                                    packageC:pw123
+                                                                                    managed package dependent
 
 
   --succeedondeploymenterrors                                                       Do not fail the scratch orgs, if a
                                                                                     package failed to deploy, return the
                                                                                     scratch org with packages till the
                                                                                     last failure
-
-  --npm                                                                             Fetch artifacts from a pre-authenticated
-                                                                                    private npm registry
-
-  --scope                                                                           User or Organisation scope of the NPM
-                                                                                    packages
-
-  --npmtag                                                                          The distribution tag of the package to
-                                                                                    download. If not provided, the 'latest'
-                                                                                    tag is used by default.
 
 EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:prepare -t CI_1  -v <devhub>
@@ -150,11 +136,6 @@ OPTIONS
                                                                                     code coverage of packages with Apex
                                                                                     classes
 
-  --keys=keys                                                                       Keys to be used while installing any
-                                                                                    managed package dependencies. Required
-                                                                                    format is a string of key-value pairs
-                                                                                    separated by spaces e.g. packageA:pw123
-                                                                                    packageB:pw123 packageC:pw123
 
   --shapefile=shapefile                                                             Path to .zip file of scratch org
                                                                                     shape / metadata to deploy
@@ -244,8 +225,9 @@ OPTIONS
   --executorcount=executorcount                                                     [default: 5] Number of parallel
                                                                                     package task schedulors
 
-  --gittag                                                                          This flag is deprecated, Please
-                                                                                    utilize git tags on publish stage
+  --gittag                                                                          Tag the current commit ID with an
+                                                                                    annotated tag containing the package
+                                                                                    name and version - does not push tag
 
   --tag=tag                                                                         Tag the build with a label, useful
                                                                                     to identify in metrics
@@ -305,8 +287,9 @@ OPTIONS
   --executorcount=executorcount                                                     [default: 5] Number of parallel
                                                                                     package task schedulors
 
-  --gittag                                                                          This flag is deprecated,
-                                                                                    Please utilize git tags on publish stage
+  --gittag                                                                          Tag the current commit ID with an
+                                                                                    annotated tag containing the package
+                                                                                    name and version - does not push tag
 
   --tag=tag                                                                         Tag the build with a label, useful
                                                                                     to identify in metrics
@@ -326,12 +309,9 @@ Deploy packages from the provided aritfact directory, to a given org, using the 
 
 USAGE
   $ sfdx sfpowerscripts:orchestrator:deploy -u <string> [--artifactdir <directory>] [--waittime <number>] [-g <array>]
-  [-t <string>] [-b <string> --skipifalreadyinstalled]
+  [-t <string>] [--skipifalreadyinstalled]
 
 OPTIONS
-  -b, --baselineorg=baselineorg                                                     The org against which the package skip
-                                                                                    should be baselined
-
   -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to
                                                                                     group/collapse logs in the console.
                                                                                     Provide an opening group, and an
@@ -415,31 +395,75 @@ OPTIONS
   -v, --devhubalias=devhubalias                                                     Provide the alias of the devhub
                                                                                     previously authenticated
 
-  --gittag                                                                          Tag the current commit ID with an
-                                                                                    annotated tag containing the package
-                                                                                    name and version - does not push tag
 
-  --pushgittag                                                                      Pushes the git tags created by this
-                                                                                    command to the repo, ensure you have
-                                                                                    access to the repo
-
-  --npm                                                                             Upload artifacts to a pre-authenticated
-                                                                                    npm registry
-
-  --scope                                                                           User or Organisation scope of the NPM
-                                                                                    package
-
-  --npmtag                                                                          Add an optional distribution tag to NPM
-                                                                                    packages. If not provided, the 'latest'
-                                                                                    tag is set to the published version
 EXAMPLES
   $ sfdx sfpowerscripts:orchestrator:publish -f path/to/script
-  $ sfdx sfpowerscripts:orchestrator:publish --npm
-  $ sfdx sfpowerscripts:orchestrator:publish -f path/to/script -p -v HubOrg
-  $ sfdx sfpowerscripts:orchestrator:publish -f path/to/script --gittag --pushgittag
+  $ sfdx sfpowerscripts:orchestrator:publish -p -v HubOrg
 ```
 
 _See code:_ [_commands/sfpowerscripts/orchestrator/publish.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/publish.ts)
+
+## `sfdx sfpowerscripts:orchestrator:release`
+
+Initiate a release to an org, according to the release configuration defined in a release-definition YAML file
+
+```text
+Initiate a release to an org, according to the configuration defined in a release-definition YAML file
+
+USAGE
+  $ sfdx sfpowerscripts:orchestrator:release -u <string> [-p <filepath>] [--scope <string> [--npm | -f <filepath>]] [--npmrcpath <filepath> 
+  undefined] [-g <array>] [-t <string>] [--waittime <number>] [--keys <string>] [-b <string> --generatechangelog] [-v <string>] [--json] 
+  [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -b, --branchname=branchname                                                       Repository branch in which the changelog files are 
+                                                                                    located
+
+  -f, --scriptpath=scriptpath                                                       (Optional: no-NPM) Path to script that authenticates and 
+                                                                                    downloads artifacts from the registry
+
+  -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to group/collapse logs in 
+                                                                                    the console. Provide an opening group, and an optional 
+                                                                                    closing group symbol.
+
+  -p, --releasedefinition=releasedefinition                                         Path to YAML file containing map of packages and package 
+                                                                                    versions to download
+
+  -t, --tag=tag                                                                     Tag the release with a label, useful for identification 
+                                                                                    in metrics
+
+  -u, --targetorg=targetorg                                                         (required) [default: scratchorg] Alias/User Name of the 
+                                                                                    target environment
+
+  -v, --devhubalias=devhubalias                                                     [default: HubOrg] Provide the alias of the devhub 
+                                                                                    previously authenticated, default value is HubOrg
+
+  --generatechangelog                                                               Create a release changelog
+
+  --json                                                                            format output as json
+
+  --keys=keys                                                                       Keys to be used while installing any managed package 
+                                                                                    dependencies. Required format is a string of key-value 
+                                                                                    pairs separated by spaces e.g. packageA:pw123 
+                                                                                    packageB:pw123 packageC:pw123
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for this command 
+                                                                                    invocation
+
+  --npm                                                                             Download artifacts from a pre-authenticated private npm 
+                                                                                    registry
+
+  --npmrcpath=npmrcpath                                                             Path to .npmrc file used for authentication to registry. 
+                                                                                    If left blank, defaults to home directory
+
+  --scope=scope                                                                     (required for NPM) User or Organisation scope of the NPM 
+                                                                                    package
+
+  --waittime=waittime                                                               [default: 120] Wait time for package installation
+
+EXAMPLE
+  sfdx sfpowerscripts:orchestrator:release -p path/to/releasedefinition.yml -u myorg --npm --scope myscope --generatechangelog
+```
 
 ## `sfdx sfpowerscripts:changelog:generate`
 
@@ -1141,7 +1165,7 @@ EXAMPLES
   $ sfdx sfpowerscripts:pool:list -t core -v devhub -m -a
 ```
 
-_See code:_ [_commands/sfpowerscripts/pool/list.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/list.ts)
+_See code:_ [_commands/sfpowerscripts/pool/list.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/pool/list.ts)\`\`
 
 ## `sfdx sfpowerscripts:artifacts:fetch`
 
