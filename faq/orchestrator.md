@@ -16,7 +16,6 @@ To understand the orchestrator, let's look at a typical CI/CD pipeline for a pac
 
 ![](../.gitbook/assets/flowdiagram-1-.png)
 
-
 Let's dive into the pipeline depicted above, there are two basic pipelines in play
 
 * **CI Pipeline**: A pipeline that gets triggered on every merge to the trunk. During this process, the following stages happen in sequence.

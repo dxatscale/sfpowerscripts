@@ -24,7 +24,7 @@ One approach to solve is to use branches, where a branch per environment is used
 
 This is where an artifact registry comes into play, it stores all the artifacts produced by the build stage into a repository, which allows you to consolidate all versions of your artifacts and then allowing you to decide which all packages/artifacts should be aggregated and released into production.
 
-The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and its version number/tag as the input, such as by using a release definition used by the [release](release.md) command.
+The CD pipeline \(or called as 'Release' pipelines in some CI/CD systems\) can be triggered manually or automatically, with artifacts and its version number/tag as the input, such as by using a release definition used by the [release](https://github.com/Accenture/sfpowerscripts/tree/ba4858e1388945e7d672d31315886da8b16fb408/faq/release.md) command.
 
 ### **Type of Artifact Registries supported**
 
