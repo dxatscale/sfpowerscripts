@@ -67,7 +67,7 @@ export default class SFPLogger {
             break;
 
           case LoggerLevel.INFO:
-            console.log(COLOR_INFO(message));
+            console.log(message);
             break;
 
           case LoggerLevel.WARN:
