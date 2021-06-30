@@ -30,12 +30,14 @@ import { RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/
 import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions";
 import semver = require("semver");
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
+import { DeploymentType } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/source/DeploymentExecutor";
 const Table = require("cli-table");
 const retry = require("async-retry");
 
 export enum DeploymentMode {
   NORMAL,
   SOURCEPACKAGES,
+  SOURCEPACKAGES_PUSH
 }
 
 export interface DeployProps {
@@ -54,7 +56,8 @@ export interface DeployProps {
   isDryRun?: boolean;
   isRetryOnFailure?: boolean;
   promotePackagesBeforeDeploymentToOrg?:string,
-  devhubUserName?:string
+  devhubUserName?:string,
+  artifacts?: ArtifactFilePaths[]
 }
 
 export default class DeployImpl {
@@ -71,19 +74,21 @@ export default class DeployImpl {
     let failed: string[] = [];
     let testFailure: string;
     try {
-      let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-        this.props.artifactDir,
-        null,
-        this.props.packageLogger
-      );
+      if (!this.props.artifacts) {
+        this.props.artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+          this.props.artifactDir,
+          null,
+          this.props.packageLogger
+        );
+      }
 
-      if (artifacts.length === 0)
+      if (this.props.artifacts.length === 0)
         throw new Error(
           `No artifacts to deploy found in ${this.props.artifactDir}`
         );
 
       let artifactInquirer: ArtifactInquirer = new ArtifactInquirer(
-        artifacts,
+        this.props.artifacts,
         this.props.packageLogger
       );
       let packageManifest = artifactInquirer.latestPackageManifestFromArtifacts
@@ -94,7 +99,7 @@ export default class DeployImpl {
       }
 
 
-      let packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
+      let packagesToPackageInfo = this.getPackagesToPackageInfo(this.props.artifacts);
 
       let queue: any[] = this.getPackagesToDeploy(
         packageManifest,
@@ -188,7 +193,6 @@ export default class DeployImpl {
             }
 
           }, { retries: 1, minTimeout: 2000 });
-
 
         if (
           packageInstallationResult.result ===
@@ -556,7 +560,10 @@ export default class DeployImpl {
       } else {
         throw new Error(`Unhandled package type ${packageType}`);
       }
-    } else if (this.props.deploymentMode == DeploymentMode.SOURCEPACKAGES) {
+    } else if (
+      this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES ||
+      this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
+    ) {
       if (packageType === "source" || packageType === "unlocked") {
         let options = {
           optimizeDeployment: false,
@@ -637,7 +644,10 @@ export default class DeployImpl {
       this.props.packageLogger,
       this.props.currentStage == "prepare"
         ? path.join(sourceDirectoryPath, "forceignores", ".prepareignore")
-        : null
+        : null,
+      this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
+        ? DeploymentType.SOURCE_PUSH
+        : DeploymentType.MDAPI_DEPLOY
     );
 
     return installSourcePackageImpl.exec();

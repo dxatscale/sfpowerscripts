@@ -14,9 +14,10 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/Art
 import { PreparePool } from "../PreparePool";
 import { PoolError } from "../../pool/PoolError";
 import { Result} from "neverthrow"
-
-
-
+import ArtifactFilePathFetcher, {
+  ArtifactFilePaths,
+} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
+const path = require("path");
 
 
 export default class PrepareCIPool implements PreparePool  {
@@ -26,38 +27,48 @@ export default class PrepareCIPool implements PreparePool  {
     private hubOrg: Org,
     private pool:PoolConfig
   ) {
-   
+
   }
 
-  
+
   public async poolScratchOrgs(): Promise<Result<PoolConfig,PoolError>>{
-   
+
     let pool = await this.createCIPools();
-   
+
      return pool;
   }
 
 
   private async createCIPools():Promise<Result<PoolConfig,PoolError>>
   {
-     //Create Artifact Directory
-     rimraf.sync("artifacts");
-     fs.mkdirpSync("artifacts");
- 
-     //Fetch Latest Artifacts to Artifact Directory
-     if (this.pool.cipool.installAll) {
-       await this.getPackageArtifacts();
-     }
- 
-     let prepareASingleOrgImpl: PrepareCIOrgJob = new PrepareCIOrgJob( this.pool
-     );
- 
-     let createPool:PoolCreateImpl = new PoolCreateImpl(this.hubOrg,this.pool,prepareASingleOrgImpl);
-     let pool = await createPool.execute();
-     return pool
+    //Create Artifact Directory
+    rimraf.sync("artifacts");
+    fs.mkdirpSync("artifacts");
+
+    let artifacts: ArtifactFilePaths[];
+    if (this.pool.cipool.installAll) {
+      // Fetch Latest Artifacts to Artifact Directory
+      await this.getPackageArtifacts();
+
+      artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths("artifacts");
+    }
+
+    let prepareASingleOrgImpl: PrepareCIOrgJob = new PrepareCIOrgJob(
+      this.pool,
+      artifacts
+    );
+
+    let createPool: PoolCreateImpl = new PoolCreateImpl(
+      this.hubOrg,
+      this.pool,
+      prepareASingleOrgImpl
+    );
+    let pool = await createPool.execute();
+
+    return pool
   }
 
- 
+
 
   private async getPackageArtifacts() {
     let packages = ProjectConfig.getSFDXPackageManifest(null)[
@@ -68,7 +79,7 @@ export default class PrepareCIPool implements PreparePool  {
     let artifactFetcher:FetchAnArtifact;
     if (this.pool.cipool.fetchArtifacts?.npm || this.pool.cipool.fetchArtifacts?.artifactFetchScript) {
       let version= this.pool.cipool.fetchArtifacts.npm.npmtag;
-      artifactFetcher = new FetchArtifactSelector(this.pool.cipool.fetchArtifacts.artifactFetchScript,this.pool.cipool.fetchArtifacts.npm.scope,this.pool.cipool.fetchArtifacts.npm.npmrcPath).getArtifactFetcher();  
+      artifactFetcher = new FetchArtifactSelector(this.pool.cipool.fetchArtifacts.artifactFetchScript,this.pool.cipool.fetchArtifacts.npm.scope,this.pool.cipool.fetchArtifacts.npm.npmrcPath).getArtifactFetcher();
       packages.forEach((pkg) => {
         artifactFetcher.fetchArtifact(
           pkg.package,
@@ -132,12 +143,10 @@ export default class PrepareCIPool implements PreparePool  {
 
 
 
- 
 
 
 
-  
+
+
 
 }
-
-

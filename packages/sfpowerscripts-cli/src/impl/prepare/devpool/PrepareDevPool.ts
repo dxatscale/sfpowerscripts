@@ -7,7 +7,9 @@ import { PreparePool } from "../PreparePool";
 import { PoolError } from "../../pool/PoolError";
 import { Result} from "neverthrow"
 import PrepareDevOrgWithPush from "./PrepareDevOrgWithPush";
-
+import ArtifactFilePathFetcher, {
+  ArtifactFilePaths,
+} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 
 
 
@@ -18,12 +20,12 @@ export default class PrepareDevPool implements PreparePool {
     private hubOrg: Org,
     private pool:PoolConfig
   ) {
-   
+
   }
 
-  
+
   public async poolScratchOrgs(): Promise<Result<PoolConfig,PoolError>> {
-   
+
     let pool = await this.createPool();
     return pool;
   }
@@ -33,18 +35,18 @@ export default class PrepareDevPool implements PreparePool {
   {
     let prepareASingleOrgJob;
 
-    if(this.pool.devpool.scriptToExecute)
+    if(this.pool.devpool.scriptToExecute) {
       prepareASingleOrgJob = new PrepareDevOrgWithScript(this.pool);
-    else
-       prepareASingleOrgJob = new PrepareDevOrgWithPush(this.pool);
+    } else {
+      ArtifactFilePathFetcher.fetchArtifactFilePaths("artifacts")
+      prepareASingleOrgJob = new PrepareDevOrgWithPush(this.pool);
+    }
 
-      let createPool:PoolCreateImpl = new PoolCreateImpl(this.hubOrg,this.pool,prepareASingleOrgJob);
-      let pool = await createPool.execute();
-      return pool;
+    let createPool:PoolCreateImpl = new PoolCreateImpl(this.hubOrg,this.pool,prepareASingleOrgJob);
+    let pool = await createPool.execute();
+    return pool;
   }
 
 
 
 }
-
-

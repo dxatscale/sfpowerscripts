@@ -20,12 +20,18 @@ import { Org } from "@salesforce/core";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { PoolConfig } from "../../pool/PoolConfig";
 import { Result, ok, err } from "neverthrow";
+import { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
+const path = require("path");
+import * as fs from "fs-extra";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
 export default class PrepareCIOrgJob extends PoolJobExecutor {
   private checkPointPackages: string[];
 
-  public constructor(protected pool: PoolConfig) {
+  public constructor(
+    protected pool: PoolConfig,
+    private artifacts: ArtifactFilePaths[]
+  ) {
     super(pool);
   }
 
@@ -37,7 +43,7 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
     //Install sfpowerscripts Artifact
 
     try {
-      
+
       let packageLogger: FileLogger = new FileLogger(logToFilePath);
       this.checkPointPackages = this.getcheckPointPackages(packageLogger);
 
@@ -86,11 +92,19 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
         `Successfully completed Installing Package Dependencies of this repo in ${scratchOrg.alias}`
       );
 
-      if (this.pool.cipool.installAll) {
-        let deploymentResult = await this.deployAllPackagesInTheRepo(
-          scratchOrg,
-          packageLogger
-        );
+      if (this.artifacts) {
+        let deploymentResult;
+        if (true) {
+          deploymentResult = await this.pushArtifacts(
+            scratchOrg,
+            packageLogger
+          );
+        } else {
+          deploymentResult = await this.deployAllPackagesInTheRepo(
+            scratchOrg,
+            packageLogger
+          );
+        }
         this.pool.succeedOnDeploymentErrors
           ? this.handleDeploymentErrorsForPartialDeployment(
               scratchOrg,
@@ -102,7 +116,49 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
               deploymentResult,
               packageLogger
             );
+
+        // consolidate source tracking files
+        let aggregatedSourceTrackingDir = ".sfpowerscripts/source-tracking-files";
+        fs.mkdirpSync(aggregatedSourceTrackingDir);
+        for (let artifact of this.artifacts) {
+          let artifactsOrgsDir = path.join(artifact.sourceDirectoryPath, ".sfdx", "orgs"); // may not exist
+          if (fs.existsSync(artifactsOrgsDir)) {
+            let usernames = fs.readdirSync(artifactsOrgsDir);
+            for (let username of usernames) {
+              let aggregatedUsernameDir = path.join(aggregatedSourceTrackingDir, username);
+              fs.mkdirpSync(aggregatedUsernameDir);
+
+              let artifactsMaxRevisionFilePath = path.join(artifactsOrgsDir, username, "maxRevision.json");
+              let artifactsSourcePathInfosFilePath = path.join(artifactsOrgsDir, username, "sourcePathInfos.json");
+
+              if (fs.existsSync(artifactsMaxRevisionFilePath) && fs.existsSync(artifactsSourcePathInfosFilePath)) {
+                let aggregatedMaxRevisionFilePath = path.join(aggregatedUsernameDir, "maxRevision.json");
+                let aggregatedSourcePathinfosFilePath = path.join(aggregatedUsernameDir, "sourcePathInfos.json");
+                if (fs.existsSync(aggregatedMaxRevisionFilePath) && fs.existsSync(aggregatedSourcePathinfosFilePath)) {
+                  // Replace maxRevision.json
+                  fs.copySync(artifactsMaxRevisionFilePath, aggregatedMaxRevisionFilePath, { overwrite: true });
+
+                  // Concatenate sourcePathInfos.json
+                  let aggregatedSourcePathInfos = fs.readJSONSync(aggregatedSourcePathinfosFilePath, {encoding: "UTF-8"});
+                  let sourcePathInfos = fs.readJSONSync(artifactsOrgsDir, {encoding: "UTF-8"});
+                  Object.assign(aggregatedSourcePathInfos, sourcePathInfos)
+
+                  fs.writeJSONSync(aggregatedSourcePathinfosFilePath, aggregatedSourcePathInfos);
+                } else {
+                  fs.copySync(path.join(artifactsOrgsDir, username), path.join(aggregatedUsernameDir));
+                }
+              } else {
+                continue;
+              }
+            }
+          } else {
+            continue;
+          }
+        }
+
       }
+
+
 
       return ok({ scratchOrgUsername: scratchOrg.username });
     } catch (error) {
@@ -113,6 +169,31 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
     }
   }
 
+  private async pushArtifacts(
+    scratchOrg: ScratchOrg,
+    packageLogger: any
+  ) {
+
+    let deployProps: DeployProps = {
+      deploymentMode: DeploymentMode.SOURCEPACKAGES_PUSH,
+      artifacts: this.artifacts,
+      targetUsername: scratchOrg.username,
+      artifactDir: null,
+      isTestsToBeTriggered: false,
+      skipIfPackageInstalled: false,
+      waitTime: 120,
+      packageLogger: packageLogger,
+      currentStage: Stage.PREPARE,
+      isRetryOnFailure: this.pool.cipool.retryOnFailure
+    }
+
+    //Deploy the fetched artifacts to the org
+    let deployImpl: DeployImpl = new DeployImpl(deployProps);
+
+    let deploymentResult = await deployImpl.exec();
+
+    return deploymentResult;
+  }
   private async deployAllPackagesInTheRepo(
     scratchOrg: ScratchOrg,
     packageLogger: any
@@ -126,7 +207,7 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
 
     let deployProps: DeployProps = {
       targetUsername: scratchOrg.username,
-      artifactDir: "artifacts",
+      artifactDir: null,
       waitTime: 120,
       currentStage: Stage.PREPARE,
       packageLogger: packageLogger,
@@ -136,6 +217,7 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
         ? DeploymentMode.SOURCEPACKAGES
         : DeploymentMode.NORMAL,
       isRetryOnFailure: this.pool.cipool.retryOnFailure,
+      artifacts: this.artifacts
     };
 
     //Deploy the fetched artifacts to the org

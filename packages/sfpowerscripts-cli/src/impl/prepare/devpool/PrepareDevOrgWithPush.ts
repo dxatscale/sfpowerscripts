@@ -4,6 +4,7 @@ import { PoolConfig } from "../../pool/PoolConfig";
 import PoolJobExecutor, { JobError, ScriptExecutionResult } from "../../pool/PoolJobExecutor";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
 
+
 export default class PrepareDevOrgWithPush extends PoolJobExecutor {
 
    constructor(protected pool:PoolConfig)
@@ -12,6 +13,7 @@ export default class PrepareDevOrgWithPush extends PoolJobExecutor {
    }
 
   async executeJob(scratchOrg: ScratchOrg, hubOrg: Org, logToFilePath: string): Promise<Result<ScriptExecutionResult, JobError>> {
+
     throw new Error("Method not implemented.");
   }
 }
