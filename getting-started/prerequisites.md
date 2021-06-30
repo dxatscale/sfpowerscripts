@@ -28,7 +28,7 @@ If you prefer to install using source code instead or to create your own package
 You need to install the package to every target org \(including your production environment\). The command for installing this package is as follows
 
 ```text
-sfdx force:package:install --package 04t1P000000ka0fQAA -u <org> -w 10
+sfdx force:package:install --package 04t1P000000ka9mQAA -u <org> -w 10
 ```
 
 If your prefer to install a package from your own DevHub rather than this package, you could do by building a package from the source provided at the [URL](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/sfpowerscripts-artifact). Once this package is built, you can override sfpowerscripts to use this package by passing in the the environment variable SFPOWERSCRIPTS\_ARTIFACT\_UNLOCKED\_PACKAGE

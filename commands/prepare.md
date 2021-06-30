@@ -42,7 +42,7 @@ The prepare command does the following sequence of activities
 2. **Fetch the artifacts from using "artifactFetchScript" if provided / Build all artifacts**
 3. **Create the scratch orgs, and update Allocation\_status\_c of each these orgs to "In Progress"**
 4. **On each scratch org, in parallel, do the following activities**
-   * Install SFPOWERSCRIPTS\_ARTIFACT\_PACKAGE \(04t1P000000ka0fQAA\) for keeping track of all the packages which will be installed in the org. You could set an environment variable SFPOWERSCRIPTS\_ARTIFACT\_PACKAGE to override the installation with your own package id \(the source code is available [here](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/sfpowerscripts-artifact)\)
+   * Install SFPOWERSCRIPTS\_ARTIFACT\_PACKAGE \(04t1P000000ka9mQAA\) for keeping track of all the packages which will be installed in the org. You could set an environment variable SFPOWERSCRIPTS\_ARTIFACT\_PACKAGE to override the installation with your own package id \(the source code is available [here](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/sfpowerscripts-artifact)\)
    * Install all the dependencies of your packages, such as managed packages that are marked as dependencies in your sfdx-project.json
    * Install all the artifacts that is either built/fetched
 5. **Mark each completed scratch org as "Available"**
