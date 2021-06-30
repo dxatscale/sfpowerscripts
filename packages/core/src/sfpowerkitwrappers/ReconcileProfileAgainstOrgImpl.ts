@@ -1,11 +1,12 @@
 import child_process = require("child_process");
-import SFPLogger from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 import { onExit } from "../utils/OnExit";
 
 export default class ReconcileProfileAgainstOrgImpl {
   public constructor(
     private target_org: string,
-    private project_directory: string
+    private project_directory: string,
+    private logger:Logger
   ) {}
 
   public async exec() {
@@ -17,10 +18,10 @@ export default class ReconcileProfileAgainstOrgImpl {
     );
 
     child.stdout.on("data", data => {
-      SFPLogger.log(data.toString());
+      SFPLogger.log(data.toString(),LoggerLevel.INFO,this.logger);
     });
     child.stderr.on("data", data => {
-      SFPLogger.log(data.toString());
+      SFPLogger.log(data.toString(),LoggerLevel.INFO,this.logger);
     });
 
     await onExit(child);

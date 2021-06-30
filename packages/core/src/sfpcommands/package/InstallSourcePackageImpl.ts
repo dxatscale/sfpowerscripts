@@ -368,7 +368,8 @@ export default class InstallSourcePackageImpl {
       //Now Reconcile
       let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
         target_org,
-        path.join(sourceDirectoryPath)
+        path.join(sourceDirectoryPath),
+        this.packageLogger
       );
       await reconcileProfileAgainstOrg.exec();
       isReconcileActivated = true;
@@ -399,7 +400,8 @@ export default class InstallSourcePackageImpl {
       //Now Reconcile
       let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
         target_org,
-        path.join(sourceDirectoryPath)
+        path.join(sourceDirectoryPath),
+        this.packageLogger
       );
       await reconcileProfileAgainstOrg.exec();
 
