@@ -81,7 +81,7 @@ export default class InstallSourcePackageImpl {
 
       if (fs.existsSync(preDeploymentScript)) {
         SFPLogger.log("Executing preDeployment script",LoggerLevel.INFO,this.packageLogger);
-        PackageInstallationHelpers.executeScript(
+        await PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,
           this.targetusername,
@@ -225,7 +225,7 @@ export default class InstallSourcePackageImpl {
 
       if (fs.existsSync(postDeploymentScript)) {
         console.log("Executing postDeployment script",LoggerLevel.INFO, this.packageLogger);
-        PackageInstallationHelpers.executeScript(
+        await PackageInstallationHelpers.executeScript(
           postDeploymentScript,
           this.sfdx_package,
           this.targetusername,

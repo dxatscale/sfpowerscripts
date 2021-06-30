@@ -43,7 +43,7 @@ export default class InstallUnlockedPackageImpl {
 
           if (fs.existsSync(preDeploymentScript)) {
             console.log("Executing preDeployment script",LoggerLevel.INFO,this.packageLogger);
-            PackageInstallationHelpers.executeScript(
+            await PackageInstallationHelpers.executeScript(
               preDeploymentScript,
               this.packageMetadata.package_name,
               this.targetusername,
@@ -95,7 +95,7 @@ export default class InstallUnlockedPackageImpl {
 
           if (fs.existsSync(postDeploymentScript)) {
             console.log("Executing postDeployment script",LoggerLevel.INFO,this.packageLogger);
-            PackageInstallationHelpers.executeScript(
+            await PackageInstallationHelpers.executeScript(
               postDeploymentScript,
               this.packageMetadata.package_name,
               this.targetusername,

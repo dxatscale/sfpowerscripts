@@ -70,7 +70,7 @@ export default class InstallDataPackageImpl {
 
       if (fs.existsSync(preDeploymentScript)) {
         console.log("Executing preDeployment script");
-        PackageInstallationHelpers.executeScript(
+        await PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,
           this.targetusername,
@@ -118,7 +118,7 @@ export default class InstallDataPackageImpl {
 
       if (fs.existsSync(postDeploymentScript)) {
         console.log("Executing postDeployment script");
-        PackageInstallationHelpers.executeScript(
+        await PackageInstallationHelpers.executeScript(
           postDeploymentScript,
           this.sfdx_package,
           this.targetusername,
