@@ -6,6 +6,7 @@ import ReleaseImpl, { ReleaseProps, ReleaseResult } from "../../../impl/release/
 import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
 import ReleaseError from "../../../errors/ReleaseError";
 import path = require("path");
+import { COLOR_ERROR, COLOR_HEADER,COLOR_INFO,COLOR_TIME,COLOR_SUCCESS, COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -117,16 +118,16 @@ export default class Release extends SfpowerscriptsCommand {
     if (this.flags.generatechangelog && !releaseDefinition.changelog)
       throw new Error("changelog parameters must be specified in release definition to generate changelog");
 
-    console.log("-----------sfpowerscripts orchestrator ------------------");
-    console.log("command: release");
-    console.log(`Target Org: ${this.flags.targetorg}`);
-    console.log(`Release Definition: ${this.flags.releasedefinition}`);
-    console.log(`Artifact Directory: ${path.resolve("artifacts")}`);
-    console.log(`Skip Packages If Already Installed: ${releaseDefinition.skipIfAlreadyInstalled ? true : false}`);
+    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
+    console.log(COLOR_HEADER("command: release"));
+    console.log(COLOR_HEADER(`Target Org: ${this.flags.targetorg}`));
+    console.log(COLOR_HEADER(`Release Definition: ${this.flags.releasedefinition}`));
+    console.log(COLOR_HEADER(`Artifact Directory: ${path.resolve("artifacts")}`));
+    console.log(COLOR_HEADER(`Skip Packages If Already Installed: ${releaseDefinition.skipIfAlreadyInstalled ? true : false}`));
     if(releaseDefinition.baselineOrg)
-      console.log(`Baselined Against Org: ${releaseDefinition.baselineOrg}`);
-    console.log(`Dry-run: ${this.flags.dryrun}`);
-    console.log("---------------------------------------------------------");
+      console.log(COLOR_HEADER(`Baselined Against Org: ${releaseDefinition.baselineOrg}`));
+    console.log(COLOR_HEADER(`Dry-run: ${this.flags.dryrun}`));
+    console.log(COLOR_HEADER("---------------------------------------------------------"));
 
     let releaseResult: ReleaseResult;
     try {
@@ -200,32 +201,32 @@ export default class Release extends SfpowerscriptsCommand {
     totalElapsedTime: number
   ): void {
     if (this.flags.logsgroupsymbol?.[0])
-      console.log(this.flags.logsgroupsymbol[0], "Release Summary");
+      console.log(COLOR_HEADER(this.flags.logsgroupsymbol[0], "Release Summary"));
 
     console.log(
-      `----------------------------------------------------------------------------------------------------`
-    );
+      COLOR_HEADER(`----------------------------------------------------------------------------------------------------`
+    ));
     if (releaseResult.installDependenciesResult) {
-      console.log(`\nPackage Dependencies`);
-      console.log(`   ${releaseResult.installDependenciesResult.success.length} succeeded`);
-      console.log(`   ${releaseResult.installDependenciesResult.skipped.length} skipped`);
-      console.log(`   ${releaseResult.installDependenciesResult.failed.length} failed`);
+      console.log(COLOR_HEADER(`\nPackage Dependencies`));
+      console.log(COLOR_SUCCESS(`   ${releaseResult.installDependenciesResult.success.length} succeeded`));
+      console.log(COLOR_WARNING(`   ${releaseResult.installDependenciesResult.skipped.length} skipped`));
+      console.log(COLOR_ERROR(`   ${releaseResult.installDependenciesResult.failed.length} failed`));
     }
 
     if (releaseResult.deploymentResult) {
-      console.log(`\nDeployment`);
-      console.log(`   ${releaseResult.deploymentResult.deployed.length} succeeded`);
-      console.log(`   ${releaseResult.deploymentResult.failed.length} failed`);
+      console.log(COLOR_HEADER(`\nDeployment`));
+      console.log(COLOR_SUCCESS(`   ${releaseResult.deploymentResult.deployed.length} succeeded`));
+      console.log(COLOR_ERROR(`   ${releaseResult.deploymentResult.failed.length} failed`));
 
       if (releaseResult.deploymentResult.failed.length > 0) {
-        console.log(`\nPackages Failed to Deploy`, releaseResult.deploymentResult.failed);
+        console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, releaseResult.deploymentResult.failed));
       }
     }
 
-    console.log(`\nElapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11,8)}`);
-    console.log(
+    console.log(COLOR_TIME(`\nElapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11,8)}`));
+    console.log(COLOR_HEADER(
       `----------------------------------------------------------------------------------------------------`
-    );
+    ));
   }
 
   protected validateFlags() {

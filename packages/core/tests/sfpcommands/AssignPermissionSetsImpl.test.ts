@@ -1,6 +1,7 @@
 import child_process = require("child_process");
 import AssignPermissionSetsImpl from "../../src/sfpcommands/permsets/AssignPermissionSetsImpl";
 import { jest,expect } from "@jest/globals";
+import { VoidLogger } from "../../src/logger/SFPLogger";
 
 jest.mock("../../src/sfdxwrappers/AliasListImpl", () => {
   class AliasListImpl {
@@ -74,7 +75,8 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
     let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
       alias,
       ["test1", "test2"],
-      null
+      null,
+      new VoidLogger()
     );
     const child_processMock = jest.spyOn(child_process, "execSync");
     child_processMock
@@ -113,7 +115,8 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
     let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
       alias,
       ["test1", "test2"],
-      null
+      null,
+      new VoidLogger()
     );
     const child_processMock = jest.spyOn(child_process, "execSync");
     child_processMock
@@ -151,7 +154,8 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
     let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
       alias,
       ["test1", "test2"],
-      null
+      null,
+      new VoidLogger()
     );
     const child_processMock = jest.spyOn(child_process, "execSync");
     child_processMock

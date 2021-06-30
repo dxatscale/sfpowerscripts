@@ -8,6 +8,8 @@ import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import { Stage } from "../../../impl/Stage";
 import * as fs from "fs-extra"
 import ScratchOrgUtils from "../../../impl/pool/utils/ScratchOrgUtils";
+import { COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import getFormattedTime from "../../../utils/GetFormattedTime";
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -109,17 +111,17 @@ export default class Prepare extends SfpowerscriptsCommand {
   public async execute(): Promise<any> {
     let executionStartTime = Date.now();
 
-    console.log("-----------sfpowerscripts orchestrator ------------------");
-    console.log("command: prepare");
-    console.log(`Pool Name: ${this.flags.tag}`);
-    console.log(`Requested Count of Orgs: ${this.flags.maxallocation}`);
-    console.log(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`);
-    console.log(`Fetch artifacts from pre-authenticated NPM registry: ${this.flags.npm ? "true" : "false"}`);
+    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
+    console.log(COLOR_HEADER("command: prepare"));
+    console.log(COLOR_HEADER(`Pool Name: ${this.flags.tag}`));
+    console.log(COLOR_HEADER(`Requested Count of Orgs: ${this.flags.maxallocation}`));
+    console.log(COLOR_HEADER(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`));
+    console.log(COLOR_HEADER(`Fetch artifacts from pre-authenticated NPM registry: ${this.flags.npm ? "true" : "false"}`));
     if(this.flags.npm && this.flags.npmtag)
-      console.log(`Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`);
-    console.log(`All packages in the repo to be installed: ${this.flags.installall}`);
-    console.log(`Scratch Orgs to be submitted to pool in case of failures: ${this.flags.succeedondeploymenterrors}`)
-    console.log("---------------------------------------------------------");
+      console.log(COLOR_HEADER(`Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`));
+    console.log(COLOR_HEADER(`All packages in the repo to be installed: ${this.flags.installall}`));
+    console.log(COLOR_HEADER(`Scratch Orgs to be submitted to pool in case of failures: ${this.flags.succeedondeploymenterrors}`))
+    console.log(COLOR_HEADER("---------------------------------------------------------"));
 
     let tags = {
       stage: Stage.PREPARE,
@@ -157,13 +159,13 @@ export default class Prepare extends SfpowerscriptsCommand {
       let results= await prepareImpl.poolScratchOrgs();
 
       let totalElapsedTime=Date.now()-executionStartTime;
-      console.log(
+      console.log(COLOR_HEADER(
         `-----------------------------------------------------------------------------------------------------------`
-      );
-      console.log(`Provisioned {${results.success}}  scratchorgs out of ${results.totalallocated} requested with ${results.failed} failed in ${this.getFormattedTime(totalElapsedTime)} `)
-      console.log(
+      ));
+      console.log(COLOR_SUCCESS(`Provisioned {${results.success}}  scratchorgs out of ${results.totalallocated} requested with ${COLOR_ERROR(results.failed)} failed in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} `));
+      console.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------------`
-      );
+      ));
 
       if(results.errorCode)
       {
@@ -236,11 +238,6 @@ export default class Prepare extends SfpowerscriptsCommand {
     }
   }
 
-  private getFormattedTime(milliseconds: number): string {
-    let date = new Date(0);
-    date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
-    let timeString = date.toISOString().substr(11, 8);
-    return timeString;
-  }
+
 
 }
