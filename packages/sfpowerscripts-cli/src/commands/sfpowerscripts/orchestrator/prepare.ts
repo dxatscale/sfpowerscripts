@@ -64,7 +64,6 @@ export default class Prepare extends SfpowerscriptsCommand {
       this.validatePoolConfig(poolConfig);
 
       console.log(`Pool Name: ${poolConfig.tag}`);
-      console.log(`Type of Pool: ${poolConfig.cipool ? "ci" : "dev"}`);
       console.log(`Requested Count of Orgs: ${poolConfig.maxallocation}`);
       console.log(
         `Scratch Orgs to be submitted to pool in case of failures: ${
@@ -72,26 +71,25 @@ export default class Prepare extends SfpowerscriptsCommand {
         }`
       );
 
-      if (poolConfig.cipool) {
+
+      console.log(
+        `All packages in the repo to be installed: ${poolConfig.installAll}`
+      );
+      if (poolConfig.fetchArtifacts) {
         console.log(
-          `All packages in the repo to be installed: ${poolConfig.cipool.installAll}`
+          `Script provided to fetch artifacts: ${
+            poolConfig.fetchArtifacts.artifactfetchscript ? "true" : "false"
+          }`
         );
-        if (poolConfig.fetchArtifacts) {
+        console.log(
+          `Fetch artifacts from pre-authenticated NPM registry: ${
+            poolConfig.fetchArtifacts.npm ? "true" : "false"
+          }`
+        );
+        if (poolConfig.fetchArtifacts.npm?.npmtag)
           console.log(
-            `Script provided to fetch artifacts: ${
-              poolConfig.fetchArtifacts.artifactfetchscript ? "true" : "false"
-            }`
+            `Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`
           );
-          console.log(
-            `Fetch artifacts from pre-authenticated NPM registry: ${
-              poolConfig.fetchArtifacts.npm ? "true" : "false"
-            }`
-          );
-          if (poolConfig.fetchArtifacts.npm?.npmtag)
-            console.log(
-              `Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`
-            );
-        }
       }
 
       console.log("---------------------------------------------------------");

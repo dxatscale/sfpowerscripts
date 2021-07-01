@@ -4,6 +4,10 @@
   "title": "pool definition",
   "description": "The definition for creating a pool of scratch orgs in sfpowerscripts",
   "type": "object",
+  "required": [
+    "tag",
+    "maxallocation"
+  ],
   "properties": {
     "tag": {
       "title": "Tag of the pool",
@@ -43,97 +47,59 @@
       "type": "string",
       "title": "Keys for managed package"
     },
-    "cipool": {
+    "installAll": {
+      "type": "boolean"
+    },
+    "deploymentType": {
+      "enum": ["push", "mdapi"],
+      "default": "push"
+    },
+    "relaxAllIPRanges": {
+      "type": "boolean",
+      "title": "Relax all IP Ranges"
+    },
+    "ipRangesToBeRelaxed": {
+      "type": "array",
+      "title": "ip ranges to be relaxed"
+    },
+    "retryOnFailure": {
+      "type": "boolean"
+    },
+    "fetchArtifacts": {
       "type": "object",
+      "title": "Fetch Artifacts using below mechanism",
+      "oneOf": [
+        { "required": ["artifactFetchScript"] },
+        { "required": ["npm"] }
+      ],
       "properties": {
-        "installAll": {
-          "type": "boolean"
+        "artifactFetchScript": {
+          "type": "string",
+          "title": "Path to the script to fetch artifacts"
         },
-        "installAsSourcePackages": {
-          "type": "boolean"
-        },
-
-        "retryOnFailure": {
-          "type": "boolean"
-        },
-        "fetchArtifacts": {
+        "npm": {
           "type": "object",
-          "title": "Fetch Artifacts using below mechanism",
+          "required": [
+            "scope",
+            "npmtag",
+            "npmrcPath"
+          ],
           "properties": {
-            "artifactFetchScript": {
+            "scope": {
               "type": "string",
-              "title": "Path to the script to fetch artifacts"
+              "title": "Scope of your npm packages"
             },
-            "npm": {
-              "type": "object",
-              "properties": {
-                "scope": {
-                  "type": "string",
-                  "title": "Scope of your npm packages"
-                },
-                "npmtag": {
-                  "type": "string",
-                  "title": "Tag of your npm packages, such as LATEST, develop, alpha etc"
-                },
-                "npmrcPath": {
-                  "type": "string",
-                  "title": "Path to npmrc file"
-                }
-              },
-              "required": ["scope", "npmtag", "npmrc"]
+            "npmtag": {
+              "type": "string",
+              "title": "Tag of your npm packages, such as LATEST, develop, alpha etc"
+            },
+            "npmrcPath": {
+              "type": "string",
+              "title": "Path to npmrc file"
             }
-          },
-          "oneOf": [
-            { "required": ["artifactFetchScript"] },
-            { "required": ["npm"] }
-          ]
+          }
         }
       }
-    },
-    "devpool": {
-      "type": "object",
-      "properties": {
-        "relaxAllIPRanges": {
-          "type": "boolean",
-          "title": "Relax all IP Ranges"
-        },
-        "ipRangesToBeRelaxed": {
-          "type": "array",
-          "title": "ip ranges to be relaxed"
-        },
-        "scriptToExecute": {
-          "type": "string",
-          "title": "Path to the script to be executed"
-        },
-        "pushSource": {
-          "type": "boolean",
-          "title": "Push source to the scratch org using source:push"
-        }
-      },
-      "oneOf": [
-        {
-          "required": ["scriptToExecute", "relaxAllIPRanges"]
-        },
-        {
-          "required": ["scriptToExecute", "ipRangesToBeRelaxed"]
-        },
-        {
-          "required": ["pushSource", "relaxAllIPRanges"]
-        },
-        {
-          "required": ["pushSource", "ipRangesToBeRelaxed"]
-        }
-      ]
     }
-  },
-
-  "oneOf": [
-    {
-      "required": ["cipool"]
-    },
-    {
-      "required": ["devpool"]
-    }
-  ],
-  "required": ["tag", "maxallocation"]
+  }
 }

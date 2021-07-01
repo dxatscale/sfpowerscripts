@@ -4,22 +4,23 @@ import DeployImpl, {
   DeploymentMode,
   DeployProps,
   DeploymentResult
-} from "../../deploy/DeployImpl";
+} from "../deploy/DeployImpl";
 import SFPLogger, {
   FileLogger,
   LoggerLevel,
+  Logger
 } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import { Stage } from "../../Stage";
+import { Stage } from "../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
 import PoolJobExecutor, {
   JobError,
   ScriptExecutionResult,
-} from "../../pool/PoolJobExecutor";
-import { Org } from "@salesforce/core";
+} from "../pool/PoolJobExecutor";
+import { AuthInfo, Connection, Org } from "@salesforce/core";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
-import { PoolConfig } from "../../pool/PoolConfig";
+import { PoolConfig } from "../pool/PoolConfig";
 import { Result, ok, err } from "neverthrow";
 import { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 const path = require("path");
@@ -27,9 +28,10 @@ import * as fs from "fs-extra";
 import lodash = require("lodash");
 import AdmZip = require("adm-zip");
 import child_process = require("child_process");
+import RelaxIPRange from "@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange"
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
-export default class PrepareCIOrgJob extends PoolJobExecutor {
+export default class PrepareOrgJob extends PoolJobExecutor {
   private checkPointPackages: string[];
 
   public constructor(
@@ -50,6 +52,13 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
 
       let packageLogger: FileLogger = new FileLogger(logToFilePath);
       this.checkPointPackages = this.getcheckPointPackages(packageLogger);
+
+      await this.relaxIPRanges(
+        scratchOrg,
+        this.pool.relaxAllIPRanges,
+        this.pool.ipRangesToBeRelaxed,
+        packageLogger
+      );
 
       SFPLogger.log(
         `Installing sfpowerscripts_artifact package to the ${scratchOrg.alias}`,
@@ -266,7 +275,7 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
       waitTime: 120,
       packageLogger: packageLogger,
       currentStage: Stage.PREPARE,
-      isRetryOnFailure: this.pool.cipool.retryOnFailure
+      isRetryOnFailure: this.pool.retryOnFailure
     }
 
     //Deploy the fetched artifacts to the org
@@ -295,10 +304,8 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
       packageLogger: packageLogger,
       isTestsToBeTriggered: false,
       skipIfPackageInstalled: false,
-      deploymentMode: this.pool.cipool.installAsSourcePackages
-        ? DeploymentMode.SOURCEPACKAGES
-        : DeploymentMode.NORMAL,
-      isRetryOnFailure: this.pool.cipool.retryOnFailure,
+      deploymentMode: DeploymentMode.SOURCEPACKAGES,
+      isRetryOnFailure: this.pool.retryOnFailure,
       artifacts: this.artifacts
     };
 
@@ -381,5 +388,36 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
       if (pkg.checkpointForPrepare) checkPointPackages.push(pkg["package"]);
     });
     return checkPointPackages;
+  }
+
+  private async relaxIPRanges(
+    scratchOrg: ScratchOrg,
+    isRelaxAllIPRanges: boolean,
+    relaxIPRanges: string[],
+    logger: Logger
+  ): Promise<{ username: string; success: boolean }> {
+    SFPLogger.log(
+      `Relaxing ip ranges for scratchOrg with user ${scratchOrg.username}`,
+      LoggerLevel.INFO
+    );
+    const connection = await Connection.create({
+      authInfo: await AuthInfo.create({ username: scratchOrg.username }),
+    });
+
+    if (isRelaxAllIPRanges) {
+      relaxIPRanges = [];
+      return new RelaxIPRange(logger).setIp(
+        connection,
+        scratchOrg.username,
+        relaxIPRanges,
+        true
+      );
+    } else {
+      return new RelaxIPRange(logger).setIp(
+        connection,
+        scratchOrg.username,
+        relaxIPRanges
+      );
+    }
   }
 }
