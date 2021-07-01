@@ -1,6 +1,6 @@
 import child_process = require("child_process");
 import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
-import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
+import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from "../deploy/DeployImpl";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { Stage } from "../Stage";
@@ -179,12 +179,7 @@ export default class ValidateImpl {
     );
   }
 
-  private async deploySourcePackages(scratchOrgUsername: string): Promise<{
-    deployed: string[],
-    failed: string[],
-    testFailure: string,
-    error: any
-  }> {
+  private async deploySourcePackages(scratchOrgUsername: string): Promise<DeploymentResult> {
     let deployStartTime: number = Date.now();
 
     let deployProps: DeployProps = {
@@ -320,7 +315,7 @@ export default class ValidateImpl {
       try {
         let hubOrg:Org = await Org.create({aliasOrUsername:devHubUsername,isDevHub:true});
 
-        let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false); 
+        let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false);
         scratchOrg = await poolFetchImpl.execute() as ScratchOrg;
 
       } catch (error) {}
@@ -364,7 +359,7 @@ export default class ValidateImpl {
   }
 
   private printDeploySummary(
-    deploymentResult: {deployed: string[], failed: string[], testFailure: string},
+    deploymentResult: DeploymentResult,
     totalElapsedTime: number
   ): void {
     if (this.props.logsGroupSymbol?.[0])
@@ -379,11 +374,11 @@ export default class ValidateImpl {
     );
 
     if (deploymentResult.testFailure)
-      console.log(`\nTests failed for`, deploymentResult.testFailure);
+      console.log(`\nTests failed for`, deploymentResult.testFailure.packageMetadata.package_name);
 
 
     if (deploymentResult.failed.length > 0) {
-      console.log(`\nPackages Failed to Deploy`, deploymentResult.failed);
+      console.log(`\nPackages Failed to Deploy`, deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name));
     }
     console.log(
       `----------------------------------------------------------------------------------------------------`

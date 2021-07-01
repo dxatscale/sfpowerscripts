@@ -63,16 +63,11 @@ export interface DeployProps {
 export default class DeployImpl {
   constructor(private props: DeployProps) { }
   // TODO: Refactor to use exception pattern
-  public async exec(): Promise<{
-    deployed: string[];
-    failed: string[];
-    testFailure: string;
-    error: any;
-  }> {
+  public async exec(): Promise<DeploymentResult> {
 
-    let deployed: string[] = [];
-    let failed: string[] = [];
-    let testFailure: string;
+    let deployed: PackageInfo[] = [];
+    let failed: PackageInfo[] = [];
+    let testFailure: PackageInfo;
     try {
       if (!this.props.artifacts) {
         this.props.artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
@@ -155,7 +150,6 @@ export default class DeployImpl {
 
         let packageInstallationResult = await retry(
           async (bail,count) => {
-
             try {
 
               await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory,packageMetadata);
@@ -173,32 +167,29 @@ export default class DeployImpl {
                 pkgDescriptor,
                 false
               );
-              if (this.props.isRetryOnFailure && installPackageResult.result === PackageInstallationStatus.Failed && count ==1) {
-               {
-                  throw new Error(installPackageResult.message)}
-               }
-              else
-                return installPackageResult;
-            } catch (error) {
-              if (!this.props.isRetryOnFailure) // Any other exception, in regular cases dont retry, just bail out
-                 {
-                  let failedPackageInstallationResult: PackageInstallationResult = {
-                      result : PackageInstallationStatus.Failed,
-                       message:error
-                  }
-                   return failedPackageInstallationResult;
-                 }
-              else
-                throw (error)
-            }
 
-          }, { retries: 1, minTimeout: 2000 });
+              if (this.props.isRetryOnFailure && installPackageResult.result === PackageInstallationStatus.Failed && count === 1) {
+                throw new Error(installPackageResult.message)
+              } else return installPackageResult;
+
+            } catch (error) {
+              if (!this.props.isRetryOnFailure) {
+                // Any other exception, in regular cases dont retry, just bail out
+                let failedPackageInstallationResult: PackageInstallationResult = {
+                  result : PackageInstallationStatus.Failed,
+                  message:error
+                }
+                return failedPackageInstallationResult;
+              } else throw (error)
+            }
+          }, { retries: 1, minTimeout: 2000 }
+        );
 
         if (
           packageInstallationResult.result ===
           PackageInstallationStatus.Succeeded
         ) {
-          deployed.push(queue[i].package);
+          deployed.push(packageInfo);
           this.printClosingLoggingGroup();
         } else if (
           packageInstallationResult.result === PackageInstallationStatus.Skipped
@@ -208,7 +199,7 @@ export default class DeployImpl {
         } else if (
           packageInstallationResult.result === PackageInstallationStatus.Failed
         ) {
-          failed = queue.slice(i).map((pkg) => pkg.package);
+          failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
           throw new Error(packageInstallationResult.message);
         }
 
@@ -235,10 +226,10 @@ export default class DeployImpl {
               }
 
               if (!testResult.result) {
-                testFailure = queue[i].package;
+                testFailure = packageInfo;
 
                 if (i !== queue.length - 1)
-                  failed = queue.slice(i + 1).map((pkg) => pkg.package);
+                  failed = queue.slice(i + 1).map((pkg) => packagesToPackageInfo[pkg.package]);
 
                 throw new Error(testResult.message);
               } else {
@@ -788,8 +779,8 @@ interface PackageInfo {
 }
 
 export interface DeploymentResult {
-  deployed: string[];
-  failed: string[];
-  testFailure: string;
+  deployed: PackageInfo[];
+  failed: PackageInfo[];
+  testFailure: PackageInfo;
   error: any;
 }

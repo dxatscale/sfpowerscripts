@@ -3,6 +3,7 @@ import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/pa
 import DeployImpl, {
   DeploymentMode,
   DeployProps,
+  DeploymentResult
 } from "../../deploy/DeployImpl";
 import SFPLogger, {
   FileLogger,
@@ -93,7 +94,7 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
       );
 
       if (this.artifacts) {
-        let deploymentResult;
+        let deploymentResult: DeploymentResult;
         if (true) {
           deploymentResult = await this.pushArtifacts(
             scratchOrg,
@@ -118,6 +119,7 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
             );
 
         // consolidate source tracking files
+        // TODO: only run for push
         let aggregatedSourceTrackingDir = ".sfpowerscripts/source-tracking-files";
         fs.mkdirpSync(aggregatedSourceTrackingDir);
         for (let artifact of this.artifacts) {
@@ -155,6 +157,8 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
             continue;
           }
         }
+
+
 
       }
 
@@ -230,12 +234,7 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
 
   private handleDeploymentErrorsForFullDeployment(
     scratchOrg: ScratchOrg,
-    deploymentResult: {
-      deployed: string[];
-      failed: string[];
-      testFailure: string;
-      error: any;
-    },
+    deploymentResult: DeploymentResult,
     packageLogger: any
   ) {
     //Handle Deployment Failures
@@ -247,7 +246,7 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
         packageLogger
       );
       SFPLogger.log(
-        JSON.stringify(deploymentResult.failed),
+        JSON.stringify(deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)),
         LoggerLevel.INFO,
         packageLogger
       );
@@ -257,26 +256,21 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
         packageLogger
       );
       throw new Error(
-        "Following Packages failed to deploy:" + deploymentResult.failed
+        "Following Packages failed to deploy:" + deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)
       );
     }
   }
 
   private handleDeploymentErrorsForPartialDeployment(
     scratchOrg: ScratchOrg,
-    deploymentResult: {
-      deployed: string[];
-      failed: string[];
-      testFailure: string;
-      error: any;
-    },
+    deploymentResult: DeploymentResult,
     packageLogger: any
   ) {
     //Handle Deployment Failures
     if (deploymentResult.failed.length > 0 || deploymentResult.error) {
       if (this.checkPointPackages.length > 0) {
         let isCheckPointSucceded = this.checkPointPackages.some((pkg) =>
-          deploymentResult.deployed.includes(pkg)
+          deploymentResult.deployed.map((packageInfo) => packageInfo.packageMetadata.package_name).includes(pkg)
         );
         if (!isCheckPointSucceded) {
           SFPStatsSender.logCount("prepare.org.checkpointfailed");

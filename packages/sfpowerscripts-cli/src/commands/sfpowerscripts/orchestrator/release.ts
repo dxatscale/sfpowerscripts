@@ -218,7 +218,7 @@ export default class Release extends SfpowerscriptsCommand {
       console.log(`   ${releaseResult.deploymentResult.failed.length} failed`);
 
       if (releaseResult.deploymentResult.failed.length > 0) {
-        console.log(`\nPackages Failed to Deploy`, releaseResult.deploymentResult.failed);
+        console.log(`\nPackages Failed to Deploy`, releaseResult.deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name));
       }
     }
 
