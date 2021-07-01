@@ -24,6 +24,9 @@ import { Result, ok, err } from "neverthrow";
 import { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 const path = require("path");
 import * as fs from "fs-extra";
+import lodash = require("lodash");
+import AdmZip = require("adm-zip");
+import child_process = require("child_process");
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
 export default class PrepareCIOrgJob extends PoolJobExecutor {
@@ -120,44 +123,119 @@ export default class PrepareCIOrgJob extends PoolJobExecutor {
 
         // consolidate source tracking files
         // TODO: only run for push
-        let aggregatedSourceTrackingDir = ".sfpowerscripts/source-tracking-files";
-        fs.mkdirpSync(aggregatedSourceTrackingDir);
-        for (let artifact of this.artifacts) {
-          let artifactsOrgsDir = path.join(artifact.sourceDirectoryPath, ".sfdx", "orgs"); // may not exist
-          if (fs.existsSync(artifactsOrgsDir)) {
-            let usernames = fs.readdirSync(artifactsOrgsDir);
-            for (let username of usernames) {
-              let aggregatedUsernameDir = path.join(aggregatedSourceTrackingDir, username);
-              fs.mkdirpSync(aggregatedUsernameDir);
+        let aggregatedSourceTrackingDir = ".sfpowerscripts/sourceTrackingFiles";
+        let aggregatedUsernameDir = path.join(aggregatedSourceTrackingDir, scratchOrg.username);
+        let aggregatedMaxRevisionFilePath = path.join(aggregatedUsernameDir, "maxRevision.json");
+        let aggregatedSourcePathinfosFilePath = path.join(aggregatedUsernameDir, "sourcePathInfos.json");
 
-              let artifactsMaxRevisionFilePath = path.join(artifactsOrgsDir, username, "maxRevision.json");
-              let artifactsSourcePathInfosFilePath = path.join(artifactsOrgsDir, username, "sourcePathInfos.json");
+        fs.mkdirpSync(aggregatedUsernameDir);
 
-              if (fs.existsSync(artifactsMaxRevisionFilePath) && fs.existsSync(artifactsSourcePathInfosFilePath)) {
-                let aggregatedMaxRevisionFilePath = path.join(aggregatedUsernameDir, "maxRevision.json");
-                let aggregatedSourcePathinfosFilePath = path.join(aggregatedUsernameDir, "sourcePathInfos.json");
-                if (fs.existsSync(aggregatedMaxRevisionFilePath) && fs.existsSync(aggregatedSourcePathinfosFilePath)) {
-                  // Replace maxRevision.json
-                  fs.copySync(artifactsMaxRevisionFilePath, aggregatedMaxRevisionFilePath, { overwrite: true });
+        for (let packageInfoOfDeployedArtifact of deploymentResult.deployed) {
+          console.log(packageInfoOfDeployedArtifact.sourceDirectory);
+          let orgsDir = path.join(packageInfoOfDeployedArtifact.sourceDirectory, ".sfdx", "orgs");
+          let usernameDir = path.join(orgsDir, scratchOrg.username);
 
-                  // Concatenate sourcePathInfos.json
-                  let aggregatedSourcePathInfos = fs.readJSONSync(aggregatedSourcePathinfosFilePath, {encoding: "UTF-8"});
-                  let sourcePathInfos = fs.readJSONSync(artifactsOrgsDir, {encoding: "UTF-8"});
-                  Object.assign(aggregatedSourcePathInfos, sourcePathInfos)
+          if (!fs.existsSync(usernameDir)) throw new Error(`Failed to consolidate source tracking files. Unable to find ${usernameDir}`);
 
-                  fs.writeJSONSync(aggregatedSourcePathinfosFilePath, aggregatedSourcePathInfos);
-                } else {
-                  fs.copySync(path.join(artifactsOrgsDir, username), path.join(aggregatedUsernameDir));
-                }
-              } else {
-                continue;
-              }
+          let maxRevisionFilePath = path.join(usernameDir, "maxRevision.json");
+          let sourcePathInfosFilePath = path.join(usernameDir, "sourcePathInfos.json");
+
+          if (!fs.existsSync(maxRevisionFilePath) || !fs.existsSync(sourcePathInfosFilePath))
+            throw new Error(`Failed to consolidate source tracking files. Missing source tracking files`);
+
+          if (fs.existsSync(aggregatedMaxRevisionFilePath) && fs.existsSync(aggregatedSourcePathinfosFilePath)) {
+
+            let aggregatedMaxRevision = fs.readJSONSync(aggregatedMaxRevisionFilePath, {encoding: "UTF-8"});
+            let maxRevision = fs.readJSONSync(maxRevisionFilePath, {encoding: "UTF-8"})
+            if (maxRevision.serverMaxRevisionCounter >= aggregatedMaxRevision.serverMaxRevisionCounter) {
+              // Replace maxRevision.json
+              fs.copySync(maxRevisionFilePath, aggregatedMaxRevisionFilePath, { overwrite: true });
             }
+
+            // Concatenate sourcePathInfos.json
+            let aggregatedSourcePathInfos = fs.readJSONSync(aggregatedSourcePathinfosFilePath, {encoding: "UTF-8"});
+            let sourcePathInfos = fs.readJSONSync(sourcePathInfosFilePath, {encoding: "UTF-8"});
+
+            // truncate source path
+            for (let entry of Object.entries<any>(sourcePathInfos)) {
+              let newPropName = entry[0].replace(path.resolve(packageInfoOfDeployedArtifact.sourceDirectory), "");
+              let newPropValue = lodash.cloneDeep(entry[1]);
+              newPropValue.sourcePath = newPropValue.sourcePath.replace(path.resolve(packageInfoOfDeployedArtifact.sourceDirectory), "");
+
+              sourcePathInfos[newPropName] = newPropValue;
+
+              delete sourcePathInfos[entry[0]];
+            }
+
+            Object.assign(aggregatedSourcePathInfos, sourcePathInfos)
+
+            fs.writeJSONSync(aggregatedSourcePathinfosFilePath, aggregatedSourcePathInfos, {spaces: 2});
           } else {
-            continue;
+            fs.copySync(maxRevisionFilePath, aggregatedMaxRevisionFilePath);
+            fs.copySync(sourcePathInfosFilePath, aggregatedSourcePathinfosFilePath);
+
+            let aggregatedSourcePathInfos = fs.readJSONSync(aggregatedSourcePathinfosFilePath, {encoding: "UTF-8"});
+            // truncate source path
+            for (let entry of Object.entries<any>(aggregatedSourcePathInfos)) {
+              let newPropName = entry[0].replace(path.resolve(packageInfoOfDeployedArtifact.sourceDirectory), "");
+              let newPropValue = lodash.cloneDeep(entry[1]);
+              newPropValue.sourcePath = newPropValue.sourcePath.replace(path.resolve(packageInfoOfDeployedArtifact.sourceDirectory), "");
+              aggregatedSourcePathInfos[newPropName] = newPropValue;
+
+              delete aggregatedSourcePathInfos[entry[0]];
+            }
+
+            fs.writeJSONSync(aggregatedSourcePathinfosFilePath, aggregatedSourcePathInfos, { spaces: 2 })
           }
         }
 
+        // Deploy static resource to SO
+        let projectConfig = {
+          packageDirectories: [
+            {
+              path: "force-app",
+              default: true
+            }
+          ],
+          namespace: "",
+          sourceApiVersion: "49.0"
+        };
+
+        fs.writeJSONSync(path.join(aggregatedUsernameDir, "sfdx-project.json"), projectConfig, { spaces: 2 });
+        let staticResourcesDir = path.join(aggregatedUsernameDir, "force-app", "main", "default", "staticresources");
+        fs.mkdirpSync(staticResourcesDir);
+
+        let zip = new AdmZip();
+        zip.addLocalFile(aggregatedMaxRevisionFilePath);
+        zip.addLocalFile(aggregatedSourcePathinfosFilePath);
+        zip.writeZip(path.join(staticResourcesDir, "sourceTrackingFiles.zip"));
+
+        let metadataXml: string =
+          `<?xml version="1.0" encoding="UTF-8"?>
+          <StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
+            <cacheControl>Public</cacheControl>
+            <contentType>application/zip</contentType>
+          </StaticResource>`;
+
+        fs.writeFileSync(path.join(staticResourcesDir, "sourceTrackingFiles.resource-meta.xml"), metadataXml);
+
+        try {
+          child_process.execSync(
+            `sfdx force:source:deploy -p force-app -u ${scratchOrg.username}`,
+            {
+              cwd: aggregatedUsernameDir,
+              encoding: 'utf8',
+              stdio: 'pipe'
+            }
+          );
+        } catch (error) {
+          SFPLogger.log(
+            `Failed to deploy static resources to scratch org`,
+            null,
+            packageLogger
+          );
+          throw error;
+        }
 
 
       }
