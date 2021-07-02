@@ -21,7 +21,7 @@ export default class Prepare extends SfpowerscriptsCommand {
   protected static flagsConfig = {
     poolconfig: flags.filepath({
       required: false,
-      default: "config/cipoolconfig.json",
+      default: "config/poolconfig.json",
       char: "f",
       description: messages.getMessage("configDescription"),
     }),
@@ -49,7 +49,7 @@ export default class Prepare extends SfpowerscriptsCommand {
   public static description = messages.getMessage("commandDescription");
 
   public static examples = [
-    `$ sfdx sfpowerscripts:orchestrator:prepare -t CI_1  -v <devhub>`,
+    `$ sfdx sfpowerscripts:orchestrator:prepare -t POOL1  -v <devhub>`,
   ];
 
   public async execute(): Promise<any> {

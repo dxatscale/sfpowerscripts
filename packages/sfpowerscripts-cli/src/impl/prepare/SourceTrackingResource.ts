@@ -81,7 +81,6 @@ export default class SourceTrackingResource {
    */
   private aggregateSourceTrackingResources() {
     for (let packageInfoOfDeployedArtifact of this.deploymentResult.deployed) {
-      console.log(packageInfoOfDeployedArtifact.sourceDirectory);
       let orgsDir = path.join(packageInfoOfDeployedArtifact.sourceDirectory, ".sfdx", "orgs");
       let usernameDir = path.join(orgsDir, this.scratchOrg.username);
 

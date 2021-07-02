@@ -8,6 +8,7 @@
     "tag",
     "maxallocation"
   ],
+  "additionalProperties": false,
   "properties": {
     "tag": {
       "title": "Tag of the pool",
@@ -17,7 +18,7 @@
     "expiry": {
       "title": "expiry",
       "type": "integer",
-      "default": 1,
+      "default": 2,
       "description": "Duration of the scratch org (in days) (default:1)"
     },
     "maxallocation": {
@@ -48,7 +49,8 @@
       "title": "Keys for managed package"
     },
     "installAll": {
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     },
     "deploymentType": {
       "enum": ["push", "mdapi"],
@@ -56,14 +58,16 @@
     },
     "relaxAllIPRanges": {
       "type": "boolean",
-      "title": "Relax all IP Ranges"
+      "title": "Relax all IP Ranges",
+      "default": "false"
     },
     "ipRangesToBeRelaxed": {
       "type": "array",
       "title": "ip ranges to be relaxed"
     },
     "retryOnFailure": {
-      "type": "boolean"
+      "type": "boolean",
+      "default": "false"
     },
     "fetchArtifacts": {
       "type": "object",

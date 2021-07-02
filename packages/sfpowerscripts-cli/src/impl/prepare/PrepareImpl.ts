@@ -15,11 +15,10 @@ export default class PrepareImpl {
     private pool:PoolConfig
   ) {
 
-    //set defaults
-    if(!this.pool.expiry)
-      this.pool.expiry=1
-    if(!this.pool.batchsize)
-      this.pool.batchsize=5
+    // set defaults
+    if(!this.pool.expiry) this.pool.expiry = 2;
+
+    if(!this.pool.batchsize) this.pool.batchsize = 5;
 
   }
 

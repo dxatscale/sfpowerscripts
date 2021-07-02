@@ -49,12 +49,15 @@ export default class PrepareOrgJob extends PoolJobExecutor {
       let packageLogger: FileLogger = new FileLogger(logToFilePath);
       this.checkPointPackages = this.getcheckPointPackages(packageLogger);
 
-      await this.relaxIPRanges(
-        scratchOrg,
-        this.pool.relaxAllIPRanges,
-        this.pool.ipRangesToBeRelaxed,
-        packageLogger
-      );
+      if (this.pool.relaxAllIPRanges || this.pool.ipRangesToBeRelaxed) {
+        await this.relaxIPRanges(
+          scratchOrg,
+          this.pool.relaxAllIPRanges,
+          this.pool.ipRangesToBeRelaxed,
+          packageLogger
+        );
+      }
+
 
       SFPLogger.log(
         `Installing sfpowerscripts_artifact package to the ${scratchOrg.alias}`,
