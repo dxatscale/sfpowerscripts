@@ -8,9 +8,7 @@ import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 import ScratchOrgInfoAssigner from "./services/updaters/ScratchOrgInfoAssigner";
 import ShareScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ShareScratchOrg";
 import * as fs from "fs-extra";
-const path = require("path");
-import lodash = require("lodash");
-import * as rimraf from "rimraf";
+import SourceTrackingResourceController from "./SourceTrackingResourceController";
 
 export default class PoolFetchImpl extends PoolBaseImpl{
 
@@ -121,78 +119,10 @@ export default class PoolFetchImpl extends PoolBaseImpl{
       }
     } else {
       try {
-        let sourceTrackingResourceDir = `.sfpowerscripts/sourceTrackingFiles/${soDetail.username}`;
-        fs.mkdirpSync(sourceTrackingResourceDir);
-
-        let projectConfig = {
-          packageDirectories: [
-            {
-              path: "force-app",
-              default: true
-            }
-          ],
-          namespace: "",
-          sourceApiVersion: "49.0"
-        };
-
-        fs.writeJSONSync(path.join(sourceTrackingResourceDir, "sfdx-project.json"), projectConfig, { spaces: 2 });
-
-        // Create empty forceignore to prevent static resource from being ignored
-        fs.closeSync(fs.openSync(path.join(sourceTrackingResourceDir, ".forceignore"), 'w'));
-
-        let staticResourcesDir = path.join(sourceTrackingResourceDir, "force-app", "main", "default", "staticresources");
-        rimraf.sync(staticResourcesDir);
-        fs.mkdirpSync(staticResourcesDir);
-
-        child_process.execSync(
-          `sfdx force:source:retrieve -m StaticResource:sourceTrackingFiles -u ${soDetail.username}`,
-          {
-            cwd: sourceTrackingResourceDir,
-            encoding: 'utf8',
-            stdio: 'pipe'
-          }
-        );
-
-        let sfdxSourceTrackingResourceDir = `.sfdx/orgs/${soDetail.username}`;
-        let sfdxMaxRevisionFilePath = path.join(sfdxSourceTrackingResourceDir, "maxRevision.json");
-        let sfdxSourcePathInfosFilePath = path.join(sfdxSourceTrackingResourceDir, "sourcePathInfos.json");
-
-        fs.mkdirpSync(sfdxSourceTrackingResourceDir);
-        fs.copySync(path.join(staticResourcesDir, "sourceTrackingFiles", "maxRevision.json"), sfdxMaxRevisionFilePath);
-        fs.copySync(path.join(staticResourcesDir, "sourceTrackingFiles", "sourcePathInfos.json"), sfdxSourcePathInfosFilePath);
-
-        let sfdxSourcePathInfos = fs.readJSONSync(sfdxSourcePathInfosFilePath, {encoding: "UTF-8"});
-
-        // Prepend source paths with CWD
-        for (let entry of Object.entries<any>(sfdxSourcePathInfos)) {
-          let newPropName = path.join(process.cwd(), entry[0]);
-          let newPropValue = lodash.cloneDeep(entry[1]);
-          newPropValue.sourcePath = path.join(process.cwd(), newPropValue.sourcePath);
-          sfdxSourcePathInfos[newPropName] = newPropValue;
-
-          delete sfdxSourcePathInfos[entry[0]];
-        }
-
-        fs.writeJSONSync(sfdxSourcePathInfosFilePath, sfdxSourcePathInfos, { spaces: 2 });
-
-        // Prevent source tracking files from being shown as a remote addition
-        child_process.execSync(
-          `sfdx force:source:status -u ${soDetail.username}`,
-          {
-            encoding: 'utf8',
-            stdio: 'pipe'
-          }
-        );
-
-        let sfdxMaxRevision = fs.readJSONSync(sfdxMaxRevisionFilePath, { encoding: "UTF-8" });
-
-        if (sfdxMaxRevision.sourceMembers.StaticResource__sourceTrackingFiles?.serverRevisionCounter) {
-          sfdxMaxRevision.sourceMembers.StaticResource__sourceTrackingFiles.lastRetrievedFromServer = sfdxMaxRevision.sourceMembers.StaticResource__sourceTrackingFiles.serverRevisionCounter;
-          fs.writeJSONSync(sfdxMaxRevisionFilePath, sfdxMaxRevision, { spaces: 2 });
-        }
-
+        let sourceTrackingResourceController = new SourceTrackingResourceController(soDetail, null);
+        sourceTrackingResourceController.retrieve();
       } catch (error) {
-        SFPLogger.log("Failed to setup source tracking files");
+        // Don't fail if failed to retrieve source tracking files
       }
     }
 

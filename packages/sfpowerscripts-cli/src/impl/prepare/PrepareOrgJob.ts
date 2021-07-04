@@ -24,7 +24,7 @@ import { PoolConfig } from "../pool/PoolConfig";
 import { Result, ok, err } from "neverthrow";
 import { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import RelaxIPRange from "@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange"
-import SourceTrackingResource from "./SourceTrackingResource";
+import SourceTrackingResourceController from "../pool/SourceTrackingResourceController";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
 export default class PrepareOrgJob extends PoolJobExecutor {
@@ -133,8 +133,9 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             );
 
         if (deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH) {
-          let sourceTrackingResource = new SourceTrackingResource(scratchOrg, deploymentResult, packageLogger);
-          sourceTrackingResource.deploy();
+          let sourceTrackingResourceController = new SourceTrackingResourceController(scratchOrg, packageLogger);
+          sourceTrackingResourceController.createSourceTrackingResources(deploymentResult);
+          sourceTrackingResourceController.deploy();
         }
 
 

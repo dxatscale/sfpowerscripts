@@ -7,50 +7,33 @@ import child_process = require("child_process");
 import { DeploymentResult } from "../deploy/DeployImpl";
 import SFPLogger, { Logger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
-export default class SourceTrackingResource {
+export default class SourceTrackingResourceController {
   private readonly aggregatedSourceTrackingDir = ".sfpowerscripts/sourceTrackingFiles";
   private readonly aggregatedUsernameDir = path.join(this.aggregatedSourceTrackingDir, this.scratchOrg.username);
+
   private readonly aggregatedMaxRevisionFilePath = path.join(this.aggregatedUsernameDir, "maxRevision.json");
   private readonly aggregatedSourcePathinfosFilePath = path.join(this.aggregatedUsernameDir, "sourcePathInfos.json");
 
+  private readonly staticResourcesDir = path.join(this.aggregatedUsernameDir, "force-app", "main", "default", "staticresources");
+
   constructor(
     private scratchOrg: ScratchOrg,
-    private deploymentResult: DeploymentResult,
     private logger: Logger
   ) {
     fs.mkdirpSync(this.aggregatedUsernameDir);
+    fs.mkdirpSync(this.staticResourcesDir);
 
-    this.aggregateSourceTrackingResources();
+    this.createSfdxProject(this.aggregatedUsernameDir);
   }
 
   /**
    * Deploy source tracking resource to scratch org as a static resource
    */
   deploy(): void {
-    // Deploy static resource to SO
-    let projectConfig = {
-      packageDirectories: [
-        {
-          path: "force-app",
-          default: true
-        }
-      ],
-      namespace: "",
-      sourceApiVersion: "49.0"
-    };
-
-    fs.writeJSONSync(path.join(this.aggregatedUsernameDir, "sfdx-project.json"), projectConfig, { spaces: 2 });
-
-    // Create empty forceignore to prevent static resource from being ignored
-    fs.closeSync(fs.openSync(path.join(this.aggregatedUsernameDir, ".forceignore"), 'w'));
-
-    let staticResourcesDir = path.join(this.aggregatedUsernameDir, "force-app", "main", "default", "staticresources");
-    fs.mkdirpSync(staticResourcesDir);
-
     let zip = new AdmZip();
     zip.addLocalFile(this.aggregatedMaxRevisionFilePath);
     zip.addLocalFile(this.aggregatedSourcePathinfosFilePath);
-    zip.writeZip(path.join(staticResourcesDir, "sourceTrackingFiles.zip"));
+    zip.writeZip(path.join(this.staticResourcesDir, "sourceTrackingFiles.zip"));
 
     let metadataXml: string =
       `<?xml version="1.0" encoding="UTF-8"?>
@@ -59,7 +42,7 @@ export default class SourceTrackingResource {
         <contentType>application/zip</contentType>
       </StaticResource>`;
 
-    fs.writeFileSync(path.join(staticResourcesDir, "sourceTrackingFiles.resource-meta.xml"), metadataXml);
+    fs.writeFileSync(path.join(this.staticResourcesDir, "sourceTrackingFiles.resource-meta.xml"), metadataXml);
 
     try {
       child_process.execSync(
@@ -81,10 +64,53 @@ export default class SourceTrackingResource {
   }
 
   /**
-   * Aggregate source tracking resources, maxRevision.json and sourcePathInfos.json, across artifacts, for scratch org username
+   * Retrieve source tracking resources for scratch org
    */
-  private aggregateSourceTrackingResources() {
-    for (let packageInfoOfDeployedArtifact of this.deploymentResult.deployed) {
+  retrieve(): void {
+    this.clearStaticResourcesDir();
+
+    try {
+      child_process.execSync(
+        `sfdx force:source:retrieve -m StaticResource:sourceTrackingFiles -u ${this.scratchOrg.username}`,
+        {
+          cwd: this.aggregatedUsernameDir,
+          encoding: 'utf8',
+          stdio: 'pipe'
+        }
+      );
+
+      let sfdxSourceTrackingResourceDir = `.sfdx/orgs/${this.scratchOrg.username}`;
+      let sfdxMaxRevisionFilePath = path.join(sfdxSourceTrackingResourceDir, "maxRevision.json");
+      let sfdxSourcePathInfosFilePath = path.join(sfdxSourceTrackingResourceDir, "sourcePathInfos.json");
+
+      fs.mkdirpSync(sfdxSourceTrackingResourceDir);
+      fs.copySync(path.join(this.staticResourcesDir, "sourceTrackingFiles", "maxRevision.json"), sfdxMaxRevisionFilePath);
+      fs.copySync(path.join(this.staticResourcesDir, "sourceTrackingFiles", "sourcePathInfos.json"), sfdxSourcePathInfosFilePath);
+
+      let sfdxSourcePathInfos = fs.readJSONSync(sfdxSourcePathInfosFilePath, {encoding: "UTF-8"});
+
+      this.untruncateSourcePathInfos(sfdxSourcePathInfos);
+
+      fs.writeJSONSync(sfdxSourcePathInfosFilePath, sfdxSourcePathInfos, { spaces: 2 });
+
+      // Prevent source tracking files from being shown as a remote addition
+      this.trackStaticResource(sfdxMaxRevisionFilePath);
+    } catch (error) {
+      console.log(error);
+      SFPLogger.log(
+        `Failed to retrieve source tracking files for scratch org`,
+        null,
+        this.logger
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Create source tracking resources by aggregating maxRevision.json and sourcePathInfos.json across artifacts, for scratch org username
+   */
+  createSourceTrackingResources(deploymentResult: DeploymentResult) {
+    for (let packageInfoOfDeployedArtifact of deploymentResult.deployed) {
       let orgsDir = path.join(packageInfoOfDeployedArtifact.sourceDirectory, ".sfdx", "orgs");
       let usernameDir = path.join(orgsDir, this.scratchOrg.username);
 
@@ -152,4 +178,71 @@ export default class SourceTrackingResource {
       delete sourcePathInfos[entry[0]];
     }
   }
+
+  /**
+   * Un-truncate Source Path Infos by prepending source paths with CWD
+   * @param sourcePathInfos
+   */
+  private untruncateSourcePathInfos(sourcePathInfos: any) {
+    for (let entry of Object.entries<any>(sourcePathInfos)) {
+      let newPropName = path.join(process.cwd(), entry[0]);
+      let newPropValue = lodash.cloneDeep(entry[1]);
+      newPropValue.sourcePath = path.join(process.cwd(), newPropValue.sourcePath);
+      sourcePathInfos[newPropName] = newPropValue;
+
+      delete sourcePathInfos[entry[0]];
+    }
+  }
+
+  /**
+   * Create a barebones SFDX project at the target directory
+   */
+  private createSfdxProject(targetDirectory: string): void {
+    let projectConfig = {
+      packageDirectories: [
+        {
+          path: "force-app",
+          default: true
+        }
+      ],
+      namespace: "",
+      sourceApiVersion: "49.0"
+    };
+
+    fs.writeJSONSync(path.join(targetDirectory, "sfdx-project.json"), projectConfig, { spaces: 2 });
+
+    // Create empty forceignore to prevent static resource from being ignored
+    fs.closeSync(fs.openSync(path.join(targetDirectory, ".forceignore"), 'w'));
+  }
+
+  private clearStaticResourcesDir() {
+    let staticResources = fs.readdirSync(this.staticResourcesDir, { encoding: "utf8" });
+    if (staticResources.length > 0) {
+      staticResources.forEach((resource) => {
+        fs.unlinkSync(path.join(this.staticResourcesDir, resource));
+      });
+    }
+  }
+
+  /**
+   * Track static resource 'sourceTrackingFiles' by updating 'lastRetrievedFromServer' field
+   * Prevents source tracking files from being shown as a remote addition
+   * @param sfdxMaxRevisionFilePath
+   */
+     private trackStaticResource(sfdxMaxRevisionFilePath: string) {
+      child_process.execSync(
+        `sfdx force:source:status -u ${this.scratchOrg.username}`,
+        {
+          encoding: 'utf8',
+          stdio: 'pipe'
+        }
+      );
+
+      let sfdxMaxRevision = fs.readJSONSync(sfdxMaxRevisionFilePath, { encoding: "UTF-8" });
+
+      if (sfdxMaxRevision.sourceMembers.StaticResource__sourceTrackingFiles?.serverRevisionCounter) {
+        sfdxMaxRevision.sourceMembers.StaticResource__sourceTrackingFiles.lastRetrievedFromServer = sfdxMaxRevision.sourceMembers.StaticResource__sourceTrackingFiles.serverRevisionCounter;
+        fs.writeJSONSync(sfdxMaxRevisionFilePath, sfdxMaxRevision, { spaces: 2 });
+      }
+    }
 }
