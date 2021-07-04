@@ -1,6 +1,7 @@
 import { core, flags, SfdxCommand } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import PoolFetchImpl from "../../../impl/pool/PoolFetchImpl";
+import * as fs from "fs-extra";
 
 // Initialize Messages with the current plugin directory
 core.Messages.importMessagesDirectory(__dirname);
@@ -16,6 +17,7 @@ export default class Fetch extends SfdxCommand {
   public static description = messages.getMessage("commandDescription");
 
   protected static requiresDevhubUsername = true;
+  protected static requiresProject = true;
 
   public static examples = [
     `$ sfdx sfpowerkit:pool:fetch -t core `,
@@ -67,7 +69,7 @@ export default class Fetch extends SfdxCommand {
   };
 
   public async run(): Promise<AnyJson> {
-   
+    if (!fs.existsSync("sfdx-project.json")) throw new Error("This command must be run in the root directory of a SFDX project");
 
     await this.hubOrg.refreshAuth();
     const hubConn = this.hubOrg.getConnection();
@@ -99,6 +101,6 @@ export default class Fetch extends SfdxCommand {
     }
 
     return result as AnyJson;
-  
+
   }
 }
