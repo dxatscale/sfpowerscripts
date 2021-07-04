@@ -40,6 +40,10 @@ export default class SourceTrackingResource {
     };
 
     fs.writeJSONSync(path.join(this.aggregatedUsernameDir, "sfdx-project.json"), projectConfig, { spaces: 2 });
+
+    // Create empty forceignore to prevent static resource from being ignored
+    fs.closeSync(fs.openSync(path.join(this.aggregatedUsernameDir, ".forceignore"), 'w'));
+
     let staticResourcesDir = path.join(this.aggregatedUsernameDir, "force-app", "main", "default", "staticresources");
     fs.mkdirpSync(staticResourcesDir);
 
@@ -98,6 +102,16 @@ export default class SourceTrackingResource {
         let aggregatedMaxRevision = fs.readJSONSync(this.aggregatedMaxRevisionFilePath, { encoding: "UTF-8" });
         let maxRevision = fs.readJSONSync(maxRevisionFilePath, { encoding: "UTF-8" });
         if (maxRevision.serverMaxRevisionCounter >= aggregatedMaxRevision.serverMaxRevisionCounter) {
+          // Update lastRetrievedFromServer field to match serverRevisionCounter
+          let maxRevision = fs.readJSONSync(maxRevisionFilePath, { encoding: "UTF-8"});
+          Object.values<any>(maxRevision.sourceMembers).forEach((sourceMember) => {
+            if (sourceMember.lastRetrievedFromServer === null) {
+              sourceMember.lastRetrievedFromServer = sourceMember.serverRevisionCounter;
+            }
+          });
+
+          fs.writeJSONSync(maxRevisionFilePath, maxRevision, { spaces: 2 });
+
           // Replace maxRevision.json
           fs.copySync(maxRevisionFilePath, this.aggregatedMaxRevisionFilePath, { overwrite: true });
         }
