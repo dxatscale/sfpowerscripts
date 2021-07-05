@@ -42,8 +42,8 @@ export default class InstallUnlockedPackageImpl {
           );
 
           if (fs.existsSync(preDeploymentScript)) {
-            console.log("Executing preDeployment script");
-            PackageInstallationHelpers.executeScript(
+            console.log("Executing preDeployment script",LoggerLevel.INFO,this.packageLogger);
+            await PackageInstallationHelpers.executeScript(
               preDeploymentScript,
               this.packageMetadata.package_name,
               this.targetusername,
@@ -65,12 +65,12 @@ export default class InstallUnlockedPackageImpl {
               this.packageLogger
             );
           }
-          
+
         }
 
             //Print Metadata carried in the package
          PackageMetadataPrinter.printMetadataToDeploy(this.packageMetadata?.payload,this.packageLogger);
- 
+
         let command = this.buildPackageInstallCommand();
         let child = child_process.exec(command);
 
@@ -94,8 +94,8 @@ export default class InstallUnlockedPackageImpl {
           );
 
           if (fs.existsSync(postDeploymentScript)) {
-            console.log("Executing postDeployment script");
-            PackageInstallationHelpers.executeScript(
+            console.log("Executing postDeployment script",LoggerLevel.INFO,this.packageLogger);
+            await PackageInstallationHelpers.executeScript(
               postDeploymentScript,
               this.packageMetadata.package_name,
               this.targetusername,
@@ -121,10 +121,9 @@ export default class InstallUnlockedPackageImpl {
 
 
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
+          this.packageLogger,
           this.targetusername,
-          this.packageMetadata,
-          false,
-          this.packageLogger
+          this.packageMetadata
         );
 
 

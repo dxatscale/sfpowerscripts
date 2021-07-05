@@ -40,11 +40,16 @@ export interface Logger {
   path?: string;
 }
 
-const error = chalk.bold.red;
-const warning = chalk.keyword("orange");
-const success = chalk.green;
-const trace = chalk.cyanBright;
-const debug = chalk.gray;
+export const COLOR_ERROR = chalk.bold.red;
+export const COLOR_WARNING = chalk.keyword("orange");
+export const COLOR_INFO = chalk.white;
+export const COLOR_TRACE = chalk.gray;
+export const COLOR_DEBUG = chalk.blue;
+export const COLOR_HEADER = chalk.yellowBright.bold;
+export const COLOR_SUCCESS = chalk.green.bold;
+export const COLOR_TIME=chalk.magentaBright
+export const COLOR_KEY_MESSAGE=chalk.magentaBright.bold
+export const COLOR_KEY_VALUE=chalk.black.bold.bgGreenBright;
 
 export default class SFPLogger {
   public static logLevel: LoggerLevel = LoggerLevel.INFO;
@@ -65,11 +70,11 @@ export default class SFPLogger {
       } else {
         switch (logLevel) {
           case LoggerLevel.TRACE:
-            console.log(trace(message));
+            console.log(COLOR_TRACE(message));
             break;
 
           case LoggerLevel.DEBUG:
-            console.log(debug(message));
+            console.log(COLOR_DEBUG(message));
             break;
 
           case LoggerLevel.INFO:
@@ -77,15 +82,11 @@ export default class SFPLogger {
             break;
 
           case LoggerLevel.WARN:
-            console.log(warning(message));
+            console.log(COLOR_WARNING(message));
             break;
 
           case LoggerLevel.ERROR:
-            console.log(error(message));
-            break;
-
-          case LoggerLevel.SUCCESS:
-            console.log(success(message));
+            console.log(COLOR_ERROR(message));
             break;
         }
       }

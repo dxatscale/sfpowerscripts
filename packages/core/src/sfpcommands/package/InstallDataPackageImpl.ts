@@ -18,7 +18,6 @@ export default class InstallDataPackageImpl {
     private sourceDirectory: string,
     private packageMetadata: PackageMetadata,
     private skip_if_package_installed: boolean,
-    private isPackageCheckHandledByCaller?:boolean,
     private packageLogger?:Logger
   ) {}
 
@@ -50,9 +49,9 @@ export default class InstallDataPackageImpl {
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
         let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+          this.packageLogger,
           this.targetusername,
-          this.packageMetadata,
-          this.isPackageCheckHandledByCaller
+          this.packageMetadata
         );
         isPackageInstalled = installationStatus.isInstalled;
 
@@ -71,7 +70,7 @@ export default class InstallDataPackageImpl {
 
       if (fs.existsSync(preDeploymentScript)) {
         console.log("Executing preDeployment script");
-        PackageInstallationHelpers.executeScript(
+        await PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,
           this.targetusername,
@@ -82,7 +81,7 @@ export default class InstallDataPackageImpl {
       if (this.packageMetadata.assignPermSetsPreDeployment) {
         SFPLogger.log(
           "Assigning permission sets before deployment:",
-          null,
+          LoggerLevel.INFO,
           this.packageLogger
         );
 
@@ -119,7 +118,7 @@ export default class InstallDataPackageImpl {
 
       if (fs.existsSync(postDeploymentScript)) {
         console.log("Executing postDeployment script");
-        PackageInstallationHelpers.executeScript(
+        await PackageInstallationHelpers.executeScript(
           postDeploymentScript,
           this.sfdx_package,
           this.targetusername,
@@ -143,10 +142,9 @@ export default class InstallDataPackageImpl {
       }
 
       await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
+        this.packageLogger,
         this.targetusername,
-        this.packageMetadata,
-        this.isPackageCheckHandledByCaller,
-        this.packageLogger
+        this.packageMetadata
       );
 
       let elapsedTime = Date.now() - startTime;
@@ -178,8 +176,8 @@ export default class InstallDataPackageImpl {
     } finally {
       let csvIssuesReportFilepath: string = path.join(this.sourceDirectory, packageDirectory, `CSVIssuesReport.csv`)
       if (fs.existsSync(csvIssuesReportFilepath)) {
-        SFPLogger.log(`\n---------------------WARNING: SFDMU detected CSV issues, verify the following files -------------------------------`,null,this.packageLogger);
-        SFPLogger.log(fs.readFileSync(csvIssuesReportFilepath, 'utf8'),null,this.packageLogger);
+        SFPLogger.log(`\n---------------------WARNING: SFDMU detected CSV issues, verify the following files -------------------------------`,LoggerLevel.WARN,this.packageLogger);
+        SFPLogger.log(fs.readFileSync(csvIssuesReportFilepath, 'utf8'),LoggerLevel.INFO,this.packageLogger);
       }
     }
   }

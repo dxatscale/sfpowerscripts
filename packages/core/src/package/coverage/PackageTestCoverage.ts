@@ -1,6 +1,7 @@
 import SFPLogger, { Logger } from "../../logger/SFPLogger";
 import IndividualClassCoverage from "../../coverage/IndividualClassCoverage";
 import  SFPPackage  from "../SFPPackage";
+import { Connection } from "@salesforce/core";
 
 export default class PackageTestCoverage {
   private individualClassCoverage: IndividualClassCoverage;
@@ -9,7 +10,8 @@ export default class PackageTestCoverage {
   public constructor(
     private pkg: SFPPackage,
     private codeCoverage: any,
-    private logger:Logger
+    private logger:Logger,
+    private readonly conn: Connection
   ) {
     this.individualClassCoverage = new IndividualClassCoverage(
       this.codeCoverage,
@@ -17,7 +19,7 @@ export default class PackageTestCoverage {
     );
   }
 
-  public getCurrentPackageTestCoverage(): number {
+  public async getCurrentPackageTestCoverage(): Promise<number> {
     let packageClasses: string[] = this.pkg.apexClassWithOutTestClasses;
     let triggers: string[] = this.pkg.triggers;
 
@@ -35,22 +37,47 @@ export default class PackageTestCoverage {
         totalCovered += classCoverage.totalCovered;
       }
     }
+
+    let listOfApexClassOrTriggerId: string[] = [];
+
+    let classesNotTouchedByTestClass = this.getClassesNotTouchedByTestClass(packageClasses, this.codeCoverage);
+    if (classesNotTouchedByTestClass.length > 0) {
+      let apexClassIds = await this.queryApexClassIdByName(classesNotTouchedByTestClass);
+      listOfApexClassOrTriggerId = listOfApexClassOrTriggerId.concat(apexClassIds);
+    }
+
+    let triggersNotTouchedByTestClass = this.getTriggersNotTouchedByTestClass(triggers, this.codeCoverage);
+    if (triggersNotTouchedByTestClass.length > 0) {
+      let triggerIds = await this.queryTriggerIdByName(triggersNotTouchedByTestClass);
+      listOfApexClassOrTriggerId = listOfApexClassOrTriggerId.concat(triggerIds);
+    }
+
+    if (listOfApexClassOrTriggerId.length > 0) {
+      let recordsOfApexCodeCoverageAggregate = await this.queryApexCodeCoverageAggregateById(listOfApexClassOrTriggerId);
+
+      if (recordsOfApexCodeCoverageAggregate.length > 0) {
+        let numLinesUncovered: number = 0; // aggregate number of unconvered lines for classes & triggers that are not touched by any test classes
+        recordsOfApexCodeCoverageAggregate.forEach((record) => { numLinesUncovered += record.NumLinesUncovered; });
+        totalLines += numLinesUncovered;
+      }
+    }
+
     let testCoverage = Math.floor((totalCovered / totalLines) * 100);
     this.packageTestCoverage=testCoverage;
     return testCoverage;
   }
 
-  public validateTestCoverage(
+  public async validateTestCoverage(
       coverageThreshold?:number
-  ): {
+  ): Promise<{
     result: boolean;
     message?: string;
     packageTestCoverage: number;
     classesCovered?: { name: string; coveredPercent: number }[];
     classesWithInvalidCoverage?: { name: string; coveredPercent: number }[];
-  } {
+  }> {
     if(this.packageTestCoverage==-1)  //No Value available
-      this.getCurrentPackageTestCoverage();
+      await this.getCurrentPackageTestCoverage();
 
     let classesCovered = this.getIndividualClassCoverageByPackage(
       this.codeCoverage
@@ -138,19 +165,7 @@ export default class PackageTestCoverage {
       }
     }
 
-
-    // Check for package classes with no test class
-    let namesOfClassesWithoutTest: string[] = packageClasses.filter(
-      (packageClass) => {
-        // Filter out package class if accounted for in coverage json
-        for (let classCoverage of codeCoverageReport) {
-          if (classCoverage["name"] === packageClass) {
-            return false;
-          }
-        }
-        return true;
-      }
-    );
+    let namesOfClassesWithoutTest: string[] = this.getClassesNotTouchedByTestClass(packageClasses, codeCoverageReport);
 
     if (namesOfClassesWithoutTest.length > 0) {
       let classesWithoutTest: {
@@ -164,32 +179,68 @@ export default class PackageTestCoverage {
       );
     }
 
+    // Check for triggers with no test class
+    let namesOfTriggersWithoutTest: string[] = this.getTriggersNotTouchedByTestClass(triggers, codeCoverageReport);
+
+    if (namesOfTriggersWithoutTest.length > 0) {
+      let triggersWithoutTest: {
+        name: string;
+        coveredPercent: number;
+      }[] = namesOfTriggersWithoutTest.map((triggerName) => {
+        return { name: triggerName, coveredPercent: 0 };
+      });
+      individualClassCoverage = individualClassCoverage.concat(
+        triggersWithoutTest
+      );
+    }
+
+    return individualClassCoverage;
+  }
+
+  /**
+   * Returns names of triggers in the package that are not triggered by the execution of any test classes
+   * Returns empty array if triggers is null or undefined
+   * @param triggers
+   * @param codeCoverageReport
+   * @returns
+   */
+  private getTriggersNotTouchedByTestClass(triggers: string[], codeCoverageReport: any): string[] {
     if (triggers != null) {
-      // Check for triggers with no test class
-      let namesOfTriggersWithoutTest: string[] = triggers.filter((trigger) => {
-        // Filter out triggers if accounted for in coverage json
+      return triggers.filter((trigger) => {
         for (let classCoverage of codeCoverageReport) {
           if (classCoverage["name"] === trigger) {
+            // Filter out triggers if accounted for in coverage json
             return false;
           }
         }
         return true;
       });
-
-      if (namesOfTriggersWithoutTest.length > 0) {
-        let triggersWithoutTest: {
-          name: string;
-          coveredPercent: number;
-        }[] = namesOfTriggersWithoutTest.map((triggerName) => {
-          return { name: triggerName, coveredPercent: 0 };
-        });
-        individualClassCoverage = individualClassCoverage.concat(
-          triggersWithoutTest
-        );
-      }
-    }
-    return individualClassCoverage;
+    } else return [];
   }
+
+  /**
+   * Returns name of classes in the package that are not touched by the execution of any test classes
+   * Returns empty array if packageClasses is null or undefined
+   * @param packageClasses
+   * @param codeCoverageReport
+   * @returns
+   */
+  private getClassesNotTouchedByTestClass(packageClasses: string[], codeCoverageReport: any): string[] {
+    if (packageClasses != null) {
+      return packageClasses.filter(
+        (packageClass) => {
+          for (let classCoverage of codeCoverageReport) {
+            if (classCoverage["name"] === packageClass) {
+              // Filter out package class if accounted for in coverage json
+              return false;
+            }
+          }
+          return true;
+        }
+      );
+    } else return [];
+  }
+
   /**
    * Filter code coverage to classes and triggers in the package
    * @param codeCoverage
@@ -221,4 +272,69 @@ export default class PackageTestCoverage {
 
     return filteredCodeCoverage;
   }
+
+    /**
+   * Query ApexCodeCoverageAggregate by list of ApexClassorTriggerId
+   * @param listOfApexClassOrTriggerId
+   * @returns
+   */
+     private async queryApexCodeCoverageAggregateById(
+      listOfApexClassOrTriggerId: string[]
+    ) {
+      let collection = listOfApexClassOrTriggerId.map((ApexClassOrTriggerId) => `'${ApexClassOrTriggerId}'`).toString();
+      let query = `SELECT ApexClassorTriggerId, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassorTriggerId IN (${collection})`;
+
+      return (
+        await this.conn.tooling.query<{
+          ApexClassOrTriggerId: string;
+          NumLinesCovered: number;
+          NumLinesUncovered: number;
+          Coverage: any;
+        }>(query)
+      ).records;
+    }
+
+    /**
+     * Query Ids of Triggers by Name
+     * Returns empty array if no Id's are found
+     * @param triggersNotTouchedByTestClass
+     * @returns
+     */
+    private async queryTriggerIdByName(
+      triggers: string[]
+    ): Promise<string[]> {
+      let triggerIds: string[] = [];
+
+      let collection = triggers.map((trigger) => `'${trigger}'`).toString(); // transform into formatted string for query
+      let query = `SELECT ID, Name FROM ApexTrigger WHERE Name IN (${collection})`;
+      let records = (await this.conn.query<{ Id: string; Name: string; }>(query)).records;
+
+      if (records.length > 0) {
+        records.forEach((record) => { triggerIds.push(record.Id); });
+      }
+
+      return triggerIds;
+    }
+
+    /**
+     * Query Ids of Apex Classes by Name
+     * Returns empty array if no Id's are found
+     * @param classes
+     * @returns
+     */
+    private async queryApexClassIdByName(
+      classes: string[],
+    ): Promise<string[]> {
+      let apexClassIds: string[] = [];
+
+      let collection = classes.map((cls) => `'${cls}'`).toString(); // transform into formatted string for query
+      let query = `SELECT ID, Name FROM ApexClass WHERE Name IN (${collection})`;
+      let records = (await this.conn.query<{ Id: string; Name: string; }>(query)).records;
+
+      if (records.length > 0) {
+        records.forEach((record) => { apexClassIds.push(record.Id); });
+      }
+
+      return apexClassIds;
+    }
 }

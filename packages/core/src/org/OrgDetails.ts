@@ -16,7 +16,6 @@ export default class OrgDetails {
             );
             let result = JSON.parse(cmdOutput);
             if (result["status"] == 0) {
-              SFPLogger.log(JSON.stringify(result["result"]["records"][0]),LoggerLevel.INFO,logger);
               return result["result"]["records"][0];
             }
             else

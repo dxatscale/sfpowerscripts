@@ -2,10 +2,11 @@ const fs = require("fs");
 const path = require("path");
 import Git from "../git/Git";
 import IgnoreFiles from "../ignore/IgnoreFiles";
-import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from "../logger/SFPLogger";
 import ProjectConfig from "../project/ProjectConfig";
 import GitTags from "../git/GitTags";
 import lodash = require("lodash");
+import { EOL } from "os";
 
 export default class PackageDiffImpl {
   public constructor(
@@ -26,9 +27,7 @@ export default class PackageDiffImpl {
     let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(this.sfdx_package, projectConfig);
 
     SFPLogger.log(
-      `Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`,
-       LoggerLevel.INFO,
-       this.logger
+      COLOR_KEY_MESSAGE(`${EOL}Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`)
     );
 
     let tag: string;
@@ -39,7 +38,7 @@ export default class PackageDiffImpl {
     }
 
     if (tag) {
-      SFPLogger.log(`\nUtilizing tag ${tag} for ${this.sfdx_package}`,LoggerLevel.INFO,this.logger);
+      SFPLogger.log(COLOR_KEY_MESSAGE(`\nUtilizing tag ${tag} for ${this.sfdx_package}`));
 
       // Get the list of modified files between the tag and HEAD refs
       let modified_files: string[] = await git.diff([
@@ -121,11 +120,11 @@ export default class PackageDiffImpl {
     const gitTags: GitTags = new GitTags(git, sfdx_package);
     let tags: string[] = await gitTags.listTagsOnBranch();
 
-    SFPLogger.log("Analysing tags:",LoggerLevel.INFO,this.logger);
+    SFPLogger.log("Analysing tags:",LoggerLevel.DEBUG);
     if (tags.length > 10) {
-      SFPLogger.log(tags.slice(-10).toString().replace(/,/g, "\n"),LoggerLevel.INFO,this.logger);
+      SFPLogger.log(tags.slice(-10).toString().replace(/,/g, "\n"),LoggerLevel.DEBUG);
     } else {
-      SFPLogger.log(tags.toString().replace(/,/g, "\n"),LoggerLevel.INFO,this.logger);
+      SFPLogger.log(tags.toString().replace(/,/g, "\n"),LoggerLevel.DEBUG);
     }
 
     return tags.pop();

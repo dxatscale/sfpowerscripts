@@ -33,7 +33,6 @@ export default class InstallSourcePackageImpl {
     private wait_time: string,
     private skip_if_package_installed: boolean,
     private packageMetadata: PackageMetadata,
-    private isPackageCheckHandledByCaller?: boolean,
     private packageLogger?:Logger,
     private pathToReplacementForceIgnore?: string,
     private deploymentType?: DeploymentType
@@ -56,9 +55,9 @@ export default class InstallSourcePackageImpl {
     if (this.skip_if_package_installed) {
 
       let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+        this.packageLogger,
         this.targetusername,
-        this.packageMetadata,
-        this.isPackageCheckHandledByCaller
+        this.packageMetadata
       );
       isPackageInstalled = installationStatus.isInstalled;
       if (isPackageInstalled) {
@@ -85,7 +84,7 @@ export default class InstallSourcePackageImpl {
 
       if (fs.existsSync(preDeploymentScript)) {
         SFPLogger.log("Executing preDeployment script",LoggerLevel.INFO,this.packageLogger);
-        PackageInstallationHelpers.executeScript(
+        await PackageInstallationHelpers.executeScript(
           preDeploymentScript,
           this.sfdx_package,
           this.targetusername,
@@ -207,13 +206,10 @@ export default class InstallSourcePackageImpl {
           );
         }
 
-
-
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
+          this.packageLogger,
           this.targetusername,
           this.packageMetadata,
-          this.isPackageCheckHandledByCaller,
-          this.packageLogger
         );
 
       } else if (result.result === false) {
@@ -243,8 +239,8 @@ export default class InstallSourcePackageImpl {
       );
 
       if (fs.existsSync(postDeploymentScript)) {
-        console.log("Executing postDeployment script");
-        PackageInstallationHelpers.executeScript(
+        console.log("Executing postDeployment script",LoggerLevel.INFO, this.packageLogger);
+        await PackageInstallationHelpers.executeScript(
           postDeploymentScript,
           this.sfdx_package,
           this.targetusername,
@@ -387,7 +383,8 @@ export default class InstallSourcePackageImpl {
       //Now Reconcile
       let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
         target_org,
-        path.join(sourceDirectoryPath)
+        path.join(sourceDirectoryPath),
+        this.packageLogger
       );
       await reconcileProfileAgainstOrg.exec();
       isReconcileActivated = true;
@@ -418,7 +415,8 @@ export default class InstallSourcePackageImpl {
       //Now Reconcile
       let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
         target_org,
-        path.join(sourceDirectoryPath)
+        path.join(sourceDirectoryPath),
+        this.packageLogger
       );
       await reconcileProfileAgainstOrg.exec();
 
@@ -494,7 +492,7 @@ export default class InstallSourcePackageImpl {
           ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
             `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
             `-------------------------------------------------------------------------------------------------------------`,
-            LoggerLevel.WARN,
+            LoggerLevel.DEBUG,
             this.packageLogger
         );
         mdapi_options["testlevel"] = "NoTestRun";

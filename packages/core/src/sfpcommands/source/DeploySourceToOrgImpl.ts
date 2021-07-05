@@ -1,7 +1,7 @@
 import child_process = require("child_process");
 import { delay } from "../../utils/Delay";
 import { onExit } from "../../utils/OnExit";
-import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_SUCCESS, Logger, LoggerLevel } from "../../logger/SFPLogger";
 import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import ConvertSourceToMDAPIImpl from "../../sfdxwrappers/ConvertSourceToMDAPIImpl";
@@ -19,7 +19,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     private source_directory: string,
     private deployment_options: any,
     private isToBreakBuildIfEmpty: boolean,
-    private packageLogger?: any
+    private packageLogger?: Logger
   ) {}
 
   public async exec(): Promise<DeploySourceResult> {
@@ -53,7 +53,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         this.packageLogger
       ).exec(true);
       PackageMetadataPrinter.printMetadataToDeploy(
-        await new PackageManifest(this.mdapiDir).getManifest(),this.packageLogger
+        await new PackageManifest(this.mdapiDir).getManifest(),
+        this.packageLogger
       );
 
       //Get Deploy ID
@@ -127,8 +128,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
           );
         } else if (resultAsJSON["result"]["status"] == "Succeeded") {
           SFPLogger.log(
-            "Validation/Deployment Succeeded",
-            null,
+            COLOR_SUCCESS("Deployment Succeeded"),
+            LoggerLevel.INFO,
             this.packageLogger
           );
           commandExecStatus = true;

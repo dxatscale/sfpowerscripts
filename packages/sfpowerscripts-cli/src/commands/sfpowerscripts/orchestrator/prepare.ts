@@ -10,6 +10,8 @@ import Ajv from "ajv";
 import path = require("path");
 import { PoolErrorCodes } from "../../../impl/pool/PoolError";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import getFormattedTime from "../../../utils/GetFormattedTime";
+
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
@@ -118,7 +120,7 @@ export default class Prepare extends SfpowerscriptsCommand {
             results.value.scratchOrgs.length
           }}  scratchorgs out of ${results.value.to_allocate} requested with ${
             results.value.failedToCreate
-          } failed in ${this.getFormattedTime(totalElapsedTime)} `,
+          } failed in ${getFormattedTime(totalElapsedTime)} `,
           LoggerLevel.SUCCESS
         );
         SFPLogger.log(
@@ -178,12 +180,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     }
   }
 
-  private getFormattedTime(milliseconds: number): string {
-    let date = new Date(0);
-    date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
-    let timeString = date.toISOString().substr(11, 8);
-    return timeString;
-  }
+
 
   public validatePoolConfig(poolConfig: any) {
     console.log("...", __dirname);
