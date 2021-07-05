@@ -2,7 +2,7 @@ import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
-import DeployImpl, { DeploymentMode, DeployProps } from "../../../impl/deploy/DeployImpl";
+import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from "../../../impl/deploy/DeployImpl";
 import { Stage } from "../../../impl/Stage";
 import { COLOR_ERROR, COLOR_HEADER,COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
 import { COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
@@ -86,11 +86,7 @@ export default class Deploy extends SfpowerscriptsCommand {
 
 
 
-    let deploymentResult: {
-      deployed: string[],
-      failed: string[],
-      error: any
-    };
+    let deploymentResult: DeploymentResult;
 
     let tags = {
       targetOrg: this.flags.targetorg
@@ -144,7 +140,7 @@ export default class Deploy extends SfpowerscriptsCommand {
 
 
       if (deploymentResult.failed.length > 0) {
-        console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, deploymentResult.failed));
+        console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)));
       }
       console.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`

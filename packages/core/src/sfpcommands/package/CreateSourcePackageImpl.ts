@@ -38,7 +38,7 @@ export default class CreateSourcePackageImpl {
 
     SFPLogger.log(
       "--------------Create Source Package---------------------------",
-      null,
+      LoggerLevel.INFO,
       this.packageLogger
     );
     SFPLogger.log(

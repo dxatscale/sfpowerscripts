@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Accenture/sfpowerscripts/blob/develop/packages/sfpowerscripts-cli/resources/pooldefinition.schema.json",
+  "title": "pool definition",
+  "description": "The definition for creating a pool of scratch orgs in sfpowerscripts",
+  "type": "object",
+  "required": [
+    "tag",
+    "maxallocation"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "tag": {
+      "title": "Tag of the pool",
+      "type": "string",
+      "description": "Tag or name to identify the scratch org pool"
+    },
+    "expiry": {
+      "title": "expiry",
+      "type": "integer",
+      "default": 2,
+      "description": "Duration of the scratch org (in days) (default:1)"
+    },
+    "maxallocation": {
+      "title": "Max number of scratch orgs to be allocated",
+      "type": "integer",
+      "description": "Maximum number of scratch orgs to be allocated in the pool"
+    },
+    "batchsize": {
+      "title": "batchsize",
+      "default": 5,
+      "type": "integer",
+      "description": "Control the parallelism of the pool creation (default:5)"
+    },
+    "configFilePath": {
+      "title": "Path to config file",
+      "default": "config/project-scratch-def.json",
+      "type": "string",
+      "description": "Reference an external .json file to specify the features and org preferences required for the metadata of your package, such as the scratch org definition."
+    },
+    "succeedOnDeploymentErrors": {
+      "title": "Succeed on Deployment Errors",
+      "default": false,
+      "type": "boolean",
+      "description": "In case of a deployment error, whether to keep that scratch org in the pool"
+    },
+    "keys": {
+      "type": "string",
+      "title": "Keys for managed package"
+    },
+    "installAll": {
+      "type": "boolean",
+      "default": false
+    },
+    "deploymentType": {
+      "enum": ["push", "mdapi"],
+      "default": "push"
+    },
+    "relaxAllIPRanges": {
+      "type": "boolean",
+      "title": "Relax all IP Ranges",
+      "default": "false"
+    },
+    "ipRangesToBeRelaxed": {
+      "type": "array",
+      "title": "ip ranges to be relaxed"
+    },
+    "retryOnFailure": {
+      "type": "boolean",
+      "default": "false"
+    },
+    "fetchArtifacts": {
+      "type": "object",
+      "title": "Fetch Artifacts using below mechanism",
+      "oneOf": [
+        { "required": ["artifactFetchScript"] },
+        { "required": ["npm"] }
+      ],
+      "properties": {
+        "artifactFetchScript": {
+          "type": "string",
+          "title": "Path to the script to fetch artifacts"
+        },
+        "npm": {
+          "type": "object",
+          "required": [
+            "scope",
+            "npmtag",
+            "npmrcPath"
+          ],
+          "properties": {
+            "scope": {
+              "type": "string",
+              "title": "Scope of your npm packages"
+            },
+            "npmtag": {
+              "type": "string",
+              "title": "Tag of your npm packages, such as LATEST, develop, alpha etc"
+            },
+            "npmrcPath": {
+              "type": "string",
+              "title": "Path to npmrc file"
+            }
+          }
+        }
+      }
+    }
+  }
+}

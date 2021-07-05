@@ -9,5 +9,8 @@
          "packages/azpipelines/build":true,
          "**/lib":true
      },
+     "files.associations": {
+        "*.log": "vt100",
+     },
      "editor.tabSize": 2
 }

@@ -1,6 +1,6 @@
 import child_process = require("child_process");
 import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
-import DeployImpl, { DeploymentMode, DeployProps } from "../deploy/DeployImpl";
+import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from "../deploy/DeployImpl";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { Stage } from "../Stage";
@@ -10,8 +10,9 @@ import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/s
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import PoolFetchImpl from "../pool/PoolFetchImpl";
 import { Org } from "@salesforce/core";
-import { ScratchOrg } from "../pool/utils/ScratchOrgUtils";
+
 import DependencyAnalysis from "./DependencyAnalysis";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
 const Table = require("cli-table");
 import InstalledArtifactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
@@ -89,8 +90,6 @@ export default class ValidateImpl {
 
       await this.buildChangedSourcePackages(packagesToCommits);
 
-      // Un-suppress logs for deployment
-      SFPLogger.logLevel = LoggerLevel.INFO;
 
       let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
@@ -187,12 +186,7 @@ export default class ValidateImpl {
     );
   }
 
-  private async deploySourcePackages(scratchOrgUsername: string): Promise<{
-    deployed: string[],
-    failed: string[],
-    testFailure: string,
-    error: any
-  }> {
+  private async deploySourcePackages(scratchOrgUsername: string): Promise<DeploymentResult> {
     let deployStartTime: number = Date.now();
 
     let deployProps: DeployProps = {
@@ -329,7 +323,7 @@ export default class ValidateImpl {
         let hubOrg:Org = await Org.create({aliasOrUsername:devHubUsername,isDevHub:true});
 
         let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false);
-        scratchOrg = await poolFetchImpl.execute();
+        scratchOrg = await poolFetchImpl.execute() as ScratchOrg;
 
       } catch (error) {}
 
@@ -368,7 +362,7 @@ export default class ValidateImpl {
   }
 
   private printDeploySummary(
-    deploymentResult: {deployed: string[], failed: string[], testFailure: string},
+    deploymentResult: DeploymentResult,
     totalElapsedTime: number
   ): void {
     if (this.props.logsGroupSymbol?.[0])
@@ -383,11 +377,11 @@ export default class ValidateImpl {
     ));
 
     if (deploymentResult.testFailure)
-      console.log(COLOR_ERROR(`\nTests failed for`, deploymentResult.testFailure));
+      console.log(COLOR_ERROR(`\nTests failed for`, deploymentResult.testFailure.packageMetadata.package_name));
 
 
     if (deploymentResult.failed.length > 0) {
-      console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, deploymentResult.failed));
+      console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)));
     }
     console.log(COLOR_HEADER(
       `----------------------------------------------------------------------------------------------------`

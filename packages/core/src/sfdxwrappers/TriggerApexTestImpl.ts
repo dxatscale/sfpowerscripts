@@ -1,7 +1,9 @@
-import { SFDXCommand } from "../SFDXCommand";
+import { SFDXCommand } from "../command/SFDXCommand";
 import { RunAllTestsInOrg, RunApexTestSuitesOption, RunLocalTests, RunSpecifiedTestsOption, TestOptions } from "./TestOptions";
 
 export default class TriggerApexTestImpl extends SFDXCommand {
+
+ 
   public constructor(
     target_org: string,
     project_directory: string,
@@ -14,10 +16,14 @@ export default class TriggerApexTestImpl extends SFDXCommand {
     return "TriggerApexTest";
   }
 
-  getGeneratedSFDXCommandWithParams(): string {
+  getSFDXCommand(): string {
+    return  `sfdx force:apex:test:run`;
+  }
+
+  getGeneratedParams(): string {
     let command;
 
-    command = `sfdx force:apex:test:run -u ${this.target_org}`;
+    command = `-u ${this.target_org}`;
 
     if (this.testOptions.synchronous) command += " --synchronous";
 
@@ -60,8 +66,6 @@ export default class TriggerApexTestImpl extends SFDXCommand {
     return `--testlevel=${testOptions.testLevel.toString()}`;
   }
 
-  async executeCommand() {
-    return super.exec(true);
-  }
+ 
 }
 

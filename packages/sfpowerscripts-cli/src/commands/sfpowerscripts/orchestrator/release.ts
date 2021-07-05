@@ -219,7 +219,7 @@ export default class Release extends SfpowerscriptsCommand {
       console.log(COLOR_ERROR(`   ${releaseResult.deploymentResult.failed.length} failed`));
 
       if (releaseResult.deploymentResult.failed.length > 0) {
-        console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, releaseResult.deploymentResult.failed));
+        console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, releaseResult.deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)));
       }
     }
 

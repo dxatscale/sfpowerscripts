@@ -47,7 +47,7 @@ export default class SourcePackageGenerator {
     SourcePackageGenerator.createForceIgnores(artifactDirectory, rootDirectory);
 
     if (pathToReplacementForceIgnore)
-      SourcePackageGenerator.replaceRootForceIgnore(artifactDirectory, pathToReplacementForceIgnore);
+      SourcePackageGenerator.replaceRootForceIgnore(artifactDirectory, pathToReplacementForceIgnore,logger);
 
     if (destructiveManifestFilePath) {
       SourcePackageGenerator.copyDestructiveManifests(destructiveManifestFilePath, artifactDirectory, rootDirectory,logger);
@@ -177,7 +177,7 @@ export default class SourcePackageGenerator {
   private static replaceRootForceIgnore(
     artifactDirectory: string,
     pathToReplacementForceIgnore: string,
-    logger?:Logger
+    logger:Logger
   ): void {
     if (fs.existsSync(pathToReplacementForceIgnore))
       fs.copySync(

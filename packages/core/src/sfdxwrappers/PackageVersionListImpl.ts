@@ -1,24 +1,25 @@
-import { SFDXCommand } from "../SFDXCommand";
+import { SFDXCommand } from "../command/SFDXCommand";
 
 export default class PackageVersionListImpl extends SFDXCommand
 {
+ 
 
   public constructor(
-    devhub: string
+    target_org: string
   ) {
-    super(devhub, null);
+    super(target_org, null);
   }
 
-  public async exec(quiet?: boolean): Promise<any> {
-    let result =JSON.parse( await super.exec(quiet));
-    return result.result;
+  getSFDXCommand(): string {
+    return `sfdx force:package:list`
+  }
+  getGeneratedParams(): string {
+    return `-v ${this.target_org}`
   }
 
   getCommandName(): string {
     return "PackageVersionList"
   }
-  getGeneratedSFDXCommandWithParams(): string {
-    return `sfdx force:package:list --json -v ${this.target_org} `;
-  }
+
 
 }

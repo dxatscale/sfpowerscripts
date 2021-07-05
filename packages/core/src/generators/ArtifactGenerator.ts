@@ -88,6 +88,8 @@ export default class ArtifactGenerator {
         artifactFilepath + `_` + packageVersionNumber + `.zip`;
       zip.writeZip(zipArtifactFilepath);
 
+      SFPLogger.log(`Artifact Generation Completed for ${sfdx_package} to ${zipArtifactFilepath}`,LoggerLevel.INFO);
+
       // Cleanup unzipped artifact
       rimraf.sync(artifactFilepath);
 

@@ -17,6 +17,7 @@ import {
   PackageInstallationStatus,
 } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import SFPLogger, {
+  Logger,
   LoggerLevel,
 } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { EOL } from "os";
@@ -24,11 +25,12 @@ import { Stage } from "../Stage";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import TriggerApexTests from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/TriggerApexTests";
 import SFPPackage from "@dxatscale/sfpowerscripts.core/lib/package/SFPPackage";
-import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/package/IndividualClassCoverage";
+import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/coverage/IndividualClassCoverage";
 import { RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions";
 import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions";
 import semver = require("semver");
 import PromoteUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl";
+import { DeploymentType } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/source/DeploymentExecutor";
 import { COLOR_ERROR } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
@@ -38,6 +40,7 @@ const retry = require("async-retry");
 export enum DeploymentMode {
   NORMAL,
   SOURCEPACKAGES,
+  SOURCEPACKAGES_PUSH
 }
 
 export interface DeployProps {
@@ -50,40 +53,40 @@ export interface DeployProps {
   coverageThreshold?: number;
   waitTime: number;
   tags?: any;
-  packageLogger?: any;
+  packageLogger?: Logger;
   currentStage?: Stage;
   baselineOrg?: string;
   isDryRun?: boolean;
   isRetryOnFailure?: boolean;
   promotePackagesBeforeDeploymentToOrg?:string,
-  devhubUserName?:string
+  devhubUserName?:string,
+  artifacts?: ArtifactFilePaths[]
 }
 
 export default class DeployImpl {
   constructor(private props: DeployProps) { }
   // TODO: Refactor to use exception pattern
-  public async exec(): Promise<{
-    deployed: string[];
-    failed: string[];
-    testFailure: string;
-    error: any;
-  }> {
+  public async exec(): Promise<DeploymentResult> {
 
-    let deployed: string[] = [];
-    let failed: string[] = [];
-    let testFailure: string;
+    let deployed: PackageInfo[] = [];
+    let failed: PackageInfo[] = [];
+    let testFailure: PackageInfo;
     try {
-      let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-        this.props.artifactDir
-      );
+      if (!this.props.artifacts) {
+        this.props.artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+          this.props.artifactDir,
+          null,
+          this.props.packageLogger
+        );
+      }
 
-      if (artifacts.length === 0)
+      if (this.props.artifacts.length === 0)
         throw new Error(
           `No artifacts to deploy found in ${this.props.artifactDir}`
         );
 
       let artifactInquirer: ArtifactInquirer = new ArtifactInquirer(
-        artifacts,
+        this.props.artifacts,
         this.props.packageLogger
       );
       let packageManifest = artifactInquirer.latestPackageManifestFromArtifacts
@@ -94,7 +97,7 @@ export default class DeployImpl {
       }
 
 
-      let packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
+      let packagesToPackageInfo = this.getPackagesToPackageInfo(this.props.artifacts);
 
       let queue: any[] = this.getPackagesToDeploy(
         packageManifest,
@@ -150,7 +153,6 @@ export default class DeployImpl {
 
         let packageInstallationResult = await retry(
           async (bail,count) => {
-
             try {
 
               await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory,packageMetadata);
@@ -168,33 +170,29 @@ export default class DeployImpl {
                 pkgDescriptor,
                 false
               );
-              if (this.props.isRetryOnFailure && installPackageResult.result === PackageInstallationStatus.Failed && count ==1) {
-               {
-                  throw new Error(installPackageResult.message)}
-               }
-              else
-                return installPackageResult;
+
+              if (this.props.isRetryOnFailure && installPackageResult.result === PackageInstallationStatus.Failed && count === 1) {
+                throw new Error(installPackageResult.message)
+              } else return installPackageResult;
+
             } catch (error) {
-              if (!this.props.isRetryOnFailure) // Any other exception, in regular cases dont retry, just bail out
-                 {
-                  let failedPackageInstallationResult: PackageInstallationResult = {
-                      result : PackageInstallationStatus.Failed,
-                       message:error
-                  }
-                   return failedPackageInstallationResult;
-                 }
-              else
-                throw (error)
+              if (!this.props.isRetryOnFailure) {
+                // Any other exception, in regular cases dont retry, just bail out
+                let failedPackageInstallationResult: PackageInstallationResult = {
+                  result : PackageInstallationStatus.Failed,
+                  message:error
+                }
+                return failedPackageInstallationResult;
+              } else throw (error)
             }
-
-          }, { retries: 1, minTimeout: 2000 });
-
+          }, { retries: 1, minTimeout: 2000 }
+        );
 
         if (
           packageInstallationResult.result ===
           PackageInstallationStatus.Succeeded
         ) {
-          deployed.push(queue[i].package);
+          deployed.push(packageInfo);
           this.printClosingLoggingGroup();
         } else if (
           packageInstallationResult.result === PackageInstallationStatus.Skipped
@@ -204,7 +202,7 @@ export default class DeployImpl {
         } else if (
           packageInstallationResult.result === PackageInstallationStatus.Failed
         ) {
-          failed = queue.slice(i).map((pkg) => pkg.package);
+          failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
           throw new Error(packageInstallationResult.message);
         }
 
@@ -233,10 +231,10 @@ export default class DeployImpl {
               }
 
               if (!testResult.result) {
-                testFailure = queue[i].package;
+                testFailure = packageInfo;
 
                 if (i !== queue.length - 1)
-                  failed = queue.slice(i + 1).map((pkg) => pkg.package);
+                  failed = queue.slice(i + 1).map((pkg) => packagesToPackageInfo[pkg.package]);
 
                 throw new Error(testResult.message);
               } else {
@@ -421,15 +419,15 @@ export default class DeployImpl {
 
   private printOpenLoggingGroup(message: string, pkg?: string) {
     if (this.props.logsGroupSymbol?.[0])
-      console.log(
-        `${this.props.logsGroupSymbol[0]} ${message}   ${(pkg ? pkg : "")}`
+      SFPLogger.log(
+        `${this.props.logsGroupSymbol[0]} ${message}   ${(pkg ? pkg : "")}`,LoggerLevel.INFO,this.props.packageLogger
       );
   }
 
   private printClosingLoggingGroup() {
     if (this.props.logsGroupSymbol?.[1])
-      console.log(
-        this.props.logsGroupSymbol[1])
+      SFPLogger.log(
+        this.props.logsGroupSymbol[1],LoggerLevel.INFO,this.props.packageLogger)
   }
 
   /**
@@ -560,7 +558,10 @@ export default class DeployImpl {
       } else {
         throw new Error(`Unhandled package type ${packageType}`);
       }
-    } else if (this.props.deploymentMode == DeploymentMode.SOURCEPACKAGES) {
+    } else if (
+      this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES ||
+      this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
+    ) {
       if (packageType === "source" || packageType === "unlocked") {
         let options = {
           optimizeDeployment: false,
@@ -640,7 +641,10 @@ export default class DeployImpl {
       this.props.packageLogger,
       this.props.currentStage == "prepare"
         ? path.join(sourceDirectoryPath, "forceignores", ".prepareignore")
-        : null
+        : null,
+      this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
+        ? DeploymentType.SOURCE_PUSH
+        : DeploymentType.MDAPI_DEPLOY
     );
 
     return installSourcePackageImpl.exec();
@@ -695,7 +699,8 @@ export default class DeployImpl {
       targetUsername,
       testOptions,
       testCoverageOptions,
-      null
+      null,
+      this.props.packageLogger
     );
 
     return triggerApexTests.exec();
@@ -779,8 +784,8 @@ interface PackageInfo {
 }
 
 export interface DeploymentResult {
-  deployed: string[];
-  failed: string[];
-  testFailure: string;
+  deployed: PackageInfo[];
+  failed: PackageInfo[];
+  testFailure: PackageInfo;
   error: any;
 }

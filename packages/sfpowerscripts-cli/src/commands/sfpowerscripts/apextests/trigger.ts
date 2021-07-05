@@ -12,7 +12,7 @@ import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import SFPPackage from "@dxatscale/sfpowerscripts.core/lib/package/SFPPackage";
-import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/package/IndividualClassCoverage";
+import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/coverage/IndividualClassCoverage";
 import { ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 const path = require("path");
 
@@ -167,7 +167,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
       }
 
 
-      const triggerApexTests: TriggerApexTests = new TriggerApexTests(this.org.getUsername(),testOptions,coverageOptions,null);
+      const triggerApexTests: TriggerApexTests = new TriggerApexTests(this.org.getUsername(),testOptions,coverageOptions,null,null);
       let result = await triggerApexTests.exec();
 
       if (!result.result) {

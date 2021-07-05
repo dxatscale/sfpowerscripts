@@ -1,6 +1,7 @@
 import { core, flags, SfdxCommand } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import PoolFetchImpl from "../../../impl/pool/PoolFetchImpl";
+import * as fs from "fs-extra";
 
 // Initialize Messages with the current plugin directory
 core.Messages.importMessagesDirectory(__dirname);
@@ -16,6 +17,7 @@ export default class Fetch extends SfdxCommand {
   public static description = messages.getMessage("commandDescription");
 
   protected static requiresDevhubUsername = true;
+  protected static requiresProject = true;
 
   public static examples = [
     `$ sfdx sfpowerkit:pool:fetch -t core `,
@@ -29,6 +31,21 @@ export default class Fetch extends SfdxCommand {
       char: "t",
       description: messages.getMessage("tagDescription"),
       required: true
+    }),
+    alias: flags.string({
+      char: "a",
+      description: messages.getMessage("aliasDescription"),
+      required: false,
+    }),
+    sendtouser: flags.string({
+      char: "s",
+      description: messages.getMessage("sendToUserDescription"),
+      required: false,
+    }),
+    setdefaultusername: flags.boolean({
+      char: "d",
+      description: messages.getMessage("setdefaultusernameDescription"),
+      required: false,
     }),
     loglevel: flags.enum({
       description: "logging level for this command invocation",
@@ -52,7 +69,7 @@ export default class Fetch extends SfdxCommand {
   };
 
   public async run(): Promise<AnyJson> {
-   
+    if (!fs.existsSync("sfdx-project.json")) throw new Error("This command must be run in the root directory of a SFDX project");
 
     await this.hubOrg.refreshAuth();
     const hubConn = this.hubOrg.getConnection();
@@ -63,7 +80,10 @@ export default class Fetch extends SfdxCommand {
     let fetchImpl = new PoolFetchImpl(
       this.hubOrg,
       this.flags.tag,
-      this.flags.mypool
+      null,
+      this.flags.sendtouser,
+      this.flags.alias,
+      this.flags.setdefaultusername
     );
 
     let result = await fetchImpl.execute();
@@ -77,9 +97,10 @@ export default class Fetch extends SfdxCommand {
         }
       }
       this.ux.table(list, ["key", "value"]);
+      fetchImpl.loginToScratchOrgIfSfdxAuthURLExists(result);
     }
 
     return result as AnyJson;
-  
+
   }
 }

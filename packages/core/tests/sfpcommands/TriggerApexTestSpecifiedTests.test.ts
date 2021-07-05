@@ -2,8 +2,9 @@
 import { jest, expect } from "@jest/globals";
 import { RunSpecifiedTestsOption, TestOptions } from "../../src/sfdxwrappers/TestOptions";
 import fs from "fs-extra";
-import { CoverageOptions } from "../../src/package/IndividualClassCoverage";
+import { CoverageOptions } from "../../src/coverage/IndividualClassCoverage";
 import TriggerApexTests from "../../src/sfpcommands/apextest/TriggerApexTests";
+import { ConsoleLogger } from "../../src/logger/SFPLogger";
 
 
 let result:"";
@@ -50,7 +51,7 @@ describe("Given an org, trigger apex tests,along with specified test and coverag
       coverageThreshold:75,
       isPackageCoverageToBeValidated:false
     }
-    let triggerApexTests:TriggerApexTests = new TriggerApexTests("test@test.com",testOptions,coverageOptions,null);
+    let triggerApexTests:TriggerApexTests = new TriggerApexTests("test@test.com",testOptions,coverageOptions,null,new ConsoleLogger());
 
     expect(triggerApexTests.exec()).resolves.toStrictEqual({
       result: true,
@@ -85,7 +86,7 @@ describe("Given an org, trigger apex tests,along with specified test and coverag
       coverageThreshold:75,
       isPackageCoverageToBeValidated:false
     }
-    let triggerApexTests:TriggerApexTests = new TriggerApexTests("test@test.com",testOptions,coverageOptions,null);
+    let triggerApexTests:TriggerApexTests = new TriggerApexTests("test@test.com",testOptions,coverageOptions,null,new ConsoleLogger());
 
     expect(triggerApexTests.exec()).resolves.toStrictEqual({
       result: true,
@@ -116,7 +117,7 @@ describe("Given an org, trigger apex tests,along with specified test and coverag
       coverageThreshold:75,
       isPackageCoverageToBeValidated:false
     }
-    let triggerApexTests:TriggerApexTests = new TriggerApexTests("test@test.com",testOptions,coverageOptions,null);
+    let triggerApexTests:TriggerApexTests = new TriggerApexTests("test@test.com",testOptions,coverageOptions,null,new ConsoleLogger());
 
     expect(triggerApexTests.exec()).resolves.toStrictEqual({
       result: false,
@@ -149,7 +150,7 @@ describe("Given an org, trigger apex tests,along with specified test and coverag
       coverageThreshold:75,
       isPackageCoverageToBeValidated:false
     }
-    let triggerApexTests:TriggerApexTests = new TriggerApexTests("test@test.com",testOptions,coverageOptions,null);
+    let triggerApexTests:TriggerApexTests = new TriggerApexTests("test@test.com",testOptions,coverageOptions,null,new ConsoleLogger());
 
     expect(triggerApexTests.exec()).resolves.toStrictEqual({
       result: false,

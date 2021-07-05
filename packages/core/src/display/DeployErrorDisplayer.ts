@@ -3,7 +3,7 @@ import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
 export default class DeployErrorDisplayer {
 
-  public static printMetadataFailedToDeploy(componentFailures: any, packageLogger?: Logger) {
+  public static printMetadataFailedToDeploy(componentFailures: any, packageLogger: Logger) {
 
     if (componentFailures === null || componentFailures === undefined) return;
 
@@ -31,8 +31,9 @@ export default class DeployErrorDisplayer {
     }
     SFPLogger.log(
       "The following components resulted in failures:",
-      LoggerLevel.WARN
+      LoggerLevel.WARN,
+      packageLogger
     );
-    SFPLogger.log(table.toString(), LoggerLevel.WARN);
+    SFPLogger.log(table.toString(), LoggerLevel.WARN,packageLogger);
   }
 }

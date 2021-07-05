@@ -50,7 +50,8 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
   private preInstall(): void {
     let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
       this.flags.artifactdir,
-      this.flags.package
+      this.flags.package,
+      null
     );
 
     if (artifacts.length === 0) {

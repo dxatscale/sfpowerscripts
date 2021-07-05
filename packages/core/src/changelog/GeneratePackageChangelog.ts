@@ -2,7 +2,7 @@ import ProjectConfig from "../project/ProjectConfig";
 import simplegit, { SimpleGit, LogOptions } from "simple-git/promise";
 import { ListLogSummary } from "simple-git/typings/response";
 import { Changelog } from "./interfaces/GenericChangelogInterfaces";
-import SFPLogger from "../logger/SFPLogger";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 import { DefaultLogFields } from "simple-git";
 
 /**
@@ -32,8 +32,8 @@ export default class GeneratePackageChangelog {
               this.sfdx_package
           );
         } catch (err) {
-          SFPLogger.log(err);
-          SFPLogger.log(`Unable to find descriptor for package ${this.sfdx_package}`);
+          SFPLogger.log(`Unable to find descriptor for package ${this.sfdx_package}`,LoggerLevel.WARN);
+          SFPLogger.log(err.message,LoggerLevel.WARN);
         }
 
         let revFrom: string;

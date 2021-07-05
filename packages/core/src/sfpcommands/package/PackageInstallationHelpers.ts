@@ -1,5 +1,5 @@
 import child_process = require("child_process");
-import ExecuteCommand from "../../commandExecutor/ExecuteCommand";
+import ExecuteCommand from "../../command/commandExecutor/ExecuteCommand";
 import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
 import AssignPermissionSetsImpl from "../permsets/AssignPermissionSetsImpl";
 

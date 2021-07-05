@@ -1,4 +1,6 @@
-import DeploySourceToOrgImpl, { DeploySourceResult } from "../source/DeploySourceToOrgImpl";
+import DeploySourceToOrgImpl from "../source/DeploySourceToOrgImpl";
+import PushSourceToOrgImpl from "../source/PushSourceToOrgImpl";
+import DeploymentExecutor, { DeploySourceResult, DeploymentType } from "../../sfpcommands/source/DeploymentExecutor";
 import ReconcileProfileAgainstOrgImpl from "../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl";
 import DeployDestructiveManifestToOrgImpl from "../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl";
 import PackageMetadata from "../../PackageMetadata";
@@ -32,7 +34,8 @@ export default class InstallSourcePackageImpl {
     private skip_if_package_installed: boolean,
     private packageMetadata: PackageMetadata,
     private packageLogger?:Logger,
-    private pathToReplacementForceIgnore?: string
+    private pathToReplacementForceIgnore?: string,
+    private deploymentType?: DeploymentType
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -149,25 +152,37 @@ export default class InstallSourcePackageImpl {
         }
       }
 
-      //Construct Deploy Command for actual payload
-      let deploymentOptions = await this.generateDeploymentOptions(
-        this.packageMetadata,
-        this.wait_time,
-        this.options.optimizeDeployment,
-        this.options.skipTesting,
-        this.targetusername
-      );
+      let result: DeploySourceResult;
+      if (this.deploymentType === DeploymentType.SOURCE_PUSH) {
+        let pushSourceToOrgImpl: DeploymentExecutor = new PushSourceToOrgImpl(
+          this.targetusername,
+          this.sourceDirectory
+        );
 
-      let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
-        this.targetusername,
-        this.sourceDirectory,
-        packageDirectory,
-        deploymentOptions,
-        false,
-        this.packageLogger
-      );
+        result = await pushSourceToOrgImpl.exec()
 
-      let result: DeploySourceResult = await deploySourceToOrgImpl.exec();
+      } else {
+        //Construct Deploy Command for actual payload
+        let deploymentOptions = await this.generateDeploymentOptions(
+          this.packageMetadata,
+          this.wait_time,
+          this.options.optimizeDeployment,
+          this.options.skipTesting,
+          this.targetusername
+        );
+
+        let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
+          this.targetusername,
+          this.sourceDirectory,
+          packageDirectory,
+          deploymentOptions,
+          false,
+          this.packageLogger
+        );
+
+        result = await deploySourceToOrgImpl.exec();
+      }
+
 
 
       if (result.result && !result.message.startsWith("skip:")) {
@@ -533,7 +548,7 @@ export default class InstallSourcePackageImpl {
         path.join(sourceDirectory, ".forceignore")
       );
     else {
-      SFPLogger.log(`${pathToReplacementForceIgnore} does not exist`, null, this.packageLogger);
+      SFPLogger.log(`${pathToReplacementForceIgnore} does not exist`, LoggerLevel.INFO, this.packageLogger);
       SFPLogger.log("Package installation will continue using the unchanged forceignore in the source directory", null, this.packageLogger);
     }
   }

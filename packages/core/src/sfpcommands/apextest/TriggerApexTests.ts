@@ -4,9 +4,9 @@ import TriggerApexTestImpl from "../../sfdxwrappers/TriggerApexTestImpl";
 import { TestOptions } from "../../sfdxwrappers/TestOptions";
 import IndividualClassCoverage, {
   CoverageOptions,
-} from "../../package/IndividualClassCoverage";
+} from "../../coverage/IndividualClassCoverage";
 import { TestReportDisplayer } from "./TestReportDisplayer";
-import PackageTestCoverage from "../../package/PackageTestCoverage";
+import PackageTestCoverage from "../../package/coverage/PackageTestCoverage";
 import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
 import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
 import SFPStatsSender from "../../stats/SFPStatsSender";
@@ -183,6 +183,7 @@ export default class TriggerApexTests {
       let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
         this.testOptions.sfppackage,
         this.getCoverageReport(),
+        this.fileLogger,
         this.conn
       );
 
@@ -192,7 +193,8 @@ export default class TriggerApexTests {
     } else {
       if (this.coverageOptions.isIndividualClassCoverageToBeValidated) {
         let coverageValidator: IndividualClassCoverage = new IndividualClassCoverage(
-          this.getCoverageReport()
+          this.getCoverageReport(),
+          this.fileLogger
         );
         return coverageValidator.validateIndividualClassCoverage(
           coverageValidator.getIndividualClassCoverage(),
@@ -200,7 +202,8 @@ export default class TriggerApexTests {
         );
       } else {
         let coverageValidator: IndividualClassCoverage = new IndividualClassCoverage(
-          this.getCoverageReport()
+          this.getCoverageReport(),
+          this.fileLogger
         );
         return coverageValidator.validateIndividualClassCoverage(
           coverageValidator.getIndividualClassCoverage()

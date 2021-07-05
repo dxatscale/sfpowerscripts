@@ -8,14 +8,9 @@ import ConvertSourceToMDAPIImpl from "../../sfdxwrappers/ConvertSourceToMDAPIImp
 import PackageManifest from "../../package/PackageManifest";
 import DeployErrorDisplayer from "../../display/DeployErrorDisplayer";
 import * as fs from "fs-extra";
+import DeploymentExecutor, { DeploySourceResult } from "./DeploymentExecutor";
 
-export interface DeploySourceResult {
-  deploy_id: string;
-  result: boolean;
-  message: string;
-}
-
-export default class DeploySourceToOrgImpl {
+export default class DeploySourceToOrgImpl implements DeploymentExecutor {
   private mdapiDir: string;
 
   public constructor(

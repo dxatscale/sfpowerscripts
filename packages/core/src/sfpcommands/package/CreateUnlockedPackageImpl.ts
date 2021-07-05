@@ -148,11 +148,11 @@ export default class CreateUnlockedPackageImpl {
     });
 
     child.stderr.on("data", (data) => {
-      SFPLogger.log(data.toString(), null, this.packageLogger);
+      SFPLogger.log(data.toString(), LoggerLevel.INFO, this.packageLogger);
     });
 
     child.stdout.on("data", (data) => {
-      SFPLogger.log(data.toString(), null, this.packageLogger);
+      SFPLogger.log(data.toString(), LoggerLevel.INFO, this.packageLogger);
       output += data.toString();
     });
 

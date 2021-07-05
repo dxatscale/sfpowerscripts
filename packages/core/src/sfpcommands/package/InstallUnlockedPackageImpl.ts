@@ -65,21 +65,21 @@ export default class InstallUnlockedPackageImpl {
               this.packageLogger
             );
           }
-          
+
         }
 
             //Print Metadata carried in the package
          PackageMetadataPrinter.printMetadataToDeploy(this.packageMetadata?.payload,this.packageLogger);
- 
+
         let command = this.buildPackageInstallCommand();
         let child = child_process.exec(command);
 
         child.stderr.on("data", (data) => {
-          SFPLogger.log(data.toString(),null,this.packageLogger);
+          SFPLogger.log(data.toString(),LoggerLevel.INFO,this.packageLogger);
         });
 
         child.stdout.on("data", (data) => {
-          SFPLogger.log(data.toString(),null,this.packageLogger);
+          SFPLogger.log(data.toString(),LoggerLevel.INFO,this.packageLogger);
         });
 
 
@@ -106,7 +106,7 @@ export default class InstallUnlockedPackageImpl {
           if (this.packageMetadata.assignPermSetsPostDeployment) {
             SFPLogger.log(
               "Assigning permission sets after deployment:",
-              null,
+              LoggerLevel.INFO,
               this.packageLogger
             );
 

@@ -1,9 +1,14 @@
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import {Org } from "@salesforce/core";
-import ScratchOrgUtils, { ScratchOrg } from "./utils/ScratchOrgUtils";
-export default class PoolDeleteImpl {
-  private hubOrg: Org;
-  private apiversion: string;
+import { PoolBaseImpl } from "./PoolBaseImpl";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import DeleteScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/DeleteScratchOrg";
+import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
+
+
+
+export default class PoolDeleteImpl extends PoolBaseImpl {
+
   private tag: string;
   private mypool: boolean;
   private allScratchOrgs: boolean;
@@ -11,35 +16,29 @@ export default class PoolDeleteImpl {
 
   public constructor(
     hubOrg: Org,
-    apiversion: string,
     tag: string,
     mypool: boolean,
     allScratchOrgs: boolean,
     inprogressonly: boolean
   ) {
+    super(hubOrg);
     this.hubOrg = hubOrg;
-    this.apiversion = apiversion;
     this.tag = tag;
     this.mypool = mypool;
     this.allScratchOrgs = allScratchOrgs;
     this.inprogressonly = inprogressonly;
   }
 
-  public async execute(): Promise<ScratchOrg[]> {
-    await ScratchOrgUtils.checkForNewVersionCompatible(this.hubOrg);
-    const results = (await ScratchOrgUtils.getScratchOrgsByTag(
+  protected async onExec(): Promise<ScratchOrg[]> {
+    const results = (await new ScratchOrgInfoFetcher(this.hubOrg).getScratchOrgsByTag(
       this.tag,
-      this.hubOrg,
       this.mypool,
       !this.allScratchOrgs
     )) as any;
 
     let scratchOrgToDelete: ScratchOrg[] = new Array<ScratchOrg>();
     if (results.records.length > 0) {
-
-
       let scrathOrgIds: string[] = [];
-
       for (let element of results.records) {
         if (
           !this.inprogressonly ||
@@ -58,16 +57,14 @@ export default class PoolDeleteImpl {
       }
 
       if (scrathOrgIds.length > 0) {
-        let activeScrathOrgs = await ScratchOrgUtils.getActiveScratchOrgsByInfoId(
-          this.hubOrg,
+        let activeScrathOrgs = await new ScratchOrgInfoFetcher(this.hubOrg).getActiveScratchOrgsByInfoId(
           scrathOrgIds.join(",")
         );
 
         if (activeScrathOrgs.records.length > 0) {
           for (let ScratchOrg of activeScrathOrgs.records) {
-            await ScratchOrgUtils.deleteScratchOrg(
-              this.hubOrg,
-              this.apiversion,
+            
+            await new DeleteScratchOrg(this.hubOrg).deleteScratchOrg(
               ScratchOrg.Id
             );
             SFPLogger.log(
@@ -80,4 +77,5 @@ export default class PoolDeleteImpl {
 
     return scratchOrgToDelete;
   }
+
 }

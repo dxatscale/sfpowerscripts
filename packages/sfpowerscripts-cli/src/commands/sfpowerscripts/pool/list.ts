@@ -2,7 +2,8 @@ import { core, flags, SfdxCommand } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import poolListImpl from "../../../impl/pool/PoolListImpl";
 import { isNullOrUndefined } from "util";
-import { ScratchOrg } from "../../../impl/pool/utils/ScratchOrgUtils";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+
 
 
 
@@ -61,7 +62,7 @@ export default class List extends SfdxCommand {
       this.flags.allscratchorgs
     );
 
-    let result = await listImpl.execute();
+    let result = await listImpl.execute() as ScratchOrg[];
 
     if (!this.flags.mypool && result.length > 0) {
       result.forEach((element) => {

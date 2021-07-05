@@ -1,14 +1,15 @@
 import { Messages, SfdxError } from "@salesforce/core";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from "@salesforce/command";
-import { sfdx } from "../../../impl/pool/sfdxnode/parallel";
 import PrepareImpl from "../../../impl/prepare/PrepareImpl";
-import { loadSFDX } from "../../../impl/pool/sfdxnode/GetNodeWrapper";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { Stage } from "../../../impl/Stage";
-import * as fs from "fs-extra"
-import ScratchOrgUtils from "../../../impl/pool/utils/ScratchOrgUtils";
-import { COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import * as fs from "fs-extra";
+import ScratchOrgInfoFetcher from "../../../impl/pool/services/fetchers/ScratchOrgInfoFetcher";
+import Ajv from "ajv";
+import path = require("path");
+import { PoolErrorCodes } from "../../../impl/pool/PoolError";
+import SFPLogger, { LoggerLevel, COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import getFormattedTime from "../../../utils/GetFormattedTime";
 
 
@@ -20,92 +21,37 @@ export default class Prepare extends SfpowerscriptsCommand {
   protected static requiresProject = true;
 
   protected static flagsConfig = {
-    tag: flags.string({
-      required: true,
-      char: "t",
-      description: messages.getMessage("tagDescription"),
-    }),
-    expiry: flags.number({
+    poolconfig: flags.filepath({
       required: false,
-      default: 2,
-      char: "e",
-      description: messages.getMessage("expiryDescription"),
-    }),
-    maxallocation: flags.number({
-      required: false,
-      default: 10,
-      char: "m",
-      description: messages.getMessage("maxallocationDescription"),
-    }),
-    config: flags.filepath({
-      required: false,
-      default: "config/project-scratch-def.json",
+      default: "config/poolconfig.json",
       char: "f",
       description: messages.getMessage("configDescription"),
     }),
-    installall: flags.boolean({
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
       required: false,
-      default: false,
-      description: messages.getMessage("installallDescription"),
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
     }),
-    installassourcepackages: flags.boolean({
-      required: false,
-      description: messages.getMessage("installationModeDescription"),
-      dependsOn: ["installall"]
-    }),
-    artifactfetchscript: flags.filepath({
-      required: false,
-      char: "s",
-      description: messages.getMessage("artifactfetchscriptDescription"),
-    }),
-     succeedondeploymenterrors:flags.boolean({
-      required: false,
-      default:false,
-      description: messages.getMessage("succeedondeploymenterrorsDescription"),
-    }),
-    keys: flags.string({
-      required: false,
-      description: messages.getMessage("keysDescription"),
-    }),
-    batchsize: flags.number({
-      required: false,
-      default: 10,
-      hidden: true,
-      description: messages.getMessage("batchsize"),
-    }),
-    apiversion: flags.builtin({
-      description: messages.getMessage("apiversion"),
-    }),
-    npm: flags.boolean({
-      description: messages.getMessage('npmFlagDescription'),
-      exclusive: ['artifactfetchscript'],
-      required: false
-    }),
-    scope: flags.string({
-      description: messages.getMessage('scopeFlagDescription'),
-      dependsOn: ['npm'],
-      parse: (scope) => scope.replace(/@/g,"").toLowerCase()
-    }),
-    npmtag: flags.string({
-      description: messages.getMessage('npmTagFlagDescription'),
-      dependsOn: ['npm'],
-      required: false
-    }),
-    npmrcpath: flags.string({
-      description: messages.getMessage('npmrcPathFlagDescription'),
-      dependsOn: ['npm'],
-      required: false
-    }),
-    retryonfailure:flags.boolean({
-      description: messages.getMessage('retryOnFailureFlagDescription'),
-      hidden:true
-    })
   };
 
   public static description = messages.getMessage("commandDescription");
 
   public static examples = [
-    `$ sfdx sfpowerscripts:orchestrator:prepare -t CI_1  -v <devhub>`,
+    `$ sfdx sfpowerscripts:orchestrator:prepare -t POOL1  -v <devhub>`,
   ];
 
   public async execute(): Promise<any> {
@@ -113,131 +59,160 @@ export default class Prepare extends SfpowerscriptsCommand {
 
     console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
     console.log(COLOR_HEADER("command: prepare"));
-    console.log(COLOR_HEADER(`Pool Name: ${this.flags.tag}`));
-    console.log(COLOR_HEADER(`Requested Count of Orgs: ${this.flags.maxallocation}`));
-    console.log(COLOR_HEADER(`Script provided to fetch artifacts: ${this.flags.artifactfetchscript?'true':'false'}`));
-    console.log(COLOR_HEADER(`Fetch artifacts from pre-authenticated NPM registry: ${this.flags.npm ? "true" : "false"}`));
-    if(this.flags.npm && this.flags.npmtag)
-      console.log(COLOR_HEADER(`Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`));
-    console.log(COLOR_HEADER(`All packages in the repo to be installed: ${this.flags.installall}`));
-    console.log(COLOR_HEADER(`Scratch Orgs to be submitted to pool in case of failures: ${this.flags.succeedondeploymenterrors}`))
-    console.log(COLOR_HEADER("---------------------------------------------------------"));
 
-    let tags = {
-      stage: Stage.PREPARE,
-      poolName:this.flags.tag
-    }
-
-    await this.hubOrg.refreshAuth();
-    const hubConn = this.hubOrg.getConnection();
-
-    this.flags.apiversion =
-      this.flags.apiversion || (await hubConn.retrieveMaxApiVersion());
-
-    loadSFDX();
-
-    let prepareImpl = new PrepareImpl(
-      this.hubOrg,
-      this.flags.apiversion,
-      sfdx,
-      this.flags.tag,
-      this.flags.expiry,
-      this.flags.maxallocation,
-      this.flags.config,
-      this.flags.batchsize
-    );
-    prepareImpl.setArtifactFetchScript(this.flags.artifactfetchscript);
-    prepareImpl.setInstallationBehaviour(this.flags.installall,this.flags.installassourcepackages,this.flags.succeedondeploymenterrors);
-    prepareImpl.setPackageKeys(this.flags.keys);
-    prepareImpl.isNpm = this.flags.npm;
-    prepareImpl.scope = this.flags.scope;
-    prepareImpl.npmTag = this.flags.npmtag;
-    prepareImpl.npmrcPath = this.flags.npmrcpath;
-    prepareImpl.retryOnFailure = this.flags.retryonfailure;
-
+    //Read pool config
     try {
-      let results= await prepareImpl.poolScratchOrgs();
+      let poolConfig = fs.readJSONSync(this.flags.poolconfig);
+      this.validatePoolConfig(poolConfig);
 
-      let totalElapsedTime=Date.now()-executionStartTime;
-      console.log(COLOR_HEADER(
-        `-----------------------------------------------------------------------------------------------------------`
-      ));
-      console.log(COLOR_SUCCESS(`Provisioned {${results.success}}  scratchorgs out of ${results.totalallocated} requested with ${COLOR_ERROR(results.failed)} failed in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} `));
-      console.log(COLOR_HEADER(
-        `----------------------------------------------------------------------------------------------------------`
-      ));
+      console.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
+      console.log(COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxallocation}`));
+      console.log(
+        COLOR_HEADER(
+        `Scratch Orgs to be submitted to pool in case of failures: ${
+          poolConfig.succeedOnDeploymentErrors ? "true" : "false"
+        }`)
+      );
 
-      if(results.errorCode)
-      {
-        switch(results.errorCode)
-        {
-          case "Max_Capacity": process.exitCode=0;
-                              break;
-          case "No_Capacity" : process.exitCode=0;
-                               break;
-          case "Fields_Missing": process.exitCode=1;
-                                break;
+
+      console.log(COLOR_HEADER(
+        `All packages in the repo to be installed: ${poolConfig.installAll}`)
+      );
+      if (poolConfig.fetchArtifacts) {
+        console.log(
+          COLOR_HEADER(
+          `Script provided to fetch artifacts: ${
+            poolConfig.fetchArtifacts.artifactfetchscript ? "true" : "false"
+          }`)
+        );
+        console.log(
+          COLOR_HEADER(
+          `Fetch artifacts from pre-authenticated NPM registry: ${
+            poolConfig.fetchArtifacts.npm ? "true" : "false"
+          }`)
+        );
+        if (poolConfig.fetchArtifacts.npm?.npmtag)
+          console.log(
+            COLOR_HEADER(`Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`)
+          );
+      }
+
+      console.log(COLOR_HEADER("---------------------------------------------------------"));
+
+      let tags = {
+        stage: Stage.PREPARE,
+        poolName: poolConfig.tag,
+      };
+
+      await this.hubOrg.refreshAuth();
+      const hubConn = this.hubOrg.getConnection();
+
+      this.flags.apiversion =
+        this.flags.apiversion || (await hubConn.retrieveMaxApiVersion());
+
+      let prepareImpl = new PrepareImpl(this.hubOrg, poolConfig);
+
+      let results = await prepareImpl.exec();
+      if (results.isOk()) {
+        let totalElapsedTime = Date.now() - executionStartTime;
+        SFPLogger.log(
+          COLOR_HEADER(`-----------------------------------------------------------------------------------------------------------`)
+        );
+        SFPLogger.log(
+          COLOR_SUCCESS(
+          `Provisioned {${
+            results.value.scratchOrgs.length
+          }}  scratchorgs out of ${results.value.to_allocate} requested with ${COLOR_ERROR(
+            results.value.failedToCreate
+          )} failed in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} `)
+        );
+        SFPLogger.log(
+          COLOR_HEADER(`----------------------------------------------------------------------------------------------------------`)
+        );
+
+        await this.getCurrentRemainingNumberOfOrgsInPoolAndReport();
+
+        SFPStatsSender.logGauge("prepare.succeededorgs", results.value.scratchOrgs.length, tags);
+
+      } else if (results.isErr()) {
+
+        console.log(
+          COLOR_HEADER(`-----------------------------------------------------------------------------------------------------------`)
+        );
+        SFPLogger.log(COLOR_ERROR(results.error.message),LoggerLevel.ERROR);
+        console.log(
+          COLOR_HEADER(`-----------------------------------------------------------------------------------------------------------`)
+        );
+
+        switch (results.error.errorCode) {
+          case PoolErrorCodes.Max_Capacity:
+            process.exitCode = 0;
+            break;
+          case PoolErrorCodes.No_Capacity:
+            process.exitCode = 0;
+            break;
+          case PoolErrorCodes.PrerequisiteMissing:
+            process.exitCode = 1;
+            break;
+          case PoolErrorCodes.UnableToProvisionAny:
+            SFPStatsSender.logGauge("prepare.failedorgs", results.error.failed, tags);
+            process.exitCode=1;
+            break;
         }
-      }
-      else if(results.success==0)
-      {
-        SFPStatsSender.logGauge(
-          "prepare.failedorgs",
-          results.failed,
-          tags
-        );
-
-        process.exitCode=1;
-      }
-      else
-      {
-
-
-      await this.getCurrentRemainingNumberOfOrgsInPoolAndReport();
-
-      SFPStatsSender.logGauge(
-          "prepare.succeededorgs",
-          results.success,
-          tags
-        );
       }
       SFPStatsSender.logGauge(
         "prepare.duration",
-        (Date.now() - executionStartTime),
+        Date.now() - executionStartTime,
         tags
       );
-
     } catch (err) {
       throw new SfdxError("Unable to execute command .. " + err);
     }
   }
 
-  protected validateFlags() {
-    if (this.flags.artifactfetchscript && !fs.existsSync(this.flags.artifactfetchscript)) {
-      throw new Error(`Script path ${this.flags.scriptpath} does not exist, Please provide a valid path to the script file`);
-    }
-
-    if (this.flags.npm && !this.flags.scope)
-      throw new Error("--scope parameter is required for NPM");
-  }
-
   private async getCurrentRemainingNumberOfOrgsInPoolAndReport() {
-    try
-    {
-    const results = await ScratchOrgUtils.getScratchOrgsByTag(
-      this.flags.tag,
-      this.hubOrg,
-      false,
-      true
-    )
-    SFPStatsSender.logGauge("pool.remaining", results.records.length, { poolName: this.flags.tag });
-    }
-    catch(error)
-    {
-     //do nothing, we are not reporting anything if anything goes wrong here
+    try {
+      const results = await new ScratchOrgInfoFetcher(
+        this.hubOrg
+      ).getScratchOrgsByTag(this.flags.tag, false, true);
+      SFPStatsSender.logGauge("pool.remaining", results.records.length, {
+        poolName: this.flags.tag,
+      });
+    } catch (error) {
+      //do nothing, we are not reporting anything if anything goes wrong here
     }
   }
 
 
 
+  public validatePoolConfig(poolConfig: any) {
+    console.log("...", __dirname);
+    let resourcesDir = path.join(
+      __dirname,
+      "..",
+      "..",
+      "..",
+      "..",
+      "resources",
+      "schemas"
+    );
+    let ajv = new Ajv({ allErrors: true });
+    let schema = fs.readJSONSync(
+      path.join(resourcesDir, `pooldefinition.schema.json`),
+      { encoding: "UTF-8" }
+    );
+    let validator = ajv.compile(schema);
+    let isSchemaValid = validator(poolConfig);
+    if (!isSchemaValid) {
+      let errorMsg: string = `The pool configuration is invalid, Please fix the following errors\n`;
+
+      validator.errors.forEach((error, errorNum) => {
+        errorMsg += `\n${errorNum + 1}: ${error.instancePath}: ${
+          error.message
+        } ${JSON.stringify(error.params, null, 4)}`;
+      });
+
+      throw new Error(errorMsg);
+    }
+  }
 }

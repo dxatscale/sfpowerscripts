@@ -9,6 +9,7 @@ import * as fs from "fs-extra";
 import path = require("path");
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import CreateDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateDataPackageImpl';
+import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_data_package');
@@ -61,7 +62,7 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
 
       let runBuild: boolean;
       if (this.flags.diffcheck) {
-        let packageDiffImpl = new PackageDiffImpl(sfdx_package, null);
+        let packageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),sfdx_package, null);
 
         runBuild = (await packageDiffImpl.exec()).isToBeBuilt;
 
