@@ -120,8 +120,7 @@ export default class Prepare extends SfpowerscriptsCommand {
             results.value.scratchOrgs.length
           }}  scratchorgs out of ${results.value.to_allocate} requested with ${
             results.value.failedToCreate
-          } failed in ${getFormattedTime(totalElapsedTime)} `,
-          LoggerLevel.SUCCESS
+          } failed in ${getFormattedTime(totalElapsedTime)} `
         );
         SFPLogger.log(
           `----------------------------------------------------------------------------------------------------------`

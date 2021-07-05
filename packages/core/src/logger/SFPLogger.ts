@@ -8,8 +8,7 @@ export enum LoggerLevel {
   INFO = 30,
   WARN = 40,
   ERROR = 50,
-  FATAL = 60,
-  SUCCESS = 70,
+  FATAL = 60
 }
 
 const enum LoggerType {
