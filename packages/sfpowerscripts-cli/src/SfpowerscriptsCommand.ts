@@ -37,7 +37,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
      * Entry point of all commands
      */
     async run(): Promise<any> {
-       
+
 
         this.setLogLevel();
 
@@ -116,7 +116,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         SFPStatsSender.initializeLogBasedMetrics();
     }
 
- 
+
     private  setLogLevel()
     {
       if(this.flags.loglevel==="trace" || this.flags.loglevel==="TRACE")
@@ -129,7 +129,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         SFPLogger.logLevel = LoggerLevel.WARN
       else if(this.flags.loglevel==="error" || this.flags.loglevel==="ERROR")
         SFPLogger.logLevel = LoggerLevel.ERROR
-      else if(this.flags.loglevel==="FATAL" || this.flags.loglevel==="FATAL")
+      else if(this.flags.loglevel==="fatal" || this.flags.loglevel==="FATAL")
         SFPLogger.logLevel = LoggerLevel.FATAL
       else
         SFPLogger.logLevel = LoggerLevel.INFO
@@ -138,7 +138,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
     private async executeDemoMode()
     {
-           
+
             if(fs.existsSync(process.env.SFPOWERSCRIPTS_DEMOREEL_FOLDER_PATH))
             {
             let player:DemoReelPlayer = new DemoReelPlayer();
