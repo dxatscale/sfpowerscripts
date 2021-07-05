@@ -9,7 +9,7 @@ import ScratchOrgInfoFetcher from "../../../impl/pool/services/fetchers/ScratchO
 import Ajv from "ajv";
 import path = require("path");
 import { PoolErrorCodes } from "../../../impl/pool/PoolError";
-import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import SFPLogger, { LoggerLevel, COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import getFormattedTime from "../../../utils/GetFormattedTime";
 
 
@@ -57,44 +57,47 @@ export default class Prepare extends SfpowerscriptsCommand {
   public async execute(): Promise<any> {
     let executionStartTime = Date.now();
 
-    console.log("-----------sfpowerscripts orchestrator ------------------");
-    console.log("command: prepare");
+    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
+    console.log(COLOR_HEADER("command: prepare"));
 
     //Read pool config
     try {
       let poolConfig = fs.readJSONSync(this.flags.poolconfig);
       this.validatePoolConfig(poolConfig);
 
-      console.log(`Pool Name: ${poolConfig.tag}`);
-      console.log(`Requested Count of Orgs: ${poolConfig.maxallocation}`);
+      console.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
+      console.log(COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxallocation}`));
       console.log(
+        COLOR_HEADER(
         `Scratch Orgs to be submitted to pool in case of failures: ${
           poolConfig.succeedOnDeploymentErrors ? "true" : "false"
-        }`
+        }`)
       );
 
 
-      console.log(
-        `All packages in the repo to be installed: ${poolConfig.installAll}`
+      console.log(COLOR_HEADER(
+        `All packages in the repo to be installed: ${poolConfig.installAll}`)
       );
       if (poolConfig.fetchArtifacts) {
         console.log(
+          COLOR_HEADER(
           `Script provided to fetch artifacts: ${
             poolConfig.fetchArtifacts.artifactfetchscript ? "true" : "false"
-          }`
+          }`)
         );
         console.log(
+          COLOR_HEADER(
           `Fetch artifacts from pre-authenticated NPM registry: ${
             poolConfig.fetchArtifacts.npm ? "true" : "false"
-          }`
+          }`)
         );
         if (poolConfig.fetchArtifacts.npm?.npmtag)
           console.log(
-            `Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`
+            COLOR_HEADER(`Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`)
           );
       }
 
-      console.log("---------------------------------------------------------");
+      console.log(COLOR_HEADER("---------------------------------------------------------"));
 
       let tags = {
         stage: Stage.PREPARE,
@@ -113,17 +116,18 @@ export default class Prepare extends SfpowerscriptsCommand {
       if (results.isOk()) {
         let totalElapsedTime = Date.now() - executionStartTime;
         SFPLogger.log(
-          `-----------------------------------------------------------------------------------------------------------`
+          COLOR_HEADER(`-----------------------------------------------------------------------------------------------------------`)
         );
         SFPLogger.log(
+          COLOR_SUCCESS(
           `Provisioned {${
             results.value.scratchOrgs.length
-          }}  scratchorgs out of ${results.value.to_allocate} requested with ${
+          }}  scratchorgs out of ${results.value.to_allocate} requested with ${COLOR_ERROR(
             results.value.failedToCreate
-          } failed in ${getFormattedTime(totalElapsedTime)} `
+          )} failed in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} `)
         );
         SFPLogger.log(
-          `----------------------------------------------------------------------------------------------------------`
+          COLOR_HEADER(`----------------------------------------------------------------------------------------------------------`)
         );
 
         await this.getCurrentRemainingNumberOfOrgsInPoolAndReport();
@@ -133,11 +137,11 @@ export default class Prepare extends SfpowerscriptsCommand {
       } else if (results.isErr()) {
 
         console.log(
-          `-----------------------------------------------------------------------------------------------------------`
+          COLOR_HEADER(`-----------------------------------------------------------------------------------------------------------`)
         );
-        SFPLogger.log(results.error.message,LoggerLevel.ERROR);
+        SFPLogger.log(COLOR_ERROR(results.error.message),LoggerLevel.ERROR);
         console.log(
-          `-----------------------------------------------------------------------------------------------------------`
+          COLOR_HEADER(`-----------------------------------------------------------------------------------------------------------`)
         );
 
         switch (results.error.errorCode) {
