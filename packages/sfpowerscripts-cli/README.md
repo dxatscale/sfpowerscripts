@@ -195,62 +195,17 @@ USAGE
   [--apiversion <string>]
 
 OPTIONS
-  -e, --expiry=expiry                                                               [default: 2] Expiry of the scratch
-                                                                                    org's created in the pool
-
-  -f, --config=config                                                               [default:
-                                                                                    config/project-scratch-def.json] The
-                                                                                    file path to the definition file for
-                                                                                    the scratch org shape
-
-  -m, --maxallocation=maxallocation                                                 [default: 10] The size of the
-                                                                                    scratch org pool to be created
-
-  -s, --artifactfetchscript=artifactfetchscript                                     The path to the script file that is
-                                                                                    used to fetch the validated
-                                                                                    artifacts to be used in the prepare
-                                                                                    command
-
-  -t, --tag=tag                                                                     (required) The name/tag of the
-                                                                                    scratch org pool
+  -f, --poolconfig=poolconfig                                                       [default: config/poolconfig.json]
+                                                                                    The path to the configuration file
+                                                                                    for creating a pool of scratch orgs
 
   -v, --targetdevhubusername=targetdevhubusername                                   username or alias for the dev hub
                                                                                     org; overrides default dev hub org
 
   --apiversion=apiversion                                                           API version to be used
 
-  --installall                                                                      Install the dependencies,along with
-                                                                                    all the packages in the repo
-
-  --installassourcepackages                                                         Install all packages as Source
-                                                                                    packages
-
-
-  --keys=keys                                                                       Keys to be used while installing any
-                                                                                    managed package dependencies.
-                                                                                    Required format is a string of
-                                                                                    key-value pairs separated by spaces
-                                                                                    e.g. packageA:pw123 packageB:pw123
-                                                                                    packageC:pw123
-
-
-  --succeedondeploymenterrors                                                       Do not fail the scratch orgs, if a
-                                                                                    package failed to deploy, return the
-                                                                                    scratch org with packages till the
-                                                                                    last failure
-
-  --npm                                                                             Fetch artifacts from a pre-authenticated
-                                                                                    private npm registry
-
-  --scope                                                                           User or Organisation scope of the NPM
-                                                                                    packages
-
-  --npmtag                                                                          The distribution tag of the package to
-                                                                                    download. If not provided, the 'latest'
-                                                                                    tag is used by default.
-
 EXAMPLE
-  $ sfdx sfpowerscripts:orchestrator:prepare -t CI_1  -v <devhub>
+  $ sfdx sfpowerscripts:orchestrator:prepare -f config/mypoolconfig.json  -v <devhub>
 ```
 
 _See code: [commands/sfpowerscripts/orchestrator/prepare.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/prepare.ts)_
