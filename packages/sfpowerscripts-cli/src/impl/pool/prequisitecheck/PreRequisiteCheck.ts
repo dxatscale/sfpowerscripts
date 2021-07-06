@@ -78,7 +78,7 @@ export default class PreRequisiteCheck {
     }
     else
     {
-      return ok(PreRequisiteCheck.isPrerequisiteChecked);
+      return ok(true);
     }
 
 
