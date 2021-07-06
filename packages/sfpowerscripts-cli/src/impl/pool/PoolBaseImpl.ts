@@ -19,7 +19,7 @@ export  abstract class PoolBaseImpl
     let prerequisiteCheck: PreRequisiteCheck = new PreRequisiteCheck(this.hubOrg)
     let prerequisiteResult = await prerequisiteCheck.checkForPrerequisites();
     if(prerequisiteResult.isErr())
-     return prerequisiteResult.error;
+     return prerequisiteResult;
     else
       return this.onExec();
   }
