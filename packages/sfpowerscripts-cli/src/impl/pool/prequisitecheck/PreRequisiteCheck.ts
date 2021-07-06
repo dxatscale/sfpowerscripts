@@ -72,7 +72,7 @@ export default class PreRequisiteCheck {
         success: 0,
         failed: 0,
         message:  `Required Prerequisite values in ScratchOrgInfo is missing in the DevHub` +
-        `For more information Please refer https://github.com/Accenture/SFPLogger/blob/main/src_saleforce_packages/scratchorgpool/force-app/main/default/objects/ScratchOrgInfo/fields/Allocation_status__c.field-meta.xml \n`+PreRequisiteCheck.describeResult.fields,
+        `For more information Please refer https://github.com/Accenture/SFPLogger/blob/main/src_saleforce_packages/scratchorgpool/force-app/main/default/objects/ScratchOrgInfo/fields/Allocation_status__c.field-meta.xml \n`+JSON.stringify(PreRequisiteCheck.describeResult.fields),
         errorCode: PoolErrorCodes.PrerequisiteMissing,
       });
     }
