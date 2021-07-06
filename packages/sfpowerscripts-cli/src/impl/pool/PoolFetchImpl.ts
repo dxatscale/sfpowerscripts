@@ -155,7 +155,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         fs.writeFileSync("soAuth.json", JSON.stringify(soLogin));
 
         SFPLogger.log(
-          `Initiating Auto Login for Scratch Org with ${soDetail.username}`,
+          `Authenticating to Scratch Org ${soDetail.username}..`,
           LoggerLevel.INFO
         );
 
