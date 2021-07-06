@@ -32,14 +32,6 @@ export default class PreparePool implements PreparePoolInterface  {
 
   public async poolScratchOrgs(): Promise<Result<PoolConfig,PoolError>>{
 
-    let pool = await this.createPools();
-
-     return pool;
-  }
-
-
-  private async createPools():Promise<Result<PoolConfig,PoolError>>
-  {
     //Create Artifact Directory
     rimraf.sync("artifacts");
     fs.mkdirpSync("artifacts");
@@ -66,6 +58,7 @@ export default class PreparePool implements PreparePoolInterface  {
 
     return pool
   }
+
 
 
 

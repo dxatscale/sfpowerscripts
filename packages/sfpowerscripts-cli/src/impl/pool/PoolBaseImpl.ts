@@ -16,9 +16,10 @@ export  abstract class PoolBaseImpl
   }
 
   public async execute():Promise<any> {
-    let prerequisiteResult = new PreRequisiteCheck(this.hubOrg).checkForPrerequisites();
-    if((await prerequisiteResult).isErr())
-     return prerequisiteResult;
+    let prerequisiteCheck: PreRequisiteCheck = new PreRequisiteCheck(this.hubOrg)
+    let prerequisiteResult = await prerequisiteCheck.checkForPrerequisites();
+    if(prerequisiteResult.isErr())
+     return prerequisiteResult.error;
     else
       return this.onExec();
   }
