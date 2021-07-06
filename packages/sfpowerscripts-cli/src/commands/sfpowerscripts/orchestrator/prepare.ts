@@ -186,7 +186,6 @@ export default class Prepare extends SfpowerscriptsCommand {
 
 
   public validatePoolConfig(poolConfig: any) {
-    console.log("...", __dirname);
     let resourcesDir = path.join(
       __dirname,
       "..",
