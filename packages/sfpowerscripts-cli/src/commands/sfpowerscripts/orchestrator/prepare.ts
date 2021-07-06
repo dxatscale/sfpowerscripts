@@ -79,12 +79,12 @@ export default class Prepare extends SfpowerscriptsCommand {
         `All packages in the repo to be installed: ${poolConfig.installAll}`)
       );
       if (poolConfig.fetchArtifacts) {
+       if (poolConfig.fetchArtifacts.artifactFetchScript)
         console.log(
           COLOR_HEADER(
-          `Script provided to fetch artifacts: ${
-            poolConfig.fetchArtifacts.artifactfetchscript ? "true" : "false"
-          }`)
+          `Script provided to fetch artifacts: ${ poolConfig.fetchArtifacts.artifactFetchScript }`)
         );
+       if (poolConfig.fetchArtifacts.npm)
         console.log(
           COLOR_HEADER(
           `Fetch artifacts from pre-authenticated NPM registry: ${
