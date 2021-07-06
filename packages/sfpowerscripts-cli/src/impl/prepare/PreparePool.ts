@@ -76,21 +76,23 @@ export default class PreparePool implements PreparePoolInterface  {
 
 
     let artifactFetcher:FetchAnArtifact;
-    if (this.pool.fetchArtifacts?.npm || this.pool.fetchArtifacts?.artifactFetchScript) {
-      let version= this.pool.fetchArtifacts.npm.npmtag;
+    if (this.pool.fetchArtifacts) {
       artifactFetcher = new FetchArtifactSelector(
         this.pool.fetchArtifacts.artifactFetchScript,
-        this.pool.fetchArtifacts.npm.scope,
-        this.pool.fetchArtifacts.npm.npmrcPath
+        this.pool.fetchArtifacts.npm?.scope,
+        this.pool.fetchArtifacts.npm?.npmrcPath
       ).getArtifactFetcher();
 
+  
       packages.forEach((pkg) => {
         artifactFetcher.fetchArtifact(
           pkg.package,
           "artifacts",
-          version
+          this.pool.fetchArtifacts.npm ? this.pool.fetchArtifacts.npm.npmtag : null
         );
       });
+
+
     } else {
       //Build All Artifacts
       console.log("\n");
