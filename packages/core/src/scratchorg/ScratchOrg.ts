@@ -9,7 +9,7 @@ export default interface ScratchOrg {
   alias?: string;
   password?: string;
   isScriptExecuted?: boolean;
-  expityDate?: string;
+  expiryDate?: string;
   accessToken?: string;
   instanceURL?: string;
   status?: string;
