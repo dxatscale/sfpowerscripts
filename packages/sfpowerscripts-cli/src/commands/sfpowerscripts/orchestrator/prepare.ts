@@ -76,7 +76,7 @@ export default class Prepare extends SfpowerscriptsCommand {
 
 
       console.log(COLOR_HEADER(
-        `All packages in the repo to be installed: ${poolConfig.installAll}`)
+        `All packages in the repo to be installed: ${poolConfig.installAll?"true":"false"}`)
       );
       if (poolConfig.fetchArtifacts) {
        if (poolConfig.fetchArtifacts.artifactFetchScript)
