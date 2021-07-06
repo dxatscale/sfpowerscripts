@@ -108,10 +108,10 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         let deploymentResult: DeploymentResult;
 
         let deploymentMode: DeploymentMode;
-        if (this.pool.deploymentType === "mdapi") {
-          deploymentMode = DeploymentMode.SOURCEPACKAGES;
+        if (this.pool.enableSourceTracking) {
+          deploymentMode = DeploymentMode.SOURCEPACKAGES_PUSH;
         } else {
-          deploymentMode = DeploymentMode.SOURCEPACKAGES_PUSH
+          deploymentMode = DeploymentMode.SOURCEPACKAGES;
         }
 
         deploymentResult = await this.deployAllPackagesInTheRepo(

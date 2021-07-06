@@ -66,7 +66,7 @@ export default class Prepare extends SfpowerscriptsCommand {
       this.validatePoolConfig(poolConfig);
 
       console.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
-      console.log(COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxallocation}`));
+      console.log(COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxAllocation}`));
       console.log(
         COLOR_HEADER(
         `Scratch Orgs to be submitted to pool in case of failures: ${

@@ -6,80 +6,86 @@
   "type": "object",
   "required": [
     "tag",
-    "maxallocation"
+    "maxAllocation"
   ],
   "additionalProperties": false,
   "properties": {
     "tag": {
       "title": "Tag of the pool",
-      "type": "string",
-      "description": "Tag or name to identify the scratch org pool"
+      "description": "Tag or name to identify the scratch org pool",
+      "type": "string"
     },
     "expiry": {
       "title": "expiry",
+      "description": "Duration of the scratch org (in days) (default:2)",
       "type": "integer",
-      "default": 2,
-      "description": "Duration of the scratch org (in days) (default:1)"
+      "default": 2
     },
-    "maxallocation": {
+    "maxAllocation": {
       "title": "Max number of scratch orgs to be allocated",
-      "type": "integer",
-      "description": "Maximum number of scratch orgs to be allocated in the pool"
+      "description": "Maximum number of scratch orgs to be allocated in the pool",
+      "type": "integer"
     },
-    "batchsize": {
-      "title": "batchsize",
-      "default": 5,
+    "batchSize": {
+      "title": "Batch Size",
+      "description": "Control the parallelism of the pool creation (default:5)",
       "type": "integer",
-      "description": "Control the parallelism of the pool creation (default:5)"
+      "default": 5
     },
     "configFilePath": {
       "title": "Path to config file",
-      "default": "config/project-scratch-def.json",
+      "description": "Reference an external .json file to specify the features and org preferences required for the metadata of your package, such as the scratch org definition.",
       "type": "string",
-      "description": "Reference an external .json file to specify the features and org preferences required for the metadata of your package, such as the scratch org definition."
+      "default": "config/project-scratch-def.json"
     },
     "succeedOnDeploymentErrors": {
       "title": "Succeed on Deployment Errors",
-      "default": false,
-      "type": "boolean",
-      "description": "In case of a deployment error, whether to keep that scratch org in the pool"
-    },
-    "keys": {
-      "type": "string",
-      "title": "Keys for managed package"
-    },
-    "installAll": {
+      "description": "In case of a deployment error, whether to keep that scratch org in the pool",
       "type": "boolean",
       "default": false
     },
-    "deploymentType": {
-      "enum": ["push", "mdapi"],
-      "default": "push"
+    "installAll": {
+      "title": "Install all packages",
+      "description": "Install all package artifacts, in addition to the managed package dependencies",
+      "type": "boolean",
+      "default": false
+    },
+    "enableSourceTracking": {
+      "title": "Enable source tracking",
+      "description": "Enable source tracking by deploying packages using source:push , and persisting local source tracking files",
+      "type": "boolean",
+      "default": true
     },
     "relaxAllIPRanges": {
-      "type": "boolean",
       "title": "Relax all IP Ranges",
+      "description": "Relax all IP addresses to enable developers to login to scratch orgs",
+      "type": "boolean",
       "default": "false"
     },
     "ipRangesToBeRelaxed": {
-      "type": "array",
-      "title": "ip ranges to be relaxed"
+      "title": "IP ranges to be relaxed",
+      "description": "Relax IP address of developers to allow access to scratch orgs",
+      "type": "array"
     },
     "retryOnFailure": {
+      "title": "Retry on failure",
+      "description": "Retry installation of packages on failed deployment",
       "type": "boolean",
       "default": "false"
     },
     "fetchArtifacts": {
-      "type": "object",
       "title": "Fetch Artifacts using below mechanism",
+      "description": "Fetch artifacts from artifact registry using below mechanism",
+      "type": "object",
       "oneOf": [
         { "required": ["artifactFetchScript"] },
         { "required": ["npm"] }
       ],
       "properties": {
         "artifactFetchScript": {
-          "type": "string",
-          "title": "Path to the script to fetch artifacts"
+          "title": "Path to the script for fetching artifacts",
+          "description": "Path to Shell script that handles fetching artifacts from a registry",
+          "type": "string"
         },
         "npm": {
           "type": "object",
@@ -90,16 +96,19 @@
           ],
           "properties": {
             "scope": {
-              "type": "string",
-              "title": "Scope of your npm packages"
+              "title": "Scope of NPM packages",
+              "description": "Scope of NPM package",
+              "type": "string"
             },
             "npmtag": {
-              "type": "string",
-              "title": "Tag of your npm packages, such as LATEST, develop, alpha etc"
+              "title": "Tag of NPM packages",
+              "description": "Tag of NPM packages e.g. develop, release, alpha, latest",
+              "type": "string"
             },
             "npmrcPath": {
-              "type": "string",
-              "title": "Path to npmrc file"
+              "title": "Path to NPMRC file",
+              "description": "Path to NPMRC file required for authentication to private NPM registry",
+              "type": "string"
             }
           }
         }
