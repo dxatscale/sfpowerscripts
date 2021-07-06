@@ -24,7 +24,26 @@ export default class ValidateApexCoverage extends SfpowerscriptsCommand {
 
   protected static flagsConfig = {
     targetorg: flags.string({char: 'u', description: messages.getMessage('targetOrgFlagDescription'), default: 'scratchorg'}),
-    testcoverage: flags.string({required: true, char: 't', description: messages.getMessage('testCoverageFlagDescription')})
+    testcoverage: flags.string({required: true, char: 't', description: messages.getMessage('testCoverageFlagDescription')}),
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
+      required: false,
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
+    })
   };
 
 

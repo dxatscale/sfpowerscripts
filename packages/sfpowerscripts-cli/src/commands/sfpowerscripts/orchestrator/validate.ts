@@ -67,6 +67,25 @@ export default class Validate extends SfpowerscriptsCommand {
     tag: flags.string({
       description: messages.getMessage("tagFlagDescription"),
     }),
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
+      required: false,
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
+    })
   };
 
   async execute(): Promise<void> {

@@ -33,7 +33,26 @@ export default class IncrementBuildNumber extends SfpowerscriptsCommand {
     projectdir: flags.string({char: 'd', description: messages.getMessage('projectDirectoryFlagDescription')}),
     commitchanges: flags.boolean({char: 'c', description: messages.getMessage('commitChangesFlagDescription')}),
     refname: flags.string({description: messages.getMessage('refNameFlagDescription')}),
-    runnumber: flags.string({char: 'r', description: messages.getMessage('runNumberFlagDescription'), dependsOn: ['appendbuildnumber']})
+    runnumber: flags.string({char: 'r', description: messages.getMessage('runNumberFlagDescription'), dependsOn: ['appendbuildnumber']}),
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
+      required: false,
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
+    })
   };
 
   protected static requiresProject = true;

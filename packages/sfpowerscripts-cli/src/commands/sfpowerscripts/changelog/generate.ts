@@ -62,6 +62,25 @@ export default class GenerateChangelog extends SfdxCommand {
       description: messages.getMessage('forcePushFlagDescription'),
       hidden: true,
       default: false
+    }),
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
+      required: false,
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
     })
   };
 
