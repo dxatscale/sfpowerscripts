@@ -18,7 +18,7 @@ export default class PrepareImpl {
     // set defaults
     if(!this.pool.expiry) this.pool.expiry = 2;
 
-    if(!this.pool.batchsize) this.pool.batchsize = 5;
+    if(!this.pool.batchSize) this.pool.batchSize = 5;
 
   }
 
