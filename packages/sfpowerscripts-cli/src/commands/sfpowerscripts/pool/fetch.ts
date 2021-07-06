@@ -2,6 +2,7 @@ import { core, flags, SfdxCommand } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import PoolFetchImpl from "../../../impl/pool/PoolFetchImpl";
 import * as fs from "fs-extra";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 // Initialize Messages with the current plugin directory
 core.Messages.importMessagesDirectory(__dirname);
@@ -86,6 +87,9 @@ export default class Fetch extends SfdxCommand {
       this.flags.setdefaultusername
     );
 
+    if(this.flags.json)
+     SFPLogger.logLevel = LoggerLevel.HIDE;
+
     let result = await fetchImpl.execute();
 
     if (!this.flags.json && !this.flags.sendtouser) {
@@ -97,10 +101,9 @@ export default class Fetch extends SfdxCommand {
         }
       }
       this.ux.table(list, ["key", "value"]);
-      fetchImpl.loginToScratchOrgIfSfdxAuthURLExists(result);
+     
     }
-
-    return result as AnyJson;
+    return result;
 
   }
 }

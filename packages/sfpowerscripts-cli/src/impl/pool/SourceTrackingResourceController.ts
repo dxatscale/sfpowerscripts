@@ -69,7 +69,6 @@ export default class SourceTrackingResourceController {
   retrieve(): void {
     this.clearStaticResourcesDir();
 
-    try {
       child_process.execSync(
         `sfdx force:source:retrieve -m StaticResource:sourceTrackingFiles -u ${this.scratchOrg.username}`,
         {
@@ -95,15 +94,7 @@ export default class SourceTrackingResourceController {
 
       // Prevent source tracking files from being shown as a remote addition
       this.trackStaticResource(sfdxMaxRevisionFilePath);
-    } catch (error) {
-      console.log(error);
-      SFPLogger.log(
-        `Failed to retrieve source tracking files for scratch org`,
-        null,
-        this.logger
-      );
-      throw error;
-    }
+    
   }
 
   /**

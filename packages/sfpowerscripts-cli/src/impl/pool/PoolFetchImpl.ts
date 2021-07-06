@@ -10,13 +10,12 @@ import ShareScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/Share
 import * as fs from "fs-extra";
 import SourceTrackingResourceController from "./SourceTrackingResourceController";
 
-export default class PoolFetchImpl extends PoolBaseImpl{
-
+export default class PoolFetchImpl extends PoolBaseImpl {
   private tag: string;
   private mypool: boolean;
   private sendToUser: string;
   private alias: string;
-  private setdefaultusername:boolean;
+  private setdefaultusername: boolean;
 
   public constructor(
     hubOrg: Org,
@@ -24,7 +23,7 @@ export default class PoolFetchImpl extends PoolBaseImpl{
     mypool: boolean,
     sendToUser?: string,
     alias?: string,
-    setdefaultusername?:boolean
+    setdefaultusername?: boolean
   ) {
     super(hubOrg);
     this.tag = tag;
@@ -35,18 +34,15 @@ export default class PoolFetchImpl extends PoolBaseImpl{
   }
 
   protected async onExec(): Promise<ScratchOrg> {
-
-    const results = (await new ScratchOrgInfoFetcher(this.hubOrg).getScratchOrgsByTag(
-      this.tag,
-      this.mypool,
-      true
-    )) as any;
+    const results = (await new ScratchOrgInfoFetcher(
+      this.hubOrg
+    ).getScratchOrgsByTag(this.tag, this.mypool, true)) as any;
 
     let availableSo = [];
     if (results.records.length > 0) {
       availableSo = results.records.filter(
-            (soInfo) => soInfo.Allocation_status__c === "Available"
-          );
+        (soInfo) => soInfo.Allocation_status__c === "Available"
+      );
     }
     let emaiId;
     if (this.sendToUser) {
@@ -70,9 +66,12 @@ export default class PoolFetchImpl extends PoolBaseImpl{
       );
 
       for (let element of availableSo) {
-        let allocateSO = await new ScratchOrgInfoAssigner(this.hubOrg).setScratchOrgInfo(
-          { Id: element.Id, Allocation_status__c: "Allocate" }
-        );
+        let allocateSO = await new ScratchOrgInfoAssigner(
+          this.hubOrg
+        ).setScratchOrgInfo({
+          Id: element.Id,
+          Allocation_status__c: "Allocate",
+        });
         if (allocateSO === true) {
           SFPLogger.log(
             `Scratch org ${element.SignupUsername} is allocated from the pool. Expiry date is ${element.ExpirationDate}`,
@@ -108,74 +107,95 @@ export default class PoolFetchImpl extends PoolBaseImpl{
       //Fetch the email for user id
       try {
         //Send an email for username
-        await new ShareScratchOrg(this.hubOrg,soDetail).shareScratchOrgThroughEmail(
-          emaiId
-        );
+        await new ShareScratchOrg(
+          this.hubOrg,
+          soDetail
+        ).shareScratchOrgThroughEmail(emaiId);
       } catch (error) {
         SFPLogger.log(
           "Unable to send the scratchorg details to specified user. Check whether the user exists in the org",
           LoggerLevel.ERROR
         );
+        throw new SfdxError( "Unable to send the scratchorg details to specified user. Check whether the user exists in the org");
       }
     } else {
-      try {
-        let sourceTrackingResourceController = new SourceTrackingResourceController(soDetail, null);
-        sourceTrackingResourceController.retrieve();
-      } catch (error) {
-        // Don't fail if failed to retrieve source tracking files
+      //Login to the org
+      let isLoginSuccessFull = this.loginToScratchOrgIfSfdxAuthURLExists(
+        soDetail
+      );
+      //Attempt to Fetch Source Tracking Files and silently continue if it fails
+      if (isLoginSuccessFull) {
+        try {
+          let sourceTrackingResourceController = new SourceTrackingResourceController(
+            soDetail,
+            null
+          );
+          sourceTrackingResourceController.retrieve();
+        } catch (error) {
+          SFPLogger.log(
+            "Retriveing Source Tracking skipped.. " + error.message,
+            LoggerLevel.TRACE
+          );
+        }
       }
+
+
     }
-
-
     return soDetail;
   }
 
-  public loginToScratchOrgIfSfdxAuthURLExists(soDetail: ScratchOrg) {
-    if (soDetail.sfdxAuthUrl) {
+  public loginToScratchOrgIfSfdxAuthURLExists(soDetail: ScratchOrg): boolean {
+    try {
+      if (
+        soDetail.sfdxAuthUrl &&
+        this.isValidSfdxAuthUrl(soDetail.sfdxAuthUrl)
+      ) {
+        let soLogin: any = {};
+        soLogin.sfdxAuthUrl = soDetail.sfdxAuthUrl;
+        fs.writeFileSync("soAuth.json", JSON.stringify(soLogin));
 
-      if (!this.isValidSfdxAuthUrl(soDetail.sfdxAuthUrl)) {
-        return;
+        SFPLogger.log(
+          `Initiating Auto Login for Scratch Org with ${soDetail.username}`,
+          LoggerLevel.INFO
+        );
+
+        let authURLStoreCommand: string = `sfdx auth:sfdxurl:store -f soAuth.json`;
+
+        if (this.alias) authURLStoreCommand += ` -a ${this.alias}`;
+        if (this.setdefaultusername)
+          authURLStoreCommand += ` --setdefaultusername`;
+
+        child_process.execSync(authURLStoreCommand, {
+          encoding: "utf8",
+          stdio: "pipe",
+        });
+
+        return true;
+      } else {
+        SFPLogger.log(
+          "Unable to autenticate to the scratch org",
+          LoggerLevel.INFO
+        );
+        return false;
       }
-
-      let soLogin: any = {};
-      soLogin.sfdxAuthUrl = soDetail.sfdxAuthUrl;
-      fs.writeFileSync("soAuth.json", JSON.stringify(soLogin));
-
+    } catch (error) {
       SFPLogger.log(
-        `Initiating Auto Login for Scratch Org with ${soDetail.username}`,
-        LoggerLevel.INFO
+        "Unable to autenticate to the scratch org due " + error.message,
+        LoggerLevel.ERROR
       );
-
-      let authURLStoreCommand:string = `sfdx auth:sfdxurl:store -f soAuth.json`;
-
-      if(this.alias)
-         authURLStoreCommand+=` -a ${this.alias}`;
-      if(this.setdefaultusername)
-          authURLStoreCommand+=` --setdefaultusername`;
-
-         child_process.execSync(
-          authURLStoreCommand,
-          { encoding: "utf8", stdio: "inherit" }
-        );;
-
+      return false;
+    } finally {
       fs.unlinkSync("soAuth.json");
-
-
-      //Run shape list to reassign this org to the pool
-      child_process.execSync(`sfdx force:org:shape:list`, {
-        encoding: "utf8",
-        stdio: "pipe",
-      });
-
     }
   }
-
 
   private isValidSfdxAuthUrl(sfdxAuthUrl: string): boolean {
     if (sfdxAuthUrl.match(/force:\/\/(?<refreshToken>[a-zA-Z0-9._]+)@.+/)) {
       return true;
     } else {
-      let match = sfdxAuthUrl.match(/force:\/\/(?<clientId>[a-zA-Z]+):(?<clientSecret>[a-zA-Z0-9]*):(?<refreshToken>[a-zA-Z0-9._]+)@.+/)
+      let match = sfdxAuthUrl.match(
+        /force:\/\/(?<clientId>[a-zA-Z]+):(?<clientSecret>[a-zA-Z0-9]*):(?<refreshToken>[a-zA-Z0-9._]+)@.+/
+      );
 
       if (match !== null) {
         if (match.groups.refreshToken === "undefined") {
@@ -188,6 +208,4 @@ export default class PoolFetchImpl extends PoolBaseImpl{
       }
     }
   }
-
-
 }
