@@ -2,7 +2,7 @@ import { core, flags, SfdxCommand } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import poolListImpl from "../../../impl/pool/PoolListImpl";
 import { isNullOrUndefined } from "util";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 
 
 
@@ -48,7 +48,7 @@ export default class List extends SfdxCommand {
   };
 
   public async run(): Promise<AnyJson> {
- 
+
 
     await this.hubOrg.refreshAuth();
     const hubConn = this.hubOrg.getConnection();

@@ -2,11 +2,11 @@ import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { LoggerLevel, Org, SfdxError } from "@salesforce/core";
 import child_process = require("child_process");
 import { PoolBaseImpl } from "./PoolBaseImpl";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import { getUserEmail } from "./services/fetchers/GetUserEmail";
 import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 import ScratchOrgInfoAssigner from "./services/updaters/ScratchOrgInfoAssigner";
-import ShareScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ShareScratchOrg";
+import ShareScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ShareScratchOrg";
 import * as fs from "fs-extra";
 import SourceTrackingResourceController from "./SourceTrackingResourceController";
 

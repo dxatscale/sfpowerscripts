@@ -12,7 +12,7 @@ import PoolFetchImpl from "../pool/PoolFetchImpl";
 import { Org } from "@salesforce/core";
 
 import DependencyAnalysis from "./DependencyAnalysis";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 const Table = require("cli-table");
 import InstalledArtifactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";

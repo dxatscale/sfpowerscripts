@@ -1,6 +1,6 @@
 import { Org } from "@salesforce/core";
 import { PoolConfig } from "./PoolConfig";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import { Result } from "neverthrow";
 import * as fs from "fs-extra";
 import { EOL } from "os";

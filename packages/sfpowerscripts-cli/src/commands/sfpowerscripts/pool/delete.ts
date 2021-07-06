@@ -1,7 +1,7 @@
 import { core, flags, SfdxCommand } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import PoolDeleteImpl from "../../../impl/pool/PoolDeleteImpl";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 
 // Initialize Messages with the current plugin directory
 core.Messages.importMessagesDirectory(__dirname);
@@ -48,7 +48,7 @@ export default class Delete extends SfdxCommand {
   };
 
   public async run(): Promise<AnyJson> {
-   
+
     await this.hubOrg.refreshAuth();
     const hubConn = this.hubOrg.getConnection();
 

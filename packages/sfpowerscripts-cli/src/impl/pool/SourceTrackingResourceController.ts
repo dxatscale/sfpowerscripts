@@ -1,4 +1,4 @@
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 const path = require("path");
 import * as fs from "fs-extra";
 import lodash = require("lodash");
