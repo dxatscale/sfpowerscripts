@@ -13,8 +13,10 @@ export default class Validate extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
+  protected static requiresDevhubUsername = true;
+
   public static examples = [
-    `$ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -u <devHubUsername> -i <clientId> -f <jwt_file>`
+    `$ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>`
   ];
 
   static aliases = ["sfpowerscripts:orchestrator:validateAgainstPool"];
@@ -22,8 +24,10 @@ export default class Validate extends SfpowerscriptsCommand {
   protected static flagsConfig = {
     devhubusername: flags.string({
       char: 'u',
+      deprecated:{messageOverride:"--devhub username is deprecated, utilize the default devhub flag"},
       description: messages.getMessage('devhubUsernameFlagDescription'),
-      required: true
+      required: false,
+      hidden:true
     }),
     pools: flags.array({
       char: 'p',
@@ -95,6 +99,9 @@ export default class Validate extends SfpowerscriptsCommand {
   async execute(): Promise<void> {
     let executionStartTime = Date.now();
 
+    await this.hubOrg.refreshAuth();
+  
+
     console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
     console.log(COLOR_HEADER("command: validate"));
     console.log(COLOR_HEADER(`Pools being used: ${this.flags.pools}`));
@@ -110,8 +117,8 @@ export default class Validate extends SfpowerscriptsCommand {
       validateMode: ValidateMode.POOL,
       coverageThreshold: this.flags.coveragepercent,
       logsGroupSymbol: this.flags.logsgroupsymbol,
-      devHubUsername: this.flags.devhubusername,
       pools: this.flags.pools,
+      hubOrg: this.hubOrg,
       shapeFile: this.flags.shapefile,
       isDeleteScratchOrg: this.flags.deletescratchorg,
       keys: this.flags.keys,
