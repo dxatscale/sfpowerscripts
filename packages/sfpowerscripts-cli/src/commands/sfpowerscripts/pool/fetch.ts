@@ -81,7 +81,8 @@ export default class Fetch extends SfdxCommand {
     let fetchImpl = new PoolFetchImpl(
       this.hubOrg,
       this.flags.tag,
-      null,
+      false,
+      false,
       this.flags.sendtouser,
       this.flags.alias,
       this.flags.setdefaultusername

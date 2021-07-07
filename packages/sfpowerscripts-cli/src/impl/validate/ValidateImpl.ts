@@ -35,8 +35,6 @@ export interface ValidateProps {
   targetOrg?: string,
   devHubUsername?: string,
   pools?: string[],
-  jwt_key_file?: string,
-  client_id?: string,
   shapeFile?: string,
   isDeleteScratchOrg?: boolean,
   keys?: string,
@@ -58,14 +56,14 @@ export default class ValidateImpl {
 
         //TODO: get accessToken and instanceURL for scratch org
       } else if (this.props.validateMode === ValidateMode.POOL) {
-        this.authenticateDevHub(this.props.devHubUsername);
+      
 
         scratchOrgUsername = await this.fetchScratchOrgFromPool(
           this.props.pools,
           this.props.devHubUsername
         );
 
-        authDetails = this.authenticateToScratchOrg(scratchOrgUsername);
+       
 
         if (this.props.shapeFile) {
           this.deployShapeFile(this.props.shapeFile, scratchOrgUsername);
@@ -165,15 +163,7 @@ export default class ValidateImpl {
     }
   }
 
-  private authenticateDevHub(devHubUsername: string): void {
-    child_process.execSync(
-      `sfdx auth:jwt:grant -u ${devHubUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://login.salesforce.com`,
-      {
-        stdio: "inherit",
-        encoding: "utf8"
-      }
-    );
-  }
+
 
   private deployShapeFile(shapeFile: string, scratchOrgUsername: string): void {
     console.log(COLOR_KEY_MESSAGE(`Deploying scratch org shape`), shapeFile);
@@ -292,27 +282,7 @@ export default class ValidateImpl {
     this.printClosingLoggingGroup();
   }
 
-  /**
-   * Authenticate to scratch org and return auth details:
-   * username, accessToken, orgId, loginUrl, privateKey, clientId and instanceUrl
-   * @param scratchOrgUsername
-   */
-  private authenticateToScratchOrg(scratchOrgUsername: string) {
-    try {
-      let grantJson = child_process.execSync(
-        `sfdx auth:jwt:grant -u ${scratchOrgUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://test.salesforce.com --json`,
-        {
-          stdio: "pipe",
-          encoding: "utf8"
-        }
-      );
-      let grant = JSON.parse(grantJson);
-      console.log(COLOR_KEY_MESSAGE(`Successfully authorized ${grant.result.username} with org ID ${grant.result.orgId}`));
-      return grant.result;
-    } catch (err) {
-      throw new Error(`Failed to authenticate to ${scratchOrgUsername}`);
-    }
-  }
+
 
   private  async fetchScratchOrgFromPool(pools: string[], devHubUsername: string): Promise<string> {
     let scratchOrgUsername: string;
@@ -322,11 +292,12 @@ export default class ValidateImpl {
       try {
         let hubOrg:Org = await Org.create({aliasOrUsername:devHubUsername,isDevHub:true});
 
-        let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false);
+        let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false,true);
         scratchOrg = await poolFetchImpl.execute() as ScratchOrg;
 
-      } catch (error) {}
-
+      } catch (error) {
+        SFPLogger.log(error.message,LoggerLevel.TRACE)
+      }
       if (scratchOrg && scratchOrg.status==="Assigned") {
           scratchOrgUsername = scratchOrg.username;
           console.log(`Fetched scratch org ${scratchOrgUsername} from ${pool}`);
@@ -337,7 +308,7 @@ export default class ValidateImpl {
     if (scratchOrgUsername)
       return scratchOrgUsername;
     else
-      throw new Error(`Failed to fetch scratch org from ${pools}`);
+      throw new Error(`Failed to fetch scratch org from ${pools}, Are you sure you created this pool using a DevHub authenticated using auth:sfdxurl or auth:web or auth:accesstoken:store`);
   }
 
   private printBuildSummary(

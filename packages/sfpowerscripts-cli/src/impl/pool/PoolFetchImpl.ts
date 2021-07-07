@@ -16,11 +16,13 @@ export default class PoolFetchImpl extends PoolBaseImpl {
   private sendToUser: string;
   private alias: string;
   private setdefaultusername: boolean;
+  private authURLEnabledScratchOrg: boolean
 
   public constructor(
     hubOrg: Org,
     tag: string,
     mypool: boolean,
+    authURLEnabledScratchOrg:boolean,
     sendToUser?: string,
     alias?: string,
     setdefaultusername?: boolean
@@ -28,6 +30,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
     super(hubOrg);
     this.tag = tag;
     this.mypool = mypool;
+    this.authURLEnabledScratchOrg=authURLEnabledScratchOrg;
     this.sendToUser = sendToUser;
     this.alias = alias;
     this.setdefaultusername = setdefaultusername;
@@ -66,6 +69,18 @@ export default class PoolFetchImpl extends PoolBaseImpl {
       );
 
       for (let element of availableSo) {
+
+        if(this.authURLEnabledScratchOrg) {
+          if(element.SfdxAuthUrl__c && !this.isValidSfdxAuthUrl(element.SfdxAuthUrl__c))
+          { 
+            SFPLogger.log(
+              `Iterating through pool to find a scratch org with valid authURL`,
+              LoggerLevel.TRACE
+            );
+            continue;
+          }
+        }
+
         let allocateSO = await new ScratchOrgInfoAssigner(
           this.hubOrg
         ).setScratchOrgInfo({
