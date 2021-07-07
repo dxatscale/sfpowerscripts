@@ -94,7 +94,7 @@ export default class SourceTrackingResourceController {
 
       // Prevent source tracking files from being shown as a remote addition
       this.trackStaticResource(sfdxMaxRevisionFilePath);
-    
+
   }
 
   /**
@@ -102,6 +102,8 @@ export default class SourceTrackingResourceController {
    */
   createSourceTrackingResources(deploymentResult: DeploymentResult) {
     for (let packageInfoOfDeployedArtifact of deploymentResult.deployed) {
+      if (packageInfoOfDeployedArtifact.packageMetadata.package_type === "data") continue;
+
       let orgsDir = path.join(packageInfoOfDeployedArtifact.sourceDirectory, ".sfdx", "orgs");
       let usernameDir = path.join(orgsDir, this.scratchOrg.username);
 
