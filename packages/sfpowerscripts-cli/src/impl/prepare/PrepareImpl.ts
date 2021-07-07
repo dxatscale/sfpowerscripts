@@ -3,6 +3,8 @@ import { Org } from "@salesforce/core";
 import { PoolConfig } from "../pool/PoolConfig";
 import { PreparePoolInterface } from "./PreparePoolInterface";
 import PreparePool from "./PreparePool";
+import { err } from "neverthrow";
+import { PoolErrorCodes } from "../pool/PoolError";
 
 
 
@@ -25,8 +27,10 @@ export default class PrepareImpl {
 
   public async exec()
   {
-
     let poolPreparer:PreparePoolInterface;
+
+    if(!this.hubOrg.getConnection().refreshToken)
+      throw new  Error(`Pools have to be created using a DevHub authenticated with auth:web or auth:store or auth:accesstoken:store`);
 
     poolPreparer = new PreparePool(this.hubOrg,this.pool);
 
