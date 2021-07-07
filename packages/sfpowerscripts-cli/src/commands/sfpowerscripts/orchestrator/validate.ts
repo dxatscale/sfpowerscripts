@@ -31,14 +31,18 @@ export default class Validate extends SfpowerscriptsCommand {
       required: true
     }),
     jwtkeyfile: flags.filepath({
+      deprecated:{messageOverride:"--jwtkeyfile is deprecated, Validate no longer accepts jwt based auth mechanism"},
       char: 'f',
       description: messages.getMessage("jwtKeyFileFlagDescription"),
-      required: true
+      required: false,
+      hidden:true
     }),
     clientid: flags.string({
+      deprecated:{messageOverride:"--clientid is deprecated, Validate no longer accepts jwt based auth mechanism"},
       char: 'i',
       description: messages.getMessage("clientIdFlagDescription"),
-      required: true
+      required: false,
+      hidden:true
     }),
     shapefile: flags.string({
       description: messages.getMessage('shapeFileFlagDescription')
@@ -108,8 +112,6 @@ export default class Validate extends SfpowerscriptsCommand {
       logsGroupSymbol: this.flags.logsgroupsymbol,
       devHubUsername: this.flags.devhubusername,
       pools: this.flags.pools,
-      jwt_key_file: this.flags.jwtkeyfile,
-      client_id: this.flags.clientid,
       shapeFile: this.flags.shapefile,
       isDeleteScratchOrg: this.flags.deletescratchorg,
       keys: this.flags.keys,
