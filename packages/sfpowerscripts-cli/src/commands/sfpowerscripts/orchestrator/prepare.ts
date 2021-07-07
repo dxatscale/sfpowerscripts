@@ -13,6 +13,7 @@ import SFPLogger, { LoggerLevel, COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, COLOR
 import getFormattedTime from "../../../utils/GetFormattedTime";
 
 
+
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
 
@@ -74,10 +75,17 @@ export default class Prepare extends SfpowerscriptsCommand {
         }`)
       );
 
-
       console.log(COLOR_HEADER(
         `All packages in the repo to be installed: ${poolConfig.installAll?"true":"false"}`)
       );
+
+      console.log(
+        COLOR_HEADER(
+        `Enable Source Tracking: ${poolConfig.enableSourceTracking? "true" : "false"
+        }`)
+      );
+
+
       if (poolConfig.fetchArtifacts) {
        if (poolConfig.fetchArtifacts.artifactFetchScript)
         console.log(
