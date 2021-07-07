@@ -24,7 +24,7 @@ export default class Validate extends SfpowerscriptsCommand {
   protected static flagsConfig = {
     devhubusername: flags.string({
       char: 'u',
-      deprecated:{messageOverride:"--devhub username is deprecated, utilize the default devhub flag"},
+      deprecated:{messageOverride:"--devhubusername is deprecated, utilize the default devhub flag"},
       description: messages.getMessage('devhubUsernameFlagDescription'),
       required: false,
       hidden:true
