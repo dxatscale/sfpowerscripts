@@ -39,6 +39,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     async run(): Promise<any> {
 
 
+        SFPLogger.setColorLevel(this.flags.nocolor);
         this.setLogLevel();
 
         //If demo mode, display demo reel and return
