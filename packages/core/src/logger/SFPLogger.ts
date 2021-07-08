@@ -1,8 +1,6 @@
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import chalk = require("chalk");
-
-
 export enum LoggerLevel {
   TRACE = 10,
   DEBUG = 20,
@@ -55,6 +53,12 @@ export const COLOR_KEY_VALUE=chalk.black.bold.bgGreenBright;
 export default class SFPLogger {
   public static logLevel: LoggerLevel = LoggerLevel.INFO;
 
+  static setColorLevel(nocolor:boolean) {
+  if(nocolor)
+    chalk.level = 0
+  else 
+    chalk.level = 1;
+  }
 
   static log(message: string, logLevel = LoggerLevel.INFO, logger?: Logger) {
     if (typeof jest == "undefined") {
