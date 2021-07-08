@@ -33,7 +33,7 @@ export interface ValidateProps {
   coverageThreshold: number,
   logsGroupSymbol: string[],
   targetOrg?: string,
-  devHubUsername?: string,
+  hubOrg?:Org
   pools?: string[],
   shapeFile?: string,
   isDeleteScratchOrg?: boolean,
@@ -54,16 +54,12 @@ export default class ValidateImpl {
       if (this.props.validateMode === ValidateMode.ORG) {
         scratchOrgUsername = this.props.targetOrg;
 
-        //TODO: get accessToken and instanceURL for scratch org
-      } else if (this.props.validateMode === ValidateMode.POOL) {
-      
-
-        scratchOrgUsername = await this.fetchScratchOrgFromPool(
-          this.props.pools,
-          this.props.devHubUsername
-        );
-
        
+      } else if (this.props.validateMode === ValidateMode.POOL) {
+    
+        scratchOrgUsername = await this.fetchScratchOrgFromPool(
+          this.props.pools
+        );
 
         if (this.props.shapeFile) {
           this.deployShapeFile(this.props.shapeFile, scratchOrgUsername);
@@ -131,7 +127,7 @@ export default class ValidateImpl {
     // Install Dependencies
     let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
       scratchOrgUsername,
-      this.props.devHubUsername,
+      this.props.hubOrg.getUsername(),
       120,
       null,
       this.props.keys,
@@ -148,10 +144,10 @@ export default class ValidateImpl {
 
   private deleteScratchOrg(scratchOrgUsername: string): void {
     try {
-      if (scratchOrgUsername && this.props.devHubUsername ) {
+      if (scratchOrgUsername && this.props.hubOrg.getUsername() ) {
           console.log(`Deleting scratch org`, scratchOrgUsername);
           child_process.execSync(
-            `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.props.devHubUsername}`,
+            `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.props.hubOrg.getUsername()}`,
             {
               stdio: 'inherit',
               encoding: 'utf8'
@@ -284,15 +280,14 @@ export default class ValidateImpl {
 
 
 
-  private  async fetchScratchOrgFromPool(pools: string[], devHubUsername: string): Promise<string> {
+  private  async fetchScratchOrgFromPool(pools: string[]): Promise<string> {
     let scratchOrgUsername: string;
 
     for (let pool of pools) {
       let scratchOrg:ScratchOrg
       try {
-        let hubOrg:Org = await Org.create({aliasOrUsername:devHubUsername,isDevHub:true});
-
-        let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false,true);
+       
+        let poolFetchImpl = new PoolFetchImpl(this.props.hubOrg,pool.trim(),false,true);
         scratchOrg = await poolFetchImpl.execute() as ScratchOrg;
 
       } catch (error) {
