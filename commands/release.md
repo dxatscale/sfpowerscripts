@@ -1,6 +1,6 @@
 # Release
 
-The `orchestrator:release` command brings uniformity to the CICD landscape, allowing you to define 'releases' no matter which platform you are on. A release is defined by a YAML file, where you can specify the artifacts to be installed in the org, in addition to other parameters. The release will then be orchestrated based on the configuration of the YAML definition file.
+The `orchestrator:release` command brings uniformity to the CI/CD landscape, allowing you to define 'releases' no matter which platform you are on. A release is defined by a YAML file, where you can specify the artifacts to be installed in the org, in addition to other parameters. The release will then be orchestrated based on the configuration of the YAML definition file.
 
 ## Release definition
 
@@ -41,10 +41,10 @@ changelog:
 
 ## Fetching Artifacts for Release
 
-The `orchestrator:release` command provides a simplified method of fetching artifacts from an artifact repository using the release defintion file which contains the name of the artifacts that you want to download, and a mapping to the version to download. If fetching from a **NPM registry**, the command will handle everything else for you. However, for universal artifacts there is no uniform method for downloading artifacts from a repository, so you will need to provide a shell script that calls the relevant API.
+The `orchestrator:release` command provides a simplified method of fetching artifacts from an artifact repository using the release definition file which contains the name of the artifacts that you want to download, and a mapping to the version to download. If fetching from a **NPM registry**, the command will handle everything else for you. However, for universal artifacts there is no uniform method for downloading artifacts from a repository, so you will need to provide a shell script that calls the relevant API.
 
 {% hint style="info" %}
-The `LATEST_TAG` keyword is only supported if the current working directory is pointing to the project directory, and if at least one git tag exists for the package.
+The`LATEST_TAG` keyword is only supported if the current working directory is pointing to the project directory, and if at least one git tag exists for the package.
 {% endhint %}
 
 ### Fetching universal artifacts
@@ -77,10 +77,10 @@ az artifacts universal download --feed myfeed --name $1 --version $2 --path $3 \
 When the `--generatechangelog` flag is passed to the command, a changelog will automatically be generated if the release is successful. The changelog provides traceability for the artifacts, work items and commits that were introduced by each release, as well as an at-a-glance view of all your orgs and which release they are currently on.
 
 {% hint style="info" %}
-To generate a changelog, the`changelog.repoUrl` and `changelog.workItemFilter` parameters must be configured in the release definition file.
+To generate a changelog, the`changelog.repoUrl`and`changelog.workItemFilter` parameters must be configured in the release definition file.
 {% endhint %}
 
-A changelog is generated in markdown format and pushed to the repo, utilizing the `branchname` flag provided to the release command. If the command finds a previous changelog files, it will utilize to generate an incremental changelog
+A changelog is generated in markdown format and pushed to the repo, utilizing the`branchname` flag provided to the release command. If the command finds a previous changelog files, it will utilize to generate an incremental changelog
 
 ![Release changelog](../.gitbook/assets/changelog%20%281%29.png)
 
