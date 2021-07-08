@@ -47,6 +47,10 @@ export default class Prepare extends SfpowerscriptsCommand {
         "FATAL",
       ],
     }),
+    nocolor: flags.boolean({
+      description: "Disable colors displayed by the sfpowerscripts the terminal",
+      default: false,
+    })
   };
 
   public static description = messages.getMessage("commandDescription");

@@ -61,6 +61,10 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
         "ERROR",
         "FATAL",
       ],
+    }),
+    nocolor: flags.boolean({
+      description: "Disable colors displayed by the sfpowerscripts the terminal",
+      default: false,
     })
   };
 

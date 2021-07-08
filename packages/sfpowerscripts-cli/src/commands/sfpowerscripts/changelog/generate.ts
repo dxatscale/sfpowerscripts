@@ -81,6 +81,10 @@ export default class GenerateChangelog extends SfdxCommand {
         "ERROR",
         "FATAL",
       ],
+    }),
+    nocolor: flags.boolean({
+      description: "Disable colors displayed by the sfpowerscripts the terminal",
+      default: false,
     })
   };
 
