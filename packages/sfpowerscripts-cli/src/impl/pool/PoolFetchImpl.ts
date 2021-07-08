@@ -9,6 +9,7 @@ import ScratchOrgInfoAssigner from "./services/updaters/ScratchOrgInfoAssigner";
 import ShareScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ShareScratchOrg";
 import * as fs from "fs-extra";
 import SourceTrackingResourceController from "./SourceTrackingResourceController";
+import isValidSfdxAuthUrl from "./prequisitecheck/IsValidSfdxAuthUrl";
 
 export default class PoolFetchImpl extends PoolBaseImpl {
   private tag: string;
@@ -71,8 +72,8 @@ export default class PoolFetchImpl extends PoolBaseImpl {
       for (let element of availableSo) {
 
         if(this.authURLEnabledScratchOrg) {
-          if(element.SfdxAuthUrl__c && !this.isValidSfdxAuthUrl(element.SfdxAuthUrl__c))
-          { 
+          if(element.SfdxAuthUrl__c && !isValidSfdxAuthUrl(element.SfdxAuthUrl__c))
+          {
             SFPLogger.log(
               `Iterating through pool to find a scratch org with valid authURL`,
               LoggerLevel.TRACE
@@ -163,7 +164,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
     try {
       if (
         soDetail.sfdxAuthUrl &&
-        this.isValidSfdxAuthUrl(soDetail.sfdxAuthUrl)
+        isValidSfdxAuthUrl(soDetail.sfdxAuthUrl)
       ) {
         let soLogin: any = {};
         soLogin.sfdxAuthUrl = soDetail.sfdxAuthUrl;
@@ -201,26 +202,6 @@ export default class PoolFetchImpl extends PoolBaseImpl {
       return false;
     } finally {
       fs.unlinkSync("soAuth.json");
-    }
-  }
-
-  private isValidSfdxAuthUrl(sfdxAuthUrl: string): boolean {
-    if (sfdxAuthUrl.match(/force:\/\/(?<refreshToken>[a-zA-Z0-9._]+)@.+/)) {
-      return true;
-    } else {
-      let match = sfdxAuthUrl.match(
-        /force:\/\/(?<clientId>[a-zA-Z]+):(?<clientSecret>[a-zA-Z0-9]*):(?<refreshToken>[a-zA-Z0-9._]+)@.+/
-      );
-
-      if (match !== null) {
-        if (match.groups.refreshToken === "undefined") {
-          return false;
-        } else {
-          return true;
-        }
-      } else {
-        return false;
-      }
     }
   }
 }
