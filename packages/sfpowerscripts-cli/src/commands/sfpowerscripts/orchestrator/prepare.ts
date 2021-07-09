@@ -28,6 +28,10 @@ export default class Prepare extends SfpowerscriptsCommand {
       char: "f",
       description: messages.getMessage("poolConfigFlagDescription"),
     }),
+    keys: flags.string({
+      required: false,
+      description: messages.getMessage("keysDescription"),
+    }),
     loglevel: flags.enum({
       description: "logging level for this command invocation",
       default: "info",
@@ -65,6 +69,11 @@ export default class Prepare extends SfpowerscriptsCommand {
     try {
       let poolConfig = fs.readJSONSync(this.flags.poolconfig);
       this.validatePoolConfig(poolConfig);
+
+      //Assign Keys to the config
+      if(this.flags.keys)
+        poolConfig.keys = this.flags.keys;
+    
 
       console.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
       console.log(COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxAllocation}`));
