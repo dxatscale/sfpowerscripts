@@ -102,16 +102,16 @@ export default class Prepare extends SfpowerscriptsCommand {
           `Script provided to fetch artifacts: ${ poolConfig.fetchArtifacts.artifactFetchScript }`)
         );
        if (poolConfig.fetchArtifacts.npm)
+       {
         console.log(
           COLOR_HEADER(
-          `Fetch artifacts from pre-authenticated NPM registry: ${
-            poolConfig.fetchArtifacts.npm ? "true" : "false"
-          }`)
+          `Fetch artifacts from pre-authenticated NPM registry: "true"`)
         );
-        if (poolConfig.fetchArtifacts.npm?.npmtag)
+        if (poolConfig.fetchArtifacts.npm.npmtag)
           console.log(
             COLOR_HEADER(`Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`)
           );
+       }
       }
 
       console.log(COLOR_HEADER("---------------------------------------------------------"));
