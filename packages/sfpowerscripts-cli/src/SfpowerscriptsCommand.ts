@@ -1,5 +1,6 @@
 import { SfdxCommand } from "@salesforce/command";
 import { OutputFlags } from "@oclif/parser";
+import { AnyJson } from "@salesforce/ts-types";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender"
 import * as rimraf from "rimraf";
 import ProjectValidation from "./ProjectValidation";
@@ -68,7 +69,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         this.initializeStatsD();
 
         // Execute command run code
-        await this.execute();
+        return await this.execute() as AnyJson;
     }
 
     /**
@@ -119,6 +120,9 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
     private  setLogLevel()
     {
+      if(this.flags.json)
+        SFPLogger.isJSONMode=true;
+
       if(this.flags.loglevel==="trace" || this.flags.loglevel==="TRACE")
         SFPLogger.logLevel = LoggerLevel.TRACE
       else if(this.flags.loglevel==="debug" || this.flags.loglevel==="DEBUG")
