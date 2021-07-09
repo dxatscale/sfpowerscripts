@@ -3,7 +3,6 @@ import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logge
 import { Org } from "@salesforce/core";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 const retry = require("async-retry");
-const request = require("request-promise-native");
 const ORDER_BY_FILTER = " ORDER BY CreatedDate ASC";
 
 export default class ScratchOrgInfoFetcher {
@@ -130,26 +129,16 @@ export default class ScratchOrgInfoFetcher {
     scratchOrgId: string
   ): Promise<any> {
     let hubConn = this.hubOrg.getConnection();
-    let apiVersion = await this.hubOrg.getConnection().retrieveMaxApiVersion();
-
     return  retry(
       async (bail) => {
-        var query_uri = `${hubConn.instanceUrl}/services/data/v${apiVersion}/query?q=SELECT+Id+FROM+ActiveScratchOrg+WHERE+ScratchOrg+=+'${scratchOrgId}'`;
-
-        const result = await request({
-          method: "get",
-          url: query_uri,
-          headers: {
-            Authorization: `Bearer ${hubConn.accessToken}`,
-          },
-          json: true,
-        });
+        let query = `SELECT Id FROM ActiveScratchOrg WHERE ScratchOrg = '${scratchOrgId}'`;
+        let records = (await hubConn.query<any>(query)).records;
 
         SFPLogger.log(
-          "Retrieve Active ScratchOrg Id:" + JSON.stringify(result),
+          "Retrieve Active ScratchOrg Id:" + JSON.stringify(records),
           LoggerLevel.TRACE
         );
-        return result.records[0].Id;
+        return records[0].Id;
       },
       { retries: 3, minTimeout: 3000 }
     );
