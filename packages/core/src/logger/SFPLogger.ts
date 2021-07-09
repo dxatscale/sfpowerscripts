@@ -10,7 +10,6 @@ export enum LoggerLevel {
   WARN = 40,
   ERROR = 50,
   FATAL = 60,
-  HIDE = 70
 }
 
 const enum LoggerType {
@@ -54,10 +53,10 @@ export const COLOR_KEY_VALUE=chalk.black.bold.bgGreenBright;
 
 export default class SFPLogger {
   public static logLevel: LoggerLevel = LoggerLevel.INFO;
-
+  public static isJSONMode=false;
 
   static log(message: string, logLevel = LoggerLevel.INFO, logger?: Logger) {
-    if (typeof jest == "undefined") {
+    if (typeof jest == "undefined" || !SFPLogger.isJSONMode ) {
       if (logLevel == null) logLevel = LoggerLevel.INFO;
 
       if (logLevel < this.logLevel) return;
