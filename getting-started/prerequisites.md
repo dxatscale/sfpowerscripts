@@ -19,7 +19,7 @@ To get the maximum benefit out of sfpowerscripts, you need a good understanding 
 sfdx force:package:install -p 04t1P000000gOqzQAE -u Devhub -r -a package -s AdminsOnly -w 30
 ```
 
-If you prefer to install using source code instead or to create your own package, the source code is available at this [link](https://github.com/Accenture/sfpowerkit/tree/main/src_saleforce_packages/scratchorgpool)
+If you prefer to install using source code or to create your own package, the instructions are available [here](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/scratchorgpool)
 
 ## **On each org \(sandbox/production\) that you intend to deploy**
 
