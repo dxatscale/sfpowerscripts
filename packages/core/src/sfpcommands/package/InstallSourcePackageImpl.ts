@@ -156,7 +156,9 @@ export default class InstallSourcePackageImpl {
       if (this.deploymentType === DeploymentType.SOURCE_PUSH) {
         let pushSourceToOrgImpl: DeploymentExecutor = new PushSourceToOrgImpl(
           this.targetusername,
-          this.sourceDirectory
+          this.sourceDirectory,
+          packageDirectory,
+          this.packageLogger
         );
 
         result = await pushSourceToOrgImpl.exec()
