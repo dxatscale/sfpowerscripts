@@ -108,7 +108,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         let deploymentResult: DeploymentResult;
 
         let deploymentMode: DeploymentMode;
-        if (this.pool.enableSourceTracking) {
+        if (this.pool.enableSourceTracking || this.pool.enableSourceTracking === undefined) {
           deploymentMode = DeploymentMode.SOURCEPACKAGES_PUSH;
         } else {
           deploymentMode = DeploymentMode.SOURCEPACKAGES;
