@@ -1,7 +1,7 @@
 const Table = require("cli-table");
 import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
-export default class DeployErrorDisplayer {
+export default class PushErrorDisplayer {
 
   public static printMetadataFailedToPush(componentFailures: any, packageLogger: Logger) {
 
