@@ -151,7 +151,7 @@ export default class DeployImpl {
 
 
 
-        let packageInstallationResult = await retry(
+        let packageInstallationResult:PackageInstallationResult = await retry(
           async (bail,count) => {
             try {
 
@@ -171,6 +171,7 @@ export default class DeployImpl {
                 false
               );
 
+            
               if (this.props.isRetryOnFailure && installPackageResult.result === PackageInstallationStatus.Failed && count === 1) {
                 throw new Error(installPackageResult.message)
               } else return installPackageResult;
@@ -202,6 +203,7 @@ export default class DeployImpl {
         } else if (
           packageInstallationResult.result === PackageInstallationStatus.Failed
         ) {
+        
           failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
           throw new Error(packageInstallationResult.message);
         }
@@ -266,7 +268,8 @@ export default class DeployImpl {
         error: null,
       };
     } catch (err) {
-      SFPLogger.log(JSON.stringify(err),LoggerLevel.ERROR, this.props.packageLogger);
+     
+      SFPLogger.log(err,LoggerLevel.ERROR, this.props.packageLogger);
 
       return {
         deployed: deployed,
