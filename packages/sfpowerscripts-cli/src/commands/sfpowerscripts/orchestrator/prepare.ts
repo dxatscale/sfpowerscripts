@@ -73,7 +73,7 @@ export default class Prepare extends SfpowerscriptsCommand {
       //Assign Keys to the config
       if(this.flags.keys)
         poolConfig.keys = this.flags.keys;
-    
+
 
       console.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
       console.log(COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxAllocation}`));
@@ -90,7 +90,7 @@ export default class Prepare extends SfpowerscriptsCommand {
 
       console.log(
         COLOR_HEADER(
-        `Enable Source Tracking: ${poolConfig.enableSourceTracking? "true" : "false"
+        `Enable Source Tracking: ${poolConfig.enableSourceTracking || poolConfig.enableSourceTracking === undefined ? "true" : "false"
         }`)
       );
 

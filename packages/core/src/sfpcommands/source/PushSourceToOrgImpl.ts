@@ -1,15 +1,34 @@
 
 import DeploymentExecutor, { DeploySourceResult } from "./DeploymentExecutor";
 import PushSourceImpl from "../../sfdxwrappers/PushSourceImpl";
+import PushErrorDisplayer from "../../display/PushErrorDisplayer";
+import { Logger } from "../../logger/SFPLogger";
+import ConvertSourceToMDAPIImpl from "../../sfdxwrappers/ConvertSourceToMDAPIImpl";
+import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
+import PackageManifest from "../../package/PackageManifest";
 
 export default class PushSourceToOrgImpl implements DeploymentExecutor {
 
   constructor(
-    protected target_org: string,
-    protected project_directory: string,
+    private target_org: string,
+    private project_directory: string,
+    private source_directory: string,
+    private logger: Logger
   ) {}
 
   async exec(): Promise<DeploySourceResult> {
+
+    let mdapiDir = await new ConvertSourceToMDAPIImpl(
+      this.project_directory,
+      this.source_directory,
+      this.logger
+    ).exec(true);
+
+    PackageMetadataPrinter.printMetadataToDeploy(
+      await new PackageManifest(mdapiDir).getManifest(),
+      this.logger
+    );
+
     try {
       await new PushSourceImpl(
         this.target_org,
@@ -22,6 +41,7 @@ export default class PushSourceToOrgImpl implements DeploymentExecutor {
         message: "pushed successfully"
       }
     } catch (error) {
+      PushErrorDisplayer.printMetadataFailedToPush(JSON.parse(error.message).result, this.logger);
       return {
         deploy_id: null,
         result: false,
