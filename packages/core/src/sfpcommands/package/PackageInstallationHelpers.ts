@@ -1,5 +1,4 @@
 import { Connection } from "@salesforce/core";
-import child_process = require("child_process");
 import ExecuteCommand from "../../command/commandExecutor/ExecuteCommand";
 import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
 import AssignPermissionSets from "../../permsets/AssignPermissionSets";
