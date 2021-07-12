@@ -1,21 +1,16 @@
 import child_process = require("child_process");
-import AssignPermissionSetsImpl from "../../src/sfpcommands/permsets/AssignPermissionSetsImpl";
+import AssignPermissionSets from "../../src/permsets/AssignPermissionSets";
 import { jest,expect } from "@jest/globals";
 import { VoidLogger } from "../../src/logger/SFPLogger";
+import { AuthInfo, Connection } from "@salesforce/core";
+import { MockTestOrgData, testSetup } from "@salesforce/core/lib/testSetup";
 
-jest.mock("../../src/sfdxwrappers/AliasListImpl", () => {
-  class AliasListImpl {
-    exec() {
-      return aliasList;
-    }
-  }
-  return AliasListImpl;
-});
+const $$ = testSetup();
 
-jest.mock("../../src/sfdxwrappers/PermsetListImpl", () => {
-  class PermsetListImpl {
-    constructor(private username: string, private target_org: string) {}
-    exec(): any[] {
+jest.mock("../../src/permsets/PermissionSetFetcher", () => {
+  class PermissionSetFetcher {
+    constructor(private username: string, private conn: Connection) {}
+    fetchAllPermsetAssignment(): any[] {
       return [
         {
           attributes: {
@@ -66,14 +61,23 @@ jest.mock("../../src/sfdxwrappers/PermsetListImpl", () => {
       ];
     }
   }
-  return PermsetListImpl;
+  return PermissionSetFetcher;
 });
 
 describe("Given a set of permsets, assign it to the user who is deploying the packages", () => {
-  it("should assign a set of  permset, if its not previously assigned", () => {
-    let alias = "S05";
-    let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-      alias,
+  it("should assign a set of  permset, if its not previously assigned", async () => {
+    
+    const testData = new MockTestOrgData();
+    $$.setConfigStubContents('AuthInfoConfig', {
+      contents:  await testData.getConfig(),
+    });
+    const connection: Connection = await Connection.create({
+      authInfo:  await AuthInfo.create({ username: testData.username })
+    });
+
+
+    let assignPermSetImpl: AssignPermissionSets = new AssignPermissionSets(
+      connection,
       ["test1", "test2"],
       null,
       new VoidLogger()
@@ -103,17 +107,26 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
         }`);
       });
 
-    let results = assignPermSetImpl.exec();
+    let results = await assignPermSetImpl.exec();
     expect(results.successfullAssignments).toHaveLength(2);
     expect(results.failedAssignments).toHaveLength(0);
 
   });
 
 
-  it("should assign a partial set  of  permset, if any of them fails", () => {
-    let alias = "S05";
-    let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-      alias,
+  it("should assign a partial set  of  permset, if any of them fails", async () => {
+    
+    const testData = new MockTestOrgData();
+    $$.setConfigStubContents('AuthInfoConfig', {
+      contents:  await testData.getConfig(),
+    });
+    const connection: Connection = await Connection.create({
+      authInfo:  await AuthInfo.create({ username: testData.username })
+    });
+
+
+    let assignPermSetImpl: AssignPermissionSets = new AssignPermissionSets(
+      connection,
       ["test1", "test2"],
       null,
       new VoidLogger()
@@ -143,16 +156,25 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
         }`);
       });
 
-    let results = assignPermSetImpl.exec();
+    let results = await assignPermSetImpl.exec();
     expect(results.successfullAssignments).toHaveLength(1);
     expect(results.failedAssignments).toHaveLength(1);
   });
 
 
-  it("should assign none, if all of them fails", () => {
-    let alias = "S05";
-    let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-      alias,
+  it("should assign none, if all of them fails", async () => {
+
+    const testData = new MockTestOrgData();
+    $$.setConfigStubContents('AuthInfoConfig', {
+      contents:  await testData.getConfig(),
+    });
+    const connection: Connection = await Connection.create({
+      authInfo:  await AuthInfo.create({ username: testData.username })
+    });
+
+   
+    let assignPermSetImpl: AssignPermissionSets = new AssignPermissionSets(
+      connection,
       ["test1", "test2"],
       null,
       new VoidLogger()
@@ -182,7 +204,7 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
         }`);
       });
 
-    let results = assignPermSetImpl.exec();
+    let results = await assignPermSetImpl.exec();
     expect(results.successfullAssignments).toHaveLength(0);
     expect(results.failedAssignments).toHaveLength(2);
   });

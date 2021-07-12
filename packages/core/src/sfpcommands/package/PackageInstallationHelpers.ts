@@ -1,7 +1,8 @@
+import { Connection } from "@salesforce/core";
 import child_process = require("child_process");
 import ExecuteCommand from "../../command/commandExecutor/ExecuteCommand";
 import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
-import AssignPermissionSetsImpl from "../permsets/AssignPermissionSetsImpl";
+import AssignPermissionSets from "../../permsets/AssignPermissionSets";
 
 export default class PackageInstallationHelpers {
   static  async executeScript(
@@ -23,20 +24,20 @@ export default class PackageInstallationHelpers {
 
   }
 
-  static applyPermsets(
+  static async applyPermsets(
     permsets: string[],
-    targetusername: string,
+    conn:Connection,
     sourceDirectory: string,
     logger:Logger
   ) {
-    let assignPermissionSetsImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
-      targetusername,
+    let assignPermissionSetsImpl: AssignPermissionSets = new AssignPermissionSets(
+      conn,
       permsets,
       sourceDirectory,
       logger
     );
 
-    let results = assignPermissionSetsImpl.exec();
+    let results = await assignPermissionSetsImpl.exec();
     if (results.failedAssignments.length > 0)
       throw new Error("Unable to assign permsets");
   }
