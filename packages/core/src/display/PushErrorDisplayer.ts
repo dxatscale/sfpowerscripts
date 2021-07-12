@@ -1,9 +1,9 @@
 const Table = require("cli-table");
 import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
-export default class DeployErrorDisplayer {
+export default class PushErrorDisplayer {
 
-  public static printMetadataFailedToDeploy(componentFailures: any, packageLogger: Logger) {
+  public static printMetadataFailedToPush(componentFailures: any, packageLogger: Logger) {
 
     if (componentFailures === null || componentFailures === undefined) return;
 
@@ -13,10 +13,10 @@ export default class DeployErrorDisplayer {
 
     let pushComponentFailureIntoTable = (componentFailure) => {
         let item = [
-          componentFailure.componentType,
+          componentFailure.type,
           componentFailure.fullName,
           componentFailure.problemType,
-          componentFailure.problem
+          componentFailure.error
         ];
         table.push(item);
     };
