@@ -117,7 +117,7 @@ describe("Retrieve assigned permsets provided username and a target org", () => 
 
     let permsetListImpl: PermissionSetFetcher = new PermissionSetFetcher(testData.username,connection);
     
-    await expect(permsetListImpl.fetchAllPermsetAssignment()).rejects.toThrowError("Unable to fetch records");
+    expect(permsetListImpl.fetchAllPermsetAssignment()).rejects.toThrowError();
 
   },1000000);
 });
