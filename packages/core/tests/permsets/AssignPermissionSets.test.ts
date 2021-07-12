@@ -211,21 +211,3 @@ describe("Given a set of permsets, assign it to the user who is deploying the pa
 });
 
 
-const aliasList = [
-  {
-    "alias": "s01",
-    "value": "test-jx6iygd1o2pw@example.com"
-  },
-  {
-    "alias": "S03",
-    "value": "test-db2xyqz7wdw3@example.com"
-  },
-  {
-    "alias": "nufsupport",
-    "value": "azlam.abdulsalam@accenture.com.support"
-  },
-  {
-    "alias": "S05",
-    "value": "test-sfvulqawd2w0@example.com"
-  }
-];
