@@ -1,4 +1,4 @@
-import { core, flags, SfdxCommand } from "@salesforce/command";
+import { core, flags } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand";
 import PoolOrgDeleteImpl from "../../../../impl/pool/PoolOrgDeleteImpl";
