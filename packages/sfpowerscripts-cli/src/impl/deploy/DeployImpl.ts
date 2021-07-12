@@ -148,7 +148,7 @@ export default class DeployImpl {
 
 
 
-        let packageInstallationResult = await retry(
+        let packageInstallationResult:PackageInstallationResult = await retry(
           async (bail,count) => {
 
             try {
@@ -268,7 +268,8 @@ export default class DeployImpl {
         error: null,
       };
     } catch (err) {
-      SFPLogger.log(JSON.stringify(err),LoggerLevel.ERROR, this.props.packageLogger);
+
+      SFPLogger.log(err,LoggerLevel.ERROR, this.props.packageLogger);
 
       return {
         deployed: deployed,
