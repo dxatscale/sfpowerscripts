@@ -21,11 +21,7 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
     package: flags.string({char: 'n', description: messages.getMessage('packageFlagDescription'), required: true}),
     targetorg: flags.string({char: 'u', description: messages.getMessage('targetOrgFlagDescription'), required: true}),
     artifactdir: flags.directory({description: messages.getMessage('artifactDirectoryFlagDescription'), default: 'artifacts'}),
-    skiponmissingartifact: flags.boolean({char: 's', description: messages.getMessage('skipOnMissingArtifactFlagDescription')}),
-    nocolor: flags.boolean({
-      description: "Disable colors displayed by the sfpowerscripts the terminal",
-      default: false,
-    })
+    skiponmissingartifact: flags.boolean({char: 's', description: messages.getMessage('skipOnMissingArtifactFlagDescription')})
   };
 
   protected artifactFilePaths: ArtifactFilePaths;

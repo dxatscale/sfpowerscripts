@@ -39,7 +39,9 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     async run(): Promise<any> {
 
 
-        SFPLogger.setColorLevel(this.flags.nocolor);
+        if(process.env.SFPOWERSCRIPTS_NOCOLOR)
+          SFPLogger.setColorLevel(true);
+
         this.setLogLevel();
 
         //If demo mode, display demo reel and return

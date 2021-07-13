@@ -45,10 +45,6 @@ export default class InstallDataPackage extends InstallPackageCommand {
         "ERROR",
         "FATAL",
       ],
-    }),
-    nocolor: flags.boolean({
-      description: "Disable colors displayed by the sfpowerscripts the terminal",
-      default: false,
     })
   };
 
