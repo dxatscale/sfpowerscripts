@@ -41,7 +41,7 @@ export default class PushSourceToOrgImpl implements DeploymentExecutor {
         message: "pushed successfully"
       }
     } catch (error) {
-      PushErrorDisplayer.printMetadataFailedToPush(JSON.parse(error.message).result, this.logger);
+      PushErrorDisplayer.printMetadataFailedToPush(JSON.parse(error.message), this.logger);
       return {
         deploy_id: null,
         result: false,
