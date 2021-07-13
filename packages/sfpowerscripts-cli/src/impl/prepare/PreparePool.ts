@@ -63,9 +63,22 @@ export default class PreparePool implements PreparePoolInterface  {
 
 
   private async getPackageArtifacts() {
-    let packages = ProjectConfig.getSFDXPackageManifest(null)[
+   
+
+    //Filter Packages to be ignore from prepare to be fetched
+    let packages =ProjectConfig.getSFDXPackageManifest(null)[
       "packageDirectories"
-    ];
+    ].filter((pkg)=>{
+      if (
+        pkg.ignoreOnStage?.find( (stage) => {
+          stage = stage.toLowerCase();
+          return stage === "prepare";
+        })
+      )
+        return false;
+      else
+        return true;
+    });
 
 
     let artifactFetcher:FetchAnArtifact;
@@ -77,7 +90,7 @@ export default class PreparePool implements PreparePoolInterface  {
       ).getArtifactFetcher();
 
   
-      packages.forEach((pkg) => {
+      packages.forEach((pkg) => {       
         artifactFetcher.fetchArtifact(
           pkg.package,
           "artifacts",
