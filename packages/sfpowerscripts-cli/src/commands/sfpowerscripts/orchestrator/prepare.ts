@@ -28,6 +28,10 @@ export default class Prepare extends SfpowerscriptsCommand {
       char: "f",
       description: messages.getMessage("poolConfigFlagDescription"),
     }),
+    keys: flags.string({
+      required: false,
+      description: messages.getMessage("keysDescription"),
+    }),
     loglevel: flags.enum({
       description: "logging level for this command invocation",
       default: "info",
@@ -70,6 +74,11 @@ export default class Prepare extends SfpowerscriptsCommand {
       let poolConfig = fs.readJSONSync(this.flags.poolconfig);
       this.validatePoolConfig(poolConfig);
 
+      //Assign Keys to the config
+      if(this.flags.keys)
+        poolConfig.keys = this.flags.keys;
+
+
       console.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
       console.log(COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxAllocation}`));
       console.log(
@@ -85,7 +94,7 @@ export default class Prepare extends SfpowerscriptsCommand {
 
       console.log(
         COLOR_HEADER(
-        `Enable Source Tracking: ${poolConfig.enableSourceTracking? "true" : "false"
+        `Enable Source Tracking: ${poolConfig.enableSourceTracking || poolConfig.enableSourceTracking === undefined ? "true" : "false"
         }`)
       );
 
@@ -97,16 +106,16 @@ export default class Prepare extends SfpowerscriptsCommand {
           `Script provided to fetch artifacts: ${ poolConfig.fetchArtifacts.artifactFetchScript }`)
         );
        if (poolConfig.fetchArtifacts.npm)
+       {
         console.log(
           COLOR_HEADER(
-          `Fetch artifacts from pre-authenticated NPM registry: ${
-            poolConfig.fetchArtifacts.npm ? "true" : "false"
-          }`)
+          `Fetch artifacts from pre-authenticated NPM registry: true`)
         );
-        if (poolConfig.fetchArtifacts.npm?.npmtag)
+        if (poolConfig.fetchArtifacts.npm.npmtag)
           console.log(
-            COLOR_HEADER(`Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`)
+            COLOR_HEADER(`Tag utilized to fetch from NPM registry: ${poolConfig.fetchArtifacts.npm.npmtag}`)
           );
+       }
       }
 
       console.log(COLOR_HEADER("---------------------------------------------------------"));
