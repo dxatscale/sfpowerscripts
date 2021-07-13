@@ -14,7 +14,7 @@ export default class PushSourceImpl extends SFDXCommand{
   }
 
   public getGeneratedParams(): string {
-    return `-u ${this.target_org}`;
+    return `-u ${this.target_org} -f`;
   }
 
   public getCommandName() {
