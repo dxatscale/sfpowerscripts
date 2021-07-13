@@ -9,14 +9,6 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
     private scope: string,
     private npmrcPath: string
   ) {
-    if (this.npmrcPath) {
-      fs.copyFileSync(this.npmrcPath, path.resolve(".npmrc"));
-
-      if (!fs.existsSync("package.json")) {
-        // package json is required in the same directory as .npmrc
-        fs.writeFileSync("package.json", "{}");
-      }
-    }
   }
 
 
@@ -25,6 +17,17 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
     artifactDirectory: string,
     version?:string
   ) {
+    
+    //Create .npmrc file in the artifact directory
+    if (this.npmrcPath && !fs.pathExistsSync(path.join(artifactDirectory,".npmrc"))) {
+      fs.copyFileSync(this.npmrcPath, path.join(artifactDirectory,".npmrc"));
+
+      if (!fs.existsSync(path.join(artifactDirectory,"package.json"))) {
+        // package json is required in the same directory as .npmrc
+        fs.writeFileSync(path.join(artifactDirectory,"package.json"), "{}");
+      }
+    }
+
     // NPM package names must be lowercase
     packageName = packageName.toLowerCase();
 
