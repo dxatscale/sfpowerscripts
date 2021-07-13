@@ -59,7 +59,7 @@ export default class SFPLogger {
   }
 
   static disableColor() {
-    chalk.level = 2;
+    chalk.level = 0;
   }
 
 
