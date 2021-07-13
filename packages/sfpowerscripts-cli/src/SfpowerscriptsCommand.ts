@@ -40,7 +40,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
 
         if(process.env.SFPOWERSCRIPTS_NOCOLOR)
-          SFPLogger.setColorLevel(true);
+          SFPLogger.setColor(false);
 
         this.setLogLevel();
 

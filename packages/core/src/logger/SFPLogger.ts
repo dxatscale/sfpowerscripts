@@ -52,12 +52,13 @@ export const COLOR_KEY_VALUE=chalk.black.bold.bgGreenBright;
 
 export default class SFPLogger {
   public static logLevel: LoggerLevel = LoggerLevel.INFO;
+  
 
-  static setColorLevel(nocolor:boolean) {
+  static setColor(nocolor:boolean) {
   if(nocolor)
     chalk.level = 0
   else 
-    chalk.level = 1;
+    chalk.level = 2;
   }
 
   static log(message: string, logLevel = LoggerLevel.INFO, logger?: Logger) {
