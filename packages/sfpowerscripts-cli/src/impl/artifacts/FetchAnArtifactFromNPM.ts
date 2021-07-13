@@ -16,7 +16,7 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
       fs.copyFileSync(this.npmrcPath, path.resolve(".npmrc"));
       }catch(error)
       {
-        throw new error("We were unable to find or copy the .npmrc file as provided due to "+error.message);
+        throw new Error("We were unable to find or copy the .npmrc file as provided due to "+error.message);
       }
       if (!fs.existsSync("package.json")) {
         // package json is required in the same directory as .npmrc
