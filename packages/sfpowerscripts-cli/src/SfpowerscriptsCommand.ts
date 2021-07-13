@@ -39,8 +39,12 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     async run(): Promise<any> {
 
 
+
+        //Always enable color by default
         if(process.env.SFPOWERSCRIPTS_NOCOLOR)
-          SFPLogger.setColor(false);
+          SFPLogger.disableColor();
+        else
+          SFPLogger.enableColor();
 
         this.setLogLevel();
 

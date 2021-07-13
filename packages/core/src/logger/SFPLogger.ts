@@ -54,12 +54,14 @@ export default class SFPLogger {
   public static logLevel: LoggerLevel = LoggerLevel.INFO;
   
 
-  static setColor(isColorEnabled:boolean) {
-  if(isColorEnabled)
-    chalk.level = 2
-  else 
-    chalk.level = 0;
+  static enableColor() {
+    chalk.level = 2;
   }
+
+  static disableColor() {
+    chalk.level = 2;
+  }
+
 
   static log(message: string, logLevel = LoggerLevel.INFO, logger?: Logger) {
     if (typeof jest == "undefined") {
