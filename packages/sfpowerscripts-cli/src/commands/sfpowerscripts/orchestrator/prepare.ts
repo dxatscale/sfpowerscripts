@@ -56,7 +56,7 @@ export default class Prepare extends SfpowerscriptsCommand {
         "ERROR",
         "FATAL",
       ],
-    }),
+    })
   };
 
   public static description = messages.getMessage("commandDescription");
