@@ -54,11 +54,11 @@ export default class SFPLogger {
   public static logLevel: LoggerLevel = LoggerLevel.INFO;
   
 
-  static setColor(nocolor:boolean) {
-  if(nocolor)
-    chalk.level = 0
+  static setColor(isColorEnabled:boolean) {
+  if(isColorEnabled)
+    chalk.level = 2
   else 
-    chalk.level = 2;
+    chalk.level = 0;
   }
 
   static log(message: string, logLevel = LoggerLevel.INFO, logger?: Logger) {
