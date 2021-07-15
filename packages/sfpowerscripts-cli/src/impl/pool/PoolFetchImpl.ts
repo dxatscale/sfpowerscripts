@@ -10,6 +10,10 @@ import ShareScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/Share
 import * as fs from "fs-extra";
 import SourceTrackingResourceController from "./SourceTrackingResourceController";
 import isValidSfdxAuthUrl from "./prequisitecheck/IsValidSfdxAuthUrl";
+import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
+import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
+import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/InstalledPackagesFetcher";
+import InstalledPackageDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer";
 
 export default class PoolFetchImpl extends PoolBaseImpl {
   private tag: string;
@@ -153,6 +157,8 @@ export default class PoolFetchImpl extends PoolBaseImpl {
             LoggerLevel.TRACE
           );
         }
+
+        await this.displayOrgContents(soDetail);
       }
 
 
@@ -202,6 +208,31 @@ export default class PoolFetchImpl extends PoolBaseImpl {
       return false;
     } finally {
       fs.unlinkSync("soAuth.json");
+    }
+  }
+
+  /**
+   * Display artifacts and managed packages installed in the org
+   * @param soDetail
+   */
+  private async displayOrgContents(soDetail: ScratchOrg) {
+    try {
+      const scratchOrgConnection = (await Org.create({ aliasOrUsername: soDetail.username })).getConnection();
+      let installedPackagesFetcher = new InstalledPackagesFetcher(scratchOrgConnection);
+      let installedManagedPackages = await installedPackagesFetcher.fetchManagedPackages();
+      SFPLogger.log(
+        "Installed managed packages:",
+        LoggerLevel.INFO
+      );
+      InstalledPackageDisplayer.printInstalledPackages(installedManagedPackages, null);
+
+      let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(soDetail.username);
+      InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
+    } catch (error) {
+      SFPLogger.log(
+        "Failed to query packages/artifacts installed in the org",
+        LoggerLevel.ERROR
+      );
     }
   }
 }
