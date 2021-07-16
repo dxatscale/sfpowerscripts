@@ -10,10 +10,10 @@ import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/s
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import PoolFetchImpl from "../pool/PoolFetchImpl";
 import { Org } from "@salesforce/core";
+import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
 
 import DependencyAnalysis from "./DependencyAnalysis";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
-const Table = require("cli-table");
 import InstalledArtifactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
@@ -54,9 +54,9 @@ export default class ValidateImpl {
       if (this.props.validateMode === ValidateMode.ORG) {
         scratchOrgUsername = this.props.targetOrg;
 
-       
+
       } else if (this.props.validateMode === ValidateMode.POOL) {
-    
+
         scratchOrgUsername = await this.fetchScratchOrgFromPool(
           this.props.pools
         );
@@ -265,16 +265,9 @@ export default class ValidateImpl {
 
   private printArtifactVersions(installedArtifacts: any) {
     this.printOpenLoggingGroup(`Artifacts installed in the Scratch Org`);
-    let table = new Table({
-      head: ["Artifact", "Version", "Commit Id"],
-    });
 
-    installedArtifacts.forEach((artifact) => {
-      table.push([artifact.Name, artifact.Version__c, artifact.CommitId__c]);
-    });
+    InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
 
-    console.log(COLOR_KEY_MESSAGE(`Artifacts installed in scratch org:`));
-    console.log(table.toString());
     this.printClosingLoggingGroup();
   }
 
@@ -286,7 +279,7 @@ export default class ValidateImpl {
     for (let pool of pools) {
       let scratchOrg:ScratchOrg
       try {
-       
+
         let poolFetchImpl = new PoolFetchImpl(this.props.hubOrg,pool.trim(),false,true);
         scratchOrg = await poolFetchImpl.execute() as ScratchOrg;
 
