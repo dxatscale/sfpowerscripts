@@ -2,7 +2,10 @@ import child_process = require("child_process");
 import { isNullOrUndefined } from "util";
 import { onExit } from "../../utils/OnExit";
 import PackageMetadata from "../../PackageMetadata";
-import { PackageInstallationResult, PackageInstallationStatus } from "../../package/PackageInstallationResult";
+import {
+  PackageInstallationResult,
+  PackageInstallationStatus,
+} from "../../package/PackageInstallationResult";
 import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
 import PackageInstallationHelpers from "./PackageInstallationHelpers";
 import path = require("path");
@@ -11,7 +14,7 @@ import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
 import InstalledPackagesFetcher from "../../package/InstalledPackagesFetcher";
-import { Org } from "@salesforce/core";
+import { Org, Connection } from "@salesforce/core";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -21,20 +24,24 @@ export default class InstallUnlockedPackageImpl {
     private wait_time: string,
     private publish_wait_time: string,
     private skip_if_package_installed: boolean,
-    private packageMetadata:PackageMetadata,
-    private sourceDirectory?:string,
-    private packageLogger?:Logger
+    private packageMetadata: PackageMetadata,
+    private sourceDirectory?: string,
+    private packageLogger?: Logger
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
     try {
       let startTime = Date.now();
+
+      const connection = (await Org.create({aliasOrUsername: this.targetusername})).getConnection(); // TODO: CONN TO BE PASSED IN FROM CONSTRUCTOR
+
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
-        isPackageInstalled = await this.checkWhetherPackageIsIntalledInOrg();
+        isPackageInstalled = await this.checkWhetherPackageIsIntalledInOrg(connection);
       }
 
       if (!isPackageInstalled) {
+
         if (this.sourceDirectory) {
           let preDeploymentScript: string = path.join(
             this.sourceDirectory,
@@ -43,7 +50,11 @@ export default class InstallUnlockedPackageImpl {
           );
 
           if (fs.existsSync(preDeploymentScript)) {
-            console.log("Executing preDeployment script",LoggerLevel.INFO,this.packageLogger);
+            console.log(
+              "Executing preDeployment script",
+              LoggerLevel.INFO,
+              this.packageLogger
+            );
             await PackageInstallationHelpers.executeScript(
               preDeploymentScript,
               this.packageMetadata.package_name,
@@ -59,35 +70,35 @@ export default class InstallUnlockedPackageImpl {
               this.packageLogger
             );
 
-            PackageInstallationHelpers.applyPermsets(
+            await PackageInstallationHelpers.applyPermsets(
               this.packageMetadata.assignPermSetsPreDeployment,
-              this.targetusername,
+              connection,
               this.sourceDirectory,
               this.packageLogger
             );
           }
-
         }
 
-            //Print Metadata carried in the package
-         PackageMetadataPrinter.printMetadataToDeploy(this.packageMetadata?.payload,this.packageLogger);
+        //Print Metadata carried in the package
+        PackageMetadataPrinter.printMetadataToDeploy(
+          this.packageMetadata?.payload,
+          this.packageLogger
+        );
 
         let command = this.buildPackageInstallCommand();
         let child = child_process.exec(command);
 
         child.stderr.on("data", (data) => {
-          SFPLogger.log(data.toString(),LoggerLevel.INFO,this.packageLogger);
+          SFPLogger.log(data.toString(), LoggerLevel.INFO, this.packageLogger);
         });
 
         child.stdout.on("data", (data) => {
-          SFPLogger.log(data.toString(),LoggerLevel.INFO,this.packageLogger);
+          SFPLogger.log(data.toString(), LoggerLevel.INFO, this.packageLogger);
         });
-
 
         await onExit(child);
 
-
-        if(this.sourceDirectory) {
+        if (this.sourceDirectory) {
           let postDeploymentScript: string = path.join(
             this.sourceDirectory,
             `scripts`,
@@ -95,7 +106,11 @@ export default class InstallUnlockedPackageImpl {
           );
 
           if (fs.existsSync(postDeploymentScript)) {
-            console.log("Executing postDeployment script",LoggerLevel.INFO,this.packageLogger);
+            console.log(
+              "Executing postDeployment script",
+              LoggerLevel.INFO,
+              this.packageLogger
+            );
             await PackageInstallationHelpers.executeScript(
               postDeploymentScript,
               this.packageMetadata.package_name,
@@ -111,22 +126,20 @@ export default class InstallUnlockedPackageImpl {
               this.packageLogger
             );
 
-            PackageInstallationHelpers.applyPermsets(
+            await PackageInstallationHelpers.applyPermsets(
               this.packageMetadata.assignPermSetsPostDeployment,
-              this.targetusername,
+              connection,
               this.sourceDirectory,
               this.packageLogger
-            )
+            );
           }
         }
-
 
         await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
           this.packageLogger,
           this.targetusername,
           this.packageMetadata
         );
-
 
         let elapsedTime = Date.now() - startTime;
         SFPStatsSender.logElapsedTime(
@@ -144,13 +157,16 @@ export default class InstallUnlockedPackageImpl {
           target_org: this.targetusername,
         });
 
-        return { result: PackageInstallationStatus.Succeeded}
+        return { result: PackageInstallationStatus.Succeeded };
       } else {
-        SFPLogger.log("Skipping Package Installation",null,this.packageLogger)
-        return { result: PackageInstallationStatus.Skipped }
+        SFPLogger.log(
+          "Skipping Package Installation",
+          null,
+          this.packageLogger
+        );
+        return { result: PackageInstallationStatus.Skipped };
       }
     } catch (err) {
-
       SFPStatsSender.logCount("package.installation.failure", {
         package: this.packageMetadata.package_name,
         type: "unlocked",
@@ -159,11 +175,10 @@ export default class InstallUnlockedPackageImpl {
 
       return {
         result: PackageInstallationStatus.Failed,
-        message: err.message
-      }
+        message: err.message,
+      };
     }
   }
-
 
   private buildPackageInstallCommand(): string {
     let command = `sfdx force:package:install --package ${this.package_version_id} -u ${this.targetusername} --noprompt`;
@@ -177,14 +192,12 @@ export default class InstallUnlockedPackageImpl {
     if (!isNullOrUndefined(this.options["installationkey"]))
       command += ` --installationkey=${this.options["installationkey"]}`;
 
-    SFPLogger.log(`Generated Command ${command}`,null,this.packageLogger);
+    SFPLogger.log(`Generated Command ${command}`, null, this.packageLogger);
     return command;
   }
 
-  private async checkWhetherPackageIsIntalledInOrg(): Promise<boolean> {
+  private async checkWhetherPackageIsIntalledInOrg(conn: Connection): Promise<boolean> {
     try {
-      let conn = (await Org.create({aliasOrUsername: this.targetusername})).getConnection(); // TODO: REFACTOR CLASS TO TAKE CONNECTION IN CONSTRUCTOR
-
       SFPLogger.log(`Checking Whether Package with ID ${this.package_version_id} is installed in  ${this.targetusername}`,null,this.packageLogger);
       let installedPackages = await new InstalledPackagesFetcher(conn).fetchAllPackages();
 
@@ -203,7 +216,9 @@ export default class InstallUnlockedPackageImpl {
 
     } catch (error) {
       SFPLogger.log(
-        "Unable to check whether this package is installed in the target org",LoggerLevel.INFO,this.packageLogger
+        "Unable to check whether this package is installed in the target org",
+        LoggerLevel.INFO,
+        this.packageLogger
       );
       return false;
     }

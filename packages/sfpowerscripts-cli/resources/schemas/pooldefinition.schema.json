@@ -91,8 +91,7 @@
           "type": "object",
           "required": [
             "scope",
-            "npmtag",
-            "npmrcPath"
+            "npmtag"
           ],
           "properties": {
             "scope": {
@@ -103,11 +102,6 @@
             "npmtag": {
               "title": "Tag of NPM packages",
               "description": "Tag of NPM packages e.g. develop, release, alpha, latest",
-              "type": "string"
-            },
-            "npmrcPath": {
-              "title": "Path to NPMRC file",
-              "description": "Path to NPMRC file required for authentication to private NPM registry",
               "type": "string"
             }
           }

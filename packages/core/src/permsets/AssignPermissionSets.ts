@@ -1,18 +1,18 @@
+import { Connection } from "@salesforce/core";
 import child_process = require("child_process");
-import SFPLogger, { Logger } from "../../logger/SFPLogger";
-import AliasListImpl from "../../sfdxwrappers/AliasListImpl";
-import PermsetListImpl from "../../sfdxwrappers/PermsetListImpl";
+import SFPLogger, { Logger } from "../logger/SFPLogger";
+import PermissionSetFetcher from "./PermissionSetFetcher";
 const Table = require("cli-table");
 
-export default class AssignPermissionSetsImpl {
+export default class AssignPermissionSets {
   constructor(
-    private target_org: string,
+    private conn: Connection,
     private permSets: string[],
     private project_directory: string,
     private packageLogger: Logger
   ) {}
 
-  public exec(): {
+  public async exec(): Promise<{
     successfullAssignments: {
       username: string;
       permset: string;
@@ -21,13 +21,11 @@ export default class AssignPermissionSetsImpl {
       username: string;
       permset: string;
     }[];
-  } {
-    // Fetch username if alias is provied
-    let username: string = this.convertAliasToUsername(this.target_org);
-    let assignedPermSets = new PermsetListImpl(
-      username,
-      this.target_org
-    ).exec();
+  }> {
+
+    
+    let permsetListImpl: PermissionSetFetcher = new PermissionSetFetcher(this.conn.getUsername(),this.conn);
+    let assignedPermSets = await permsetListImpl.fetchAllPermsetAssignment();
 
     let failedAssignments: {
       username: string;
@@ -45,13 +43,13 @@ export default class AssignPermissionSetsImpl {
 
       if (permSetAssignmentMatch !== undefined) {
         // Treat permsets that have already been assigned as successes
-        successfullAssignments.push({ username: username, permset: permSet});
+        successfullAssignments.push({ username: this.conn.getUsername(), permset: permSet});
         continue;
       }
 
       try {
         let permsetAssignmentJson: string = child_process.execSync(
-          `npx sfdx force:user:permset:assign -n ${permSet} -u ${username} --json`,
+          `npx sfdx force:user:permset:assign -n ${permSet} -u ${this.conn.getUsername()} --json`,
           {
             cwd: this.project_directory,
             encoding: "utf8",
@@ -61,10 +59,10 @@ export default class AssignPermissionSetsImpl {
 
         let permsetAssignment = JSON.parse(permsetAssignmentJson);
         if (permsetAssignment.status === 0)
-          successfullAssignments.push({ username: username, permset: permSet });
-        else failedAssignments.push({ username: username, permset: permSet });
+          successfullAssignments.push({ username: this.conn.getUsername(), permset: permSet });
+        else failedAssignments.push({ username: this.conn.getUsername(), permset: permSet });
       } catch (err) {
-        failedAssignments.push({ username: username, permset: permSet });
+        failedAssignments.push({ username: this.conn.getUsername(), permset: permSet });
       }
     }
 
@@ -81,18 +79,7 @@ export default class AssignPermissionSetsImpl {
     return { successfullAssignments, failedAssignments };
   }
 
-  private convertAliasToUsername(alias: string) {
-    let aliasList = new AliasListImpl().exec();
-
-    let matchedAlias = aliasList.find((elem) => {
-      return elem.alias === alias;
-    });
-
-    if (matchedAlias !== undefined)
-      return matchedAlias.value;
-    else
-      return alias;
-  }
+ 
 
   private printPermsetAssignments(
     assignments: { username: string; permset: string }[]
