@@ -13,9 +13,8 @@ import fs = require("fs");
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
-import { AuthInfo, Connection } from "@salesforce/core";
-import AliasListImpl from "../../sfdxwrappers/AliasListImpl";
-import { convertAliasToUsername } from "../../utils/AliasList";
+import InstalledPackagesFetcher from "../../package/InstalledPackagesFetcher";
+import { Org, Connection } from "@salesforce/core";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -33,21 +32,15 @@ export default class InstallUnlockedPackageImpl {
   public async exec(): Promise<PackageInstallationResult> {
     try {
       let startTime = Date.now();
+
+      const connection = (await Org.create({aliasOrUsername: this.targetusername})).getConnection(); // TODO: CONN TO BE PASSED IN FROM CONSTRUCTOR
+
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
-        isPackageInstalled = this.checkWhetherPackageIsIntalledInOrg();
+        isPackageInstalled = await this.checkWhetherPackageIsIntalledInOrg(connection);
       }
 
       if (!isPackageInstalled) {
-        //Create a conncetion to the target org for api calls
-        let connection:Connection;
-     
-
-
-         connection = await Connection.create({
-          authInfo: await AuthInfo.create({ username: convertAliasToUsername(this.targetusername)}),
-        });
-     
 
         if (this.sourceDirectory) {
           let preDeploymentScript: string = path.join(
@@ -203,30 +196,24 @@ export default class InstallUnlockedPackageImpl {
     return command;
   }
 
-  private checkWhetherPackageIsIntalledInOrg(): boolean {
+  private async checkWhetherPackageIsIntalledInOrg(conn: Connection): Promise<boolean> {
     try {
-      SFPLogger.log(
-        `Checking Whether Package with ID ${this.package_version_id} is installed in  ${this.targetusername}`,
-        null,
-        this.packageLogger
-      );
-      let command = `sfdx sfpowerkit:package:version:info  -u ${this.targetusername} --json`;
-      let result = JSON.parse(child_process.execSync(command).toString());
-      if (result.status == 0) {
-        let packageInfos: PackageInfo[] = result.result;
-        let packageFound = packageInfos.find((packageInfo) => {
-          if (packageInfo.packageVersionId == this.package_version_id)
-            return true;
-        });
-        if (packageFound) {
-          SFPLogger.log(
-            `Package To be installed was found in the target org ${packageFound}`,
-            LoggerLevel.INFO,
-            this.packageLogger
-          );
-          return true;
-        }
-      }
+      SFPLogger.log(`Checking Whether Package with ID ${this.package_version_id} is installed in  ${this.targetusername}`,null,this.packageLogger);
+      let installedPackages = await new InstalledPackagesFetcher(conn).fetchAllPackages();
+
+      let packageFound = installedPackages.find((installedPackage) => {
+        return installedPackage.subscriberPackageVersionId === this.package_version_id
+      });
+
+      if (packageFound) {
+        SFPLogger.log(
+          `Package to be installed was found in the target org ${packageFound}`,
+          LoggerLevel.INFO,
+          this.packageLogger
+        );
+        return true;
+      } else return false;
+
     } catch (error) {
       SFPLogger.log(
         "Unable to check whether this package is installed in the target org",
@@ -236,29 +223,4 @@ export default class InstallUnlockedPackageImpl {
       return false;
     }
   }
-
-  private convertAliasToUsername(alias: string) {
-    let aliasList = new AliasListImpl().exec();
-
-    let matchedAlias = aliasList.find((elem) => {
-      return elem.alias === alias;
-    });
-
-    if (matchedAlias !== undefined)
-      return matchedAlias.value;
-    else
-      return alias;
-  }
 }
-
-type PackageInfo = {
-  packageName: string;
-  subcriberPackageId: string;
-  packageNamespacePrefix: string;
-  packageVersionId: string;
-  packageVersionNumber: string;
-  allowedLicenses: number;
-  usedLicenses: number;
-  expirationDate: string;
-  status: string;
-};
