@@ -10,8 +10,14 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
     private npmrcPath: string
   ) {
     if (this.npmrcPath) {
-      fs.copyFileSync(this.npmrcPath, path.resolve(".npmrc"));
 
+      try
+      {
+      fs.copyFileSync(this.npmrcPath, path.resolve(".npmrc"));
+      }catch(error)
+      {
+        throw new Error("We were unable to find or copy the .npmrc file as provided due to "+error.message);
+      }
       if (!fs.existsSync("package.json")) {
         // package json is required in the same directory as .npmrc
         fs.writeFileSync("package.json", "{}");

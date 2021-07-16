@@ -16,7 +16,7 @@ export interface PoolConfig {
   fetchArtifacts: {
     artifactFetchScript?: string,
     npm?: {
-      npmrcPath:string,
+      npmrcPath?:string,
       scope: string,
       npmtag: string
     }
