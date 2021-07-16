@@ -10,6 +10,6 @@ export default class QueryInstalledPackagesImpl {
     "SubscriberPackageVersion.PatchVersion, SubscriberPackageVersion.BuildNumber, SubscriberPackageVersion.Package2ContainerOptions, SubscriberPackageVersion.IsOrgDependent FROM InstalledSubscriberPackage " +
     "ORDER BY SubscriberPackageId";
 
-    return await QueryHelper.query<any>(installedPackagesQuery, conn, true);
+    return QueryHelper.query<any>(installedPackagesQuery, conn, true);
   }
 }
