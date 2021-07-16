@@ -12,6 +12,6 @@ export default class PermissionSetFetcher {
 
     const query = `SELECT Id, PermissionSet.Name, Assignee.Username FROM PermissionSetAssignment WHERE Assignee.Username = '${this.username}'`;
 
-    return await QueryHelper.query<any>(query, this.conn, false);
+    return QueryHelper.query<any>(query, this.conn, false);
   }
 }
