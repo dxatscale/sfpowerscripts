@@ -6,14 +6,14 @@ const retry = require("async-retry");
 export default class QueryHelper {
 
 
-  static async query(query: string, conn: Connection, isTooling: boolean) {
+  static async query<T>(query: string, conn: Connection, isTooling: boolean): Promise<T[]> {
     return await retry(
       async (bail) => {
         let records;
         if (isTooling)
-          records = (await conn.tooling.query<any>(query)).records;
+          records = (await conn.tooling.query<T>(query)).records;
         else
-          records = (await conn.query<any>(query)).records;
+          records = (await conn.query<T>(query)).records;
 
         return records;
       },
