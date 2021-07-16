@@ -10,7 +10,8 @@ import fs = require("fs");
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
-
+import InstalledPackagesFetcher from "../../package/InstalledPackagesFetcher";
+import { Org } from "@salesforce/core";
 
 export default class InstallUnlockedPackageImpl {
   public constructor(
@@ -30,7 +31,7 @@ export default class InstallUnlockedPackageImpl {
       let startTime = Date.now();
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
-        isPackageInstalled = this.checkWhetherPackageIsIntalledInOrg();
+        isPackageInstalled = await this.checkWhetherPackageIsIntalledInOrg();
       }
 
       if (!isPackageInstalled) {
@@ -180,26 +181,26 @@ export default class InstallUnlockedPackageImpl {
     return command;
   }
 
-  private checkWhetherPackageIsIntalledInOrg(): boolean {
+  private async checkWhetherPackageIsIntalledInOrg(): Promise<boolean> {
     try {
+      let conn = (await Org.create({aliasOrUsername: this.targetusername})).getConnection(); // TODO: REFACTOR CLASS TO TAKE CONNECTION IN CONSTRUCTOR
+
       SFPLogger.log(`Checking Whether Package with ID ${this.package_version_id} is installed in  ${this.targetusername}`,null,this.packageLogger);
-      let command = `sfdx sfpowerkit:package:version:info  -u ${this.targetusername} --json`;
-      let result = JSON.parse(child_process.execSync(command).toString());
-      if (result.status == 0) {
-        let packageInfos: PackageInfo[] = result.result;
-        let packageFound = packageInfos.find((packageInfo) => {
-          if(packageInfo.packageVersionId == this.package_version_id)
-          return true;
-        });
-        if (packageFound) {
-          SFPLogger.log(
-            `Package To be installed was found in the target org ${packageFound}`,
-            LoggerLevel.INFO,
-            this.packageLogger
-          );
-          return true;
-        }
-      }
+      let installedPackages = await new InstalledPackagesFetcher(conn).fetchAllPackages();
+
+      let packageFound = installedPackages.find((installedPackage) => {
+        return installedPackage.subscriberPackageVersionId === this.package_version_id
+      });
+
+      if (packageFound) {
+        SFPLogger.log(
+          `Package to be installed was found in the target org ${packageFound}`,
+          LoggerLevel.INFO,
+          this.packageLogger
+        );
+        return true;
+      } else return false;
+
     } catch (error) {
       SFPLogger.log(
         "Unable to check whether this package is installed in the target org",LoggerLevel.INFO,this.packageLogger
@@ -207,18 +208,4 @@ export default class InstallUnlockedPackageImpl {
       return false;
     }
   }
-}
-
-
-
-type PackageInfo= {
-  packageName: string;
-  subcriberPackageId: string;
-  packageNamespacePrefix: string;
-  packageVersionId: string;
-  packageVersionNumber: string;
-  allowedLicenses: number;
-  usedLicenses: number;
-  expirationDate: string;
-  status: string;
 }
