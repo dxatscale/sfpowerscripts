@@ -50,7 +50,7 @@ export default class Prepare extends SfpowerscriptsCommand {
         "ERROR",
         "FATAL",
       ],
-    }),
+    })
   };
 
   public static description = messages.getMessage("commandDescription");
@@ -105,11 +105,11 @@ export default class Prepare extends SfpowerscriptsCommand {
        {
         console.log(
           COLOR_HEADER(
-          `Fetch artifacts from pre-authenticated NPM registry: "true"`)
+          `Fetch artifacts from pre-authenticated NPM registry: true`)
         );
         if (poolConfig.fetchArtifacts.npm.npmtag)
           console.log(
-            COLOR_HEADER(`Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`)
+            COLOR_HEADER(`Tag utilized to fetch from NPM registry: ${poolConfig.fetchArtifacts.npm.npmtag}`)
           );
        }
       }

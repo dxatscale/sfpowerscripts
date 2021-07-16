@@ -1,8 +1,6 @@
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import chalk = require("chalk");
-
-
 export enum LoggerLevel {
   TRACE = 10,
   DEBUG = 20,
@@ -54,6 +52,15 @@ export const COLOR_KEY_VALUE=chalk.black.bold.bgGreenBright;
 
 export default class SFPLogger {
   public static logLevel: LoggerLevel = LoggerLevel.INFO;
+  
+
+  static enableColor() {
+    chalk.level = 2;
+  }
+
+  static disableColor() {
+    chalk.level = 0;
+  }
 
 
   static log(message: string, logLevel = LoggerLevel.INFO, logger?: Logger) {
