@@ -1,6 +1,5 @@
 import { Connection } from "@salesforce/core";
 import QueryHelper from "../query/QueryHelper";
-const retry = require("async-retry");
 
 /*
  * Retrieve Permsets for a user from a target org
