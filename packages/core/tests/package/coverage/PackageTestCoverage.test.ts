@@ -1,6 +1,5 @@
 import  SFPPackage  from "../../../src/package/SFPPackage";
 import PackageTestCoverage from "../../../src/package/coverage/PackageTestCoverage";
-import { Connection } from "@salesforce/core";
 import { jest, expect } from "@jest/globals";
 import { ConsoleLogger } from "../../../src/logger/SFPLogger";
 import ApexClassFetcher from "../../../src/query/ApexClassFetcher";
