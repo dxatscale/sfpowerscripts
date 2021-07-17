@@ -20,6 +20,6 @@ export default class ApexTriggerFetcher {
     let collection = triggerNames.map((name) => `'${name}'`).toString(); // transform into formatted string for query
     let query = `SELECT ID, Name FROM ApexTrigger WHERE Name IN (${collection})`;
 
-    return await QueryHelper.query<{ Id: string; Name: string; }>(query, this.conn, false);
+    return QueryHelper.query<{ Id: string; Name: string; }>(query, this.conn, false);
   }
 }

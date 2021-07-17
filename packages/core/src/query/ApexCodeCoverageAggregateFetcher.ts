@@ -19,7 +19,7 @@ export default class ApexCodeCoverageAggregateFetcher {
     let collection = listOfApexClassOrTriggerId.map((ApexClassOrTriggerId) => `'${ApexClassOrTriggerId}'`).toString();
     let query = `SELECT ApexClassorTriggerId, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassorTriggerId IN (${collection})`;
 
-    return await QueryHelper.query<{
+    return QueryHelper.query<{
       ApexClassOrTriggerId: string;
       NumLinesCovered: number;
       NumLinesUncovered: number;
