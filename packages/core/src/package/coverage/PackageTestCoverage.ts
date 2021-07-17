@@ -2,6 +2,9 @@ import SFPLogger, { Logger } from "../../logger/SFPLogger";
 import IndividualClassCoverage from "../../coverage/IndividualClassCoverage";
 import  SFPPackage  from "../SFPPackage";
 import { Connection } from "@salesforce/core";
+import ApexClassFetcher from "../../query/ApexClassFetcher";
+import ApexTriggerFetcher from "../../query/ApexTriggerFetcher";
+import ApexCodeCoverageAggregateFetcher from "../../query/ApexCodeCoverageAggregateFetcher";
 
 export default class PackageTestCoverage {
   private individualClassCoverage: IndividualClassCoverage;
@@ -42,18 +45,18 @@ export default class PackageTestCoverage {
 
     let classesNotTouchedByTestClass = this.getClassesNotTouchedByTestClass(packageClasses, this.codeCoverage);
     if (classesNotTouchedByTestClass.length > 0) {
-      let apexClassIds = await this.queryApexClassIdByName(classesNotTouchedByTestClass);
+      let apexClassIds = (await new ApexClassFetcher(this.conn).fetchApexClassByName(classesNotTouchedByTestClass)).map((apexClass) => apexClass.Id);
       listOfApexClassOrTriggerId = listOfApexClassOrTriggerId.concat(apexClassIds);
     }
 
     let triggersNotTouchedByTestClass = this.getTriggersNotTouchedByTestClass(triggers, this.codeCoverage);
     if (triggersNotTouchedByTestClass.length > 0) {
-      let triggerIds = await this.queryTriggerIdByName(triggersNotTouchedByTestClass);
+      let triggerIds = (await new ApexTriggerFetcher(this.conn).fetchApexTriggerByName(triggersNotTouchedByTestClass)).map((trigger) => trigger.Id);
       listOfApexClassOrTriggerId = listOfApexClassOrTriggerId.concat(triggerIds);
     }
 
     if (listOfApexClassOrTriggerId.length > 0) {
-      let recordsOfApexCodeCoverageAggregate = await this.queryApexCodeCoverageAggregateById(listOfApexClassOrTriggerId);
+      let recordsOfApexCodeCoverageAggregate = await new ApexCodeCoverageAggregateFetcher(this.conn).fetchACCAById(listOfApexClassOrTriggerId);
 
       if (recordsOfApexCodeCoverageAggregate.length > 0) {
         let numLinesUncovered: number = 0; // aggregate number of unconvered lines for classes & triggers that are not touched by any test classes
@@ -272,69 +275,4 @@ export default class PackageTestCoverage {
 
     return filteredCodeCoverage;
   }
-
-    /**
-   * Query ApexCodeCoverageAggregate by list of ApexClassorTriggerId
-   * @param listOfApexClassOrTriggerId
-   * @returns
-   */
-     private async queryApexCodeCoverageAggregateById(
-      listOfApexClassOrTriggerId: string[]
-    ) {
-      let collection = listOfApexClassOrTriggerId.map((ApexClassOrTriggerId) => `'${ApexClassOrTriggerId}'`).toString();
-      let query = `SELECT ApexClassorTriggerId, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassorTriggerId IN (${collection})`;
-
-      return (
-        await this.conn.tooling.query<{
-          ApexClassOrTriggerId: string;
-          NumLinesCovered: number;
-          NumLinesUncovered: number;
-          Coverage: any;
-        }>(query)
-      ).records;
-    }
-
-    /**
-     * Query Ids of Triggers by Name
-     * Returns empty array if no Id's are found
-     * @param triggersNotTouchedByTestClass
-     * @returns
-     */
-    private async queryTriggerIdByName(
-      triggers: string[]
-    ): Promise<string[]> {
-      let triggerIds: string[] = [];
-
-      let collection = triggers.map((trigger) => `'${trigger}'`).toString(); // transform into formatted string for query
-      let query = `SELECT ID, Name FROM ApexTrigger WHERE Name IN (${collection})`;
-      let records = (await this.conn.query<{ Id: string; Name: string; }>(query)).records;
-
-      if (records.length > 0) {
-        records.forEach((record) => { triggerIds.push(record.Id); });
-      }
-
-      return triggerIds;
-    }
-
-    /**
-     * Query Ids of Apex Classes by Name
-     * Returns empty array if no Id's are found
-     * @param classes
-     * @returns
-     */
-    private async queryApexClassIdByName(
-      classes: string[],
-    ): Promise<string[]> {
-      let apexClassIds: string[] = [];
-
-      let collection = classes.map((cls) => `'${cls}'`).toString(); // transform into formatted string for query
-      let query = `SELECT ID, Name FROM ApexClass WHERE Name IN (${collection})`;
-      let records = (await this.conn.query<{ Id: string; Name: string; }>(query)).records;
-
-      if (records.length > 0) {
-        records.forEach((record) => { apexClassIds.push(record.Id); });
-      }
-
-      return apexClassIds;
-    }
 }
