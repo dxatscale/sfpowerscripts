@@ -14,8 +14,8 @@ import {
   CaseInsensitiveInputStream,
   ThrowingErrorListener,
 } from "apex-parser";
-import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
-import { ApexClasses } from "../package/SFPPackage";
+import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
+import { ApexClasses } from "../../package/SFPPackage";
 
 
 /**

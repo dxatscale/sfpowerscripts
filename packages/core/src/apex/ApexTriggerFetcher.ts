@@ -1,5 +1,6 @@
 import { Connection } from "@salesforce/core";
-import QueryHelper from "./QueryHelper";
+import QueryHelper from "../queryHelper/QueryHelper";
+
 
 export default class ApexTriggerFetcher {
 

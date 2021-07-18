@@ -1,10 +1,10 @@
 import SFPLogger, { Logger } from "../../logger/SFPLogger";
-import IndividualClassCoverage from "../../coverage/IndividualClassCoverage";
+import IndividualClassCoverage from "../../apex/coverage/IndividualClassCoverage";
 import  SFPPackage  from "../SFPPackage";
 import { Connection } from "@salesforce/core";
-import ApexClassFetcher from "../../query/ApexClassFetcher";
-import ApexTriggerFetcher from "../../query/ApexTriggerFetcher";
-import ApexCodeCoverageAggregateFetcher from "../../query/ApexCodeCoverageAggregateFetcher";
+import ApexClassFetcher from "../../apex/ApexClassFetcher";
+import ApexCodeCoverageAggregateFetcher from "../../apex/coverage/ApexCodeCoverageAggregateFetcher";
+import ApexTriggerFetcher from "../../apex/ApexTriggerFetcher";
 
 export default class PackageTestCoverage {
   private individualClassCoverage: IndividualClassCoverage;

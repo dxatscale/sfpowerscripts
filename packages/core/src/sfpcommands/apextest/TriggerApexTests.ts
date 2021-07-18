@@ -4,7 +4,7 @@ import TriggerApexTestImpl from "../../sfdxwrappers/TriggerApexTestImpl";
 import { TestOptions } from "../../sfdxwrappers/TestOptions";
 import IndividualClassCoverage, {
   CoverageOptions,
-} from "../../coverage/IndividualClassCoverage";
+} from "../../apex/coverage/IndividualClassCoverage";
 import { TestReportDisplayer } from "./TestReportDisplayer";
 import PackageTestCoverage from "../../package/coverage/PackageTestCoverage";
 import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
