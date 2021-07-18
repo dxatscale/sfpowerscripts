@@ -61,7 +61,7 @@ $ echo'y' | sfdx plugins:install @dxatscale/sfpowerscripts
 
 Alternatively, you could use our [docker](docker.md) image and we highly recommend to utilize it.
 
-### JWT Based Authentication
+## JWT Based Authentication
 
 sfpowerscripts need JWT based authentication setup in DevHub for the commands to work successfully. To setup JWT based authentication please follow the link [here](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_jwt_flow.htm).
 

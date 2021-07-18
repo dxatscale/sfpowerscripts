@@ -14,20 +14,17 @@ description: The heart of sfpowerscripts
 
 To understand the orchestrator, let's look at a typical CI/CD pipeline for a package-based development in a program that has multiple environments. For brevity, prepare and validate states are not discussed.
 
-![](../.gitbook/assets/flowdiagram-1-.png)
+![Flow Diagram](../.gitbook/assets/flowdiagram_revised.png)
 
-Let's dive into the pipeline depicted above, there are two basic pipelines in play
+
+
+Let's dive into the pipeline depicted above, there key stages we wil be 
 
 * **CI Pipeline**: A pipeline that gets triggered on every merge to the trunk. During this process, the following stages happen in sequence.
 
   * [quickbuild](../commands/build-and-quickbuild.md) a set of changed packages \(packages without validating for dependency or code coverage\) 
   * [deploy](../commands/deploy.md) to a Development Sandbox.  This process ensures the upgrade process of a package is accurate and you could also do a quick round of validation of your packages coming in from a scratch org.
-  * Once deploy is successful, the pipeline proceed to [build](../commands/build-and-quickbuild.md) the set of changed packages \(but this time with dependency validation and code coverage check\)
-  * The pipeline could then [publish](../commands/publish.md) these validated packages to an artifact repository for deployment into higher environments for further testing.
-
-  Each of this stage could have a pre-approval step modelled like the example shown below
-
-![](../.gitbook/assets/image%20%2816%29%20%282%29%20%283%29%20%284%29%20%281%29%20%2813%29.png)
+  * Once deploy is successful, the pipeline proceed to [build](../commands/build-and-quickbuild.md) the set of changed packages \(but this time with dependency validation and code coverage check\). The same job could then [publish](../commands/publish.md) these validated packages to an artifact repository for deployment into higher environments for further testing.
 
 * **CD Pipeline**:  A Continuous Delivery Pipeline that gets triggered manually or automatically \(every day on a scheduled time interval\) deploying a set of the latest validated packages to a series of environment. The sequence of stages include
   * Fetch the Artifacts from the artifact repository using the provided release definition
@@ -36,7 +33,7 @@ Let's dive into the pipeline depicted above, there are two basic pipelines in pl
   * If the packages are successful in all of the testing, the packages are marked for promotion
   * The promoted packages are then deployed to production.
 
-Take a note of each stage in the pipeline above and the key functionality required, such as build, deploy, fetch etc, this is typically done by inserting the equivalent sfdx commands into your CI/CD pipeline definition. As your number of packages grow, it not only is hard to maintain but is error prone. This is where sfpowerscripts orchestrator simplifies the pipeline to a one time setup. All the stages are driven by sfdx-project.json, which ensures zero maintenance to the pipelines. Each stage of the above pipeline could be modelled by using equivalent sfpowerscripts orchestrator commands
+Take a note of each stage in the pipeline above and the key functionality required, such as build, deploy, release etc, this is typically done by inserting the equivalent sfdx commands into your CI/CD pipeline definition. As your number of packages grow, it not only is hard to maintain but is error prone. This is where sfpowerscripts orchestrator simplifies the pipeline to a one time setup. All the stages are driven by sfdx-project.json, which ensures zero maintenance to the pipelines. Each stage of the above pipeline could be modelled by using equivalent sfpowerscripts orchestrator commands
 
 ### Orchestrator commands
 
