@@ -16,6 +16,8 @@ Artifact registry allows you to split your CI and CD pipelines. We believe that 
 
 Let's have a look at the below example, here a CI pipeline creates a bunch of artifacts/packages, then the publish command is used to publish these artifacts into an Artifact Registry. This stage often gets repeated multiple times during a day.
 
+![](../.gitbook/assets/flowdiagram_revised.png)
+
 An important thing to note here is especially when a CI pipeline is enabled with '[diffcheck](../commands/build-and-quickbuild.md#how-does-build-and-quickbuild-know-what-to-build-when-using-diffcheck-flag)**'** functionality, it only builds packages for the particular build run. Unless you are immediately deploying these packages to production, there is no way to deploy an entire set of packages other than going through each of the build runs and immediately pushing them into production. You will need to aggregate packages before you proceed to the next stage.
 
 One approach to solve is to use branches, where a branch per environment is used to stage changes, and new builds are generated from this branch to deploy to the environment. We believe this practice is incorrect as they break the traceability chain and errors could be introduced, moreover it complicates your version control strategy. Our premise is rather to use the same set of artifacts that were built at one stage all the way to production.
