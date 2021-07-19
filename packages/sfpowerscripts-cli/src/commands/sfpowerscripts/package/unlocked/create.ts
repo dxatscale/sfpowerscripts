@@ -106,6 +106,25 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
     refname: flags.string({
       description: messages.getMessage("refNameFlagDescription"),
     }),
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
+      required: false,
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
+    })
   };
 
   public async execute() {

@@ -31,9 +31,9 @@ export default class DeployErrorDisplayer {
     }
     SFPLogger.log(
       "The following components resulted in failures:",
-      LoggerLevel.WARN,
+      LoggerLevel.ERROR,
       packageLogger
     );
-    SFPLogger.log(table.toString(), LoggerLevel.WARN,packageLogger);
+    SFPLogger.log(table.toString(), LoggerLevel.ERROR,packageLogger);
   }
 }

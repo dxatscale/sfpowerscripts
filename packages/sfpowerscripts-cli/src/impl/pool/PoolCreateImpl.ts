@@ -1,10 +1,10 @@
 import { Org } from "@salesforce/core";
 import Bottleneck from "bottleneck";
-import CreateScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/CreateScratchOrg";
-import DeleteScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/DeleteScratchOrg";
+import CreateScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/CreateScratchOrg";
+import DeleteScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/DeleteScratchOrg";
 import { PoolConfig} from "./PoolConfig";
 import { PoolBaseImpl } from "./PoolBaseImpl";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 import ScratchOrgLimitsFetcher from "./services/fetchers/ScratchOrgLimitsFetcher";
 import ScratchOrgInfoAssigner from "./services/updaters/ScratchOrgInfoAssigner";
@@ -42,7 +42,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
   ) {
     super(hubOrg);
     this.limiter = new Bottleneck({
-      maxConcurrent: this.pool.batchsize,
+      maxConcurrent: this.pool.batchSize,
     });
 
     this.scriptExecutorWrappedForBottleneck = this.limiter.wrap(
@@ -63,7 +63,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
    //Create Service classes
    this.scratchOrgInfoFetcher = new ScratchOrgInfoFetcher(this.hubOrg);
    this.scratchOrgInfoAssigner = new ScratchOrgInfoAssigner(this.hubOrg);
-   
+
    //Create Operators
    this.createScratchOrgOperator = new CreateScratchOrg(this.hubOrg);
    this.deleteScratchOrgOperator = new DeleteScratchOrg(this.hubOrg);
@@ -74,7 +74,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
 
     if (this.totalToBeAllocated === 0) {
       if (this.limits.ActiveScratchOrgs.Remaining > 0) {
-        
+
         return err({
           success: 0,
           failed: 0,
@@ -110,9 +110,9 @@ export default class PoolCreateImpl extends PoolBaseImpl
          scriptExecPromises.push(result);
        }
 
-  
+
      await Promise.all(scriptExecPromises);
- 
+
      await this.finalizeGeneratedScratchOrgs();
 
      if(this.pool.scratchOrgs.length==0)
@@ -127,7 +127,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
      return ok(this.pool);
   }
 
- 
+
 
   private async computeAllocation(): Promise<number> {
     //Compute current pool requirement
@@ -149,8 +149,8 @@ export default class PoolCreateImpl extends PoolBaseImpl
     pool.current_allocation = countOfActiveScratchOrgs;
     pool.to_allocate = 0;
     pool.to_satisfy_max =
-        pool.maxallocation - pool.current_allocation > 0
-        ? pool.maxallocation - pool.current_allocation
+        pool.maxAllocation - pool.current_allocation > 0
+        ? pool.maxAllocation - pool.current_allocation
         : 0;
 
     if (
@@ -178,10 +178,10 @@ export default class PoolCreateImpl extends PoolBaseImpl
 
   private async generateScratchOrgs() {
     //Generate Scratch Orgs
-  
+
       let count = 1;
       this.pool.scratchOrgs = new Array<ScratchOrg>();
-     
+
       for (let i = 0; i < this.pool.to_allocate; i++) {
         SFPLogger.log(
           `Creating Scratch  Org  ${count} of ${this.totalToBeAllocated}..`
@@ -206,7 +206,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
 
       let scratchOrgInprogress = [];
 
-   
+
 
       if(this.pool.scratchOrgs)
       {
@@ -244,7 +244,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
         SFPLogger.log(
           `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias} due to ${scratchOrg.failureMessage}`,LoggerLevel.ERROR
         );
-  
+
         try {
           //Delete scratchorgs that failed to execute script
 
@@ -266,7 +266,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
         this.pool.failedToCreate+=1;
         this.pool.scratchOrgs.splice(i,1);
       }
-   
+
   }
 
 
@@ -274,7 +274,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
   private async scriptExecutor(
     scratchOrg: ScratchOrg
   ): Promise<ScratchOrg> {
-    
+
     SFPLogger.log(
       `Executing Preparation Job ${scratchOrg.alias} with username: ${scratchOrg.username}`,LoggerLevel.INFO
     );
@@ -307,9 +307,8 @@ export default class PoolCreateImpl extends PoolBaseImpl
       scratchOrg.failureMessage = result.error.message;
       SFPStatsSender.logCount("prepare.org.failed");
     }
-    
+
     return scratchOrg;
   }
 
 }
-

@@ -1,22 +1,22 @@
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 
 export interface PoolConfig {
   tag: string,
-  maxallocation: number,
+  maxAllocation: number,
   expiry?: number,
-  batchsize?: number,
+  batchSize?: number,
   configFilePath: string,
   succeedOnDeploymentErrors?: boolean,
   keys?: string,
   installAll: boolean,
-  deploymentType: "push" | "mdapi",
+  enableSourceTracking: boolean,
   relaxAllIPRanges?:boolean,
   ipRangesToBeRelaxed?:[],
   retryOnFailure?:boolean,
   fetchArtifacts: {
     artifactFetchScript?: string,
     npm?: {
-      npmrcPath:string,
+      npmrcPath?:string,
       scope: string,
       npmtag: string
     }

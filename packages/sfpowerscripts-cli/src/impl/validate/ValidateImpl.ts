@@ -10,10 +10,10 @@ import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/s
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import PoolFetchImpl from "../pool/PoolFetchImpl";
 import { Org } from "@salesforce/core";
+import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
 
 import DependencyAnalysis from "./DependencyAnalysis";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
-const Table = require("cli-table");
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import InstalledArtifactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
@@ -33,10 +33,8 @@ export interface ValidateProps {
   coverageThreshold: number,
   logsGroupSymbol: string[],
   targetOrg?: string,
-  devHubUsername?: string,
+  hubOrg?:Org
   pools?: string[],
-  jwt_key_file?: string,
-  client_id?: string,
   shapeFile?: string,
   isDeleteScratchOrg?: boolean,
   keys?: string,
@@ -56,16 +54,12 @@ export default class ValidateImpl {
       if (this.props.validateMode === ValidateMode.ORG) {
         scratchOrgUsername = this.props.targetOrg;
 
-        //TODO: get accessToken and instanceURL for scratch org
+
       } else if (this.props.validateMode === ValidateMode.POOL) {
-        this.authenticateDevHub(this.props.devHubUsername);
 
         scratchOrgUsername = await this.fetchScratchOrgFromPool(
-          this.props.pools,
-          this.props.devHubUsername
+          this.props.pools
         );
-
-        authDetails = this.authenticateToScratchOrg(scratchOrgUsername);
 
         if (this.props.shapeFile) {
           this.deployShapeFile(this.props.shapeFile, scratchOrgUsername);
@@ -133,7 +127,7 @@ export default class ValidateImpl {
     // Install Dependencies
     let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
       scratchOrgUsername,
-      this.props.devHubUsername,
+      this.props.hubOrg.getUsername(),
       120,
       null,
       this.props.keys,
@@ -150,10 +144,10 @@ export default class ValidateImpl {
 
   private deleteScratchOrg(scratchOrgUsername: string): void {
     try {
-      if (scratchOrgUsername && this.props.devHubUsername ) {
+      if (scratchOrgUsername && this.props.hubOrg.getUsername() ) {
           console.log(`Deleting scratch org`, scratchOrgUsername);
           child_process.execSync(
-            `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.props.devHubUsername}`,
+            `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.props.hubOrg.getUsername()}`,
             {
               stdio: 'inherit',
               encoding: 'utf8'
@@ -165,15 +159,7 @@ export default class ValidateImpl {
     }
   }
 
-  private authenticateDevHub(devHubUsername: string): void {
-    child_process.execSync(
-      `sfdx auth:jwt:grant -u ${devHubUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://login.salesforce.com`,
-      {
-        stdio: "inherit",
-        encoding: "utf8"
-      }
-    );
-  }
+
 
   private deployShapeFile(shapeFile: string, scratchOrgUsername: string): void {
     console.log(COLOR_KEY_MESSAGE(`Deploying scratch org shape`), shapeFile);
@@ -279,54 +265,27 @@ export default class ValidateImpl {
 
   private printArtifactVersions(installedArtifacts: any) {
     this.printOpenLoggingGroup(`Artifacts installed in the Scratch Org`);
-    let table = new Table({
-      head: ["Artifact", "Version", "Commit Id"],
-    });
 
-    installedArtifacts.forEach((artifact) => {
-      table.push([artifact.Name, artifact.Version__c, artifact.CommitId__c]);
-    });
+    InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
 
-    console.log(COLOR_KEY_MESSAGE(`Artifacts installed in scratch org:`));
-    console.log(table.toString());
     this.printClosingLoggingGroup();
   }
 
-  /**
-   * Authenticate to scratch org and return auth details:
-   * username, accessToken, orgId, loginUrl, privateKey, clientId and instanceUrl
-   * @param scratchOrgUsername
-   */
-  private authenticateToScratchOrg(scratchOrgUsername: string) {
-    try {
-      let grantJson = child_process.execSync(
-        `sfdx auth:jwt:grant -u ${scratchOrgUsername} -i ${this.props.client_id} -f ${this.props.jwt_key_file} -r https://test.salesforce.com --json`,
-        {
-          stdio: "pipe",
-          encoding: "utf8"
-        }
-      );
-      let grant = JSON.parse(grantJson);
-      console.log(COLOR_KEY_MESSAGE(`Successfully authorized ${grant.result.username} with org ID ${grant.result.orgId}`));
-      return grant.result;
-    } catch (err) {
-      throw new Error(`Failed to authenticate to ${scratchOrgUsername}`);
-    }
-  }
 
-  private  async fetchScratchOrgFromPool(pools: string[], devHubUsername: string): Promise<string> {
+
+  private  async fetchScratchOrgFromPool(pools: string[]): Promise<string> {
     let scratchOrgUsername: string;
 
     for (let pool of pools) {
       let scratchOrg:ScratchOrg
       try {
-        let hubOrg:Org = await Org.create({aliasOrUsername:devHubUsername,isDevHub:true});
 
-        let poolFetchImpl = new PoolFetchImpl(hubOrg,pool.trim(),false);
+        let poolFetchImpl = new PoolFetchImpl(this.props.hubOrg,pool.trim(),false,true);
         scratchOrg = await poolFetchImpl.execute() as ScratchOrg;
 
-      } catch (error) {}
-
+      } catch (error) {
+        SFPLogger.log(error.message,LoggerLevel.TRACE)
+      }
       if (scratchOrg && scratchOrg.status==="Assigned") {
           scratchOrgUsername = scratchOrg.username;
           console.log(`Fetched scratch org ${scratchOrgUsername} from ${pool}`);
@@ -337,7 +296,7 @@ export default class ValidateImpl {
     if (scratchOrgUsername)
       return scratchOrgUsername;
     else
-      throw new Error(`Failed to fetch scratch org from ${pools}`);
+      throw new Error(`Failed to fetch scratch org from ${pools}, Are you sure you created this pool using a DevHub authenticated using auth:sfdxurl or auth:web or auth:accesstoken:store`);
   }
 
   private printBuildSummary(

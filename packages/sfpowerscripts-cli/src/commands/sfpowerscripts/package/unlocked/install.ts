@@ -34,7 +34,26 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
     skiponmissingartifact: flags.boolean({char: 's', description: messages.getMessage('skipOnMissingArtifactFlagDescription'), dependsOn: ['packageinstalledfrom']}),
     upgradetype: flags.string({description: messages.getMessage('upgradeTypeFlagDescription'), options: ['DeprecateOnly', 'Mixed', 'Delete'], default: 'Mixed'}),
     waittime: flags.string({description: messages.getMessage('waitTimeFlagDescription'), default: '120'}),
-    publishwaittime: flags.string({description: messages.getMessage('publishWaitTimeFlagDescription'), default: '10'})
+    publishwaittime: flags.string({description: messages.getMessage('publishWaitTimeFlagDescription'), default: '10'}),
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
+      required: false,
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
+    })
   };
 
 

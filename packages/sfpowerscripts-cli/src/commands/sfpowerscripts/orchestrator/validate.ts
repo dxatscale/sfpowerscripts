@@ -11,10 +11,14 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
 
 export default class Validate extends SfpowerscriptsCommand {
 
+  protected static requiresProject = true;
+  
   public static description = messages.getMessage('commandDescription');
 
+  protected static requiresDevhubUsername = true;
+
   public static examples = [
-    `$ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -u <devHubUsername> -i <clientId> -f <jwt_file>`
+    `$ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>`
   ];
 
   static aliases = ["sfpowerscripts:orchestrator:validateAgainstPool"];
@@ -22,8 +26,10 @@ export default class Validate extends SfpowerscriptsCommand {
   protected static flagsConfig = {
     devhubusername: flags.string({
       char: 'u',
+      deprecated:{messageOverride:"--devhubusername is deprecated, utilize the default devhub flag"},
       description: messages.getMessage('devhubUsernameFlagDescription'),
-      required: true
+      required: false,
+      hidden:true
     }),
     pools: flags.array({
       char: 'p',
@@ -31,14 +37,18 @@ export default class Validate extends SfpowerscriptsCommand {
       required: true
     }),
     jwtkeyfile: flags.filepath({
+      deprecated:{messageOverride:"--jwtkeyfile is deprecated, Validate no longer accepts jwt based auth mechanism"},
       char: 'f',
       description: messages.getMessage("jwtKeyFileFlagDescription"),
-      required: true
+      required: false,
+      hidden:true
     }),
     clientid: flags.string({
+      deprecated:{messageOverride:"--clientid is deprecated, Validate no longer accepts jwt based auth mechanism"},
       char: 'i',
       description: messages.getMessage("clientIdFlagDescription"),
-      required: true
+      required: false,
+      hidden:true
     }),
     shapefile: flags.string({
       description: messages.getMessage('shapeFileFlagDescription')
@@ -67,10 +77,32 @@ export default class Validate extends SfpowerscriptsCommand {
     tag: flags.string({
       description: messages.getMessage("tagFlagDescription"),
     }),
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
+      required: false,
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
+    })
   };
 
   async execute(): Promise<void> {
     let executionStartTime = Date.now();
+
+    await this.hubOrg.refreshAuth();
+  
 
     console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
     console.log(COLOR_HEADER("command: validate"));
@@ -87,10 +119,8 @@ export default class Validate extends SfpowerscriptsCommand {
       validateMode: ValidateMode.POOL,
       coverageThreshold: this.flags.coveragepercent,
       logsGroupSymbol: this.flags.logsgroupsymbol,
-      devHubUsername: this.flags.devhubusername,
       pools: this.flags.pools,
-      jwt_key_file: this.flags.jwtkeyfile,
-      client_id: this.flags.clientid,
+      hubOrg: this.hubOrg,
       shapeFile: this.flags.shapefile,
       isDeleteScratchOrg: this.flags.deletescratchorg,
       keys: this.flags.keys,

@@ -32,14 +32,6 @@ export default class PreparePool implements PreparePoolInterface  {
 
   public async poolScratchOrgs(): Promise<Result<PoolConfig,PoolError>>{
 
-    let pool = await this.createPools();
-
-     return pool;
-  }
-
-
-  private async createPools():Promise<Result<PoolConfig,PoolError>>
-  {
     //Create Artifact Directory
     rimraf.sync("artifacts");
     fs.mkdirpSync("artifacts");
@@ -69,28 +61,44 @@ export default class PreparePool implements PreparePoolInterface  {
 
 
 
+
   private async getPackageArtifacts() {
-    let packages = ProjectConfig.getSFDXPackageManifest(null)[
+   
+
+    //Filter Packages to be ignore from prepare to be fetched
+    let packages =ProjectConfig.getSFDXPackageManifest(null)[
       "packageDirectories"
-    ];
+    ].filter((pkg)=>{
+      if (
+        pkg.ignoreOnStage?.find( (stage) => {
+          stage = stage.toLowerCase();
+          return stage === "prepare";
+        })
+      )
+        return false;
+      else
+        return true;
+    });
 
 
     let artifactFetcher:FetchAnArtifact;
-    if (this.pool.fetchArtifacts?.npm || this.pool.fetchArtifacts?.artifactFetchScript) {
-      let version= this.pool.fetchArtifacts.npm.npmtag;
+    if (this.pool.fetchArtifacts) {
       artifactFetcher = new FetchArtifactSelector(
         this.pool.fetchArtifacts.artifactFetchScript,
-        this.pool.fetchArtifacts.npm.scope,
-        this.pool.fetchArtifacts.npm.npmrcPath
+        this.pool.fetchArtifacts.npm?.scope,
+        this.pool.fetchArtifacts.npm?.npmrcPath
       ).getArtifactFetcher();
 
-      packages.forEach((pkg) => {
+  
+      packages.forEach((pkg) => {       
         artifactFetcher.fetchArtifact(
           pkg.package,
           "artifacts",
-          version
+          this.pool.fetchArtifacts.npm ? this.pool.fetchArtifacts.npm.npmtag : null
         );
       });
+
+
     } else {
       //Build All Artifacts
       console.log("\n");

@@ -2,7 +2,7 @@ import { core, flags, SfdxCommand } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import poolListImpl from "../../../impl/pool/PoolListImpl";
 import { isNullOrUndefined } from "util";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 
 
 
@@ -45,10 +45,29 @@ export default class List extends SfdxCommand {
       description: messages.getMessage("allscratchorgsDescription"),
       required: false,
     }),
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
+      required: false,
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
+    })
   };
 
   public async run(): Promise<AnyJson> {
- 
+
 
     await this.hubOrg.refreshAuth();
     const hubConn = this.hubOrg.getConnection();

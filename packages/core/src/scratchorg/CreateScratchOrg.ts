@@ -68,11 +68,20 @@ export default class CreateScratchOrg {
     scratchOrg.password = passwordData.password;
 
 
-
+    try
+    {
     //Get Sfdx Auth URL
     const authInfo = await AuthInfo.create({ username: scratchOrg.username });
 
     scratchOrg.sfdxAuthUrl = authInfo.getSfdxAuthUrl();
+    }
+    catch(error)
+    {
+      SFPLogger.log(
+        `Unable to set auth URL, Ignoring...`,
+        LoggerLevel.TRACE
+      );
+    }
 
 
     if (!passwordData.password) {
