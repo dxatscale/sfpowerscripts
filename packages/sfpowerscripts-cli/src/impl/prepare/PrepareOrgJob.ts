@@ -13,7 +13,7 @@ import SFPLogger, {
 import { Stage } from "../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import PoolJobExecutor, {
   JobError,
   ScriptExecutionResult,
@@ -108,10 +108,10 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         let deploymentResult: DeploymentResult;
 
         let deploymentMode: DeploymentMode;
-        if (this.pool.deploymentType === "mdapi") {
-          deploymentMode = DeploymentMode.SOURCEPACKAGES;
+        if (this.pool.enableSourceTracking || this.pool.enableSourceTracking === undefined) {
+          deploymentMode = DeploymentMode.SOURCEPACKAGES_PUSH;
         } else {
-          deploymentMode = DeploymentMode.SOURCEPACKAGES_PUSH
+          deploymentMode = DeploymentMode.SOURCEPACKAGES;
         }
 
         deploymentResult = await this.deployAllPackagesInTheRepo(

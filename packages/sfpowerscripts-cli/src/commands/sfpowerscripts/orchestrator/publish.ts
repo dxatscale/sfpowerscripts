@@ -78,6 +78,25 @@ export default class Promote extends SfpowerscriptsCommand {
       description: messages.getMessage('npmrcPathFlagDescription'),
       dependsOn: ['npm'],
       required: false
+    }),
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
+      required: false,
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
     })
   };
 

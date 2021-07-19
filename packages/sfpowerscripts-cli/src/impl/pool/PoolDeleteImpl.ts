@@ -1,8 +1,8 @@
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import {Org } from "@salesforce/core";
 import { PoolBaseImpl } from "./PoolBaseImpl";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
-import DeleteScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/DeleteScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
+import DeleteScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/DeleteScratchOrg";
 import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 
 
@@ -48,7 +48,7 @@ export default class PoolDeleteImpl extends PoolBaseImpl {
           soDetail.orgId = element.ScratchOrg;
           soDetail.loginURL = element.LoginUrl;
           soDetail.username = element.SignupUsername;
-          soDetail.expityDate = element.ExpirationDate;
+          soDetail.expiryDate = element.ExpirationDate;
           soDetail.status = "Deleted";
 
           scratchOrgToDelete.push(soDetail);
@@ -63,7 +63,7 @@ export default class PoolDeleteImpl extends PoolBaseImpl {
 
         if (activeScrathOrgs.records.length > 0) {
           for (let ScratchOrg of activeScrathOrgs.records) {
-            
+
             await new DeleteScratchOrg(this.hubOrg).deleteScratchOrg(
               ScratchOrg.Id
             );

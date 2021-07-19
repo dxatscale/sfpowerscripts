@@ -11,6 +11,9 @@ import path = require("path");
 import { PoolErrorCodes } from "../../../impl/pool/PoolError";
 import SFPLogger, { LoggerLevel, COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import getFormattedTime from "../../../utils/GetFormattedTime";
+import { PoolConfig } from "../../../impl/pool/PoolConfig";
+import { COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -25,7 +28,15 @@ export default class Prepare extends SfpowerscriptsCommand {
       required: false,
       default: "config/poolconfig.json",
       char: "f",
-      description: messages.getMessage("configDescription"),
+      description: messages.getMessage("poolConfigFlagDescription"),
+    }),
+    npmrcpath: flags.filepath({
+      description: messages.getMessage('npmrcPathFlagDescription'),
+      required: false
+    }),
+    keys: flags.string({
+      required: false,
+      description: messages.getMessage("keysDescription"),
     }),
     loglevel: flags.enum({
       description: "logging level for this command invocation",
@@ -45,13 +56,13 @@ export default class Prepare extends SfpowerscriptsCommand {
         "ERROR",
         "FATAL",
       ],
-    }),
+    })
   };
 
   public static description = messages.getMessage("commandDescription");
 
   public static examples = [
-    `$ sfdx sfpowerscripts:orchestrator:prepare -t POOL1  -v <devhub>`,
+    `$ sfdx sfpowerscripts:orchestrator:prepare -f config/mypoolconfig.json  -v <devhub>`,
   ];
 
   public async execute(): Promise<any> {
@@ -62,110 +73,172 @@ export default class Prepare extends SfpowerscriptsCommand {
 
     //Read pool config
     try {
-      let poolConfig = fs.readJSONSync(this.flags.poolconfig);
-      this.validatePoolConfig(poolConfig);
+          let poolConfig: PoolConfig = fs.readJSONSync(this.flags.poolconfig);
+          this.validatePoolConfig(poolConfig);
 
-      console.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
-      console.log(COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxallocation}`));
-      console.log(
-        COLOR_HEADER(
-        `Scratch Orgs to be submitted to pool in case of failures: ${
-          poolConfig.succeedOnDeploymentErrors ? "true" : "false"
-        }`)
-      );
+          //Assign Keys to the config
+          if (this.flags.keys) poolConfig.keys = this.flags.keys;
 
 
-      console.log(COLOR_HEADER(
-        `All packages in the repo to be installed: ${poolConfig.installAll}`)
-      );
-      if (poolConfig.fetchArtifacts) {
-        console.log(
-          COLOR_HEADER(
-          `Script provided to fetch artifacts: ${
-            poolConfig.fetchArtifacts.artifactfetchscript ? "true" : "false"
-          }`)
-        );
-        console.log(
-          COLOR_HEADER(
-          `Fetch artifacts from pre-authenticated NPM registry: ${
-            poolConfig.fetchArtifacts.npm ? "true" : "false"
-          }`)
-        );
-        if (poolConfig.fetchArtifacts.npm?.npmtag)
+          console.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
           console.log(
-            COLOR_HEADER(`Tag utilized to fetch from NPM registry: ${this.flags.npmtag}`)
+            COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxAllocation}`)
           );
-      }
+          console.log(
+            COLOR_HEADER(
+              `Scratch Orgs to be submitted to pool in case of failures: ${
+                poolConfig.succeedOnDeploymentErrors ? "true" : "false"
+              }`
+            )
+          );
 
-      console.log(COLOR_HEADER("---------------------------------------------------------"));
+          console.log(
+            COLOR_HEADER(
+              `All packages in the repo to be installed: ${
+                poolConfig.installAll ? "true" : "false"
+              }`
+            )
+          );
 
-      let tags = {
-        stage: Stage.PREPARE,
-        poolName: poolConfig.tag,
-      };
+          console.log(
+            COLOR_HEADER(
+              `Enable Source Tracking: ${
+                poolConfig.enableSourceTracking ||
+                poolConfig.enableSourceTracking === undefined
+                  ? "true"
+                  : "false"
+              }`
+            )
+          );
 
-      await this.hubOrg.refreshAuth();
-      const hubConn = this.hubOrg.getConnection();
+          if (poolConfig.fetchArtifacts) {
+            if (poolConfig.fetchArtifacts.artifactFetchScript)
+              console.log(
+                COLOR_HEADER(
+                  `Script provided to fetch artifacts: ${poolConfig.fetchArtifacts.artifactFetchScript}`
+                )
+              );
+            if (poolConfig.fetchArtifacts.npm) {
+              console.log(
+                COLOR_HEADER(
+                  `Fetch artifacts from pre-authenticated NPM registry: true`
+                )
+              );
+              if (poolConfig.fetchArtifacts.npm.npmtag)
+                console.log(
+                  COLOR_HEADER(
+                    `Tag utilized to fetch from NPM registry: ${poolConfig.fetchArtifacts.npm.npmtag}`
+                  )
+                );
+            }
+          }
 
-      this.flags.apiversion =
-        this.flags.apiversion || (await hubConn.retrieveMaxApiVersion());
+          console.log(
+            COLOR_HEADER(
+              "---------------------------------------------------------"
+            )
+          );
 
-      let prepareImpl = new PrepareImpl(this.hubOrg, poolConfig);
 
-      let results = await prepareImpl.exec();
-      if (results.isOk()) {
-        let totalElapsedTime = Date.now() - executionStartTime;
-        SFPLogger.log(
-          COLOR_HEADER(`-----------------------------------------------------------------------------------------------------------`)
-        );
-        SFPLogger.log(
-          COLOR_SUCCESS(
-          `Provisioned {${
-            results.value.scratchOrgs.length
-          }}  scratchorgs out of ${results.value.to_allocate} requested with ${COLOR_ERROR(
-            results.value.failedToCreate
-          )} failed in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} `)
-        );
-        SFPLogger.log(
-          COLOR_HEADER(`----------------------------------------------------------------------------------------------------------`)
-        );
 
-        await this.getCurrentRemainingNumberOfOrgsInPoolAndReport();
+          //Assign npmrcPath to the config
+          if (this.flags.npmrcpath) {
+            if (poolConfig.fetchArtifacts?.npm)
+              poolConfig.fetchArtifacts.npm.npmrcPath = this.flags.npmrcpath;
+            else
+              console.log(COLOR_WARNING(
+                "npmrcPath found in flag, however the configuration doesnt seem to use npm, Are you sure your schema is good?"
+              ));
+          }
 
-        SFPStatsSender.logGauge("prepare.succeededorgs", results.value.scratchOrgs.length, tags);
 
-      } else if (results.isErr()) {
+          let tags = {
+            stage: Stage.PREPARE,
+            poolName: poolConfig.tag,
+          };
 
-        console.log(
-          COLOR_HEADER(`-----------------------------------------------------------------------------------------------------------`)
-        );
-        SFPLogger.log(COLOR_ERROR(results.error.message),LoggerLevel.ERROR);
-        console.log(
-          COLOR_HEADER(`-----------------------------------------------------------------------------------------------------------`)
-        );
+          await this.hubOrg.refreshAuth();
+          const hubConn = this.hubOrg.getConnection();
 
-        switch (results.error.errorCode) {
-          case PoolErrorCodes.Max_Capacity:
-            process.exitCode = 0;
-            break;
-          case PoolErrorCodes.No_Capacity:
-            process.exitCode = 0;
-            break;
-          case PoolErrorCodes.PrerequisiteMissing:
-            process.exitCode = 1;
-            break;
-          case PoolErrorCodes.UnableToProvisionAny:
-            SFPStatsSender.logGauge("prepare.failedorgs", results.error.failed, tags);
-            process.exitCode=1;
-            break;
-        }
-      }
-      SFPStatsSender.logGauge(
-        "prepare.duration",
-        Date.now() - executionStartTime,
-        tags
-      );
-    } catch (err) {
+          this.flags.apiversion =
+            this.flags.apiversion || (await hubConn.retrieveMaxApiVersion());
+
+          let prepareImpl = new PrepareImpl(this.hubOrg, poolConfig);
+
+          let results = await prepareImpl.exec();
+          if (results.isOk()) {
+            let totalElapsedTime = Date.now() - executionStartTime;
+            SFPLogger.log(
+              COLOR_HEADER(
+                `-----------------------------------------------------------------------------------------------------------`
+              )
+            );
+            SFPLogger.log(
+              COLOR_SUCCESS(
+                `Provisioned {${
+                  results.value.scratchOrgs.length
+                }}  scratchorgs out of ${
+                  results.value.to_allocate
+                } requested with ${COLOR_ERROR(
+                  results.value.failedToCreate
+                )} failed in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} `
+              )
+            );
+            SFPLogger.log(
+              COLOR_HEADER(
+                `----------------------------------------------------------------------------------------------------------`
+              )
+            );
+
+            await this.getCurrentRemainingNumberOfOrgsInPoolAndReport();
+
+            SFPStatsSender.logGauge(
+              "prepare.succeededorgs",
+              results.value.scratchOrgs.length,
+              tags
+            );
+          } else if (results.isErr()) {
+            console.log(
+              COLOR_HEADER(
+                `-----------------------------------------------------------------------------------------------------------`
+              )
+            );
+            SFPLogger.log(
+              COLOR_ERROR(results.error.message),
+              LoggerLevel.ERROR
+            );
+            console.log(
+              COLOR_HEADER(
+                `-----------------------------------------------------------------------------------------------------------`
+              )
+            );
+
+            switch (results.error.errorCode) {
+              case PoolErrorCodes.Max_Capacity:
+                process.exitCode = 0;
+                break;
+              case PoolErrorCodes.No_Capacity:
+                process.exitCode = 0;
+                break;
+              case PoolErrorCodes.PrerequisiteMissing:
+                process.exitCode = 1;
+                break;
+              case PoolErrorCodes.UnableToProvisionAny:
+                SFPStatsSender.logGauge(
+                  "prepare.failedorgs",
+                  results.error.failed,
+                  tags
+                );
+                process.exitCode = 1;
+                break;
+            }
+          }
+          SFPStatsSender.logGauge(
+            "prepare.duration",
+            Date.now() - executionStartTime,
+            tags
+          );
+        } catch (err) {
       throw new SfdxError("Unable to execute command .. " + err);
     }
   }
@@ -186,7 +259,6 @@ export default class Prepare extends SfpowerscriptsCommand {
 
 
   public validatePoolConfig(poolConfig: any) {
-    console.log("...", __dirname);
     let resourcesDir = path.join(
       __dirname,
       "..",

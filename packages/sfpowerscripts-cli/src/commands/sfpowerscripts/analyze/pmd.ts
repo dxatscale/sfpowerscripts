@@ -38,7 +38,26 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
     outputpath: flags.string({char: 'o', description: messages.getMessage('outputPathFlagDescription')}),
     version: flags.string({description: messages.getMessage('versionFlagDescription'), default: '6.26.0'}),
     istobreakbuild: flags.boolean({char: 'b', description: messages.getMessage('isToBreakBuildFlagDescription')}),
-    refname: flags.string({description: messages.getMessage('refNameFlagDescription')})
+    refname: flags.string({description: messages.getMessage('refNameFlagDescription')}),
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
+      required: false,
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
+    })
   };
 
 

@@ -6,8 +6,8 @@ import { Stage } from "../Stage";
 import child_process = require("child_process");
 import ReleaseError from "../../errors/ReleaseError";
 import ChangelogImpl from "../../impl/changelog/ChangelogImpl";
-
-
+import { Org } from "@salesforce/core";
+import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/InstalledPackagesFetcher";
 
 export interface ReleaseProps
 {
@@ -51,7 +51,7 @@ export default class ReleaseImpl {
 
     let installDependenciesResult: InstallDependenciesResult;
     if (this.props.releaseDefinition.packageDependencies) {
-      installDependenciesResult = this.installPackageDependencies(
+      installDependenciesResult = await this.installPackageDependencies(
         this.props.releaseDefinition.packageDependencies,
         this.props.targetOrg,
         this.props.keys,
@@ -125,12 +125,12 @@ export default class ReleaseImpl {
     return deploymentResult;
   }
 
-  private installPackageDependencies(
+  private async installPackageDependencies(
     packageDependencies: {[p:string]: string},
     targetOrg: string,
     keys: string,
     waitTime: number
-  ): InstallDependenciesResult {
+  ): Promise<InstallDependenciesResult> {
     let result: InstallDependenciesResult = {
       success: [],
       skipped: [],
@@ -148,7 +148,7 @@ export default class ReleaseImpl {
       // print packages dependencies to install
 
       for (let pkg in packageDependencies) {
-        if (!this.isPackageInstalledInOrg(packageDependencies[pkg], targetOrg)) {
+        if (!await this.isPackageInstalledInOrg(packageDependencies[pkg], targetOrg)) {
           let cmd = `sfdx force:package:install -p ${packageDependencies[pkg]} -u ${targetOrg} -w ${waitTime} -b ${waitTime} --noprompt`;
 
           if (packagesToKeys?.[pkg])
@@ -213,18 +213,18 @@ export default class ReleaseImpl {
     return output;
   }
 
-  private isPackageInstalledInOrg(packageVersionId: string, targetUsername: string): boolean {
+  private async isPackageInstalledInOrg(packageVersionId: string, targetUsername: string): Promise<boolean> {
     try {
+      let conn = (await Org.create({aliasOrUsername: targetUsername})).getConnection(); // TODO: REFACTOR CLASS TO TAKE CONNECTION IN CONSTRUCTOR
+
       SFPLogger.log(`Checking Whether Package with ID ${packageVersionId} is installed in  ${targetUsername}`);
-      let command = `sfdx sfpowerkit:package:version:info  -u ${targetUsername} --json`;
-      let result = JSON.parse(child_process.execSync(command).toString());
-      if (result.status === 0) {
-        let packageInfos: PackageInfo[] = result.result;
-        let packageFound = packageInfos.find((packageInfo) => {
-          return packageInfo.packageVersionId === packageVersionId
-        });
-        return packageFound ? true : false;
-      } else throw new Error("Unable to query packages installed in org");
+      let installedPackages = await new InstalledPackagesFetcher(conn).fetchAllPackages();
+
+      let packageFound = installedPackages.find((installedPackage) => {
+        return installedPackage.subscriberPackageVersionId === packageVersionId
+      });
+
+      return packageFound ? true : false;
     } catch (error) {
       SFPLogger.log(
         "Unable to check whether this package is installed in the target org");
@@ -247,18 +247,6 @@ export default class ReleaseImpl {
         LoggerLevel.INFO
       );
   }
-}
-
-type PackageInfo = {
-  packageName: string;
-  subcriberPackageId: string;
-  packageNamespacePrefix: string;
-  packageVersionId: string;
-  packageVersionNumber: string;
-  allowedLicenses: number;
-  usedLicenses: number;
-  expirationDate: string;
-  status: string;
 }
 
 interface InstallDependenciesResult {

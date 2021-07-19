@@ -1,0 +1,4 @@
+{
+  "commandDescription": "Deletes a particular scratch org in the pool, This command is to be used in a pipeline with correct permissions to delete any active scratch org record or to be used by an adminsitrator",
+  "userNameFlagDescription": "Username of the scratchOrg to be deleted, not aliases"
+}

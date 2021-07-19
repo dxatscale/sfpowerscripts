@@ -29,6 +29,25 @@ export default class Validate extends SfpowerscriptsCommand {
     logsgroupsymbol: flags.array({
       char: "g",
       description: messages.getMessage("logsGroupSymbolFlagDescription")
+    }),
+    loglevel: flags.enum({
+      description: "logging level for this command invocation",
+      default: "info",
+      required: false,
+      options: [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+      ],
     })
   };
 

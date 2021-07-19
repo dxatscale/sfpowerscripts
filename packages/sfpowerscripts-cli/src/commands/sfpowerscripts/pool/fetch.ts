@@ -1,7 +1,14 @@
 import { core, flags, SfdxCommand } from "@salesforce/command";
+import { Org } from "@salesforce/core";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import { AnyJson } from "@salesforce/ts-types";
 import PoolFetchImpl from "../../../impl/pool/PoolFetchImpl";
 import * as fs from "fs-extra";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
+import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
+import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/InstalledPackagesFetcher";
+import InstalledPackageDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer";
 
 // Initialize Messages with the current plugin directory
 core.Messages.importMessagesDirectory(__dirname);
@@ -80,15 +87,21 @@ export default class Fetch extends SfdxCommand {
     let fetchImpl = new PoolFetchImpl(
       this.hubOrg,
       this.flags.tag,
-      null,
+      false,
+      false,
       this.flags.sendtouser,
       this.flags.alias,
       this.flags.setdefaultusername
     );
 
+    if(this.flags.json)
+     SFPLogger.logLevel = LoggerLevel.HIDE;
+
     let result = await fetchImpl.execute();
 
     if (!this.flags.json && !this.flags.sendtouser) {
+      await this.displayOrgContents(result);
+
       this.ux.log(`======== Scratch org details ========`);
       let list = [];
       for (let [key, value] of Object.entries(result)) {
@@ -97,10 +110,33 @@ export default class Fetch extends SfdxCommand {
         }
       }
       this.ux.table(list, ["key", "value"]);
-      fetchImpl.loginToScratchOrgIfSfdxAuthURLExists(result);
     }
 
-    return result as AnyJson;
+    return result;
+  }
 
+  /**
+   * Display artifacts and managed packages installed in the org
+   * @param soDetail
+   */
+  private async displayOrgContents(soDetail: ScratchOrg) {
+    try {
+      const scratchOrgConnection = (await Org.create({ aliasOrUsername: soDetail.username })).getConnection();
+      let installedPackagesFetcher = new InstalledPackagesFetcher(scratchOrgConnection);
+      let installedManagedPackages = await installedPackagesFetcher.fetchManagedPackages();
+      SFPLogger.log(
+        "Installed managed packages:",
+        LoggerLevel.INFO
+      );
+      InstalledPackageDisplayer.printInstalledPackages(installedManagedPackages, null);
+
+      let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(soDetail.username);
+      InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
+    } catch (error) {
+      SFPLogger.log(
+        "Failed to query packages/artifacts installed in the org",
+        LoggerLevel.ERROR
+      );
+    }
   }
 }

@@ -1,6 +1,6 @@
 import { Org } from "@salesforce/core";
 import { PoolBaseImpl } from "./PoolBaseImpl";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 
 export default class PoolListImpl extends PoolBaseImpl {
@@ -30,7 +30,7 @@ export default class PoolListImpl extends PoolBaseImpl {
         soDetail.loginURL = element.LoginUrl;
         soDetail.username = element.SignupUsername;
         soDetail.password = element.Password__c;
-        soDetail.expityDate = element.ExpirationDate;
+        soDetail.expiryDate = element.ExpirationDate;
         if (element.Allocation_status__c === "Assigned") {
           soDetail.status = "In use";
         } else if (element.Allocation_status__c === "Available") {

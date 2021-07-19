@@ -1,4 +1,4 @@
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/src/scratchorg/ScratchOrg";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 const path = require("path");
 import * as fs from "fs-extra";
 import lodash = require("lodash");
@@ -69,7 +69,6 @@ export default class SourceTrackingResourceController {
   retrieve(): void {
     this.clearStaticResourcesDir();
 
-    try {
       child_process.execSync(
         `sfdx force:source:retrieve -m StaticResource:sourceTrackingFiles -u ${this.scratchOrg.username}`,
         {
@@ -95,15 +94,7 @@ export default class SourceTrackingResourceController {
 
       // Prevent source tracking files from being shown as a remote addition
       this.trackStaticResource(sfdxMaxRevisionFilePath);
-    } catch (error) {
-      console.log(error);
-      SFPLogger.log(
-        `Failed to retrieve source tracking files for scratch org`,
-        null,
-        this.logger
-      );
-      throw error;
-    }
+
   }
 
   /**
@@ -111,6 +102,8 @@ export default class SourceTrackingResourceController {
    */
   createSourceTrackingResources(deploymentResult: DeploymentResult) {
     for (let packageInfoOfDeployedArtifact of deploymentResult.deployed) {
+      if (packageInfoOfDeployedArtifact.packageMetadata.package_type === "data") continue;
+
       let orgsDir = path.join(packageInfoOfDeployedArtifact.sourceDirectory, ".sfdx", "orgs");
       let usernameDir = path.join(orgsDir, this.scratchOrg.username);
 
