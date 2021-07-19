@@ -1,6 +1,6 @@
 import { Connection } from "@salesforce/core";
-import QueryInstalledPackagesImpl from "../query/QueryInstalledPackagesImpl";
-import PackageDetails from "./PackageDetails";
+import InstalledPackagesQueryExecutor from "./InstalledPackagesQueryExecutor";
+import PackageDetails from "../PackageDetails";
 
 export default class InstalledPackagesFetcher {
 
@@ -11,7 +11,7 @@ export default class InstalledPackagesFetcher {
   async fetchAllPackages(): Promise<PackageDetails[]> {
     const installedPackages: PackageDetails[] = [];
 
-    let records = await QueryInstalledPackagesImpl.exec(this.conn);
+    let records = await InstalledPackagesQueryExecutor.exec(this.conn);
 
     records.forEach((record) => {
       let packageVersionNumber = `${record.SubscriberPackageVersion.MajorVersion}.${record.SubscriberPackageVersion.MinorVersion}.${record.SubscriberPackageVersion.PatchVersion}.${record.SubscriberPackageVersion.BuildNumber}`;

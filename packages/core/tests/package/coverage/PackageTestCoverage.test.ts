@@ -1,13 +1,13 @@
-import  SFPPackage  from "../../../src/package/SFPPackage";
 import PackageTestCoverage from "../../../src/package/coverage/PackageTestCoverage";
 import { jest, expect } from "@jest/globals";
 import { ConsoleLogger } from "../../../src/logger/SFPLogger";
-import ApexClassFetcher from "../../../src/query/ApexClassFetcher";
-import ApexTriggerFetcher from "../../../src/query/ApexTriggerFetcher";
-import ApexCodeCoverageAggregateFetcher from "../../../src/query/ApexCodeCoverageAggregateFetcher";
+import ApexClassFetcher from "../../../src/apex/ApexClassFetcher";
+import ApexTriggerFetcher from "../../../src/apex/ApexTriggerFetcher";
+import ApexCodeCoverageAggregateFetcher from "../../../src/apex/coverage/ApexCodeCoverageAggregateFetcher";
 
 import { Org } from "@salesforce/core";
 import { MockTestOrgData, testSetup } from "@salesforce/core/lib/testSetup";
+import SFPPackage from "../../../src/package/SFPPackage";
 const $$ = testSetup();
 
 let packageType="Unlocked";

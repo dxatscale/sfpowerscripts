@@ -1,7 +1,7 @@
 import { Connection } from "@salesforce/core";
-import QueryHelper from "./QueryHelper";
+import QueryHelper from "../../queryHelper/QueryHelper";
 
-export default class QueryInstalledPackagesImpl {
+export default class InstalledPackagesQueryExecutor {
 
   static async exec(conn: Connection) {
     const installedPackagesQuery =

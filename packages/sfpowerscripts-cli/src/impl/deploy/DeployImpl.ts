@@ -25,7 +25,6 @@ import { Stage } from "../Stage";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import TriggerApexTests from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/TriggerApexTests";
 import SFPPackage from "@dxatscale/sfpowerscripts.core/lib/package/SFPPackage";
-import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/coverage/IndividualClassCoverage";
 import { RunAllTestsInPackageOptions } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions";
 import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions";
 import semver = require("semver");
@@ -34,6 +33,7 @@ import { DeploymentType } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/s
 import { COLOR_ERROR } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage";
 const Table = require("cli-table");
 const retry = require("async-retry");
 
