@@ -20,6 +20,8 @@ export default class SourceTrackingResourceController {
     private logger: Logger
   ) {
     fs.mkdirpSync(this.aggregatedUsernameDir);
+    this.conn.metadata.pollTimeout = 33*60*1000;
+    this.conn.metadata.pollInterval = 30000;
   }
 
   /**
