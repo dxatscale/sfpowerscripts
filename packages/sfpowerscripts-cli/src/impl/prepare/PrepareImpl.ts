@@ -190,9 +190,9 @@ export default class PrepareImpl {
 
     return {totalallocated:this.totalToBeAllocated,success:finalizedResults.success,failed:finalizedResults.failed};
   }
-  
-  
-  //Fetch all checkpoints  
+
+
+  //Fetch all checkpoints
   private getcheckPointPackages() {
     console.log("Fetching checkpoints for prepare if any.....");
     let projectConfig = ProjectConfig.getSFDXPackageManifest(null);
@@ -207,7 +207,17 @@ export default class PrepareImpl {
   private async getPackageArtifacts() {
     let packages = ProjectConfig.getSFDXPackageManifest(null)[
       "packageDirectories"
-    ];
+    ].filter((pkg)=>{
+      if (
+        pkg.ignoreOnStage?.find( (stage) => {
+          stage = stage.toLowerCase();
+          return stage === "prepare";
+        })
+      )
+        return false;
+      else
+        return true;
+    });
 
     if (this._isNpm) {
       if (this._npmrcPath) {
