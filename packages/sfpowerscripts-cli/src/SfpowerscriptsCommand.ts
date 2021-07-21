@@ -5,7 +5,7 @@ import * as rimraf from "rimraf";
 import ProjectValidation from "./ProjectValidation";
 import DemoReelPlayer from "./impl/demoreelplayer/DemoReelPlayer";
 import { fs } from "@salesforce/core";
-import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import SFPLogger, { ConsoleLogger, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -117,7 +117,11 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         }
         if(process.env.SFPOWERSCRIPTS_DATADOG)
         {
-            SFPStatsSender.initializeNativeDataDogMetrics(process.env.SFPOWERSCRIPTS_DATADOG_HOST,process.env.SFPOWERSCRIPTS_DATADOG_API_KEY);
+            SFPStatsSender.initializeNativeMetrics('DataDog',process.env.SFPOWERSCRIPTS_DATADOG_HOST,process.env.SFPOWERSCRIPTS_DATADOG_API_KEY,new ConsoleLogger());
+        }
+        else if(process.env.SFPOWERSCRIPTS_NEWRELIC)
+        {
+            SFPStatsSender.initializeNativeMetrics('NewRelic',null,process.env.SFPOWERSCRIPTS_NEWRELIC_API_KEY,new ConsoleLogger());
         }
 
         SFPStatsSender.initializeLogBasedMetrics();
