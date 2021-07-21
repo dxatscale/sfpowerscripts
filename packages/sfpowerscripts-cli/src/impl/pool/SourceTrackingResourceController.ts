@@ -1,11 +1,10 @@
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 const path = require("path");
 import * as fs from "fs-extra";
 import lodash = require("lodash");
 import AdmZip = require("adm-zip");
 import child_process = require("child_process");
 import { DeploymentResult } from "../deploy/DeployImpl";
-import SFPLogger, { Logger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { Logger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Connection } from "@salesforce/core";
 
 export default class SourceTrackingResourceController {

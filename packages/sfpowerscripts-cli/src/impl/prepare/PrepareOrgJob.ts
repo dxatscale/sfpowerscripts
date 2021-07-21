@@ -18,7 +18,7 @@ import PoolJobExecutor, {
   JobError,
   ScriptExecutionResult,
 } from "../pool/PoolJobExecutor";
-import { AuthInfo, Connection, Org } from "@salesforce/core";
+import { Connection, Org } from "@salesforce/core";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { PoolConfig } from "../pool/PoolConfig";
 import { Result, ok, err } from "neverthrow";
