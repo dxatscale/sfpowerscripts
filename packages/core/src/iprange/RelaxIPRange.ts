@@ -13,7 +13,6 @@ export default class RelaxIPRange {
 
   public async setIp(
     conn: Connection,
-    username: string,
     ipRangeToSet: any[],
     addall: boolean = false
   ): Promise<{ username: string; success: boolean }> {
@@ -52,14 +51,14 @@ export default class RelaxIPRange {
           LoggerLevel.ERROR,
           this.logger
         );
-        return { username: username, success: false };
+        return { username: conn.getUsername(), success: false };
       } else {
         SFPLogger.log(
           `IP Ranges relaxed succesfully`,
           LoggerLevel.INFO,
           this.logger
         );
-        return { username: username, success: true };
+        return { username: conn.getUsername(), success: true };
       }
     }
     else
@@ -69,7 +68,7 @@ export default class RelaxIPRange {
         LoggerLevel.ERROR,
         this.logger
       );
-      return { username: username, success: false };
+      return { username: conn.getUsername(), success: false };
     }
   }
 
@@ -287,7 +286,7 @@ export default class RelaxIPRange {
       }
       retrieve_securitySetting.SecuritySettings.networkAccess.ipRanges = ipRangeToSet;
     }
-  
+
     let builder = new xml2js.Builder();
     var xml = builder.buildObject(retrieve_securitySetting);
     fs.writeFileSync(pathToMetadatFile, xml);

@@ -18,7 +18,7 @@ import PoolJobExecutor, {
   JobError,
   ScriptExecutionResult,
 } from "../pool/PoolJobExecutor";
-import { AuthInfo, Connection, Org } from "@salesforce/core";
+import { Connection, Org } from "@salesforce/core";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { PoolConfig } from "../pool/PoolConfig";
 import { Result, ok, err } from "neverthrow";
@@ -45,13 +45,14 @@ export default class PrepareOrgJob extends PoolJobExecutor {
     //Install sfpowerscripts Artifact
 
     try {
+      const conn = (await Org.create({aliasOrUsername: scratchOrg.username})).getConnection();
 
       let packageLogger: FileLogger = new FileLogger(logToFilePath);
       this.checkPointPackages = this.getcheckPointPackages(packageLogger);
 
       if (this.pool.relaxAllIPRanges || this.pool.ipRangesToBeRelaxed) {
         await this.relaxIPRanges(
-          scratchOrg,
+          conn,
           this.pool.relaxAllIPRanges,
           this.pool.ipRangesToBeRelaxed,
           packageLogger
@@ -133,9 +134,9 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             );
 
         if (deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH) {
-          let sourceTrackingResourceController = new SourceTrackingResourceController(scratchOrg, packageLogger);
+          let sourceTrackingResourceController = new SourceTrackingResourceController(conn, packageLogger);
           sourceTrackingResourceController.createSourceTrackingResources(deploymentResult);
-          sourceTrackingResourceController.deploy();
+          await sourceTrackingResourceController.deploy();
         }
 
 
@@ -259,31 +260,25 @@ export default class PrepareOrgJob extends PoolJobExecutor {
   }
 
   private async relaxIPRanges(
-    scratchOrg: ScratchOrg,
+    conn: Connection,
     isRelaxAllIPRanges: boolean,
     relaxIPRanges: string[],
     logger: Logger
   ): Promise<{ username: string; success: boolean }> {
     SFPLogger.log(
-      `Relaxing ip ranges for scratchOrg with user ${scratchOrg.username}`,
+      `Relaxing ip ranges for scratchOrg with user ${conn.getUsername()}`,
       LoggerLevel.INFO
     );
-    const connection = await Connection.create({
-      authInfo: await AuthInfo.create({ username: scratchOrg.username }),
-    });
-
     if (isRelaxAllIPRanges) {
       relaxIPRanges = [];
       return new RelaxIPRange(logger).setIp(
-        connection,
-        scratchOrg.username,
+        conn,
         relaxIPRanges,
         true
       );
     } else {
       return new RelaxIPRange(logger).setIp(
-        connection,
-        scratchOrg.username,
+        conn,
         relaxIPRanges
       );
     }

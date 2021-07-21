@@ -143,11 +143,12 @@ export default class PoolFetchImpl extends PoolBaseImpl {
       //Attempt to Fetch Source Tracking Files and silently continue if it fails
       if (isLoginSuccessFull) {
         try {
+          const conn = (await Org.create({aliasOrUsername: soDetail.username})).getConnection();
           let sourceTrackingResourceController = new SourceTrackingResourceController(
-            soDetail,
+            conn,
             null
           );
-          sourceTrackingResourceController.retrieve();
+          await sourceTrackingResourceController.retrieve();
         } catch (error) {
           SFPLogger.log(
             "Retriveing Source Tracking skipped.. " + error.message,
