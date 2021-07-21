@@ -54,7 +54,7 @@ jest.mock("../../src/package/MetadataCount", () => {
   return MetadataCount
 });
 
-jest.mock("../../src/parser/ApexTypeFetcher", () => {
+jest.mock("../../src/apex/parser/ApexTypeFetcher", () => {
   class ApexTypeFetcher {
     getClassesClassifiedByType = jest.fn();
     getTestClasses = jest

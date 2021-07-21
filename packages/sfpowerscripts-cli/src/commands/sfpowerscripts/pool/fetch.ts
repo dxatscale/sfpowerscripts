@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
 import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
-import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/InstalledPackagesFetcher";
+import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/installedPackages/InstalledPackagesFetcher"
 import InstalledPackageDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer";
 
 // Initialize Messages with the current plugin directory
