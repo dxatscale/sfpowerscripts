@@ -64,19 +64,28 @@ export default class SFPLogger {
 
 
   static log(message: string, logLevel = LoggerLevel.INFO, logger?: Logger) {
+
+
     if (typeof jest == "undefined") {
       if (logLevel == null) logLevel = LoggerLevel.INFO;
 
       if (logLevel < this.logLevel) return;
 
+      //Todo: Proper fix
+      if(logger && logger.logType===LoggerType.console)
+      {
+        logger=null; //Make it nullable, so it goes to console
+      } 
+     
       if (logger) {
         if (logger.logType === LoggerType.void) {
           return;
         } else if (logger.logType === LoggerType.file) {
           let fileLogger = logger as FileLogger;
           fs.appendFileSync(fileLogger.path, message + EOL, "utf8");
-        }
+        } 
       } else {
+        
         switch (logLevel) {
           case LoggerLevel.TRACE:
             console.log(COLOR_TRACE(message));
