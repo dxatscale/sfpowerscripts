@@ -7,7 +7,7 @@ export default class QueryHelper {
 
 
   static async query<T>(query: string, conn: Connection, isTooling: boolean): Promise<T[]> {
-    return await retry(
+    return retry(
       async (bail) => {
         let records;
         if (isTooling)
