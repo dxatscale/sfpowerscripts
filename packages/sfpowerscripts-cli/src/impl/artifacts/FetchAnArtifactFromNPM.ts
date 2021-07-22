@@ -9,20 +9,6 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
     private scope: string,
     private npmrcPath: string
   ) {
-    if (this.npmrcPath) {
-
-      try
-      {
-      fs.copyFileSync(this.npmrcPath, path.resolve(".npmrc"));
-      }catch(error)
-      {
-        throw new Error("We were unable to find or copy the .npmrc file as provided due to "+error.message);
-      }
-      if (!fs.existsSync("package.json")) {
-        // package json is required in the same directory as .npmrc
-        fs.writeFileSync("package.json", "{}");
-      }
-    }
   }
 
 
@@ -31,6 +17,23 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
     artifactDirectory: string,
     version?:string
   ) {
+
+    if (this.npmrcPath && !fs.existsSync(path.resolve(path.join(artifactDirectory,".npmrc")))) {
+
+      try
+      {
+      fs.copyFileSync(this.npmrcPath, path.resolve(path.join(artifactDirectory,".npmrc")));
+      }catch(error)
+      {
+        throw new Error("We were unable to find or copy the .npmrc file as provided due to "+error.message);
+      }
+      if (!fs.existsSync(path.resolve(path.join(artifactDirectory,"package.json")))) {
+        // package json is required in the same directory as .npmrc
+        fs.writeFileSync(path.resolve(path.join(artifactDirectory,"package.json")), "{}");
+      }
+    }
+
+
     // NPM package names must be lowercase
     packageName = packageName.toLowerCase();
 
