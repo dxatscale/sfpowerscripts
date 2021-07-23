@@ -12,7 +12,7 @@ import * as rimraf from "rimraf";
 import * as fs from "fs-extra";
 import PoolJobExecutor, { ScriptExecutionResult } from "./PoolJobExecutor";
 import { PoolError, PoolErrorCodes } from "./PoolError";
-import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Result ,ok,err} from "neverthrow"
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { EOL } from "os";
@@ -69,7 +69,20 @@ export default class PoolCreateImpl extends PoolBaseImpl
    this.deleteScratchOrgOperator = new DeleteScratchOrg(this.hubOrg);
 
     //Compute allocation
+
+    SFPLogger.log(COLOR_KEY_MESSAGE("Computing Allocation.."),LoggerLevel.INFO);
+    try
+    {
     this.totalToBeAllocated = await this.computeAllocation();
+    }catch(error)
+    {
+      return err({
+        success: 0,
+        failed: 0,
+        message: `Unable to access fields on ScratchOrgInfo, Please check the profile being used`,
+        errorCode: PoolErrorCodes.PrerequisiteMissing,
+      });
+    }
 
 
     if (this.totalToBeAllocated === 0) {
@@ -98,6 +111,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
     fs.mkdirpSync("script_exec_outputs");
 
 
+    
      //Generate Scratch Orgs
      await this.generateScratchOrgs();
 
@@ -178,7 +192,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
 
   private async generateScratchOrgs() {
     //Generate Scratch Orgs
-
+     SFPLogger.log(COLOR_KEY_MESSAGE("Generate Scratch Orgs.."),LoggerLevel.INFO);
       let count = 1;
       this.pool.scratchOrgs = new Array<ScratchOrg>();
 
