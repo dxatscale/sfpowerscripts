@@ -7,7 +7,8 @@ import child_process = require("child_process");
 import ReleaseError from "../../errors/ReleaseError";
 import ChangelogImpl from "../../impl/changelog/ChangelogImpl";
 import { Org } from "@salesforce/core";
-import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/InstalledPackagesFetcher";
+import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/installedPackages/InstalledPackagesFetcher"
+
 
 export interface ReleaseProps
 {

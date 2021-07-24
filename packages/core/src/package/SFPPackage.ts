@@ -1,4 +1,4 @@
-import ApexTypeFetcher, { ApexSortedByType } from "../parser/ApexTypeFetcher";
+import ApexTypeFetcher, { ApexSortedByType } from "../apex/parser/ApexTypeFetcher";
 import ProjectConfig from "../project/ProjectConfig";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ConvertSourceToMDAPIImpl from "../sfdxwrappers/ConvertSourceToMDAPIImpl";

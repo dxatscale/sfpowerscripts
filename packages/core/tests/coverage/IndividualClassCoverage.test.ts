@@ -1,4 +1,4 @@
-import IndividualClassCoverage from "../../src/coverage/IndividualClassCoverage";
+import IndividualClassCoverage from "../../src/apex/coverage/IndividualClassCoverage";
 import { expect } from "@jest/globals";
 import { ConsoleLogger } from "../../src/logger/SFPLogger";
 

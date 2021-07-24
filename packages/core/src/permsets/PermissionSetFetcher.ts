@@ -1,5 +1,5 @@
 import { Connection } from "@salesforce/core";
-import QueryHelper from "../query/QueryHelper";
+import QueryHelper from "../queryHelper/QueryHelper";
 
 /*
  * Retrieve Permsets for a user from a target org

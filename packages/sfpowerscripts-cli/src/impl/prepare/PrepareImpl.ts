@@ -5,6 +5,7 @@ import { PreparePoolInterface } from "./PreparePoolInterface";
 import PreparePool from "./PreparePool";
 import OrgDisplayImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/OrgDisplayImpl";
 import isValidSfdxAuthUrl from "../pool/prequisitecheck/IsValidSfdxAuthUrl";
+import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 
 
@@ -28,6 +29,7 @@ export default class PrepareImpl {
   {
     let poolPreparer:PreparePoolInterface;
 
+    SFPLogger.log(COLOR_KEY_MESSAGE("Validating Org Authentication Mechanism.."),LoggerLevel.INFO);
     let orgDisplayImpl = new OrgDisplayImpl(null, this.hubOrg.getUsername());
     let orgDisplayResult = await orgDisplayImpl.exec(true);
 

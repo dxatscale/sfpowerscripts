@@ -1,12 +1,17 @@
 import StatsDClient, { ClientOptions, StatsD } from "hot-shots";
 import * as fs from "fs-extra";
 import { EOL } from "os";
-import { BufferedMetricsLogger } from "datadog-metrics";
+import { NativeMetricSender } from "./NativeMetricSender";
+import { DataDogMetricsSender } from "./nativeMetricSenderImpl/DataDogMetricSender";
+import { Logger } from "../logger/SFPLogger";
+import { NewRelicMetricSender } from "./nativeMetricSenderImpl/NewRelicMetricSender";
+
 
 export default class SFPStatsSender {
   private static client: StatsD;
   private static metricsLogger;
-  private static nativeDataDogMetricsLogger: BufferedMetricsLogger;
+  private static nativeMetricsSender:NativeMetricSender;
+  
 
   static initialize(port: string, host: string, protocol: string) {
     let options: ClientOptions = {
@@ -18,6 +23,25 @@ export default class SFPStatsSender {
     SFPStatsSender.client = new StatsDClient(options);
   }
 
+  static initializeNativeMetrics(type:string, apiHost: string, apiKey: string,logger?:Logger) 
+  {
+    switch(type)
+    {
+      case 'DataDog':
+               this.nativeMetricsSender = new DataDogMetricsSender(logger);
+               this.nativeMetricsSender.initialize(apiHost, apiKey);
+              break;
+    
+     case 'NewRelic':
+               this.nativeMetricsSender = new NewRelicMetricSender(logger);
+               this.nativeMetricsSender.initialize(apiHost, apiKey);
+              break;
+
+    default:  
+           throw new Error("Invalid Metric Type");
+    }
+  }
+
   static initializeLogBasedMetrics() {
     try {
       fs.mkdirpSync(".sfpowerscripts/logs");
@@ -27,18 +51,7 @@ export default class SFPStatsSender {
     }
   }
 
-  static initializeNativeDataDogMetrics(apiHost: string, apiKey: string) {
-    try {
-      SFPStatsSender.nativeDataDogMetricsLogger = new BufferedMetricsLogger({
-        apiHost: apiHost,
-        apiKey: apiKey,
-        prefix: "sfpowerscripts.",
-        flushIntervalSeconds: 0,
-      });
-    } catch (error) {
-      console.log("Unable to intialize native datadog logger", error);
-    }
-  }
+ 
 
   static logElapsedTime(
     metric: string,
@@ -49,8 +62,8 @@ export default class SFPStatsSender {
       SFPStatsSender.client.timing(metric, elapsedMilliSeconds, tags);
 
     //Native Datadog integration
-    if (SFPStatsSender.nativeDataDogMetricsLogger != null) {
-      SFPStatsSender.sendDataDogGaugeMetric(metric, elapsedMilliSeconds, tags);
+    if (SFPStatsSender.nativeMetricsSender != null) {
+      SFPStatsSender.nativeMetricsSender.sendGaugeMetric(metric, elapsedMilliSeconds, tags);
     }
 
     let metrics = {
@@ -71,9 +84,9 @@ export default class SFPStatsSender {
     if (SFPStatsSender.client != null)
       SFPStatsSender.client.gauge(metric, value, tags);
 
-    //Native Datadog integration
-    if (SFPStatsSender.nativeDataDogMetricsLogger != null) {
-      SFPStatsSender.sendDataDogGaugeMetric(metric, value, tags);
+    //Native Metrics integration
+    if (SFPStatsSender.nativeMetricsSender != null) {
+      SFPStatsSender.nativeMetricsSender.sendGaugeMetric(metric, value, tags);
     }
 
     let metrics = {
@@ -91,9 +104,9 @@ export default class SFPStatsSender {
     if (SFPStatsSender.client != null)
       SFPStatsSender.client.increment(metric, tags);
 
-    //Native Datadog integration
-    if (SFPStatsSender.nativeDataDogMetricsLogger != null) {
-      SFPStatsSender.sendDataDogCountMetric(metric, tags);
+    //Native Metrics integration
+    if (SFPStatsSender.nativeMetricsSender != null) {
+      SFPStatsSender.nativeMetricsSender.sendCountMetric(metric, tags);
     }
 
     let metrics = {
@@ -105,58 +118,12 @@ export default class SFPStatsSender {
     SFPStatsSender.logMetrics(metrics, SFPStatsSender.metricsLogger);
   }
 
-  private static sendDataDogGaugeMetric(
-    metric: string,
-    value: number,
-    tags: string[] | { [key: string]: string }
-  ) {
-    try {
-      let transformedTags = SFPStatsSender.transformTagsToStringArray(tags);
-      SFPStatsSender.nativeDataDogMetricsLogger.gauge(
-        metric,
-        value,
-        transformedTags
-      );
-      SFPStatsSender.nativeDataDogMetricsLogger.flush();
-    } catch (error) {
-      console.log("Unable to transmit metrics for metric", metric);
-    }
-  }
-
-
-  private static sendDataDogCountMetric(
-    metric: string,
-    tags: string[] | { [key: string]: string }
-  ) {
-    try {
-      let transformedTags = SFPStatsSender.transformTagsToStringArray(tags);
-      SFPStatsSender.nativeDataDogMetricsLogger.increment(
-        metric,
-        1,
-        transformedTags
-      );
-      SFPStatsSender.nativeDataDogMetricsLogger.flush();
-    } catch (error) {
-      console.log("Unable to transmit metrics for metric", metric);
-    }
-  }
-
+  
   static logMetrics(key: any, logger?: any) {
     if (logger) {
       fs.appendFileSync(logger, `${JSON.stringify(key)}${EOL}`, "utf8");
     }
   }
 
-  private static transformTagsToStringArray(
-    tags: { [key: string]: string } | string[]
-  ): string[] {
-    if (tags != null && !Array.isArray(tags)) {
-      let transformedTagArray: string[] = new Array();
-      for (const [key, value] of Object.entries(tags)) {
-        transformedTagArray.push(`${key}:${value}`);
-      }
-      return transformedTagArray;
-    }
-    return tags as string[];
-  }
+
 }

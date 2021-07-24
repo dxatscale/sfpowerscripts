@@ -13,7 +13,7 @@ import fs = require("fs");
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
-import InstalledPackagesFetcher from "../../package/InstalledPackagesFetcher";
+import InstalledPackagesFetcher from "../../package/installedPackages/InstalledPackagesFetcher";
 import { Org, Connection } from "@salesforce/core";
 
 export default class InstallUnlockedPackageImpl {

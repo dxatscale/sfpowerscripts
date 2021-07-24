@@ -12,8 +12,9 @@ import { flags } from "@salesforce/command";
 import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { Messages } from "@salesforce/core";
 import SFPPackage from "@dxatscale/sfpowerscripts.core/lib/package/SFPPackage";
-import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/coverage/IndividualClassCoverage";
+
 import { ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage";
 const path = require("path");
 
 

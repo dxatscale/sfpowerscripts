@@ -1,39 +1,40 @@
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 const path = require("path");
 import * as fs from "fs-extra";
 import lodash = require("lodash");
 import AdmZip = require("adm-zip");
 import child_process = require("child_process");
 import { DeploymentResult } from "../deploy/DeployImpl";
-import SFPLogger, { Logger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { Logger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { Connection } from "@salesforce/core";
 
 export default class SourceTrackingResourceController {
   private readonly aggregatedSourceTrackingDir = ".sfpowerscripts/sourceTrackingFiles";
-  private readonly aggregatedUsernameDir = path.join(this.aggregatedSourceTrackingDir, this.scratchOrg.username);
+  private readonly aggregatedUsernameDir = path.join(this.aggregatedSourceTrackingDir, this.conn.getUsername());
 
   private readonly aggregatedMaxRevisionFilePath = path.join(this.aggregatedUsernameDir, "maxRevision.json");
   private readonly aggregatedSourcePathinfosFilePath = path.join(this.aggregatedUsernameDir, "sourcePathInfos.json");
 
-  private readonly staticResourcesDir = path.join(this.aggregatedUsernameDir, "force-app", "main", "default", "staticresources");
-
   constructor(
-    private scratchOrg: ScratchOrg,
+    private conn: Connection,
     private logger: Logger
   ) {
     fs.mkdirpSync(this.aggregatedUsernameDir);
-    fs.mkdirpSync(this.staticResourcesDir);
-
-    this.createSfdxProject(this.aggregatedUsernameDir);
+    this.conn.metadata.pollTimeout = 33*60*1000;
+    this.conn.metadata.pollInterval = 30000;
   }
 
   /**
    * Deploy source tracking resource to scratch org as a static resource
    */
-  deploy(): void {
-    let zip = new AdmZip();
-    zip.addLocalFile(this.aggregatedMaxRevisionFilePath);
-    zip.addLocalFile(this.aggregatedSourcePathinfosFilePath);
-    zip.writeZip(path.join(this.staticResourcesDir, "sourceTrackingFiles.zip"));
+  async deploy(): Promise<void> {
+    const pkgDir = path.join(this.aggregatedUsernameDir, "pkg");
+    const staticResourcesDir = path.join(pkgDir, "staticresources");
+    fs.mkdirpSync(staticResourcesDir);
+
+    let resourceZip = new AdmZip()
+    resourceZip.addLocalFile(this.aggregatedMaxRevisionFilePath);
+    resourceZip.addLocalFile(this.aggregatedSourcePathinfosFilePath);
+    resourceZip.writeZip(path.join(staticResourcesDir, "sourceTrackingFiles.resource"));
 
     let metadataXml: string =
       `<?xml version="1.0" encoding="UTF-8"?>
@@ -42,58 +43,59 @@ export default class SourceTrackingResourceController {
         <contentType>application/zip</contentType>
       </StaticResource>`;
 
-    fs.writeFileSync(path.join(this.staticResourcesDir, "sourceTrackingFiles.resource-meta.xml"), metadataXml);
+    fs.writeFileSync(path.join(staticResourcesDir, "sourceTrackingFiles.resource-meta.xml"), metadataXml);
 
-    try {
-      child_process.execSync(
-        `sfdx force:source:deploy -p force-app -u ${this.scratchOrg.username}`,
-        {
-          cwd: this.aggregatedUsernameDir,
-          encoding: 'utf8',
-          stdio: 'pipe'
-        }
-      );
-    } catch (error) {
-      SFPLogger.log(
-        `Failed to deploy static resources to scratch org`,
-        null,
-        this.logger
-      );
-      throw error;
-    }
+    let packageXml: string =
+      `<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+        <types>
+          <name>StaticResource</name>
+          <members>sourceTrackingFiles</members>
+        </types>
+        <version>50.0</version>
+      </Package>`;
+
+    fs.writeFileSync(path.join(pkgDir, "package.xml"), packageXml);
+
+    let metadataZip = new AdmZip();
+    metadataZip.addLocalFolder(pkgDir, "pkg");
+    metadataZip.writeZip(path.join(this.aggregatedUsernameDir, "pkg.zip"));
+
+    let metadataZipStream = fs.createReadStream(path.join(this.aggregatedUsernameDir, "pkg.zip"));
+
+    await this.conn.metadata.deploy(metadataZipStream, {runAllTests: false, checkOnly: false, rollbackOnError: true}).complete();
   }
 
   /**
    * Retrieve source tracking resources for scratch org
    */
-  retrieve(): void {
-    this.clearStaticResourcesDir();
+  async retrieve(): Promise<void> {
 
-      child_process.execSync(
-        `sfdx force:source:retrieve -m StaticResource:sourceTrackingFiles -u ${this.scratchOrg.username}`,
-        {
-          cwd: this.aggregatedUsernameDir,
-          encoding: 'utf8',
-          stdio: 'pipe'
-        }
-      );
+    let retrieveResult = (await this.conn.metadata.retrieve({ unpackaged: {types: [{name: "StaticResource", members: ["sourceTrackingFiles"]}], version: "50.0"} }).complete()) as any
 
-      let sfdxSourceTrackingResourceDir = `.sfdx/orgs/${this.scratchOrg.username}`;
-      let sfdxMaxRevisionFilePath = path.join(sfdxSourceTrackingResourceDir, "maxRevision.json");
-      let sfdxSourcePathInfosFilePath = path.join(sfdxSourceTrackingResourceDir, "sourcePathInfos.json");
+    fs.writeFileSync(path.join(this.aggregatedUsernameDir, "pkg.zip"), retrieveResult.zipFile, {encoding: 'base64'});
 
-      fs.mkdirpSync(sfdxSourceTrackingResourceDir);
-      fs.copySync(path.join(this.staticResourcesDir, "sourceTrackingFiles", "maxRevision.json"), sfdxMaxRevisionFilePath);
-      fs.copySync(path.join(this.staticResourcesDir, "sourceTrackingFiles", "sourcePathInfos.json"), sfdxSourcePathInfosFilePath);
+    let pkgZip = new AdmZip(path.join(this.aggregatedUsernameDir, "pkg.zip"));
+    pkgZip.extractAllTo(this.aggregatedUsernameDir, true);
 
-      let sfdxSourcePathInfos = fs.readJSONSync(sfdxSourcePathInfosFilePath, {encoding: "UTF-8"});
+    let resourceZip = new AdmZip(path.join(this.aggregatedUsernameDir, "unpackaged", "staticresources", "sourceTrackingFiles.resource"));
+    resourceZip.extractAllTo(path.join(this.aggregatedUsernameDir, "unpackaged", "staticresources"));
 
-      this.untruncateSourcePathInfos(sfdxSourcePathInfos);
+    let sfdxSourceTrackingResourceDir = `.sfdx/orgs/${this.conn.getUsername()}`;
+    let sfdxMaxRevisionFilePath = path.join(sfdxSourceTrackingResourceDir, "maxRevision.json");
+    let sfdxSourcePathInfosFilePath = path.join(sfdxSourceTrackingResourceDir, "sourcePathInfos.json");
 
-      fs.writeJSONSync(sfdxSourcePathInfosFilePath, sfdxSourcePathInfos, { spaces: 2 });
+    fs.mkdirpSync(sfdxSourceTrackingResourceDir);
+    fs.copySync(path.join(this.aggregatedUsernameDir, "unpackaged", "staticresources", "maxRevision.json"), sfdxMaxRevisionFilePath);
+    fs.copySync(path.join(this.aggregatedUsernameDir, "unpackaged", "staticresources", "sourcePathInfos.json"), sfdxSourcePathInfosFilePath);
 
-      // Prevent source tracking files from being shown as a remote addition
-      this.trackStaticResource(sfdxMaxRevisionFilePath);
+    let sfdxSourcePathInfos = fs.readJSONSync(sfdxSourcePathInfosFilePath, {encoding: "UTF-8"});
+
+    this.untruncateSourcePathInfos(sfdxSourcePathInfos);
+
+    fs.writeJSONSync(sfdxSourcePathInfosFilePath, sfdxSourcePathInfos, { spaces: 2 });
+
+    // Prevent source tracking files from being shown as a remote addition
+    this.trackStaticResource(sfdxMaxRevisionFilePath);
 
   }
 
@@ -105,7 +107,7 @@ export default class SourceTrackingResourceController {
       if (packageInfoOfDeployedArtifact.packageMetadata.package_type === "data") continue;
 
       let orgsDir = path.join(packageInfoOfDeployedArtifact.sourceDirectory, ".sfdx", "orgs");
-      let usernameDir = path.join(orgsDir, this.scratchOrg.username);
+      let usernameDir = path.join(orgsDir, this.conn.getUsername());
 
       if (!fs.existsSync(usernameDir))
         throw new Error(`Failed to consolidate source tracking files. Unable to find ${usernameDir}`);
@@ -188,43 +190,13 @@ export default class SourceTrackingResourceController {
   }
 
   /**
-   * Create a barebones SFDX project at the target directory
-   */
-  private createSfdxProject(targetDirectory: string): void {
-    let projectConfig = {
-      packageDirectories: [
-        {
-          path: "force-app",
-          default: true
-        }
-      ],
-      namespace: "",
-      sourceApiVersion: "49.0"
-    };
-
-    fs.writeJSONSync(path.join(targetDirectory, "sfdx-project.json"), projectConfig, { spaces: 2 });
-
-    // Create empty forceignore to prevent static resource from being ignored
-    fs.closeSync(fs.openSync(path.join(targetDirectory, ".forceignore"), 'w'));
-  }
-
-  private clearStaticResourcesDir() {
-    let staticResources = fs.readdirSync(this.staticResourcesDir, { encoding: "utf8" });
-    if (staticResources.length > 0) {
-      staticResources.forEach((resource) => {
-        fs.unlinkSync(path.join(this.staticResourcesDir, resource));
-      });
-    }
-  }
-
-  /**
    * Track static resource 'sourceTrackingFiles' by updating 'lastRetrievedFromServer' field
    * Prevents source tracking files from being shown as a remote addition
    * @param sfdxMaxRevisionFilePath
    */
      private trackStaticResource(sfdxMaxRevisionFilePath: string) {
       child_process.execSync(
-        `sfdx force:source:status -u ${this.scratchOrg.username}`,
+        `sfdx force:source:status -u ${this.conn.getUsername()}`,
         {
           encoding: 'utf8',
           stdio: 'pipe'
