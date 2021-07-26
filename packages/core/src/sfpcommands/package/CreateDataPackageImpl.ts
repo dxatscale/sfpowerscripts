@@ -27,20 +27,7 @@ export default class CreateDataPackageImpl {
   public async exec(): Promise<PackageMetadata> {
     this.packageArtifactMetadata.package_type = "data";
 
-    SFPLogger.log(
-      "--------------Create Data Package---------------------------",
-      null,
-      this.packageLogger
-    );
-    SFPLogger.log(
-      `Project Directory ${this.projectDirectory}`,
-      LoggerLevel.INFO,
-      this.packageLogger
-    );
-    SFPLogger.log(`sfdx_package ${this.sfdx_package}`, LoggerLevel.INFO,this.packageLogger);
-    SFPLogger.log(
-      `packageArtifactMetadata ${this.packageArtifactMetadata}`,LoggerLevel.INFO,this.packageLogger
-    );
+    this.printHeader();
 
     let startTime = Date.now();
 
@@ -52,15 +39,7 @@ export default class CreateDataPackageImpl {
 
     let packageDirectory: string = packageDescriptor["path"];
 
-    if (PackageEmptyChecker.isEmptyDataPackage(this.projectDirectory, packageDirectory)) {
-
-      if (this.breakBuildIfEmpty)
-        throw new Error(`Package directory ${packageDirectory} is empty`);
-      else
-        this.printEmptyArtifactWarning();
-    }
-
-
+   
     this.validateDataPackage(packageDirectory);
 
 
@@ -103,8 +82,34 @@ export default class CreateDataPackageImpl {
   }
 
 
+  private printHeader() {
+    SFPLogger.log(
+      "--------------Create Data Package---------------------------",
+      null,
+      this.packageLogger
+    );
+    SFPLogger.log(
+      `Project Directory ${this.projectDirectory}`,
+      LoggerLevel.INFO,
+      this.packageLogger
+    );
+    SFPLogger.log(`sfdx_package ${this.sfdx_package}`, LoggerLevel.INFO, this.packageLogger);
+    SFPLogger.log(
+      `packageArtifactMetadata ${this.packageArtifactMetadata}`, LoggerLevel.INFO, this.packageLogger
+    );
+  }
+
   // Validate type of data package and existence of the correct configuration files 
   private validateDataPackage(packageDirectory: string) {
+
+    if (PackageEmptyChecker.isEmptyDataPackage(this.projectDirectory, packageDirectory)) {
+
+      if (this.breakBuildIfEmpty)
+        throw new Error(`Package directory ${packageDirectory} is empty`);
+      else
+        this.printEmptyArtifactWarning();
+    }
+
     if (fs.pathExistsSync(path.join(this.projectDirectory, packageDirectory, "export.json"))) {
       SFPLogger.log(
         `Found export.json in ${packageDirectory}.. Utilizing it as data package and will be deployed using sfdmu`,
