@@ -15,6 +15,7 @@ import SFPStatsSender from "../../stats/SFPStatsSender";
 import { AuthInfo, Connection } from "@salesforce/core";
 import { convertAliasToUsername } from "../../utils/AliasList";
 const path = require("path");
+import OrgDetailsFetcher from "../../org/OrgDetailsFetcher";
 
 export default class InstallDataPackageImpl {
   public constructor(
@@ -110,7 +111,7 @@ export default class InstallDataPackageImpl {
         );
       }
 
-      let command = this.buildExecCommand(packageDirectory);
+      let command = await this.buildExecCommand(packageDirectory);
       let child = child_process.exec(command, {
         cwd: path.resolve(this.sourceDirectory),
         encoding: "utf8",
@@ -206,15 +207,18 @@ export default class InstallDataPackageImpl {
         );
       }
     }
-    
+
   }
 
-  private buildExecCommand(packageDirectory: string): string {
-    let command = `sfdx sfdmu:run --path ${packageDirectory} -s csvfile -u ${this.targetusername} --noprompt`;
+  private async buildExecCommand(packageDirectory: string): Promise<string> {
+    let orgDomainUrl = await new OrgDetailsFetcher(this.targetusername).getOrgDomainUrl();
+
+    let command = `sfdx sfdmu:run --path ${packageDirectory} -s csvfile -u ${this.targetusername} --noprompt --canmodify ${orgDomainUrl}`;
 
     SFPLogger.log(`Generated Command ${command}`, null, this.packageLogger);
     return command;
   }
 
-  
+
+
 }
