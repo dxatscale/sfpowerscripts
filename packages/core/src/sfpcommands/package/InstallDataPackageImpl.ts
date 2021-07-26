@@ -1,7 +1,5 @@
 import PackageMetadata from "../../PackageMetadata";
-import child_process = require("child_process");
-import { onExit } from "../../utils/OnExit";
-import fs = require("fs");
+import fs = require("fs-extra");
 import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
 import {
   PackageInstallationResult,
@@ -14,6 +12,7 @@ import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallat
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import { AuthInfo, Connection } from "@salesforce/core";
 import { convertAliasToUsername } from "../../utils/AliasList";
+import SFDMURunImpl from "../../sfdmuwrapper/SFDMURunImpl";
 const path = require("path");
 
 export default class InstallDataPackageImpl {
@@ -23,7 +22,8 @@ export default class InstallDataPackageImpl {
     private sourceDirectory: string,
     private packageMetadata: PackageMetadata,
     private skip_if_package_installed: boolean,
-    private packageLogger?: Logger
+    private packageLogger?: Logger,
+    private logLevel?:LoggerLevel
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -110,21 +110,20 @@ export default class InstallDataPackageImpl {
         );
       }
 
-      let command = this.buildExecCommand(packageDirectory);
-      let child = child_process.exec(command, {
-        cwd: path.resolve(this.sourceDirectory),
-        encoding: "utf8",
-      });
+    
+      //Validate package type
+      let packageType:string = this.determinePackageType(packageDirectory);
 
-      child.stdout.on("data", (data) => {
-        SFPLogger.log(data.toString(), null, this.packageLogger);
-      });
-
-      child.stderr.on("data", (data) => {
-        SFPLogger.log(data.toString(), null, this.packageLogger);
-      });
-
-      await onExit(child);
+    
+      if(packageType==="sfdmu")
+      {
+        let dataPackageDeployer:SFDMURunImpl = new SFDMURunImpl(null,this.targetusername,packageDirectory,this.packageLogger,this.logLevel);
+         await dataPackageDeployer.exec();
+      }
+      else
+      {
+        throw new Error("Unsupported package type");
+      }
 
       let postDeploymentScript: string = path.join(
         this.sourceDirectory,
@@ -209,11 +208,27 @@ export default class InstallDataPackageImpl {
     
   }
 
-  private buildExecCommand(packageDirectory: string): string {
-    let command = `sfdx sfdmu:run --path ${packageDirectory} -s csvfile -u ${this.targetusername} --noprompt`;
+  private determinePackageType (packageDirectory: string):string {
 
-    SFPLogger.log(`Generated Command ${command}`, null, this.packageLogger);
-    return command;
+    if (fs.pathExistsSync(path.join(packageDirectory, "export.json"))) {
+      SFPLogger.log(
+        `Found export.json in ${packageDirectory}.. Utilizing it as data package and will be deployed using sfdmu`,
+        LoggerLevel.INFO,
+        this.packageLogger
+      );
+      return "sfdmu";
+    }
+    else if (fs.pathExistsSync(path.join(packageDirectory, "VlocityComponents.yaml"))) {
+      SFPLogger.log(
+        `Found VlocityComponents.yaml in ${packageDirectory}.. Utilizing it as data package and will be deployed using vbt`,
+        LoggerLevel.INFO,
+        this.packageLogger
+      );
+      return "vlocity";
+    }
+    else {
+      throw new Error(`Could not find export.json or VlocityComponents.yaml in ${packageDirectory}. sfpowerscripts only support vlocity or sfdmu based data packages`);
+    }
   }
 
   
