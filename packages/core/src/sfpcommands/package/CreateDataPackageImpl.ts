@@ -5,7 +5,6 @@ import SFPLogger, { FileLogger, LoggerLevel } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import SFPStatsSender from "../../stats/SFPStatsSender";
-import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 import path from "path";
 import FileSystem from "../../utils/FileSystem";
 

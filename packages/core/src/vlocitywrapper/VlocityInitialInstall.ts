@@ -1,4 +1,3 @@
-import path from "path";
 import { SFDXCommand } from "../command/SFDXCommand";
 import { Logger, LoggerLevel } from "../logger/SFPLogger";
 
