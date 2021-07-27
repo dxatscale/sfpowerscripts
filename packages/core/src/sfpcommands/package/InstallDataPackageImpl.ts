@@ -117,7 +117,7 @@ export default class InstallDataPackageImpl {
 
       //Fetch the sfdxcommand executor for the type
       let dataPackageDeployer:SFDXCommand = this.getSFDXCommand(packageDirectory);
-      await dataPackageDeployer.exec();
+      await dataPackageDeployer.exec(false);
 
       let postDeploymentScript: string = path.join(
         this.sourceDirectory,
