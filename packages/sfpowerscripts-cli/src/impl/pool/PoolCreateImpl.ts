@@ -38,7 +38,8 @@ export default class PoolCreateImpl extends PoolBaseImpl
   public constructor(
     hubOrg: Org,
     private pool:PoolConfig,
-    private poolScriptExecutor:PoolJobExecutor
+    private poolScriptExecutor:PoolJobExecutor,
+    private logLevel:LoggerLevel
   ) {
     super(hubOrg);
     this.limiter = new Bottleneck({
@@ -294,7 +295,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
     );
 
     let startTime = Date.now();
-    let result = await this.poolScriptExecutor.execute(scratchOrg,this.hubOrg);
+    let result = await this.poolScriptExecutor.execute(scratchOrg,this.hubOrg,this.logLevel);
 
     if (result.isOk()) {
       scratchOrg.isScriptExecuted = true;

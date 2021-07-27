@@ -20,7 +20,8 @@ export interface PoolConfig {
       scope: string,
       npmtag: string
     }
-  }
+  },
+  enableVlocity?:boolean,
   min_allocation?: number;
   current_allocation?: number;
   to_allocate?: number;
