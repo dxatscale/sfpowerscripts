@@ -208,6 +208,7 @@ export default class Prepare extends SfpowerscriptsCommand {
       )
     );
 
+  
     console.log(
       COLOR_HEADER(
         `Enable Source Tracking: ${poolConfig.enableSourceTracking ||
@@ -217,9 +218,10 @@ export default class Prepare extends SfpowerscriptsCommand {
       )
     );
 
+    if(poolConfig.enableVlocity)
     console.log(
       COLOR_HEADER(
-        `Enable Vlocity Config: ${poolConfig.enableVlocity ? "true" : "false"}`
+        `Enable Vlocity Config: true`
       )
     );
 
