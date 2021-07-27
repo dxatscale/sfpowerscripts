@@ -26,7 +26,7 @@ export default class VlocityPackDeployImpl extends SFDXCommand
   getGeneratedParams(): string {
     let command = `-sfdx.username ${this.target_org} -job ${path.join(this.packageDirectory,"VlocityComponents.yaml")}  packDeploy`;
     if(this.logLevel)
-     command += ` --loglevel ${LoggerLevel[this.logLevel]}`;
+     command += ` -verbose`;
     return command;
   }
 }

@@ -26,7 +26,7 @@ export default class VlocityRefreshBase extends SFDXCommand
   getGeneratedParams(): string {
     let command = `-sfdx.username ${this.target_org} -job ${path.join(this.packageDirectory,"VlocityComponents.yaml")}  refreshVlocityBase`;
     if(this.logLevel)
-     command += ` --loglevel ${LoggerLevel[this.logLevel]}`;
+     command += ` -verbose`;
     return command;
   }
 }

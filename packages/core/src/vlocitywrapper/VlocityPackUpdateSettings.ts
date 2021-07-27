@@ -8,7 +8,6 @@ export default class VlocityPackUpdateSettings extends SFDXCommand
   public constructor(
     project_directory: string,
     target_org: string,
-    private packageDirectory: string,
     logger: Logger,
     logLevel:LoggerLevel
   ) {
@@ -24,9 +23,9 @@ export default class VlocityPackUpdateSettings extends SFDXCommand
   }
   
   getGeneratedParams(): string {
-    let command = `-sfdx.username ${this.target_org} -job ${path.join(this.packageDirectory,"VlocityComponents.yaml")}  packUpdateSettings`;
+    let command = `-sfdx.username ${this.target_org} --nojob  packUpdateSettings`;
     if(this.logLevel)
-     command += ` --loglevel ${LoggerLevel[this.logLevel]}`;
+     command += ` -verbose`;
     return command;
   }
 }
