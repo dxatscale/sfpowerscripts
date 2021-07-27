@@ -6,6 +6,7 @@ import * as fs from "fs-extra";
 import { EOL } from "os";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import PackageEmptyChecker from "../../package/PackageEmptyChecker";
+import path from "path";
 
 export default class CreateDataPackageImpl {
   private packageLogger:FileLogger;
@@ -26,20 +27,7 @@ export default class CreateDataPackageImpl {
   public async exec(): Promise<PackageMetadata> {
     this.packageArtifactMetadata.package_type = "data";
 
-    SFPLogger.log(
-      "--------------Create Data Package---------------------------",
-      null,
-      this.packageLogger
-    );
-    SFPLogger.log(
-      `Project Directory ${this.projectDirectory}`,
-      LoggerLevel.INFO,
-      this.packageLogger
-    );
-    SFPLogger.log(`sfdx_package ${this.sfdx_package}`, LoggerLevel.INFO,this.packageLogger);
-    SFPLogger.log(
-      `packageArtifactMetadata ${this.packageArtifactMetadata}`,LoggerLevel.INFO,this.packageLogger
-    );
+    this.printHeader();
 
     let startTime = Date.now();
 
@@ -51,13 +39,9 @@ export default class CreateDataPackageImpl {
 
     let packageDirectory: string = packageDescriptor["path"];
 
-    if (PackageEmptyChecker.isEmptyDataPackage(this.projectDirectory, packageDirectory)) {
+   
+    this.validateDataPackage(packageDirectory);
 
-      if (this.breakBuildIfEmpty)
-        throw new Error(`Package directory ${packageDirectory} is empty`);
-      else
-        this.printEmptyArtifactWarning();
-    }
 
     this.writeDeploymentStepsToArtifact(packageDescriptor);
 
@@ -95,6 +79,54 @@ export default class CreateDataPackageImpl {
     });
 
     return this.packageArtifactMetadata;
+  }
+
+
+  private printHeader() {
+    SFPLogger.log(
+      "--------------Create Data Package---------------------------",
+      null,
+      this.packageLogger
+    );
+    SFPLogger.log(
+      `Project Directory ${this.projectDirectory}`,
+      LoggerLevel.INFO,
+      this.packageLogger
+    );
+    SFPLogger.log(`sfdx_package ${this.sfdx_package}`, LoggerLevel.INFO, this.packageLogger);
+    SFPLogger.log(
+      `packageArtifactMetadata ${this.packageArtifactMetadata}`, LoggerLevel.INFO, this.packageLogger
+    );
+  }
+
+  // Validate type of data package and existence of the correct configuration files 
+  private validateDataPackage(packageDirectory: string) {
+
+    if (PackageEmptyChecker.isEmptyDataPackage(this.projectDirectory, packageDirectory)) {
+
+      if (this.breakBuildIfEmpty)
+        throw new Error(`Package directory ${packageDirectory} is empty`);
+      else
+        this.printEmptyArtifactWarning();
+    }
+
+    if (fs.pathExistsSync(path.join(this.projectDirectory, packageDirectory, "export.json"))) {
+      SFPLogger.log(
+        `Found export.json in ${packageDirectory}.. Utilizing it as data package and will be deployed using sfdmu`,
+        LoggerLevel.INFO,
+        this.packageLogger
+      );
+    }
+    else if (fs.pathExistsSync(path.join(this.projectDirectory, packageDirectory, "VlocityComponents.yaml"))) {
+      SFPLogger.log(
+        `Found VlocityComponents.yaml in ${packageDirectory}.. Utilizing it as data package and will be deployed using vbt`,
+        LoggerLevel.INFO,
+        this.packageLogger
+      );
+    }
+    else {
+      throw new Error(`Could not find export.json or VlocityComponents.yaml in ${packageDirectory}. sfpowerscripts only support vlocity or sfdmu based data packages`);
+    }
   }
 
   private writeDeploymentStepsToArtifact(packageDescriptor: any) {
