@@ -113,11 +113,10 @@ export default class InstallDataPackageImpl {
       }
 
     
-      //Validate package type
-      let packageType:string = this.determinePackageType(packageDirectory);
+
 
       //Fetch the sfdxcommand executor for the type
-      let dataPackageDeployer:SFDXCommand = this.getSFDXCommand(packageType,packageDirectory);
+      let dataPackageDeployer:SFDXCommand = this.getSFDXCommand(packageDirectory);
       await dataPackageDeployer.exec();
 
       let postDeploymentScript: string = path.join(
@@ -202,9 +201,14 @@ export default class InstallDataPackageImpl {
     }
     
   }
-  private getSFDXCommand(packageType: string, packageDirectory:string): SFDXCommand {
+  private getSFDXCommand(packageDirectory:string): SFDXCommand {
+
+    //Determine package type
+    let packageType:string = this.determinePackageType(packageDirectory);
+
+    //Pick the type of SFDX command to use
     let dataPackageDeployer: SFDXCommand;
-    if(packageType==="sfdmu")
+      if(packageType==="sfdmu")
       {
         dataPackageDeployer = new SFDMURunImpl(null,this.targetusername,packageDirectory,this.packageLogger,this.logLevel);
         
