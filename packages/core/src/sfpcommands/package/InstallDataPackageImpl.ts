@@ -13,6 +13,8 @@ import SFPStatsSender from "../../stats/SFPStatsSender";
 import { AuthInfo, Connection } from "@salesforce/core";
 import { convertAliasToUsername } from "../../utils/AliasList";
 import SFDMURunImpl from "../../sfdmuwrapper/SFDMURunImpl";
+import VlocityPackDeployImpl from "../../vlocitywrapper/VlocityPackDeployImpl";
+import { SFDXCommand } from "../../command/SFDXCommand";
 const path = require("path");
 
 export default class InstallDataPackageImpl {
@@ -114,16 +116,9 @@ export default class InstallDataPackageImpl {
       //Validate package type
       let packageType:string = this.determinePackageType(packageDirectory);
 
-    
-      if(packageType==="sfdmu")
-      {
-        let dataPackageDeployer:SFDMURunImpl = new SFDMURunImpl(null,this.targetusername,packageDirectory,this.packageLogger,this.logLevel);
-         await dataPackageDeployer.exec();
-      }
-      else
-      {
-        throw new Error("Unsupported package type");
-      }
+      //Fetch the sfdxcommand executor for the type
+      let dataPackageDeployer:SFDXCommand = this.getSFDXCommand(packageType,packageDirectory);
+      await dataPackageDeployer.exec();
 
       let postDeploymentScript: string = path.join(
         this.sourceDirectory,
@@ -206,6 +201,24 @@ export default class InstallDataPackageImpl {
       }
     }
     
+  }
+  private getSFDXCommand(packageType: string, packageDirectory:string): SFDXCommand {
+    let dataPackageDeployer: SFDXCommand;
+    if(packageType==="sfdmu")
+      {
+        dataPackageDeployer = new SFDMURunImpl(null,this.targetusername,packageDirectory,this.packageLogger,this.logLevel);
+        
+      }
+      else if(packageType==="vlocity")
+      {
+        dataPackageDeployer = new VlocityPackDeployImpl(null,this.targetusername,packageDirectory,this.packageLogger,this.logLevel);
+      }
+      else
+      {
+        throw new Error("Unsupported package type");
+      }
+
+      return dataPackageDeployer;
   }
 
   private determinePackageType (packageDirectory: string):string {
