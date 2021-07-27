@@ -7,6 +7,7 @@ import { EOL } from "os";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 import path from "path";
+import FileSystem from "../../utils/FileSystem";
 
 export default class CreateDataPackageImpl {
   private packageLogger:FileLogger;
@@ -102,30 +103,37 @@ export default class CreateDataPackageImpl {
   // Validate type of data package and existence of the correct configuration files 
   private validateDataPackage(packageDirectory: string) {
 
-    if (PackageEmptyChecker.isEmptyDataPackage(this.projectDirectory, packageDirectory)) {
-
-      if (this.breakBuildIfEmpty)
-        throw new Error(`Package directory ${packageDirectory} is empty`);
-      else
-        this.printEmptyArtifactWarning();
+    let dirToCheck;
+    if (this.projectDirectory!=null) {
+      dirToCheck = path.join(this.projectDirectory, packageDirectory);
+    } else {
+      dirToCheck = packageDirectory;
     }
 
-    if (fs.pathExistsSync(path.join(this.projectDirectory, packageDirectory, "export.json"))) {
+    if (fs.pathExistsSync(path.join(dirToCheck, "export.json"))) {
       SFPLogger.log(
-        `Found export.json in ${packageDirectory}.. Utilizing it as data package and will be deployed using sfdmu`,
+        `Found export.json in ${dirToCheck}.. Utilizing it as data package and will be deployed using sfdmu`,
         LoggerLevel.INFO,
         this.packageLogger
       );
+
+      if (this.isEmptyDataPackage(this.projectDirectory, packageDirectory)) {
+
+        if (this.breakBuildIfEmpty)
+          throw new Error(`Package directory ${dirToCheck} is empty`);
+        else
+          this.printEmptyArtifactWarning();
+      }
     }
-    else if (fs.pathExistsSync(path.join(this.projectDirectory, packageDirectory, "VlocityComponents.yaml"))) {
+    else if (fs.pathExistsSync(path.join(dirToCheck, "VlocityComponents.yaml"))) {
       SFPLogger.log(
-        `Found VlocityComponents.yaml in ${packageDirectory}.. Utilizing it as data package and will be deployed using vbt`,
+        `Found VlocityComponents.yaml in ${dirToCheck}.. Utilizing it as data package and will be deployed using vbt`,
         LoggerLevel.INFO,
         this.packageLogger
       );
     }
     else {
-      throw new Error(`Could not find export.json or VlocityComponents.yaml in ${packageDirectory}. sfpowerscripts only support vlocity or sfdmu based data packages`);
+      throw new Error(`Could not find export.json or VlocityComponents.yaml in ${dirToCheck}. sfpowerscripts only support vlocity or sfdmu based data packages`);
     }
   }
 
@@ -173,4 +181,29 @@ export default class CreateDataPackageImpl {
       this.packageLogger
     );
   }
+
+  public  isEmptyDataPackage(
+    projectDirectory: string,
+    sourceDirectory: string
+  ): boolean {
+    let dirToCheck;
+
+    if (projectDirectory!=null) {
+      dirToCheck = path.join(projectDirectory, sourceDirectory);
+    } else {
+      dirToCheck = sourceDirectory;
+    }
+
+    let files: string[] = FileSystem.readdirRecursive(dirToCheck);
+
+    let hasExportJson = files.find((file) =>
+      path.basename(file) === "export.json"
+    )
+
+    let hasCsvFile = files.find((file) => path.extname(file) === ".csv")
+
+    if (!hasExportJson || !hasCsvFile) return true;
+    else return false;
+  }
+
 }
