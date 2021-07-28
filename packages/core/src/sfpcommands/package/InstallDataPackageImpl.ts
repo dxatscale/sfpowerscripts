@@ -24,7 +24,7 @@ export default class InstallDataPackageImpl {
     private sourceDirectory: string,
     private packageMetadata: PackageMetadata,
     private skip_if_package_installed: boolean,
-    private packageLogger?: Logger,
+    private logger?: Logger,
     private logLevel?:LoggerLevel
   ) {}
 
@@ -65,7 +65,7 @@ export default class InstallDataPackageImpl {
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
         let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
-          this.packageLogger,
+          this.logger,
           this.targetusername,
           this.packageMetadata
         );
@@ -75,7 +75,7 @@ export default class InstallDataPackageImpl {
           SFPLogger.log(
             "Skipping Package Installation",
             null,
-            this.packageLogger
+            this.logger
           );
           return { result: PackageInstallationStatus.Skipped };
         }
@@ -93,7 +93,7 @@ export default class InstallDataPackageImpl {
           preDeploymentScript,
           this.sfdx_package,
           this.targetusername,
-          this.packageLogger
+          this.logger
         );
       }
 
@@ -101,14 +101,14 @@ export default class InstallDataPackageImpl {
         SFPLogger.log(
           "Assigning permission sets before deployment:",
           LoggerLevel.INFO,
-          this.packageLogger
+          this.logger
         );
 
         await PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPreDeployment,
           connection,
           this.sourceDirectory,
-          this.packageLogger
+          this.logger
         );
       }
 
@@ -117,7 +117,9 @@ export default class InstallDataPackageImpl {
 
       //Fetch the sfdxcommand executor for the type
       let dataPackageDeployer:SFDXCommand = this.getSFDXCommand(packageDirectory);
-      await dataPackageDeployer.exec(false);
+      let result = await dataPackageDeployer.exec(false);
+
+      SFPLogger.log(result,LoggerLevel.INFO,this.logger);
 
       let postDeploymentScript: string = path.join(
         this.sourceDirectory,
@@ -131,7 +133,7 @@ export default class InstallDataPackageImpl {
           postDeploymentScript,
           this.sfdx_package,
           this.targetusername,
-          this.packageLogger
+          this.logger
         );
       }
 
@@ -139,19 +141,19 @@ export default class InstallDataPackageImpl {
         SFPLogger.log(
           "Assigning permission sets after deployment:",
           LoggerLevel.INFO,
-          this.packageLogger
+          this.logger
         );
 
         await PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPostDeployment,
           connection,
           this.sourceDirectory,
-          this.packageLogger
+          this.logger
         );
       }
 
       await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
-        this.packageLogger,
+        this.logger,
         this.targetusername,
         this.packageMetadata
       );
@@ -190,12 +192,12 @@ export default class InstallDataPackageImpl {
         SFPLogger.log(
           `\n---------------------WARNING: SFDMU detected CSV issues, verify the following files -------------------------------`,
           LoggerLevel.WARN,
-          this.packageLogger
+          this.logger
         );
         SFPLogger.log(
           fs.readFileSync(csvIssuesReportFilepath, "utf8"),
           LoggerLevel.INFO,
-          this.packageLogger
+          this.logger
         );
       }
     }
@@ -210,12 +212,12 @@ export default class InstallDataPackageImpl {
     let dataPackageDeployer: SFDXCommand;
       if(packageType==="sfdmu")
       {
-        dataPackageDeployer = new SFDMURunImpl(null,this.targetusername,packageDirectory,this.packageLogger,this.logLevel);
+        dataPackageDeployer = new SFDMURunImpl(null,this.targetusername,packageDirectory,this.logger,this.logLevel);
         
       }
       else if(packageType==="vlocity")
       {
-        dataPackageDeployer = new VlocityPackDeployImpl(null,this.targetusername,packageDirectory,this.packageLogger,this.logLevel);
+        dataPackageDeployer = new VlocityPackDeployImpl(null,this.targetusername,packageDirectory,null,null);
       }
       else
       {
@@ -231,7 +233,7 @@ export default class InstallDataPackageImpl {
       SFPLogger.log(
         `Found export.json in ${packageDirectory}.. Utilizing it as data package and will be deployed using sfdmu`,
         LoggerLevel.INFO,
-        this.packageLogger
+        this.logger
       );
       return "sfdmu";
     }
@@ -239,7 +241,7 @@ export default class InstallDataPackageImpl {
       SFPLogger.log(
         `Found VlocityComponents.yaml in ${packageDirectory}.. Utilizing it as data package and will be deployed using vbt`,
         LoggerLevel.INFO,
-        this.packageLogger
+        this.logger
       );
       return "vlocity";
     }
