@@ -1,8 +1,15 @@
 import child_process = require("child_process"); 
+import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
 
 export default class ExecuteCommand
 {
  
+  public constructor(
+    protected logger?: Logger,
+    protected logLevel?: LoggerLevel
+  ) {}
+
+
    public execCommand(command:string, workingdirectory:string):Promise<any>
    {
     return new Promise((resolve, reject) => {
@@ -25,11 +32,17 @@ export default class ExecuteCommand
   
       // collect data written to STDOUT into a string
       childProcess.stdout.on('data', (data) => {
+        if(this.logger)
+            SFPLogger.log(data.toString(),this.logLevel,this.logger);
+           
           stdoutContents += data.toString();
       });
   
       // collect data written to STDERR into a string
       childProcess.stderr.on('data', (data) => {
+        if(this.logger)
+          SFPLogger.log(data.toString(),this.logLevel,this.logger);
+
          stderrContents += data.toString();
       });
   
