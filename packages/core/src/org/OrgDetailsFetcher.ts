@@ -16,11 +16,19 @@ export default class OrgDetailsFetcher {
       return OrgDetailsFetcher.usernamesToOrgDetails[this.username];
 
     const authInfo = await AuthInfo.create({ username: this.username });
+
     let authInfoFields = authInfo.getFields();
+
+    let sfdxAuthUrl: string;
+    try {
+     sfdxAuthUrl = authInfo.getSfdxAuthUrl();
+    } catch (error) {}
+
     OrgDetailsFetcher.usernamesToOrgDetails[this.username] = {
-      sfdxAuthUrl: authInfo.getSfdxAuthUrl(),
+      sfdxAuthUrl: sfdxAuthUrl,
       ...authInfoFields
     }
+
     return OrgDetailsFetcher.usernamesToOrgDetails[this.username];
   }
 
