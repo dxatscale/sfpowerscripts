@@ -113,7 +113,8 @@ export default class InstallDataPackageImpl {
 
 
       //Validate package type
-      let packageType:string = this.determinePackageType(packageDirectory);
+      let packageType:string = this.determinePackageType(absPackageDirectory);
+
 
 
       if(packageType==="sfdmu")
@@ -128,7 +129,7 @@ export default class InstallDataPackageImpl {
           this.packageLogger,
           this.logLevel
         );
-         await dataPackageDeployer.exec();
+        await dataPackageDeployer.exec();
       }
       else
       {
@@ -218,7 +219,7 @@ export default class InstallDataPackageImpl {
 
   }
 
-  private determinePackageType (packageDirectory: string):string {
+  private determinePackageType(packageDirectory: string): string {
 
     if (fs.pathExistsSync(path.join(packageDirectory, "export.json"))) {
       SFPLogger.log(
@@ -240,7 +241,6 @@ export default class InstallDataPackageImpl {
       throw new Error(`Could not find export.json or VlocityComponents.yaml in ${packageDirectory}. sfpowerscripts only support vlocity or sfdmu based data packages`);
     }
   }
-
 
 
 }
