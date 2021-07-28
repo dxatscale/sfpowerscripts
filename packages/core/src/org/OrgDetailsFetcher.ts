@@ -22,7 +22,7 @@ export default class OrgDetailsFetcher {
 
     let sfdxAuthUrl: string;
     try {
-     sfdxAuthUrl = authInfo.getSfdxAuthUrl();
+      sfdxAuthUrl = authInfo.getSfdxAuthUrl();
     } catch (error) {
       SFPLogger.log(`Unable to get SFDX Auth URL: ${error.message}`, LoggerLevel.TRACE, null);
     }
