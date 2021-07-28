@@ -14,6 +14,7 @@ import { AuthInfo, Connection } from "@salesforce/core";
 import { convertAliasToUsername } from "../../utils/AliasList";
 import SFDMURunImpl from "../../sfdmuwrapper/SFDMURunImpl";
 const path = require("path");
+import OrgDetailsFetcher from "../../org/OrgDetailsFetcher";
 
 export default class InstallDataPackageImpl {
   public constructor(
@@ -115,11 +116,15 @@ export default class InstallDataPackageImpl {
       let packageType:string = this.determinePackageType(absPackageDirectory);
 
 
+
       if(packageType==="sfdmu")
       {
+        let orgDomainUrl = await new OrgDetailsFetcher(this.targetusername).getOrgDomainUrl();
+
         let dataPackageDeployer:SFDMURunImpl = new SFDMURunImpl(
-          this.sourceDirectory,
+          null,
           this.targetusername,
+          orgDomainUrl,
           packageDirectory,
           this.packageLogger,
           this.logLevel
