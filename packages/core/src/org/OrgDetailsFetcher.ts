@@ -1,12 +1,15 @@
 import { AuthInfo, AuthFields } from "@salesforce/core";
 import extractDomainFromUrl from "../utils/extractDomainFromUrl";
+import { convertAliasToUsername } from "../utils/AliasList";
 
 export default class OrgDetailsFetcher {
 
 
   private static usernamesToOrgDetails: {[P: string]: OrgDetails} = {};
 
-  constructor(private username: string) {}
+  constructor(private username: string) {
+    this.username = convertAliasToUsername(this.username);
+  }
 
   public async getOrgDetails(): Promise<OrgDetails> {
     if (OrgDetailsFetcher.usernamesToOrgDetails[this.username])
