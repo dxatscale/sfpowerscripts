@@ -16,6 +16,7 @@ import SFDMURunImpl from "../../sfdmuwrapper/SFDMURunImpl";
 import VlocityPackDeployImpl from "../../vlocitywrapper/VlocityPackDeployImpl";
 import { SFDXCommand } from "../../command/SFDXCommand";
 const path = require("path");
+import OrgDetailsFetcher from "../../org/OrgDetailsFetcher";
 
 export default class InstallDataPackageImpl {
   public constructor(
@@ -112,11 +113,11 @@ export default class InstallDataPackageImpl {
         );
       }
 
-    
+
 
 
       //Fetch the sfdxcommand executor for the type
-      let dataPackageDeployer:SFDXCommand = this.getSFDXCommand(packageDirectory);
+      let dataPackageDeployer: SFDXCommand = await this.getSFDXCommand(this.sourceDirectory, packageDirectory);
       let result = await dataPackageDeployer.exec(false);
 
       SFPLogger.log(result,LoggerLevel.INFO,this.logger);
@@ -201,23 +202,38 @@ export default class InstallDataPackageImpl {
         );
       }
     }
-    
+
   }
-  private getSFDXCommand(packageDirectory:string): SFDXCommand {
+  private async getSFDXCommand(sourceDirectory: string, packageDirectory:string): Promise<SFDXCommand> {
 
     //Determine package type
-    let packageType:string = this.determinePackageType(packageDirectory);
+    let packageType:string = this.determinePackageType(path.join(sourceDirectory, packageDirectory));
 
     //Pick the type of SFDX command to use
     let dataPackageDeployer: SFDXCommand;
       if(packageType==="sfdmu")
       {
-        dataPackageDeployer = new SFDMURunImpl(null,this.targetusername,packageDirectory,this.logger,this.logLevel);
-        
+        let orgDomainUrl = await new OrgDetailsFetcher(this.targetusername).getOrgDomainUrl();
+
+        dataPackageDeployer = new SFDMURunImpl(
+          sourceDirectory,
+          this.targetusername,
+          orgDomainUrl,
+          packageDirectory,
+          this.logger,
+          this.logLevel
+        );
+
       }
       else if(packageType==="vlocity")
       {
-        dataPackageDeployer = new VlocityPackDeployImpl(null,this.targetusername,packageDirectory,null,null);
+        dataPackageDeployer = new VlocityPackDeployImpl(
+          this.sourceDirectory,
+          this.targetusername,
+          packageDirectory,
+          null,
+          null
+        );
       }
       else
       {
@@ -227,7 +243,7 @@ export default class InstallDataPackageImpl {
       return dataPackageDeployer;
   }
 
-  private determinePackageType (packageDirectory: string):string {
+  private determinePackageType(packageDirectory: string): string {
 
     if (fs.pathExistsSync(path.join(packageDirectory, "export.json"))) {
       SFPLogger.log(
@@ -250,5 +266,5 @@ export default class InstallDataPackageImpl {
     }
   }
 
-  
+
 }

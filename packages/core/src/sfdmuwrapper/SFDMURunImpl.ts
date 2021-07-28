@@ -7,6 +7,7 @@ export default class SFDMURunImpl extends SFDXCommand
   public constructor(
     working_directory: string,
     target_org: string,
+    private targetOrgDomain: string,
     private packageDirectory: string,
     logger: Logger,
     logLevel:LoggerLevel
@@ -20,11 +21,12 @@ export default class SFDMURunImpl extends SFDXCommand
   getCommandName(): string {
     return "sfdmu:run"
   }
-  
+
   getGeneratedParams(): string {
-    let command = `--path ${this.packageDirectory} -s csvfile -u ${this.target_org} --noprompt`;
+    let command = `--path ${this.packageDirectory} -s csvfile -u ${this.target_org} --noprompt --canmodify ${this.targetOrgDomain}`;
     if(this.logLevel)
      command += ` --loglevel ${LoggerLevel[this.logLevel]}`;
     return command;
   }
+
 }

@@ -4,7 +4,6 @@ import { PoolConfig } from "../pool/PoolConfig";
 import OrgDisplayImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/OrgDisplayImpl";
 import isValidSfdxAuthUrl from "../pool/prequisitecheck/IsValidSfdxAuthUrl";
 import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { Result } from "neverthrow";
@@ -59,17 +58,13 @@ export default class PrepareImpl {
     rimraf.sync("artifacts");
     fs.mkdirpSync("artifacts");
 
-    let artifacts: ArtifactFilePaths[];
     if (this.pool.installAll) {
       // Fetch Latest Artifacts to Artifact Directory
       await this.getPackageArtifacts();
-
-      artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths("artifacts");
     }
 
     let prepareASingleOrgImpl: PrepareOrgJob = new PrepareOrgJob(
-      this.pool,
-      artifacts
+      this.pool
     );
 
     let createPool: PoolCreateImpl = new PoolCreateImpl(
@@ -87,7 +82,7 @@ export default class PrepareImpl {
 
 
   private async getPackageArtifacts() {
-   
+
 
     //Filter Packages to be ignore from prepare to be fetched
     let packages =ProjectConfig.getSFDXPackageManifest(null)[
@@ -113,8 +108,8 @@ export default class PrepareImpl {
         this.pool.fetchArtifacts.npm?.npmrcPath
       ).getArtifactFetcher();
 
-  
-      packages.forEach((pkg) => {       
+
+      packages.forEach((pkg) => {
         artifactFetcher.fetchArtifact(
           pkg.package,
           "artifacts",
