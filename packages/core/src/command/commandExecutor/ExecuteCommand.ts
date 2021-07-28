@@ -1,5 +1,5 @@
 import child_process = require("child_process"); 
-import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
+import { Logger, LoggerLevel } from "../../logger/SFPLogger";
 
 export default class ExecuteCommand
 {
