@@ -22,7 +22,6 @@ import { Connection, Org } from "@salesforce/core";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { PoolConfig } from "../pool/PoolConfig";
 import { Result, ok, err } from "neverthrow";
-import { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import RelaxIPRange from "@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange"
 import SourceTrackingResourceController from "../pool/SourceTrackingResourceController";
 
@@ -32,7 +31,6 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
   public constructor(
     protected pool: PoolConfig,
-    private artifacts: ArtifactFilePaths[]
   ) {
     super(pool);
   }
@@ -105,7 +103,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         `Successfully completed Installing Package Dependencies of this repo in ${scratchOrg.alias}`
       );
 
-      if (this.artifacts) {
+      if (this.pool.installAll) {
         let deploymentResult: DeploymentResult;
 
         let deploymentMode: DeploymentMode;
@@ -167,7 +165,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
     let deployProps: DeployProps = {
       targetUsername: scratchOrg.username,
-      artifactDir: null,
+      artifactDir: "artifacts",
       waitTime: 120,
       currentStage: Stage.PREPARE,
       packageLogger: packageLogger,
@@ -175,7 +173,6 @@ export default class PrepareOrgJob extends PoolJobExecutor {
       skipIfPackageInstalled: false,
       deploymentMode: deploymentMode,
       isRetryOnFailure: this.pool.retryOnFailure,
-      artifacts: this.artifacts
     };
 
     //Deploy the fetched artifacts to the org

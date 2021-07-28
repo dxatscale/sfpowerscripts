@@ -14,9 +14,6 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/Art
 import { PreparePoolInterface } from "./PreparePoolInterface";
 import { PoolError } from "../pool/PoolError";
 import { Result} from "neverthrow"
-import ArtifactFilePathFetcher, {
-  ArtifactFilePaths,
-} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 
 
 export default class PreparePool implements PreparePoolInterface  {
@@ -36,17 +33,13 @@ export default class PreparePool implements PreparePoolInterface  {
     rimraf.sync("artifacts");
     fs.mkdirpSync("artifacts");
 
-    let artifacts: ArtifactFilePaths[];
     if (this.pool.installAll) {
       // Fetch Latest Artifacts to Artifact Directory
       await this.getPackageArtifacts();
-
-      artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths("artifacts");
     }
 
     let prepareASingleOrgImpl: PrepareOrgJob = new PrepareOrgJob(
-      this.pool,
-      artifacts
+      this.pool
     );
 
     let createPool: PoolCreateImpl = new PoolCreateImpl(
@@ -63,7 +56,7 @@ export default class PreparePool implements PreparePoolInterface  {
 
 
   private async getPackageArtifacts() {
-   
+
 
     //Filter Packages to be ignore from prepare to be fetched
     let packages =ProjectConfig.getSFDXPackageManifest(null)[
@@ -89,8 +82,8 @@ export default class PreparePool implements PreparePoolInterface  {
         this.pool.fetchArtifacts.npm?.npmrcPath
       ).getArtifactFetcher();
 
-  
-      packages.forEach((pkg) => {       
+
+      packages.forEach((pkg) => {
         artifactFetcher.fetchArtifact(
           pkg.package,
           "artifacts",
