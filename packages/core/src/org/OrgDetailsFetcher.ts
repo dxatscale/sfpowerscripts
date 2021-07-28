@@ -1,6 +1,7 @@
 import { AuthInfo, AuthFields } from "@salesforce/core";
 import extractDomainFromUrl from "../utils/extractDomainFromUrl";
 import { convertAliasToUsername } from "../utils/AliasList";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 
 export default class OrgDetailsFetcher {
 
@@ -16,11 +17,21 @@ export default class OrgDetailsFetcher {
       return OrgDetailsFetcher.usernamesToOrgDetails[this.username];
 
     const authInfo = await AuthInfo.create({ username: this.username });
+
     let authInfoFields = authInfo.getFields();
+
+    let sfdxAuthUrl: string;
+    try {
+      sfdxAuthUrl = authInfo.getSfdxAuthUrl();
+    } catch (error) {
+      SFPLogger.log(`Unable to get SFDX Auth URL: ${error.message}`, LoggerLevel.TRACE, null);
+    }
+
     OrgDetailsFetcher.usernamesToOrgDetails[this.username] = {
-      sfdxAuthUrl: authInfo.getSfdxAuthUrl(),
+      sfdxAuthUrl: sfdxAuthUrl,
       ...authInfoFields
     }
+
     return OrgDetailsFetcher.usernamesToOrgDetails[this.username];
   }
 
