@@ -88,29 +88,6 @@ export default class PackageEmptyChecker
     else return false;
   }
 
-  public static isEmptyDataPackage(
-    projectDirectory: string,
-    sourceDirectory: string
-  ): boolean {
-    let dirToCheck;
-
-    if (projectDirectory!=null) {
-      dirToCheck = path.join(projectDirectory, sourceDirectory);
-    } else {
-      dirToCheck = sourceDirectory;
-    }
-
-    let files: string[] = FileSystem.readdirRecursive(dirToCheck);
-
-    let hasExportJson = files.find((file) =>
-      path.basename(file) === "export.json"
-    )
-
-    let hasCsvFile = files.find((file) => path.extname(file) === ".csv")
-
-    if (!hasExportJson || !hasCsvFile) return true;
-    else return false;
-  }
-
+ 
 
 }

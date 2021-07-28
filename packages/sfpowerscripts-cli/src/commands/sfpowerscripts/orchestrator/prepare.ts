@@ -85,64 +85,7 @@ export default class Prepare extends SfpowerscriptsCommand {
           if (this.flags.keys) poolConfig.keys = this.flags.keys;
 
 
-          console.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
-          console.log(
-            COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxAllocation}`)
-          );
-          console.log(
-            COLOR_HEADER(
-              `Scratch Orgs to be submitted to pool in case of failures: ${
-                poolConfig.succeedOnDeploymentErrors ? "true" : "false"
-              }`
-            )
-          );
-
-          console.log(
-            COLOR_HEADER(
-              `All packages in the repo to be installed: ${
-                poolConfig.installAll ? "true" : "false"
-              }`
-            )
-          );
-
-          console.log(
-            COLOR_HEADER(
-              `Enable Source Tracking: ${
-                poolConfig.enableSourceTracking ||
-                poolConfig.enableSourceTracking === undefined
-                  ? "true"
-                  : "false"
-              }`
-            )
-          );
-
-          if (poolConfig.fetchArtifacts) {
-            if (poolConfig.fetchArtifacts.artifactFetchScript)
-              console.log(
-                COLOR_HEADER(
-                  `Script provided to fetch artifacts: ${poolConfig.fetchArtifacts.artifactFetchScript}`
-                )
-              );
-            if (poolConfig.fetchArtifacts.npm) {
-              console.log(
-                COLOR_HEADER(
-                  `Fetch artifacts from pre-authenticated NPM registry: true`
-                )
-              );
-              if (poolConfig.fetchArtifacts.npm.npmtag)
-                console.log(
-                  COLOR_HEADER(
-                    `Tag utilized to fetch from NPM registry: ${poolConfig.fetchArtifacts.npm.npmtag}`
-                  )
-                );
-            }
-          }
-
-          console.log(
-            COLOR_HEADER(
-              "---------------------------------------------------------"
-            )
-          );
+          this.displayHeader(poolConfig);
 
 
 
@@ -168,7 +111,7 @@ export default class Prepare extends SfpowerscriptsCommand {
           this.flags.apiversion =
             this.flags.apiversion || (await hubConn.retrieveMaxApiVersion());
 
-          let prepareImpl = new PrepareImpl(this.hubOrg, poolConfig);
+          let prepareImpl = new PrepareImpl(this.hubOrg, poolConfig,this.flags.loglevel);
 
           let results = await prepareImpl.exec();
           if (results.isOk()) {
@@ -246,6 +189,70 @@ export default class Prepare extends SfpowerscriptsCommand {
         } catch (err) {
       throw new SfdxError("Unable to execute command .. " + err);
     }
+  }
+
+  private displayHeader(poolConfig: PoolConfig) {
+    console.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
+    console.log(
+      COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxAllocation}`)
+    );
+    console.log(
+      COLOR_HEADER(
+        `Scratch Orgs to be submitted to pool in case of failures: ${poolConfig.succeedOnDeploymentErrors ? "true" : "false"}`
+      )
+    );
+
+    console.log(
+      COLOR_HEADER(
+        `All packages in the repo to be installed: ${poolConfig.installAll ? "true" : "false"}`
+      )
+    );
+
+  
+    console.log(
+      COLOR_HEADER(
+        `Enable Source Tracking: ${poolConfig.enableSourceTracking ||
+          poolConfig.enableSourceTracking === undefined
+          ? "true"
+          : "false"}`
+      )
+    );
+
+    if(poolConfig.enableVlocity)
+    console.log(
+      COLOR_HEADER(
+        `Enable Vlocity Config: true`
+      )
+    );
+
+
+    if (poolConfig.fetchArtifacts) {
+      if (poolConfig.fetchArtifacts.artifactFetchScript)
+        console.log(
+          COLOR_HEADER(
+            `Script provided to fetch artifacts: ${poolConfig.fetchArtifacts.artifactFetchScript}`
+          )
+        );
+      if (poolConfig.fetchArtifacts.npm) {
+        console.log(
+          COLOR_HEADER(
+            `Fetch artifacts from pre-authenticated NPM registry: true`
+          )
+        );
+        if (poolConfig.fetchArtifacts.npm.npmtag)
+          console.log(
+            COLOR_HEADER(
+              `Tag utilized to fetch from NPM registry: ${poolConfig.fetchArtifacts.npm.npmtag}`
+            )
+          );
+      }
+    }
+
+    console.log(
+      COLOR_HEADER(
+        "---------------------------------------------------------"
+      )
+    );
   }
 
   private async getCurrentRemainingNumberOfOrgsInPoolAndReport() {

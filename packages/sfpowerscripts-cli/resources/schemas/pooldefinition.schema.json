@@ -55,6 +55,12 @@
       "type": "boolean",
       "default": false
     },
+    "enableVlocity": {
+      "title": "Enable vlocity config deployment",
+      "description": "[alpha] Enable vlocity settings and config deployment. Please note it doesnt install vlocity managed package",
+      "type": "boolean",
+      "default":"false"
+    },
     "enableSourceTracking": {
       "title": "Enable source tracking",
       "description": "Enable source tracking by deploying packages using source:push , and persisting local source tracking files",

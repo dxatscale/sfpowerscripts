@@ -13,6 +13,8 @@ import SFPStatsSender from "../../stats/SFPStatsSender";
 import { AuthInfo, Connection } from "@salesforce/core";
 import { convertAliasToUsername } from "../../utils/AliasList";
 import SFDMURunImpl from "../../sfdmuwrapper/SFDMURunImpl";
+import VlocityPackDeployImpl from "../../vlocitywrapper/VlocityPackDeployImpl";
+import { SFDXCommand } from "../../command/SFDXCommand";
 const path = require("path");
 import OrgDetailsFetcher from "../../org/OrgDetailsFetcher";
 
@@ -23,7 +25,7 @@ export default class InstallDataPackageImpl {
     private sourceDirectory: string,
     private packageMetadata: PackageMetadata,
     private skip_if_package_installed: boolean,
-    private packageLogger?: Logger,
+    private logger?: Logger,
     private logLevel?:LoggerLevel
   ) {}
 
@@ -64,7 +66,7 @@ export default class InstallDataPackageImpl {
       let isPackageInstalled = false;
       if (this.skip_if_package_installed) {
         let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
-          this.packageLogger,
+          this.logger,
           this.targetusername,
           this.packageMetadata
         );
@@ -74,7 +76,7 @@ export default class InstallDataPackageImpl {
           SFPLogger.log(
             "Skipping Package Installation",
             null,
-            this.packageLogger
+            this.logger
           );
           return { result: PackageInstallationStatus.Skipped };
         }
@@ -92,7 +94,7 @@ export default class InstallDataPackageImpl {
           preDeploymentScript,
           this.sfdx_package,
           this.targetusername,
-          this.packageLogger
+          this.logger
         );
       }
 
@@ -100,41 +102,25 @@ export default class InstallDataPackageImpl {
         SFPLogger.log(
           "Assigning permission sets before deployment:",
           LoggerLevel.INFO,
-          this.packageLogger
+          this.logger
         );
 
         await PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPreDeployment,
           connection,
           this.sourceDirectory,
-          this.packageLogger
+          this.logger
         );
       }
 
 
-      //Validate package type
-      let packageType:string = this.determinePackageType(absPackageDirectory);
 
 
+      //Fetch the sfdxcommand executor for the type
+      let dataPackageDeployer: SFDXCommand = await this.getSFDXCommand(this.sourceDirectory, packageDirectory);
+      let result = await dataPackageDeployer.exec(false);
 
-      if(packageType==="sfdmu")
-      {
-        let orgDomainUrl = await new OrgDetailsFetcher(this.targetusername).getOrgDomainUrl();
-
-        let dataPackageDeployer:SFDMURunImpl = new SFDMURunImpl(
-          null,
-          this.targetusername,
-          orgDomainUrl,
-          packageDirectory,
-          this.packageLogger,
-          this.logLevel
-        );
-        await dataPackageDeployer.exec();
-      }
-      else
-      {
-        throw new Error("Unsupported package type");
-      }
+      SFPLogger.log(result,LoggerLevel.INFO,this.logger);
 
       let postDeploymentScript: string = path.join(
         this.sourceDirectory,
@@ -148,7 +134,7 @@ export default class InstallDataPackageImpl {
           postDeploymentScript,
           this.sfdx_package,
           this.targetusername,
-          this.packageLogger
+          this.logger
         );
       }
 
@@ -156,19 +142,19 @@ export default class InstallDataPackageImpl {
         SFPLogger.log(
           "Assigning permission sets after deployment:",
           LoggerLevel.INFO,
-          this.packageLogger
+          this.logger
         );
 
         await PackageInstallationHelpers.applyPermsets(
           this.packageMetadata.assignPermSetsPostDeployment,
           connection,
           this.sourceDirectory,
-          this.packageLogger
+          this.logger
         );
       }
 
       await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
-        this.packageLogger,
+        this.logger,
         this.targetusername,
         this.packageMetadata
       );
@@ -207,16 +193,54 @@ export default class InstallDataPackageImpl {
         SFPLogger.log(
           `\n---------------------WARNING: SFDMU detected CSV issues, verify the following files -------------------------------`,
           LoggerLevel.WARN,
-          this.packageLogger
+          this.logger
         );
         SFPLogger.log(
           fs.readFileSync(csvIssuesReportFilepath, "utf8"),
           LoggerLevel.INFO,
-          this.packageLogger
+          this.logger
         );
       }
     }
 
+  }
+  private async getSFDXCommand(sourceDirectory: string, packageDirectory:string): Promise<SFDXCommand> {
+
+    //Determine package type
+    let packageType:string = this.determinePackageType(path.join(sourceDirectory, packageDirectory));
+
+    //Pick the type of SFDX command to use
+    let dataPackageDeployer: SFDXCommand;
+      if(packageType==="sfdmu")
+      {
+        let orgDomainUrl = await new OrgDetailsFetcher(this.targetusername).getOrgDomainUrl();
+
+        dataPackageDeployer = new SFDMURunImpl(
+          sourceDirectory,
+          this.targetusername,
+          orgDomainUrl,
+          packageDirectory,
+          this.logger,
+          this.logLevel
+        );
+
+      }
+      else if(packageType==="vlocity")
+      {
+        dataPackageDeployer = new VlocityPackDeployImpl(
+          this.sourceDirectory,
+          this.targetusername,
+          packageDirectory,
+          null,
+          null
+        );
+      }
+      else
+      {
+        throw new Error("Unsupported package type");
+      }
+
+      return dataPackageDeployer;
   }
 
   private determinePackageType(packageDirectory: string): string {
@@ -225,7 +249,7 @@ export default class InstallDataPackageImpl {
       SFPLogger.log(
         `Found export.json in ${packageDirectory}.. Utilizing it as data package and will be deployed using sfdmu`,
         LoggerLevel.INFO,
-        this.packageLogger
+        this.logger
       );
       return "sfdmu";
     }
@@ -233,7 +257,7 @@ export default class InstallDataPackageImpl {
       SFPLogger.log(
         `Found VlocityComponents.yaml in ${packageDirectory}.. Utilizing it as data package and will be deployed using vbt`,
         LoggerLevel.INFO,
-        this.packageLogger
+        this.logger
       );
       return "vlocity";
     }
