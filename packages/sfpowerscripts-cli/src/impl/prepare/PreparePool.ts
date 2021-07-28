@@ -14,9 +14,6 @@ import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/Art
 import { PreparePoolInterface } from "./PreparePoolInterface";
 import { PoolError } from "../pool/PoolError";
 import { Result} from "neverthrow"
-import ArtifactFilePathFetcher, {
-  ArtifactFilePaths,
-} from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 
 
 export default class PreparePool implements PreparePoolInterface  {

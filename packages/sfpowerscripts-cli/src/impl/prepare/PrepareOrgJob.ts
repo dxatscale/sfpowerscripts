@@ -22,7 +22,6 @@ import { Connection, Org } from "@salesforce/core";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { PoolConfig } from "../pool/PoolConfig";
 import { Result, ok, err } from "neverthrow";
-import { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import RelaxIPRange from "@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange"
 import SourceTrackingResourceController from "../pool/SourceTrackingResourceController";
 
