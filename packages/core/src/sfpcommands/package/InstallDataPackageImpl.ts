@@ -110,15 +110,21 @@ export default class InstallDataPackageImpl {
         );
       }
 
-    
-      //Validate package type
-      let packageType:string = this.determinePackageType(packageDirectory);
 
-    
+      //Validate package type
+      let packageType:string = this.determinePackageType(absPackageDirectory);
+
+
       if(packageType==="sfdmu")
       {
-        let dataPackageDeployer:SFDMURunImpl = new SFDMURunImpl(null,this.targetusername,packageDirectory,this.packageLogger,this.logLevel);
-         await dataPackageDeployer.exec();
+        let dataPackageDeployer:SFDMURunImpl = new SFDMURunImpl(
+          this.sourceDirectory,
+          this.targetusername,
+          packageDirectory,
+          this.packageLogger,
+          this.logLevel
+        );
+        await dataPackageDeployer.exec();
       }
       else
       {
@@ -205,10 +211,10 @@ export default class InstallDataPackageImpl {
         );
       }
     }
-    
+
   }
 
-  private determinePackageType (packageDirectory: string):string {
+  private determinePackageType(packageDirectory: string): string {
 
     if (fs.pathExistsSync(path.join(packageDirectory, "export.json"))) {
       SFPLogger.log(
@@ -231,5 +237,5 @@ export default class InstallDataPackageImpl {
     }
   }
 
-  
+
 }
