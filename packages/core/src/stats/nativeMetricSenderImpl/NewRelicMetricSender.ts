@@ -3,7 +3,7 @@ import { NativeMetricSender } from "../NativeMetricSender";
 import { telemetry } from '@newrelic/telemetry-sdk'
 import { CountMetric, GaugeMetric, MetricBatch, MetricClient } from "@newrelic/telemetry-sdk/dist/src/telemetry/metrics";
 import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
-const util = require('util')
+
 
 
 
@@ -31,7 +31,7 @@ export class NewRelicMetricSender extends NativeMetricSender
     }
   }
   
-  public  async sendGaugeMetric(
+  public sendGaugeMetric(
     metric: string,
     value: number,
     tags: string[] | { [key: string]: string }
@@ -46,9 +46,6 @@ export class NewRelicMetricSender extends NativeMetricSender
         1            
       )
       batch.addMetric(guageMetric);
-      let nrMetricClientSend = util.promisify(this.nrMetricClient.send);
-
-      await nrMetricClientSend.send(batch);
       this.nrMetricClient.send(
         batch,(error,response,body)=>{ 
           if(response)
