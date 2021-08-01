@@ -22,7 +22,7 @@ export default class ScratchOrgInfoFetcher {
       WHERE ScratchOrg IN (${collection})
     `;
 
-    return await QueryHelper.query<ScratchOrgInfo>(query, conn, false);
+    return  QueryHelper.query<ScratchOrgInfo>(query, conn, false);
   }
 }
 
