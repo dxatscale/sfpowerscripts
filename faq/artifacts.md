@@ -49,5 +49,5 @@ Please refer to your artifact registry provider's documentation on how to set it
 
 ### Publishing/Fetching Packages to or from Artifact Registry
 
-sfpowerscripts provides with functionality to help you [fetch](artifacts.md) or [publish](../commands/publish.md) artifacts. Some orchestrator commands like [prepare](../commands/prepare.md) also fetches artifacts from the artifact registry.
+sfpowerscripts provides with functionality to help you [fetch](artifacts.md) or [publish](../commands/publish.md) artifacts. Some orchestrator commands like [prepare](../commands/prepare/) also fetches artifacts from the artifact registry.
 

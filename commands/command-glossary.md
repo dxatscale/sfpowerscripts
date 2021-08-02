@@ -39,60 +39,44 @@ description: Commands in sfpowerscripts
 
 ## `sfdx sfpowerscripts:orchestrator:prepare`
 
-Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner, Please note for this feature to work the devhub should be enabled and scratchorgpool \(additional fields to ScratchOrgInfo object\) should be deployed to devhub. Please see the instructions [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling#1-install-the-supporting-fields-and-validation-rule-to-devhub). This command also install an unlocked package to the scratch org 'sfpowerscripts-artifact' \(04t1P000000ka9mQAA\) for skipping unchanged packages during a validation phase. This particular package can be prebuilt against your org and the ID could be overriden by setting up the environment variable SFPOWERSCRIPTS\_ARTIFACT\_UNLOCKED\_PACKAGE
+Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner, Please note for this feature to work the devhub should be enabled and scratchorgpool \(additional fields to ScratchOrgInfo object\) should be deployed to devhub. Please see the instructions [here](https://github.com/Accenture/sfpowerkit/wiki/Getting-started-with-ScratchOrg-Pooling#1-install-the-supporting-fields-and-validation-rule-to-devhub). This command also install an unlocked package to the scratch org 'sfpowerscripts-artifact' \(04t1P000000ka9mQAA\) for skipping unchanged packages during a validation phase. This particular package can be prebuilt against your org and the ID could be overriden by setting up the environment variable `SFPOWERSCRIPTS_ARTIFACT_UNLOCKED_PACKAGE`
 
 ```text
-Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner,
-
+Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner
 
 USAGE
-  $ sfdx sfpowerscripts:orchestrator:prepare -t <string> [-e <number>] [-m <number>] [-f <filepath>]
-  [--installassourcepackages --installall] [-s <filepath>] [--succeedondeploymenterrors] [--keys <string>] [-v <string>]
-  [--apiversion <string>]
+  $ sfdx sfpowerscripts:orchestrator:prepare [-f <filepath>] [--npmrcpath <filepath>] [--keys <string>] [-v <string>] [--apiversion <string>] [--json] [--loglevel
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -e, --expiry=expiry                                                               [default: 2] Expiry of the scratch
-                                                                                    org's created in the pool
+  -f, --poolconfig=poolconfig                                                       [default: config/poolconfig.json] 
+                                                                                    The path to the configuration file 
+                                                                                    for creating a pool of scratch
+                                                                                    orgs
 
-  -f, --config=config                                                               [default:
-                                                                                    config/project-scratch-def.json] The
-                                                                                    file path to the definition file for
-                                                                                    the scratch org shape
+  -v, --targetdevhubusername=targetdevhubusername                                   username or alias for the dev hub org; 
+                                                                                    overrides default dev hub org
 
-  -m, --maxallocation=maxallocation                                                 [default: 10] The size of the
-                                                                                    scratch org pool to be created
+  --apiversion=apiversion                                                           override the api version used for api 
+                                                                                    requests made by this command
 
-  -s, --artifactfetchscript=artifactfetchscript                                     The path to the script file that is
-                                                                                    used to fetch the validated
-                                                                                    artifacts to be used in the prepare
-                                                                                    command
+  --json                                                                            format output as json
 
-  -t, --tag=tag                                                                     (required) The name/tag of the
-                                                                                    scratch org pool
+  --keys=keys                                                                       Keys to be used while installing 
+                                                                                    any managed package dependencies. 
+                                                                                    Required format is a string of
+                                                                                    key-value pairs separated by spaces 
+                                                                                    e.g. packageA:pw123 packageB:pw123 packageC:pw123
 
-  -v, --targetdevhubusername=targetdevhubusername                                   username or alias for the dev hub
-                                                                                    org; overrides default dev hub org
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: info] logging level for this command 
+                                                                                    invocation
 
-  --apiversion=apiversion                                                           API version to be used
-
-  --installall                                                                      Install the dependencies,along with
-                                                                                    all the packages in the repo
-
-  --installassourcepackages                                                         Install all packages as Source
-                                                                                    packages
-
-
-  --keys=keys                                                                       Keys to be used while installing any
-                                                                                    managed package dependent
-
-
-  --succeedondeploymenterrors                                                       Do not fail the scratch orgs, if a
-                                                                                    package failed to deploy, return the
-                                                                                    scratch org with packages till the
-                                                                                    last failure
+  --npmrcpath=npmrcpath                                                             Path to .npmrc file used for authentication 
+                                                                                    to a npm registry when using npm based artifacts. 
+                                                                                    If left blank, defaults to home directory
 
 EXAMPLE
-  $ sfdx sfpowerscripts:orchestrator:prepare -t CI_1  -v <devhub>
+  $ sfdx sfpowerscripts:orchestrator:prepare -f config/mypoolconfig.json  -v <devhub>
 ```
 
 _See code:_ [_commands/sfpowerscripts/orchestrator/prepare.ts_](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/prepare.ts)

@@ -22,7 +22,8 @@
 
 ## COMMANDS
 
-* [Prepare](commands/prepare.md)
+* [Prepare](commands/prepare/README.md)
+  * [Scratch Org Pool Configuration](commands/prepare/scratch-org-pool-configuration.md)
 * [Validate](commands/validate.md)
 * [Build & QuickBuild](commands/build-and-quickbuild.md)
 * [Deploy](commands/deploy.md)
