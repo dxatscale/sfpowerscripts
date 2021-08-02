@@ -16,18 +16,13 @@ description: Run checks before accepting incoming changes
 
 The following are the list of steps that are orchestrated by the **validate** command
 
-1. Authenticate to the DevHub using the provided JWT Key / Client ID
-2. Fetch a scratch org from the provided pools in a sequential manner
-3. Authenticate to the Scratch org using the provided JWT Key / Client ID
-4. Build packages that are changed by comparing the tags in your repo against the packages installed in scratch org
-5. For each of the packages \(internally calls the Deploy Command\)
+1. Fetch a scratch org from the provided pools in a sequential manner
+2. Authenticate to the Scratch org using the auth url fetched from the Scratch Org Info Object
+3. Build packages that are changed by comparing the tags in your repo against the packages installed in scratch org
+4. For each of the packages \(internally calls the Deploy Command\)
    * Deploy all the built packages as [source packages](../faq/package-types/source-packages.md) / [data package](validate.md)  \(unlocked packages are installed as source package\)
    * Trigger Apex Tests if there are any apex test in the package
    * Validate test coverage of the package depending on the type of the package \( source packages: each class needs to have 75% or more, unlocked packages: packages as whole need to have 75% or more\)
-
-{% hint style="danger" %}
-The command needs JWT based authentication mechanism to authenticate to the DevHub and utilize the same credentials to authenticate to the fetched scratch org from the pool.
-{% endhint %}
 
 ## Shapefile of a scratch org
 
