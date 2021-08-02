@@ -1,5 +1,5 @@
 import ExecuteCommand from "./commandExecutor/ExecuteCommand";
-import { Logger, LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
 export abstract class SFDXCommand {
   public constructor(
@@ -14,6 +14,7 @@ export abstract class SFDXCommand {
     if (quiet) command += ` --json`;
     command += " " + this.getGeneratedParams();
 
+    SFPLogger.log("Generated Command:"+command,LoggerLevel.TRACE,this.logger);
     let executor: ExecuteCommand = new ExecuteCommand(this.logger,this.logLevel);
     let output = await executor.execCommand(command, this.project_directory);
     if (quiet) {
