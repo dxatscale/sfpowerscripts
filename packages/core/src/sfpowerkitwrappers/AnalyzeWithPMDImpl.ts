@@ -3,16 +3,15 @@ import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
 export default class AnalyzeWithPMDImpl extends SFDXCommand {
   public constructor(
-    protected project_directory: string,
-    private directory: string,
-    private ruleset: string,
+    protected sourceDirectory: string,
+    private ruleset: string, //Future Use
     private format: string,
     private ouputPath: string,
     private version: string,
     protected logger?: Logger,
     protected logLevel?: LoggerLevel
   ) {
-    super(null, project_directory,logger,logLevel);
+    super(null, sourceDirectory,logger,logLevel);
   }
 
   getSFDXCommand(): string {
@@ -25,7 +24,7 @@ export default class AnalyzeWithPMDImpl extends SFDXCommand {
     let command:string="";
 
 
-    if (this.directory) command=`-d  ${this.directory}`;
+    if (this.sourceDirectory) command=`-d  ${this.sourceDirectory}`;
     if (this.format)    command +=` -f  ${this.format}`;
     if (this.ouputPath) command+=` -o  ${this.ouputPath}`;
     if (this.version)   command+=` --version  ${this.version}`;

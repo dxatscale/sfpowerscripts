@@ -116,7 +116,6 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
       const version: string = this.flags.version;
 
       let pmdImpl: AnalyzeWithPMDImpl = new AnalyzeWithPMDImpl(
-        null,
         source_directory,
         rulesetpath,
         format,
