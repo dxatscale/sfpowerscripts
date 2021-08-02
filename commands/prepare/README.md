@@ -41,6 +41,7 @@ The prepare command does the following sequence of activities
    * Install SFPOWERSCRIPTS\_ARTIFACT\_PACKAGE \(04t1P000000ka9mQAA\) for keeping track of all the packages which will be installed in the org. You can set an environment variable SFPOWERSCRIPTS\_ARTIFACT\_PACKAGE to override the installation with your own package id \(the source code is available [here](https://github.com/Accenture/sfpowerscripts/tree/develop/prerequisites/sfpowerscripts-artifact)\)
    * Install all the dependencies of your packages, such as managed packages that are marked as dependencies in your sfdx-project.json
    * Install all the artifacts that is either built/fetched
+   * If `enableSourceTracking` is specified in the configuration, create and deploy "sourceTrackingFiles" static resource to the scratch org. The static resource is retrieved to the local ".sfdx" directory, when using `sfpowerscripts:pool:fetch` to fetch a scratch org, and allows users to deploy their changes only, through source tracking. 
 5. **Mark each completed scratch org as "Available"**
 6. **Delete all the failed scratch orgs** - check **Why do some scratch org's fail during pool creation?** below
 
