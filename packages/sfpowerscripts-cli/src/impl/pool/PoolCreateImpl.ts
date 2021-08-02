@@ -16,7 +16,7 @@ import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from "@dxatscale/sfpowerscr
 import { Result ,ok,err} from "neverthrow"
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { EOL } from "os";
-
+import OrgDetailsFetcher from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetailsFetcher";
 
 
 
@@ -112,7 +112,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
     fs.mkdirpSync("script_exec_outputs");
 
 
-    
+
      //Generate Scratch Orgs
      await this.generateScratchOrgs();
 
@@ -208,6 +208,12 @@ export default class PoolCreateImpl extends PoolBaseImpl
             this.pool.configFilePath,
             this.pool.expiry
           );
+
+          let orgDetails = await new OrgDetailsFetcher(scratchOrg.username).getOrgDetails();
+          if (orgDetails.status === "Deleted") {
+            throw new Error(`Throwing away scratch org ${count} as it has a status of deleted`);
+          }
+
           this.pool.scratchOrgs.push(scratchOrg);
           this.totalAllocated++;
         } catch (error) {
