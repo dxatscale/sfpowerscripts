@@ -95,7 +95,7 @@ The Prepare command utilises `sfpowerkit:package:dependencies:install` under the
     {
       "path": "util",
       "default": true,
-      "package": "Expense Manager - Util",
+      "package": "Expense-Manager-Util",
       "versionName": "Winter ‘20",
       "versionDescription": "Welcome to Winter 2020 Release of Expense Manager Util Package",
       "versionNumber": "4.7.0.NEXT"
@@ -103,13 +103,13 @@ The Prepare command utilises `sfpowerkit:package:dependencies:install` under the
     {
       "path": "exp-core",
       "default": false,
-      "package": "Expense Manager",
+      "package": "ExpenseManager",
       "versionName": "v 3.2",
       "versionDescription": "Winter 2020 Release",
       "versionNumber": "3.2.0.NEXT",
       "dependencies": [
         {
-          "package": "Expense Manager - Util",
+          "package": "ExpenseManager-Util",
           "versionNumber": "4.7.0.LATEST"
         },
           {
