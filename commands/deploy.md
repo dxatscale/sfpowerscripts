@@ -47,7 +47,7 @@ If the username/alias passed as a flag to the command matches the array, then th
 
 ### Deploy a package everytime
 
-There are some certain situations, due to integrity concerns \(especially around data or org-specific source packages\) that need to be installed every time, as some earlier packages if deployed in the sequence would overwrite certain components. To solve this specific challenge utilize `alwaysDeploy:true` and the particular package will always be deployed. **Please note this package has to be always available in the artifacts directory to enable thsi functionality**
+There are some certain situations, due to integrity concerns \(especially around data or org-specific source packages\) that need to be installed every time, as some earlier packages if deployed in the sequence would overwrite certain components. To solve this specific challenge utilize `alwaysDeploy:true` and the particular package will always be deployed. **Please note this package has to be always available in the artifacts directory to enable this functionality.**
 
 ### **Deploy packages based on a target org**
 
