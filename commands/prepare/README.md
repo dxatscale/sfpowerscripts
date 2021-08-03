@@ -1,14 +1,18 @@
 ---
-description: Prepare a pool of just-in-time CI scratch orgs
+description: Prepare a pool of just-in-time CI scratch orgs or Development Environments
 ---
 
 # Prepare
 
-Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to considerably cut down time in re-creating a scratch org during validation process when a scratch org is used as just-in-time CI environment.
+Prepare command helps you to build a pool of prebuilt scratch orgs which include managed packages as well as packages in your repository. This process allows you to cut down time in re-creating a scratch org during validation process when a scratch org is used as just-in-time CI environment or when being used as a developer environment.
 
-## Using scratch orgs as CI environments
+## Using scratch org as Developer Environments
 
-Scratch orgs are one of the best features that Salesforce released, where they re-imagined the developer experience on the platform. Scratch orgs are ephemeral orgs that can be provisioned as a just-in-time environment, which can be populated with metadata and data from your source control repository.
+Scratch orgs are one of the best features that Salesforce released, where they re-imagined the developer experience on the platform. Scratch orgs are ephemeral orgs that can be provisioned as a just-in-time environment, which can be populated with metadata and data from source control repository. This allows one to be in control of the metadata and data that needs to be provisioned in the orgs as opposed to sandboxes \(which are either a clone of another sandbox or created from production\). 
+
+Scratch orgs helps to create environments at any specific point in time in your version control, and results in an interesting side effect, i.e. significant reduction in manual steps, as the whole objective is to get an org ready for development just from code.
+
+## Using scratch orgs as Just in Time CI environments
 
 The ability to quickly spin up an environment that is completely built from your source code repository, makes scratch orgs an ideal candidate for validating changes before merging pull requests. In this process, a freshly spun up scratch org could be used to deploy the metadata in your repository with the changes \( a PR process creates a temporary merge of the incoming branch along with current head of the target branch\), run apex tests, run UI tests etc. This addresses the following problems compared to using a sandbox for validation, especially in large programs.
 
@@ -18,7 +22,9 @@ The ability to quickly spin up an environment that is completely built from your
 
 ## Building a pool of scratch orgs
 
-As you try to automate more of your business processes in Salesforce, you cannot avoid adding third party managed packages as a dependency to your configuration metadata and code in your repository. The time required to spin up a just-in-time scratch org would increase and the value of having quick feedback diminishes. This is the primary reason why scratch org pools pre-installed with managed packages and your custom configuration and code from your repository will enable you to immediately validate the PR check process without waiting for a single, new scratch org to be provisioned. If required, sample test data can be loaded to your scratch orgs was well to allow developers to effectively complete their user stories.
+As you try to automate more of your business processes in Salesforce, you cannot avoid adding third party managed packages as a dependency to your configuration metadata and code in your repository. The time required to spin up a just-in-time CI scratch org or even a developer environment \(one need to run data loading scripts, assign permission sets etc.\) would increase and the value of scratch org diminishes, as teams find it cumbersome.
+
+This is the primary reason scratch org pools pre-installed with managed packages and your custom configuration and code, along with data from your repository will significantly enhance the developer experience. 
 
 {% hint style="info" %}
 The Prepare command was built primarily due to the delays from Salesforce to enable **snapshot** feature and make it GA to the public. However, even with snapshot feature, you might need to rebuild the snapshot every day, as we have noticed in a large mono repo scenario \(full deployment of metadata also takes long time\). We will modify the command as needed when this feature launches to utilize snapshot accordingly.
@@ -59,6 +65,20 @@ Building packages from source code during pooling takes a considerable amount of
 
 {% hint style="info" %}
  If the `installall` configuration is specified without `fetchArtifacts`, then new packages will be built, from the checked-out source code, and installed in the scratch orgs.
+{% endhint %}
+
+## Fetching Scratch Orgs from pool
+
+While scratch orgs created by prepare command will be automatically fetched by the validate command, for use as Just in time environments for validating an incoming change. Developers who need a scratch org from the pool must issue the fetch command on their terminal
+
+```javascript
+sfdx sfpowerscripts:pool:fetch -t <POOL_NAME> -v <devhub-alias> -a <scratchorg-alias>
+```
+
+Developers need sufficient permission in the associated DevHub to fetch a scratch org. Read more about associated permissions [here](https://sfpowerscripts.dxatscale.io/getting-started/prerequisites#grant-developers-access-to-scratch-org-pools)
+
+{% hint style="warning" %}
+When [Free Limited Access Licenses](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/dev_hub_license.htm) are being utilized, developers will not be able to delete the scratch orgs fetched from the pool \(due to permission restrictions\). It is recommended to build a pipeline in your CI/CD system that is run with elevated permission and license which could delete these scratch orgs.
 {% endhint %}
 
 ## Creating a shell script for fetching artifacts
