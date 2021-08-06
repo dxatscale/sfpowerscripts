@@ -11,3 +11,4 @@ The dependency manager should utilise the SemVer incrementation style https://se
 It will prompt the user for each package version, the command will then update all dependencies found for the package. 
 
 ## Decision 
+Development to commence on the solution and be included in the september release
