@@ -20,7 +20,7 @@ The `orchestrator:prepare` command accepts a JSON configuration file that define
 | ipRangesToBeRelaxed | array | Range of IP addresses that can access the scratch orgs |
 | retryOnFailure | boolean | Retry installation of a package on a failed deployment |
 | fetchArtifacts | object | Fetch artifacts, to be deployed to scratch orgs, from an artifact registry  |
-| fetchArtifacts.artifactFetchScript | string | Path to the shell script containing logic for fetching artifacts from a universal registry |
+| fetchArtifacts.artifactFetchScript | string | Path to the shell script containing logic for fetching artifacts from a universal registry, if not using npm |
 | fetchArtifacts.npm | object | Fetch artifacts from NPM registry |
 | fetchArtifacts.npm.scope | string | Scope of the NPM package |
 | fetchArtifacts.npm.npmtag | string | Tag of NPM packages \(usually the name of the branch from which the artifacts were created\) |
