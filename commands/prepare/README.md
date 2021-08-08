@@ -55,10 +55,6 @@ The prepare command does the following sequence of activities
  **Ensure that your DevHub is authenticated using** [**SFDX Auth URL**](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference_auth_sfdxurl.htm) **and the auth URL is stored in a secure place \(Key Management System or Secure Storage\).**
 {% endhint %}
 
-{% hint style="info" %}
-From Aug 21' Release, the prepare command will only work when authenticated to Dev Hub using SFDX Auth URL. 
-{% endhint %}
-
 ## **Using pre-existing artifacts in Scratch Org Pools**
 
 Building packages from source code during pooling takes a considerable amount of time, and there could be situations where the latest head is broken. Hence we recommend using the last-known successful build from the artifact repository. When the `installall` and `fetchArtifacts` configurations are specified, the user can either use **NPM** to fetch artifacts or define the path to a shell script containing the logic for fetching artifacts from a registry.  
@@ -75,36 +71,15 @@ While scratch orgs created by prepare command will be automatically fetched by t
 sfdx sfpowerscripts:pool:fetch -t <POOL_NAME> -v <devhub-alias> -a <scratchorg-alias>
 ```
 
-Developers need sufficient permission in the associated DevHub to fetch a scratch org. Read more about associated permissions [here](https://sfpowerscripts.dxatscale.io/getting-started/prerequisites#grant-developers-access-to-scratch-org-pools)
+Developers need sufficient permission in the associated DevHub to fetch a scratch org. Read more about associated permissions [here](https://sfpowerscripts.dxatscale.io/getting-started/prerequisites#grant-developers-access-to-scratch-org-pools).
 
 {% hint style="warning" %}
 When [Free Limited Access Licenses](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/dev_hub_license.htm) are being utilized, developers will not be able to delete the scratch orgs fetched from the pool \(due to permission restrictions\). It is recommended to build a pipeline in your CI/CD system that is run with elevated permission and license which could delete these scratch orgs.
 {% endhint %}
 
-## Creating a shell script for fetching artifacts
-
-Unlike NPM registries, there is no uniform method for downloading artifacts from a universal registry, so you will need to provide a shell script that calls the relevant API. The path to the shell script should be specified in the pool configuration.
-
-There are multiple parameters available in the shell script. Pass these parameters to the API call, and at runtime they will be substituted with the corresponding values:
-
-1. Artifact name
-2. Artifact version
-3. Directory to download artifacts 
-
-**Eg.** **Fetching from Azure Artifacts using the Az CLI on Linux**
-
-```text
-#!/bin/bash
-
-# $1 - artifact name
-# $2 - artifact version
-# $3 - artifact directory 
-
-echo "Downloading Artifact $1 Version $2"
-
-az artifacts universal download --feed myfeed --name $1 --version $2 --path $3 \
-    --organization "https://dev.azure.com/myorg/" --project myproject --scope project
-```
+{% hint style="info" %}
+Please check the [prerequisites](../../getting-started/prerequisites.md) page to learn more about and the steps required to enable pooling in your DevHub
+{% endhint %}
 
 ## Managing Package Dependencies
 
@@ -189,4 +164,31 @@ The `sfpowerscripts:pool` topic contains commands that can be used to manage \(l
 ## Package checkpoints
 
 Package checkpoints allow precise control over which scratch orgs are committed to a pool when there are deployment failures and the `succeedOnDeploymentErrors` configuration is specified. To designate a package as a checkpoint, add the property `checkpointForPrepare: true` to the package in the sfdx-project.json. Only scratch orgs that satisfy at least one checkpoint will be committed to the pool. This provides more consistency in what you can expect from your scratch orgs.
+
+## Using Prepare with Non-NPM Registries
+
+Unlike NPM registries, there is no uniform method for downloading artifacts from a universal registry, so you will need to provide a shell script that calls the relevant API. The path to the shell script should be specified in the pool configuration.
+
+There are multiple parameters available in the shell script. Pass these parameters to the API call, and at runtime they will be substituted with the corresponding values:
+
+1. Artifact name
+2. Artifact version
+3. Directory to download artifacts 
+
+**Eg.** **Fetching from Azure Artifacts using the Az CLI on Linux**
+
+```text
+#!/bin/bash
+
+# $1 - artifact name
+# $2 - artifact version
+# $3 - artifact directory 
+
+echo "Downloading Artifact $1 Version $2"
+
+az artifacts universal download --feed myfeed --name $1 --version $2 --path $3 \
+    --organization "https://dev.azure.com/myorg/" --project myproject --scope project
+```
+
+## 
 
