@@ -50,6 +50,16 @@ To setup native DataDog integration, you need to set the following environment v
  export SFPOWERSCRIPTS_DATADOG_API_KEY=<your api key> // Refer to datadog documentation
 ```
 
+### Native NewRelic Integration
+
+sfpowerscripts is also able to integrate into NewRelic natively using HTTP/HTTPS integration. Similar to native DataDog integration, this feature allows one to directly post metrics to NewRelic without using an intermittent StatsD server to aggregate metrics before reaching an analyzer.
+
+```text
+# Set NEWRELIC Environment Variables for logging metrics natively to NewRelic
+ export SFPOWERSCRIPTS_NEWRELIC=true
+ export SFPOWERSCRIPTS_NEWRELIC_API_KEY=<your api key> // Refer to newrelic documentation to generate an NEWRELIC INGEST KEY
+```
+
 ## Metrics available within sfpowerscripts
 
 The following are the list of metrics that are captured.
@@ -87,9 +97,11 @@ The following are the list of metrics that are captured.
 | sfpowerscripts.prepare.duration | Time take to prepare a  pool of scratchorgs | GAUGE |
 | sfpowerscripts.pool.remaining | Number of scratch orgs that are remaining in a pool after fetched by validate command | GAUGE |
 
-## Sample Dashboards
+## Sample Dashboards 
 
 ![Package Status Dashboard](../.gitbook/assets/status_package.jpeg)
 
 ![Package Weekly Status](../.gitbook/assets/image%20%288%29.png)
+
+![NewRelic Dashboards](../.gitbook/assets/image%20%2816%29.png)
 
