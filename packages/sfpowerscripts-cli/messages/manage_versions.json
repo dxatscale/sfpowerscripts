@@ -1,0 +1,3 @@
+{
+  "commandDescription": "Utlises SemVer incrementation to update package versions using the Major, Minor, Patch syntax in the sfdx-project.json"
+}
