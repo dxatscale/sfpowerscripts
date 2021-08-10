@@ -28,6 +28,7 @@ export default class AnalyzeWithPMDImpl extends SFDXCommand {
     if (this.format)    command +=` -f  ${this.format}`;
     if (this.ouputPath) command+=` -o  ${this.ouputPath}`;
     if (this.version)   command+=` --version  ${this.version}`;
+    command+=` --no-failonviolation`
     command +=` --loglevel ${LoggerLevel[SFPLogger.logLevel]}`;
     
     
