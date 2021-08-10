@@ -17,10 +17,13 @@ We will also not be supporting pre-release versioning at this stage.
 Steps to the command:
 For each package in the sfdx-project.json the command will ask 
 1. if the package version should be updated
-2. if the package version has been updated, would the user like all packages with this dependency updates as well? 
-3. Would the user like to update the dependencies of this package? (regardless of whether the package version was updated)
+2. If the package is a source/data package with a non-zero build number, does the build number need to be reset to 0 or stay as is 
+3. if the package version has been updated, would the user like all packages with this dependency updates as well? 
+4. Would the user like to update the dependencies of this package? (regardless of whether the package version was updated)
 
-the packageDirectories portion will then be updated with the input given and written to the sfdx-project.json in the root folder. 
+The packageDirectories portion will then be updated with the input given and written to the sfdx-project.json in the root folder with the option to commit the file (but not push to the repo). 
+
+Note: Number 4 has been included in the case of a multi-repo scenario where the user may want to update the dependencies, where any of the given dependencies are in another repo. 
 
 ## Decision 
 Development to commence on the solution and be included in the september release
