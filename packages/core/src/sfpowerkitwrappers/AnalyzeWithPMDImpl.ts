@@ -11,7 +11,7 @@ export default class AnalyzeWithPMDImpl extends SFDXCommand {
     protected logger?: Logger,
     protected logLevel?: LoggerLevel
   ) {
-    super(null, sourceDirectory,logger,logLevel);
+    super(null, null,logger,logLevel);
   }
 
   getSFDXCommand(): string {
