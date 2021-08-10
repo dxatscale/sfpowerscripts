@@ -56,6 +56,13 @@ The sfpowerscripts docker image has the following SFDX CLI plugins installed:
 
 We recommend using the sfpowerscripts docker image to avoid breakages in your CICD pipelines due to updates in sfpowerscripts or any of its dependencies such as the SFDX CLI.
 
+#### Build Instructions 
+To build sfpowerscripts execute the following on the commandline: 
+1. npm i -g lerna
+2. Navigate to the root directory of sfpowerscripts 
+3. lerna bootstrap
+4. lerna run build
+
 #### Maintainers
 
 List of Maintainers are available in the [link](https://dxatscale.gitbook.io/sfpowerscripts/maintainers)
