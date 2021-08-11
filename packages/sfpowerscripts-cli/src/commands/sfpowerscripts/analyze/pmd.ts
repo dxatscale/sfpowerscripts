@@ -224,12 +224,13 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
           });
       
           data.pmd.file[i].violation.forEach(element => {
-           table.push(element["$"]["priority"],[element["$"].beginline, element["$"].rule , element._.trim()]);
+           table.push([element["$"].priority,element["$"].beginline, element["$"].rule , element._.trim()]);
             if (element["$"]["priority"] == 1) {
               criticaldefects++;
             }
           });
-          console.log(table.toString());
+          
+            console.log(table.toString());
         }
       });
 
