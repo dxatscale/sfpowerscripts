@@ -7,6 +7,7 @@ import {isNullOrUndefined} from 'util';
 const fs = require('fs-extra');
 const path = require('path');
 import * as rimraf from "rimraf";
+const Table = require("cli-table");
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -130,35 +131,9 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 
       let result: [number, number, number] = [0, 0, 0];
 
-      let pmdImpl: AnalyzeWithPMDImpl = new AnalyzeWithPMDImpl(
-        source_directory,
-        rulesetpath,
-        format,
-        outputPath,
-        version
-      );
+      let pmdImpl: AnalyzeWithPMDImpl;
+  
       
-      let output = await pmdImpl.exec(false);
-      console.log(output);
-
-
-      if (!isNullOrUndefined(this.flags.refname)) {
-        if (!isNullOrUndefined(outputPath)) {
-            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_pmd_output_path=${outputPath}\n`, {flag:'a'});
-        } else {
-            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_pmd_output_path=${process.env.PWD}/pmd-output\n`, {flag:'a'});
-        }
-      } else {
-        if (!isNullOrUndefined(outputPath)) {
-          fs.writeFileSync('.env', `sfpowerscripts_pmd_output_path=${outputPath}\n`, {flag:'a'});
-        } else {
-          fs.writeFileSync('.env', `sfpowerscripts_pmd_output_path=${process.env.PWD}/pmd-output\n`, {flag:'a'});
-        }
-      }
-
-
-
-      //Do a one more pass, Temporary hack while this is fixed properly
       let artifactFilePath = path.join(".sfpowerscripts","sf-pmd-output.xml");
       pmdImpl = new AnalyzeWithPMDImpl(
         source_directory,
@@ -173,6 +148,37 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 
       if (fs.existsSync(artifactFilePath)) {
       result = parseXmlReport(artifactFilePath);
+      }
+
+
+
+      //If the user has requested for an output path, do one more pass
+      if(outputPath)
+      {
+        pmdImpl = new AnalyzeWithPMDImpl(
+        source_directory,
+        rulesetpath,
+        format,
+        outputPath,
+        version
+      );
+      
+      await pmdImpl.exec(false);
+      }
+
+
+      if (!isNullOrUndefined(this.flags.refname)) {
+        if (!isNullOrUndefined(outputPath)) {
+            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_pmd_output_path=${outputPath}\n`, {flag:'a'});
+        } else {
+            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_pmd_output_path=${process.env.PWD}/pmd-output\n`, {flag:'a'});
+        }
+      } else {
+        if (!isNullOrUndefined(outputPath)) {
+          fs.writeFileSync('.env', `sfpowerscripts_pmd_output_path=${outputPath}\n`, {flag:'a'});
+        } else {
+          fs.writeFileSync('.env', `sfpowerscripts_pmd_output_path=${process.env.PWD}/pmd-output\n`, {flag:'a'});
+        }
       }
 
       if (isToBreakBuild && result[2] > 0)
@@ -212,11 +218,18 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
         });
 
         for (let i = 0; i < data.pmd.file.length; i++) {
+          console.log(`${data.pmd.file[i]["$"].name}`);
+          let table = new Table({
+            head: ["Priority","Line Number", "Rule", "Description"],
+          });
+      
           data.pmd.file[i].violation.forEach(element => {
+           table.push(element["$"]["priority"],[element["$"].beginline, element["$"].rule , element._.trim()]);
             if (element["$"]["priority"] == 1) {
               criticaldefects++;
             }
           });
+          console.log(table.toString());
         }
       });
 
