@@ -1,6 +1,9 @@
 import { Messages } from "@salesforce/core";
 import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
 import { flags } from '@salesforce/command';
+import fs = require("fs");
+import inquirer = require("inquirer");
+import { cli } from "cli-ux";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -46,7 +49,33 @@ export default class ManageVersions extends SfpowerscriptsCommand {
 
   public async execute(){
     try {
+      const projectConfig = JSON.parse(
+        fs.readFileSync("sfdx-project.json", "utf8")
+      );
+      
+      let packages = projectConfig.packageDirectories; 
+      console.log(`The sfdx-project.json contains the packages and dependencies:\n`);
+      for(let pkg of packages){
+        console.log(`${pkg.package} verion number: ${pkg.versionNumber}`)
+        
+        
 
+        await inquirer.prompt([{type: 'list', name: 'selection', message: `Would you like to update ${pkg.package}?`, choices: ['Major', 'Minor', 'Patch', 'Skip']}]).then((answers) => {});
+        console.log(`\n`)
+
+        if(pkg.dependencies != undefined){
+          console.log(`Dependencies for ${pkg.package}:`);
+          let dependencies = pkg.dependencies;
+          for(let dependency of dependencies){
+            if(dependency.versionNumber != undefined){
+              console.log(`${dependency.package} has VersionNumber ${dependency.versionNumber}`)
+            }
+          }
+        }else{
+          console.log(`No dependencies found for ${pkg.package}`);
+        }
+        
+      }
     }
     catch (err){
       console.log(err);
