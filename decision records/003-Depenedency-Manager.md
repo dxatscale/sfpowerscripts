@@ -10,7 +10,7 @@ Other solutions encountered were local bash scripts as documented in both the is
 ## Solution
 The dependency manager should utilise the SemVer incrementation style https://semver.org/ and be of a similar method to the ‘lerna version’ command. It should prompt the user for the version either for individual packages or for all packages in the sfdx-project.json: (major, minor, patch, custom). 
 
-Since salesforce does not necissarily follow the semver versioning, we will provide a summary to the bump. 
+Since salesforce does not necessarily follow the semver versioning, 
 Eg. Option 1 bump Major - includes incompatible API changes
 We will also not be supporting pre-release versioning at this stage. 
 
