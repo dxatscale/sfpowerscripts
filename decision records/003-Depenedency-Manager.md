@@ -22,4 +22,4 @@ For each package in the sfdx-project.json the command will ask
 The packageDirectories portion will then be updated with the input given and written to the sfdx-project.json in the root folder with the option to commit the file (but not push to the repo). 
 
 ## Decision 
-Development to commence on the solution and be included in the september release
+A new command would be built with the above solution and will be added to sfpowerscripts
