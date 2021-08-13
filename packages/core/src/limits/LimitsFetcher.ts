@@ -14,7 +14,7 @@ export default class LimitsFetcher {
 
     const result = await retry(
       async (bail) => {
-        return await this.conn.request<{
+        return this.conn.request<{
           [p: string]: { Max: number; Remaining: number };
         }>(endpoint);
       },
