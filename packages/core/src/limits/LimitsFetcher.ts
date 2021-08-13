@@ -21,7 +21,7 @@ export default class LimitsFetcher {
       { retries: 3, minTimeout: 2000 }
     );
 
-    Object.keys(result).map((limitName) => {
+    Object.keys(result).forEach((limitName) => {
       limits.push({
         name: limitName,
         max: result[limitName].Max,
