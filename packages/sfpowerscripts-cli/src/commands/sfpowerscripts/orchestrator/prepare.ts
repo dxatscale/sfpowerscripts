@@ -208,7 +208,7 @@ export default class Prepare extends SfpowerscriptsCommand {
       )
     );
 
-  
+
     console.log(
       COLOR_HEADER(
         `Enable Source Tracking: ${poolConfig.enableSourceTracking ||
@@ -260,7 +260,7 @@ export default class Prepare extends SfpowerscriptsCommand {
       const results = await new ScratchOrgInfoFetcher(
         this.hubOrg
       ).getScratchOrgsByTag(this.flags.tag, false, true);
-      SFPStatsSender.logGauge("pool.remaining", results.records.length, {
+      SFPStatsSender.logGauge("pool.available", results.records.length, {
         poolName: this.flags.tag,
       });
     } catch (error) {
