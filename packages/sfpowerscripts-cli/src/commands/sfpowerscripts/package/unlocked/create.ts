@@ -205,7 +205,9 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           wait_time,
           isCoverageEnabled,
           isSkipValidation,
-          packageMetadata
+          packageMetadata,
+          null,
+          new ConsoleLogger()
         );
 
         let result = await createUnlockedPackageImpl.exec();
