@@ -9,6 +9,7 @@ import PackageManifest from "../../package/PackageManifest";
 import DeployErrorDisplayer from "../../display/DeployErrorDisplayer";
 import * as fs from "fs-extra";
 import DeploymentExecutor, { DeploySourceResult } from "./DeploymentExecutor";
+const Table = require("cli-table");
 
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
   private mdapiDir: string;
@@ -103,16 +104,16 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
           );
         } catch (err) {
           if (this.deployment_options["checkonly"])
-            SFPLogger.log(`Validation Failed`, null, this.packageLogger);
-          else SFPLogger.log(`Deployment Failed`, null, this.packageLogger);
+            SFPLogger.log(`Validation Failed`, LoggerLevel.ERROR, this.packageLogger);
+          else SFPLogger.log(`Deployment Failed`, LoggerLevel.ERROR, this.packageLogger);
           break;
         }
 
         let resultAsJSON = JSON.parse(result);
         if (resultAsJSON["status"] == 1) {
           SFPLogger.log(
-            "Validation/Deployment Failed",
-            null,
+            "Deployment Failed",
+            LoggerLevel.ERROR,
             this.packageLogger
           );
           commandExecStatus = false;
@@ -155,7 +156,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
       let filepath=`sfpowerscripts/mdapiDeployReports`;
       fs.mkdirpSync(filepath);
       let child = child_process.exec(
-        `sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org}`,
+        `sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org} -w 30`,
         {
           cwd: this.project_directory,
           encoding: "utf8",
@@ -168,15 +169,12 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
       });
 
 
-      child.stderr.on("data", (data) => {
-        reportAsJSON += data.toString();
-      });
-
       await onExit(child);
 
       return "Succesfully Deployed";
     } catch (err) {
-      let report = JSON.parse(reportAsJSON);
+      let report=JSON.parse(reportAsJSON);
+      
       if(report.result.details.componentFailures && report.result.details.componentFailures.length>0)
       {
         DeployErrorDisplayer.printMetadataFailedToDeploy(
@@ -184,11 +182,32 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         );
         return report.message;
       }
+      else if(report.result.details.runTestResult?.codeCoverageWarnings)
+      {
+        this.displayCodeCoverageWarnings(report.result.details.runTestResult.codeCoverageWarnings);
+        return "Unable to deploy due to unsatisfactory code coverage";
+      }
       else
       {
         return "Unable to fetch report";
       }
     }
+  }
+
+  private displayCodeCoverageWarnings(coverageWarnings: any) {
+    let table = new Table({
+      head: ["Name", "Message"],
+    });
+    if (Array.isArray(coverageWarnings)) {
+      coverageWarnings.forEach(element => {
+        table.push([element.name, element.message]);
+      });
+    }
+    else {
+      table.push([coverageWarnings.name, coverageWarnings.message]);
+    }
+    SFPLogger.log("Unable to deploy due to unsatisfactory code coverage, Check the following classses:", LoggerLevel.WARN, this.packageLogger);
+    SFPLogger.log(table.toString(), LoggerLevel.WARN, this.packageLogger);
   }
 
   private buildExecCommand(): string {
