@@ -118,7 +118,8 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
           null,
           sfdx_package,
           packageMetadata,
-          false
+          false,
+          new ConsoleLogger()
         );
         packageMetadata = await createDataPackageImpl.exec();
 
