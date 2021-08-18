@@ -660,6 +660,10 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)   [default: warn] logging level for
                                                                                      this command invocation
 
+  --minimumpriority=minimumpriority                                                  Rule priority threshold; rules with
+                                                                                     lower priority than configured here
+                                                                                     won't be used.
+
   --refname=refname                                                                  Reference name to be prefixed to
                                                                                      output variables
 

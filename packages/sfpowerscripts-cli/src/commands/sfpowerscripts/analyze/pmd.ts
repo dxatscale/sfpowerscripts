@@ -42,6 +42,9 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
   rulesetpath: flags.string({
     description: messages.getMessage("rulesetPathFlagDescription"),
   }),
+  minimumpriority: flags.string({
+    description: messages.getMessage("minimumpriorityDescription"),
+  }),
   format: flags.string({
     description: messages.getMessage("formatFlagDescription"),
     options: [
@@ -123,6 +126,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 
 
 
+      const minimumpriority: string = this.flags.minimumpriority;
       const format: string = this.flags.format;
       const outputPath: string = this.flags.outputpath;
       const version: string = this.flags.version;
@@ -138,6 +142,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
       pmdImpl = new AnalyzeWithPMDImpl(
         source_directory,
         rulesetpath,
+        minimumpriority,
         "xml",
         artifactFilePath,
         version
@@ -158,6 +163,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
         pmdImpl = new AnalyzeWithPMDImpl(
         source_directory,
         rulesetpath,
+        minimumpriority,
         format,
         outputPath,
         version
