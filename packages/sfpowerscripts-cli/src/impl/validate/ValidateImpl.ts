@@ -11,6 +11,7 @@ import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/pa
 import PoolFetchImpl from "../pool/PoolFetchImpl";
 import { Org } from "@salesforce/core";
 import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
+import ValidateError from "../../errors/ValidateError";
 
 import DependencyAnalysis from "./DependencyAnalysis";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
@@ -47,7 +48,7 @@ export default class ValidateImpl {
     private props: ValidateProps
   ){}
 
-  public async exec(): Promise<boolean>{
+  public async exec(): Promise<DeploymentResult>{
     let scratchOrgUsername: string;
     try {
       let authDetails;
@@ -88,7 +89,7 @@ export default class ValidateImpl {
       let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
       if (deploymentResult.failed.length > 0 || deploymentResult.error)
-        return false;
+        throw new ValidateError("Validation failed", deploymentResult);
       else {
         if (this.props.visualizeChangesAgainst) {
           try {
@@ -102,7 +103,7 @@ export default class ValidateImpl {
             console.log("Failed to perform change analysis");
           }
         }
-        return true;
+        return deploymentResult;
       }
     } finally {
       if (this.props.isDeleteScratchOrg) {
