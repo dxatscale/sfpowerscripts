@@ -4,7 +4,7 @@ import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 export default class AnalyzeWithPMDImpl extends SFDXCommand {
   public constructor(
     protected sourceDirectory: string,
-    private ruleset: string, //Future Use
+    private rulesetpath: string,
     private format: string,
     private ouputPath: string,
     private version: string,
@@ -27,6 +27,7 @@ export default class AnalyzeWithPMDImpl extends SFDXCommand {
     if (this.sourceDirectory) command=`-d  ${this.sourceDirectory}`;
     if (this.format)    command +=` -f  ${this.format}`;
     if (this.ouputPath) command+=` -o  ${this.ouputPath}`;
+    if (this.rulesetpath) command += ` -r  ${this.rulesetpath}`;
     if (this.version)   command+=` --version  ${this.version}`;
     command+=` --no-failonviolation`
     command +=` --loglevel ${LoggerLevel[SFPLogger.logLevel]}`;
