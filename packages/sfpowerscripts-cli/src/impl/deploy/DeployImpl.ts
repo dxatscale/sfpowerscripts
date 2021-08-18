@@ -253,7 +253,7 @@ export default class DeployImpl {
       }
 
       return {
-        scheduled: queue?.length ? queue.length : 0,
+        scheduled: queue.length,
         deployed: deployed,
         failed: failed,
         testFailure: testFailure,
