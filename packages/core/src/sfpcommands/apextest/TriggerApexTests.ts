@@ -132,6 +132,16 @@ export default class TriggerApexTests {
     finally {
       let elapsedTime = Date.now() - startTime;
 
+      if (fs.existsSync(path.join(this.testOptions.outputdir, "test-run-id.txt"))) {
+        // Delete test-run-id.txt to prevent misusage of results from previous test runs
+        fs.unlinkSync(path.join(this.testOptions.outputdir, "test-run-id.txt"));
+      }
+
+      if (fs.existsSync(path.join(this.testOptions.outputdir, "test-result-codecoverage.json"))) {
+        // Delete test-result-codecoverage.json to prevent misusage of results from previous test runs
+        fs.unlinkSync(path.join(this.testOptions.outputdir, "test-result-codecoverage.json"));
+      }
+
       if (testExecutionResult)
         SFPStatsSender.logGauge("apextest.tests.ran", testsRan, {
           test_result: String(testExecutionResult),
