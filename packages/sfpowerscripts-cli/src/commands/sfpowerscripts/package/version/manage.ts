@@ -3,7 +3,6 @@ import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
 import { flags } from '@salesforce/command';
 import fs = require("fs");
 import inquirer = require("inquirer");
-import { cli } from "cli-ux";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -56,30 +55,81 @@ export default class ManageVersions extends SfpowerscriptsCommand {
       let packages = projectConfig.packageDirectories; 
       console.log(`The sfdx-project.json contains the packages and dependencies:\n`);
       for(let pkg of packages){
-        console.log(`${pkg.package} verion number: ${pkg.versionNumber}`)
+        console.log(`${pkg.package} version number: ${pkg.versionNumber}`)
+        let newMajor = this.getMajor(pkg.versionNumber);
+        let newMinor = this.getMinor(pkg.versionNumber);
+        let patch = this.getPatch(pkg.versionNumber)
+       
         
-        
-
-        await inquirer.prompt([{type: 'list', name: 'selection', message: `Would you like to update ${pkg.package}?`, choices: ['Major', 'Minor', 'Patch', 'Skip']}]).then((answers) => {});
-        console.log(`\n`)
-
-        if(pkg.dependencies != undefined){
-          console.log(`Dependencies for ${pkg.package}:`);
-          let dependencies = pkg.dependencies;
-          for(let dependency of dependencies){
-            if(dependency.versionNumber != undefined){
-              console.log(`${dependency.package} has VersionNumber ${dependency.versionNumber}`)
-            }
+        await inquirer.prompt([{type: 'list', name: 'selection', message: `Would you like to update ${pkg.package}?`, choices: ['Major: ' + newMajor, 'Minor: ' + newMinor, 'Patch: ' + patch, 'Custom', 'Skip']}]).then((answer) => {
+          
+          if(this.hasNonZeroBuildNo){
+            
+            console.log(`Build number for ${pkg.package} is ${this.getBump(pkg.versionNumber)}. Would you like to reset this to 0?`)
           }
-        }else{
-          console.log(`No dependencies found for ${pkg.package}`);
-        }
+          this.updateVersion(answer.selection, pkg)
         
+        });
+      
       }
     }
     catch (err){
       console.log(err);
       process.exit(1);
     }
+  }
+
+  private getMajor(currentVersion){
+    let verArr = currentVersion.split('.');
+    verArr[0]++;
+    return verArr.join('.');
+  }
+  private getMinor(currentVersion){
+    let verArr = currentVersion.split('.');
+    verArr[1]++;
+    return verArr.join('.');
+  }
+  private getPatch(currentVersion){
+    let verArr = currentVersion.split('.');
+    verArr[2]++;
+    return verArr.join('.');
+  }
+  private getBump(currentVersion){
+    let verArr = currentVersion.split('.');
+    return verArr[3];
+  }
+  private hasNonZeroBuildNo(currentVersion){
+    if(!(currentVersion.includes('NEXT') || currentVersion.includes('LATEST'))){
+      if(this.getBump(currentVersion) != '0'){
+        return false;
+      }else{
+        return true; 
+      }
+    }
+    return false;
+  }
+
+
+  private updateVersion(selection, pkg) {
+    if(selection == 'skip'){
+      return; 
+    }
+
+    if(selection == 'Major: ' + this.getMajor(pkg.versionNumber)){
+      pkg.versionNumber = this.getMajor(pkg.versionNumber);
+    }else if(selection == 'Minor: '+ this.getMinor(pkg.versionNumber)){
+      pkg.versionNumber = this.getMinor(pkg.versionNumber);
+    }else if(selection == 'Patch: '+ this.getPatch(pkg.versionNumber)){
+      pkg.versionNumber = this.getPatch(pkg.versionNumber);
+    }
+    else if(selection == 'Custom'){
+      //write for custom
+    }
+    console.log(`${pkg.package} version will be updated to ${pkg.versionNumber}\n`);
+
+  }
+
+  private async bumpBuild(){
+    await inquirer.prompt 
   }
 }
