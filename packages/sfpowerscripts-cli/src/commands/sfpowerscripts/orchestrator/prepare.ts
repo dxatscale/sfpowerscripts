@@ -260,7 +260,12 @@ export default class Prepare extends SfpowerscriptsCommand {
       const results = await new ScratchOrgInfoFetcher(
         this.hubOrg
       ).getScratchOrgsByTag(this.flags.tag, false, true);
-      SFPStatsSender.logGauge("pool.available", results.records.length, {
+
+      let availableSo = results.records.filter(
+        (soInfo) => soInfo.Allocation_status__c === "Available"
+      );
+
+      SFPStatsSender.logGauge("pool.available", availableSo.length, {
         poolName: this.flags.tag,
       });
     } catch (error) {

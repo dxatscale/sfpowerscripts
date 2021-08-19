@@ -168,7 +168,14 @@ export default class Deploy extends SfpowerscriptsCommand {
       if (this.flags.logsgroupsymbol?.[1])
         console.log(COLOR_HEADER(this.flags.logsgroupsymbol[1]));
 
-     SFPStatsSender.logCount("deploy.scheduled",tags);
+      SFPStatsSender.logCount("deploy.scheduled",tags);
+
+      SFPStatsSender.logGauge(
+        "deploy.packages.scheduled",
+        deploymentResult.scheduled,
+        tags
+      );
+
 
       SFPStatsSender.logGauge(
         "deploy.duration",

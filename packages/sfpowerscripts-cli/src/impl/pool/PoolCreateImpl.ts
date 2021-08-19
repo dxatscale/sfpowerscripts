@@ -314,11 +314,11 @@ export default class PoolCreateImpl extends PoolBaseImpl
       if (!submitInfoToPool) {
         scratchOrg.isScriptExecuted = false;
         scratchOrg.failureMessage = "Unable to set the scratch org record in Pool";
-        SFPStatsSender.logCount("prepare.org.succeeded");
+        SFPStatsSender.logCount("prepare.org.failed");
       }
       else
       {
-        SFPStatsSender.logCount("prepare.org.failure");
+        SFPStatsSender.logCount("prepare.org.succeeded");
       }
 
 
