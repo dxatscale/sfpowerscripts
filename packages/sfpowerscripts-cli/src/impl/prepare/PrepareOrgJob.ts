@@ -131,17 +131,26 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
         SFPStatsSender.logGauge(
           "prepare.packages.scheduled",
-          deploymentResult.scheduled
+          deploymentResult.scheduled,
+          {
+            poolName: this.pool.tag
+          }
         );
 
         SFPStatsSender.logGauge(
           "prepare.packages.succeeded",
-          deploymentResult.deployed.length
+          deploymentResult.deployed.length,
+          {
+            poolName: this.pool.tag
+          }
         );
 
         SFPStatsSender.logGauge(
           "prepare.packages.failed",
-          deploymentResult.failed.length
+          deploymentResult.failed.length,
+          {
+            poolName: this.pool.tag
+          }
         );
 
 
