@@ -34,7 +34,7 @@ export default class ChangelogImpl {
   }
 
   async exec(): Promise<ReleaseChangelog> {
-    return await retry(async (bail, retryNum) => {
+    return retry(async (bail, retryNum) => {
       try {
         return await this.execHandler();
       } catch (err) {
