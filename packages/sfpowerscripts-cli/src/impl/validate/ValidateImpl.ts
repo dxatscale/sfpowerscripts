@@ -309,7 +309,12 @@ export default class ValidateImpl {
       const results = await new ScratchOrgInfoFetcher(
         this.props.hubOrg
       ).getScratchOrgsByTag(tag, false, true);
-      SFPStatsSender.logGauge("pool.available", results.records.length, {
+
+      let availableSo = results.records.filter(
+        (soInfo) => soInfo.Allocation_status__c === "Available"
+      );
+
+      SFPStatsSender.logGauge("pool.available", availableSo.length, {
         poolName: tag,
       });
     } catch (error) {
