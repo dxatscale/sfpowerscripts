@@ -68,12 +68,17 @@ export default class ManageVersions extends SfpowerscriptsCommand {
 
         if(this.hasNonZeroBuildNo(pkg.versionNumber)){
           await inquirer.prompt([{type: 'list', name: 'selection', message: `Would you like the build number for ${pkg.package} reset to 0?`, choices: ['Yes', 'No']}]).then((answer) => {
-            if(answer.selection == 'Yes'){pkg.VersionNumber = this.resetBuildNumber(pkg.versionNumber);}
+            if(answer.selection == 'Yes'){pkg.versionNumber = this.resetBuildNumber(pkg.versionNumber);}
             console.log(pkg.versionNumber);
           });
         }
       
       }
+      projectConfig.packageDirectories = packages;
+      let projectString = JSON.stringify(projectConfig,null,4);
+
+      fs.writeFileSync('sfdx-project.json', projectString, 'utf-8')
+
     }
     catch (err){
       console.log(err);
@@ -100,7 +105,6 @@ export default class ManageVersions extends SfpowerscriptsCommand {
     let verArr = currentVersion.split('.');
     return verArr[3];
   }
-
   private hasNonZeroBuildNo(currentVersion){
     if(!(currentVersion.includes('NEXT') || currentVersion.includes('LATEST'))){
       if(this.getBuildNumber(currentVersion) != '0'){
@@ -112,12 +116,10 @@ export default class ManageVersions extends SfpowerscriptsCommand {
     return false;
   }
 
-
   private updateVersion(selection, pkg) {
     if(selection == 'skip'){
       return; 
     }
-
     if(selection == 'Major: ' + this.getMajor(pkg.versionNumber)){
       pkg.versionNumber = this.getMajor(pkg.versionNumber);
     }else if(selection == 'Minor: '+ this.getMinor(pkg.versionNumber)){
@@ -130,12 +132,11 @@ export default class ManageVersions extends SfpowerscriptsCommand {
     }
     console.log(`${pkg.package} version will be updated to ${pkg.versionNumber}\n`);
     return pkg.versionNumber;
-
   }
 
-  private async resetBuildNumber(currentVersion){
+  private resetBuildNumber(currentVersion){
     let versionArr = currentVersion.split('.');
-    versionArr[3] = 0;
+    versionArr[3] = '0';
     return versionArr.join('.'); 
   }
 }
