@@ -3,6 +3,7 @@ import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
 import { flags } from '@salesforce/command';
 import fs = require("fs");
 import inquirer = require("inquirer");
+import { captureRejectionSymbol } from "events";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -61,15 +62,16 @@ export default class ManageVersions extends SfpowerscriptsCommand {
         let patch = this.getPatch(pkg.versionNumber)
        
         
-        await inquirer.prompt([{type: 'list', name: 'selection', message: `Would you like to update ${pkg.package}?`, choices: ['Major: ' + newMajor, 'Minor: ' + newMinor, 'Patch: ' + patch, 'Custom', 'Skip']}]).then((answer) => {
-          
-          if(this.hasNonZeroBuildNo){
-            
-            console.log(`Build number for ${pkg.package} is ${this.getBump(pkg.versionNumber)}. Would you like to reset this to 0?`)
-          }
-          this.updateVersion(answer.selection, pkg)
-        
+        await inquirer.prompt([{type: 'list', name: 'selection', message: `Would you like to update ${pkg.package}?`, choices: ['Major: ' + newMajor, 'Minor: ' + newMinor, 'Patch: ' + patch, 'Custom', 'Skip']}]).then((selection) => {
+          pkg.versionNumber = this.updateVersion(selection.selection, pkg)
         });
+
+        if(this.hasNonZeroBuildNo(pkg.versionNumber)){
+          await inquirer.prompt([{type: 'list', name: 'selection', message: `Would you like the build number for ${pkg.package} reset to 0?`, choices: ['Yes', 'No']}]).then((answer) => {
+            if(answer.selection == 'Yes'){pkg.VersionNumber = this.resetBuildNumber(pkg.versionNumber);}
+            console.log(pkg.versionNumber);
+          });
+        }
       
       }
     }
@@ -94,16 +96,17 @@ export default class ManageVersions extends SfpowerscriptsCommand {
     verArr[2]++;
     return verArr.join('.');
   }
-  private getBump(currentVersion){
+  private getBuildNumber(currentVersion){
     let verArr = currentVersion.split('.');
     return verArr[3];
   }
+
   private hasNonZeroBuildNo(currentVersion){
     if(!(currentVersion.includes('NEXT') || currentVersion.includes('LATEST'))){
-      if(this.getBump(currentVersion) != '0'){
-        return false;
+      if(this.getBuildNumber(currentVersion) != '0'){
+        return true;
       }else{
-        return true; 
+        return false; 
       }
     }
     return false;
@@ -126,10 +129,13 @@ export default class ManageVersions extends SfpowerscriptsCommand {
       //write for custom
     }
     console.log(`${pkg.package} version will be updated to ${pkg.versionNumber}\n`);
+    return pkg.versionNumber;
 
   }
 
-  private async bumpBuild(){
-    await inquirer.prompt 
+  private async resetBuildNumber(currentVersion){
+    let versionArr = currentVersion.split('.');
+    versionArr[3] = 0;
+    return versionArr.join('.'); 
   }
 }
