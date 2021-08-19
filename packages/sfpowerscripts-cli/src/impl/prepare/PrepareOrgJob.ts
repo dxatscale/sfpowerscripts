@@ -129,6 +129,31 @@ export default class PrepareOrgJob extends PoolJobExecutor {
           deploymentMode
         );
 
+        SFPStatsSender.logGauge(
+          "prepare.packages.scheduled",
+          deploymentResult.scheduled,
+          {
+            poolName: this.pool.tag
+          }
+        );
+
+        SFPStatsSender.logGauge(
+          "prepare.packages.succeeded",
+          deploymentResult.deployed.length,
+          {
+            poolName: this.pool.tag
+          }
+        );
+
+        SFPStatsSender.logGauge(
+          "prepare.packages.failed",
+          deploymentResult.failed.length,
+          {
+            poolName: this.pool.tag
+          }
+        );
+
+
         this.pool.succeedOnDeploymentErrors
           ? this.handleDeploymentErrorsForPartialDeployment(
               scratchOrg,

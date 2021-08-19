@@ -11,6 +11,7 @@ import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/pa
 import PoolFetchImpl from "../pool/PoolFetchImpl";
 import { Org } from "@salesforce/core";
 import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
+import ValidateError from "../../errors/ValidateError";
 
 import DependencyAnalysis from "./DependencyAnalysis";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
@@ -22,6 +23,9 @@ import { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogge
 import { COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import getFormattedTime from "../../utils/GetFormattedTime";
 import { COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import ScratchOrgInfoFetcher from "../../impl/pool/services/fetchers/ScratchOrgInfoFetcher";
 
 export enum ValidateMode {
   ORG,
@@ -47,7 +51,7 @@ export default class ValidateImpl {
     private props: ValidateProps
   ){}
 
-  public async exec(): Promise<boolean>{
+  public async exec(): Promise<DeploymentResult>{
     let scratchOrgUsername: string;
     try {
       let authDetails;
@@ -88,7 +92,7 @@ export default class ValidateImpl {
       let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
       if (deploymentResult.failed.length > 0 || deploymentResult.error)
-        return false;
+        throw new ValidateError("Validation failed", deploymentResult);
       else {
         if (this.props.visualizeChangesAgainst) {
           try {
@@ -102,7 +106,7 @@ export default class ValidateImpl {
             console.log("Failed to perform change analysis");
           }
         }
-        return true;
+        return deploymentResult;
       }
     } finally {
       if (this.props.isDeleteScratchOrg) {
@@ -289,6 +293,7 @@ export default class ValidateImpl {
       if (scratchOrg && scratchOrg.status==="Assigned") {
           scratchOrgUsername = scratchOrg.username;
           console.log(`Fetched scratch org ${scratchOrgUsername} from ${pool}`);
+          this.getCurrentRemainingNumberOfOrgsInPoolAndReport(scratchOrg.tag);
           break;
         }
     }
@@ -297,6 +302,24 @@ export default class ValidateImpl {
       return scratchOrgUsername;
     else
       throw new Error(`Failed to fetch scratch org from ${pools}, Are you sure you created this pool using a DevHub authenticated using auth:sfdxurl or auth:web or auth:accesstoken:store`);
+  }
+
+  private async getCurrentRemainingNumberOfOrgsInPoolAndReport(tag: string) {
+    try {
+      const results = await new ScratchOrgInfoFetcher(
+        this.props.hubOrg
+      ).getScratchOrgsByTag(tag, false, true);
+
+      let availableSo = results.records.filter(
+        (soInfo) => soInfo.Allocation_status__c === "Available"
+      );
+
+      SFPStatsSender.logGauge("pool.available", availableSo.length, {
+        poolName: tag,
+      });
+    } catch (error) {
+      //do nothing, we are not reporting anything if anything goes wrong here
+    }
   }
 
   private printBuildSummary(
