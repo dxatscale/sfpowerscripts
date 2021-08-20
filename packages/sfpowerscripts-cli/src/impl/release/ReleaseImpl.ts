@@ -8,7 +8,8 @@ import ReleaseError from "../../errors/ReleaseError";
 import ChangelogImpl from "../../impl/changelog/ChangelogImpl";
 import { Org } from "@salesforce/core";
 import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/installedPackages/InstalledPackagesFetcher"
-
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import { ReleaseChangelog, Release } from "../changelog/ReleaseChangelogInterfaces";
 
 export interface ReleaseProps
 {
@@ -83,8 +84,25 @@ export default class ReleaseImpl {
           this.props.targetOrg
         );
 
-        await changelogImpl.exec();
+        let releaseChangelog = await changelogImpl.exec();
 
+        let latestRelease = this.getLatestRelease(releaseChangelog);
+
+        let numberOfWorkItems = this.getNumberOfWorkItems(latestRelease);
+
+        SFPStatsSender.logGauge(
+          "release.workitems",
+          numberOfWorkItems,
+          {releaseName: this.props.releaseDefinition.release}
+        );
+
+        let numberOfCommits = this.getNumberOfCommits(latestRelease);
+
+        SFPStatsSender.logGauge(
+          "release.commits",
+          numberOfCommits,
+          {releaseName: this.props.releaseDefinition.release}
+        );
 
         this.printClosingLoggingGroup();
       }
@@ -96,6 +114,29 @@ export default class ReleaseImpl {
     }
   }
 
+  private getNumberOfWorkItems(release: Release) {
+    return Object.keys(release.workItems).length;
+  }
+
+  private getNumberOfCommits(release: Release) {
+    let numberOfCommits: number = 0;
+
+    release.artifacts.forEach((artifact) => {numberOfCommits += artifact.commits.length});
+
+    return numberOfCommits;
+  }
+
+  private getLatestRelease(releaseChangelog: ReleaseChangelog) {
+    let hashIdOfLatestRelease = releaseChangelog.orgs.find(
+      (org) => org.name === this.props.targetOrg.toLowerCase()
+    ).latestRelease.hashId;
+
+    let latestRelease = releaseChangelog.releases.find(
+      (release) => release.hashId === hashIdOfLatestRelease
+    );
+
+    return latestRelease;
+  }
 
   private async deployArtifacts(
     releaseDefinition: ReleaseDefinitionSchema

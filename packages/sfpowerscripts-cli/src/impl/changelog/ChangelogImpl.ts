@@ -33,10 +33,10 @@ export default class ChangelogImpl {
     this.org = org?.toLowerCase();
   }
 
-  async exec() {
-    await retry(async (bail, retryNum) => {
+  async exec(): Promise<ReleaseChangelog> {
+    return retry(async (bail, retryNum) => {
       try {
-        await this.execHandler();
+        return await this.execHandler();
       } catch (err) {
         if (err instanceof GitError) {
           if (!err.message.includes('failed to push some refs')) {
@@ -172,6 +172,7 @@ export default class ChangelogImpl {
       await this.pushChangelogToBranch(this.branch, git, this.forcePush);
 
       console.log(`Successfully generated changelog`);
+      return releaseChangelog;
     } finally {
       tempDir.removeCallback();
     }
