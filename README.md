@@ -6,7 +6,9 @@
 
 [![npm](https://img.shields.io/npm/dw/@dxatscale/sfpowerscripts)](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)  [![Docker Pulls](https://img.shields.io/docker/pulls/dxatscale/sfpowerscripts)](https://hub.docker.com/r/dxatscale/sfpowerscripts)
 
-![](https://img.shields.io/badge/Compatible%20with%20sfdx--cli-7.110.0-green)
+![](https://img.shields.io/badge/Compatible%20with%20sfdx--cli-7.110.0-green) 
+
+[![Join slack](https://img.shields.io/badge/slack-Join%20DX%40Scale%20Slack-green)](https://join.slack.com/t/dxatscale/shared_invite/zt-9uahlx2v-r0TczYpEkR7_1YKg6uk7Yw)
 
 <p align="center">
   <img alt="sfpowerscripts" src="https://repository-images.githubusercontent.com/248449736/5d08c600-728e-11ea-8267-ae1aceebea60" width="480" height="400">
