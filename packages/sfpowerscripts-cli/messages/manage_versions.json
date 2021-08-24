@@ -1,3 +1,6 @@
 {
-  "commandDescription": "Utlises SemVer incrementation to update package versions using the Major, Minor, Patch syntax in the sfdx-project.json"
+  "commandDescription": "Utlises SemVer incrementation to update package versions using the Major, Minor, Patch syntax in the sfdx-project.json",
+  "dependenciesDescription": "If a package version is updated, update all package dependencies that list the package. If this flag is not specified, the user will be asked if they want to update the package version in dependencies",
+  "allPackagesDescription":"Update all packages with version supplied with --version", 
+  "versionDescription":"Options:\nMajor: when you make incompatible API changes\n Minor: when you add functionality in a backwards compatible manner\n Patch: when you make backwards compatible bug fixes. The version to update using SemVer versioning"
 }
