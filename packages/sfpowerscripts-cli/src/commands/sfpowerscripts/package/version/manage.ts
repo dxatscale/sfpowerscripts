@@ -3,8 +3,7 @@ import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
 import { flags } from '@salesforce/command';
 import fs = require("fs");
 import inquirer = require("inquirer");
-import { captureRejectionSymbol } from "events";
-import { getAllJSDocTags } from "typescript";
+
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
