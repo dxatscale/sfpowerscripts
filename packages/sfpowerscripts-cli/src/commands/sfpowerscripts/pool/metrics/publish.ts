@@ -72,24 +72,6 @@ export default class Publish extends SfpowerscriptsCommand {
       head: ["Metric", "Value", "Tag"],
     });
 
-    if (pools) {
-      for (let pool of Object.entries(pools)) {
-        SFPStatsSender.logGauge("pool.total", pool[1].nTotal, {poolName: pool[0]});
-        SFPStatsSender.logGauge("pool.available", pool[1].nAvailable, {poolName: pool[0]});
-        SFPStatsSender.logGauge("pool.inuse", pool[1].nInUse, {poolName: pool[0]});
-        SFPStatsSender.logGauge("pool.provisioning", pool[1].nProvisioningInProgress, {poolName: pool[0]});
-
-        table.push(["pool.total", pool[1].nTotal, pool[0]]);
-        table.push(["pool.available", pool[1].nAvailable, pool[0]]);
-        table.push(["pool.inuse", pool[1].nInUse, pool[0]]);
-        table.push(["pool.provisioning", pool[1].nProvisioningInProgress, pool[0]]);
-      }
-    }
-
-
-    SFPStatsSender.logGauge(`pool.footprint`, nPooledScratchOrgs);
-    table.push(["pool.footprint", nPooledScratchOrgs, ""]);
-
     const limits = await new LimitsFetcher(this.hubOrg.getConnection()).getApiLimits();
     const remainingActiveScratchOrgs = limits.find(((limit) => limit.name === "ActiveScratchOrgs")).remaining;
     const remainingDailyScratchOrgs = limits.find(((limit) => limit.name === "DailyScratchOrgs")).remaining;
@@ -97,8 +79,25 @@ export default class Publish extends SfpowerscriptsCommand {
     SFPStatsSender.logGauge(`scratchorgs.active.remaining`, remainingActiveScratchOrgs);
     SFPStatsSender.logGauge(`scratchorgs.daily.remaining`, remainingDailyScratchOrgs);
 
-    table.push(["scratchorgs.active.remaining", remainingActiveScratchOrgs, ""]);
-    table.push(["scratchorgs.daily.remaining", remainingDailyScratchOrgs, ""]);
+    table.push(["sfpowerscripts.scratchorgs.active.remaining", remainingActiveScratchOrgs, ""]);
+    table.push(["sfpowerscripts.scratchorgs.daily.remaining", remainingDailyScratchOrgs, ""]);
+
+    SFPStatsSender.logGauge(`pool.footprint`, nPooledScratchOrgs);
+    table.push(["sfpowerscripts.pool.footprint", nPooledScratchOrgs, ""]);
+
+    if (pools) {
+      for (let pool of Object.entries(pools)) {
+        SFPStatsSender.logGauge("pool.total", pool[1].nTotal, {poolName: pool[0]});
+        SFPStatsSender.logGauge("pool.available", pool[1].nAvailable, {poolName: pool[0]});
+        SFPStatsSender.logGauge("pool.inuse", pool[1].nInUse, {poolName: pool[0]});
+        SFPStatsSender.logGauge("pool.provisioning", pool[1].nProvisioningInProgress, {poolName: pool[0]});
+
+        table.push(["sfpowerscripts.pool.total", pool[1].nTotal, pool[0]]);
+        table.push(["sfpowerscripts.pool.available", pool[1].nAvailable, pool[0]]);
+        table.push(["sfpowerscripts.pool.inuse", pool[1].nInUse, pool[0]]);
+        table.push(["sfpowerscripts.pool.provisioning", pool[1].nProvisioningInProgress, pool[0]]);
+      }
+    }
 
     SFPLogger.log(
       COLOR_KEY_MESSAGE("Metrics published:"),
