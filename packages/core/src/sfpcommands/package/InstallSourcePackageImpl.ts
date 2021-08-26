@@ -8,7 +8,7 @@ import ReconcileProfileAgainstOrgImpl from "../../sfpowerkitwrappers/ReconcilePr
 import DeployDestructiveManifestToOrgImpl from "../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl";
 import PackageMetadata from "../../PackageMetadata";
 import ProjectConfig from "../../project/ProjectConfig";
-import OrgDetails from "../../org/OrgDetails";
+import OrgDetailsFetcher, { OrgDetails } from "../../org/OrgDetailsFetcher";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import {
   PackageInstallationResult,
@@ -509,9 +509,9 @@ export default class InstallSourcePackageImpl {
     mdapi_options["checkonly"] = false;
 
     if (skipTest) {
-      let result;
+      let orgDetails: OrgDetails;
       try {
-        result = await OrgDetails.getOrgDetails(target_org, this.packageLogger);
+        orgDetails = await new OrgDetailsFetcher(target_org).getOrgDetails();
       } catch (err) {
         SFPLogger.log(
           ` -------------------------WARNING! SKIPPING TESTS AS ORG TYPE CANNOT BE DETERMINED! ------------------------------------${EOL}` +
@@ -526,7 +526,7 @@ export default class InstallSourcePackageImpl {
         return mdapi_options;
       }
 
-      if (result && result["IsSandbox"]) {
+      if (orgDetails && !orgDetails.isDevHub) {
         SFPLogger.log(
           ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
             `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +

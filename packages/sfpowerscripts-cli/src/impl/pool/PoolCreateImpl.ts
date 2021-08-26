@@ -16,7 +16,7 @@ import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from "@dxatscale/sfpowerscr
 import { Result ,ok,err} from "neverthrow"
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { EOL } from "os";
-
+import OrgDetailsFetcher from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetailsFetcher";
 
 
 
@@ -38,7 +38,8 @@ export default class PoolCreateImpl extends PoolBaseImpl
   public constructor(
     hubOrg: Org,
     private pool:PoolConfig,
-    private poolScriptExecutor:PoolJobExecutor
+    private poolScriptExecutor:PoolJobExecutor,
+    private logLevel:LoggerLevel
   ) {
     super(hubOrg);
     this.limiter = new Bottleneck({
@@ -111,7 +112,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
     fs.mkdirpSync("script_exec_outputs");
 
 
-    
+
      //Generate Scratch Orgs
      await this.generateScratchOrgs();
 
@@ -207,6 +208,12 @@ export default class PoolCreateImpl extends PoolBaseImpl
             this.pool.configFilePath,
             this.pool.expiry
           );
+
+          let orgDetails = await new OrgDetailsFetcher(scratchOrg.username).getOrgDetails();
+          if (orgDetails.status === "Deleted") {
+            throw new Error(`Throwing away scratch org ${count} as it has a status of deleted`);
+          }
+
           this.pool.scratchOrgs.push(scratchOrg);
           this.totalAllocated++;
         } catch (error) {
@@ -294,7 +301,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
     );
 
     let startTime = Date.now();
-    let result = await this.poolScriptExecutor.execute(scratchOrg,this.hubOrg);
+    let result = await this.poolScriptExecutor.execute(scratchOrg,this.hubOrg,this.logLevel);
 
     if (result.isOk()) {
       scratchOrg.isScriptExecuted = true;
@@ -307,11 +314,11 @@ export default class PoolCreateImpl extends PoolBaseImpl
       if (!submitInfoToPool) {
         scratchOrg.isScriptExecuted = false;
         scratchOrg.failureMessage = "Unable to set the scratch org record in Pool";
-        SFPStatsSender.logCount("prepare.org.succeeded");
+        SFPStatsSender.logCount("prepare.org.failed");
       }
       else
       {
-        SFPStatsSender.logCount("prepare.org.failure");
+        SFPStatsSender.logCount("prepare.org.succeeded");
       }
 
 

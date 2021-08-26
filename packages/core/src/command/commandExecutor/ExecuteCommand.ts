@@ -1,9 +1,16 @@
-import child_process = require("child_process"); 
+import child_process = require("child_process");
+import { Logger, LoggerLevel } from "../../logger/SFPLogger";
 
 export default class ExecuteCommand
 {
- 
-   public execCommand(command:string, workingdirectory:string):Promise<any>
+
+  public constructor(
+    protected logger?: Logger,
+    protected logLevel?: LoggerLevel
+    ) {}
+
+
+   public execCommand(command:string, workingdirectory:string, timeout: number = 0):Promise<any>
    {
     return new Promise((resolve, reject) => {
       try
@@ -13,26 +20,27 @@ export default class ExecuteCommand
        childProcess = child_process.exec(command, {
         encoding: "utf8",
         cwd: workingdirectory,
-        maxBuffer: 1024*1024*5
+        maxBuffer: 1024*1024*5,
+        timeout: timeout
       });
-     
-    
 
-     
+
+
+
       // variables for collecting data written to STDOUT and STDERR
       let stdoutContents = ''
       let stderrContents = ''
-  
+
       // collect data written to STDOUT into a string
       childProcess.stdout.on('data', (data) => {
           stdoutContents += data.toString();
       });
-  
+
       // collect data written to STDERR into a string
       childProcess.stderr.on('data', (data) => {
          stderrContents += data.toString();
       });
-  
+
 
       childProcess.once('close', (code: number, signal: string) => {
 
@@ -41,7 +49,7 @@ export default class ExecuteCommand
         } else {
           if(stdoutContents)
           reject(new Error(stdoutContents));
-          else 
+          else
           reject(new Error(stdoutContents+"\n"+stderrContents));
           }
       });
@@ -58,5 +66,5 @@ export default class ExecuteCommand
       }
     });
    }
-   
+
 }

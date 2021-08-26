@@ -1,21 +1,22 @@
 import ExecuteCommand from "./commandExecutor/ExecuteCommand";
-import { LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
 export abstract class SFDXCommand {
   public constructor(
     protected target_org: string,
     protected project_directory: string,
-    protected logFile?: any,
-    protected loggerLevel?: LoggerLevel
+    protected logger?: Logger,
+    protected logLevel?: LoggerLevel
   ) {}
 
-  public async exec(quiet = true): Promise<any> {
+  public async exec(quiet = true, timeout: number = 0): Promise<any> {
     let command = this.getSFDXCommand();
     if (quiet) command += ` --json`;
     command += " " + this.getGeneratedParams();
 
-    let executor: ExecuteCommand = new ExecuteCommand();
-    let output = await executor.execCommand(command, this.project_directory);
+    SFPLogger.log("Generated Command:"+command,LoggerLevel.TRACE,this.logger);
+    let executor: ExecuteCommand = new ExecuteCommand(this.logger,this.logLevel);
+    let output = await executor.execCommand(command, this.project_directory, timeout);
     if (quiet) {
       return JSON.parse(output).result;
     }

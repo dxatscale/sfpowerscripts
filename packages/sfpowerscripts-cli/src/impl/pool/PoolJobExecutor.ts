@@ -4,7 +4,7 @@ import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg
 import { Result } from "neverthrow";
 import * as fs from "fs-extra";
 import { EOL } from "os";
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 export default abstract class PoolJobExecutor {
   protected logToFilePath: string;
@@ -13,19 +13,21 @@ export default abstract class PoolJobExecutor {
 
   async execute(
     scratchOrg: ScratchOrg,
-    hubOrg: Org
+    hubOrg: Org,
+    logLevel: LoggerLevel
   ): Promise<Result<ScriptExecutionResult, JobError>> {
     this.logToFilePath = `.sfpowerscripts/prepare_logs/${scratchOrg.alias}.log`;
     //Create file logger
     fs.outputFileSync(this.logToFilePath, `sfpowerscripts--log${EOL}`);
     SFPLogger.log(`Preparation Log files for ${scratchOrg.username} written to ${this.logToFilePath}`)
-    return this.executeJob(scratchOrg, hubOrg, this.logToFilePath);
+    return this.executeJob(scratchOrg, hubOrg, this.logToFilePath,logLevel);
   }
 
   abstract executeJob(
     scratchOrg: ScratchOrg,
     hubOrg: Org,
-    logToFilePath: string
+    logToFilePath: string,
+    logLevel: LoggerLevel
   ): Promise<Result<ScriptExecutionResult, JobError>>;
 }
 

@@ -8,7 +8,8 @@ import DeployImpl, {
 import SFPLogger, {
   FileLogger,
   LoggerLevel,
-  Logger
+  Logger,
+  COLOR_KEY_MESSAGE
 } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Stage } from "../Stage";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
@@ -22,9 +23,10 @@ import { Connection, Org } from "@salesforce/core";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { PoolConfig } from "../pool/PoolConfig";
 import { Result, ok, err } from "neverthrow";
-import { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import RelaxIPRange from "@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange"
 import SourceTrackingResourceController from "../pool/SourceTrackingResourceController";
+import VlocityPackUpdateSettings from "@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings";
+import VlocityInitialInstall from "@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall";
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
 export default class PrepareOrgJob extends PoolJobExecutor {
@@ -32,7 +34,6 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
   public constructor(
     protected pool: PoolConfig,
-    private artifacts: ArtifactFilePaths[]
   ) {
     super(pool);
   }
@@ -40,7 +41,8 @@ export default class PrepareOrgJob extends PoolJobExecutor {
   async executeJob(
     scratchOrg: ScratchOrg,
     hubOrg: Org,
-    logToFilePath: string
+    logToFilePath: string,
+    logLevel: LoggerLevel
   ): Promise<Result<ScriptExecutionResult, JobError>> {
     //Install sfpowerscripts Artifact
 
@@ -105,7 +107,13 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         `Successfully completed Installing Package Dependencies of this repo in ${scratchOrg.alias}`
       );
 
-      if (this.artifacts) {
+
+
+      //Hook Velocity Deployment
+      if(this.pool.enableVlocity)
+        await this.prepareVlocityDataPacks(scratchOrg,packageLogger,logLevel);
+
+      if (this.pool.installAll) {
         let deploymentResult: DeploymentResult;
 
         let deploymentMode: DeploymentMode;
@@ -120,6 +128,31 @@ export default class PrepareOrgJob extends PoolJobExecutor {
           packageLogger,
           deploymentMode
         );
+
+        SFPStatsSender.logGauge(
+          "prepare.packages.scheduled",
+          deploymentResult.scheduled,
+          {
+            poolName: this.pool.tag
+          }
+        );
+
+        SFPStatsSender.logGauge(
+          "prepare.packages.succeeded",
+          deploymentResult.deployed.length,
+          {
+            poolName: this.pool.tag
+          }
+        );
+
+        SFPStatsSender.logGauge(
+          "prepare.packages.failed",
+          deploymentResult.failed.length,
+          {
+            poolName: this.pool.tag
+          }
+        );
+
 
         this.pool.succeedOnDeploymentErrors
           ? this.handleDeploymentErrorsForPartialDeployment(
@@ -167,7 +200,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
     let deployProps: DeployProps = {
       targetUsername: scratchOrg.username,
-      artifactDir: null,
+      artifactDir: "artifacts",
       waitTime: 120,
       currentStage: Stage.PREPARE,
       packageLogger: packageLogger,
@@ -175,7 +208,6 @@ export default class PrepareOrgJob extends PoolJobExecutor {
       skipIfPackageInstalled: false,
       deploymentMode: deploymentMode,
       isRetryOnFailure: this.pool.retryOnFailure,
-      artifacts: this.artifacts
     };
 
     //Deploy the fetched artifacts to the org
@@ -283,4 +315,21 @@ export default class PrepareOrgJob extends PoolJobExecutor {
       );
     }
   }
+
+
+  //Prepare for vlocity
+  private async prepareVlocityDataPacks(scratchOrg:ScratchOrg,logger:Logger,logLevel:LoggerLevel)
+  {
+
+    SFPLogger.log(COLOR_KEY_MESSAGE("Installing Vlocity Configurations.."),LoggerLevel.INFO,logger);
+    let vlocityPackSettingsUpdate:VlocityPackUpdateSettings = new VlocityPackUpdateSettings(null,scratchOrg.username,logger,logLevel);
+    await vlocityPackSettingsUpdate.exec(false);
+
+    let vlocityInitialInstall:VlocityInitialInstall = new VlocityInitialInstall(null,scratchOrg.username,logger,logLevel);
+    await vlocityInitialInstall.exec(false);
+    SFPLogger.log(COLOR_KEY_MESSAGE("Succesfully completed all vlocity config installation"),LoggerLevel.INFO,logger);
+  }
+
+
+
 }

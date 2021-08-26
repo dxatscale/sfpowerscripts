@@ -1,4 +1,4 @@
-import SFPLogger, { FileLogger, LoggerLevel } from "../../logger/SFPLogger";
+import SFPLogger, { FileLogger, LoggerLevel, Logger } from "../../logger/SFPLogger";
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
@@ -12,20 +12,22 @@ import SFPPackage  from "../../package/SFPPackage";
 const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl {
-  private packageLogger:FileLogger;
 
   public constructor(
     private projectDirectory: string,
     private sfdx_package: string,
     private packageArtifactMetadata: PackageMetadata,
     private pathToReplacementForceIgnore?: string,
-    private breakBuildIfEmpty: boolean = true
+    private breakBuildIfEmpty: boolean = true,
+    private packageLogger?: Logger
   ) {
-    fs.outputFileSync(
-      `.sfpowerscripts/logs/${sfdx_package}`,
-      `sfpowerscripts--log${EOL}`
-    );
-    this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
+    if (!this.packageLogger) {
+      fs.outputFileSync(
+        `.sfpowerscripts/logs/${sfdx_package}`,
+        `sfpowerscripts--log${EOL}`
+      );
+      this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
+    }
   }
 
   public async exec(): Promise<PackageMetadata> {

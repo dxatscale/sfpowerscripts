@@ -97,9 +97,14 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
     let totalElapsedTime: number;
     let artifactCreationErrors: string[] = [];
 
+    let tags;
     try {
+
+    
+     
+
+
       const artifactDirectory: string = this.flags.artifactdir;
-      const gittag: boolean = this.flags.gittag;
       const diffcheck: boolean = this.flags.diffcheck;
       const branch: string = this.flags.branch;
 
@@ -112,7 +117,17 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
       let executionStartTime = Date.now();
 
+      let tags = {
+        is_diffcheck_enabled: String(diffcheck),
+        stage: this.getStage(),
+        branch: branch,
+      };
 
+      if (!(this.flags.tag == null || this.flags.tag == undefined)) {
+        tags["tag"] = this.flags.tag;
+      }
+
+      SFPStatsSender.logCount("build.scheduled", tags);
 
       buildExecResult = await this.getBuildImplementer().exec();
 
@@ -151,26 +166,24 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         throw new Error("Build Failed");
 
 
-      let tags = {
-        is_diffcheck_enabled: String(diffcheck),
-        stage: this.getStage(),
-        branch: branch,
-      };
-
-      if (!(this.flags.tag == null || this.flags.tag == undefined)) {
-        tags["tag"] = this.flags.tag;
-      }
-
-      SFPStatsSender.logCount("build.scheduled", tags);
-
-
+      
+  
       SFPStatsSender.logGauge(
         "build.duration",
         Date.now() - executionStartTime,
         tags
       );
 
+      SFPStatsSender.logCount(
+        "build.succeeded",
+        tags
+      );
+
     } catch (error) {
+      SFPStatsSender.logCount(
+        "build.failed",
+        tags
+      );
       console.log(COLOR_ERROR(error));
       process.exitCode = 1;
     } finally {

@@ -4,7 +4,7 @@ import { onExit } from "../../utils/OnExit";
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger, { FileLogger, LoggerLevel } from "../../logger/SFPLogger";
+import SFPLogger, { FileLogger, LoggerLevel, Logger } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import { delay } from "../../utils/Delay";
@@ -14,7 +14,6 @@ import SFPPackage  from "../../package/SFPPackage";
 const path = require("path");
 
 export default class CreateUnlockedPackageImpl {
-  private packageLogger:FileLogger;
   private static packageTypeInfos: any[];
   private isOrgDependentPackage: boolean = false;
 
@@ -30,13 +29,16 @@ export default class CreateUnlockedPackageImpl {
     private isCoverageEnabled: boolean,
     private isSkipValidation: boolean,
     private packageArtifactMetadata: PackageMetadata,
-    private pathToReplacementForceIgnore?: string
+    private pathToReplacementForceIgnore?: string,
+    private packageLogger?: Logger
   ) {
-    fs.outputFileSync(
-      `.sfpowerscripts/logs/${sfdx_package}`,
-      `sfpowerscripts--log${EOL}`
-    );
-    this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
+    if (!this.packageLogger) {
+      fs.outputFileSync(
+        `.sfpowerscripts/logs/${sfdx_package}`,
+        `sfpowerscripts--log${EOL}`
+      );
+      this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
+    }
   }
 
   public async exec(): Promise<PackageMetadata> {

@@ -9,6 +9,7 @@ import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifa
 import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
 import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/installedPackages/InstalledPackagesFetcher"
 import InstalledPackageDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer";
+import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 // Initialize Messages with the current plugin directory
 core.Messages.importMessagesDirectory(__dirname);
@@ -78,8 +79,12 @@ export default class Fetch extends SfdxCommand {
   public async run(): Promise<AnyJson> {
     if (!fs.existsSync("sfdx-project.json")) throw new Error("This command must be run in the root directory of a SFDX project");
 
+
     await this.hubOrg.refreshAuth();
     const hubConn = this.hubOrg.getConnection();
+
+    SFPLogger.log(COLOR_KEY_MESSAGE(`Fetching a scratch org from pool ${ this.flags.tag} in Org ${this.hubOrg.getOrgId()}`),LoggerLevel.INFO);
+
 
     this.flags.apiversion =
       this.flags.apiversion || (await hubConn.retrieveMaxApiVersion());
