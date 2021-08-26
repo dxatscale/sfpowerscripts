@@ -3,11 +3,12 @@ import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages, SfdxError } from '@salesforce/core';
 import AnalyzeWithPMDImpl from '@dxatscale/sfpowerscripts.core/lib/sfpowerkitwrappers/AnalyzeWithPMDImpl';
 import xml2js = require('xml2js');
-import {isNullOrUndefined} from 'util';
 const fs = require('fs-extra');
 const path = require('path');
 import * as rimraf from "rimraf";
 const Table = require("cli-table");
+import SFPLogger, { LoggerLevel, COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import lodash = require("lodash");
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -21,7 +22,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
   public static description = messages.getMessage('commandDescription');
 
   public static examples = [
-    `$ sfdx sfpowerscripts:analyze:pmd -b\n`,
+    `$ sfdx sfpowerscripts:analyze:pmd --sourcedir <dir>\n`,
     `Output variable:`,
     `sfpowerscripts_pmd_output_path`,
     `<refname>_sfpowerscripts_pmd_output_path`
@@ -69,11 +70,18 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
     default: "6.34.0",
     description: messages.getMessage("versionFlagDescription"),
   }),
+  threshold: flags.integer({
+    required: false,
+    default: 1,
+    min: 1,
+    max: 5,
+    description: messages.getMessage("thresholdFlagDescription")
+  }),
   istobreakbuild: flags.boolean({
     char: "b",
     deprecated: {
       messageOverride:
-        "--istobreakbuild has been deprecated, the command will always break if there is critical errors",
+        "--istobreakbuild has been deprecated, the command will always break if there are critical errors",
     },
     description: messages.getMessage("isToBreakBuildFlagDescription"),
   }),
@@ -103,138 +111,213 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 
   public async execute(){
     try {
-
-      
-     // Setup Logging Directory
-     rimraf.sync("sfpowerscripts");
-     fs.mkdirpSync(".sfpowerscripts");
-
-
+      // Setup Logging Directory
+      rimraf.sync("sfpowerscripts");
+      fs.mkdirpSync(".sfpowerscripts");
 
       const source_directory: string = this.flags.sourcedir;
       const ruleset: string = this.flags.ruleset;
 
-
       let rulesetpath=""
       if (ruleset == "Custom") {
         let rulesetpath = this.flags.rulesetpath;
-        console.log(rulesetpath);
+        SFPLogger.log(rulesetpath, LoggerLevel.DEBUG);
       }
-
-
 
       const format: string = this.flags.format;
       const outputPath: string = this.flags.outputpath;
       const version: string = this.flags.version;
 
-      const isToBreakBuild = this.flags.istobreakbuild;
+      let pmdReport: PmdReport;
 
-      let result: [number, number, number] = [0, 0, 0];
 
-      let pmdImpl: AnalyzeWithPMDImpl;
-  
-      
       let artifactFilePath = path.join(".sfpowerscripts","sf-pmd-output.xml");
-      pmdImpl = new AnalyzeWithPMDImpl(
+      // generate pmd output in XML format, for parsing
+      let pmdImpl = new AnalyzeWithPMDImpl(
         source_directory,
         rulesetpath,
         "xml",
         artifactFilePath,
         version
       );
-
       await pmdImpl.exec(false);
-      
 
       if (fs.existsSync(artifactFilePath)) {
-      result = parseXmlReport(artifactFilePath);
-      }
-
-
-
-      //If the user has requested for an output path, do one more pass
-      if(outputPath)
-      {
-        pmdImpl = new AnalyzeWithPMDImpl(
-        source_directory,
-        rulesetpath,
-        format,
-        outputPath,
-        version
-      );
-      
-      await pmdImpl.exec(false);
-      }
-
-
-      if (!isNullOrUndefined(this.flags.refname)) {
-        if (!isNullOrUndefined(outputPath)) {
-            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_pmd_output_path=${outputPath}\n`, {flag:'a'});
-        } else {
-            fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_pmd_output_path=${process.env.PWD}/pmd-output\n`, {flag:'a'});
-        }
+       pmdReport = parsePmdXmlOutputFile(artifactFilePath);
       } else {
-        if (!isNullOrUndefined(outputPath)) {
-          fs.writeFileSync('.env', `sfpowerscripts_pmd_output_path=${outputPath}\n`, {flag:'a'});
-        } else {
-          fs.writeFileSync('.env', `sfpowerscripts_pmd_output_path=${process.env.PWD}/pmd-output\n`, {flag:'a'});
-        }
+        throw new SfdxError("Failed to generate PMD output");
       }
 
-      if (isToBreakBuild && result[2] > 0)
-          throw new SfdxError(`Build Failed due to ${result[2]} critical defects found`);
+      printReport(pmdReport);
+
+      if (outputPath)
+      {
+        // generate pmd results in the requested format and at the output path
+        pmdImpl = new AnalyzeWithPMDImpl(
+          source_directory,
+          rulesetpath,
+          format,
+          outputPath,
+          version
+        );
+        await pmdImpl.exec(false);
+
+        writeDotEnv();
+      }
+
+      if (this.flags.threshold === 1) {
+        if (pmdReport.summary.priority["1"].nViolations > 0)
+          throw new SfdxError(`Build failed due to ${pmdReport.summary.priority["1"].nViolations} critical violations found`);
+      } else {
+          for (let i = 1 ; i <= this.flags.threshold ; i ++) {
+            if (pmdReport.summary.priority[i].nViolations > 0) {
+              throw new SfdxError(`Build failed due to violations with a priority less than or equal to the threshold ${this.flags.threshold}`);
+            }
+          }
+      }
 
     } catch (err) {
-      console.log(err);
+      SFPLogger.log(err, LoggerLevel.ERROR);
       // Fail the task when an error occurs
       process.exit(1);
     }
 
-    function parseXmlReport(xmlReport: string): [number, number, number] {
-      let fileCount = 0;
-      let violationCount = 0;
-      let criticaldefects = 0;
-
-  
-
-      let reportContent: string = fs.readFileSync(xmlReport, "utf-8");
-      xml2js.parseString(reportContent, (err, data) => {
-        // If the file is not XML, or is not from PMD, return immediately
-        if (!data || !data.pmd) {
-          console.debug(`Empty or unrecognized PMD xml report ${xmlReport}`);
-          return null;
-        }
-
-        if (!data.pmd.file || data.pmd.file.length === 0) {
-          // No files with violations, return now that it has been marked for upload
-          return null;
-        }
-
-        data.pmd.file.forEach((file: any) => {
-          if (file.violation) {
-            fileCount++;
-            violationCount += file.violation.length;
+    /**
+     * Parse PMD XML output file and return a PMD report in JSON
+     * @param xmlFile
+     * @returns
+     */
+    function parsePmdXmlOutputFile(xmlFile: string): PmdReport {
+      const pmdReport: PmdReport = {
+        summary: {
+          totalViolations: 0,
+          totalFiles: 0,
+          priority: {
+            1: {
+              nViolations: 0
+            },
+            2: {
+              nViolations: 0
+            },
+            3: {
+              nViolations: 0
+            },
+            4: {
+              nViolations: 0
+            },
+            5: {
+              nViolations: 0
+            }
           }
+        },
+        data: []
+      };
+
+      let xml: string = fs.readFileSync(xmlFile, "utf-8");
+      xml2js.parseString(xml, (err, result) => {
+
+        if (lodash.isEmpty(result)) {
+          throw new SfdxError(`Empty PMD XML output ${xmlFile}`);
+        } else if (!result.pmd) {
+          throw new SfdxError(`Unrecognized PMD XML output ${xmlFile}`);
+        }
+
+        if (!result.pmd.file || result.pmd.file.length === 0) {
+          // No files with violations, return empty PMD report
+          return pmdReport;
+        }
+
+        result.pmd.file.forEach((file: any) => {
+          let record: Record = {
+            filepath: file.$.name,
+            violations: []
+          };
+
+          file.violation.forEach((elem) => {
+            let violation: Violation = {
+              description: elem._,
+              beginLine: parseInt(elem.$.beginline, 10),
+              endLine: parseInt(elem.$.endline, 10),
+              beginColumn: parseInt(elem.$.begincolumn, 10),
+              endColumn: parseInt(elem.$.endcolumn, 10),
+              rule: elem.$.rule,
+              ruleset: elem.$.ruleset,
+              externalInfoUrl: elem.$.externalInfoUrl,
+              priority: parseInt(elem.$.priority, 10)
+            };
+
+            pmdReport.summary.priority[violation.priority].nViolations++;
+
+            record.violations.push(violation);
+          })
+
+          pmdReport.summary.totalViolations += record.violations.length;
+
+          pmdReport.data.push(record);
         });
 
-        for (let i = 0; i < data.pmd.file.length; i++) {
-          console.log(`${data.pmd.file[i]["$"].name}`);
-          let table = new Table({
-            head: ["Priority","Line Number", "Rule", "Description"],
-          });
-      
-          data.pmd.file[i].violation.forEach(element => {
-           table.push([element["$"].priority,element["$"].beginline, element["$"].rule , element._.trim()]);
-            if (element["$"]["priority"] == 1) {
-              criticaldefects++;
-            }
-          });
-          
-            console.log(table.toString());
-        }
+        pmdReport.summary.totalFiles = pmdReport.data.length;
       });
 
-      return [violationCount, fileCount, criticaldefects];
+      return pmdReport;
+    }
+
+    function printReport(report: PmdReport): void {
+      if (report.data.length === 0) {
+        SFPLogger.log(COLOR_SUCCESS("Build succeeded. No violations found."), LoggerLevel.INFO);
+        return;
+      }
+
+      for (let i = 0; i < report.data.length; i++) {
+        SFPLogger.log(`\n${report.data[i].filepath}`, LoggerLevel.INFO);
+        let table = new Table({
+          head: ["Priority", "Line Number", "Rule", "Description"],
+        });
+
+        report.data[i].violations.forEach(violation => {
+          table.push([violation.priority, violation.beginLine, violation.rule , violation.description.trim()]);
+        });
+
+        SFPLogger.log(table.toString(), LoggerLevel.INFO);
+      }
+    }
+
+    function writeDotEnv() {
+      if (this.flags.refname) {
+        fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_pmd_output_path=${this.flags.outputpath}\n`, {flag:'a'});
+      } else {
+        fs.writeFileSync('.env', `sfpowerscripts_pmd_output_path=${this.flags.outputpath}\n`, {flag:'a'});
+      }
     }
   }
+}
+
+interface PmdReport {
+  summary: {
+    totalViolations: number,
+    totalFiles: number,
+    priority: {
+      [p: number]: {
+        nViolations: number
+      }
+    }
+  }
+  data: Record[]
+}
+
+interface Record {
+  filepath: string,
+  violations: Violation[]
+}
+
+interface Violation {
+  description: string,
+  beginLine: number,
+  endLine: number,
+  beginColumn: number,
+  endColumn: number,
+  rule: string,
+  ruleset: string,
+  externalInfoUrl: string,
+  priority: number
 }
