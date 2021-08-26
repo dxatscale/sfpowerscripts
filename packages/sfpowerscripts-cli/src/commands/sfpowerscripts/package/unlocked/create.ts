@@ -205,7 +205,9 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           wait_time,
           isCoverageEnabled,
           isSkipValidation,
-          packageMetadata
+          packageMetadata,
+          null,
+          new ConsoleLogger()
         );
 
         let result = await createUnlockedPackageImpl.exec();
@@ -238,7 +240,7 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           packageMetadata
         );
 
-        console.log(`Created data package ${path.basename(artifactFilepath)}`);
+        console.log(`Created unlocked package ${path.basename(artifactFilepath)}`);
 
         console.log("\nOutput variables:");
         if (refname != null) {

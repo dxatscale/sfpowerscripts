@@ -1,4 +1,4 @@
-[![DeepScan grade](https://deepscan.io/api/teams/10234/projects/12959/branches/208838/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=10234&pid=12959&bid=208838)  [![Build Status](https://dev.azure.com/dxatscale/sfpowerscripts/_apis/build/status/Release?branchName=develop)](https://dev.azure.com/dxatscale/sfpowerscripts/_build/latest?definitionId=40&branchName=develop)   [![codecov](https://codecov.io/gh/Accenture/sfpowerscripts/branch/develop/graph/badge.svg?token=BOSH3G2PSU)](https://codecov.io/gh/Accenture/sfpowerscripts)  [![CodeFactor](https://www.codefactor.io/repository/github/accenture/sfpowerscripts/badge)](https://www.codefactor.io/repository/github/accenture/sfpowerscripts)
+[![DeepScan grade](https://deepscan.io/api/teams/10234/projects/12959/branches/208838/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=10234&pid=12959&bid=208838)  [![Build Status](https://dev.azure.com/dxatscale/sfpowerscripts/_apis/build/status/Release?branchName=develop)](https://dev.azure.com/dxatscale/sfpowerscripts/_build/latest?definitionId=40&branchName=develop)  [![CodeFactor](https://www.codefactor.io/repository/github/accenture/sfpowerscripts/badge)](https://www.codefactor.io/repository/github/accenture/sfpowerscripts)
 
  [![npm (tag)](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts/alpha)](https://www.npmjs.com/package/@dxatscale/sfpowerscripts/v/alpha)  [![npm (tag)](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts/beta)](https://www.npmjs.com/package/@dxatscale/sfpowerscripts/v/beta)  [![npm](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts)](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)  [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/dxatscale/sfpowerscripts)](https://hub.docker.com/r/dxatscale/sfpowerscripts)
 
@@ -6,7 +6,9 @@
 
 [![npm](https://img.shields.io/npm/dw/@dxatscale/sfpowerscripts)](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)  [![Docker Pulls](https://img.shields.io/docker/pulls/dxatscale/sfpowerscripts)](https://hub.docker.com/r/dxatscale/sfpowerscripts)
 
-![](https://img.shields.io/badge/Compatible%20with%20sfdx--cli-7.107.0-green)
+![](https://img.shields.io/badge/Compatible%20with%20sfdx--cli-7.110.0-green) 
+
+[![Join slack](https://i.imgur.com/FZZmA3g.png)](https://launchpass.com/dxatscale)
 
 <p align="center">
   <img alt="sfpowerscripts" src="https://repository-images.githubusercontent.com/248449736/5d08c600-728e-11ea-8267-ae1aceebea60" width="480" height="400">
@@ -55,6 +57,28 @@ The sfpowerscripts docker image has the following SFDX CLI plugins installed:
 - [sfdmu](https://github.com/forcedotcom/SFDX-Data-Move-Utility)
 
 We recommend using the sfpowerscripts docker image to avoid breakages in your CICD pipelines due to updates in sfpowerscripts or any of its dependencies such as the SFDX CLI.
+
+#### Build Instructions 
+To build sfpowerscripts execute the following on the terminal: 
+```
+npm i -g lerna #Install Lerna Globally
+cd <sfpowerscrips directory> # Navigate to the checked out directory 
+lerna bootstrap
+lerna run build
+```
+
+To run unit tests
+
+```
+lerna run test
+```
+
+To debug and test plugin
+
+```
+ cd sfpowerscripts-cli
+ sfdx plugins:link
+```
 
 #### Maintainers
 

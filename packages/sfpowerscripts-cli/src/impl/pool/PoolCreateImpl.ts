@@ -12,11 +12,11 @@ import * as rimraf from "rimraf";
 import * as fs from "fs-extra";
 import PoolJobExecutor, { ScriptExecutionResult } from "./PoolJobExecutor";
 import { PoolError, PoolErrorCodes } from "./PoolError";
-import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { Result ,ok,err} from "neverthrow"
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { EOL } from "os";
-
+import OrgDetailsFetcher from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetailsFetcher";
 
 
 
@@ -38,7 +38,8 @@ export default class PoolCreateImpl extends PoolBaseImpl
   public constructor(
     hubOrg: Org,
     private pool:PoolConfig,
-    private poolScriptExecutor:PoolJobExecutor
+    private poolScriptExecutor:PoolJobExecutor,
+    private logLevel:LoggerLevel
   ) {
     super(hubOrg);
     this.limiter = new Bottleneck({
@@ -69,7 +70,20 @@ export default class PoolCreateImpl extends PoolBaseImpl
    this.deleteScratchOrgOperator = new DeleteScratchOrg(this.hubOrg);
 
     //Compute allocation
+
+    SFPLogger.log(COLOR_KEY_MESSAGE("Computing Allocation.."),LoggerLevel.INFO);
+    try
+    {
     this.totalToBeAllocated = await this.computeAllocation();
+    }catch(error)
+    {
+      return err({
+        success: 0,
+        failed: 0,
+        message: `Unable to access fields on ScratchOrgInfo, Please check the profile being used`,
+        errorCode: PoolErrorCodes.PrerequisiteMissing,
+      });
+    }
 
 
     if (this.totalToBeAllocated === 0) {
@@ -96,6 +110,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
     // Setup Logging Directory
     rimraf.sync("script_exec_outputs");
     fs.mkdirpSync("script_exec_outputs");
+
 
 
      //Generate Scratch Orgs
@@ -178,7 +193,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
 
   private async generateScratchOrgs() {
     //Generate Scratch Orgs
-
+     SFPLogger.log(COLOR_KEY_MESSAGE("Generate Scratch Orgs.."),LoggerLevel.INFO);
       let count = 1;
       this.pool.scratchOrgs = new Array<ScratchOrg>();
 
@@ -193,6 +208,12 @@ export default class PoolCreateImpl extends PoolBaseImpl
             this.pool.configFilePath,
             this.pool.expiry
           );
+
+          let orgDetails = await new OrgDetailsFetcher(scratchOrg.username).getOrgDetails();
+          if (orgDetails.status === "Deleted") {
+            throw new Error(`Throwing away scratch org ${count} as it has a status of deleted`);
+          }
+
           this.pool.scratchOrgs.push(scratchOrg);
           this.totalAllocated++;
         } catch (error) {
@@ -280,7 +301,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
     );
 
     let startTime = Date.now();
-    let result = await this.poolScriptExecutor.execute(scratchOrg,this.hubOrg);
+    let result = await this.poolScriptExecutor.execute(scratchOrg,this.hubOrg,this.logLevel);
 
     if (result.isOk()) {
       scratchOrg.isScriptExecuted = true;
@@ -293,11 +314,11 @@ export default class PoolCreateImpl extends PoolBaseImpl
       if (!submitInfoToPool) {
         scratchOrg.isScriptExecuted = false;
         scratchOrg.failureMessage = "Unable to set the scratch org record in Pool";
-        SFPStatsSender.logCount("prepare.org.succeeded");
+        SFPStatsSender.logCount("prepare.org.failed");
       }
       else
       {
-        SFPStatsSender.logCount("prepare.org.failure");
+        SFPStatsSender.logCount("prepare.org.succeeded");
       }
 
 

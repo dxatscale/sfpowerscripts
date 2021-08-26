@@ -2,7 +2,6 @@ import ArtifactFilePathFetcher, {
   ArtifactFilePaths,
 } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl";
 import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallSourcePackageImpl";
 import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl";
@@ -59,8 +58,7 @@ export interface DeployProps {
   isDryRun?: boolean;
   isRetryOnFailure?: boolean;
   promotePackagesBeforeDeploymentToOrg?:string,
-  devhubUserName?:string,
-  artifacts?: ArtifactFilePaths[]
+  devhubUserName?:string
 }
 
 export default class DeployImpl {
@@ -71,22 +69,22 @@ export default class DeployImpl {
     let deployed: PackageInfo[] = [];
     let failed: PackageInfo[] = [];
     let testFailure: PackageInfo;
+    let queue;
     try {
-      if (!this.props.artifacts) {
-        this.props.artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-          this.props.artifactDir,
-          null,
-          this.props.packageLogger
-        );
-      }
+      let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
+        this.props.artifactDir,
+        null,
+        this.props.packageLogger
+      );
 
-      if (this.props.artifacts.length === 0)
+
+      if (artifacts.length === 0)
         throw new Error(
           `No artifacts to deploy found in ${this.props.artifactDir}`
         );
 
       let artifactInquirer: ArtifactInquirer = new ArtifactInquirer(
-        this.props.artifacts,
+        artifacts,
         this.props.packageLogger
       );
       let packageManifest = artifactInquirer.latestPackageManifestFromArtifacts
@@ -97,9 +95,9 @@ export default class DeployImpl {
       }
 
 
-      let packagesToPackageInfo = this.getPackagesToPackageInfo(this.props.artifacts);
+      let packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
 
-      let queue: any[] = this.getPackagesToDeploy(
+      queue = this.getPackagesToDeploy(
         packageManifest,
         packagesToPackageInfo
       );
@@ -122,13 +120,6 @@ export default class DeployImpl {
       else {
         this.printArtifactVersions(queue, packagesToPackageInfo);
       }
-
-
-      SFPStatsSender.logGauge(
-        "deploy.scheduled.packages",
-        queue.length,
-        this.props.tags
-      );
 
 
       for (let i = 0; i < queue.length; i++) {
@@ -171,7 +162,7 @@ export default class DeployImpl {
                 false
               );
 
-            
+
               if (this.props.isRetryOnFailure && installPackageResult.result === PackageInstallationStatus.Failed && count === 1) {
                 throw new Error(installPackageResult.message)
               } else return installPackageResult;
@@ -203,7 +194,7 @@ export default class DeployImpl {
         } else if (
           packageInstallationResult.result === PackageInstallationStatus.Failed
         ) {
-        
+
           failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
           throw new Error(packageInstallationResult.message);
         }
@@ -262,16 +253,18 @@ export default class DeployImpl {
       }
 
       return {
+        scheduled: queue.length,
         deployed: deployed,
         failed: failed,
         testFailure: testFailure,
         error: null,
       };
     } catch (err) {
-     
+
       SFPLogger.log(err,LoggerLevel.ERROR, this.props.packageLogger);
 
       return {
+        scheduled: queue?.length ? queue.length : 0,
         deployed: deployed,
         failed: failed,
         testFailure: testFailure,
@@ -787,6 +780,7 @@ interface PackageInfo {
 }
 
 export interface DeploymentResult {
+  scheduled: number;
   deployed: PackageInfo[];
   failed: PackageInfo[];
   testFailure: PackageInfo;

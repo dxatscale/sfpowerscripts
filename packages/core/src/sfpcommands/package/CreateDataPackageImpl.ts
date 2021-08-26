@@ -1,45 +1,35 @@
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger, { FileLogger, LoggerLevel } from "../../logger/SFPLogger";
+import SFPLogger, { FileLogger, LoggerLevel, Logger } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import SFPStatsSender from "../../stats/SFPStatsSender";
-import PackageEmptyChecker from "../../package/PackageEmptyChecker";
+import path from "path";
+import FileSystem from "../../utils/FileSystem";
 
 export default class CreateDataPackageImpl {
-  private packageLogger:FileLogger;
 
   public constructor(
     private projectDirectory: string,
     private sfdx_package: string,
     private packageArtifactMetadata: PackageMetadata,
-    private breakBuildIfEmpty: boolean = true
+    private breakBuildIfEmpty: boolean = true,
+    private packageLogger?: Logger
   ) {
-    fs.outputFileSync(
-      `.sfpowerscripts/logs/${sfdx_package}`,
-      `sfpowerscripts--log${EOL}`
-    );
-    this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
+    if (!this.packageLogger) {
+      fs.outputFileSync(
+        `.sfpowerscripts/logs/${sfdx_package}`,
+        `sfpowerscripts--log${EOL}`
+      );
+      this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
+    }
   }
 
   public async exec(): Promise<PackageMetadata> {
     this.packageArtifactMetadata.package_type = "data";
 
-    SFPLogger.log(
-      "--------------Create Data Package---------------------------",
-      null,
-      this.packageLogger
-    );
-    SFPLogger.log(
-      `Project Directory ${this.projectDirectory}`,
-      LoggerLevel.INFO,
-      this.packageLogger
-    );
-    SFPLogger.log(`sfdx_package ${this.sfdx_package}`, LoggerLevel.INFO,this.packageLogger);
-    SFPLogger.log(
-      `packageArtifactMetadata ${this.packageArtifactMetadata}`,LoggerLevel.INFO,this.packageLogger
-    );
+    this.printHeader();
 
     let startTime = Date.now();
 
@@ -51,13 +41,9 @@ export default class CreateDataPackageImpl {
 
     let packageDirectory: string = packageDescriptor["path"];
 
-    if (PackageEmptyChecker.isEmptyDataPackage(this.projectDirectory, packageDirectory)) {
 
-      if (this.breakBuildIfEmpty)
-        throw new Error(`Package directory ${packageDirectory} is empty`);
-      else
-        this.printEmptyArtifactWarning();
-    }
+    this.validateDataPackage(packageDirectory);
+
 
     this.writeDeploymentStepsToArtifact(packageDescriptor);
 
@@ -95,6 +81,61 @@ export default class CreateDataPackageImpl {
     });
 
     return this.packageArtifactMetadata;
+  }
+
+
+  private printHeader() {
+    SFPLogger.log(
+      "--------------Create Data Package---------------------------",
+      null,
+      this.packageLogger
+    );
+    SFPLogger.log(
+      `Project Directory ${this.projectDirectory}`,
+      LoggerLevel.INFO,
+      this.packageLogger
+    );
+    SFPLogger.log(`sfdx_package ${this.sfdx_package}`, LoggerLevel.INFO, this.packageLogger);
+    SFPLogger.log(
+      `packageArtifactMetadata ${this.packageArtifactMetadata}`, LoggerLevel.INFO, this.packageLogger
+    );
+  }
+
+  // Validate type of data package and existence of the correct configuration files
+  private validateDataPackage(packageDirectory: string) {
+
+    let dirToCheck;
+    if (this.projectDirectory!=null) {
+      dirToCheck = path.join(this.projectDirectory, packageDirectory);
+    } else {
+      dirToCheck = packageDirectory;
+    }
+
+    if (fs.pathExistsSync(path.join(dirToCheck, "export.json"))) {
+      SFPLogger.log(
+        `Found export.json in ${dirToCheck}.. Utilizing it as data package and will be deployed using sfdmu`,
+        LoggerLevel.INFO,
+        this.packageLogger
+      );
+
+      if (this.isEmptyDataPackage(this.projectDirectory, packageDirectory)) {
+
+        if (this.breakBuildIfEmpty)
+          throw new Error(`Package directory ${dirToCheck} is empty`);
+        else
+          this.printEmptyArtifactWarning();
+      }
+    }
+    else if (fs.pathExistsSync(path.join(dirToCheck, "VlocityComponents.yaml"))) {
+      SFPLogger.log(
+        `Found VlocityComponents.yaml in ${dirToCheck}.. Utilizing it as data package and will be deployed using vbt`,
+        LoggerLevel.INFO,
+        this.packageLogger
+      );
+    }
+    else {
+      throw new Error(`Could not find export.json or VlocityComponents.yaml in ${dirToCheck}. sfpowerscripts only support vlocity or sfdmu based data packages`);
+    }
   }
 
   private writeDeploymentStepsToArtifact(packageDescriptor: any) {
@@ -141,4 +182,29 @@ export default class CreateDataPackageImpl {
       this.packageLogger
     );
   }
+
+  public  isEmptyDataPackage(
+    projectDirectory: string,
+    sourceDirectory: string
+  ): boolean {
+    let dirToCheck;
+
+    if (projectDirectory!=null) {
+      dirToCheck = path.join(projectDirectory, sourceDirectory);
+    } else {
+      dirToCheck = sourceDirectory;
+    }
+
+    let files: string[] = FileSystem.readdirRecursive(dirToCheck);
+
+    let hasExportJson = files.find((file) =>
+      path.basename(file) === "export.json"
+    )
+
+    let hasCsvFile = files.find((file) => path.extname(file) === ".csv")
+
+    if (!hasExportJson || !hasCsvFile) return true;
+    else return false;
+  }
+
 }

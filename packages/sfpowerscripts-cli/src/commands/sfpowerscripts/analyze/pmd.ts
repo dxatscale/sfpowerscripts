@@ -4,9 +4,10 @@ import { Messages, SfdxError } from '@salesforce/core';
 import AnalyzeWithPMDImpl from '@dxatscale/sfpowerscripts.core/lib/sfpowerkitwrappers/AnalyzeWithPMDImpl';
 import xml2js = require('xml2js');
 import {isNullOrUndefined} from 'util';
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
-const os = require('os');
+import * as rimraf from "rimraf";
+const Table = require("cli-table");
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -29,42 +30,86 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
   protected static requiresProject = true;
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
-
   protected static flagsConfig = {
-    sourcedir: flags.string({description: messages.getMessage('sourceDirectoryFlagDescription')}),
-    ruleset: flags.string({description: messages.getMessage('rulesetFlagDescription'), options: ['sfpowerkit','Custom'], default: 'sfpowerkit'}),
-    rulesetpath: flags.string({description: messages.getMessage('rulesetPathFlagDescription')}),
-    format: flags.string({description: messages.getMessage('formatFlagDescription'), options: ['text','textcolor','csv','emacs','summaryhtml','html','xml','xslt','yahtml','vbhtml','textpad', 'sarif'], default: 'text'}),
-    outputpath: flags.string({char: 'o', description: messages.getMessage('outputPathFlagDescription')}),
-    version: flags.string({description: messages.getMessage('versionFlagDescription'), default: '6.26.0'}),
-    istobreakbuild: flags.boolean({char: 'b', description: messages.getMessage('isToBreakBuildFlagDescription')}),
-    refname: flags.string({description: messages.getMessage('refNameFlagDescription')}),
-    loglevel: flags.enum({
-      description: "logging level for this command invocation",
-      default: "info",
-      required: false,
-      options: [
-        "trace",
-        "debug",
-        "info",
-        "warn",
-        "error",
-        "fatal",
-        "TRACE",
-        "DEBUG",
-        "INFO",
-        "WARN",
-        "ERROR",
-        "FATAL",
-      ],
-    })
-  };
-
+  sourcedir: flags.string({
+    description: messages.getMessage("sourceDirectoryFlagDescription"),
+  }),
+  ruleset: flags.string({
+    description: messages.getMessage("rulesetFlagDescription"),
+    options: ["sfpowerkit", "Custom"],
+    default: "sfpowerkit",
+  }),
+  rulesetpath: flags.string({
+    description: messages.getMessage("rulesetPathFlagDescription"),
+  }),
+  format: flags.string({
+    description: messages.getMessage("formatFlagDescription"),
+    options: [
+      "text",
+      "textcolor",
+      "csv",
+      "emacs",
+      "summaryhtml",
+      "html",
+      "xml",
+      "xslt",
+      "yahtml",
+      "vbhtml",
+      "textpad",
+      "sarif",
+    ],
+    default: "text",
+  }),
+  outputpath: flags.string({
+    char: "o",
+    description: messages.getMessage("outputPathFlagDescription"),
+  }),
+  version: flags.string({
+    required: false,
+    default: "6.34.0",
+    description: messages.getMessage("versionFlagDescription"),
+  }),
+  istobreakbuild: flags.boolean({
+    char: "b",
+    deprecated: {
+      messageOverride:
+        "--istobreakbuild has been deprecated, the command will always break if there is critical errors",
+    },
+    description: messages.getMessage("isToBreakBuildFlagDescription"),
+  }),
+  refname: flags.string({
+    description: messages.getMessage("refNameFlagDescription"),
+  }),
+  loglevel: flags.enum({
+    description: "logging level for this command invocation",
+    default: "info",
+    required: false,
+    options: [
+      "trace",
+      "debug",
+      "info",
+      "warn",
+      "error",
+      "fatal",
+      "TRACE",
+      "DEBUG",
+      "INFO",
+      "WARN",
+      "ERROR",
+      "FATAL",
+    ],
+  }),
+};
 
   public async execute(){
     try {
 
-      console.log("Test.. PMD");
+      
+     // Setup Logging Directory
+     rimraf.sync("sfpowerscripts");
+     fs.mkdirpSync(".sfpowerscripts");
+
+
 
       const source_directory: string = this.flags.sourcedir;
       const ruleset: string = this.flags.ruleset;
@@ -86,16 +131,41 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 
       let result: [number, number, number] = [0, 0, 0];
 
-      let pmdImpl: AnalyzeWithPMDImpl = new AnalyzeWithPMDImpl(
-        null,
+      let pmdImpl: AnalyzeWithPMDImpl;
+  
+      
+      let artifactFilePath = path.join(".sfpowerscripts","sf-pmd-output.xml");
+      pmdImpl = new AnalyzeWithPMDImpl(
+        source_directory,
+        rulesetpath,
+        "xml",
+        artifactFilePath,
+        version
+      );
+
+      await pmdImpl.exec(false);
+      
+
+      if (fs.existsSync(artifactFilePath)) {
+      result = parseXmlReport(artifactFilePath);
+      }
+
+
+
+      //If the user has requested for an output path, do one more pass
+      if(outputPath)
+      {
+        pmdImpl = new AnalyzeWithPMDImpl(
         source_directory,
         rulesetpath,
         format,
         outputPath,
         version
       );
-      let command = await pmdImpl.buildExecCommand();
-      await pmdImpl.exec(command);
+      
+      await pmdImpl.exec(false);
+      }
+
 
       if (!isNullOrUndefined(this.flags.refname)) {
         if (!isNullOrUndefined(outputPath)) {
@@ -111,18 +181,6 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
         }
       }
 
-      let artifactFilePath = path.join(
-      os.homedir(),
-      "sfpowerkit",
-      "pmd",
-      `pmd-bin-${version}`,
-      "sf-pmd-output.xml"
-      );
-
-      if (fs.existsSync(artifactFilePath)) {
-      result = parseXmlReport(artifactFilePath);
-      }
-
       if (isToBreakBuild && result[2] > 0)
           throw new SfdxError(`Build Failed due to ${result[2]} critical defects found`);
 
@@ -136,6 +194,8 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
       let fileCount = 0;
       let violationCount = 0;
       let criticaldefects = 0;
+
+  
 
       let reportContent: string = fs.readFileSync(xmlReport, "utf-8");
       xml2js.parseString(reportContent, (err, data) => {
@@ -158,11 +218,19 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
         });
 
         for (let i = 0; i < data.pmd.file.length; i++) {
+          console.log(`${data.pmd.file[i]["$"].name}`);
+          let table = new Table({
+            head: ["Priority","Line Number", "Rule", "Description"],
+          });
+      
           data.pmd.file[i].violation.forEach(element => {
+           table.push([element["$"].priority,element["$"].beginline, element["$"].rule , element._.trim()]);
             if (element["$"]["priority"] == 1) {
               criticaldefects++;
             }
           });
+          
+            console.log(table.toString());
         }
       });
 

@@ -13,9 +13,9 @@ There are multiple options to install the supporting package to your environment
 
 -  Installing the Unlocked package to your DevHub using CLI
 
-        
+
         sfdx force:package:install -p 04t1P000000gOqzQAE -u Devhub -r -a package -s AdminsOnly -w 30
-        
+
 
 ### Issues with installing third party packages?
 
@@ -25,21 +25,16 @@ to be manually synced up
 
 
 -  Build an Org Depedendent Unlocked Package in your DevHub and deploy it
-        
-        
+
+
         1. git clone https://github.com/Accenture/sfpowerscripts
-        
-        2. cd sfpowerscripts/prerequisites/scratchorgpool
-        
-        3. Remove the packageAliases section in sfdx-project.json
-        
-        4. sfdx force:package:create -n sfpower-scratchorg-pool -t Unlocked -r force-app -v <devhub_alias> --orgdependent
-        
-        5. sfdx force:package:version:create p sfpower-scratchorg-pool  -x -v <devhub_alias> -w 30
-        
-        6. Observe the package id created in sfdx-project.json
-        
-        7. sfdx force:package:install -p <packageVersionId> -u <devhub_alias> -w 30
-        
-        
-        
+
+        1. cd sfpowerscripts/prerequisites/scratchorgpool
+
+        1. sfdx force:package:create -n sfpower-scratchorg-pool -t Unlocked -r force-app -v <devhub_alias> --orgdependent
+
+        1. sfdx force:package:version:create -p sfpower-scratchorg-pool -x -v <devhub_alias> -w 30
+
+        1. Observe the package id created in sfdx-project.json
+
+        1. sfdx force:package:install -p <packageVersionId> -u <devhub_alias> -w 30
