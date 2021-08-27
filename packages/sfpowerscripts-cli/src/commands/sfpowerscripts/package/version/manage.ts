@@ -3,6 +3,7 @@ import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
 import { flags } from '@salesforce/command';
 import fs = require("fs");
 import inquirer = require("inquirer");
+import semver = require("semver");
 
 
 // Initialize Messages with the current plugin directory
@@ -76,6 +77,12 @@ export default class ManageVersions extends SfpowerscriptsCommand {
 
       /**
        * TODO: Custom numbering 
+       * SEMVER library 
+       * Flag for build number
+       * Greenfield project
+       * Confirmation of updates
+       * 
+       * Separating into modular functions in core library 
        */
 
 
@@ -92,27 +99,47 @@ export default class ManageVersions extends SfpowerscriptsCommand {
           let newMajor = this.getMajor(pkg.versionNumber);
           let newMinor = this.getMinor(pkg.versionNumber);
           let patch = this.getPatch(pkg.versionNumber);
+          let custom = false;
 
-
+          let skip = false;
           await inquirer.prompt([{ type: 'list', name: 'selection', message: `Would you like to update ${pkg.package}?`, choices: ['Major: ' + newMajor, 'Minor: ' + newMinor, 'Patch: ' + patch, 'Custom', 'Skip'] }]).then((selection) => {
-            pkg.versionNumber = this.updateVersion(selection.selection, pkg)
+            if (selection.selection == 'Skip') {
+              skip = true;
+            } else if (selection.selection == 'Custom') {
+              custom = true;
+            } else if (selection.selection == `'Major: ' + ${newMajor}`) {
+              pkg.versionNumber = this.updateVersion('major', pkg)
+            } else if (selection.selection == `'Minor: ' + ${newMinor}`) {
+              pkg.versionNumber = this.updateVersion('minor', pkg)
+            } else if (selection.selection == `'Patch: ' + ${patch}`) {
+              pkg.versionNumber = this.updateVersion('patch', pkg)
+            }
+
           });
 
-          if (this.hasNonZeroBuildNo(pkg.versionNumber)) {
-            await inquirer.prompt([{ type: 'list', name: 'selection', message: `Would you like the build number for ${pkg.package} reset to 0?`, choices: ['Yes', 'No'] }]).then((answer) => {
-              if (answer.selection == 'Yes') { pkg.versionNumber = this.resetBuildNumber(pkg.versionNumber); }
-              console.log(pkg.versionNumber);
-            });
+          if (custom) {
+            pkg.versonNumber = await this.getCustom();
+
           }
 
-          if (!this.flags.dependencies) {
-            await inquirer.prompt([{ type: 'list', name: 'selection', message: `Would you like to update dependency version for all packages that have ${pkg.package} as a dependency?`, choices: ['Yes', 'No'] }]).then((answer) => {
-              if (answer.selection == 'Yes') {
-                dependencyMap.set(pkg.package, pkg.versionNumber);
-              }
-            });
-          } else {
-            dependencyMap.set(pkg.package, pkg.versionNumber);
+
+          if (!skip) {
+            if (this.hasNonZeroBuildNo(pkg.versionNumber)) {
+              await inquirer.prompt([{ type: 'list', name: 'selection', message: `Would you like the build number for ${pkg.package} reset to 0?`, choices: ['Yes', 'No'] }]).then((answer) => {
+                if (answer.selection == 'Yes') { pkg.versionNumber = this.resetBuildNumber(pkg.versionNumber); }
+                console.log(pkg.versionNumber);
+              });
+            }
+
+            if (!this.flags.dependencies) {
+              await inquirer.prompt([{ type: 'list', name: 'selection', message: `Would you like to update dependency version for all packages that have ${pkg.package} as a dependency?`, choices: ['Yes', 'No'] }]).then((answer) => {
+                if (answer.selection == 'Yes') {
+                  dependencyMap.set(pkg.package, pkg.versionNumber);
+                }
+              });
+            } else {
+              dependencyMap.set(pkg.package, pkg.versionNumber);
+            }
           }
         }
       }
@@ -123,7 +150,7 @@ export default class ManageVersions extends SfpowerscriptsCommand {
       projectConfig.packageDirectories = packages;
       packages = projectConfig.packageDirectories;
 
-      projectConfig.packageDirectories = this.increaseDependencies(dependencyMap, packages);
+      projectConfig.packageDirectories = this.updateDependencies(dependencyMap, packages);
 
       let projectString = JSON.stringify(projectConfig, null, 4);
 
@@ -138,18 +165,23 @@ export default class ManageVersions extends SfpowerscriptsCommand {
 
   private getMajor(currentVersion) {
     let verArr = currentVersion.split('.');
-    verArr[0]++;
-    return verArr.join('.');
+    currentVersion = verArr.splice(0, 3);
+
+    let major = semver.inc(currentVersion.join('.'), 'major');
+    major = major + '.' + verArr;
+    return major;
   }
   private getMinor(currentVersion) {
     let verArr = currentVersion.split('.');
-    verArr[1]++;
-    return verArr.join('.');
+    currentVersion = verArr.splice(0, 3);
+    let minor = semver.inc(currentVersion.join('.'), 'minor') + '.' + verArr;
+    return minor;
   }
   private getPatch(currentVersion) {
     let verArr = currentVersion.split('.');
-    verArr[2]++;
-    return verArr.join('.');
+    currentVersion = verArr.splice(0, 3);
+    let patch = semver.inc(currentVersion.join('.'), 'patch') + '.' + verArr;
+    return patch;
   }
   private getBuildNumber(currentVersion) {
     let verArr = currentVersion.split('.');
@@ -167,17 +199,14 @@ export default class ManageVersions extends SfpowerscriptsCommand {
   }
 
   private updateVersion(selection, pkg) {
-
-
-
     if (selection == 'skip') {
       return;
     }
-    if (selection == 'Major: ' + this.getMajor(pkg.versionNumber) || selection == 'major') {
+    if (selection == 'major') {
       pkg.versionNumber = this.getMajor(pkg.versionNumber);
-    } else if (selection == 'Minor: ' + this.getMinor(pkg.versionNumber) || selection == 'minor') {
+    } else if (selection == 'minor') {
       pkg.versionNumber = this.getMinor(pkg.versionNumber);
-    } else if (selection == 'Patch: ' + this.getPatch(pkg.versionNumber) || selection == 'patch') {
+    } else if (selection == 'patch') {
       pkg.versionNumber = this.getPatch(pkg.versionNumber);
     }
     else if (selection == 'Custom') {
@@ -202,24 +231,43 @@ export default class ManageVersions extends SfpowerscriptsCommand {
     return dependencyMap;
   }
 
-  private increaseDependencies(dependencies, packages) {
-    console.log(dependencies);
+  private updateDependencies(dependencies, packages) {
     for (let pkg of packages) {
       if (pkg.dependencies != null) {
-        console.log(pkg.package);
         for (let dependency of pkg.dependencies) {
-          console.log(dependency.package);
           if (dependencies.has(dependency.package)) {
-            
             let versionNumber = dependencies.get(dependency.package).split('.');
-            if(versionNumber[3] == 'NEXT'){versionNumber[3] = 'LATEST';}
-
+            if (versionNumber[3] == 'NEXT') { versionNumber[3] = 'LATEST'; }
             dependency.versionNumber = versionNumber.join('.');
           }
         }
       }
     }
     return packages;
+  }
+
+  private async getCustom() {
+    let custom;
+    await inquirer.prompt([{ type: 'input', name: 'selection', message: `Input custom versionNumber` }]).then((answers) => { custom = answers.selection; });
+
+    custom = this.verifyCustom(custom)
+    if (custom == false) {
+      console.log(`Custom number was invalid`);
+      return this.getCustom();
+    }else{
+      return custom;
+    }
+  }
+
+  private verifyCustom(versionNumber) {
+    let verArray = versionNumber.split('.');
+    let validated = semver.valid(verArray.splice(0, 3).join('.'));
+    console.log(validated);
+    if (validated != null && (!isNaN(verArray) || verArray == "NEXT")) {
+      return versionNumber;
+    } else {
+      return false;
+    }
   }
 
 }
