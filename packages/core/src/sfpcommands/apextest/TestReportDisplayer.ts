@@ -2,8 +2,9 @@ import {
   RunApexTestSuitesOption,
   TestOptions,
 } from "../../sfdxwrappers/TestOptions";
-import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
+import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from "../../logger/SFPLogger";
 import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
+
 
 const Table = require("cli-table");
 
@@ -48,12 +49,26 @@ export class TestReportDisplayer {
     });
 
     this.apexTestReport.tests.forEach((test) => {
+     
+      if(test.Outcome==='Pass')
+      {
       table.push([
-        test.FullName || "",
-        test.Outcome || "",
-        test.Message || "",
-        test.RunTime || "",
+        COLOR_SUCCESS(test.FullName || ""),
+        COLOR_SUCCESS(test.Outcome || ""),
+        COLOR_SUCCESS(test.Message || ""),
+        COLOR_SUCCESS(test.RunTime || ""),
       ]);
+      }
+      else
+      {
+        table.push([
+          COLOR_ERROR(test.FullName || ""),
+          COLOR_ERROR(test.Outcome || ""),
+          COLOR_ERROR(test.Message || ""),
+          COLOR_ERROR(test.RunTime || ""),
+        ]);
+      }
+
     });
 
     SFPLogger.log(table.toString(),LoggerLevel.INFO,this.fileLogger);
@@ -99,7 +114,16 @@ export class TestReportDisplayer {
     });
 
     individualClassCoverage.forEach((cls) => {
-      table.push([cls.name || "", cls.coveredPercent !== null ? cls.coveredPercent : "N/A"]);
+      if(cls.coveredPercent !== null && cls.coveredPercent < 75)
+      {
+        table.push([COLOR_ERROR(cls.name || ""),  COLOR_ERROR(cls.coveredPercent)]);
+      }
+      else if(cls.coveredPercent !== null && cls.coveredPercent >= 75)
+      {
+        table.push([COLOR_SUCCESS(cls.name || ""),  COLOR_SUCCESS(cls.coveredPercent)]);
+      }
+      else
+        table.push([cls.name || "", "N/A"]);
     });
 
     SFPLogger.log(table.toString(),LoggerLevel.INFO,this.fileLogger);
