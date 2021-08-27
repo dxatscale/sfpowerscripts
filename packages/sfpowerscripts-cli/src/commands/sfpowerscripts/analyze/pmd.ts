@@ -143,12 +143,12 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
       await pmdImpl.exec(false);
 
       if (fs.existsSync(artifactFilePath)) {
-       pmdReport = parsePmdXmlOutputFile(artifactFilePath);
+       pmdReport = this.parsePmdXmlOutputFile(artifactFilePath);
       } else {
         throw new SfdxError("Failed to generate PMD output");
       }
 
-      printReport(pmdReport);
+      this.printPmdReport(pmdReport);
 
       if (outputPath)
       {
@@ -162,7 +162,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
         );
         await pmdImpl.exec(false);
 
-        writeDotEnv();
+        this.writeDotEnv();
       }
 
       if (this.flags.threshold === 1) {
@@ -182,115 +182,121 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
       process.exit(1);
     }
 
-    /**
-     * Parse PMD XML output file and return a PMD report in JSON
-     * @param xmlFile
-     * @returns
-     */
-    function parsePmdXmlOutputFile(xmlFile: string): PmdReport {
-      const pmdReport: PmdReport = {
-        summary: {
-          totalViolations: 0,
-          totalFiles: 0,
-          priority: {
-            1: {
-              nViolations: 0
-            },
-            2: {
-              nViolations: 0
-            },
-            3: {
-              nViolations: 0
-            },
-            4: {
-              nViolations: 0
-            },
-            5: {
-              nViolations: 0
-            }
+
+  }
+
+  /**
+   * Write output variables to dot env file
+   */
+  private writeDotEnv() {
+    if (this.flags.refname) {
+      fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_pmd_output_path=${this.flags.outputpath}\n`, { flag: 'a' });
+    } else {
+      fs.writeFileSync('.env', `sfpowerscripts_pmd_output_path=${this.flags.outputpath}\n`, { flag: 'a' });
+    }
+  }
+
+  /**
+   * Parse PMD XML output file and return a PMD report in JSON
+   * @param xmlFile
+   * @returns
+   */
+  private parsePmdXmlOutputFile(xmlFile: string): PmdReport {
+    const pmdReport: PmdReport = {
+      summary: {
+        totalViolations: 0,
+        totalFiles: 0,
+        priority: {
+          1: {
+            nViolations: 0
+          },
+          2: {
+            nViolations: 0
+          },
+          3: {
+            nViolations: 0
+          },
+          4: {
+            nViolations: 0
+          },
+          5: {
+            nViolations: 0
           }
-        },
-        data: []
-      };
-
-      let xml: string = fs.readFileSync(xmlFile, "utf-8");
-      xml2js.parseString(xml, (err, result) => {
-
-        if (lodash.isEmpty(result)) {
-          throw new SfdxError(`Empty PMD XML output ${xmlFile}`);
-        } else if (!result.pmd) {
-          throw new SfdxError(`Unrecognized PMD XML output ${xmlFile}`);
         }
+      },
+      data: []
+    };
 
-        if (!result.pmd.file || result.pmd.file.length === 0) {
-          // No files with violations, return empty PMD report
-          return pmdReport;
-        }
+    let xml: string = fs.readFileSync(xmlFile, "utf-8");
+    xml2js.parseString(xml, (err, result) => {
 
-        result.pmd.file.forEach((file: any) => {
-          let record: Record = {
-            filepath: file.$.name,
-            violations: []
+      if (lodash.isEmpty(result)) {
+        throw new SfdxError(`Empty PMD XML output ${xmlFile}`);
+      } else if (!result.pmd) {
+        throw new SfdxError(`Unrecognized PMD XML output ${xmlFile}`);
+      }
+
+      if (!result.pmd.file || result.pmd.file.length === 0) {
+        // No files with violations, return empty PMD report
+        return pmdReport;
+      }
+
+      result.pmd.file.forEach((file: any) => {
+        let record: Record = {
+          filepath: file.$.name,
+          violations: []
+        };
+
+        file.violation.forEach((elem) => {
+          let violation: Violation = {
+            description: elem._,
+            beginLine: parseInt(elem.$.beginline, 10),
+            endLine: parseInt(elem.$.endline, 10),
+            beginColumn: parseInt(elem.$.begincolumn, 10),
+            endColumn: parseInt(elem.$.endcolumn, 10),
+            rule: elem.$.rule,
+            ruleset: elem.$.ruleset,
+            externalInfoUrl: elem.$.externalInfoUrl,
+            priority: parseInt(elem.$.priority, 10)
           };
 
-          file.violation.forEach((elem) => {
-            let violation: Violation = {
-              description: elem._,
-              beginLine: parseInt(elem.$.beginline, 10),
-              endLine: parseInt(elem.$.endline, 10),
-              beginColumn: parseInt(elem.$.begincolumn, 10),
-              endColumn: parseInt(elem.$.endcolumn, 10),
-              rule: elem.$.rule,
-              ruleset: elem.$.ruleset,
-              externalInfoUrl: elem.$.externalInfoUrl,
-              priority: parseInt(elem.$.priority, 10)
-            };
+          pmdReport.summary.priority[violation.priority].nViolations++;
 
-            pmdReport.summary.priority[violation.priority].nViolations++;
-
-            record.violations.push(violation);
-          })
-
-          pmdReport.summary.totalViolations += record.violations.length;
-
-          pmdReport.data.push(record);
+          record.violations.push(violation);
         });
 
-        pmdReport.summary.totalFiles = pmdReport.data.length;
+        pmdReport.summary.totalViolations += record.violations.length;
+
+        pmdReport.data.push(record);
       });
 
-      return pmdReport;
+      pmdReport.summary.totalFiles = pmdReport.data.length;
+    });
+
+    return pmdReport;
+  }
+
+  private printPmdReport(report: PmdReport): void {
+    if (report.data.length === 0) {
+      SFPLogger.log(COLOR_SUCCESS("Build succeeded. No violations found."), LoggerLevel.INFO);
+      return;
     }
 
-    function printReport(report: PmdReport): void {
-      if (report.data.length === 0) {
-        SFPLogger.log(COLOR_SUCCESS("Build succeeded. No violations found."), LoggerLevel.INFO);
-        return;
-      }
+    for (let i = 0; i < report.data.length; i++) {
+      SFPLogger.log(`\n${report.data[i].filepath}`, LoggerLevel.INFO);
+      let table = new Table({
+        head: ["Priority", "Line Number", "Rule", "Description"],
+      });
 
-      for (let i = 0; i < report.data.length; i++) {
-        SFPLogger.log(`\n${report.data[i].filepath}`, LoggerLevel.INFO);
-        let table = new Table({
-          head: ["Priority", "Line Number", "Rule", "Description"],
-        });
+      report.data[i].violations.forEach(violation => {
+        table.push([violation.priority, violation.beginLine, violation.rule , violation.description.trim()]);
+      });
 
-        report.data[i].violations.forEach(violation => {
-          table.push([violation.priority, violation.beginLine, violation.rule , violation.description.trim()]);
-        });
-
-        SFPLogger.log(table.toString(), LoggerLevel.INFO);
-      }
-    }
-
-    function writeDotEnv() {
-      if (this.flags.refname) {
-        fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_pmd_output_path=${this.flags.outputpath}\n`, {flag:'a'});
-      } else {
-        fs.writeFileSync('.env', `sfpowerscripts_pmd_output_path=${this.flags.outputpath}\n`, {flag:'a'});
-      }
+      SFPLogger.log(table.toString(), LoggerLevel.INFO);
     }
   }
 }
+
 
 interface PmdReport {
   summary: {
