@@ -8,12 +8,13 @@ import { exec } from "shelljs";
 import * as fs from "fs-extra"
 import path = require("path");
 import CreateSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateSourcePackageImpl';
-import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import PackageCreateCommand from '../../../../PackageCreateCommand';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_source_package');
 
-export default class CreateSourcePackage extends SfpowerscriptsCommand {
+export default class CreateSourcePackage extends PackageCreateCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -122,6 +123,10 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
         );
         packageMetadata = await createSourcePackageImpl.exec();
 
+        console.log(COLOR_SUCCESS(`Created source package ${packageMetadata.package_name}`));
+        this.printPackageDetails(packageMetadata);
+
+
         if (this.flags.gittag) {
           exec(`git config --global user.email "sfpowerscripts@dxscale"`);
           exec(`git config --global user.name "sfpowerscripts"`);
@@ -132,12 +137,7 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
           packageMetadata.tag = tagname;
         }
 
-        console.log(JSON.stringify(packageMetadata, function(key, val) {
-          if (key !== "payload")
-              return val;
-         }));
-
-
+   
        //Generate Artifact
         let artifactFilepath: string = await ArtifactGenerator.generateArtifact(
           sfdx_package,
@@ -146,8 +146,7 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
           packageMetadata
         );
 
-        console.log(`Created source package ${path.basename(artifactFilepath)}`);
-
+      
 
         console.log("\nOutput variables:");
         if (refname != null) {
@@ -168,4 +167,6 @@ export default class CreateSourcePackage extends SfpowerscriptsCommand {
       process.exit(1);
     }
   }
+
+  
 }

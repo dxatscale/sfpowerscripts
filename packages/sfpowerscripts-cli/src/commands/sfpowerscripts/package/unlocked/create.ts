@@ -8,7 +8,9 @@ import { exec } from "shelljs";
 import * as fs from "fs-extra"
 import path = require("path");
 import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateUnlockedPackageImpl";
-import { ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { EOL } from "os";
+import PackageCreateCommand from "../../../../PackageCreateCommand";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -20,7 +22,7 @@ const messages = Messages.loadMessages(
   "create_unlocked_package"
 );
 
-export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
+export default class CreateUnlockedPackage extends PackageCreateCommand {
   public static description = messages.getMessage("commandDescription");
 
   public static examples = [
@@ -212,6 +214,10 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
 
         let result = await createUnlockedPackageImpl.exec();
 
+
+        console.log(COLOR_SUCCESS(`Created unlocked package ${packageMetadata.package_name}`));
+        this.printPackageDetails(packageMetadata);
+
         if (this.flags.gittag) {
           exec(`git config --global user.email "sfpowerscripts@dxscale"`);
           exec(`git config --global user.name "sfpowerscripts"`);
@@ -226,11 +232,7 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           packageMetadata.tag = tagname;
         }
 
-        console.log(
-          JSON.stringify(packageMetadata, function (key, val) {
-            if (key !== "payload") return val;
-          })
-        );
+
 
         //Generate Artifact
         let artifactFilepath: string = await ArtifactGenerator.generateArtifact(
@@ -240,7 +242,7 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
           packageMetadata
         );
 
-        console.log(`Created unlocked package ${path.basename(artifactFilepath)}`);
+  
 
         console.log("\nOutput variables:");
         if (refname != null) {
@@ -300,4 +302,6 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
       process.exit(1);
     }
   }
+
+ 
 }

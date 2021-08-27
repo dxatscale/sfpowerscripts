@@ -9,12 +9,13 @@ import * as fs from "fs-extra";
 import path = require("path");
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import CreateDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateDataPackageImpl';
-import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import PackageCreateCommand from '../../../../PackageCreateCommand';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_data_package');
 
-export default class CreateDataPackage extends SfpowerscriptsCommand {
+export default class CreateDataPackage extends PackageCreateCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -123,6 +124,10 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
         );
         packageMetadata = await createDataPackageImpl.exec();
 
+
+        console.log(COLOR_SUCCESS(`Created data package ${packageMetadata.package_name}`));
+        this.printPackageDetails(packageMetadata);
+
         if (this.flags.gittag) {
           exec(`git config --global user.email "sfpowerscripts@dxscale"`);
           exec(`git config --global user.name "sfpowerscripts"`);
@@ -134,7 +139,7 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
           packageMetadata.tag = tagname;
         }
 
-        console.log(JSON.stringify(packageMetadata));
+      
 
 
        //Generate Artifact
@@ -145,8 +150,7 @@ export default class CreateDataPackage extends SfpowerscriptsCommand {
           packageMetadata
         );
 
-        console.log(`Created data package ${path.basename(artifactFilepath)}`);
-
+     
 
 
         console.log("\nOutput variables:");
