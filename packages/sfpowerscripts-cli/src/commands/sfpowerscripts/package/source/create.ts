@@ -1,12 +1,10 @@
 import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import { Messages } from '@salesforce/core';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import { exec } from "shelljs";
 import * as fs from "fs-extra"
-import path = require("path");
 import CreateSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateSourcePackageImpl';
 import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import PackageCreateCommand from '../../../../PackageCreateCommand';

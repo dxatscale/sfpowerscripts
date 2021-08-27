@@ -2,14 +2,10 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata"
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import { flags } from "@salesforce/command";
-import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import { Messages } from "@salesforce/core";
 import { exec } from "shelljs";
 import * as fs from "fs-extra"
-import path = require("path");
 import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateUnlockedPackageImpl";
-import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import { EOL } from "os";
 import PackageCreateCommand from "../../../../PackageCreateCommand";
 
 // Initialize Messages with the current plugin directory
