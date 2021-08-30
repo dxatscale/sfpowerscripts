@@ -7,6 +7,7 @@ import { exec } from "shelljs";
 import * as fs from "fs-extra"
 import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateUnlockedPackageImpl";
 import PackageCreateCommand from "../../../../PackageCreateCommand";
+import { COLOR_SUCCESS, ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
