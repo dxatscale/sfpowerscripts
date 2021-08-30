@@ -2,8 +2,18 @@ import semver = require("semver");
 
 /**Helper functions for updating the project config */
 
-export default class Version {
+export default class Update {
 
+  private updatePkg; 
+  private updateVersion;
+
+  public constructor (
+    private pkg?,
+    private version?
+  ){
+    this.updatePkg = pkg; 
+    this.updateVersion = version;
+  }
 
   /**
    * get increased semver major versio
@@ -85,15 +95,15 @@ export default class Version {
    * @param version the package with the version to be update
    * @returns returns updated version number 
    */
-  public update(selection, versionNumber) {
-    if (selection == 'major') {
-      let updatedVersionNumber = this.getMajor(versionNumber);
+  public update() {
+    if (this.updateVersion == 'major') {
+      let updatedVersionNumber = this.getMajor(this.updatePkg.versionNumber);
       return updatedVersionNumber;
-    } else if (selection == 'minor') {
-      let updatedVersionNumber = this.getMinor(versionNumber);
+    } else if (this.updateVersion == 'minor') {
+      let updatedVersionNumber = this.getMinor(this.updatePkg.versionNumber);
       return updatedVersionNumber;
-    } else if (selection == 'patch') {
-      let updatedVersionNumber = this.getPatch(versionNumber);
+    } else if (this.updateVersion == 'patch') {
+      let updatedVersionNumber = this.getPatch(this.updatePkg.versionNumber);
       return updatedVersionNumber;
     }
   }
