@@ -269,5 +269,8 @@ export default class Release extends SfpowerscriptsCommand {
   protected validateFlags() {
     if (this.flags.npm && !this.flags.scope)
       throw new Error("--scope parameter is required for NPM");
+
+    if (this.flags.generatechangelog && !this.flags.branchname)
+      throw new Error("--branchname parameter is required to generate changelog");
   }
 }
