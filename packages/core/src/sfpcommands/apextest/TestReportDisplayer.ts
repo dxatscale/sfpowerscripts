@@ -54,7 +54,7 @@ export class TestReportDisplayer {
       {
       table.push([
         COLOR_SUCCESS(test.FullName || ""),
-        COLOR_SUCCESS(test.Outcome || ""),
+        COLOR_SUCCESS(test.Outcome),
         COLOR_SUCCESS(test.Message || ""),
         COLOR_SUCCESS(test.RunTime || ""),
       ]);
