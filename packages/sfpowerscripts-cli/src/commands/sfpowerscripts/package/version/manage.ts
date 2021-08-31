@@ -4,8 +4,8 @@ import { flags } from '@salesforce/command';
 import fs = require("fs");
 import inquirer = require("inquirer");
 import semver = require("semver");
-import Update from "@dxatscale/sfpowerscripts.core/lib/package/version/Update";
-
+import Version from "@dxatscale/sfpowerscripts.core/lib/package/update/Version";
+import Dependencies from "@dxatscale/sfpowerscripts.core/lib/package/update/Dependencies";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -14,7 +14,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'manage_versions');
 
-export default class ManageVersions extends SfpowerscriptsCommand {
+export default class Manage extends SfpowerscriptsCommand {
 
   public static description = messages.getMessage('commandDescription');
 
@@ -79,14 +79,14 @@ export default class ManageVersions extends SfpowerscriptsCommand {
       let packages = projectConfig.packageDirectories;
 
 
-      let versionUpdate = new Update();
+      let version = new Version();
       let dependencyMap = new Map();
       let updatedPackages = new Map();
 
       if (this.flags.allpackages && this.flags.version != null) {
         for (let pkg of packages) {
-          versionUpdate = new Update(pkg, this.flags.version);
-          pkg.versionNumber = versionUpdate.update()
+          version = new Version(pkg, this.flags.version);
+          pkg.versionNumber = version.update()
           updatedPackages.set(pkg.package, pkg.versionNumber);
           dependencyMap.set(pkg.package, pkg.versionNumber);
         }
@@ -95,9 +95,9 @@ export default class ManageVersions extends SfpowerscriptsCommand {
         //First iteration of packages to update version numbers 
         for (let pkg of packages) {
           console.log(`${pkg.package} version number: ${pkg.versionNumber}`)
-          let newMajor = versionUpdate.getMajor(pkg.versionNumber);
-          let newMinor = versionUpdate.getMinor(pkg.versionNumber);
-          let patch = versionUpdate.getPatch(pkg.versionNumber);
+          let newMajor = version.getMajor(pkg.versionNumber);
+          let newMinor = version.getMinor(pkg.versionNumber);
+          let patch = version.getPatch(pkg.versionNumber);
           let custom = false;
 
           let skip = false;
@@ -111,16 +111,16 @@ export default class ManageVersions extends SfpowerscriptsCommand {
               custom = true;
             }
             else if (selection.selection == 'Major: ' + newMajor) {
-              versionUpdate = new Update(pkg, 'major');
-              pkg.versionNumber = versionUpdate.update();
+              version = new Version(pkg, 'major');
+              pkg.versionNumber = version.update();
             }
             else if (selection.selection == 'Minor: ' + newMinor) {
-              versionUpdate = new Update(pkg, 'minor');
-              pkg.versionNumber = versionUpdate.update()
+              version = new Version(pkg, 'minor');
+              pkg.versionNumber = version.update()
             }
             else if (selection.selection == 'Patch: ' + patch) {
-              versionUpdate = new Update(pkg, 'patch');
-              pkg.versionNumber = versionUpdate.update()
+              version = new Version(pkg, 'patch');
+              pkg.versionNumber = version.update()
             }
       
           });
@@ -132,9 +132,9 @@ export default class ManageVersions extends SfpowerscriptsCommand {
 
 
           if (!skip) {
-            if (versionUpdate.hasNonZeroBuildNo(pkg.versionNumber)) {
+            if (version.hasNonZeroBuildNo(pkg.versionNumber)) {
               await inquirer.prompt([{ type: 'list', name: 'selection', message: `Would you like the build number for ${pkg.package} reset to 0?`, choices: ['Yes', 'No'] }]).then((answer) => {
-                if (answer.selection == 'Yes') { pkg.versionNumber = versionUpdate.resetBuildNumber(pkg.versionNumber); }
+                if (answer.selection == 'Yes') { pkg.versionNumber = version.resetBuildNumber(pkg.versionNumber); }
               });
             }
             updatedPackages.set(pkg.package, pkg.versionNumber);
@@ -153,7 +153,8 @@ export default class ManageVersions extends SfpowerscriptsCommand {
         }
       }
 
-      projectConfig.packageDirectories = versionUpdate.updateDependencies(dependencyMap, packages);
+      let dependecies = new Dependencies(packages, dependencyMap); 
+      projectConfig.packageDirectories = dependecies.update();
 
       console.log(`The following packages and dependencies will be updated in your sfdx-project.json file`); 
       for(let pkg of packages){
