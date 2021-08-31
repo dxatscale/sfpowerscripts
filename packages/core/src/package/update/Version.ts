@@ -2,7 +2,7 @@ import semver = require("semver");
 
 /**Helper functions for updating the project config */
 
-export default class Update {
+export default class Version {
 
   private updatePkg; 
   private updateVersion;
