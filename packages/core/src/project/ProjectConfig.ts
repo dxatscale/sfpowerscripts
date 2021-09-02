@@ -22,6 +22,18 @@ export default class ProjectConfig {
   }
 
   /**
+   * Function to return dependents 
+   * @param package
+   * @returns 
+   */
+
+  /**
+   * Function to update dependents 
+   * @param package
+   * @returns 
+   */
+
+  /**
    * Returns package names, as an array of strings
    * @param projectDirectory
    */

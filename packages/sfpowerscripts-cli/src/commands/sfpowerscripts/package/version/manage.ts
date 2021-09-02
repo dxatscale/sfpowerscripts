@@ -66,6 +66,24 @@ export default class Manage extends SfpowerscriptsCommand {
     })
   };
 
+
+  //TODO: no prompt 
+  //TODO: specific package 
+  //TODO: 
+  //TODO: Diff version - Talk alan 
+  //TODO: New class, dependent finder (list all dependents of a pcakage)
+
+/**
+ * input a package: (parameter as a flag)
+ * If patch, minor - skip updating dependencies 
+ * If major, ask if dependencies need to be updated 
+ * Spit out list of dependents which were updated.
+ * Eg. The following packages were updated:: 
+ * 
+ */
+
+
+
   protected static requiresProject = true;
   protected static requiresUsername = false;
   protected static requiresDevhubUsername = false;
@@ -92,6 +110,7 @@ export default class Manage extends SfpowerscriptsCommand {
         }
 
       } else {
+
         //First iteration of packages to update version numbers 
         for (let pkg of packages) {
           console.log(`${pkg.package} version number: ${pkg.versionNumber}`)
@@ -141,7 +160,7 @@ export default class Manage extends SfpowerscriptsCommand {
 
 
             if (!this.flags.dependencies) {
-              await inquirer.prompt([{ type: 'list', name: 'selection', message: `Would you like to update dependency version for all packages that have ${pkg.package} as a dependency?`, choices: ['Yes', 'No'] }]).then((answer) => {
+              await inquirer.prompt([{ type: 'list', name: 'selection', message: `Would you like to update packages that are dependent on ${pkg.package}?`, choices: ['Yes', 'No'] }]).then((answer) => {
                 if (answer.selection == 'Yes') {
                   dependencyMap.set(pkg.package, pkg.versionNumber);
                 }

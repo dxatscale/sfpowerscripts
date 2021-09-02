@@ -91,10 +91,10 @@ export default class Version {
 
   /**
    * Update the version number of the given package with the selection given
-   * @param selection enum[major,minor,patch]
-   * @param version the package with the version to be update
+   * @param version 
    * @returns returns updated version number 
    */
+  //increment 
   public update() {
     if (this.updateVersion == 'major') {
       let updatedVersionNumber = this.getMajor(this.updatePkg.versionNumber);
@@ -106,27 +106,5 @@ export default class Version {
       let updatedVersionNumber = this.getPatch(this.updatePkg.versionNumber);
       return updatedVersionNumber;
     }
-  }
-
-
-  /**
-   * 
-   * @param dependencies a map of dependencies chosen to be updated
-   * @param packages the packages and dependencies with the current versions
-   * @returns the updated packages and dependencies
-   */
-  public updateDependencies(dependencies, packages) {
-    for (let pkg of packages) {
-      if (pkg.dependencies != null) {
-        for (let dependency of pkg.dependencies) {
-          if (dependencies.has(dependency.package)) {
-            let versionNumber = dependencies.get(dependency.package).split('.');
-            if (versionNumber[3] == 'NEXT') { versionNumber[3] = 'LATEST'; }
-            dependency.versionNumber = versionNumber.join('.');
-          }
-        }
-      }
-    }
-    return packages;
   }
 }

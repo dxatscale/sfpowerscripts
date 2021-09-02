@@ -1,6 +1,6 @@
 import semver = require("semver");
 
-export default class Dependencies {
+export default class Dependents {
 
   private dependencyMap; 
   private packages; 
@@ -14,6 +14,10 @@ export default class Dependencies {
 
   }
 
+
+  //Use projectConfig.ts
+
+  //singular package 
    /**
    * 
    * @param dependencies a map of dependencies chosen to be updated
