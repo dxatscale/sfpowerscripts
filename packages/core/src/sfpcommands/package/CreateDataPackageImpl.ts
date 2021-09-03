@@ -1,7 +1,7 @@
 import PackageMetadata from "../../PackageMetadata";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger, { FileLogger, LoggerLevel } from "../../logger/SFPLogger";
+import SFPLogger, { FileLogger, LoggerLevel, Logger } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import SFPStatsSender from "../../stats/SFPStatsSender";
@@ -9,19 +9,21 @@ import path from "path";
 import FileSystem from "../../utils/FileSystem";
 
 export default class CreateDataPackageImpl {
-  private packageLogger:FileLogger;
 
   public constructor(
     private projectDirectory: string,
     private sfdx_package: string,
     private packageArtifactMetadata: PackageMetadata,
-    private breakBuildIfEmpty: boolean = true
+    private breakBuildIfEmpty: boolean = true,
+    private packageLogger?: Logger
   ) {
-    fs.outputFileSync(
-      `.sfpowerscripts/logs/${sfdx_package}`,
-      `sfpowerscripts--log${EOL}`
-    );
-    this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
+    if (!this.packageLogger) {
+      fs.outputFileSync(
+        `.sfpowerscripts/logs/${sfdx_package}`,
+        `sfpowerscripts--log${EOL}`
+      );
+      this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
+    }
   }
 
   public async exec(): Promise<PackageMetadata> {
@@ -39,7 +41,7 @@ export default class CreateDataPackageImpl {
 
     let packageDirectory: string = packageDescriptor["path"];
 
-   
+
     this.validateDataPackage(packageDirectory);
 
 
@@ -99,7 +101,7 @@ export default class CreateDataPackageImpl {
     );
   }
 
-  // Validate type of data package and existence of the correct configuration files 
+  // Validate type of data package and existence of the correct configuration files
   private validateDataPackage(packageDirectory: string) {
 
     let dirToCheck;

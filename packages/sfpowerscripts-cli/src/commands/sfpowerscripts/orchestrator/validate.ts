@@ -4,6 +4,8 @@ import { flags } from '@salesforce/command';
 import ValidateImpl, {ValidateMode, ValidateProps} from "../../../impl/validate/ValidateImpl";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { DeploymentResult } from "../../../impl/deploy/DeployImpl";
+import ValidateError from "../../../errors/ValidateError";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
@@ -12,7 +14,7 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
 export default class Validate extends SfpowerscriptsCommand {
 
   protected static requiresProject = true;
-  
+
   public static description = messages.getMessage('commandDescription');
 
   protected static requiresDevhubUsername = true;
@@ -102,7 +104,13 @@ export default class Validate extends SfpowerscriptsCommand {
     let executionStartTime = Date.now();
 
     await this.hubOrg.refreshAuth();
-  
+
+    let tags: {[p: string]: string};
+    if (this.flags.tag != null) {
+      tags = {
+        "tag": this.flags.tag
+      };
+    }
 
     console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
     console.log(COLOR_HEADER("command: validate"));
@@ -111,51 +119,65 @@ export default class Validate extends SfpowerscriptsCommand {
     console.log(COLOR_HEADER(`Using shapefile to override existing shape of the org: ${this.flags.shapefile?'true':'false'}`));
     console.log(COLOR_HEADER("---------------------------------------------------------"));
 
-
-    let validateResult: boolean = false;
+    let validateResult: DeploymentResult;
     try {
 
-    let validateProps: ValidateProps = {
-      validateMode: ValidateMode.POOL,
-      coverageThreshold: this.flags.coveragepercent,
-      logsGroupSymbol: this.flags.logsgroupsymbol,
-      pools: this.flags.pools,
-      hubOrg: this.hubOrg,
-      shapeFile: this.flags.shapefile,
-      isDeleteScratchOrg: this.flags.deletescratchorg,
-      keys: this.flags.keys,
-      visualizeChangesAgainst: this.flags.visualizechangesagainst
-    }
+      let validateProps: ValidateProps = {
+        validateMode: ValidateMode.POOL,
+        coverageThreshold: this.flags.coveragepercent,
+        logsGroupSymbol: this.flags.logsgroupsymbol,
+        pools: this.flags.pools,
+        hubOrg: this.hubOrg,
+        shapeFile: this.flags.shapefile,
+        isDeleteScratchOrg: this.flags.deletescratchorg,
+        keys: this.flags.keys,
+        visualizeChangesAgainst: this.flags.visualizechangesagainst
+      }
 
-    let validateImpl: ValidateImpl = new ValidateImpl( validateProps);
+      let validateImpl: ValidateImpl = new ValidateImpl( validateProps);
 
-    let validateResult  = await validateImpl.exec();
+      validateResult  = await validateImpl.exec();
 
-     SFPStatsSender.logCount("validate.succeeded",this.flags.tag);
-
-    if (validateResult)
-      process.exitCode=0;
-    else
-      process.exitCode=1;
+      SFPStatsSender.logCount("validate.succeeded", tags);
 
     } catch (error) {
-      validateResult=false;
-      console.log(error.message);
-      process.exitCode=1;
+      if (error instanceof ValidateError) {
+        validateResult = error.data;
+      } else console.log(error.message);
+
+      SFPStatsSender.logCount("validate.failed", tags);
+
+      process.exitCode = 1;
     } finally {
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
-    if (!validateResult)
-       SFPStatsSender.logCount("validate.failed",this.flags.tag);
-
-      
       SFPStatsSender.logGauge(
         "validate.duration",
         totalElapsedTime,
-        this.flags.tag
+        tags
       );
 
-   
+      SFPStatsSender.logCount("validate.scheduled", tags);
+
+      if (validateResult) {
+        SFPStatsSender.logGauge(
+          "validate.packages.scheduled",
+          validateResult.scheduled,
+          tags
+        );
+
+        SFPStatsSender.logGauge(
+          "validate.packages.succeeded",
+          validateResult.deployed.length,
+          tags
+        );
+
+        SFPStatsSender.logGauge(
+          "validate.packages.failed",
+          validateResult.failed.length,
+          tags
+        );
+      }
     }
   }
 }

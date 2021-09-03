@@ -1,14 +1,12 @@
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
-import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
 import { flags } from "@salesforce/command";
-import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand"
 import { Messages } from "@salesforce/core";
-import { exec } from "shelljs";
-import * as fs from "fs-extra"
-import path = require("path");
 import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateUnlockedPackageImpl";
-import { ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import PackageCreateCommand from "../../../../PackageCreateCommand";
+import {
+  COLOR_SUCCESS,
+  ConsoleLogger,
+} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -20,8 +18,14 @@ const messages = Messages.loadMessages(
   "create_unlocked_package"
 );
 
-export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
+export default class CreateUnlockedPackage extends PackageCreateCommand {
   public static description = messages.getMessage("commandDescription");
+
+
+  protected static requiresUsername = false;
+  protected static requiresDevhubUsername = true;
+  protected static requiresProject = true;
+
 
   public static examples = [
     `$ sfdx sfpowerscripts:package:unlocked:create -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
@@ -37,10 +41,6 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
     `<refname>_sfpowerscripts_package_version_number`,
   ];
 
-  protected static requiresUsername = false;
-  protected static requiresDevhubUsername = true;
-  protected static requiresProject = true;
-
   protected static flagsConfig = {
     package: flags.string({
       required: true,
@@ -50,7 +50,10 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
     buildartifactenabled: flags.boolean({
       char: "b",
       description: messages.getMessage("buildArtifactEnabledFlagDescription"),
-      deprecated: {messageOverride:"--buildartifactenabled is deprecated. Artifacts are always created"}
+      deprecated: {
+        messageOverride:
+          "--buildartifactenabled is deprecated. Artifacts are always created",
+      },
     }),
     installationkey: flags.string({
       char: "k",
@@ -93,8 +96,8 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
         "isValidationToBeSkippedFlagDescription"
       ),
     }),
-    branch:flags.string({
-      description:messages.getMessage("branchFlagDescription"),
+    branch: flags.string({
+      description: messages.getMessage("branchFlagDescription"),
     }),
     tag: flags.string({
       description: messages.getMessage("tagFlagDescription"),
@@ -124,178 +127,61 @@ export default class CreateUnlockedPackage extends SfpowerscriptsCommand {
         "ERROR",
         "FATAL",
       ],
-    })
+    }),
   };
-
-  public async execute() {
-    try {
-      const sfdx_package: string = this.flags.package;
-      const version_number: string = this.flags.versionnumber;
-      const artifactDirectory: string = this.flags.artifactdir;
-      const refname: string = this.flags.refname;
-      const branch:string=this.flags.branch;
+  
 
 
-      let tag: string = this.flags.tag;
-      let config_file_path = this.flags.configfilepath;
-      let installationkeybypass = this.flags.installationkeybypass;
-      let isCoverageEnabled: boolean = this.flags.enablecoverage;
-      let isSkipValidation: boolean = this.flags.isvalidationtobeskipped;
-      let installationkey = this.flags.installationkey;
-      let wait_time = this.flags.waittime;
+  public async create(): Promise<PackageMetadata> {
+    let tag: string = this.flags.tag;
+    let installationkeybypass = this.flags.installationkeybypass;
+    let isCoverageEnabled: boolean = this.flags.enablecoverage;
+    let isSkipValidation: boolean = this.flags.isvalidationtobeskipped;
+    let installationkey = this.flags.installationkey;
+    let waitTime= this.flags.waittime;
+    
 
-
-
-      await this.hubOrg.refreshAuth();
-
-      let runBuild: boolean;
-      if (this.flags.diffcheck) {
-        let packageDiffImpl = new PackageDiffImpl(
-          new ConsoleLogger(),
-          sfdx_package,
-          null,
-          config_file_path
-        );
-
-        runBuild = (await packageDiffImpl.exec()).isToBeBuilt;
-
-        if (runBuild)
-          console.log(
-            `Detected changes to ${sfdx_package} package...proceeding\n`
-          );
-        else
-          console.log(
-            `No changes detected for ${sfdx_package} package...skipping\n`
-          );
-      } else runBuild = true;
-
-      if (runBuild) {
-        let repository_url: string;
-        if (this.flags.repourl == null) {
-          repository_url = exec("git config --get remote.origin.url", {
-            silent: true,
-          });
-          // Remove new line '\n' from end of url
-          repository_url = repository_url.slice(0, repository_url.length - 1);
-        } else repository_url = this.flags.repourl;
-
-        let commit_id = exec("git log --pretty=format:%H -n 1", {
-          silent: true,
-        });
-
-
-        let packageMetadata: PackageMetadata = {
-          package_name: sfdx_package,
-          package_type: "unlocked",
-          package_version_number: version_number,
-          sourceVersion: commit_id,
-          repository_url: repository_url,
-          tag: tag,
-          branch:branch
-        };
-
-        let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
-          sfdx_package,
-          version_number,
-          config_file_path,
-          installationkeybypass,
-          installationkey,
-          null,
-          this.hubOrg.getUsername(),
-          wait_time,
-          isCoverageEnabled,
-          isSkipValidation,
-          packageMetadata
-        );
-
-        let result = await createUnlockedPackageImpl.exec();
-
-        if (this.flags.gittag) {
-          exec(`git config --global user.email "sfpowerscripts@dxscale"`);
-          exec(`git config --global user.name "sfpowerscripts"`);
-
-          let tagname = `${sfdx_package}_v${result.package_version_number}`;
-          console.log(`Creating tag ${tagname}`);
-          exec(
-            `git tag -a -m "${sfdx_package} Unlocked Package ${result.package_version_number}" ${tagname} HEAD`,
-            { silent: false }
-          );
-
-          packageMetadata.tag = tagname;
-        }
-
-        console.log(
-          JSON.stringify(packageMetadata, function (key, val) {
-            if (key !== "payload") return val;
-          })
-        );
-
-        //Generate Artifact
-        let artifactFilepath: string = await ArtifactGenerator.generateArtifact(
-          sfdx_package,
-          process.cwd(),
-          artifactDirectory,
-          packageMetadata
-        );
-
-        console.log(`Created data package ${path.basename(artifactFilepath)}`);
-
-        console.log("\nOutput variables:");
-        if (refname != null) {
-          fs.writeFileSync(
-            ".env",
-            `${refname}_sfpowerscripts_package_version_id=${packageMetadata.package_version_id}\n`,
-            { flag: "a" }
-          );
-          console.log(
-            `${refname}_sfpowerscripts_package_version_id=${packageMetadata.package_version_id}`
-          );
-          fs.writeFileSync(
-            ".env",
-            `${refname}_sfpowerscripts_artifact_directory=${artifactFilepath}\n`,
-            { flag: "a" }
-          );
-          console.log(
-            `${refname}_sfpowerscripts_artifact_directory=${artifactFilepath}`
-          );
-          fs.writeFileSync(
-            ".env",
-            `${refname}_sfpowerscripts_package_version_number=${packageMetadata.package_version_number}\n`,
-            { flag: "a" }
-          );
-          console.log(
-            `${refname}_sfpowerscripts_package_version_number=${packageMetadata.package_version_number}`
-          );
-        } else {
-          fs.writeFileSync(
-            ".env",
-            `sfpowerscripts_package_version_id=${packageMetadata.package_version_id}\n`,
-            { flag: "a" }
-          );
-          console.log(
-            `sfpowerscripts_package_version_id=${packageMetadata.package_version_id}`
-          );
-          fs.writeFileSync(
-            ".env",
-            `sfpowerscripts_artifact_directory=${artifactFilepath}\n`,
-            { flag: "a" }
-          );
-          console.log(
-            `sfpowerscripts_artifact_directory=${artifactFilepath}`
-          );
-          fs.writeFileSync(
-            ".env",
-            `sfpowerscripts_package_version_number=${packageMetadata.package_version_number}\n`,
-            { flag: "a" }
-          );
-          console.log(
-            `sfpowerscripts_package_version_number=${packageMetadata.package_version_number}`
-          );
-        }
-      }
-    } catch (err) {
-      console.log(err);
-      process.exit(1);
+    //Handle Installation Keys
+    if(installationkey === null || installationkey === undefined)
+    {
+     installationkeybypass=true;
     }
+    
+
+    let packageMetadata: PackageMetadata = {
+      package_name: this.sfdxPackage,
+      package_type: "unlocked",
+      package_version_number: this.versionNumber,
+      sourceVersion: this.commitId,
+      repository_url: this.repositoryURL,
+      tag: tag,
+      branch: this.branch,
+    };
+
+    let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
+      this.sfdxPackage,
+      this.versionNumber,
+      this.getConfigFilePath(),
+      installationkeybypass,
+      installationkey,
+      null,
+      this.hubOrg.getUsername(),
+      waitTime,
+      isCoverageEnabled,
+      isSkipValidation,
+      packageMetadata,
+      null,
+      new ConsoleLogger()
+    );
+
+    let result = await createUnlockedPackageImpl.exec();
+    console.log(
+      COLOR_SUCCESS(`Created unlocked package ${packageMetadata.package_name}`)
+    );
+    return result;
   }
+
+  protected getConfigFilePath(): string {
+     return this.flags.configfilepath;
+  }  
 }

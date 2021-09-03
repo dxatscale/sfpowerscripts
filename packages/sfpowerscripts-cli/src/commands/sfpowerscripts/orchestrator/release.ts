@@ -201,10 +201,6 @@ export default class Release extends SfpowerscriptsCommand {
     } finally {
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
-      if (releaseResult) {
-        this.printReleaseSummary(releaseResult, totalElapsedTime);
-      }
-
       SFPStatsSender.logCount("release.scheduled",tags);
 
       SFPStatsSender.logGauge(
@@ -212,6 +208,28 @@ export default class Release extends SfpowerscriptsCommand {
         totalElapsedTime,
         tags
       );
+
+      if (releaseResult) {
+        this.printReleaseSummary(releaseResult, totalElapsedTime);
+
+        SFPStatsSender.logGauge(
+          "release.packages.scheduled",
+          releaseResult.deploymentResult.scheduled,
+          tags
+        );
+
+        SFPStatsSender.logGauge(
+          "release.packages.succeeded",
+          releaseResult.deploymentResult.deployed.length,
+          tags
+        );
+
+        SFPStatsSender.logGauge(
+          "release.packages.failed",
+          releaseResult.deploymentResult.failed.length,
+          tags
+        );
+      }
     }
   }
 
@@ -251,5 +269,8 @@ export default class Release extends SfpowerscriptsCommand {
   protected validateFlags() {
     if (this.flags.npm && !this.flags.scope)
       throw new Error("--scope parameter is required for NPM");
+
+    if (this.flags.generatechangelog && !this.flags.branchname)
+      throw new Error("--branchname parameter is required to generate changelog");
   }
 }

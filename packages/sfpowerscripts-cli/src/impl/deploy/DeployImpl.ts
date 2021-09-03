@@ -2,7 +2,6 @@ import ArtifactFilePathFetcher, {
   ArtifactFilePaths,
 } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl";
 import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallSourcePackageImpl";
 import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl";
@@ -70,6 +69,7 @@ export default class DeployImpl {
     let deployed: PackageInfo[] = [];
     let failed: PackageInfo[] = [];
     let testFailure: PackageInfo;
+    let queue;
     try {
       let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
         this.props.artifactDir,
@@ -97,7 +97,7 @@ export default class DeployImpl {
 
       let packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
 
-      let queue: any[] = this.getPackagesToDeploy(
+      queue = this.getPackagesToDeploy(
         packageManifest,
         packagesToPackageInfo
       );
@@ -120,13 +120,6 @@ export default class DeployImpl {
       else {
         this.printArtifactVersions(queue, packagesToPackageInfo);
       }
-
-
-      SFPStatsSender.logGauge(
-        "deploy.scheduled.packages",
-        queue.length,
-        this.props.tags
-      );
 
 
       for (let i = 0; i < queue.length; i++) {
@@ -260,6 +253,7 @@ export default class DeployImpl {
       }
 
       return {
+        scheduled: queue.length,
         deployed: deployed,
         failed: failed,
         testFailure: testFailure,
@@ -270,6 +264,7 @@ export default class DeployImpl {
       SFPLogger.log(err,LoggerLevel.ERROR, this.props.packageLogger);
 
       return {
+        scheduled: queue?.length ? queue.length : 0,
         deployed: deployed,
         failed: failed,
         testFailure: testFailure,
@@ -785,6 +780,7 @@ interface PackageInfo {
 }
 
 export interface DeploymentResult {
+  scheduled: number;
   deployed: PackageInfo[];
   failed: PackageInfo[];
   testFailure: PackageInfo;

@@ -17,7 +17,7 @@ export default class CreateScratchOrgImpl extends SFDXCommand {
 
 
   public async exec(quiet?: boolean): Promise<any> {
-    let result = await super.exec(quiet);
+    let result = await super.exec(quiet, 360000);
     return result;
   }
 
@@ -33,5 +33,5 @@ export default class CreateScratchOrgImpl extends SFDXCommand {
     if(this.adminEmail)
      command+= ` adminEmail=${this.adminEmail}`
     return command;
-  } 
+  }
 }
