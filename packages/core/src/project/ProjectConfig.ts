@@ -22,16 +22,43 @@ export default class ProjectConfig {
   }
 
   /**
-   * Function to return dependents 
-   * @param package
-   * @returns 
+   * Get all packages which are dependent on the given package
+   * @param incPkg
+   * @param projectConfig
+   * @returns an array of dependent packages
    */
+  public static getDependents(incPkg, projectConfig){
+    let dependentPkgs = []; 
+    projectConfig["packageDirectories"].forEach(pkgDir => {
+      if(pkgDir["dependencies"]){
+        pkgDir["dependencies"].forEach(dependency => {
+          if(dependency["package"] == [incPkg]){
+            dependentPkgs.push(pkgDir);
+            //console.log(dependentPkgs);
+          }
+        });
+        
+      }
+    });
+    return dependentPkgs;
+  }
+
+
 
   /**
-   * Function to update dependents 
+   * Function to update a dependent of a package
    * @param package
+   * @param dependents
    * @returns 
    */
+  public static updateDependent(pkg, dependent){
+    dependent["dependencies"].forEach(dependency => {
+      if(dependency["package"] == pkg["package"]){
+        dependency["versionNumber"] = pkg["versionNumber"];
+        return dependency
+      }
+    });
+  }
 
   /**
    * Returns package names, as an array of strings

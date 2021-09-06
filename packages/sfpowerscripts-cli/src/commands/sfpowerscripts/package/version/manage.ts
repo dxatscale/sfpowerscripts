@@ -4,8 +4,8 @@ import { flags } from '@salesforce/command';
 import fs = require("fs");
 import inquirer = require("inquirer");
 import semver = require("semver");
-import Version from "@dxatscale/sfpowerscripts.core/lib/package/update/Version";
-import Dependencies from "@dxatscale/sfpowerscripts.core/lib/package/update/Dependencies";
+import Version from "@dxatscale/sfpowerscripts.core/lib/package/Version";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig"
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -68,19 +68,19 @@ export default class Manage extends SfpowerscriptsCommand {
 
 
   //TODO: no prompt 
-  //TODO: specific package 
+  //TODO: specific package - done, function in ProjectConfig class
   //TODO: 
   //TODO: Diff version - Talk alan 
-  //TODO: New class, dependent finder (list all dependents of a pcakage)
+  //TODO: New class, dependent finder (list all dependents of a pcakage) - done, function in ProjectConfig Class
 
-/**
- * input a package: (parameter as a flag)
- * If patch, minor - skip updating dependencies 
- * If major, ask if dependencies need to be updated 
- * Spit out list of dependents which were updated.
- * Eg. The following packages were updated:: 
- * 
- */
+  /**
+   * input a package: (parameter as a flag)
+   * If patch, minor - skip updating dependencies 
+   * If major, ask if dependencies need to be updated 
+   * Spit out list of dependents which were updated.
+   * Eg. The following packages were updated:: 
+   * 
+   */
 
 
 
@@ -104,9 +104,14 @@ export default class Manage extends SfpowerscriptsCommand {
       if (this.flags.allpackages && this.flags.version != null) {
         for (let pkg of packages) {
           version = new Version(pkg, this.flags.version);
-          pkg.versionNumber = version.update()
+          pkg.versionNumber = version.update();
           updatedPackages.set(pkg.package, pkg.versionNumber);
-          dependencyMap.set(pkg.package, pkg.versionNumber);
+          let dependentPkgs = ProjectConfig.getDependents(pkg.package, projectConfig);
+          if (dependentPkgs.length != 0) {
+            dependentPkgs.forEach(dependent => {
+              ProjectConfig.updateDependent(pkg, dependent);
+            });
+          }
         }
 
       } else {
@@ -141,7 +146,7 @@ export default class Manage extends SfpowerscriptsCommand {
               version = new Version(pkg, 'patch');
               pkg.versionNumber = version.update()
             }
-      
+
           });
 
           if (custom) {
@@ -162,26 +167,35 @@ export default class Manage extends SfpowerscriptsCommand {
             if (!this.flags.dependencies) {
               await inquirer.prompt([{ type: 'list', name: 'selection', message: `Would you like to update packages that are dependent on ${pkg.package}?`, choices: ['Yes', 'No'] }]).then((answer) => {
                 if (answer.selection == 'Yes') {
-                  dependencyMap.set(pkg.package, pkg.versionNumber);
+                  let dependentPkgs = ProjectConfig.getDependents(pkg, projectConfig);
+                  if (dependentPkgs.length != 0) {
+                    dependentPkgs.forEach(dependent => {
+                      ProjectConfig.updateDependent(pkg, dependent);
+                    });
+
+                  }
                 }
               });
             } else {
-              dependencyMap.set(pkg.package, pkg.versionNumber);
+              let dependentPkgs = ProjectConfig.getDependents(pkg, projectConfig);
+              if (dependentPkgs.length != 0) {
+                dependentPkgs.forEach(dependent => {
+                  ProjectConfig.updateDependent(pkg, dependent);
+                });
+              }
             }
           }
+
+
         }
       }
-
-      let dependecies = new Dependencies(packages, dependencyMap); 
-      projectConfig.packageDirectories = dependecies.update();
-
-      console.log(`The following packages and dependencies will be updated in your sfdx-project.json file`); 
-      for(let pkg of packages){
-        if(updatedPackages.has(pkg.package)){
+      console.log(`The following packages and dependencies will be updated in your sfdx-project.json file`);
+      for (let pkg of packages) {
+        if (updatedPackages.has(pkg.package)) {
           console.log(`Package: ${pkg.package} Version Number: ${pkg.versionNumber}`);
-          if(dependencyMap.has(pkg.package)){
+          if (dependencyMap.has(pkg.package)) {
             console.log(`All packages with ${pkg.package} as a dependency will also be updated\n`);
-          }else{
+          } else {
             console.log(`No packages with ${pkg.package} as a dependency will be updated\n`)
           }
         }
@@ -191,13 +205,11 @@ export default class Manage extends SfpowerscriptsCommand {
           console.log('Updating sfdx-project.json')
           let projectString = JSON.stringify(projectConfig, null, 4);
           fs.writeFileSync('sfdx-project.json', projectString, 'utf-8');
-        }else{
+        } else {
           console.log('Exiting command')
           process.exit(1);
         }
       });
-      
-
     }
     catch (err) {
       console.log(err);
