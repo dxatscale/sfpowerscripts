@@ -20,7 +20,7 @@ export default class Version {
    * @param currentVersion 
    * @returns the increased semver major version
    */
-  public getMajor(currentVersion) {
+  public static getMajor(currentVersion) {
     let verArr = currentVersion.split('.');
     currentVersion = verArr.splice(0, 3);
     let major = semver.inc(currentVersion.join('.'), 'major');
@@ -33,7 +33,7 @@ export default class Version {
    * @param currentVersion 
    * @returns the increased semver minor version
    */
-  public getMinor(currentVersion) {
+  public static getMinor(currentVersion) {
     let verArr = currentVersion.split('.');
     currentVersion = verArr.splice(0, 3);
     let minor = semver.inc(currentVersion.join('.'), 'minor') + '.' + verArr;
@@ -45,7 +45,7 @@ export default class Version {
    * @param currentVersion 
    * @returns the increased semver major version
    */
-  public getPatch(currentVersion) {
+  public static getPatch(currentVersion) {
     let verArr = currentVersion.split('.');
     currentVersion = verArr.splice(0, 3);
     let patch = semver.inc(currentVersion.join('.'), 'patch') + '.' + verArr;
@@ -57,7 +57,7 @@ export default class Version {
    * @param currentVersion 
    * @returns the current buildNumber 
    */
-  public getBuildNumber(currentVersion) {
+  public static getBuildNumber(currentVersion) {
     let verArr = currentVersion.split('.');
     return verArr[3];
   }
@@ -80,7 +80,7 @@ export default class Version {
    */
   public hasNonZeroBuildNo(currentVersion) {
     if (!(currentVersion.includes('NEXT') || currentVersion.includes('LATEST'))) {
-      if (this.getBuildNumber(currentVersion) != '0') {
+      if (Version.getBuildNumber(currentVersion) != '0') {
         return true;
       } else {
         return false;
@@ -95,16 +95,33 @@ export default class Version {
    * @returns returns updated version number 
    */
   //increment 
-  public update() {
-    if (this.updateVersion == 'major') {
-      let updatedVersionNumber = this.getMajor(this.updatePkg.versionNumber);
+  public static update(version, pkg) {
+    if (version == 'major') {
+      let updatedVersionNumber = Version.getMajor(pkg.versionNumber);
       return updatedVersionNumber;
-    } else if (this.updateVersion == 'minor') {
-      let updatedVersionNumber = this.getMinor(this.updatePkg.versionNumber);
+    } else if (version == 'minor') {
+      let updatedVersionNumber = Version.getMinor(pkg.versionNumber);
       return updatedVersionNumber;
-    } else if (this.updateVersion == 'patch') {
-      let updatedVersionNumber = this.getPatch(this.updatePkg.versionNumber);
+    } else if (version == 'patch') {
+      let updatedVersionNumber = Version.getPatch(pkg.versionNumber);
       return updatedVersionNumber;
     }
+  }
+
+  /**
+   * 
+   * @param inputtedNumber the number inputted by the user to verify
+   * @returns false if the number is not valid
+   * @returns the inputted number if valid
+   */
+  public static verifyCustom(inputtedNumber){
+    let verArray = inputtedNumber.split('.');
+    let validated = semver.valid(verArray.splice(0, 3).join('.'));
+    if (validated != null && (!isNaN(verArray) || verArray == "NEXT")) {
+      return inputtedNumber;
+    } else {
+      return false;
+    }
+
   }
 }
