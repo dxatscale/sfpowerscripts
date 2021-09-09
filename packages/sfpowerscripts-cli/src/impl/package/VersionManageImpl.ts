@@ -43,6 +43,10 @@ export default class VersionManageImpl {
         }
         else if (this.packageFlag != null) {
             updatedPackages = await this.updatePackage();
+            if(updatedPackages.size == 0){
+                console.log(`No packages with the name ${this.packageFlag} were found.`)
+                process.exit(1);
+            }
         }
         else {
             console.log('This command must be run with the --package flag or the --allpackages flag')
@@ -55,7 +59,6 @@ export default class VersionManageImpl {
             }
         }
         await this.writeConfig();
-
     }
     /**
   * prompt the user for the custom number when selected. Verifies the custom number is valid
