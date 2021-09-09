@@ -3,18 +3,6 @@ import semver = require("semver");
 /**Helper functions for updating the project config */
 
 export default class Version {
-
-  private updatePkg; 
-  private updateVersion;
-
-  public constructor (
-    private pkg?,
-    private version?
-  ){
-    this.updatePkg = pkg; 
-    this.updateVersion = version;
-  }
-
   /**
    * get increased semver major versio
    * @param currentVersion 
@@ -67,7 +55,7 @@ export default class Version {
    * @param currentVersion 
    * @returns the current version with the build number set to 0
    */
-  public resetBuildNumber(currentVersion) {
+  public static resetBuildNumber(currentVersion) {
     let versionArr = currentVersion.split('.');
     versionArr[3] = '0';
     return versionArr.join('.');
@@ -78,7 +66,7 @@ export default class Version {
    * @param currentVersion 
    * @returns true if the build number is not 0, false if the build is 0
    */
-  public hasNonZeroBuildNo(currentVersion) {
+  public static hasNonZeroBuildNo(currentVersion) {
     if (!(currentVersion.includes('NEXT') || currentVersion.includes('LATEST'))) {
       if (Version.getBuildNumber(currentVersion) != '0') {
         return true;
@@ -95,17 +83,21 @@ export default class Version {
    * @returns returns updated version number 
    */
   //increment 
-  public static update(version, pkg) {
+  public static update(version, pkg, resetbuildnumber) {
+    let updatedVersionNumber;
     if (version == 'major') {
-      let updatedVersionNumber = Version.getMajor(pkg.versionNumber);
-      return updatedVersionNumber;
+      updatedVersionNumber = Version.getMajor(pkg.versionNumber);
     } else if (version == 'minor') {
-      let updatedVersionNumber = Version.getMinor(pkg.versionNumber);
-      return updatedVersionNumber;
+      updatedVersionNumber = Version.getMinor(pkg.versionNumber);
     } else if (version == 'patch') {
-      let updatedVersionNumber = Version.getPatch(pkg.versionNumber);
-      return updatedVersionNumber;
+      updatedVersionNumber = Version.getPatch(pkg.versionNumber);
     }
+    if(resetbuildnumber){
+      if(this.hasNonZeroBuildNo){
+        updatedVersionNumber = this.resetBuildNumber(updatedVersionNumber);
+      }
+    }
+    return updatedVersionNumber;
   }
 
   /**
