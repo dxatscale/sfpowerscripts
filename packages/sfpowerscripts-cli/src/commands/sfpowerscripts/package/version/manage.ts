@@ -2,7 +2,7 @@ import { Messages } from "@salesforce/core";
 import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
 import { flags } from '@salesforce/command';
 import fs = require("fs");
-import VersionManageImpl from '/Users/caitlyn.mills/sfpowerscripts/sfpowerscripts/packages/sfpowerscripts-cli/src/impl/package/VersionManageImpl';
+import VersionManageImpl from '../../../../impl/package/VersionManageImpl';
 
 
 // Initialize Messages with the current plugin directory
