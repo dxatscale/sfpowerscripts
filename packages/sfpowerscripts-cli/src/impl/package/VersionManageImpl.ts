@@ -102,7 +102,7 @@ export default class VersionManageImpl {
                     let dependentPkgs = ProjectConfig.getDependents(pkg.package, this.projectConfig);
                     if (dependentPkgs.length != 0) {
                         dependentPkgs.forEach(dependent => {
-                            dependent = ProjectConfig.updateDependent(pkg, dependent);
+                            ProjectConfig.updateDependent(pkg, dependent);
                         });
                     }
                 } else if (packagePrompt != 'skip') {
@@ -137,7 +137,7 @@ export default class VersionManageImpl {
                 let dependentPkgs = ProjectConfig.getDependents(pkg.package, this.projectConfig);
                 if (dependentPkgs.length != 0) {
                     dependentPkgs.forEach(dependent => {
-                        dependent = ProjectConfig.updateDependent(pkg, dependent);
+                        ProjectConfig.updateDependent(pkg, dependent);
                     });
                 }
             } else if (packagePrompt != 'skip') {
@@ -219,7 +219,7 @@ export default class VersionManageImpl {
                 let dependentPkgs = ProjectConfig.getDependents(pkg.package, this.projectConfig);
                 if (dependentPkgs.length != 0) {
                     dependentPkgs.forEach(dependent => {
-                        dependent = ProjectConfig.updateDependent(pkg, dependent);
+                        ProjectConfig.updateDependent(pkg, dependent);
                     });
 
                 }
