@@ -14,14 +14,9 @@ export default class VersionManageImpl {
     protected version;
     protected noPrompt;
     protected resetBuildNumber;
+    protected allDependentPkgs = [];
 
-    /**
-     * 
-     * @param projectConfig 
-     * @param allpackages 
-     * @param dependents 
-     * @param packageFlag 
-     */
+
     constructor(projectConfig, allpackages, dependents, packageFlag, version, noprompt, resetbuildnumber) {
 
         this.projectConfig = projectConfig;
@@ -43,7 +38,7 @@ export default class VersionManageImpl {
         }
         else if (this.packageFlag != null) {
             updatedPackages = await this.updatePackage();
-            if(updatedPackages.size == 0){
+            if (updatedPackages.size == 0) {
                 console.log(`No packages with the name ${this.packageFlag} were found.`)
                 process.exit(1);
             }
@@ -52,13 +47,9 @@ export default class VersionManageImpl {
             console.log('This command must be run with the --package flag or the --allpackages flag')
             process.exit(1);
         }
-        console.log(`\nThe following packages will be updated in your sfdx-project.json file`);
-        for (let pkg of this.packages) {
-            if (updatedPackages.has(pkg.package)) {
-                console.log(`Package: ${pkg.package} Version Number: ${pkg.versionNumber}`);
-            }
-        }
+        this.printPackagesUpdated(updatedPackages);
         await this.writeConfig();
+
     }
     /**
   * prompt the user for the custom number when selected. Verifies the custom number is valid
@@ -82,30 +73,27 @@ export default class VersionManageImpl {
         let updatedPackages = new Map();
         for (let pkg of this.packages) {
             if (pkg.package == this.packageFlag) {
-                let packagePrompt;
+                let packageVersionResponse;
                 if (this.version != null) {
+                    packageVersionResponse = this.version;
                     pkg.versionNumber = Version.update(this.version, pkg, this.resetBuildNumber);
                     updatedPackages.set(pkg.package, pkg.versionNumber);
                 } else {
-                    packagePrompt = await this.packagePrompt(pkg);
-                    if (packagePrompt == "skip") {
+                    packageVersionResponse = await this.packagePrompt(pkg);
+                    if (packageVersionResponse == "skip") {
                         console.log(`Skipped updating package version for ${pkg.package}`)
                     }
-                    else if (packagePrompt == "custom") {
+                    else if (packageVersionResponse == "custom") {
                         pkg.versionNumber = await this.getCustom();
                         updatedPackages.set(pkg.package, pkg.versionNumber);
                     } else {
                         updatedPackages.set(pkg.package, pkg.versionNumber);
                     }
                 }
-                if (this.dependents && packagePrompt != 'skip') {
-                    let dependentPkgs = ProjectConfig.getDependents(pkg.package, this.projectConfig);
-                    if (dependentPkgs.length != 0) {
-                        dependentPkgs.forEach(dependent => {
-                            ProjectConfig.updateDependent(pkg, dependent);
-                        });
-                    }
-                } else if (packagePrompt != 'skip') {
+                if (this.dependents || packageVersionResponse == 'major') {
+                    this.updateDependents(pkg);
+
+                } else if (packageVersionResponse == 'major') {
                     await this.dependentPrompt(pkg);
                 }
 
@@ -122,25 +110,20 @@ export default class VersionManageImpl {
     private async updateAllWithInquirer() {
         let updatedPackages = new Map();
         for (let pkg of this.packages) {
-            let packagePrompt = await this.packagePrompt(pkg);
-            if (packagePrompt == "skip") {
+            let packageVersionResponse = await this.packagePrompt(pkg);
+            if (packageVersionResponse == 'skip') {
                 console.log(`Skipped updating package version for ${pkg.package}`)
             }
-            else if (packagePrompt == "custom") {
+            else if (packageVersionResponse == "custom") {
                 pkg.versionNumber = await this.getCustom();
                 updatedPackages.set(pkg.package, pkg.versionNumber);
             } else {
                 updatedPackages.set(pkg.package, pkg.versionNumber);
             }
 
-            if (this.dependents && packagePrompt != 'skip') {
-                let dependentPkgs = ProjectConfig.getDependents(pkg.package, this.projectConfig);
-                if (dependentPkgs.length != 0) {
-                    dependentPkgs.forEach(dependent => {
-                        ProjectConfig.updateDependent(pkg, dependent);
-                    });
-                }
-            } else if (packagePrompt != 'skip') {
+            if (this.dependents && packageVersionResponse != 'skip' ) {
+                this.updateDependents(pkg);
+            } else if (packageVersionResponse == 'major') {
                 await this.dependentPrompt(pkg);
             }
         }
@@ -158,18 +141,20 @@ export default class VersionManageImpl {
         let patch = Version.getPatch(pkg.versionNumber);
         let skip;
         let custom;
+        let major; 
 
         await inquirer.prompt([{ type: 'list', name: 'selection', message: `Would you like to update ${pkg.package}?`, choices: ['Major: ' + newMajor, 'Minor: ' + newMinor, 'Patch: ' + patch, 'Custom', 'Skip'] }]).then((selection) => {
 
             /**If else statement based on the selection by the user */
             if (selection.selection == 'Skip') {
-                return skip = true;
+                skip = true;
             }
             else if (selection.selection == 'Custom') {
-                return custom = true;
+                custom = true;
             }
             else if (selection.selection == 'Major: ' + newMajor) {
                 pkg.versionNumber = Version.update('major', pkg, this.resetBuildNumber);
+                major = true;
             }
             else if (selection.selection == 'Minor: ' + newMinor) {
                 pkg.versionNumber = Version.update('minor', pkg, this.resetBuildNumber);
@@ -178,10 +163,11 @@ export default class VersionManageImpl {
                 pkg.versionNumber = Version.update('patch', pkg, this.resetBuildNumber);
             }
         });
-        if (skip == true) {
-            return 'skip'
-        }
-        if (custom == true) { return 'custom' }
+        if (skip == true) { return 'skip' }
+        else if (custom == true) { return 'custom' }
+        else if(major == true) { return 'major' }
+
+    
     }
 
     /**
@@ -216,15 +202,47 @@ export default class VersionManageImpl {
     private async dependentPrompt(pkg) {
         await inquirer.prompt([{ type: 'list', name: 'selection', message: `Would you like to update packages that are dependent on ${pkg.package}?`, choices: ['Yes', 'No'] }]).then((answer) => {
             if (answer.selection == 'Yes') {
-                let dependentPkgs = ProjectConfig.getDependents(pkg.package, this.projectConfig);
-                if (dependentPkgs.length != 0) {
-                    dependentPkgs.forEach(dependent => {
-                        ProjectConfig.updateDependent(pkg, dependent);
-                    });
-
-                }
+                this.updateDependents(pkg);
             }
         });
 
+    }
+
+    private updateDependents(pkg) {
+        let dependentPkgs = ProjectConfig.getDependents(pkg.package, this.projectConfig);
+
+        if(this.allDependentPkgs.length != 0 && dependentPkgs.length != 0){
+            this.allDependentPkgs.concat(ProjectConfig.getDependents(pkg.package, this.projectConfig));
+        }
+        
+        else if(dependentPkgs.length != 0 &&this.allDependentPkgs.length == 0){
+            this.allDependentPkgs = ProjectConfig.getDependents(pkg.package, this.projectConfig);
+        }
+        if (dependentPkgs.length != 0) {
+            this.allDependentPkgs.forEach(dependent => {
+                ProjectConfig.updateDependent(pkg, dependent);
+            });
+
+        }
+    }
+
+    private printPackagesUpdated(updatedPackages){
+        console.log(`\nThe following packages will be updated in your sfdx-project.json file`);
+        for (let pkg of this.packages) {
+            if (updatedPackages.has(pkg.package)) {
+                console.log(`Package: ${pkg.package} Version Number: ${pkg.versionNumber}`);
+                if (this.allDependentPkgs.length != 0) {
+                    this.allDependentPkgs.forEach(depPkgs => {
+                        depPkgs["dependencies"].forEach(dependency => {
+                            if(dependency["package"] == pkg["package"]){
+                                console.log(`Dependent package ${depPkgs.package} has been updated`)
+                            }
+                            
+                        });
+                        
+                    });
+                }
+            }
+        }
     }
 }
