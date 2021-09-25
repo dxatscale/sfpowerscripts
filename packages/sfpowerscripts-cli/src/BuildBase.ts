@@ -9,7 +9,13 @@ import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import BuildImpl from "./impl/parallelBuilder/BuildImpl";
 import { Stage } from "./impl/Stage";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import { COLOR_ERROR, COLOR_HEADER,COLOR_INFO,COLOR_TIME,COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
+import {
+  COLOR_ERROR,
+  COLOR_HEADER,
+  COLOR_INFO,
+  COLOR_TIME,
+  COLOR_SUCCESS,
+} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import getFormattedTime from "./utils/GetFormattedTime";
 
 // Initialize Messages with the current plugin directory
@@ -32,7 +38,10 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
     gittag: flags.boolean({
       description: messages.getMessage("gitTagFlagDescription"),
       hidden: true,
-      deprecated: {messageOverride:"--gittag is deprecated, Please utilize git tags on publish stage"}
+      deprecated: {
+        messageOverride:
+          "--gittag is deprecated, Please utilize git tags on publish stage",
+      },
     }),
     repourl: flags.string({
       char: "r",
@@ -61,7 +70,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
     }),
     branch: flags.string({
       description: messages.getMessage("branchFlagDescription"),
-      required: true
+      required: true,
     }),
     tag: flags.string({
       description: messages.getMessage("tagFlagDescription"),
@@ -89,31 +98,43 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         "ERROR",
         "FATAL",
       ],
-    })
+    }),
   };
 
   public async execute() {
-    let buildExecResult: {generatedPackages: PackageMetadata[], failedPackages: string[]};
+    let buildExecResult: {
+      generatedPackages: PackageMetadata[];
+      failedPackages: string[];
+    };
     let totalElapsedTime: number;
     let artifactCreationErrors: string[] = [];
 
     let tags;
     try {
-
-    
-     
-
-
       const artifactDirectory: string = this.flags.artifactdir;
       const diffcheck: boolean = this.flags.diffcheck;
       const branch: string = this.flags.branch;
 
-      console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
+      console.log(
+        COLOR_HEADER(
+          "-----------sfpowerscripts orchestrator ------------------"
+        )
+      );
       console.log(COLOR_HEADER(`command: ${this.getStage()}`));
-      console.log(COLOR_HEADER(`Build Packages Only Changed: ${this.flags.diffcheck}`));
-      console.log(COLOR_HEADER(`Config File Path: ${this.flags.configfilepath}`));
-      console.log(COLOR_HEADER(`Artifact Directory: ${this.flags.artifactdir}`));
-      console.log(COLOR_HEADER("---------------------------------------------------------"));
+      console.log(
+        COLOR_HEADER(`Build Packages Only Changed: ${this.flags.diffcheck}`)
+      );
+      console.log(
+        COLOR_HEADER(`Config File Path: ${this.flags.configfilepath}`)
+      );
+      console.log(
+        COLOR_HEADER(`Artifact Directory: ${this.flags.artifactdir}`)
+      );
+      console.log(
+        COLOR_HEADER(
+          "---------------------------------------------------------"
+        )
+      );
 
       let executionStartTime = Date.now();
 
@@ -138,9 +159,13 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
       ) {
         console.log(`${EOL}${EOL}`);
         console.log(COLOR_INFO("No packages found to be built.. Exiting.. "));
-        return;
+        console.log(
+          COLOR_HEADER(
+            `----------------------------------------------------------------------------------------------------`
+          )
+        );
+        throw new Error("No packages to be found to be built")
       }
-
 
       console.log(`${EOL}${EOL}`);
       console.log("Generating Artifacts and Tags....");
@@ -153,7 +178,6 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             artifactDirectory,
             generatedPackage
           );
-
         } catch (error) {
           console.log(error.message);
           artifactCreationErrors.push(generatedPackage.package_name);
@@ -162,92 +186,109 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
       totalElapsedTime = Date.now() - executionStartTime;
 
-      if (artifactCreationErrors.length > 0 || buildExecResult.failedPackages.length > 0)
+      if (
+        artifactCreationErrors.length > 0 ||
+        buildExecResult.failedPackages.length > 0
+      )
         throw new Error("Build Failed");
 
-
-      
-  
       SFPStatsSender.logGauge(
         "build.duration",
         Date.now() - executionStartTime,
         tags
       );
 
-      SFPStatsSender.logCount(
-        "build.succeeded",
-        tags
-      );
-
+      SFPStatsSender.logCount("build.succeeded", tags);
     } catch (error) {
-      SFPStatsSender.logCount(
-        "build.failed",
-        tags
-      );
+      SFPStatsSender.logCount("build.failed", tags);
       console.log(COLOR_ERROR(error));
       process.exitCode = 1;
     } finally {
-      console.log(COLOR_HEADER(
-        `----------------------------------------------------------------------------------------------------`
-      ));
-      console.log(COLOR_SUCCESS(
-        `${buildExecResult.generatedPackages.length} packages created in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} minutes with {${COLOR_ERROR(buildExecResult.failedPackages.length)}} errors}`
-      ));
+      if (
+        buildExecResult?.generatedPackages?.length > 0 ||
+        buildExecResult?.failedPackages?.length > 0
+      ) {
+        console.log(
+          COLOR_HEADER(
+            `----------------------------------------------------------------------------------------------------`
+          )
+        );
+        console.log(
+          COLOR_SUCCESS(
+            `${
+              buildExecResult.generatedPackages.length
+            } packages created in ${COLOR_TIME(
+              getFormattedTime(totalElapsedTime)
+            )} minutes with {${COLOR_ERROR(
+              buildExecResult.failedPackages.length
+            )}} errors}`
+          )
+        );
 
-      if (buildExecResult.failedPackages.length > 0)
-        console.log(COLOR_ERROR(`Packages Failed To Build`, buildExecResult.failedPackages));
+        if (buildExecResult.failedPackages.length > 0)
+          console.log(
+            COLOR_ERROR(
+              `Packages Failed To Build`,
+              buildExecResult.failedPackages
+            )
+          );
 
+        if (artifactCreationErrors.length > 0)
+          console.log(
+            COLOR_ERROR(`Failed To Create Artifacts`, artifactCreationErrors)
+          );
 
-      if (artifactCreationErrors.length > 0)
-        console.log(COLOR_ERROR(`Failed To Create Artifacts`, artifactCreationErrors));
+        console.log(
+          COLOR_HEADER(
+            `----------------------------------------------------------------------------------------------------`
+          )
+        );
 
-      console.log(
-        COLOR_HEADER(`----------------------------------------------------------------------------------------------------`
-      ));
+        const buildResult: BuildResult = {
+          packages: [],
+          summary: {
+            scheduled_packages: null,
+            elapsed_time: null,
+            succeeded: null,
+            failed: null,
+          },
+        };
 
-      const buildResult: BuildResult = {
-        packages: [],
-        summary: {
-          scheduled_packages: null,
-          elapsed_time: null,
-          succeeded: null,
-          failed: null,
+        for (let generatedPackage of buildExecResult.generatedPackages) {
+          buildResult["packages"].push({
+            name: generatedPackage["package_name"],
+            version: generatedPackage["package_version_number"],
+            elapsed_time: generatedPackage["creation_details"]?.creation_time,
+            status: "succeeded",
+          });
         }
-      };
 
-      for (let generatedPackage of buildExecResult.generatedPackages) {
-        buildResult["packages"].push({
-          name: generatedPackage["package_name"],
-          version: generatedPackage["package_version_number"],
-          elapsed_time: generatedPackage["creation_details"]?.creation_time,
-          status: "succeeded",
-        });
+        for (let failedPackage of buildExecResult.failedPackages) {
+          buildResult["packages"].push({
+            name: failedPackage,
+            version: null,
+            elapsed_time: null,
+            status: "failed",
+          });
+        }
+
+        buildResult["summary"].scheduled_packages =
+          buildExecResult.generatedPackages.length +
+          buildExecResult.failedPackages.length;
+        buildResult["summary"].elapsed_time = totalElapsedTime;
+        buildResult["summary"].succeeded =
+          buildExecResult.generatedPackages.length;
+        buildResult["summary"].failed = buildExecResult.failedPackages.length;
+
+        fs.writeFileSync(
+          `buildResult.json`,
+          JSON.stringify(buildResult, null, 4)
+        );
       }
-
-      for (let failedPackage of buildExecResult.failedPackages) {
-        buildResult["packages"].push({
-          name: failedPackage,
-          version: null,
-          elapsed_time: null,
-          status: "failed",
-        });
-      }
-
-      buildResult["summary"].scheduled_packages =
-        buildExecResult.generatedPackages.length + buildExecResult.failedPackages.length;
-      buildResult["summary"].elapsed_time = totalElapsedTime;
-      buildResult["summary"].succeeded = buildExecResult.generatedPackages.length;
-      buildResult["summary"].failed = buildExecResult.failedPackages.length;
-
-      fs.writeFileSync(
-        `buildResult.json`,
-        JSON.stringify(buildResult, null, 4)
-      );
     }
   }
 
   abstract getStage(): Stage;
-
 
   abstract getBuildImplementer(): BuildImpl;
 }
@@ -266,5 +307,3 @@ interface BuildResult {
     failed: number;
   };
 }
-
-
