@@ -109,11 +109,14 @@ export default class PrepareImpl {
       ).getArtifactFetcher();
 
 
+      //During Prepare, there could be a race condition where a main is merged with a new package
+      //but the package is not yet available in the validated package list and can cause prepare to fail
       packages.forEach((pkg) => {
         artifactFetcher.fetchArtifact(
           pkg.package,
           "artifacts",
-          this.pool.fetchArtifacts.npm ? this.pool.fetchArtifacts.npm.npmtag : null
+          this.pool.fetchArtifacts.npm ? this.pool.fetchArtifacts.npm.npmtag : null,
+          true
         );
       });
 
