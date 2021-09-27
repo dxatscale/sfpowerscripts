@@ -173,8 +173,9 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
       return "Succesfully Deployed";
     } catch (err) {
+
       let report=JSON.parse(reportAsJSON);
-      
+
       if(report.result.details.componentFailures && report.result.details.componentFailures.length>0)
       {
         DeployErrorDisplayer.printMetadataFailedToDeploy(
@@ -182,10 +183,16 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         );
         return report.message;
       }
-      else if(report.result.details.runTestResult?.codeCoverageWarnings)
+      else if(report.result.details.runTestResult)
       {
-        this.displayCodeCoverageWarnings(report.result.details.runTestResult.codeCoverageWarnings);
-        return "Unable to deploy due to unsatisfactory code coverage";
+        if (report.result.details.runTestResult.codeCoverageWarnings) {
+          this.displayCodeCoverageWarnings(report.result.details.runTestResult.codeCoverageWarnings);
+        }
+
+        if (report.result.details.runTestResult.failures.length > 0) {
+          this.displayTestFailures(report.result.details.runTestResult.failures);
+        }
+        return "Unable to deploy due to unsatisfactory code coverage and/or test failures";
       }
       else
       {
@@ -206,7 +213,20 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     else {
       table.push([coverageWarnings.name, coverageWarnings.message]);
     }
-    SFPLogger.log("Unable to deploy due to unsatisfactory code coverage, Check the following classses:", LoggerLevel.WARN, this.packageLogger);
+    SFPLogger.log("Unable to deploy due to unsatisfactory code coverage, Check the following classes:", LoggerLevel.WARN, this.packageLogger);
+    SFPLogger.log(table.toString(), LoggerLevel.WARN, this.packageLogger);
+  }
+
+  private displayTestFailures(testFailures) {
+    let table = new Table({
+      head: ["Test Name", "Method Name", "Message"],
+    });
+
+    testFailures.forEach(elem => {
+      table.push([elem.name, elem.methodName, elem.message]);
+    });
+
+    SFPLogger.log("Unable to deploy due to test failures:", LoggerLevel.WARN, this.packageLogger);
     SFPLogger.log(table.toString(), LoggerLevel.WARN, this.packageLogger);
   }
 
