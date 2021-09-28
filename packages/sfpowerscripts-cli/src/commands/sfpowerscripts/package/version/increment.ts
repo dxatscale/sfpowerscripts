@@ -2,10 +2,10 @@ import IncrementProjectBuildNumberImpl from '@dxatscale/sfpowerscripts.core/lib/
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import { isNullOrUndefined } from 'util';
 const fs = require("fs");
-import child_process = require("child_process");
 import { ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
+import simplegit from "simple-git";
+import GitIdentity from "../../../../impl/git/GitIdentity";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -82,7 +82,7 @@ export default class IncrementBuildNumber extends SfpowerscriptsCommand {
       let result:{status:boolean,ignore:boolean,versionNumber:string} = await incrementProjectBuildNumberImpl.exec();
 
       console.log("\nOutput variables:");
-      if (!isNullOrUndefined(this.flags.refname)) {
+      if (this.flags.refname) {
         fs.writeFileSync('.env', `${this.flags.refname}_sfpowerscripts_incremented_project_version=${result.versionNumber}\n`, {flag:'a'});
         console.log(`${this.flags.refname}_sfpowerscripts_incremented_project_version=${result.versionNumber}`);
       } else {
@@ -90,28 +90,13 @@ export default class IncrementBuildNumber extends SfpowerscriptsCommand {
         console.log(`sfpowerscripts_incremented_project_version=${result.versionNumber}`);
       }
 
-      let repo_localpath = process.env.PWD;
-
-
       if(!appendBuildNumber && commit_changes && !result.ignore)
       {
+        let git = simplegit();
 
-        child_process.execSync(" git config user.email sfpowerscripts@dxscale");
-        child_process.execSync(" git config user.name sfpowerscripts");
-
-
-        console.log("Committing to Git");
-        let exec_result = child_process.execSync("git add sfdx-project.json", {
-          cwd: repo_localpath}
-        );
-
-        console.log(exec_result.toString());
-
-        exec_result = child_process.execSync(
-          `git commit  -m "[skip ci] Updated Version "`,
-          { cwd: repo_localpath }
-        );
-        console.log(exec_result.toString());
+        await new GitIdentity(git).setUsernameAndEmail();
+        await git.add(['sfdx-project.json']);
+        await git.commit('[skip ci] Updated Version');
       }
 
 

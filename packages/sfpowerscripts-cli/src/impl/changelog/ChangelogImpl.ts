@@ -1,4 +1,4 @@
-import simplegit, { SimpleGit } from "simple-git/promise";
+import simplegit, { SimpleGit } from "simple-git";
 import ArtifactFilePathFetcher, { ArtifactFilePaths } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { ReleaseChangelog } from "./ReleaseChangelogInterfaces";
@@ -11,6 +11,7 @@ var marked = require('marked');
 var TerminalRenderer = require('marked-terminal');
 const retry = require("async-retry");
 import { GitError } from "simple-git";
+import GitIdentity from "../git/GitIdentity";
 
 marked.setOptions({
   // Define custom renderer
@@ -178,10 +179,10 @@ export default class ChangelogImpl {
     }
   }
 
-  private async pushChangelogToBranch(branch: string, git, isForce: boolean) {
+  private async pushChangelogToBranch(branch: string, git: SimpleGit, isForce: boolean) {
     console.log("Pushing changelog files to", branch);
-    await git.addConfig("user.name", "sfpowerscripts");
-    await git.addConfig("user.email", "sfpowerscripts@dxscale");
+
+    await new GitIdentity(git).setUsernameAndEmail();
     await git.add([`releasechangelog.json`, `Release-Changelog.md`]);
     await git.commit(`[skip ci] Updated Changelog ${this.releaseName}`);
 

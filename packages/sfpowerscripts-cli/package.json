@@ -35,7 +35,7 @@
     "semver": "^7.3.4",
     "sfdc-soup": "^1.0.1",
     "shelljs": "0.8.4",
-    "simple-git": "^2.31.0",
+    "simple-git": "^2.45.1",
     "snyk": "^1.630.0",
     "ts-node": "^9.0.0"
   },

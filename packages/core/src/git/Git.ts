@@ -1,4 +1,4 @@
-import simplegit, { SimpleGit } from "simple-git/promise";
+import simplegit, { SimpleGit } from "simple-git";
 
 export default class Git {
   private _git: SimpleGit;
