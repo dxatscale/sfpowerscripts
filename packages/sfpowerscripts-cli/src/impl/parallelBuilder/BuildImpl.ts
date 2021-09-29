@@ -3,7 +3,7 @@ import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata"
 import DependencyHelper from "./DependencyHelper";
 import Bottleneck from "bottleneck";
 import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl";
-import { exec } from "shelljs";
+import simplegit from "simple-git";
 import IncrementProjectBuildNumberImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl";
 import { EOL } from "os";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
@@ -492,7 +492,7 @@ export default class BuildImpl {
     }
   }
 
-  private createPackage(
+  private async createPackage(
     packageType: string,
     sfdx_package: string,
     config_file_path: string,
@@ -502,24 +502,19 @@ export default class BuildImpl {
     isValidateMode: boolean
   ): Promise<PackageMetadata> {
     let repository_url: string;
+    const git = simplegit();
     if (this.props.repourl == null) {
-      repository_url = exec("git config --get remote.origin.url", {
-        silent: true,
-      });
-      // Remove new line '\n' from end of url
-      repository_url = repository_url.slice(0, repository_url.length - 1);
+      repository_url = (await git.getConfig("remote.origin.url")).value;
     } else repository_url = this.props.repourl;
 
-    let commit_id = exec("git log --pretty=format:%H -n 1", {
-      silent: true,
-    });
+    let commit_id = await git.revparse(['HEAD']);
 
     console.log(COLOR_KEY_MESSAGE(`Package creation initiated for  ${sfdx_package}`));
 
-    let result;
+    let result: PackageMetadata;
     if (!isValidateMode) {
       if (packageType === "Unlocked") {
-        result = this.createUnlockedPackage(
+        result = await this.createUnlockedPackage(
           sfdx_package,
           commit_id,
           repository_url,
@@ -529,13 +524,13 @@ export default class BuildImpl {
           isSkipValidation
         );
       } else if (packageType === "Source") {
-        result = this.createSourcePackage(
+        result = await this.createSourcePackage(
           sfdx_package,
           commit_id,
           repository_url
         );
       } else if (packageType == "Data") {
-        result = this.createDataPackage(
+        result = await this.createDataPackage(
           sfdx_package,
           commit_id,
           repository_url
@@ -545,13 +540,13 @@ export default class BuildImpl {
       }
     } else {
       if (packageType === "Source" || packageType == "Unlocked") {
-        result = this.createSourcePackage(
+        result = await this.createSourcePackage(
           sfdx_package,
           commit_id,
           repository_url
         );
       } else if (packageType == "Data") {
-        result = this.createDataPackage(
+        result = await this.createDataPackage(
           sfdx_package,
           commit_id,
           repository_url

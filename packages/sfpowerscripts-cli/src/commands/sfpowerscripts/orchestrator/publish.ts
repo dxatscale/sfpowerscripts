@@ -9,7 +9,8 @@ import child_process = require("child_process");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { COLOR_ERROR, COLOR_HEADER,COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import getFormattedTime from '../../../utils/GetFormattedTime';
-
+import simplegit from "simple-git";
+import GitIdentity from "../../../impl/git/GitIdentity";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
@@ -211,8 +212,8 @@ export default class Promote extends SfpowerscriptsCommand {
       }
 
       if (this.flags.gittag && failedArtifacts.length == 0) {
-        this.createGitTags(succesfullyPublishedPackageNamesForTagging);
-        this.pushGitTags();
+        await this.createGitTags(succesfullyPublishedPackageNamesForTagging);
+        await this.pushGitTags();
       }
 
 
@@ -372,17 +373,16 @@ export default class Promote extends SfpowerscriptsCommand {
       throw new Error("--scope parameter is required for NPM");
   }
 
-  private pushGitTags() {
+  private async pushGitTags() {
     console.log(COLOR_KEY_MESSAGE("Pushing Git Tags to Repo"));
     if(this.flags.pushgittag)
     {
-      child_process.execSync(
-        `git push --tags`
-      );
+      let git = simplegit();
+      await git.pushTags();
     }
   }
 
-  private createGitTags(
+  private async createGitTags(
     succesfullyPublishedPackageNamesForTagging: {
       name: string,
       version: string,
@@ -391,13 +391,13 @@ export default class Promote extends SfpowerscriptsCommand {
     }[]
   ) {
       console.log(COLOR_KEY_MESSAGE("Creating Git Tags in Repo"));
-      child_process.execSync(`git config --global user.email "sfpowerscripts@dxscale"`);
-      child_process.execSync(`git config --global user.name "sfpowerscripts"`);
+
+      let git = simplegit();
+
+      await new GitIdentity(git).setUsernameAndEmail();
 
       for (let packageTag of succesfullyPublishedPackageNamesForTagging) {
-        child_process.execSync(
-          `git tag -a -m "${packageTag.name} ${packageTag.type} Package ${packageTag.version}" ${packageTag.tag} HEAD`
-        );
+        await git.addAnnotatedTag(packageTag.tag, `${packageTag.name} ${packageTag.type} Package ${packageTag.version}`);
       }
 
   }
@@ -439,5 +439,3 @@ export default class Promote extends SfpowerscriptsCommand {
 
 
 }
-
-

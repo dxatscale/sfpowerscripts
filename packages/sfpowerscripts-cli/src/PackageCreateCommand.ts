@@ -4,10 +4,10 @@ import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/PackageD
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { flags } from "@salesforce/command";
 import { fs, Messages } from "@salesforce/core";
-import { execSync } from "child_process";
 import { EOL } from "os";
 import SfpowerscriptsCommand from "./SfpowerscriptsCommand";
-
+import simplegit from "simple-git";
+import GitIdentity from "./impl/git/GitIdentity";
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -75,11 +75,11 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
   protected sfdxPackage: string;
   protected versionNumber: string;
   protected artifactDirectory: string;
-  protected refname: string; 
+  protected refname: string;
   protected branch:string;
   protected commitId:string
   protected repositoryURL:string;
- 
+
     /**
    * Entry point for package installation commands
    *
@@ -97,11 +97,11 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
           console.log(err);
           process.exit(1);
         }
-        
-         
+
+
       }
     }
- 
+
 
 
 
@@ -140,19 +140,18 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
      } else isToRunBuild = true;
 
      if (isToRunBuild) {
+      let git = simplegit();
        if (this.flags.repourl == null) {
-         this.repositoryURL = execSync("git config --get remote.origin.url", { encoding: "utf8",stdio:"pipe"});
-         // Remove new line '\n' from end of url
-         this.repositoryURL = this.repositoryURL.slice(0, this.repositoryURL.length - 1);
-       } else this.repositoryURL = this.flags.repourl;
+         this.repositoryURL = (await git.getConfig("remote.origin.url")).value
 
-        this.commitId = execSync("git log --pretty=format:%H -n 1", { encoding: "utf8",stdio:"pipe"});
+       } else this.repositoryURL = this.flags.repourl;
+       this.commitId = await git.revparse(['HEAD']);
       }
     return isToRunBuild;
 
   }
-  
-  
+
+
   protected abstract getConfigFilePath():string;
 
   protected abstract create():Promise<PackageMetadata>;
@@ -162,16 +161,13 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
         this.printPackageDetails(packageMetadata);
 
         if (this.flags.gittag) {
+          let git = simplegit();
 
-          execSync(`git config --global user.email "sfpowerscripts@dxscale.io"`);
-          execSync(`git config --global user.name "sfpowerscripts"`);
+          await new GitIdentity(git).setUsernameAndEmail();
 
           let tagname = `${this.sfdxPackage}_v${packageMetadata.package_version_number}`;
           console.log(`Creating tag ${tagname}`);
-          execSync(
-            `git tag -a -m "${packageMetadata.package_name} sfpowerscripts package ${packageMetadata.package_version_number}" ${tagname} HEAD`,
-            { encoding: "utf8",stdio:"pipe"}
-          );
+          await git.addAnnotatedTag(tagname, `${packageMetadata.package_name} sfpowerscripts package ${packageMetadata.package_version_number}`);
 
           packageMetadata.tag = tagname;
         }
@@ -186,10 +182,10 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
 
 
        this.generateEnvironmentVariables(artifactFilepath, packageMetadata);
-        
-      
+
+
   }
-  
+
   private generateEnvironmentVariables(artifactFilepath: string, packageMetadata: PackageMetadata) {
     let prefix = "sfpowerscripts";
     if (this.refname != null)
@@ -272,7 +268,7 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
       );
     }
   }
-  
+
 
   protected getFormattedTime(milliseconds: number): string {
     let date = new Date(0);
