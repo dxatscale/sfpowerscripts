@@ -8,6 +8,9 @@ import SFPStatsSender from "../../stats/SFPStatsSender";
 import path from "path";
 import FileSystem from "../../utils/FileSystem";
 
+const SFDMU_CONFIG = "export.json";
+const VLOCITY_CONFIG = "VlocityComponents.yaml";
+
 export default class CreateDataPackageImpl {
 
   public constructor(
@@ -111,7 +114,18 @@ export default class CreateDataPackageImpl {
       dirToCheck = packageDirectory;
     }
 
-    if (fs.pathExistsSync(path.join(dirToCheck, "export.json"))) {
+    const files = FileSystem.readdirRecursive(dirToCheck);
+    let isSfdmu: boolean;
+    let isVlocity: boolean;
+
+    for (const file of files) {
+      if (path.basename(file) === SFDMU_CONFIG) isSfdmu = true;
+      if (path.basename(file) === VLOCITY_CONFIG) isVlocity = true;
+    }
+
+    if (isSfdmu && isVlocity) {
+      throw new Error(`Data package '${this.sfdx_package}' contains both SFDMU & Vlocity configuration`);
+    } else if (isSfdmu) {
       SFPLogger.log(
         `Found export.json in ${dirToCheck}.. Utilizing it as data package and will be deployed using sfdmu`,
         LoggerLevel.INFO,
@@ -125,15 +139,13 @@ export default class CreateDataPackageImpl {
         else
           this.printEmptyArtifactWarning();
       }
-    }
-    else if (fs.pathExistsSync(path.join(dirToCheck, "VlocityComponents.yaml"))) {
+    } else if (isVlocity) {
       SFPLogger.log(
         `Found VlocityComponents.yaml in ${dirToCheck}.. Utilizing it as data package and will be deployed using vbt`,
         LoggerLevel.INFO,
         this.packageLogger
       );
-    }
-    else {
+    } else {
       throw new Error(`Could not find export.json or VlocityComponents.yaml in ${dirToCheck}. sfpowerscripts only support vlocity or sfdmu based data packages`);
     }
   }

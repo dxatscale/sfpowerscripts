@@ -762,7 +762,8 @@ export default class DeployImpl {
       return !(
         (this.props.currentStage === "prepare" ||
           this.props.currentStage === "validate") &&
-        pkg.aliasfy
+        pkg.aliasfy &&
+        packagesToPackageInfo[pkg.package].packageMetadata.package_type !== "data"
       );
     });
 

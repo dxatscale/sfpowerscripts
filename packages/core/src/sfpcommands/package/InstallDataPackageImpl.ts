@@ -17,6 +17,7 @@ import VlocityPackDeployImpl from "../../vlocitywrapper/VlocityPackDeployImpl";
 import { SFDXCommand } from "../../command/SFDXCommand";
 const path = require("path");
 import OrgDetailsFetcher from "../../org/OrgDetailsFetcher";
+import FileSystem from "../../utils/FileSystem";
 
 export default class InstallDataPackageImpl {
   public constructor(
@@ -45,10 +46,21 @@ export default class InstallDataPackageImpl {
       });
 
       if (packageDescriptor.aliasfy) {
-        packageDirectory = path.join(
-          packageDescriptor["path"],
-          this.targetusername
-        );
+        const files = FileSystem.readdirRecursive(packageDescriptor.path, true);
+
+        packageDirectory = files.find(file =>
+          path.basename(file) === this.targetusername && fs.lstatSync(file).isDirectory()
+        )
+
+        if (!packageDirectory) {
+          packageDirectory = files.find(file =>
+            path.basename(file) === "default" && fs.lstatSync(file).isDirectory()
+          )
+        }
+
+        if (!packageDirectory) {
+          throw new Error(`Aliasfied package '${this.sfdx_package}' does not have a '${this.targetusername}'' or 'default' directory`);
+        }
       } else {
         packageDirectory = path.join(packageDescriptor["path"]);
       }
