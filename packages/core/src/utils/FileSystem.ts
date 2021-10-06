@@ -3,7 +3,13 @@ import path = require("path");
 
 export default class FileSystem {
 
-  static readdirRecursive(directory: string): string[] {
+  /**
+   * Lists files in directory and sub-directories
+   * @param directory
+   * @param includeDirectories
+   * @returns
+   */
+  static readdirRecursive(directory: string, includeDirectories: boolean = false, isAbsolute: boolean = false): string[] {
     const result: string[] = [];
 
     if (!fs.lstatSync(directory).isDirectory())
@@ -13,11 +19,20 @@ export default class FileSystem {
       const files: string[] = fs.readdirSync(directory);
 
       files.forEach((file) => {
-        let filepath = path.join(directory, file);
-        if (fs.lstatSync(filepath).isDirectory())
+        let filepath: string;
+        if (isAbsolute) {
+          filepath = path.resolve(directory, file);
+        } else {
+          filepath = path.join(directory, file);
+        }
+
+        if (fs.lstatSync(filepath).isDirectory()) {
+          if (includeDirectories) result.push(filepath);
           readdirRecursiveHandler(filepath);
-        else
+        }
+        else {
           result.push(filepath);
+        }
       });
     })(directory);
 
