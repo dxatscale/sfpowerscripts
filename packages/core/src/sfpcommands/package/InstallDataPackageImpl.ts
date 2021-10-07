@@ -46,21 +46,26 @@ export default class InstallDataPackageImpl {
       });
 
       if (packageDescriptor.aliasfy) {
-        const files = FileSystem.readdirRecursive(packageDescriptor.path, true);
+        const searchDirectory = path.join(this.sourceDirectory, packageDescriptor.path);
+        const files = FileSystem.readdirRecursive(searchDirectory, true);
 
-        packageDirectory = files.find(file =>
-          path.basename(file) === this.targetusername && fs.lstatSync(file).isDirectory()
-        )
+        let aliasDir: string;
 
-        if (!packageDirectory) {
+        aliasDir = files.find(file =>
+          path.basename(file) === this.targetusername && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
+        );
+
+        if (!aliasDir) {
           packageDirectory = files.find(file =>
-            path.basename(file) === "default" && fs.lstatSync(file).isDirectory()
-          )
+            path.basename(file) === "default" && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
+          );
         }
 
-        if (!packageDirectory) {
+        if (!aliasDir) {
           throw new Error(`Aliasfied package '${this.sfdx_package}' does not have a '${this.targetusername}'' or 'default' directory`);
         }
+
+        packageDirectory = path.join(packageDescriptor.path, aliasDir);
       } else {
         packageDirectory = path.join(packageDescriptor["path"]);
       }
