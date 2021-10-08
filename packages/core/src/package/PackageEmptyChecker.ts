@@ -72,7 +72,9 @@ export default class PackageEmptyChecker
       dirToCheck = sourceDirectory;
     }
 
-    let files: string[] = FileSystem.readdirRecursive(dirToCheck);
+    let files: string[] = FileSystem.readdirRecursive(dirToCheck, false, false);
+    // Include source directory in filepaths, as it can be a pattern in forceignore
+    files = files.map(file => path.join(sourceDirectory, file));
 
     let forceignorePath;
     if (projectDirectory!=null)
@@ -88,6 +90,6 @@ export default class PackageEmptyChecker
     else return false;
   }
 
- 
+
 
 }

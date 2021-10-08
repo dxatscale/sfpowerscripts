@@ -46,21 +46,31 @@ export default class InstallDataPackageImpl {
       });
 
       if (packageDescriptor.aliasfy) {
-        const files = FileSystem.readdirRecursive(packageDescriptor.path, true);
+        const searchDirectory = path.join(this.sourceDirectory, packageDescriptor.path);
+        const files = FileSystem.readdirRecursive(searchDirectory, true);
 
-        packageDirectory = files.find(file =>
-          path.basename(file) === this.targetusername && fs.lstatSync(file).isDirectory()
-        )
+        let aliasDir: string;
 
-        if (!packageDirectory) {
-          packageDirectory = files.find(file =>
-            path.basename(file) === "default" && fs.lstatSync(file).isDirectory()
-          )
+        aliasDir = files.find(file =>
+          path.basename(file) === this.targetusername && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
+        );
+
+        if (!aliasDir) {
+          const orgDetails = await new OrgDetailsFetcher(this.targetusername).getOrgDetails();
+
+          if (orgDetails.isSandbox) {
+            // If the target org is a sandbox, find a 'default' directory to use as package directory
+            packageDirectory = files.find(file =>
+              path.basename(file) === "default" && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
+            );
+          }
         }
 
-        if (!packageDirectory) {
-          throw new Error(`Aliasfied package '${this.sfdx_package}' does not have a '${this.targetusername}'' or 'default' directory`);
+        if (!aliasDir) {
+          throw new Error(`Aliasfied package '${this.sfdx_package}' does not have an alias with '${this.targetusername}'' or 'default' directory`);
         }
+
+        packageDirectory = path.join(packageDescriptor.path, aliasDir);
       } else {
         packageDirectory = path.join(packageDescriptor["path"]);
       }

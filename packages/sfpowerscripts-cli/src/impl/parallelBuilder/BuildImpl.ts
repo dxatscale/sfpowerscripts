@@ -294,7 +294,8 @@ export default class BuildImpl {
         return !(
           (this.props.currentStage === "prepare" ||
             this.props.currentStage === "validate") &&
-          pkg.aliasfy
+          pkg.aliasfy &&
+          pkg.type !== "data"
         );
       });
 
