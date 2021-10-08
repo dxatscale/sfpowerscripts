@@ -62,7 +62,7 @@ export default class InstallDataPackageImpl {
         }
 
         if (!aliasDir) {
-          throw new Error(`Aliasfied package '${this.sfdx_package}' does not have a '${this.targetusername}'' or 'default' directory`);
+          throw new Error(`Aliasfied package '${this.sfdx_package}' does not have an alias with '${this.targetusername}'' or 'default' directory`);
         }
 
         packageDirectory = path.join(packageDescriptor.path, aliasDir);
