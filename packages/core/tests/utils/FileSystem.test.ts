@@ -1,6 +1,5 @@
-import { jest, expect } from "@jest/globals";
+import { expect } from "@jest/globals";
 import FileSystem from "../../src/utils/FileSystem";
-import fs = require("fs");
 const path = require('path');
 
 describe("Given a search directory", () => {
