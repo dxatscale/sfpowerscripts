@@ -175,6 +175,8 @@ export default class InstallSourcePackageImpl {
         }
       }
 
+      let deploymentOptions: any;
+
       let result: DeploySourceResult;
       if (this.deploymentType === DeploymentType.SOURCE_PUSH) {
         let pushSourceToOrgImpl: DeploymentExecutor = new PushSourceToOrgImpl(
@@ -188,7 +190,7 @@ export default class InstallSourcePackageImpl {
       } else {
 
         //Construct Deploy Command for actual payload
-        let deploymentOptions = await this.generateDeploymentOptions(
+        deploymentOptions = await this.generateDeploymentOptions(
           this.packageMetadata,
           this.wait_time,
           this.options.optimizeDeployment,
@@ -218,9 +220,8 @@ export default class InstallSourcePackageImpl {
               this.sourceDirectory,
               this.targetusername,
               packageDirectory,
-              this.wait_time,
-              this.options.skipTesting,
-              tempDir
+              tempDir,
+              deploymentOptions
             );
           }
         } catch (error) {
@@ -457,9 +458,8 @@ export default class InstallSourcePackageImpl {
     sourceDirectoryPath: string,
     target_org: string,
     sourceDirectory: string,
-    wait_time: string,
-    skipTest: boolean,
-    tmpdir: string
+    tmpdir: string,
+    deploymentOptions: any
   ) {
     if (profileFolders.length > 0) {
       profileFolders.forEach((folder) => {
@@ -486,17 +486,6 @@ export default class InstallSourcePackageImpl {
         path.join(sourceDirectoryPath, ".forceignore"),
         "!**.profile-meta.xml"
       );
-
-      let deploymentOptions = {};
-      deploymentOptions["ignore_warnings"] = true;
-      deploymentOptions["wait_time"] = wait_time;
-
-      if (skipTest) {
-        deploymentOptions["testlevel"] = "NoTestRun";
-      } else {
-        deploymentOptions["testlevel"] = "RunSpecifiedTests";
-        deploymentOptions["specified_tests"] = "skip";
-      }
 
       let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
         target_org,
