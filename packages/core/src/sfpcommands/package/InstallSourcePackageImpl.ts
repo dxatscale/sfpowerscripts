@@ -28,6 +28,7 @@ const glob = require("glob");
 const os = require("os");
 const { EOL } = require("os");
 const tmp = require("tmp");
+import FileSystem from "../../utils/FileSystem";
 
 export default class InstallSourcePackageImpl {
   public constructor(
@@ -336,12 +337,27 @@ export default class InstallSourcePackageImpl {
     let packageDirectory: string;
 
     if (packageDescriptor.aliasfy) {
-      packageDirectory = path.join(
-        packageDescriptor["path"],
-        this.targetusername
-      );
+      const searchDirectory = path.join(this.sourceDirectory, packageDescriptor.path);
+      const files = FileSystem.readdirRecursive(searchDirectory, true);
+
+      let aliasDir: string;
+      aliasDir = files.find(file =>
+        path.basename(file) === this.targetusername && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
+      )
+
+      if (!aliasDir) {
+        aliasDir = files.find(file =>
+          path.basename(file) === "default" && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
+        )
+      }
+
+      if (!aliasDir) {
+   throw new Error(`Aliasfied package '${this.sfdx_package}' does not have an alias with '${this.targetusername}'' or 'default' directory`);
+      }
+
+      packageDirectory = path.join(packageDescriptor.path, aliasDir);
     } else {
-      packageDirectory = path.join(packageDescriptor["path"]);
+      packageDirectory = path.join(packageDescriptor.path);
     }
 
     let absPackageDirectory: string = path.join(

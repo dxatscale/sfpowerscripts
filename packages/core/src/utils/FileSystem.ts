@@ -4,16 +4,16 @@ import path = require("path");
 export default class FileSystem {
 
   /**
-   * Lists files in directory and sub-directories
+   * List nested files within a directory
    * @param directory
    * @param includeDirectories
    * @returns
    */
-  static readdirRecursive(directory: string, includeDirectories: boolean = false, isAbsolute: boolean = false): string[] {
+  static readdirRecursive(searchDirectory: string, includeDirectories: boolean = false, isAbsolute: boolean = false): string[] {
     const result: string[] = [];
 
-    if (!fs.lstatSync(directory).isDirectory())
-      throw new Error(`${directory} is not a directory`);
+    if (!fs.lstatSync(searchDirectory).isDirectory())
+      throw new Error(`${searchDirectory} is not a directory`);
 
     (function readdirRecursiveHandler(directory: string): void {
       const files: string[] = fs.readdirSync(directory);
@@ -27,14 +27,23 @@ export default class FileSystem {
         }
 
         if (fs.lstatSync(filepath).isDirectory()) {
-          if (includeDirectories) result.push(filepath);
+          if (includeDirectories) {
+            if (isAbsolute) {
+              result.push(path.resolve(filepath));
+            } else {
+              result.push(path.relative(searchDirectory, filepath));
+            }
+          }
           readdirRecursiveHandler(filepath);
-        }
-        else {
-          result.push(filepath);
+        } else {
+          if (isAbsolute) {
+            result.push(path.resolve(filepath));
+          } else {
+            result.push(path.relative(searchDirectory, filepath));
+          }
         }
       });
-    })(directory);
+    })(searchDirectory);
 
     return result;
   }
