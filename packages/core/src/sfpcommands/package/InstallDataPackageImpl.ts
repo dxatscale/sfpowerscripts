@@ -56,9 +56,14 @@ export default class InstallDataPackageImpl {
         );
 
         if (!aliasDir) {
-          packageDirectory = files.find(file =>
-            path.basename(file) === "default" && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
-          );
+          const orgDetails = await new OrgDetailsFetcher(this.targetusername).getOrgDetails();
+
+          if (orgDetails.isSandbox) {
+            // If the target org is a sandbox, find a 'default' directory to use as package directory
+            packageDirectory = files.find(file =>
+              path.basename(file) === "default" && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
+            );
+          }
         }
 
         if (!aliasDir) {

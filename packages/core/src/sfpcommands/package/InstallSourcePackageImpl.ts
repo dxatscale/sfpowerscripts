@@ -88,7 +88,7 @@ export default class InstallSourcePackageImpl {
       this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(
         this.packageMetadata
       );
-      let packageDirectory: string = this.getPackageDirectory(
+      let packageDirectory: string = await this.getPackageDirectory(
         packageDescriptor
       );
 
@@ -186,6 +186,7 @@ export default class InstallSourcePackageImpl {
 
         result = await pushSourceToOrgImpl.exec();
       } else {
+
         //Construct Deploy Command for actual payload
         let deploymentOptions = await this.generateDeploymentOptions(
           this.packageMetadata,
@@ -333,7 +334,7 @@ export default class InstallSourcePackageImpl {
     }
   }
 
-  private getPackageDirectory(packageDescriptor: any): string {
+  private async getPackageDirectory(packageDescriptor: any): Promise<string> {
     let packageDirectory: string;
 
     if (packageDescriptor.aliasfy) {
@@ -346,9 +347,14 @@ export default class InstallSourcePackageImpl {
       )
 
       if (!aliasDir) {
-        aliasDir = files.find(file =>
-          path.basename(file) === "default" && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
-        )
+        const orgDetails = await new OrgDetailsFetcher(this.targetusername).getOrgDetails();
+
+        if (orgDetails.isSandbox) {
+          // If the target org is a sandbox, find a 'default' directory to use as package directory
+          aliasDir = files.find(file =>
+            path.basename(file) === "default" && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
+          )
+        }
       }
 
       if (!aliasDir) {
@@ -542,7 +548,7 @@ export default class InstallSourcePackageImpl {
         return mdapi_options;
       }
 
-      if (orgDetails && !orgDetails.isDevHub) {
+      if (orgDetails && orgDetails.isSandbox) {
         SFPLogger.log(
           ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
             `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
