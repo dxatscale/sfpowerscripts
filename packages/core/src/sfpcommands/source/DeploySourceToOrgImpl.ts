@@ -189,7 +189,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
           this.displayCodeCoverageWarnings(report.result.details.runTestResult.codeCoverageWarnings);
         }
 
-        if (report.result.details.runTestResult.failures.length > 0) {
+        if (report.result.details.runTestResult.failures?.length > 0) {
           this.displayTestFailures(report.result.details.runTestResult.failures);
         }
         return "Unable to deploy due to unsatisfactory code coverage and/or test failures";
