@@ -291,7 +291,7 @@ export default class CreateSourcePackageImpl {
       let item = [
         fetchedClass.name,
         fetchedClass.filepath,
-        fetchedClass.error ? fetchedClass.error : "N/A",
+        fetchedClass.error ? JSON.stringify(fetchedClass.error) : "N/A",
       ];
       table.push(item);
     }
