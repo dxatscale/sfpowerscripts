@@ -1,12 +1,13 @@
 import child_process = require("child_process");
-import { Logger, LoggerLevel } from "../../logger/SFPLogger";
+import SFPLogger, { COLOR_TRACE, Logger, LoggerLevel } from "../../logger/SFPLogger";
 
 export default class ExecuteCommand
 {
 
   public constructor(
     protected logger?: Logger,
-    protected logLevel?: LoggerLevel
+    protected logLevel?: LoggerLevel,
+    protected showProgress?:boolean
     ) {}
 
 
@@ -34,6 +35,8 @@ export default class ExecuteCommand
       // collect data written to STDOUT into a string
       childProcess.stdout.on('data', (data) => {
           stdoutContents += data.toString();
+          if(this.showProgress)
+            SFPLogger.log(COLOR_TRACE(data),LoggerLevel.INFO,this.logger)
       });
 
       // collect data written to STDERR into a string
