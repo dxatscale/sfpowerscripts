@@ -17,7 +17,6 @@ import VlocityPackDeployImpl from "../../vlocitywrapper/VlocityPackDeployImpl";
 import { SFDXCommand } from "../../command/SFDXCommand";
 const path = require("path");
 import OrgDetailsFetcher from "../../org/OrgDetailsFetcher";
-import FileSystem from "../../utils/FileSystem";
 import { InstallPackage } from "./InstallPackage";
 
 export default class InstallDataPackageImpl extends InstallPackage {

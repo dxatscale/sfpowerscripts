@@ -1,8 +1,5 @@
-import child_process = require("child_process");
 import PackageMetadata from "../../PackageMetadata";
 import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
-import path = require("path");
-import fs = require("fs");
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import { InstallPackage } from "./InstallPackage";
 import InstalledPackagesFetcher from "../packageQuery/InstalledPackagesFetcher";
