@@ -2,10 +2,10 @@ import { Messages } from "@salesforce/core";
 import { flags } from "@salesforce/command";
 
 import InstallPackageCommand from "../../../../InstallPackageCommand";
-import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
-
+import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallSourcePackageImpl"
 import * as fs from "fs-extra"
-import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallSourcePackageImpl";
+import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult";
+
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -112,6 +112,7 @@ export default class InstallSourcePackage extends InstallPackageCommand {
       let options = {
         optimizeDeployment: optimizeDeployment,
         skipTesting: skipTesting,
+        waitTime: wait_time
       };
 
       let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
@@ -119,7 +120,6 @@ export default class InstallSourcePackage extends InstallPackageCommand {
         target_org,
         sourceDirectory,
         options,
-        wait_time,
         skipIfAlreadyInstalled,
         packageMetadata
       );

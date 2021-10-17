@@ -1,8 +1,9 @@
+
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
-import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult';
-import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl';
+import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageImpl';
+import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 const fs = require("fs");
 
 // Initialize Messages with the current plugin directory
@@ -69,14 +70,13 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
       const apexcompileonlypackage = this.flags.apexcompileonlypackage;
       const security_type = this.flags.securitytype;
       const upgrade_type = this.flags.upgradetype;
-      const wait_time = this.flags.waittime;
-      const publish_wait_time = this.flags.publishwaittime;
+      const waitTime = this.flags.waittime;
+      const publishWaitTime = this.flags.publishwaittime;
       const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
       let packageMetadata;
       let sourceDirectory;
       let package_version_id;
 
-      if (package_installedfrom) {
         // Figure out the package version id from the artifact
 
         let package_version_id_file_path =this.artifactFilePaths.packageMetadataFilePath;
@@ -92,26 +92,23 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
         package_version_id = packageMetadata.package_version_id;
         console.log(`Using Package Version Id ${package_version_id}`);
 
-      } else {
-        package_version_id = this.flags.packageversionid;
-      }
 
 
       let options = {
         installationkey: installationkey,
         apexcompile: apexcompileonlypackage ? `package` : `all`,
         securitytype: security_type,
-        upgradetype: upgrade_type
+        upgradetype: upgrade_type,
+        waitTime: waitTime,
+        publishWaitTime: publishWaitTime
       };
 
 
 
       let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
-        package_version_id,
+        this.flags.package,
         targetOrg,
         options,
-        wait_time,
-        publish_wait_time,
         skipIfAlreadyInstalled,
         packageMetadata,
         sourceDirectory

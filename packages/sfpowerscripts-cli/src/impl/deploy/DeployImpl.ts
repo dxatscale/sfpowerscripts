@@ -2,19 +2,11 @@ import ArtifactFilePathFetcher, {
   ArtifactFilePaths,
 } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallUnlockedPackageImpl";
-import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallSourcePackageImpl";
-import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl";
 import ArtifactInstallationStatusChecker from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInstallationStatusChecker"
 import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher"
 import ArtifactInquirer from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInquirer";
-
 import fs = require("fs");
 import path = require("path");
-import {
-  PackageInstallationResult,
-  PackageInstallationStatus,
-} from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
 import SFPLogger, {
   Logger,
   LoggerLevel,
@@ -33,6 +25,10 @@ import { COLOR_ERROR } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage";
+import { PackageInstallationResult, PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult";
+import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageImpl";
+import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallSourcePackageImpl";
+import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallDataPackageImpl";
 const Table = require("cli-table");
 const retry = require("async-retry");
 
@@ -511,7 +507,7 @@ export default class DeployImpl {
     sourceDirectoryPath: string,
     packageMetadata: PackageMetadata,
     skipTesting: boolean,
-    wait_time: string,
+    waitTime: string,
     pkgDescriptor: any,
     skipIfPackageInstalled: boolean
   ): Promise<PackageInstallationResult> {
@@ -523,7 +519,7 @@ export default class DeployImpl {
           targetUsername,
           packageMetadata,
           skipIfPackageInstalled,
-          wait_time,
+          waitTime,
           sourceDirectoryPath
         );
       } else if (packageType === "source") {
@@ -532,6 +528,7 @@ export default class DeployImpl {
             pkgDescriptor
           ),
           skipTesting: skipTesting,
+          waitTime: waitTime
         };
 
         packageInstallationResult = await this.installSourcePackage(
@@ -540,8 +537,7 @@ export default class DeployImpl {
           sourceDirectoryPath,
           packageMetadata,
           options,
-          skipIfPackageInstalled,
-          wait_time
+          skipIfPackageInstalled
         );
       } else if (packageType === "data") {
         packageInstallationResult = await this.installDataPackage(
@@ -562,6 +558,7 @@ export default class DeployImpl {
         let options = {
           optimizeDeployment: false,
           skipTesting: true,
+          waitTime: waitTime
         };
 
         packageInstallationResult = await this.installSourcePackage(
@@ -571,7 +568,6 @@ export default class DeployImpl {
           packageMetadata,
           options,
           skipIfPackageInstalled,
-          wait_time
         );
       } else if (packageType === "data") {
         packageInstallationResult = await this.installDataPackage(
@@ -592,7 +588,7 @@ export default class DeployImpl {
     targetUsername: string,
     packageMetadata: PackageMetadata,
     skip_if_package_installed: boolean,
-    wait_time: string,
+    waitTime: string,
     sourceDirectoryPath: string
   ): Promise<PackageInstallationResult> {
     let options = {
@@ -600,14 +596,13 @@ export default class DeployImpl {
       apexcompile: "package",
       securitytype: "AdminsOnly",
       upgradetype: "Mixed",
+      waitTime: waitTime
     };
 
     let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
-      packageMetadata.package_version_id,
+      packageMetadata.package_name,
       targetUsername,
       options,
-      wait_time,
-      "10",
       skip_if_package_installed,
       packageMetadata,
       sourceDirectoryPath,
@@ -624,14 +619,12 @@ export default class DeployImpl {
     packageMetadata: PackageMetadata,
     options: any,
     skip_if_package_installed: boolean,
-    wait_time: string
   ): Promise<PackageInstallationResult> {
     let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
       sfdx_package,
       targetUsername,
       sourceDirectoryPath,
       options,
-      wait_time,
       skip_if_package_installed,
       packageMetadata,
       this.props.packageLogger,

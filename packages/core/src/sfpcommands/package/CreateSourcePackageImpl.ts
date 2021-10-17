@@ -280,7 +280,7 @@ export default class CreateSourcePackageImpl {
     );
   }
 
-    private printClassesIdentified(fetchedClasses: FileDescriptor[]) {
+  private printClassesIdentified(fetchedClasses: FileDescriptor[]) {
     if (fetchedClasses === null || fetchedClasses === undefined) return;
 
     let table = new Table({

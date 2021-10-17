@@ -3,7 +3,7 @@ import child_process = require("child_process");
 import {
   PackageInstallationResult,
   PackageInstallationStatus,
-} from "../package/PackageInstallationResult";
+} from "../package/packageInstallers/PackageInstallationResult";
 import { onExit } from "../utils/OnExit";
 import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 
