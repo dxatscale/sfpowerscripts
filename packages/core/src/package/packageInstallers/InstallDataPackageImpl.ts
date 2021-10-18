@@ -1,17 +1,6 @@
 import PackageMetadata from "../../PackageMetadata";
 import fs = require("fs-extra");
-import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
-import {
-  PackageInstallationResult,
-  PackageInstallationStatus,
-} from "./PackageInstallationResult";
-import ProjectConfig from "../../project/ProjectConfig";
 import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
-import PackageInstallationHelpers from "./PackageInstallationHelpers";
-import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
-import SFPStatsSender from "../../stats/SFPStatsSender";
-import { AuthInfo, Connection } from "@salesforce/core";
-import { convertAliasToUsername } from "../../utils/AliasList";
 import SFDMURunImpl from "../../sfdmuwrapper/SFDMURunImpl";
 import VlocityPackDeployImpl from "../../vlocitywrapper/VlocityPackDeployImpl";
 import { SFDXCommand } from "../../command/SFDXCommand";
