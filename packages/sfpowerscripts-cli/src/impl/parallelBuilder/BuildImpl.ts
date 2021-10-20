@@ -245,7 +245,7 @@ export default class BuildImpl {
       );
       let packageDiffCheck = await diffImpl.exec();
 
-      if (packageDiffCheck) {
+      if (packageDiffCheck.isToBeBuilt) {
         packagesToBeBuilt.set(pkg,{reason:packageDiffCheck.reason,tag:packageDiffCheck.tag});
         //Add Bundles
         if (buildCollections.isPackageInACollection(pkg)) {

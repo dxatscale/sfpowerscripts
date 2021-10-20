@@ -69,7 +69,7 @@ describe("Determines whether a given package has changed", () => {
     let result =  await packageDiffImpl.exec();
     expect(result.isToBeBuilt).toEqual(true);
     expect(result.reason).toEqual(`Found change(s) in package/config`);
-   
+
   });
 
   it("should return true if package descriptor has changed", async () => {
@@ -81,7 +81,8 @@ describe("Determines whether a given package has changed", () => {
     ignoreFilterResult = gitDiff;
 
     let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),"core", null, "config/project-scratch-def.json", null);
-    expect(await packageDiffImpl.exec()).toBeTruthy();
+    let result = await packageDiffImpl.exec();
+    expect(result.isToBeBuilt).toEqual(true);
   });
 
   it("should return true if config file has changed", async () => {
@@ -98,7 +99,7 @@ describe("Determines whether a given package has changed", () => {
     let result =  await packageDiffImpl.exec();
     expect(result.isToBeBuilt).toEqual(true);
     expect(result.reason).toEqual(`Found change(s) in package/config`);
-   
+
   });
 
   it("should return false if config file has changed and not an unlocked package", async () => {
@@ -109,13 +110,14 @@ describe("Determines whether a given package has changed", () => {
 
     gitTags = ["temp_v1.0.0.0"];
     let sourcePackageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),"temp", null, "config/project-scratch-def.json", null);
-    expect(await sourcePackageDiffImpl.exec()).toBeUndefined();
+    let result = await sourcePackageDiffImpl.exec();
+    expect(result.isToBeBuilt).toEqual(false);
 
     gitTags = ["mass-dataload_v1.0.0.0"];
     let dataPackageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),"mass-dataload", null, "config/project-scratch-def.json", null);
-    let result =  await dataPackageDiffImpl.exec();
-    expect(result).toBeFalsy();
-  
+    result =  await dataPackageDiffImpl.exec();
+    expect(result.isToBeBuilt).toEqual(false);
+
   });
 
   it("should return true if package does not have any tags", async () => {
@@ -147,7 +149,8 @@ describe("Determines whether a given package has changed", () => {
     ignoreFilterResult = gitDiff;
 
     let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),"core", null, "config/project-scratch-def.json", null);
-    expect(await packageDiffImpl.exec()).toBeFalsy();
+    let result = await packageDiffImpl.exec();
+    expect(result.isToBeBuilt).toEqual(false);
   });
 
 });

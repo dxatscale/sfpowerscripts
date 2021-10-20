@@ -85,8 +85,11 @@ export default class PackageDiffImpl {
         tag,
         pkgDescriptor
       );
-      if(isPackageDescriptorChanged)
+      if(isPackageDescriptorChanged) {
         return  {isToBeBuilt:true,reason:`Package Descriptor Changed`,tag:tag};
+      }
+
+      return {isToBeBuilt: false, reason: `No changes found`, tag: tag};
     } else {
       SFPLogger.log(
         `Tag missing for ${this.sfdx_package}...marking package for build anyways`,
