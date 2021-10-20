@@ -1,8 +1,8 @@
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
-import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult';
-import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/InstallDataPackageImpl';
+import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallDataPackageImpl"
+import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 const fs = require("fs");
 
 // Initialize Messages with the current plugin directory

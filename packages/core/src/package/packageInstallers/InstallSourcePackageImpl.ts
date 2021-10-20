@@ -1,5 +1,3 @@
-import DeploySourceToOrgImpl from "../source/DeploySourceToOrgImpl";
-import PushSourceToOrgImpl from "../source/PushSourceToOrgImpl";
 import DeploymentExecutor, {
   DeploySourceResult,
   DeploymentType,
@@ -7,130 +5,61 @@ import DeploymentExecutor, {
 import ReconcileProfileAgainstOrgImpl from "../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl";
 import DeployDestructiveManifestToOrgImpl from "../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl";
 import PackageMetadata from "../../PackageMetadata";
-import ProjectConfig from "../../project/ProjectConfig";
 import OrgDetailsFetcher, { OrgDetails } from "../../org/OrgDetailsFetcher";
-import SFPStatsSender from "../../stats/SFPStatsSender";
-import {
-  PackageInstallationResult,
-  PackageInstallationStatus,
-} from "../../package/PackageInstallationResult";
 import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
-
-import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
-import PackageInstallationHelpers from "./PackageInstallationHelpers";
-
 import * as fs from "fs-extra";
-import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
-import { AuthInfo, Connection } from "@salesforce/core";
-import { convertAliasToUsername } from "../../utils/AliasList";
 const path = require("path");
 const glob = require("glob");
 const os = require("os");
 const { EOL } = require("os");
 const tmp = require("tmp");
-import FileSystem from "../../utils/FileSystem";
+import DeploySourceToOrgImpl from "../../sfpcommands/source/DeploySourceToOrgImpl";
+import PushSourceToOrgImpl from "../../sfpcommands/source/PushSourceToOrgImpl";
+import { InstallPackage } from "./InstallPackage";
 
-export default class InstallSourcePackageImpl {
+export default class InstallSourcePackageImpl extends InstallPackage {
+
+  private options:any;
+  private pathToReplacementForceIgnore:string;
+  private deploymentType:DeploymentType;
+
   public constructor(
-    private sfdx_package: string,
-    private targetusername: string,
-    private sourceDirectory: string,
-    private options: any,
-    private wait_time: string,
-    private skip_if_package_installed: boolean,
-    private packageMetadata: PackageMetadata,
-    private packageLogger?: Logger,
-    private pathToReplacementForceIgnore?: string,
-    private deploymentType?: DeploymentType
-  ) {}
+    sfdxPackage: string,
+    targetusername: string,
+    sourceDirectory: string,
+    options: any,
+    skipIfPackageInstalled: boolean,
+    packageMetadata: PackageMetadata,
+    logger?: Logger,
+    pathToReplacementForceIgnore?: string,
+    deploymentType?: DeploymentType
+  ) {
+    super(
+      sfdxPackage,
+      targetusername,
+      sourceDirectory,
+      packageMetadata,
+      skipIfPackageInstalled,
+      logger
+    );
+    this.options = options;
+    this.pathToReplacementForceIgnore = pathToReplacementForceIgnore;
+    this.deploymentType = deploymentType;
+  }
 
-  public async exec(): Promise<PackageInstallationResult> {
-    //Create a conncetion to the target org for api calls
-    const connection: Connection = await Connection.create({
-      authInfo: await AuthInfo.create({ username: convertAliasToUsername(this.targetusername) }),
-    });
-
-    let packageDescriptor;
-    if (this.sfdx_package) {
-      packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
-        this.sourceDirectory,
-        this.sfdx_package
-      );
-    } else {
-      packageDescriptor = ProjectConfig.getDefaultSFDXPackageDescriptor(
-        this.sourceDirectory
-      );
-    }
-
-    let isPackageInstalled = false;
-    if (this.skip_if_package_installed) {
-      let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
-        this.packageLogger,
-        this.targetusername,
-        this.packageMetadata
-      );
-      isPackageInstalled = installationStatus.isInstalled;
-      if (isPackageInstalled) {
-        SFPLogger.log(
-          "Skipping Package Installation",
-          LoggerLevel.INFO,
-          this.packageLogger
-        );
-        return { result: PackageInstallationStatus.Skipped };
-      }
-    }
-
+  public async install() {
     let tmpDirObj = tmp.dirSync({ unsafeCleanup: true });
     let tempDir = tmpDirObj.name;
 
     try {
-      let startTime = Date.now();
       this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(
         this.packageMetadata
       );
-      let packageDirectory: string = await this.getPackageDirectory(
-        packageDescriptor
-      );
-
-      let preDeploymentScript: string = path.join(
-        this.sourceDirectory,
-        `scripts`,
-        `preDeployment`
-      );
-
-      if (fs.existsSync(preDeploymentScript)) {
-        SFPLogger.log(
-          "Executing preDeployment script",
-          LoggerLevel.INFO,
-          this.packageLogger
-        );
-        await PackageInstallationHelpers.executeScript(
-          preDeploymentScript,
-          this.sfdx_package,
-          this.targetusername,
-          this.packageLogger
-        );
-      }
 
       if (this.pathToReplacementForceIgnore) {
         this.replaceForceIgnoreInSourceDirectory(
           this.sourceDirectory,
           this.pathToReplacementForceIgnore
-        );
-      }
-
-      if (this.packageMetadata.assignPermSetsPreDeployment) {
-        SFPLogger.log(
-          "Assigning permission sets before deployment:",
-          LoggerLevel.INFO,
-          this.packageLogger
-        );
-
-        await PackageInstallationHelpers.applyPermsets(
-          this.packageMetadata.assignPermSetsPreDeployment,
-          connection,
-          this.sourceDirectory,
-          this.packageLogger
         );
       }
 
@@ -164,7 +93,7 @@ export default class InstallSourcePackageImpl {
           SFPLogger.log(
             "Restoring original profiles as preprocessing failed",
             LoggerLevel.INFO,
-            this.packageLogger
+            this.logger
           );
           profileFolders.forEach((folder) => {
             fs.copySync(
@@ -182,17 +111,15 @@ export default class InstallSourcePackageImpl {
         let pushSourceToOrgImpl: DeploymentExecutor = new PushSourceToOrgImpl(
           this.targetusername,
           this.sourceDirectory,
-          packageDirectory,
-          this.packageLogger
+          this.packageDirectory,
+          this.logger
         );
 
         result = await pushSourceToOrgImpl.exec();
       } else {
-
         //Construct Deploy Command for actual payload
         deploymentOptions = await this.generateDeploymentOptions(
-          this.packageMetadata,
-          this.wait_time,
+          this.options.waitTime,
           this.options.optimizeDeployment,
           this.options.skipTesting,
           this.targetusername
@@ -201,10 +128,10 @@ export default class InstallSourcePackageImpl {
         let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
           this.targetusername,
           this.sourceDirectory,
-          packageDirectory,
+          this.packageDirectory,
           deploymentOptions,
           false,
-          this.packageLogger
+          this.logger
         );
 
         result = await deploySourceToOrgImpl.exec();
@@ -219,7 +146,7 @@ export default class InstallSourcePackageImpl {
               profileFolders,
               this.sourceDirectory,
               this.targetusername,
-              packageDirectory,
+              this.packageDirectory,
               tempDir,
               deploymentOptions
             );
@@ -228,88 +155,15 @@ export default class InstallSourcePackageImpl {
           SFPLogger.log(
             "Failed to apply reconcile the second time, Partial Metadata applied",
             LoggerLevel.INFO,
-            this.packageLogger
+            this.logger
           );
         }
-
-        await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
-          this.packageLogger,
-          this.targetusername,
-          this.packageMetadata
-        );
       } else if (result.result === false) {
         throw new Error(result.message);
       }
-      let elapsedTime = Date.now() - startTime;
-
-      SFPStatsSender.logElapsedTime(
-        "package.installation.elapsed_time",
-        elapsedTime,
-        {
-          package: this.sfdx_package,
-          type: "source",
-          target_org: this.targetusername,
-        }
-      );
-      SFPStatsSender.logCount("package.installation", {
-        package: this.sfdx_package,
-        type: "source",
-        target_org: this.targetusername,
-      });
-
-      let postDeploymentScript: string = path.join(
-        this.sourceDirectory,
-        `scripts`,
-        `postDeployment`
-      );
-
-      if (fs.existsSync(postDeploymentScript)) {
-        console.log(
-          "Executing postDeployment script",
-          LoggerLevel.INFO,
-          this.packageLogger
-        );
-        await PackageInstallationHelpers.executeScript(
-          postDeploymentScript,
-          this.sfdx_package,
-          this.targetusername,
-          this.packageLogger
-        );
-      }
-
-      if (this.packageMetadata.assignPermSetsPostDeployment) {
-        SFPLogger.log(
-          "Assigning permission sets after deployment:",
-          LoggerLevel.INFO,
-          this.packageLogger
-        );
-
-        await PackageInstallationHelpers.applyPermsets(
-          this.packageMetadata.assignPermSetsPostDeployment,
-          connection,
-          this.sourceDirectory,
-          this.packageLogger
-        );
-      }
-
-      return {
-        result: PackageInstallationStatus.Succeeded,
-        deploy_id: result.deploy_id,
-      };
     } catch (error) {
-      SFPStatsSender.logCount("package.installation.failure", {
-        package: this.sfdx_package,
-        type: "source",
-        target_org: this.targetusername,
-      });
-
-      return {
-        result: PackageInstallationStatus.Failed,
-        message: error,
-      };
-    } finally {
-      // Cleanup temp directories
       tmpDirObj.removeCallback();
+      throw error;
     }
   }
 
@@ -318,7 +172,7 @@ export default class InstallSourcePackageImpl {
       SFPLogger.log(
         "Attempt to delete components mentioned in destructive manifest",
         LoggerLevel.INFO,
-        this.packageLogger
+        this.logger
       );
       let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
         this.targetusername,
@@ -330,51 +184,9 @@ export default class InstallSourcePackageImpl {
       SFPLogger.log(
         "We attempted a deletion of components, However were are not succesfull. Either the components are already deleted or there are components which have dependency to components in the manifest, Please check whether this manifest works!",
         LoggerLevel.INFO,
-        this.packageLogger
+        this.logger
       );
     }
-  }
-
-  private async getPackageDirectory(packageDescriptor: any): Promise<string> {
-    let packageDirectory: string;
-
-    if (packageDescriptor.aliasfy) {
-      const searchDirectory = path.join(this.sourceDirectory, packageDescriptor.path);
-      const files = FileSystem.readdirRecursive(searchDirectory, true);
-
-      let aliasDir: string;
-      aliasDir = files.find(file =>
-        path.basename(file) === this.targetusername && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
-      )
-
-      if (!aliasDir) {
-        const orgDetails = await new OrgDetailsFetcher(this.targetusername).getOrgDetails();
-
-        if (orgDetails.isSandbox) {
-          // If the target org is a sandbox, find a 'default' directory to use as package directory
-          aliasDir = files.find(file =>
-            path.basename(file) === "default" && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
-          )
-        }
-      }
-
-      if (!aliasDir) {
-   throw new Error(`Aliasfied package '${this.sfdx_package}' does not have an alias with '${this.targetusername}'' or 'default' directory`);
-      }
-
-      packageDirectory = path.join(packageDescriptor.path, aliasDir);
-    } else {
-      packageDirectory = path.join(packageDescriptor.path);
-    }
-
-    let absPackageDirectory: string = path.join(
-      this.sourceDirectory,
-      packageDirectory
-    );
-    if (!fs.existsSync(absPackageDirectory)) {
-      throw new Error(`Source directory ${absPackageDirectory} does not exist`);
-    }
-    return packageDirectory;
   }
 
   private isAllTestsToBeTriggered(packageMetadata: PackageMetadata) {
@@ -386,7 +198,7 @@ export default class InstallSourcePackageImpl {
           `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}` +
           `-------------------------------------------------------------------------------------------------------------`,
         LoggerLevel.INFO,
-        this.packageLogger
+        this.logger
       );
       return true;
     } else if (
@@ -402,7 +214,7 @@ export default class InstallSourcePackageImpl {
           `Please consider adding test classes for the classes in the package ${EOL}` +
           `-------------------------------------------------------------------------------------------------------------`,
         LoggerLevel.INFO,
-        this.packageLogger
+        this.logger
       );
       return true;
     } else return false;
@@ -420,7 +232,7 @@ export default class InstallSourcePackageImpl {
       SFPLogger.log(
         "Attempting reconcile to profiles",
         LoggerLevel.INFO,
-        this.packageLogger
+        this.logger
       );
       //copy the original profiles to temporary location
       profileFolders = glob.sync("**/profiles", {
@@ -438,7 +250,7 @@ export default class InstallSourcePackageImpl {
       let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
         target_org,
         path.join(sourceDirectoryPath),
-        this.packageLogger
+        this.logger
       );
       await reconcileProfileAgainstOrg.exec();
       isReconcileActivated = true;
@@ -446,7 +258,7 @@ export default class InstallSourcePackageImpl {
       SFPLogger.log(
         "Failed to reconcile profiles:" + err,
         LoggerLevel.INFO,
-        this.packageLogger
+        this.logger
       );
       isReconcileErrored = true;
     }
@@ -473,7 +285,7 @@ export default class InstallSourcePackageImpl {
       let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
         target_org,
         path.join(sourceDirectoryPath),
-        this.packageLogger
+        this.logger
       );
       await reconcileProfileAgainstOrg.exec();
 
@@ -493,7 +305,7 @@ export default class InstallSourcePackageImpl {
         sourceDirectory,
         deploymentOptions,
         false,
-        this.packageLogger
+        this.logger
       );
       let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
 
@@ -501,22 +313,21 @@ export default class InstallSourcePackageImpl {
         SFPLogger.log(
           "Unable to deploy reconciled  profiles",
           LoggerLevel.INFO,
-          this.packageLogger
+          this.logger
         );
       }
     }
   }
 
   private async generateDeploymentOptions(
-    packageMetadata: PackageMetadata,
-    wait_time: string,
+    waitTime:string,
     optimizeDeployment: boolean,
     skipTest: boolean,
     target_org: string
   ): Promise<any> {
     let mdapi_options = {};
     mdapi_options["ignore_warnings"] = true;
-    mdapi_options["wait_time"] = wait_time;
+    mdapi_options["wait_time"] = waitTime;
     mdapi_options["checkonly"] = false;
 
     if (skipTest) {
@@ -530,7 +341,7 @@ export default class InstallSourcePackageImpl {
             `type cannot be determined` +
             `-------------------------------------------------------------------------------------------------------------${EOL}`,
           LoggerLevel.WARN,
-          this.packageLogger
+          this.logger
         );
 
         mdapi_options["testlevel"] = "NoTestRun";
@@ -543,7 +354,7 @@ export default class InstallSourcePackageImpl {
             `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
             `-------------------------------------------------------------------------------------------------------------`,
           LoggerLevel.DEBUG,
-          this.packageLogger
+          this.logger
         );
         mdapi_options["testlevel"] = "NoTestRun";
       } else {
@@ -552,7 +363,7 @@ export default class InstallSourcePackageImpl {
             `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
             `-------------------------------------------------------------------------------------------------------------`,
           LoggerLevel.WARN,
-          this.packageLogger
+          this.logger
         );
         mdapi_options["testlevel"] = "RunLocalTests";
       }
@@ -601,12 +412,12 @@ export default class InstallSourcePackageImpl {
       SFPLogger.log(
         `${pathToReplacementForceIgnore} does not exist`,
         LoggerLevel.INFO,
-        this.packageLogger
+        this.logger
       );
       SFPLogger.log(
         "Package installation will continue using the unchanged forceignore in the source directory",
         null,
-        this.packageLogger
+        this.logger
       );
     }
   }

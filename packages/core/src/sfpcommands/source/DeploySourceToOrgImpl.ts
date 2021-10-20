@@ -1,7 +1,7 @@
 import child_process = require("child_process");
 import { delay } from "../../utils/Delay";
 import { onExit } from "../../utils/OnExit";
-import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_SUCCESS, Logger, LoggerLevel } from "../../logger/SFPLogger";
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_TRACE, Logger, LoggerLevel } from "../../logger/SFPLogger";
 import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import ConvertSourceToMDAPIImpl from "../../sfdxwrappers/ConvertSourceToMDAPIImpl";
@@ -123,8 +123,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
           resultAsJSON["result"]["status"] == "Pending"
         ) {
           SFPLogger.log(
-            `Processing ${resultAsJSON.result.numberComponentsDeployed} out of ${resultAsJSON.result.numberComponentsTotal}`,
-            null,
+            `${COLOR_TRACE(`Processing ${resultAsJSON.result.numberComponentsDeployed} out of ${resultAsJSON.result.numberComponentsTotal}`)}`,
+            LoggerLevel.INFO,
             this.packageLogger
           );
         } else if (resultAsJSON["result"]["status"] == "Succeeded") {

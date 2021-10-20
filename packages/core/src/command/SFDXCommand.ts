@@ -9,13 +9,13 @@ export abstract class SFDXCommand {
     protected logLevel?: LoggerLevel
   ) {}
 
-  public async exec(quiet = true, timeout: number = 0): Promise<any> {
+  public async exec(quiet = true, timeout: number = 0,showProgress:boolean=false): Promise<any> {
     let command = this.getSFDXCommand();
     if (quiet) command += ` --json`;
     command += " " + this.getGeneratedParams();
 
     SFPLogger.log("Generated Command:"+command,LoggerLevel.TRACE,this.logger);
-    let executor: ExecuteCommand = new ExecuteCommand(this.logger,this.logLevel);
+    let executor: ExecuteCommand = new ExecuteCommand(this.logger,this.logLevel,showProgress);
     let output = await executor.execCommand(command, this.project_directory, timeout);
     if (quiet) {
       return JSON.parse(output).result;
