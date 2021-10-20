@@ -6,7 +6,6 @@ import ProjectValidation from "./ProjectValidation";
 import DemoReelPlayer from "./impl/demoreelplayer/DemoReelPlayer";
 import { fs } from "@salesforce/core";
 import SFPLogger, {
-  COLOR_ERROR,
   COLOR_HEADER,
   ConsoleLogger,
   LoggerLevel,
