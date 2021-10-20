@@ -1,5 +1,5 @@
 import InstallPackageDependenciesImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl";
-import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/PackageInstallationResult";
+import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult";
 import DeployImpl, {
   DeploymentMode,
   DeployProps,
@@ -27,6 +27,7 @@ import RelaxIPRange from "@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRang
 import SourceTrackingResourceController from "../pool/SourceTrackingResourceController";
 import VlocityPackUpdateSettings from "@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings";
 import VlocityInitialInstall from "@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall";
+
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = "04t1P000000ka9mQAA";
 export default class PrepareOrgJob extends PoolJobExecutor {
@@ -69,6 +70,8 @@ export default class PrepareOrgJob extends PoolJobExecutor {
       );
 
       let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
+        packageLogger,
+        logLevel,
         null,
         scratchOrg.username,
         process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE

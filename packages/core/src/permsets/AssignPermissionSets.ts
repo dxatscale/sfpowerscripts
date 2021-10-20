@@ -1,6 +1,6 @@
 import { Connection } from "@salesforce/core";
 import child_process = require("child_process");
-import SFPLogger, { Logger } from "../logger/SFPLogger";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 import PermissionSetFetcher from "./PermissionSetFetcher";
 const Table = require("cli-table");
 
@@ -67,12 +67,12 @@ export default class AssignPermissionSets {
     }
 
     if (successfullAssignments.length > 0) {
-      SFPLogger.log("Successful PermSet Assignments:", null, this.packageLogger);
+      SFPLogger.log("Successful PermSet Assignments:", LoggerLevel.INFO, this.packageLogger);
       this.printPermsetAssignments(successfullAssignments);
     }
 
     if (failedAssignments.length > 0) {
-      SFPLogger.log("Failed PermSet Assignments", null, this.packageLogger);
+      SFPLogger.log("Failed PermSet Assignments", LoggerLevel.INFO, this.packageLogger);
       this.printPermsetAssignments(failedAssignments);
     }
 
@@ -92,6 +92,6 @@ export default class AssignPermissionSets {
       table.push([assignment.username, assignment.permset]);
     });
 
-    SFPLogger.log(table.toString(), null, this.packageLogger);
+    SFPLogger.log(table.toString(), LoggerLevel.INFO, this.packageLogger);
   }
 }
