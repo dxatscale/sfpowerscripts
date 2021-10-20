@@ -9,12 +9,13 @@ import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import BuildImpl from "./impl/parallelBuilder/BuildImpl";
 import { Stage } from "./impl/Stage";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import {
+import SFPLogger, {
   COLOR_ERROR,
   COLOR_HEADER,
   COLOR_INFO,
   COLOR_TIME,
   COLOR_SUCCESS,
+  COLOR_KEY_MESSAGE,
 } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import getFormattedTime from "./utils/GetFormattedTime";
 
@@ -115,24 +116,19 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
       const diffcheck: boolean = this.flags.diffcheck;
       const branch: string = this.flags.branch;
 
-      console.log(
-        COLOR_HEADER(
-          "-----------sfpowerscripts orchestrator ------------------"
-        )
-      );
-      console.log(COLOR_HEADER(`command: ${this.getStage()}`));
-      console.log(
+      SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(this.getStage())}`));
+      SFPLogger.log(
         COLOR_HEADER(`Build Packages Only Changed: ${this.flags.diffcheck}`)
       );
-      console.log(
+      SFPLogger.log(
         COLOR_HEADER(`Config File Path: ${this.flags.configfilepath}`)
       );
-      console.log(
+      SFPLogger.log(
         COLOR_HEADER(`Artifact Directory: ${this.flags.artifactdir}`)
       );
-      console.log(
+      SFPLogger.log(
         COLOR_HEADER(
-          "---------------------------------------------------------"
+          `-------------------------------------------------------------------------------------------`
         )
       );
 
@@ -157,9 +153,9 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         buildExecResult.generatedPackages.length === 0 &&
         buildExecResult.failedPackages.length === 0
       ) {
-        console.log(`${EOL}${EOL}`);
-        console.log(COLOR_INFO("No packages found to be built.. Exiting.. "));
-        console.log(
+        SFPLogger.log(`${EOL}${EOL}`);
+        SFPLogger.log(COLOR_INFO("No packages found to be built.. Exiting.. "));
+        SFPLogger.log(
           COLOR_HEADER(
             `----------------------------------------------------------------------------------------------------`
           )
@@ -167,8 +163,8 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         throw new Error("No packages to be found to be built")
       }
 
-      console.log(`${EOL}${EOL}`);
-      console.log("Generating Artifacts and Tags....");
+      SFPLogger.log(`${EOL}${EOL}`);
+      SFPLogger.log("Generating Artifacts and Tags....");
 
       for (let generatedPackage of buildExecResult.generatedPackages) {
         try {
@@ -179,7 +175,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             generatedPackage
           );
         } catch (error) {
-          console.log(error.message);
+          SFPLogger.log(error.message);
           artifactCreationErrors.push(generatedPackage.package_name);
         }
       }
@@ -201,19 +197,19 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
       SFPStatsSender.logCount("build.succeeded", tags);
     } catch (error) {
       SFPStatsSender.logCount("build.failed", tags);
-      console.log(COLOR_ERROR(error));
+      SFPLogger.log(COLOR_ERROR(error));
       process.exitCode = 1;
     } finally {
       if (
         buildExecResult?.generatedPackages?.length > 0 ||
         buildExecResult?.failedPackages?.length > 0
       ) {
-        console.log(
+        SFPLogger.log(
           COLOR_HEADER(
             `----------------------------------------------------------------------------------------------------`
           )
         );
-        console.log(
+        SFPLogger.log(
           COLOR_SUCCESS(
             `${
               buildExecResult.generatedPackages.length
@@ -226,7 +222,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         );
 
         if (buildExecResult.failedPackages.length > 0)
-          console.log(
+          SFPLogger.log(
             COLOR_ERROR(
               `Packages Failed To Build`,
               buildExecResult.failedPackages
@@ -234,11 +230,11 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
           );
 
         if (artifactCreationErrors.length > 0)
-          console.log(
+          SFPLogger.log(
             COLOR_ERROR(`Failed To Create Artifacts`, artifactCreationErrors)
           );
 
-        console.log(
+        SFPLogger.log(
           COLOR_HEADER(
             `----------------------------------------------------------------------------------------------------`
           )

@@ -9,7 +9,7 @@ import ScratchOrgInfoFetcher from "../../../impl/pool/services/fetchers/ScratchO
 import Ajv from "ajv";
 import path = require("path");
 import { PoolErrorCodes } from "../../../impl/pool/PoolError";
-import SFPLogger, { LoggerLevel, COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import SFPLogger, { LoggerLevel, COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, COLOR_TIME, COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import getFormattedTime from "../../../utils/GetFormattedTime";
 import { PoolConfig } from "../../../impl/pool/PoolConfig";
 import { COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
@@ -68,8 +68,8 @@ export default class Prepare extends SfpowerscriptsCommand {
   public async execute(): Promise<any> {
     let executionStartTime = Date.now();
 
-    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
-    console.log(COLOR_HEADER("command: prepare"));
+    
+    SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`prepare`)}`));
 
     //Read pool config
     try {
@@ -94,7 +94,7 @@ export default class Prepare extends SfpowerscriptsCommand {
             if (poolConfig.fetchArtifacts?.npm)
               poolConfig.fetchArtifacts.npm.npmrcPath = this.flags.npmrcpath;
             else
-              console.log(COLOR_WARNING(
+              SFPLogger.log(COLOR_WARNING(
                 "npmrcPath found in flag, however the configuration doesnt seem to use npm, Are you sure your schema is good?"
               ));
           }
@@ -146,7 +146,7 @@ export default class Prepare extends SfpowerscriptsCommand {
               tags
             );
           } else if (results.isErr()) {
-            console.log(
+            SFPLogger.log(
               COLOR_HEADER(
                 `-----------------------------------------------------------------------------------------------------------`
               )
@@ -155,7 +155,7 @@ export default class Prepare extends SfpowerscriptsCommand {
               COLOR_ERROR(results.error.message),
               LoggerLevel.ERROR
             );
-            console.log(
+            SFPLogger.log(
               COLOR_HEADER(
                 `-----------------------------------------------------------------------------------------------------------`
               )
@@ -192,24 +192,24 @@ export default class Prepare extends SfpowerscriptsCommand {
   }
 
   private displayHeader(poolConfig: PoolConfig) {
-    console.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
-    console.log(
+    SFPLogger.log(COLOR_HEADER(`Pool Name: ${poolConfig.tag}`));
+    SFPLogger.log(
       COLOR_HEADER(`Requested Count of Orgs: ${poolConfig.maxAllocation}`)
     );
-    console.log(
+    SFPLogger.log(
       COLOR_HEADER(
         `Scratch Orgs to be submitted to pool in case of failures: ${poolConfig.succeedOnDeploymentErrors ? "true" : "false"}`
       )
     );
 
-    console.log(
+    SFPLogger.log(
       COLOR_HEADER(
         `All packages in the repo to be installed: ${poolConfig.installAll ? "true" : "false"}`
       )
     );
 
 
-    console.log(
+    SFPLogger.log(
       COLOR_HEADER(
         `Enable Source Tracking: ${poolConfig.enableSourceTracking ||
           poolConfig.enableSourceTracking === undefined
@@ -219,7 +219,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     );
 
     if(poolConfig.enableVlocity)
-    console.log(
+    SFPLogger.log(
       COLOR_HEADER(
         `Enable Vlocity Config: true`
       )
@@ -228,19 +228,19 @@ export default class Prepare extends SfpowerscriptsCommand {
 
     if (poolConfig.fetchArtifacts) {
       if (poolConfig.fetchArtifacts.artifactFetchScript)
-        console.log(
+        SFPLogger.log(
           COLOR_HEADER(
             `Script provided to fetch artifacts: ${poolConfig.fetchArtifacts.artifactFetchScript}`
           )
         );
       if (poolConfig.fetchArtifacts.npm) {
-        console.log(
+        SFPLogger.log(
           COLOR_HEADER(
             `Fetch artifacts from pre-authenticated NPM registry: true`
           )
         );
         if (poolConfig.fetchArtifacts.npm.npmtag)
-          console.log(
+          SFPLogger.log(
             COLOR_HEADER(
               `Tag utilized to fetch from NPM registry: ${poolConfig.fetchArtifacts.npm.npmtag}`
             )
@@ -248,11 +248,12 @@ export default class Prepare extends SfpowerscriptsCommand {
       }
     }
 
-    console.log(
+    SFPLogger.log(
       COLOR_HEADER(
-        "---------------------------------------------------------"
+        `-------------------------------------------------------------------------------------------`
       )
     );
+
   }
 
   private async getCurrentRemainingNumberOfOrgsInPoolAndReport() {

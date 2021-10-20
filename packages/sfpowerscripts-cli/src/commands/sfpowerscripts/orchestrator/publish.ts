@@ -7,7 +7,7 @@ import ArtifactFilePathFetcher, {ArtifactFilePaths} from "@dxatscale/sfpowerscri
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import child_process = require("child_process");
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
-import { COLOR_ERROR, COLOR_HEADER,COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { COLOR_ERROR, COLOR_HEADER,COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import getFormattedTime from '../../../utils/GetFormattedTime';
 import simplegit from "simple-git";
 import GitIdentity from "../../../impl/git/GitIdentity";
@@ -120,12 +120,15 @@ export default class Promote extends SfpowerscriptsCommand {
     let npmrcFilesToCleanup: string[] = [];
 
     try {
-    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
-    console.log(COLOR_HEADER("command: publish"));
-    console.log(COLOR_HEADER(`target: ${this.flags.scriptpath ? this.flags.scriptpath : "NPM"}`));
-    console.log(COLOR_HEADER(`Publish promoted artifacts only: ${this.flags.publishpromotedonly ? true : false}`));
-    console.log(COLOR_HEADER("---------------------------------------------------------"));
-
+   
+    SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`publish`)}`));
+    SFPLogger.log(COLOR_HEADER(`target: ${this.flags.scriptpath ? this.flags.scriptpath : "NPM"}`));
+    SFPLogger.log(COLOR_HEADER(`Publish promoted artifacts only: ${this.flags.publishpromotedonly ? true : false}`));
+    SFPLogger.log(
+      COLOR_HEADER(
+        `-------------------------------------------------------------------------------------------`
+      )
+    );
       let packageVersionList: any;
       if (this.flags.publishpromotedonly) {
         let packageVersionListJson: string = child_process.execSync(
@@ -173,7 +176,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
           if (!isReleased) {
             failedArtifacts.push(`${packageName} v${packageVersionNumber}`);
-            console.log(`Skipping ${packageName} Version ${packageVersionNumber}. Package Version Id ${packageVersionId} has not been promoted.`);
+            SFPLogger.log(`Skipping ${packageName} Version ${packageVersionNumber}. Package Version Id ${packageVersionId} has not been promoted.`);
             process.exitCode = 1;
             continue;
           }
@@ -206,7 +209,7 @@ export default class Promote extends SfpowerscriptsCommand {
           nPublishedArtifacts++;
         } catch (err) {
           failedArtifacts.push(`${packageName} v${packageVersionNumber}`);
-          console.log(err.message);
+          SFPLogger.log(err.message);
           process.exitCode = 1;
         }
       }
@@ -218,7 +221,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
 
     } catch (err) {
-      console.log(err.message);
+      SFPLogger.log(err.message);
 
       // Fail the task when an error occurs
       process.exitCode = 1;
@@ -232,19 +235,19 @@ export default class Promote extends SfpowerscriptsCommand {
 
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
-      console.log(COLOR_HEADER(
+      SFPLogger.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`
       ));
-      console.log(COLOR_SUCCESS(
+      SFPLogger.log(COLOR_SUCCESS(
         `${nPublishedArtifacts} artifacts published in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} with {${COLOR_ERROR(failedArtifacts.length)}} errors`
       ));
 
 
 
       if (failedArtifacts.length > 0) {
-        console.log(COLOR_ERROR(`Packages Failed to Publish`, failedArtifacts));
+        SFPLogger.log(COLOR_ERROR(`Packages Failed to Publish`, failedArtifacts));
       }
-      console.log(COLOR_HEADER(
+      SFPLogger.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`
       ));
 
@@ -328,7 +331,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
     cmd += ` --tag ${tag}`;
 
-    console.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`));
+    SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`));
 
     child_process.execSync(
       cmd,
@@ -351,7 +354,7 @@ export default class Promote extends SfpowerscriptsCommand {
       cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
     }
 
-    console.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber}...`));
+    SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber}...`));
 
     child_process.execSync(
       cmd,
@@ -374,7 +377,7 @@ export default class Promote extends SfpowerscriptsCommand {
   }
 
   private async pushGitTags() {
-    console.log(COLOR_KEY_MESSAGE("Pushing Git Tags to Repo"));
+    SFPLogger.log(COLOR_KEY_MESSAGE("Pushing Git Tags to Repo"));
     if(this.flags.pushgittag)
     {
       let git = simplegit();
@@ -390,7 +393,7 @@ export default class Promote extends SfpowerscriptsCommand {
       tag: string
     }[]
   ) {
-      console.log(COLOR_KEY_MESSAGE("Creating Git Tags in Repo"));
+      SFPLogger.log(COLOR_KEY_MESSAGE("Creating Git Tags in Repo"));
 
       let git = simplegit();
 
