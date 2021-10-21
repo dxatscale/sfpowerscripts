@@ -3,7 +3,7 @@ import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
 import { flags } from '@salesforce/command';
 import ValidateImpl, {ValidateMode, ValidateProps} from "../../../impl/validate/ValidateImpl";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
-import { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { DeploymentResult } from "../../../impl/deploy/DeployImpl";
 import ValidateError from "../../../errors/ValidateError";
 
@@ -112,12 +112,17 @@ export default class Validate extends SfpowerscriptsCommand {
       };
     }
 
-    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
-    console.log(COLOR_HEADER("command: validate"));
-    console.log(COLOR_HEADER(`Pools being used: ${this.flags.pools}`));
-    console.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
-    console.log(COLOR_HEADER(`Using shapefile to override existing shape of the org: ${this.flags.shapefile?'true':'false'}`));
-    console.log(COLOR_HEADER("---------------------------------------------------------"));
+    
+    SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`validate`)}`));
+    SFPLogger.log(COLOR_HEADER(`Pools being used: ${this.flags.pools}`));
+    SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
+    SFPLogger.log(COLOR_HEADER(`Using shapefile to override existing shape of the org: ${this.flags.shapefile?'true':'false'}`));
+    SFPLogger.log(
+      COLOR_HEADER(
+        `-------------------------------------------------------------------------------------------`
+      )
+    );
+
 
     let validateResult: DeploymentResult;
     try {
@@ -143,7 +148,7 @@ export default class Validate extends SfpowerscriptsCommand {
     } catch (error) {
       if (error instanceof ValidateError) {
         validateResult = error.data;
-      } else console.log(error.message);
+      } else SFPLogger.log(error.message);
 
       SFPStatsSender.logCount("validate.failed", tags);
 
