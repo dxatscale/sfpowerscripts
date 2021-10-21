@@ -108,7 +108,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
     if (!this.isSfdmuFound) {
       throw new Error(
-        "sfpowerscripts require sfdmu to function, please install sfpowerkit and try again!"
+        "sfpowerscripts require sfdmu to function, please install sfdmu and try again!"
       );
     }
 
