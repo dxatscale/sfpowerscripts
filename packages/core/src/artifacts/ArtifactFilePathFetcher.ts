@@ -32,7 +32,7 @@ export default class ArtifactFilePathFetcher {
       artifacts = ArtifactFilePathFetcher.findArtifactMetadata(artifactDirectory, sfdx_package);
     }
 
-    SFPLogger.log(`Artifacts: ${JSON.stringify(artifacts)}`,LoggerLevel.INFO,logger);
+    SFPLogger.log(`Artifacts: ${JSON.stringify(artifacts)}`,LoggerLevel.TRACE,logger);
 
     for(let artifact of artifacts) {
       let artifactFilePaths: ArtifactFilePaths

@@ -4,7 +4,7 @@ import { Messages } from "@salesforce/core";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from "../../../impl/deploy/DeployImpl";
 import { Stage } from "../../../impl/Stage";
-import { COLOR_ERROR, COLOR_HEADER,COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
+import SFPLogger, { COLOR_ERROR, COLOR_HEADER,COLOR_KEY_MESSAGE,COLOR_SUCCESS } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
 import { COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import getFormattedTime from "../../../utils/GetFormattedTime";
 
@@ -94,13 +94,18 @@ export default class Deploy extends SfpowerscriptsCommand {
   public async execute() {
     let executionStartTime = Date.now();
 
-    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
-    console.log(COLOR_HEADER("command: deploy"));
-    console.log(COLOR_HEADER(`Skip Packages If Already Installed: ${this.flags.skipifalreadyinstalled}`));
-    console.log(COLOR_HEADER(`Artifact Directory: ${this.flags.artifactdir}`));
+  
+    SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`deploy`)}`));
+    SFPLogger.log(COLOR_HEADER(`Skip Packages If Already Installed: ${this.flags.skipifalreadyinstalled}`));
+    SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${this.flags.artifactdir}`));
+    SFPLogger.log(COLOR_HEADER(`Target Environment: ${this.flags.targetorg}`));
     if(this.flags.baselineorg)
-      console.log(COLOR_HEADER(`Baselined Against Org: ${this.flags.baselineorg}`))
-    console.log(COLOR_HEADER("---------------------------------------------------------"));
+      SFPLogger.log(COLOR_HEADER(`Baselined Against Org: ${this.flags.baselineorg}`))
+    SFPLogger.log(
+        COLOR_HEADER(
+          `-------------------------------------------------------------------------------------------`
+        )
+      );
 
 
 
@@ -141,32 +146,32 @@ export default class Deploy extends SfpowerscriptsCommand {
         process.exitCode = 1;
       }
     } catch (error) {
-      console.log(error);
+      SFPLogger.log(COLOR_ERROR(error));
       process.exitCode = 1;
     } finally {
       let totalElapsedTime: number = Date.now() - executionStartTime;
 
       if (this.flags.logsgroupsymbol?.[0])
-        console.log(COLOR_HEADER(this.flags.logsgroupsymbol[0], "Deployment Summary"));
+      SFPLogger.log(COLOR_HEADER(this.flags.logsgroupsymbol[0], "Deployment Summary"));
 
-      console.log(COLOR_HEADER(
+      SFPLogger.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`
       ));
-      console.log(COLOR_SUCCESS(
+      SFPLogger.log(COLOR_SUCCESS(
         `${deploymentResult.deployed.length} packages deployed in ${COLOR_TIME(getFormattedTime(totalElapsedTime))} with {${deploymentResult.failed.length}} errors`)
       );
 
 
 
       if (deploymentResult.failed.length > 0) {
-        console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)));
+        SFPLogger.log(COLOR_ERROR(`\nPackages Failed to Deploy`, deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)));
       }
-      console.log(COLOR_HEADER(
+      SFPLogger.log(COLOR_HEADER(
         `----------------------------------------------------------------------------------------------------`
       ));
 
       if (this.flags.logsgroupsymbol?.[1])
-        console.log(COLOR_HEADER(this.flags.logsgroupsymbol[1]));
+      SFPLogger.log(COLOR_HEADER(this.flags.logsgroupsymbol[1]));
 
       SFPStatsSender.logCount("deploy.scheduled",tags);
 

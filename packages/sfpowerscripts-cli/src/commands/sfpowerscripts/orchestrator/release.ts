@@ -6,7 +6,7 @@ import ReleaseImpl, { ReleaseProps, ReleaseResult } from "../../../impl/release/
 import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
 import ReleaseError from "../../../errors/ReleaseError";
 import path = require("path");
-import { COLOR_ERROR, COLOR_HEADER,COLOR_INFO,COLOR_TIME,COLOR_SUCCESS, COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
+import SFPLogger, { COLOR_ERROR, COLOR_HEADER,COLOR_INFO,COLOR_TIME,COLOR_SUCCESS, COLOR_WARNING, COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -137,16 +137,21 @@ export default class Release extends SfpowerscriptsCommand {
     if (this.flags.generatechangelog && !releaseDefinition.changelog)
       throw new Error("changelog parameters must be specified in release definition to generate changelog");
 
-    console.log(COLOR_HEADER("-----------sfpowerscripts orchestrator ------------------"));
-    console.log(COLOR_HEADER("command: release"));
-    console.log(COLOR_HEADER(`Target Org: ${this.flags.targetorg}`));
-    console.log(COLOR_HEADER(`Release Definition: ${this.flags.releasedefinition}`));
-    console.log(COLOR_HEADER(`Artifact Directory: ${path.resolve("artifacts")}`));
-    console.log(COLOR_HEADER(`Skip Packages If Already Installed: ${releaseDefinition.skipIfAlreadyInstalled ? true : false}`));
+   
+    SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`release`)}`));
+    SFPLogger.log(COLOR_HEADER(`Target Org: ${this.flags.targetorg}`));
+    SFPLogger.log(COLOR_HEADER(`Release Definition: ${this.flags.releasedefinition}`));
+    SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${path.resolve("artifacts")}`));
+    SFPLogger.log(COLOR_HEADER(`Skip Packages If Already Installed: ${releaseDefinition.skipIfAlreadyInstalled ? true : false}`));
     if(releaseDefinition.baselineOrg)
-      console.log(COLOR_HEADER(`Baselined Against Org: ${releaseDefinition.baselineOrg}`));
-    console.log(COLOR_HEADER(`Dry-run: ${this.flags.dryrun}`));
-    console.log(COLOR_HEADER("---------------------------------------------------------"));
+      SFPLogger.log(COLOR_HEADER(`Baselined Against Org: ${releaseDefinition.baselineOrg}`));
+    SFPLogger.log(COLOR_HEADER(`Dry-run: ${this.flags.dryrun}`));
+    SFPLogger.log(
+      COLOR_HEADER(
+        `-------------------------------------------------------------------------------------------`
+      )
+    );
+
 
     let releaseResult: ReleaseResult;
     try {
@@ -189,7 +194,7 @@ export default class Release extends SfpowerscriptsCommand {
 
       if (err instanceof ReleaseError) {
         releaseResult = err.data;
-      } else console.log(err.message);
+      } else SFPLogger.log(err.message);
 
       SFPStatsSender.logCount(
         "release.failed",
@@ -238,30 +243,30 @@ export default class Release extends SfpowerscriptsCommand {
     totalElapsedTime: number
   ): void {
     if (this.flags.logsgroupsymbol?.[0])
-      console.log(COLOR_HEADER(this.flags.logsgroupsymbol[0], "Release Summary"));
+      SFPLogger.log(COLOR_HEADER(this.flags.logsgroupsymbol[0], "Release Summary"));
 
-    console.log(
+    SFPLogger.log(
       COLOR_HEADER(`----------------------------------------------------------------------------------------------------`
     ));
     if (releaseResult.installDependenciesResult) {
-      console.log(COLOR_HEADER(`\nPackage Dependencies`));
-      console.log(COLOR_SUCCESS(`   ${releaseResult.installDependenciesResult.success.length} succeeded`));
-      console.log(COLOR_WARNING(`   ${releaseResult.installDependenciesResult.skipped.length} skipped`));
-      console.log(COLOR_ERROR(`   ${releaseResult.installDependenciesResult.failed.length} failed`));
+      SFPLogger.log(COLOR_HEADER(`\nPackage Dependencies`));
+      SFPLogger.log(COLOR_SUCCESS(`   ${releaseResult.installDependenciesResult.success.length} succeeded`));
+      SFPLogger.log(COLOR_WARNING(`   ${releaseResult.installDependenciesResult.skipped.length} skipped`));
+      SFPLogger.log(COLOR_ERROR(`   ${releaseResult.installDependenciesResult.failed.length} failed`));
     }
 
     if (releaseResult.deploymentResult) {
-      console.log(COLOR_HEADER(`\nDeployment`));
-      console.log(COLOR_SUCCESS(`   ${releaseResult.deploymentResult.deployed.length} succeeded`));
-      console.log(COLOR_ERROR(`   ${releaseResult.deploymentResult.failed.length} failed`));
+      SFPLogger.log(COLOR_HEADER(`\nDeployment`));
+      SFPLogger.log(COLOR_SUCCESS(`   ${releaseResult.deploymentResult.deployed.length} succeeded`));
+      SFPLogger.log(COLOR_ERROR(`   ${releaseResult.deploymentResult.failed.length} failed`));
 
       if (releaseResult.deploymentResult.failed.length > 0) {
-        console.log(COLOR_ERROR(`\nPackages Failed to Deploy`, releaseResult.deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)));
+        SFPLogger.log(COLOR_ERROR(`\nPackages Failed to Deploy`, releaseResult.deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)));
       }
     }
 
-    console.log(COLOR_TIME(`\nElapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11,8)}`));
-    console.log(COLOR_HEADER(
+    SFPLogger.log(COLOR_TIME(`\nElapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11,8)}`));
+    SFPLogger.log(COLOR_HEADER(
       `----------------------------------------------------------------------------------------------------`
     ));
   }
