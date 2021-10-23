@@ -140,6 +140,7 @@ export default class CreateUnlockedPackageImpl {
     this.packageArtifactMetadata.assignPermSetsPostDeployment = sfppackage.assignPermSetsPostDeployment;
     this.packageArtifactMetadata.isApexFound = sfppackage.isApexInPackage
     this.packageArtifactMetadata.isProfilesFound = sfppackage.isProfilesInPackage;
+    this.packageArtifactMetadata.isPermissionSetGroupFound = sfppackage.isPermissionSetGroupInPackage;
 
     let command = this.buildExecCommand();
     let output = "";

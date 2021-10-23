@@ -24,6 +24,7 @@ export default class SFPPackage {
   private _triggers: ApexClasses;
   private _isApexInPackage: boolean;
   private _isProfilesInPackage: boolean;
+  private _isPermissionSetGroupInPackage:boolean;
   private _configFilePath: string;
   private _projectDirectory: string;
   private _apexClassesSortedByTypes:ApexSortedByType;
@@ -147,6 +148,7 @@ export default class SFPPackage {
     sfpPackage._triggers = packageManifest.fetchTriggers();
     sfpPackage._isApexInPackage = packageManifest.isApexInPackage();
     sfpPackage._isProfilesInPackage = packageManifest.isProfilesInPackage();
+    sfpPackage._isPermissionSetGroupInPackage = packageManifest.isPermissionSetGroupsFoundInPackage();
     sfpPackage._packageType = ProjectConfig.getPackageType(
       ProjectConfig.getSFDXPackageManifest(sfpPackage._workingDirectory),
       sfdx_package
@@ -172,5 +174,9 @@ export default class SFPPackage {
 
   public get isProfilesInPackage(): boolean {
     return this._isProfilesInPackage;
+  }
+
+  public get isPermissionSetGroupInPackage(): boolean {
+    return this._isPermissionSetGroupInPackage;
   }
 }

@@ -101,6 +101,7 @@ export default class CreateSourcePackageImpl {
       this.packageArtifactMetadata.assignPermSetsPreDeployment = sfppackage.assignPermSetsPreDeployment;
       this.packageArtifactMetadata.assignPermSetsPostDeployment = sfppackage.assignPermSetsPostDeployment;
       this.packageArtifactMetadata.reconcileProfiles = sfppackage.reconcileProfiles;
+      this.packageArtifactMetadata.isPermissionSetGroupFound = sfppackage.isPermissionSetGroupInPackage;
 
       if (sfppackage.destructiveChanges) {
         this.packageArtifactMetadata.destructiveChanges = sfppackage.destructiveChanges;

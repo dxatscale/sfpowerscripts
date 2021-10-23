@@ -14,9 +14,9 @@ import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallat
 import FileSystem from "../../utils/FileSystem";
 import OrgDetailsFetcher from "../../org/OrgDetailsFetcher";
 import path = require("path");
+import PermissionSetGroupUpdateAwaiter from "../../permsets/PermissionSetGroupUpdateAwaiter";
 
 export abstract class InstallPackage {
-
   private startTime: number;
   protected connection: Connection;
   protected packageDescriptor;
@@ -31,11 +31,10 @@ export abstract class InstallPackage {
     protected logger?: Logger
   ) {}
 
-  public async exec():Promise<PackageInstallationResult>  {
+  public async exec(): Promise<PackageInstallationResult> {
     try {
       this.startTime = Date.now();
 
-      
       this.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
         this.sourceDirectory,
         this.sfdxPackage
@@ -48,6 +47,9 @@ export abstract class InstallPackage {
       });
 
       if (await this.isPackageToBeInstalled(this.skipIfPackageInstalled)) {
+        //Package Has Permission Set Group
+        if (this.packageMetadata.isPermissionSetGroupFound)
+          await this.waitTillAllPermissionSetGroupIsUpdated();
         await this.preInstall();
         await this.getPackageDirectoryForAliasifiedPackages();
         await this.install();
@@ -66,6 +68,11 @@ export abstract class InstallPackage {
         message: error.message,
       };
     }
+  }
+  
+  private async waitTillAllPermissionSetGroupIsUpdated() {
+    let permissionSetGroupUpdateAwaiter:PermissionSetGroupUpdateAwaiter = new PermissionSetGroupUpdateAwaiter(this.connection,this.logger);
+    await permissionSetGroupUpdateAwaiter.waitTillAllPermissionSetGroupIsUpdated();
   }
 
   protected async getPackageDirectoryForAliasifiedPackages() {
@@ -119,7 +126,6 @@ export abstract class InstallPackage {
         `Package directory ${absPackageDirectory} does not exist`
       );
     }
-
   }
 
   private sendMetricsWhenFailed() {
@@ -166,8 +172,7 @@ export abstract class InstallPackage {
         this.packageMetadata
       );
       return !installationStatus.isInstalled;
-    }else
-     return true; // Always install packages if skipIfPackageInstalled is false
+    } else return true; // Always install packages if skipIfPackageInstalled is false
   }
 
   public async preInstall() {
@@ -204,8 +209,6 @@ export abstract class InstallPackage {
   }
 
   abstract install();
-
-  
 
   public async postInstall() {
     let postDeploymentScript: string = path.join(

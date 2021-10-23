@@ -18,6 +18,7 @@ export default interface PackageMetadata {
     apexTestClassses?:string[];
     isTriggerAllTests?:boolean;
     isProfilesFound?:boolean;
+    isPermissionSetGroupFound?:boolean,
     isPromoted?: boolean;
     tag?:string;
     isDependencyValidated?:boolean;
