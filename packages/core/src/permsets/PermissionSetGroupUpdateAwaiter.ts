@@ -6,7 +6,7 @@ import { delay } from "../utils/Delay";
 
 
 
-const psGroupQuery = `SELECT Id,MasterLabel,Status FROM PermissionSetGroup WHERE Status != 'Updated'`;
+const psGroupQuery = `SELECT Id,MasterLabel,Status FROM PermissionSetGroup WHERE Status = 'Updating'`;
 
 
 export default class PermissionSetGroupUpdateAwaiter
@@ -31,7 +31,7 @@ export default class PermissionSetGroupUpdateAwaiter
         }
         else
         {
-          SFPLogger.log(`Proceeding with deployment,as all status looks clear` ,LoggerLevel.INFO,this.logger); 
+          SFPLogger.log(`Proceeding with deployment,as no PermissionSetGroups are being updated` ,LoggerLevel.INFO,this.logger); 
           break;
         }
       
