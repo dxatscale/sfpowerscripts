@@ -7,8 +7,8 @@ import * as fs from "fs-extra";
 import path = require("path");
 import  { ApexSortedByType, FileDescriptor } from "../../apex/parser/ApexTypeFetcher";
 import SFPStatsSender from "../../stats/SFPStatsSender";
-import PackageEmptyChecker from "../../package/PackageEmptyChecker";
-import SFPPackage  from "../../package/SFPPackage";
+import PackageEmptyChecker from "../PackageEmptyChecker";
+import SFPPackage  from "../SFPPackage";
 const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl {
