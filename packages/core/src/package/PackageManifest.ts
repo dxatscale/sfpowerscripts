@@ -50,7 +50,7 @@ export default class PackageManifest
 
     if (this._manifest.Package.types) {
       if (Array.isArray(this._manifest.Package.types)) {
-        for (let type of this._manifest.Package.types) {
+        for (const type of this._manifest.Package.types) {
           if (type.name === "Profile") {
             isProfilesFound = true;
             break;
@@ -73,7 +73,7 @@ export default class PackageManifest
 
     if (this._manifest.Package.types) {
       if (Array.isArray(this._manifest.Package.types)) {
-        for (let type of this._manifest.Package.types) {
+        for (const type of this._manifest.Package.types) {
           if (type.name === "ApexClass" || type.name === "ApexTrigger") {
             isApexFound = true;
             break;
@@ -108,7 +108,7 @@ export default class PackageManifest
     }
 
     if (types) {
-      for (let type of types) {
+      for (const type of types) {
         if (type.name === "ApexTrigger") {
           if (type.members instanceof Array) {
             triggers = type.members;
