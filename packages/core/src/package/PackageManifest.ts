@@ -6,77 +6,121 @@ import xml2json from "../utils/xml2json";
 export default class PackageManifest
 {
 
-  private manifest;
+  private _manifest;
 
-  public constructor(private mdapiDir:string){};
-
-  public async getManifest() {
-    let packageXml: string = fs.readFileSync(
-      path.join(this.mdapiDir, "package.xml"),
-      "utf8"
-    );
-    this.manifest = await xml2json(packageXml);
-    return this.manifest;
+  /**
+   * Getter for package manifest JSON
+   */
+  get manifest() {
+    return this._manifest;
   }
 
+  private constructor(){};
+
+  /**
+   *
+   * @returns package manifest in dir, as JSON
+   */
+   private async parseManifest(dir: string) {
+    const packageXml: string = fs.readFileSync(
+      path.join(dir, "package.xml"),
+      "utf8"
+    );
+    return await xml2json(packageXml);
+  }
+
+  /**
+   * Factory method
+   * @param mdapiDir directory containing package.xml
+   * @returns instance of PackageManifest
+   */
+  static async create(mdapiDir: string): Promise<PackageManifest> {
+    const packageManifest = new PackageManifest();
+    packageManifest._manifest = await packageManifest.parseManifest(mdapiDir);
+
+    return packageManifest;
+  }
+
+  /**
+   *
+   * @returns true or false, for whether there are profiles
+   */
   public isProfilesInPackage(): boolean {
     let isProfilesFound = false;
-    if (Array.isArray(this.manifest["Package"]["types"])) {
-      for (let type of this.manifest["Package"]["types"]) {
-        if (type["name"] == "Profile") {
-          isProfilesFound = true;
-          break;
+
+    if (this._manifest.Package.types) {
+      if (Array.isArray(this._manifest.Package.types)) {
+        for (let type of this._manifest.Package.types) {
+          if (type.name === "Profile") {
+            isProfilesFound = true;
+            break;
+          }
         }
+      } else if (this._manifest.Package.types.name === "Profile") {
+        isProfilesFound = true;
       }
-    } else if (this.manifest["Package"]["types"]["name"] == "Profile") {
-      isProfilesFound = true;
     }
+
     return isProfilesFound;
   }
 
+  /**
+   *
+   * @returns true or false, for whether there are Apex classes and/or triggers
+   */
   public isApexInPackage(): boolean {
     let isApexFound = false;
-    if (Array.isArray(this.manifest["Package"]["types"])) {
-      for (let type of this.manifest["Package"]["types"]) {
-        if (type["name"] == "ApexClass" || type["name"] == "ApexTrigger") {
-          isApexFound = true;
-          break;
+
+    if (this._manifest.Package.types) {
+      if (Array.isArray(this._manifest.Package.types)) {
+        for (let type of this._manifest.Package.types) {
+          if (type.name === "ApexClass" || type.name === "ApexTrigger") {
+            isApexFound = true;
+            break;
+          }
         }
+      } else if (
+        this._manifest.Package.types.name === "ApexClass" ||
+        this._manifest.Package.types.name === "ApexTrigger"
+      ) {
+        isApexFound = true;
       }
-    } else if (
-      this.manifest["Package"]["types"]["name"] == "ApexClass" ||
-      this.manifest["Package"]["types"]["name"] == "ApexTrigger"
-    ) {
-      isApexFound = true;
     }
+
     return isApexFound;
   }
 
+  /**
+   *
+   * @returns Apex triggers if there are any, otherwise returns undefined
+   */
   public fetchTriggers(): ApexClasses {
     let triggers: string[];
 
     let types;
-    if (this.manifest["Package"]["types"] instanceof Array) {
-      types = this.manifest["Package"]["types"];
-    } else {
-      // Create array with single type
-      types = [this.manifest["Package"]["types"]];
+    if (this._manifest.Package.types) {
+      if (this._manifest.Package.types instanceof Array) {
+        types = this._manifest.Package.types;
+      } else {
+        // Create array with single type
+        types = [this._manifest.Package.types];
+      }
     }
 
-    for (let type of types) {
-      if (type["name"] === "ApexTrigger") {
-        if (type["members"] instanceof Array) {
-          triggers = type["members"];
-        } else {
-          // Create array with single member
-          triggers = [type["members"]];
+    if (types) {
+      for (let type of types) {
+        if (type.name === "ApexTrigger") {
+          if (type.members instanceof Array) {
+            triggers = type.members;
+          } else {
+            // Create array with single member
+            triggers = [type.members];
+          }
+          break;
         }
-        break;
       }
     }
 
     return triggers;
   }
-
-
 }

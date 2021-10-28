@@ -25,7 +25,7 @@ export default class PushSourceToOrgImpl implements DeploymentExecutor {
     ).exec(true);
 
     PackageMetadataPrinter.printMetadataToDeploy(
-      await new PackageManifest(mdapiDir).getManifest(),
+      (await PackageManifest.create(mdapiDir)).manifest,
       this.logger
     );
 
