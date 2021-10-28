@@ -11,14 +11,16 @@ import { delay } from "../../utils/Delay";
 import PackageVersionListImpl from "../../sfdxwrappers/PackageVersionListImpl";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import SFPPackage  from "../../package/SFPPackage";
+import { CreatePackage } from "./CreatePackage";
 const path = require("path");
 
-export default class CreateUnlockedPackageImpl {
+export default class CreateUnlockedPackageImpl extends CreatePackage{
+ 
   private static packageTypeInfos: any[];
   private isOrgDependentPackage: boolean = false;
 
   public constructor(
-    private sfdx_package: string,
+    sfdx_package: string,
     private version_number: string,
     private config_file_path: string,
     private installationkeybypass: boolean,
@@ -28,39 +30,41 @@ export default class CreateUnlockedPackageImpl {
     private wait_time: string,
     private isCoverageEnabled: boolean,
     private isSkipValidation: boolean,
-    private packageArtifactMetadata: PackageMetadata,
+    packageArtifactMetadata: PackageMetadata,
     private pathToReplacementForceIgnore?: string,
-    private packageLogger?: Logger
+    logger?: Logger
   ) {
-    if (!this.packageLogger) {
-      fs.outputFileSync(
-        `.sfpowerscripts/logs/${sfdx_package}`,
-        `sfpowerscripts--log${EOL}`
-      );
-      this.packageLogger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
-    }
+    super(
+      project_directory,
+      sfdx_package,
+      packageArtifactMetadata,
+      true,
+      logger
+    );
   }
 
-  public async exec(): Promise<PackageMetadata> {
-    this.packageArtifactMetadata.package_type = "unlocked";
 
-    let startTime = Date.now();
 
+  getTypeOfPackage() {
+   return "unlocked";
+  }
+
+  async preCreatePackage(packageDirectory: string, packageDescriptor: any) {
     let projectManifest = ProjectConfig.getSFDXPackageManifest(
       this.project_directory
     );
 
 
     let sfppackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
-      this.packageLogger,
+      this.logger,
       this.project_directory,
       this.sfdx_package,
       this.config_file_path,
       this.pathToReplacementForceIgnore
     );
-    let packageDirectory: string =sfppackage.packageDescriptor.path;
+     packageDirectory =sfppackage.packageDescriptor.path;
      //Get the revised package Descriptor
-     let packageDescriptor = sfppackage.packageDescriptor;
+     packageDescriptor = sfppackage.packageDescriptor;
      let packageId = ProjectConfig.getPackageId(
        projectManifest,
        this.sfdx_package
@@ -76,13 +80,13 @@ export default class CreateUnlockedPackageImpl {
 
 
 
-    SFPLogger.log(`Package Directory: ${packageDirectory}`, LoggerLevel.INFO,this.packageLogger);
+    SFPLogger.log(`Package Directory: ${packageDirectory}`, LoggerLevel.INFO,this.logger);
 
     //Get Type of Package
     SFPLogger.log(
       "Fetching Package Type Info from DevHub",
       LoggerLevel.INFO,
-      this.packageLogger
+      this.logger
     );
     let packageTypeInfos = await this.getPackageTypeInfos();
     let packageTypeInfo = packageTypeInfos.find(
@@ -91,22 +95,23 @@ export default class CreateUnlockedPackageImpl {
 
     if(packageTypeInfo==null)
     {
-      SFPLogger.log("Unable to find a package info for this particular package, Are you sure you created this package?",LoggerLevel.WARN,this.packageLogger);
+      SFPLogger.log("Unable to find a package info for this particular package, Are you sure you created this package?",LoggerLevel.WARN,this.logger);
+      throw new Error("Unable to fetch Package Info");
     }
 
 
     if (packageTypeInfo?.IsOrgDependent == "Yes")
       this.isOrgDependentPackage = true;
 
-    SFPLogger.log("-------------------------", LoggerLevel.INFO, this.packageLogger);
-    SFPLogger.log(`Package  ${packageTypeInfo.Name}`,LoggerLevel.INFO, this.packageLogger);
+    SFPLogger.log("-------------------------", LoggerLevel.INFO, this.logger);
+    SFPLogger.log(`Package  ${packageTypeInfo.Name}`,LoggerLevel.INFO, this.logger);
     SFPLogger.log(
       `IsOrgDependent ${packageTypeInfo.IsOrgDependent}`,
        LoggerLevel.INFO,
-      this.packageLogger
+      this.logger
     );
-    SFPLogger.log(`Package Id  ${packageTypeInfo.Id}`, LoggerLevel.INFO,this.packageLogger);
-    SFPLogger.log("-------------------------", LoggerLevel.INFO, this.packageLogger);
+    SFPLogger.log(`Package Id  ${packageTypeInfo.Id}`, LoggerLevel.INFO,this.logger);
+    SFPLogger.log("-------------------------", LoggerLevel.INFO, this.logger);
 
 
 
@@ -134,27 +139,48 @@ export default class CreateUnlockedPackageImpl {
         packageDescriptor["dependencies"];
     }
 
+    //Why?
     this.packageArtifactMetadata.payload = sfppackage.payload;
     this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
     this.packageArtifactMetadata.assignPermSetsPreDeployment = sfppackage.assignPermSetsPreDeployment;
     this.packageArtifactMetadata.assignPermSetsPostDeployment = sfppackage.assignPermSetsPostDeployment;
     this.packageArtifactMetadata.isApexFound = sfppackage.isApexInPackage
     this.packageArtifactMetadata.isProfilesFound = sfppackage.isProfilesInPackage;
+  }
+
+
+
+  createPackage(packageDirectory: string, packageDescriptor: any) {
+    throw new Error("Method not implemented.");
+  }
+  postCreatePackage(packageDirectory: string, packageDescriptor: any) {
+    throw new Error("Method not implemented.");
+  }
+  isEmptyPackage(packageDirectory: string) {
+    throw new Error("Method not implemented.");
+  }
+  printAdditionalPackageSpecificHeaders() {
+    throw new Error("Method not implemented.");
+  }
+
+
+
+  public async exec(): Promise<PackageMetadata> {
 
     let command = this.buildExecCommand();
     let output = "";
-    SFPLogger.log(`Package Creation Command, ${command}`, LoggerLevel.INFO,this.packageLogger);
+    SFPLogger.log(`Package Creation Command, ${command}`, LoggerLevel.INFO,this.logger);
     let child = child_process.exec(command, {
       cwd: workingDirectory,
       encoding: "utf8",
     });
 
     child.stderr.on("data", (data) => {
-      SFPLogger.log(data.toString(), LoggerLevel.INFO, this.packageLogger);
+      SFPLogger.log(data.toString(), LoggerLevel.INFO, this.logger);
     });
 
     child.stdout.on("data", (data) => {
-      SFPLogger.log(data.toString(), LoggerLevel.INFO, this.packageLogger);
+      SFPLogger.log(data.toString(), LoggerLevel.INFO, this.logger);
       output += data.toString();
     });
 
@@ -176,7 +202,7 @@ export default class CreateUnlockedPackageImpl {
 
     //Generate Source Artifact
     let mdapiPackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
-      this.packageLogger,
+      this.logger,
       this.project_directory,
       this.sfdx_package,
       ProjectConfig.getSFDXPackageDescriptor(
@@ -278,7 +304,7 @@ export default class CreateUnlockedPackageImpl {
         SFPLogger.log(
           "Fetching Version Number and Coverage details",
           null,
-          this.packageLogger
+          this.logger
         );
         let pkgInfoResultAsJSON = child_process.execSync(
           this.buildInfoCommand(
@@ -293,7 +319,7 @@ export default class CreateUnlockedPackageImpl {
         SFPLogger.log(
           `Package Info Fetched: ${JSON.stringify(pkgInfoResultAsJSON)}`,
           LoggerLevel.INFO,
-          this.packageLogger
+          this.logger
         );
 
         let pkgInfoResult = JSON.parse(pkgInfoResultAsJSON);
@@ -310,7 +336,7 @@ export default class CreateUnlockedPackageImpl {
         SFPLogger.log(
           "Unable to fetch package version info",
           null,
-          this.packageLogger
+          this.logger
         );
         console.log("Retrying...");
         await delay(2000);
@@ -332,14 +358,14 @@ export default class CreateUnlockedPackageImpl {
     packageDescriptor: any,
     workingDirectory: string
   ) {
-    SFPLogger.log("Resolving project dependencies", null, this.packageLogger);
+    SFPLogger.log("Resolving project dependencies", null, this.logger);
 
     let resolveResult = child_process.execSync(
       `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devhub_alias} -w --usedependencyvalidatedpackages`,
       { cwd: workingDirectory, encoding: "utf8" }
     );
 
-    SFPLogger.log(`Resolved Depenendecies: ${resolveResult}`,LoggerLevel.INFO,this.packageLogger);
+    SFPLogger.log(`Resolved Depenendecies: ${resolveResult}`,LoggerLevel.INFO,this.logger);
   }
 
   private buildExecCommand(): string {
