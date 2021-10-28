@@ -116,12 +116,6 @@ steps:
             condition: or( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}', 'review') )
 
                  
-          - script: 'npx lerna run snyk-protect'
-            displayName: 'Run snyk protect'
-            condition: or( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}', 'review') )
-
-
-
           - task: CmdLine@2
             displayName: 'Run Core Unit Tests'
             condition: eq( ${{ parameters.publish }},true)
