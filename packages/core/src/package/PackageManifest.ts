@@ -21,12 +21,12 @@ export default class PackageManifest
    *
    * @returns package manifest in dir, as JSON
    */
-   private async parseManifest(dir: string) {
+   private async parseManifest(dir: string): Promise<any> {
     const packageXml: string = fs.readFileSync(
       path.join(dir, "package.xml"),
       "utf8"
     );
-    return await xml2json(packageXml);
+    return xml2json(packageXml);
   }
 
   /**
