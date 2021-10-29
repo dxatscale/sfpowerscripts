@@ -12,8 +12,8 @@ describe("Given a mdapi directory that contains manifest file", () => {
   });
 
   it("should  return the manifest in json format", async () => {
-    let packageManifest: PackageManifest = new PackageManifest("mdapi");
-    expect(packageManifest.getManifest()).resolves.toStrictEqual(packageManifestJSON);
+    const packageManifest: PackageManifest = await PackageManifest.create("mdapi");
+    expect(packageManifest.manifest).toStrictEqual(packageManifestJSON);
   });
 });
 
