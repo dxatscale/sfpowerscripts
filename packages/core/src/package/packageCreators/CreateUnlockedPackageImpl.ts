@@ -1,10 +1,7 @@
 import child_process = require("child_process");
 import PackageMetadata from "../../PackageMetadata";
 import ProjectConfig from "../../project/ProjectConfig";
-import SFPLogger, {
-  LoggerLevel,
-  Logger,
-} from "../../logger/SFPLogger";
+import SFPLogger, { LoggerLevel, Logger } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { delay } from "../../utils/Delay";
 import PackageVersionListImpl from "../../sfdxwrappers/PackageVersionListImpl";
@@ -21,7 +18,7 @@ const path = require("path");
 export default class CreateUnlockedPackageImpl extends CreatePackage {
   private static packageTypeInfos: any[];
   private isOrgDependentPackage: boolean = false;
-  private connection:Connection;
+  private connection: Connection;
   workingDirectory: string;
 
   public constructor(
@@ -53,8 +50,6 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
   }
 
   async preCreatePackage(packageDirectory: string, packageDescriptor: any) {
-    
-
     this.connection = await Connection.create({
       authInfo: await AuthInfo.create({
         username: convertAliasToUsername(this.devHub),
@@ -86,7 +81,6 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
     //Get the one in working directory
     this.configFilePath = path.join("config", "project-scratch-def.json");
 
-  
     //Get Type of Package
     SFPLogger.log(
       "Fetching Package Type Info from DevHub",
@@ -105,10 +99,9 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
       throw new Error("Unable to fetch Package Info");
     }
 
-    if (packageTypeInfo?.IsOrgDependent == "Yes")
+    if (packageTypeInfo.IsOrgDependent == "Yes")
       this.isOrgDependentPackage = true;
 
-  
     SFPLogger.log(
       `Package  ${packageTypeInfo.Name}`,
       LoggerLevel.INFO,
@@ -162,7 +155,6 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
       sfppackage.isProfilesInPackage;
   }
 
-
   async createPackage(packageDirectory: string, packageDescriptor: any) {
     let createUnlockedPackageImpl: CreateUnlockedPackageVersionImpl = new CreateUnlockedPackageVersionImpl(
       this.devHub,
@@ -181,12 +173,13 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
       this.isCoverageEnabled
     );
 
+    let result = await createUnlockedPackageImpl.exec(true);
 
-    let result = await createUnlockedPackageImpl.exec(
-      true
+    SFPLogger.log(
+      `Package Result:${JSON.stringify(result)}`,
+      LoggerLevel.TRACE,
+      this.logger
     );
-
-    SFPLogger.log(`Package Result:${JSON.stringify(result)}`,LoggerLevel.TRACE,this.logger);
     this.packageArtifactMetadata.package_version_id =
       result.SubscriberPackageVersionId;
 
@@ -200,9 +193,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
           "This package has not meet the minimum coverage requirement of 75%"
         );
     }
-   
   }
-
 
   postCreatePackage(packageDirectory: string, packageDescriptor: any) {
     if (this.packageArtifactMetadata.isDependencyValidated) {
@@ -224,10 +215,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
     );
   }
 
-  printAdditionalPackageSpecificHeaders() {
-  }
-
-  
+  printAdditionalPackageSpecificHeaders() {}
 
   private deleteSFPowerscriptsAdditionsToManifest(workingDirectory: string) {
     let projectManifestFromWorkingDirectory = ProjectConfig.getSFDXPackageManifest(
@@ -262,26 +250,27 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
   }
 
   private async getPackageInfo(versionId) {
-    let packageVersionCoverage:PackageVersionCoverage = new PackageVersionCoverage(this.connection,this.logger);
-    let count=0
-    while (count<10) {
+    let packageVersionCoverage: PackageVersionCoverage = new PackageVersionCoverage(
+      this.connection,
+      this.logger
+    );
+    let count = 0;
+    while (count < 10) {
+      count++;
       try {
         SFPLogger.log(
           "Fetching Version Number and Coverage details",
           LoggerLevel.INFO,
           this.logger
         );
-         
-      
-         let pkgInfoResult = await packageVersionCoverage.getCoverage(versionId)
-      
-      
+
+        let pkgInfoResult = await packageVersionCoverage.getCoverage(versionId);
+
         this.packageArtifactMetadata.isDependencyValidated = !this
           .isSkipValidation;
         this.packageArtifactMetadata.package_version_number =
           pkgInfoResult.packageVersionNumber;
-        this.packageArtifactMetadata.test_coverage =
-          pkgInfoResult.coverage;
+        this.packageArtifactMetadata.test_coverage = pkgInfoResult.coverage;
         this.packageArtifactMetadata.has_passed_coverage_check =
           pkgInfoResult.HasPassedCodeCoverageCheck;
         break;
@@ -291,11 +280,10 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
           LoggerLevel.INFO,
           this.logger
         );
-        SFPLogger.log("Retrying...",LoggerLevel.INFO,this.logger);
+        SFPLogger.log("Retrying...", LoggerLevel.INFO, this.logger);
         await delay(2000);
         continue;
       }
-      count++;
     }
   }
 
@@ -325,6 +313,4 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
       this.logger
     );
   }
-
- 
 }
