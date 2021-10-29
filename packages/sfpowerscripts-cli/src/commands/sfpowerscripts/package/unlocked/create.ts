@@ -1,7 +1,7 @@
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 import { flags } from "@salesforce/command";
 import { Messages } from "@salesforce/core";
-import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateUnlockedPackageImpl";
+import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateUnlockedPackageImpl";
 import PackageCreateCommand from "../../../../PackageCreateCommand";
 import {
   COLOR_SUCCESS,

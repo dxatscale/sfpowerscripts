@@ -1,12 +1,12 @@
 import SFPLogger, {
-  FileLogger,
+  COLOR_HEADER,
+  COLOR_KEY_MESSAGE,
+  COLOR_WARNING,
   Logger,
   LoggerLevel,
 } from "../../logger/SFPLogger";
 import PackageMetadata from "../../PackageMetadata";
 import SFPStatsSender from "../../stats/SFPStatsSender";
-import * as fs from "fs-extra";
-import { EOL } from "os";
 import ProjectConfig from "../../project/ProjectConfig";
 import path from "path";
 import SourcePackageGenerator from "../../generators/SourcePackageGenerator";
@@ -22,20 +22,9 @@ export abstract class CreatePackage {
     protected packageArtifactMetadata: PackageMetadata,
     protected breakBuildIfEmpty: boolean = true,
     protected logger?: Logger
-  ) {
-    if (!this.logger) {
-      fs.outputFileSync(
-        `.sfpowerscripts/logs/${sfdx_package}`,
-        `sfpowerscripts--log${EOL}`
-      );
-      this.logger = new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`);
-    }
-  }
+  ) {}
 
   public async exec(): Promise<PackageMetadata> {
-   
-    this.printHeader();
-
     //Get Type of Package
     this.packageArtifactMetadata.package_type = this.getTypeOfPackage();
     //Capture Start Time
@@ -48,10 +37,16 @@ export abstract class CreatePackage {
     );
     this.packageDirectory = this.packageDescriptor["path"];
 
+    //Print Header
+    this.printHeader();
+
     //Resolve to the actual directory
     let resolvedPackageDirectory;
     if (this.projectDirectory != null) {
-      resolvedPackageDirectory = path.join(this.projectDirectory, this.packageDirectory);
+      resolvedPackageDirectory = path.join(
+        this.projectDirectory,
+        this.packageDirectory
+      );
     } else {
       resolvedPackageDirectory = this.packageDirectory;
     }
@@ -59,15 +54,21 @@ export abstract class CreatePackage {
     //Check if the package is empty
     await this.checkWhetherProvidedPackageIsEmpty(resolvedPackageDirectory);
     //Call lifecycle commands
-    await this.preCreatePackage(resolvedPackageDirectory,this.packageDescriptor);
-    await this.createPackage(resolvedPackageDirectory,this.packageDescriptor);
-    await this.postCreatePackage(resolvedPackageDirectory,this.packageDescriptor);
-    
+    await this.preCreatePackage(
+      resolvedPackageDirectory,
+      this.packageDescriptor
+    );
+    await this.createPackage(resolvedPackageDirectory, this.packageDescriptor);
+    await this.postCreatePackage(
+      resolvedPackageDirectory,
+      this.packageDescriptor
+    );
+
     //Add addtional descriptors available
     this.writeDeploymentStepsToArtifact(this.packageDescriptor);
 
     //Genrate Artifact
-    this.generateArtifact();
+    this.generateArtifact(resolvedPackageDirectory);
 
     //Send Metrics to Logging system
     this.sendMetricsWhenSuccessfullyCreated();
@@ -76,9 +77,9 @@ export abstract class CreatePackage {
   }
 
   abstract getTypeOfPackage();
-  abstract preCreatePackage(packageDirectory:string,packageDescriptor:any);
-  abstract createPackage(packageDirectory:string,packageDescriptor:any);
-  abstract postCreatePackage(packageDirectory:string,packageDescriptor:any);
+  abstract preCreatePackage(packageDirectory: string, packageDescriptor: any);
+  abstract createPackage(packageDirectory: string, packageDescriptor: any);
+  abstract postCreatePackage(packageDirectory: string, packageDescriptor: any);
 
   private sendMetricsWhenSuccessfullyCreated() {
     let elapsedTime = Date.now() - this.startTime;
@@ -87,6 +88,19 @@ export abstract class CreatePackage {
       creation_time: elapsedTime,
       timestamp: Date.now(),
     };
+
+    if (
+      this.getTypeOfPackage() === "source" ||
+      this.getTypeOfPackage() === "unlocked"
+    )
+      SFPStatsSender.logGauge(
+        "package.metadatacount",
+        this.packageArtifactMetadata.metadataCount,
+        {
+          package: this.packageArtifactMetadata.package_name,
+          type: this.packageArtifactMetadata.package_type,
+        }
+      );
 
     SFPStatsSender.logCount("package.created", {
       package: this.packageArtifactMetadata.package_name,
@@ -106,7 +120,6 @@ export abstract class CreatePackage {
       }
     );
   }
-
 
   private writeDeploymentStepsToArtifact(packageDescriptor: any) {
     if (packageDescriptor.assignPermSetsPreDeployment) {
@@ -129,11 +142,10 @@ export abstract class CreatePackage {
         );
     }
   }
-  
-  private generateArtifact(packageDirectory:string)
-  {
-     //Get Artifact Detailes
-     let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
+
+  private generateArtifact(packageDirectory: string) {
+    //Get Artifact Detailes
+    let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
       this.logger,
       this.projectDirectory,
       this.sfdx_package,
@@ -143,22 +155,21 @@ export abstract class CreatePackage {
     this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;
   }
 
-  private async checkWhetherProvidedPackageIsEmpty(packageDirectory:string)
-  {
-
+  private async checkWhetherProvidedPackageIsEmpty(packageDirectory: string) {
     if (await this.isEmptyPackage(packageDirectory)) {
       if (this.breakBuildIfEmpty)
         throw new Error(`Package directory ${packageDirectory} is empty`);
       else this.printEmptyArtifactWarning();
     }
-
   }
 
-  abstract isEmptyPackage(packageDirectory:string);
+  abstract isEmptyPackage(packageDirectory: string);
 
   protected printEmptyArtifactWarning() {
     SFPLogger.log(
-      "---------------------WARNING! Empty aritfact encountered-------------------------------",
+      `${COLOR_WARNING(
+        `---------------------WARNING! Empty aritfact encountered-------------------------------`
+      )}`,
       LoggerLevel.INFO,
       this.logger
     );
@@ -173,7 +184,9 @@ export abstract class CreatePackage {
       this.logger
     );
     SFPLogger.log(
-      "---------------------------------------------------------------------------------------",
+      `${COLOR_WARNING(
+        `---------------------------------------------------------------------------------------`
+      )}`,
       LoggerLevel.INFO,
       this.logger
     );
@@ -181,22 +194,43 @@ export abstract class CreatePackage {
 
   private printHeader() {
     SFPLogger.log(
-      `--------------Create ${this.getTypeOfPackage()} Package---------------------------`,
+      COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`create  package`)}`),
       LoggerLevel.INFO,
       this.logger
     );
     SFPLogger.log(
-      `Project Directory ${this.projectDirectory}`,
+      COLOR_HEADER(
+        `package name: ${COLOR_KEY_MESSAGE(`${this.packageDirectory}`)}`
+      ),
       LoggerLevel.INFO,
       this.logger
     );
     SFPLogger.log(
-      `sfdx_package ${this.sfdx_package}`,
+      COLOR_HEADER(
+        `package type: ${COLOR_KEY_MESSAGE(`${this.getTypeOfPackage()}`)}`
+      ),
       LoggerLevel.INFO,
       this.logger
     );
 
+    SFPLogger.log(
+      COLOR_HEADER(
+        `package directory: ${COLOR_KEY_MESSAGE(`${this.packageDirectory}`)}`
+      ),
+      LoggerLevel.INFO,
+      this.logger
+    );
+
+
     this.printAdditionalPackageSpecificHeaders();
+
+    SFPLogger.log(
+      `${COLOR_HEADER(
+        `-------------------------------------------------------------------------------------------`
+      )}`,
+      LoggerLevel.INFO,
+      this.logger
+    );
   }
 
   abstract printAdditionalPackageSpecificHeaders();

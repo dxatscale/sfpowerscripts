@@ -64,8 +64,8 @@ export default class ApexTypeFetcher {
 
         compilationUnitContext = parser.compilationUnit();
       } catch (err) {
-        SFPLogger.log(`Failed to parse ${clsFile}`,LoggerLevel.WARN);
-        SFPLogger.log(err,LoggerLevel.WARN);
+        SFPLogger.log(`Failed to parse ${clsFile} in ${this.searchDir}`,LoggerLevel.WARN);
+        SFPLogger.log(err.message,LoggerLevel.WARN);
 
         fileDescriptor["error"] = err;
         this.apexSortedByType["parseError"].push(fileDescriptor);
