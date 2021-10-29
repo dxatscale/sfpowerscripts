@@ -10,7 +10,6 @@ import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 const path = require("path");
 const glob = require("glob");
-const os = require("os");
 const { EOL } = require("os");
 const tmp = require("tmp");
 import DeploySourceToOrgImpl from "../../sfpcommands/source/DeploySourceToOrgImpl";
@@ -290,18 +289,26 @@ export default class InstallSourcePackageImpl extends InstallPackage {
       await reconcileProfileAgainstOrg.exec();
 
       //Now deploy the profies alone
-      fs.appendFileSync(
-        path.join(sourceDirectoryPath, ".forceignore"),
-        "**.**" + os.EOL
-      );
-      fs.appendFileSync(
-        path.join(sourceDirectoryPath, ".forceignore"),
-        "!**.profile-meta.xml"
-      );
+
+      const profilesDirs = glob.sync("**/profiles/", {
+        cwd: path.join(sourceDirectoryPath, sourceDirectory),
+        absolute: true
+      });
+
+      const profileDeploymentStagingDirectory = path.join(sourceDirectoryPath, "ProfileDeploymentStagingDirectory");
+      fs.mkdirpSync(path.join(profileDeploymentStagingDirectory, sourceDirectory, "profiles"));
+
+      for (const dir of profilesDirs) {
+        // Duplicate profiles are overwritten
+        fs.copySync(dir, path.join(profileDeploymentStagingDirectory, sourceDirectory, "profiles"))
+      }
+
+      fs.copySync(path.join(sourceDirectoryPath, "sfdx-project.json"), path.join(profileDeploymentStagingDirectory, "sfdx-project.json"));
+      fs.copySync(path.join(sourceDirectoryPath, ".forceignore"), path.join(profileDeploymentStagingDirectory, ".forceignore"));
 
       let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
         target_org,
-        sourceDirectoryPath,
+        profileDeploymentStagingDirectory,
         sourceDirectory,
         deploymentOptions,
         false,
