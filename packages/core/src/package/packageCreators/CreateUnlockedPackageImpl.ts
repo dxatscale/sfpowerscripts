@@ -67,7 +67,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
       this.configFilePath,
       this.pathToReplacementForceIgnore
     );
-    packageDirectory = sfppackage.packageDescriptor.path;
+  
     //Get the revised package Descriptor
     packageDescriptor = sfppackage.packageDescriptor;
     let packageId = ProjectConfig.getPackageId(
