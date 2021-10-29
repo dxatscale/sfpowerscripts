@@ -127,7 +127,7 @@ export default class SFPPackage {
 
     // Requires destructiveChangesPath which is set by the property fetcher
     sfpPackage._workingDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
-      sfpPackage._logger, 
+      sfpPackage._logger,
       sfpPackage._projectDirectory,
       sfpPackage._package_name,
       sfpPackage._packageDescriptor.path,
@@ -142,8 +142,8 @@ export default class SFPPackage {
       packageLogger
     ).exec(true);
 
-    let packageManifest:PackageManifest = new PackageManifest(sfpPackage.mdapiDir);
-    sfpPackage._payload = await packageManifest.getManifest();
+    const packageManifest:PackageManifest = await PackageManifest.create(sfpPackage.mdapiDir);
+    sfpPackage._payload = packageManifest.manifest;
     sfpPackage._triggers = packageManifest.fetchTriggers();
     sfpPackage._isApexInPackage = packageManifest.isApexInPackage();
     sfpPackage._isProfilesInPackage = packageManifest.isProfilesInPackage();
