@@ -18,7 +18,6 @@ export default interface PackageMetadata {
     apexTestClassses?:string[];
     isTriggerAllTests?:boolean;
     isProfilesFound?:boolean;
-    isProfileSupportedMetadataInPackage?:boolean,
     isPromoted?: boolean;
     tag?:string;
     isDependencyValidated?:boolean;
@@ -30,5 +29,4 @@ export default interface PackageMetadata {
     reconcileProfiles?: boolean;
     creation_details?:{creation_time?:number,timestamp?:number}
     deployments?:{target_org:string,sub_directory?:string,installation_time?:number,timestamp?:number}[];
-    version?:number
   }
