@@ -1,6 +1,6 @@
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
-import CreateSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateSourcePackageImpl';
+import CreateSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateSourcePackageImpl';
 import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import PackageCreateCommand from '../../../../PackageCreateCommand';
 import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
@@ -79,9 +79,8 @@ export default class CreateSourcePackage extends PackageCreateCommand {
           null,
           this.sfdxPackage,
           packageMetadata,
-          null,
-          false,
-          new ConsoleLogger()
+          true,
+          new ConsoleLogger(),
         );
         packageMetadata = await createSourcePackageImpl.exec();
 

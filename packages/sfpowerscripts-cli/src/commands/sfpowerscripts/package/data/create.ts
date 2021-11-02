@@ -3,9 +3,8 @@ import { Messages } from "@salesforce/core";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
-import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateDataPackageImpl";
-import {
-  COLOR_SUCCESS,
+import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateDataPackageImpl"
+import {  COLOR_SUCCESS,
   ConsoleLogger,
 } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import PackageCreateCommand from "../../../../PackageCreateCommand";

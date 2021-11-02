@@ -10,12 +10,12 @@ import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import { Stage } from "../Stage";
 import * as fs from "fs-extra"
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
-import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateUnlockedPackageImpl"
-import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateSourcePackageImpl"
-import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/package/CreateDataPackageImpl"
+import CreateUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateUnlockedPackageImpl"
+import CreateSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateSourcePackageImpl"
+import CreateDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateDataPackageImpl"
 import BuildCollections from "./BuildCollections";
 const Table = require("cli-table");
-import { ConsoleLogger, VoidLogger} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
+import { ConsoleLogger, FileLogger, VoidLogger} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { COLOR_ERROR } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
@@ -587,7 +587,8 @@ export default class BuildImpl {
       !isSkipValidation,
       isSkipValidation,
       packageMetadata,
-      this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
+      this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage),
+      new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`)
     );
 
     let result = createUnlockedPackageImpl.exec();
@@ -626,6 +627,8 @@ export default class BuildImpl {
       this.props.projectDirectory,
       sfdx_package,
       packageMetadata,
+      false,
+      new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`),
       this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
     );
     let result = createSourcePackageImpl.exec();
@@ -663,7 +666,9 @@ export default class BuildImpl {
     let createDataPackageImpl = new CreateDataPackageImpl(
       this.props.projectDirectory,
       sfdx_package,
-      packageMetadata
+      packageMetadata,
+      false,
+      new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`)
     );
     let result = createDataPackageImpl.exec();
 
