@@ -3,6 +3,7 @@ import { AnyJson } from "@salesforce/ts-types";
 import poolListImpl from "../../../impl/pool/PoolListImpl";
 import { isNullOrUndefined } from "util";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
 
 
@@ -130,7 +131,7 @@ export default class List extends SfdxCommand {
             "orgId",
             "username",
             "password",
-            "expityDate",
+            "expiryDate",
             "status",
             "loginURL",
           ]);
@@ -139,14 +140,14 @@ export default class List extends SfdxCommand {
             "tag",
             "orgId",
             "username",
-            "expityDate",
+            "expiryDate",
             "status",
             "loginURL",
           ]);
         }
       } else {
-        console.log(
-          `${this.flags.tag} pool has No Scratch orgs available, time to create your pool.`
+        SFPLogger.log(
+           `No Scratch orgs available, time to create your pool.`,LoggerLevel.ERROR
         );
       }
     }
