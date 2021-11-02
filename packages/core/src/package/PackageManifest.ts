@@ -78,6 +78,22 @@ export default class PackageManifest
     return isProfilesFound;
   }
 
+  public isPermissionSetGroupsFoundInPackage():boolean {
+    let isPermissionSetGroupFound = false;
+    if (Array.isArray(this.manifest["Package"]["types"])) {
+      for (let type of this.manifest["Package"]["types"]) {
+        if (type["name"] == "PermissionSetGroup") {
+          isPermissionSetGroupFound = true;
+          break;
+        }
+      }
+    } else if (this.manifest["Package"]["types"]["name"] == "PermissionSetGroup") {
+      isPermissionSetGroupFound = true;
+    }
+    return isPermissionSetGroupFound;
+  }
+
+
   /**
    *
    * @returns true or false, for whether there are Apex classes and/or triggers

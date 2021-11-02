@@ -67,7 +67,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
       this.configFilePath,
       this.pathToReplacementForceIgnore
     );
-  
+
     //Get the revised package Descriptor
     packageDescriptor = sfppackage.packageDescriptor;
     let packageId = ProjectConfig.getPackageId(
@@ -143,7 +143,6 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
         packageDescriptor["dependencies"];
     }
 
-    //Why?
     this.packageArtifactMetadata.payload = sfppackage.payload;
     this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
     this.packageArtifactMetadata.assignPermSetsPreDeployment =
@@ -153,6 +152,8 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
     this.packageArtifactMetadata.isApexFound = sfppackage.isApexInPackage;
     this.packageArtifactMetadata.isProfilesFound =
       sfppackage.isProfilesInPackage;
+    this.packageArtifactMetadata.isPermissionSetGroupFound =
+      sfppackage.isPermissionSetGroupInPackage;
   }
 
   async createPackage(packageDirectory: string, packageDescriptor: any) {

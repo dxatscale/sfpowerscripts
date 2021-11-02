@@ -15,7 +15,7 @@ jest.mock("../../src/project/ProjectConfig", () => {
       };
     }
 
-    static getSFDXPackageManifest=jest.fn();
+    static getSFDXPackageManifest = jest.fn();
     static getPackageType(projectConfig: any, sfdxPackage: string) {
       return packageType;
     }
@@ -28,9 +28,9 @@ jest.mock("../../src/generators/SourcePackageGenerator", () => {
     static generateSourcePackageArtifact(
       projectDirectory: string,
       sfdx_package: string,
-      packageDirectory:string,
+      packageDirectory: string,
       destructiveManifestFilePath?: string,
-      configFilePath?:string,
+      configFilePath?: string,
       pathToReplacementForceIgnore?: string
     ): string {
       return ".sfpowerscripts/3sIRD_source";
@@ -51,7 +51,7 @@ jest.mock("../../src/package/MetadataCount", () => {
   class MetadataCount {
     static getMetadataCount = jest.fn().mockReturnValue(20);
   }
-  return MetadataCount
+  return MetadataCount;
 });
 
 jest.mock("../../src/apex/parser/ApexTypeFetcher", () => {
@@ -72,7 +72,9 @@ jest.mock("../../src/apex/parser/ApexTypeFetcher", () => {
         )
       );
 
-      getClassesOnlyExcludingTestsAndInterfaces = jest.fn().mockReturnValue(
+    getClassesOnlyExcludingTestsAndInterfaces = jest
+      .fn()
+      .mockReturnValue(
         new Array<string>(
           "AccountTriggerHandler",
           "Data_TableV2_Controller",
@@ -82,10 +84,9 @@ jest.mock("../../src/apex/parser/ApexTypeFetcher", () => {
           "RecordHunterField",
           "RecordHunterLexer",
           "SObjectController2",
-          "Send_Receipt",
+          "Send_Receipt"
         )
       );
-
   }
 
   return ApexTypeFetcher;
@@ -93,8 +94,6 @@ jest.mock("../../src/apex/parser/ApexTypeFetcher", () => {
 
 describe("Given a sfdx package, build a sfpowerscripts package", () => {
   it("should build a sfpowerscripts package", async () => {
-
-
     const fsextraMock = jest.spyOn(fs, "readFileSync");
     fsextraMock.mockImplementation(
       (path: any, options: string | { encoding?: string; flag?: string }) => {
@@ -102,50 +101,50 @@ describe("Given a sfdx package, build a sfpowerscripts package", () => {
       }
     );
 
-
-
-
-     let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,null,"ESBaseCodeLWC");
-     expect(sfpPackage.isProfilesInPackage).toStrictEqual(false);
-     expect(sfpPackage.isApexInPackage).toStrictEqual(true);
-     expect(sfpPackage.triggers).toBeUndefined();
-     expect(sfpPackage.packageType).toStrictEqual("Source");
-     expect(sfpPackage.payload).toStrictEqual(packageManifestJSON);
-     expect(sfpPackage.mdapiDir).toStrictEqual("mdapidir");
-     expect(sfpPackage.packageDescriptor).toStrictEqual({
+    let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
+      null,
+      null,
+      "ESBaseCodeLWC"
+    );
+    expect(sfpPackage.isProfilesInPackage).toStrictEqual(false);
+    expect(sfpPackage.isApexInPackage).toStrictEqual(true);
+    expect(sfpPackage.isPermissionSetGroupInPackage).toStrictEqual(true);
+    expect(sfpPackage.triggers).toBeUndefined();
+    expect(sfpPackage.packageType).toStrictEqual("Source");
+    expect(sfpPackage.payload).toStrictEqual(packageManifestJSON);
+    expect(sfpPackage.mdapiDir).toStrictEqual("mdapidir");
+    expect(sfpPackage.packageDescriptor).toStrictEqual({
       path: "packages/domains/core",
       package: "core",
       default: false,
       versionName: "core",
       versionNumber: "1.0.0.0",
     });
-    expect(sfpPackage.apexTestClassses).toStrictEqual( new Array<string>(
-      "AccountTriggerHandlerTest",
-      "Generate_Dose_Admin_PdfTest",
-      "RecordHunterController_Test",
-      "SObjectController2Test",
-      "Send_Receipt_Test",
-      "TestDataFactory",
-      "TestFileRestriction",
-      "appoinmentSchedulerControllerTest"
-    ));
-    expect(sfpPackage.apexClassWithOutTestClasses).toStrictEqual( new Array<string>(
-      "AccountTriggerHandler",
-      "Data_TableV2_Controller",
-      "Generate_Dose_Admin_Pdf",
-      "Generate_QR_Code",
-      "RecordHunterController",
-      "RecordHunterField",
-      "RecordHunterLexer",
-      "SObjectController2",
-      "Send_Receipt",
-    ));
-
-
-
-     expect(sfpPackage.isProfileSupportedMetadataInPackage).toStrictEqual(true);
-
-
+    expect(sfpPackage.apexTestClassses).toStrictEqual(
+      new Array<string>(
+        "AccountTriggerHandlerTest",
+        "Generate_Dose_Admin_PdfTest",
+        "RecordHunterController_Test",
+        "SObjectController2Test",
+        "Send_Receipt_Test",
+        "TestDataFactory",
+        "TestFileRestriction",
+        "appoinmentSchedulerControllerTest"
+      )
+    );
+    expect(sfpPackage.apexClassWithOutTestClasses).toStrictEqual(
+      new Array<string>(
+        "AccountTriggerHandler",
+        "Data_TableV2_Controller",
+        "Generate_Dose_Admin_Pdf",
+        "Generate_QR_Code",
+        "RecordHunterController",
+        "RecordHunterField",
+        "RecordHunterLexer",
+        "SObjectController2",
+        "Send_Receipt"
+      )
+    );
   });
 
   it("should build a sfpowerscripts package when there is only one type", async () => {
@@ -216,6 +215,7 @@ let packageManifestJSON = {
         members: ["Flow_Status_Change", "Tile_Selection"],
       },
       { name: "CustomObject", members: "Customer_Fields__mdt" },
+      { name: "PermissionSetGroup", members: "TestPermissionSetGroup" },
       {
         name: "CustomField",
         members: [
@@ -273,6 +273,10 @@ let packageManifestXML: string = `
     <name>CustomObject</name>
     <members>Customer_Fields__mdt</members>
   </types>
+  <types>
+  <name>PermissionSetGroup</name>
+  <members>TestPermissionSetGroup</members>
+</types>
   <types>
     <name>CustomField</name>
     <members>Customer_Fields__mdt.Customer_City__c</members>

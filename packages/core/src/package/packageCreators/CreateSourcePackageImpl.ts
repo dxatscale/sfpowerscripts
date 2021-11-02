@@ -1,7 +1,4 @@
-import SFPLogger, {
-  LoggerLevel,
-  Logger,
-} from "../../logger/SFPLogger";
+import SFPLogger, { LoggerLevel, Logger } from "../../logger/SFPLogger";
 import PackageMetadata from "../../PackageMetadata";
 import { EOL } from "os";
 import {
@@ -15,7 +12,6 @@ import { CreatePackage } from "./CreatePackage";
 const Table = require("cli-table");
 
 export default class CreateSourcePackageImpl extends CreatePackage {
- 
   public constructor(
     projectDirectory: string,
     sfdx_package: string,
@@ -46,10 +42,8 @@ export default class CreateSourcePackageImpl extends CreatePackage {
     );
   }
 
-  preCreatePackage(packageDirectory: string, packageDescriptor: any) {
-   
-  }
- 
+  preCreatePackage(packageDirectory: string, packageDescriptor: any) {}
+
   public async createPackage(packageDirectory: string, packageDescriptor: any) {
     let sfppackage = await SFPPackage.buildPackageFromProjectConfig(
       this.logger,
@@ -70,6 +64,8 @@ export default class CreateSourcePackageImpl extends CreatePackage {
       sfppackage.assignPermSetsPostDeployment;
     this.packageArtifactMetadata.reconcileProfiles =
       sfppackage.reconcileProfiles;
+    this.packageArtifactMetadata.isPermissionSetGroupFound =
+      sfppackage.isPermissionSetGroupInPackage;
 
     if (sfppackage.destructiveChanges) {
       this.packageArtifactMetadata.destructiveChanges =
@@ -88,11 +84,7 @@ export default class CreateSourcePackageImpl extends CreatePackage {
     );
   }
 
-  postCreatePackage(packageDirectory: string, packageDescriptor: any) {
-   
-  }
-
-  
+  postCreatePackage(packageDirectory: string, packageDescriptor: any) {}
 
   private handleApexTestClasses(mdapiPackage: SFPPackage) {
     let classTypes: ApexSortedByType = mdapiPackage.apexClassesSortedByTypes;
