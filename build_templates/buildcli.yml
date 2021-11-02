@@ -52,6 +52,10 @@ steps:
                echo "##vso[build.updatebuildnumber]${PKG_VERSION}"
 
 
+          - task: NodeTool@0
+            inputs:
+             versionSpec: '14.x' 
+
           - task: CmdLine@2
             displayName: "Set Git Config"
             inputs:
