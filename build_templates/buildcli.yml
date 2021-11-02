@@ -64,12 +64,6 @@ steps:
                  git config --global user.name "sfpowerkitci"
 
 
-          - task: CmdLine@2
-            displayName: Install Node depdencies
-            inputs:
-              script: 'npm install'
-
-
           - task: DownloadSecureFile@1
             displayName: 'Download secure file .npmrc'
             name: npmrc
