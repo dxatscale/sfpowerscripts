@@ -146,6 +146,38 @@ describe("Given a sfdx package, build a sfpowerscripts package", () => {
       )
     );
   });
+
+  it("should build a sfpowerscripts package when there is only one type", async () => {
+
+
+    const fsextraMock = jest.spyOn(fs, "readFileSync");
+    fsextraMock.mockImplementation(
+      (path: any, options: string | { encoding?: string; flag?: string }) => {
+        return packageManifestXML2;
+      }
+    );
+
+
+
+     let sfpPackage:SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null,null,"ESBaseCodeLWC");
+     expect(sfpPackage.isProfilesInPackage).toStrictEqual(true);
+     expect(sfpPackage.isApexInPackage).toStrictEqual(false);
+     expect(sfpPackage.triggers).toBeUndefined();
+     expect(sfpPackage.packageType).toStrictEqual("Source");
+     expect(sfpPackage.mdapiDir).toStrictEqual("mdapidir");
+     expect(sfpPackage.packageDescriptor).toStrictEqual({
+      path: "packages/domains/core",
+      package: "core",
+      default: false,
+      versionName: "core",
+      versionNumber: "1.0.0.0",
+    });
+     expect(sfpPackage.isProfileSupportedMetadataInPackage).toStrictEqual(false);
+
+
+  });
+
+
 });
 
 let packageManifestJSON = {
@@ -255,6 +287,21 @@ let packageManifestXML: string = `
     <members>Customer_Fields__mdt.Customer_State__c</members>
     <members>Customer_Fields__mdt.Customer_Status__c</members>
     <members>Customer_Fields__mdt.Sobject_Type__c</members>
+  </types>
+  <version>50.0</version>
+</Package>
+`;
+
+let packageManifestXML2: string = `
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <types>
+    <name>Profile</name>
+    <members>CustomerServices</members>
+    <members>CustomerServicesTest</members>
+    <members>MarketServices</members>
+    <members>MarketServicesTest</members>
+    <members>TestDataFactory</members>
   </types>
   <version>50.0</version>
 </Package>

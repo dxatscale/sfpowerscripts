@@ -1,4 +1,6 @@
-import ApexTypeFetcher, { ApexSortedByType } from "../apex/parser/ApexTypeFetcher";
+import ApexTypeFetcher, {
+  ApexSortedByType,
+} from "../apex/parser/ApexTypeFetcher";
 import ProjectConfig from "../project/ProjectConfig";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
 import ConvertSourceToMDAPIImpl from "../sfdxwrappers/ConvertSourceToMDAPIImpl";
@@ -27,14 +29,16 @@ export default class SFPPackage {
   private _isPermissionSetGroupInPackage:boolean;
   private _configFilePath: string;
   private _projectDirectory: string;
-  private _apexClassesSortedByTypes:ApexSortedByType;
+  private _apexClassesSortedByTypes: ApexSortedByType;
   private _workingDirectory: string;
+  private _isProfileSupportedMetadataInPackage:boolean;
+  
 
   private readonly _propertyFetchers: PropertyFetcher[] = [
     new AssignPermissionSetFetcher(),
     new DestructiveManifestPathFetcher(),
-    new ReconcilePropertyFetcher()
-  ]
+    new ReconcilePropertyFetcher(),
+  ];
 
   public assignPermSetsPreDeployment?: string[];
   public assignPermSetsPostDeployment?: string[];
@@ -43,8 +47,9 @@ export default class SFPPackage {
   public reconcileProfiles: boolean;
   public postDeploymentScript: string;
   public preDeploymentScript: string;
+  public version: string='3';
 
-  private constructor(private _logger:Logger) {}
+  private constructor(private _logger: Logger) {}
 
   public get configFilePath() {
     return this._configFilePath;
@@ -74,18 +79,16 @@ export default class SFPPackage {
     return this._packageDescriptor;
   }
 
-
+  
   public get apexTestClassses(): ApexClasses {
     return this._apexTestClassses;
   }
-
-
 
   public get apexClassWithOutTestClasses(): ApexClasses {
     return this._apexClassWithOutTestClasses;
   }
 
-  public get apexClassesSortedByTypes():ApexSortedByType {
+  public get apexClassesSortedByTypes(): ApexSortedByType {
     return this._apexClassesSortedByTypes;
   }
 
@@ -117,18 +120,20 @@ export default class SFPPackage {
 
     sfpPackage._projectDirectory = projectDirectory;
 
-    if(configFilePath==null)
-      sfpPackage._configFilePath="config/project-scratch-def.json";
-    else
-      sfpPackage._configFilePath=configFilePath;
+    if (configFilePath == null)
+      sfpPackage._configFilePath = "config/project-scratch-def.json";
+    else sfpPackage._configFilePath = configFilePath;
 
     for (const propertyFetcher of sfpPackage.propertyFetchers) {
-      await propertyFetcher.getSfpowerscriptsProperties(sfpPackage, packageLogger);
+      await propertyFetcher.getSfpowerscriptsProperties(
+        sfpPackage,
+        packageLogger
+      );
     }
 
     // Requires destructiveChangesPath which is set by the property fetcher
     sfpPackage._workingDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
-      sfpPackage._logger, 
+      sfpPackage._logger,
       sfpPackage._projectDirectory,
       sfpPackage._package_name,
       sfpPackage._packageDescriptor.path,
@@ -143,18 +148,24 @@ export default class SFPPackage {
       packageLogger
     ).exec(true);
 
-    let packageManifest:PackageManifest = new PackageManifest(sfpPackage.mdapiDir);
-    sfpPackage._payload = await packageManifest.getManifest();
+    const packageManifest: PackageManifest = await PackageManifest.create(
+      sfpPackage.mdapiDir
+    );
+    sfpPackage._payload = packageManifest.manifest;
     sfpPackage._triggers = packageManifest.fetchTriggers();
     sfpPackage._isApexInPackage = packageManifest.isApexInPackage();
     sfpPackage._isProfilesInPackage = packageManifest.isProfilesInPackage();
     sfpPackage._isPermissionSetGroupInPackage = packageManifest.isPermissionSetGroupsFoundInPackage();
+    sfpPackage._isProfileSupportedMetadataInPackage = packageManifest.isPayLoadContainTypesSupportedByProfiles();
     sfpPackage._packageType = ProjectConfig.getPackageType(
       ProjectConfig.getSFDXPackageManifest(sfpPackage._workingDirectory),
       sfdx_package
     );
 
-    let apexFetcher:ApexTypeFetcher = new ApexTypeFetcher(sfpPackage._mdapiDir);
+
+    let apexFetcher: ApexTypeFetcher = new ApexTypeFetcher(
+      sfpPackage._mdapiDir
+    );
 
     sfpPackage._apexClassesSortedByTypes = apexFetcher.getClassesClassifiedByType();
     sfpPackage._apexTestClassses = apexFetcher.getTestClasses();
@@ -163,6 +174,7 @@ export default class SFPPackage {
       sfpPackage._packageDescriptor.path
     );
     sfpPackage._apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
+   
 
     return sfpPackage;
   }
@@ -171,7 +183,6 @@ export default class SFPPackage {
     return this._isApexInPackage;
   }
 
-
   public get isProfilesInPackage(): boolean {
     return this._isProfilesInPackage;
   }
@@ -179,4 +190,9 @@ export default class SFPPackage {
   public get isPermissionSetGroupInPackage(): boolean {
     return this._isPermissionSetGroupInPackage;
   }
+  public get isProfileSupportedMetadataInPackage():boolean {
+    return this._isProfileSupportedMetadataInPackage;
+  }
+
+
 }
