@@ -41,6 +41,20 @@ export default class PackageManifest
     return packageManifest;
   }
 
+
+    /**
+   * Factory method
+   * @param mdapiDir directory containing package.xml
+   * @returns instance of PackageManifest
+   */
+     static async createWithJSONManifest(manifest: any): Promise<PackageManifest> {
+      const packageManifest = new PackageManifest();
+      packageManifest._manifest = manifest;
+      return packageManifest;
+    }
+  
+  
+
   /**
    *
    * @returns true or false, for whether there are profiles
@@ -122,5 +136,56 @@ export default class PackageManifest
     }
 
     return triggers;
+  }
+
+  
+  public isPayloadContainTypesOtherThan(providedType: string) {
+    let anyOtherType = false;
+    if (this.manifest.Package.types) {
+      if (Array.isArray(this.manifest.Package.types)) {
+        for (const type of this.manifest.Package.types) {
+          if (type.name != providedType) {
+            anyOtherType = true;
+            break;
+          }
+        }
+      } else if (this.manifest.Package.types.name != providedType) {
+        anyOtherType = true;
+      }
+    }
+    return anyOtherType;
+  }
+
+  public isPayLoadContainTypesSupportedByProfiles() {
+    const profileSupportedMetadataTypes = [
+      "ApexClass",
+      "CustomApplication",
+      "CustomObject",
+      "CustomField",
+      "Layout",
+      "ApexPage",
+      "CustomTab",
+      "RecordType",
+      "SystemPermissions",
+    ];
+
+    let containsProfileSupportedType = false;
+    if (this.manifest.Package.types) {
+      if (Array.isArray(this.manifest.Package.types)) {
+        for (const type of this.manifest.Package.types) {
+          if (profileSupportedMetadataTypes.includes(type.name)) {
+            containsProfileSupportedType = true;
+            break;
+          }
+        }
+      } else if (
+        profileSupportedMetadataTypes.includes(
+          this.manifest.Package.types.name
+        )
+      ) {
+        containsProfileSupportedType = true;
+      }
+    }
+    return containsProfileSupportedType;
   }
 }
