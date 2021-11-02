@@ -10,18 +10,17 @@ import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 const path = require("path");
 const glob = require("glob");
-const os = require("os");
 const { EOL } = require("os");
 const tmp = require("tmp");
 import DeploySourceToOrgImpl from "../../sfpcommands/source/DeploySourceToOrgImpl";
 import PushSourceToOrgImpl from "../../sfpcommands/source/PushSourceToOrgImpl";
 import { InstallPackage } from "./InstallPackage";
+import PackageManifest from "../PackageManifest";
 
 export default class InstallSourcePackageImpl extends InstallPackage {
-
-  private options:any;
-  private pathToReplacementForceIgnore:string;
-  private deploymentType:DeploymentType;
+  private options: any;
+  private pathToReplacementForceIgnore: string;
+  private deploymentType: DeploymentType;
 
   public constructor(
     sfdxPackage: string,
@@ -273,6 +272,13 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     tmpdir: string,
     deploymentOptions: any
   ) {
+    //if no profile supported metadata, no point in
+    //doing a reconcile
+    let packageManifest = await PackageManifest.createWithJSONManifest(
+      this.packageMetadata.payload
+    );
+    if (!packageManifest.isPayLoadContainTypesSupportedByProfiles) return;
+
     if (profileFolders.length > 0) {
       profileFolders.forEach((folder) => {
         fs.copySync(
@@ -290,18 +296,48 @@ export default class InstallSourcePackageImpl extends InstallPackage {
       await reconcileProfileAgainstOrg.exec();
 
       //Now deploy the profies alone
-      fs.appendFileSync(
-        path.join(sourceDirectoryPath, ".forceignore"),
-        "**.**" + os.EOL
+
+      const profilesDirs = glob.sync("**/profiles/", {
+        cwd: path.join(sourceDirectoryPath, sourceDirectory),
+        absolute: true,
+      });
+
+      const profileDeploymentStagingDirectory = path.join(
+        sourceDirectoryPath,
+        "ProfileDeploymentStagingDirectory"
       );
-      fs.appendFileSync(
+      fs.mkdirpSync(
+        path.join(
+          profileDeploymentStagingDirectory,
+          sourceDirectory,
+          "profiles"
+        )
+      );
+
+      for (const dir of profilesDirs) {
+        // Duplicate profiles are overwritten
+        fs.copySync(
+          dir,
+          path.join(
+            profileDeploymentStagingDirectory,
+            sourceDirectory,
+            "profiles"
+          )
+        );
+      }
+
+      fs.copySync(
+        path.join(sourceDirectoryPath, "sfdx-project.json"),
+        path.join(profileDeploymentStagingDirectory, "sfdx-project.json")
+      );
+      fs.copySync(
         path.join(sourceDirectoryPath, ".forceignore"),
-        "!**.profile-meta.xml"
+        path.join(profileDeploymentStagingDirectory, ".forceignore")
       );
 
       let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
         target_org,
-        sourceDirectoryPath,
+        profileDeploymentStagingDirectory,
         sourceDirectory,
         deploymentOptions,
         false,
@@ -320,7 +356,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
   }
 
   private async generateDeploymentOptions(
-    waitTime:string,
+    waitTime: string,
     optimizeDeployment: boolean,
     skipTest: boolean,
     target_org: string

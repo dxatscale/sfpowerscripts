@@ -52,18 +52,16 @@ steps:
                echo "##vso[build.updatebuildnumber]${PKG_VERSION}"
 
 
+          - task: NodeTool@0
+            inputs:
+             versionSpec: '14.x' 
+
           - task: CmdLine@2
             displayName: "Set Git Config"
             inputs:
                script: |
                  git config --global user.email "sfpowerkit.ci@dev.azure.com"
                  git config --global user.name "sfpowerkitci"
-
-
-          - task: CmdLine@2
-            displayName: Install Node depdencies
-            inputs:
-              script: 'npm install'
 
 
           - task: DownloadSecureFile@1
@@ -81,11 +79,6 @@ steps:
                cp $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)/packages/core/.npmrc
                cp $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli/.npmrc
 
-          - task: Npm@1
-            displayName: 'npm install'
-            inputs:
-              verbose: false
-              customEndpoint: npm
 
           - task: npmAuthenticate@0
             displayName: 'npm Authenticate .npmrc'
@@ -142,7 +135,7 @@ steps:
             displayName: 'Publish CLI/Core'
             condition: eq( ${{ parameters.publish }},true)
             inputs:
-                 script: 'npx lerna publish from-package --yes --force-publish --no-git-tag-version --no-push --dist-tag ${{ parameters.version }}'
+                 script: 'npx lerna publish from-package --yes --dist-tag ${{ parameters.version }}'
                  workingDirectory: '$(System.DefaultWorkingDirectory)'
 
           - task: CmdLine@2
