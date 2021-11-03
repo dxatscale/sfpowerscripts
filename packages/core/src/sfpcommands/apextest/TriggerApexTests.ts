@@ -34,7 +34,6 @@ export default class TriggerApexTests {
 
     let startTime = Date.now();
     let testExecutionResult: boolean = false;
-    let testTotalTime;
     let testsRan;
     let commandTime;
 
@@ -80,7 +79,7 @@ export default class TriggerApexTests {
 
 
 
-      commandTime = testReport.summary?.commandTime?.split(" ")[0];
+      commandTime = testReport.summary.commandTime?.split(" ")[0];
 
 
       if (testReport.summary.outcome == "Failed") {
@@ -158,7 +157,7 @@ export default class TriggerApexTests {
         type: this.testOptions.testLevel,
         target_org: this.target_org,
       });
-      
+
       SFPStatsSender.logCount("apextests.triggered", {
         test_result: String(testExecutionResult),
         package: this.testOptions instanceof RunAllTestsInPackageOptions ? this.testOptions.sfppackage.package_name : null,
