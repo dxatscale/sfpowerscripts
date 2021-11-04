@@ -34,8 +34,8 @@ export default class TriggerApexTests {
 
     let startTime = Date.now();
     let testExecutionResult: boolean = false;
-    let testTotalTime;
     let testsRan;
+    let commandTime;
 
     try {
       let triggerApexTestImpl: TriggerApexTestImpl = new TriggerApexTestImpl(
@@ -79,7 +79,7 @@ export default class TriggerApexTests {
 
 
 
-      testTotalTime = testReport.summary.testTotalTime.split(" ")[0];
+      commandTime = testReport.summary.commandTime?.split(" ")[0];
 
 
       if (testReport.summary.outcome == "Failed") {
@@ -143,19 +143,21 @@ export default class TriggerApexTests {
         });
 
 
-      SFPStatsSender.logElapsedTime("apextest.testtotal.time", testTotalTime, {
+      SFPStatsSender.logGauge("apextest.testtotal.time", elapsedTime, {
         test_result: String(testExecutionResult),
         package: this.testOptions instanceof RunAllTestsInPackageOptions ? this.testOptions.sfppackage.package_name : null,
         type: this.testOptions["testlevel"],
         target_org: this.target_org,
       });
 
-      SFPStatsSender.logElapsedTime("apextest.command.time", elapsedTime, {
+      if(commandTime)
+      SFPStatsSender.logGauge("apextest.command.time", commandTime, {
         test_result: String(testExecutionResult),
         package: this.testOptions instanceof RunAllTestsInPackageOptions ? this.testOptions.sfppackage.package_name : null,
         type: this.testOptions.testLevel,
         target_org: this.target_org,
       });
+
       SFPStatsSender.logCount("apextests.triggered", {
         test_result: String(testExecutionResult),
         package: this.testOptions instanceof RunAllTestsInPackageOptions ? this.testOptions.sfppackage.package_name : null,
