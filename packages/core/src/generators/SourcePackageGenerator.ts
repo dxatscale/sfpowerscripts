@@ -179,11 +179,12 @@ export default class SourcePackageGenerator {
     pathToReplacementForceIgnore: string,
     logger:Logger
   ): void {
-    if (fs.existsSync(pathToReplacementForceIgnore))
+    if (fs.existsSync(pathToReplacementForceIgnore)) {
       fs.copySync(
         pathToReplacementForceIgnore,
         path.join(artifactDirectory, ".forceignore")
       );
+    }
     else {
       SFPLogger.log(`${pathToReplacementForceIgnore} does not exist`,LoggerLevel.INFO,logger);
       SFPLogger.log("Package creation will continue using the unchanged forceignore in the root directory",LoggerLevel.INFO,logger);

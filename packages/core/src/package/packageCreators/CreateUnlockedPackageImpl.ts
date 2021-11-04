@@ -33,7 +33,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
     private isCoverageEnabled: boolean,
     private isSkipValidation: boolean,
     packageArtifactMetadata: PackageMetadata,
-    private pathToReplacementForceIgnore?: string,
+    pathToReplacementForceIgnore?: string,
     logger?: Logger
   ) {
     super(
@@ -41,7 +41,8 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
       sfdx_package,
       packageArtifactMetadata,
       true,
-      logger
+      logger,
+      pathToReplacementForceIgnore
     );
   }
 

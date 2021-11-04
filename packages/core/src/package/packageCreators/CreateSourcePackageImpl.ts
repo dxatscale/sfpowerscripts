@@ -18,14 +18,15 @@ export default class CreateSourcePackageImpl extends CreatePackage {
     packageArtifactMetadata: PackageMetadata,
     breakBuildIfEmpty: boolean = true,
     logger?: Logger,
-    private pathToReplacementForceIgnore?: string
+    pathToReplacementForceIgnore?: string
   ) {
     super(
       projectDirectory,
       sfdx_package,
       packageArtifactMetadata,
       breakBuildIfEmpty,
-      logger
+      logger,
+      pathToReplacementForceIgnore
     );
   }
 

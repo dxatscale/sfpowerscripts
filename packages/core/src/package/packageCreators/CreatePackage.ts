@@ -21,7 +21,8 @@ export abstract class CreatePackage {
     protected sfdx_package: string,
     protected packageArtifactMetadata: PackageMetadata,
     protected breakBuildIfEmpty: boolean = true,
-    protected logger?: Logger
+    protected logger?: Logger,
+    protected pathToReplacementForceIgnore?: string
   ) {}
 
   public async exec(): Promise<PackageMetadata> {
@@ -143,13 +144,14 @@ export abstract class CreatePackage {
     }
   }
 
-  private generateArtifact(packageDirectory: string) {
+  private  generateArtifact(packageDirectory: string) {
     //Get Artifact Detailes
     let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
       this.logger,
       this.projectDirectory,
       this.sfdx_package,
-      packageDirectory
+      packageDirectory,
+      this.pathToReplacementForceIgnore
     );
 
     this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;
