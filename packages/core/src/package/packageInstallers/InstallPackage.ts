@@ -98,7 +98,7 @@ export abstract class InstallPackage {
 
         if (orgDetails.isSandbox) {
           // If the target org is a sandbox, find a 'default' directory to use as package directory
-          this.packageDirectory = files.find(
+          aliasDir = files.find(
             (file) =>
               path.basename(file) === "default" &&
               fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
