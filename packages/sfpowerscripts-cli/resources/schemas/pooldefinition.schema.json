@@ -47,7 +47,7 @@
       "title": "Succeed on Deployment Errors",
       "description": "In case of a deployment error, whether to keep that scratch org in the pool",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "installAll": {
       "title": "Install all packages",
