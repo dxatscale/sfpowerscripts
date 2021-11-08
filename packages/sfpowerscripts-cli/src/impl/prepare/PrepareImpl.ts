@@ -32,6 +32,8 @@ export default class PrepareImpl {
 
     if(!this.pool.batchSize) this.pool.batchSize = 5;
 
+    if(!this.pool.succeedOnDeploymentErrors) this.pool.succeedOnDeploymentErrors=true;
+
   }
 
 
