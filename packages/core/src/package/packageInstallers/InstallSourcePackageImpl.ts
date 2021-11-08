@@ -277,7 +277,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     let packageManifest = await PackageManifest.createWithJSONManifest(
       this.packageMetadata.payload
     );
-    if (!packageManifest.isPayLoadContainTypesSupportedByProfiles) return;
+    if (!packageManifest.isPayLoadContainTypesSupportedByProfiles()) return;
 
     if (profileFolders.length > 0) {
       profileFolders.forEach((folder) => {
