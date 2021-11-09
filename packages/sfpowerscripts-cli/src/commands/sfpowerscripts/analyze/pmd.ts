@@ -67,7 +67,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
   }),
   version: flags.string({
     required: false,
-    default: "6.34.0",
+    default: "6.39.0",
     description: messages.getMessage("versionFlagDescription"),
   }),
   threshold: flags.integer({
