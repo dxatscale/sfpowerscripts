@@ -10,10 +10,10 @@ import ApexTypeListener from "./listeners/ApexTypeListener";
 import {
   ApexLexer,
   ApexParser,
-  ApexParserListener,
   CaseInsensitiveInputStream,
   ThrowingErrorListener,
 } from "apex-parser";
+import { ApexParserListener } from "apex-parser/lib/ApexParserListener";
 import SFPLogger, { LoggerLevel } from "../../logger/SFPLogger";
 import { ApexClasses } from "../../package/SFPPackage";
 
