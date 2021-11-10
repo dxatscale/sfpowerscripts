@@ -239,12 +239,6 @@ export default class Prepare extends SfpowerscriptsCommand {
             `Fetch artifacts from pre-authenticated NPM registry: true`
           )
         );
-        if (poolConfig.fetchArtifacts.npm.npmtag)
-          SFPLogger.log(
-            COLOR_HEADER(
-              `Tag utilized to fetch from NPM registry: ${poolConfig.fetchArtifacts.npm.npmtag}`
-            )
-          );
       }
     }
 

@@ -1,10 +1,10 @@
 import * as fs from "fs-extra";
 import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
-import GitTags from "@dxatscale/sfpowerscripts.core/lib/git/GitTags";
 import ReleaseDefinitionSchema from "../release/ReleaseDefinitionSchema";
 import FetchArtifactsError from "../../errors/FetchArtifactsError";
 import * as rimraf from "rimraf";
 import FetchArtifactSelector from "./FetchArtifactSelector";
+import { LatestGitTagVersion } from "./LatestGitTagVersion";
 
 export default class FetchImpl {
   constructor(
@@ -53,6 +53,7 @@ export default class FetchImpl {
   }> {
    
     const git: Git = new Git(null);
+    let latestGitTagVersion:LatestGitTagVersion = new LatestGitTagVersion(git);
 
     let fetchedArtifacts = {
       success: [],
@@ -69,7 +70,7 @@ export default class FetchImpl {
           artifacts[i][1] === "LATEST_TAG" ||
           artifacts[i][1] === "LATEST_GIT_TAG"
         ) {
-          version = await this.getVersionFromLatestTag(git, artifacts[i][0]);
+          version = await latestGitTagVersion.getVersionFromLatestTag(artifacts[i][0]);
         } else version = artifacts[i][1];
 
         let  artifactFetcher = new FetchArtifactSelector(scriptPath,scope,npmrcPath).getArtifactFetcher();  
@@ -91,42 +92,5 @@ export default class FetchImpl {
   }
 
 
-  private async getVersionFromLatestTag(
-    git: Git,
-    packageName: string
-  ): Promise<string> {
-    let version: string;
-
-    let gitTags = new GitTags(git, packageName);
-    let tags = await gitTags.listTagsOnBranch();
-    let latestTag = tags.pop();
-
-    if (latestTag) {
-      let match: RegExpMatchArray = latestTag.match(
-        /^.*_v(?<version>[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+|\.LATEST|\.NEXT)?)$/
-      );
-      if (match)
-        version = this.substituteBuildNumberWithPreRelease(
-          match.groups.version
-        );
-      else throw new Error(`Failed to find valid tag for ${packageName}`);
-    } else throw new Error(`Failed to find latest tag for ${packageName}`);
-
-    return version;
-  }
-
-  private substituteBuildNumberWithPreRelease(packageVersionNumber: string) {
-    let segments = packageVersionNumber.split(".");
-
-    if (segments.length === 4) {
-      packageVersionNumber = segments.reduce(
-        (version, segment, segmentsIdx) => {
-          if (segmentsIdx === 3) return version + "-" + segment;
-          else return version + "." + segment;
-        }
-      );
-    }
-
-    return packageVersionNumber;
-  }
+  
 }
