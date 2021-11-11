@@ -1,9 +1,9 @@
 import {
+  ApexParserListener,
   AnnotationContext,
   InterfaceDeclarationContext,
   ClassDeclarationContext
 } from "apex-parser";
-import { ApexParserListener } from "apex-parser/lib/ApexParserListener";
 
 
 export default class ApexTypeListener implements ApexParserListener {
