@@ -324,10 +324,11 @@ export default class Promote extends SfpowerscriptsCommand {
 
     let cmd = `npm publish`;
 
-    if(packageMetadata.branch)
+    //Do a tag based on the branch
+    if(packageMetadata.branch) {
      cmd += ` --tag ${packageMetadata.branch}`;
-
-    SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`));
+     SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${packageMetadata.branch}...`));
+    }
 
     child_process.execSync(
       cmd,
