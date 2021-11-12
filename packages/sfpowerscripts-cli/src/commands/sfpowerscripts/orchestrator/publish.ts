@@ -324,9 +324,8 @@ export default class Promote extends SfpowerscriptsCommand {
 
     let cmd = `npm publish`;
 
-    let tag: string;
-    tag = packageMetadata.branch
-    cmd += ` --tag ${tag}`;
+    if(packageMetadata.branch)
+     cmd += ` --tag ${packageMetadata.branch}`;
 
     SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`));
 
