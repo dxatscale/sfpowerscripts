@@ -16,6 +16,8 @@ import { Stage } from "../Stage";
 import PrepareOrgJob from "./PrepareOrgJob";
 import * as rimraf from "rimraf";
 import * as fs from "fs-extra";
+import { LatestGitTagVersion } from "../artifacts/LatestGitTagVersion";
+import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
 
 
 export default class PrepareImpl {
@@ -110,14 +112,17 @@ export default class PrepareImpl {
         this.pool.fetchArtifacts.npm?.npmrcPath
       ).getArtifactFetcher();
 
+      const git: Git = new Git(null);
+      let latestGitTagVersion:LatestGitTagVersion = new LatestGitTagVersion(git)
 
       //During Prepare, there could be a race condition where a main is merged with a new package
       //but the package is not yet available in the validated package list and can cause prepare to fail
-      packages.forEach((pkg) => {
+     packages.forEach(async (pkg) => {
+        let version = await latestGitTagVersion.getVersionFromLatestTag(pkg.package);
         artifactFetcher.fetchArtifact(
           pkg.package,
           "artifacts",
-          this.pool.fetchArtifacts.npm ? this.pool.fetchArtifacts.npm.npmtag : null,
+          version,
           true
         );
       });

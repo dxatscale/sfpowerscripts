@@ -17,8 +17,7 @@ export interface PoolConfig {
     artifactFetchScript?: string,
     npm?: {
       npmrcPath?:string,
-      scope: string,
-      npmtag: string
+      scope: string
     }
   },
   enableVlocity?:boolean,

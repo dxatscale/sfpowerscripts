@@ -73,7 +73,11 @@ export default class Promote extends SfpowerscriptsCommand {
     npmtag: flags.string({
       description: messages.getMessage('npmTagFlagDescription'),
       dependsOn: ['npm'],
-      required: false
+      required: false,
+      deprecated: {
+        messageOverride:
+          "--npmtag is deprecated, sfpowerscripts will automatically tag the artifact with the branch name",
+      },
     }),
     npmrcpath: flags.filepath({
       description: messages.getMessage('npmrcPathFlagDescription'),
@@ -320,18 +324,11 @@ export default class Promote extends SfpowerscriptsCommand {
 
     let cmd = `npm publish`;
 
-    let tag: string;
-    if (this.flags.npmtag) {
-      tag = this.flags.npmtag;
-    } else if (packageMetadata.branch) {
-      tag = packageMetadata.branch
-    } else {
-      throw new Error(`Artifact ${packageName} ${packageVersionNumber} does not contain branch info. Please provide --npmtag flag explicitly, or re-build the artifact with the --branch flag.`);
+    //Do a tag based on the branch
+    if(packageMetadata.branch) {
+     cmd += ` --tag ${packageMetadata.branch}`;
+     SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${packageMetadata.branch}...`));
     }
-
-    cmd += ` --tag ${tag}`;
-
-    SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber} with tag ${tag}...`));
 
     child_process.execSync(
       cmd,

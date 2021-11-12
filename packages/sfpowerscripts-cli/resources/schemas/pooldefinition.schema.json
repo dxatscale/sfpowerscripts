@@ -101,18 +101,12 @@
         "npm": {
           "type": "object",
           "required": [
-            "scope",
-            "npmtag"
+            "scope"
           ],
           "properties": {
             "scope": {
               "title": "Scope of NPM packages",
-              "description": "Scope of NPM package",
-              "type": "string"
-            },
-            "npmtag": {
-              "title": "Tag of NPM packages",
-              "description": "Tag of NPM packages e.g. develop, release, alpha, latest",
+              "description": "Scope of NPM packages",
               "type": "string"
             }
           }
