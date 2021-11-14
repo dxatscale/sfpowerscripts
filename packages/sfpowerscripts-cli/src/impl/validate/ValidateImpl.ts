@@ -212,7 +212,7 @@ export default class ValidateImpl {
        buildNumber:1,
        executorcount:10,
        waitTime:120,
-       isDiffCheckEnabled:true,
+       isDiffCheckEnabled: this.props.validateMode===ValidateMode.POOL,
        isQuickBuild:true,
        isBuildAllAsSourcePackages:true,
        packagesToCommits:packagesToCommits,
