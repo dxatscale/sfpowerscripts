@@ -302,7 +302,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
     packageDescriptor: any,
     workingDirectory: string
   ) {
-    SFPLogger.log("Resolving project dependencies", null, this.logger);
+    SFPLogger.log("Resolving project dependencies", LoggerLevel.INFO, this.logger);
 
     let resolveResult = child_process.execSync(
       `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor["path"]} -v ${this.devHub} -w --usedependencyvalidatedpackages`,
