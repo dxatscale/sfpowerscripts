@@ -50,17 +50,17 @@ export default class ExecuteCommand
         if (code === 0 || (code === null && signal === "SIGTERM")) {
           resolve(stdoutContents);
         } else {
-          if(stdoutContents)
-          reject(new Error(stdoutContents));
+          if(stderrContents)
+          reject(new Error(stderrContents));
           else
-          reject(new Error(stdoutContents+"\n"+stderrContents));
+          reject(new Error(stdoutContents));
           }
       });
 
 
       childProcess.once('error', (err: Error) => {
         if(stderrContents)
-         reject(new Error(stdoutContents+"\n"+stderrContents));
+         reject(new Error(stderrContents));
       });
       }
       catch(error)
