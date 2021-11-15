@@ -3,6 +3,7 @@ import SFPLogger, { COLOR_TRACE, Logger, LoggerLevel } from "../../logger/SFPLog
 
 export default class ExecuteCommand
 {
+ 
 
   public constructor(
     protected logger?: Logger,
@@ -11,7 +12,9 @@ export default class ExecuteCommand
     ) {}
 
 
-   public execCommand(command:string, workingdirectory:string, timeout: number = 0):Promise<any>
+
+
+   public execCommand(command:string, workingdirectory:string, timeout: number = 0, isEnableErrorFromOutputStream:boolean=false):Promise<any>
    {
     return new Promise((resolve, reject) => {
       try
@@ -50,7 +53,7 @@ export default class ExecuteCommand
         if (code === 0 || (code === null && signal === "SIGTERM")) {
           resolve(stdoutContents);
         } else {
-          if(stderrContents)
+          if(stderrContents && !isEnableErrorFromOutputStream)
           reject(new Error(stderrContents));
           else
           reject(new Error(stdoutContents));
@@ -59,8 +62,10 @@ export default class ExecuteCommand
 
 
       childProcess.once('error', (err: Error) => {
-        if(stderrContents)
+        if(stderrContents && !isEnableErrorFromOutputStream)
          reject(new Error(stderrContents));
+        else
+          reject(new Error(stdoutContents));
       });
       }
       catch(error)
