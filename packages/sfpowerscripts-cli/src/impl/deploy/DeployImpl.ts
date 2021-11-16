@@ -300,34 +300,39 @@ export default class DeployImpl {
   }
 
   private displayHeader(packageMetadata: PackageMetadata, pkgDescriptor: any, pkg: string) {
-    let isApexFoundMessage: string = packageMetadata.package_type === "unlocked"
-      ? ""
-      : `Contains Apex Classes/Triggers: ${COLOR_KEY_MESSAGE(packageMetadata.isApexFound)}${EOL}`;
+
+
 
     let alwaysDeployMessage: string;
 
     if (this.props.skipIfPackageInstalled) {
       if (pkgDescriptor.alwaysDeploy)
-        alwaysDeployMessage = `Always Deploy: ${COLOR_KEY_MESSAGE(`True`)} ${EOL}`;
+        alwaysDeployMessage = `Always Deploy: ${COLOR_KEY_MESSAGE(`True`)}`;
 
       else
-        alwaysDeployMessage = `Always Deploy: ${COLOR_KEY_MESSAGE(`False`)} ${EOL}`;
+        alwaysDeployMessage = `Always Deploy: ${COLOR_KEY_MESSAGE(`False`)}`;
     } else
-      alwaysDeployMessage = "";
+      alwaysDeployMessage = undefined;
 
+    //Display header
     SFPLogger.log(COLOR_HEADER(
-      `-------------------------Installing Package------------------------------------${EOL}` +
-      `Name: ${COLOR_KEY_MESSAGE(pkg)}${EOL}` +
-      `Type: ${COLOR_KEY_MESSAGE(packageMetadata.package_type)}${EOL}` +
-      `Version Number: ${COLOR_KEY_MESSAGE(packageMetadata.package_version_number)}${EOL}` +
-      `Metadata Count: ${COLOR_KEY_MESSAGE(packageMetadata.metadataCount)}${EOL}` +
-      isApexFoundMessage +
-      alwaysDeployMessage +
-      `-------------------------------------------------------------------------------${EOL}`),
-      LoggerLevel.INFO,
-      this.props.packageLogger,
-
-    );
+      `-------------------------Installing Package------------------------------------`),LoggerLevel.INFO,this.props.packageLogger);
+    SFPLogger.log(COLOR_HEADER( `Name: ${COLOR_KEY_MESSAGE(pkg)}`),LoggerLevel.INFO,this.props.packageLogger);
+    SFPLogger.log(`Type: ${COLOR_KEY_MESSAGE(packageMetadata.package_type)}`,LoggerLevel.INFO,this.props.packageLogger);
+    SFPLogger.log(`Version Number: ${COLOR_KEY_MESSAGE(packageMetadata.package_version_number)}`,LoggerLevel.INFO,this.props.packageLogger);
+    if(pkgDescriptor.aliasfy)
+    SFPLogger.log(`Aliasified Package: ${COLOR_KEY_MESSAGE(`True`)}`,LoggerLevel.INFO,this.props.packageLogger);
+    SFPLogger.log(`Contains Apex Classes/Triggers: ${COLOR_KEY_MESSAGE(packageMetadata.isApexFound)}`,LoggerLevel.INFO,this.props.packageLogger);
+    if(packageMetadata.package_type=="source"|| packageMetadata.package_type=="unlocked")
+    {
+    if(!pkgDescriptor.aliasfy)
+       SFPLogger.log(`Metadata Count: ${COLOR_KEY_MESSAGE(packageMetadata.metadataCount)}`,LoggerLevel.INFO,this.props.packageLogger)
+    }
+    if(alwaysDeployMessage)
+      SFPLogger.log(alwaysDeployMessage,LoggerLevel.INFO,this.props.packageLogger);
+       
+    SFPLogger.log(COLOR_HEADER(
+      `-------------------------------------------------------------------------------`),LoggerLevel.INFO,this.props.packageLogger);
   }
 
 
