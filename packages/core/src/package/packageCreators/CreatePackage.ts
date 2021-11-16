@@ -22,7 +22,8 @@ export abstract class CreatePackage {
     protected packageArtifactMetadata: PackageMetadata,
     protected breakBuildIfEmpty: boolean = true,
     protected logger?: Logger,
-    protected pathToReplacementForceIgnore?: string
+    protected pathToReplacementForceIgnore?: string,
+    protected configFilePath?:string
   ) {}
 
   public async exec(): Promise<PackageMetadata> {
@@ -151,6 +152,8 @@ export abstract class CreatePackage {
       this.projectDirectory,
       this.sfdx_package,
       packageDirectory,
+      this.packageDescriptor.destructiveChangePath,
+      this.configFilePath,
       this.pathToReplacementForceIgnore
     );
 

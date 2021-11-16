@@ -24,7 +24,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
   public constructor(
     sfdx_package: string,
     private version_number: string,
-    private configFilePath: string,
+    configFilePath: string,
     private installationkeybypass: boolean,
     private installationkey: string,
     protected projectDirectory: string,
@@ -42,7 +42,8 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
       packageArtifactMetadata,
       true,
       logger,
-      pathToReplacementForceIgnore
+      pathToReplacementForceIgnore,
+      configFilePath
     );
   }
 
