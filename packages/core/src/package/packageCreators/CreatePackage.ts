@@ -205,7 +205,7 @@ export abstract class CreatePackage {
     );
     SFPLogger.log(
       COLOR_HEADER(
-        `package name: ${COLOR_KEY_MESSAGE(`${this.packageDirectory}`)}`
+        `package name: ${COLOR_KEY_MESSAGE(`${this.sfdx_package}`)}`
       ),
       LoggerLevel.INFO,
       this.logger
