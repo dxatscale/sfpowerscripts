@@ -54,7 +54,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         this.packageLogger
       ).exec(true);
       PackageMetadataPrinter.printMetadataToDeploy(
-        (await PackageManifest.create(this.mdapiDir)).manifest,
+        (await PackageManifest.create(this.mdapiDir)).manifestJson,
         this.packageLogger
       );
 

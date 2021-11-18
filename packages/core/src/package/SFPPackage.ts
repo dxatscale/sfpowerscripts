@@ -32,7 +32,7 @@ export default class SFPPackage {
   private _apexClassesSortedByTypes: ApexSortedByType;
   private _workingDirectory: string;
   private _isProfileSupportedMetadataInPackage:boolean;
-  
+
 
   private readonly _propertyFetchers: PropertyFetcher[] = [
     new AssignPermissionSetFetcher(),
@@ -79,7 +79,7 @@ export default class SFPPackage {
     return this._packageDescriptor;
   }
 
-  
+
   public get apexTestClassses(): ApexClasses {
     return this._apexTestClassses;
   }
@@ -151,7 +151,7 @@ export default class SFPPackage {
     const packageManifest: PackageManifest = await PackageManifest.create(
       sfpPackage.mdapiDir
     );
-    sfpPackage._payload = packageManifest.manifest;
+    sfpPackage._payload = packageManifest.manifestJson;
     sfpPackage._triggers = packageManifest.fetchTriggers();
     sfpPackage._isApexInPackage = packageManifest.isApexInPackage();
     sfpPackage._isProfilesInPackage = packageManifest.isProfilesInPackage();
@@ -174,7 +174,7 @@ export default class SFPPackage {
       sfpPackage._packageDescriptor.path
     );
     sfpPackage._apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
-   
+
 
     return sfpPackage;
   }
