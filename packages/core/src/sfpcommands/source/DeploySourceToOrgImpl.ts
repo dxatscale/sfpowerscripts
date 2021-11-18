@@ -8,6 +8,7 @@ import ConvertSourceToMDAPIImpl from "../../sfdxwrappers/ConvertSourceToMDAPIImp
 import PackageManifest from "../../package/PackageManifest";
 import DeployErrorDisplayer from "../../display/DeployErrorDisplayer";
 import * as fs from "fs-extra";
+const path = require("path");
 import DeploymentExecutor, { DeploySourceResult } from "./DeploymentExecutor";
 const Table = require("cli-table");
 
@@ -152,9 +153,10 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
   private async getFinalDeploymentStatus(deploy_id: string): Promise<string> {
     SFPLogger.log(`Gathering Final Deployment Status`, null, this.packageLogger);
     let reportAsJSON="";
+    let deploymentReports =`.sfpowerscripts/mdapiDeployReports`;
+    fs.mkdirpSync(deploymentReports);
+
     try {
-      let filepath=`sfpowerscripts/mdapiDeployReports`;
-      fs.mkdirpSync(filepath);
       let child = child_process.exec(
         `sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org} -w 30`,
         {
@@ -198,6 +200,12 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
       {
         return "Unable to fetch report";
       }
+    } finally {
+      // Write deployment report to file
+      fs.writeFileSync(
+        path.join(deploymentReports, `${deploy_id}.json`),
+        reportAsJSON
+      )
     }
   }
 

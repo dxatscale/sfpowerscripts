@@ -7,11 +7,13 @@ const Handlebars = require("handlebars");
 const puppeteer = require("puppeteer");
 import * as fs from "fs-extra";
 import path = require("path");
+import { Connection } from "@salesforce/core";
+import CyclicalDependencyAnalyzer from "./CyclicalDependencyAnalyzer";
 
 export default class DependencyAnalysis {
   constructor(
     private baseBranch: string,
-    private authDetails
+    private connection: Connection
   ){}
 
   public async exec() {
@@ -29,6 +31,7 @@ export default class DependencyAnalysis {
     // Filter diff to package directories
     diff = diff.filter((filepath) =>
       projectConfig.packageDirectories.find((pkg) =>
+        // TODO: make comparison more robust
           filepath.includes(pkg.path)
       )
     );
@@ -39,87 +42,120 @@ export default class DependencyAnalysis {
     );
     diff = ignoreFiles.filter(diff);
 
-    // Get api name of components that have changed
-    let componentApiNames: string[] = [];
-    if (diff.length > 0) {
-      diff.forEach((filepath) => {
-        componentApiNames.push(MetadataFiles.getFullApiName(filepath));
-      })
-    } else throw new Error("No changed components to analyse");
-
     let componentSuccesses = this.getComponentSuccessesFromReports();
 
-    let entrypoints = this.getEntrypoints(componentApiNames, componentSuccesses);
+    // Get api name of components that have changed
+    const components: Component[] = [];
+    if (diff.length > 0) {
+      for (const filepath of diff) {
+        // componentApiNames.push(MetadataFiles.getFullApiName(filepath));
+        const fullApiName = MetadataFiles.getFullApiName(filepath);
 
-    let connection = {
-      token: this.authDetails.accessToken,
-      url: this.authDetails.instanceUrl
-    };
-
-    // Register helper for stringifying JSON objects in hbs templates
-    Handlebars.registerHelper('stringify', function(object) {
-      return JSON.stringify(object, null, 4);
-    });
-
-    const impactAnalysisResultsDir = ".sfpowerscripts/impactAnalysis"
-    fs.mkdirpSync(impactAnalysisResultsDir);
-
-    const screenshotDir = path.join(
-      impactAnalysisResultsDir,
-      "screenshots"
-    );
-    fs.mkdirpSync(screenshotDir);
-
-    let resourcesDir: string = path.join(
-      __dirname,
-      "..",
-      "..",
-      "..",
-      "resources"
-    );
-
-    this.copyDependencies(resourcesDir, impactAnalysisResultsDir);
-
-    let browser;
-    try{
-      browser = await puppeteer.launch({
-        defaultViewport: {width: 1920, height: 1080},
-        args: ["--no-sandbox"]
-      });
-
-      for (let entrypoint of entrypoints) {
-        let { nodes, edges } = await this.createGraphElements(entrypoint, connection);
-
-        // skip graphs with single node
-        if (nodes.length === 1) continue;
-
-        await this.generateGraphFilesForEntrypoint(
-          nodes,
-          edges,
-          resourcesDir,
-          impactAnalysisResultsDir,
-          entrypoint.name
+        // find package that file belongs to
+        const indexOfPackage = projectConfig.packageDirectories.findIndex(pkg =>
+          filepath.includes(pkg.path)
         );
 
-        const page = await browser.newPage();
+        const componentSuccess = componentSuccesses
+          .find(component =>
+            component.fullName === fullApiName && component.id
+          );
 
-        await page.goto(
-          `file://` +
-          path.resolve(impactAnalysisResultsDir, `${entrypoint.name}.html`) +
-          `?depth=2`
-        );
+        if (componentSuccess) {
+          const component: Component = {
+            id: componentSuccess.id,
+            fullName: componentSuccess.fullName,
+            type: componentSuccess.componentType,
+            file: filepath,
+            package: projectConfig.packageDirectories[indexOfPackage].package,
+            indexOfPackage: indexOfPackage
+          }
 
-        await page.screenshot({
-          path: path.join(
-            screenshotDir,
-            entrypoint.name + '.png'
-          ),
-          fullPage: true
-        });
+          components.push(component);
+        } else {
+          // Ignore file if it's not an identifiable component
+          continue;
+        }
       }
-    } finally {
-      if (browser)  await browser.close();
-    }
+    } else throw new Error("No changed components to analyse");
+
+
+    let entrypoints = this.getEntrypoints(components);
+
+    // let connection = {
+    //   token: this.authDetails.accessToken,
+    //   url: this.authDetails.instanceUrl
+    // };
+
+    const cyclicalDependencyAnalyzer = new CyclicalDependencyAnalyzer(entrypoints, this.connection, components);
+    await cyclicalDependencyAnalyzer.exec();
+
+    // call Usage API once
+
+    // // Register helper for stringifying JSON objects in hbs templates
+    // Handlebars.registerHelper('stringify', function(object) {
+    //   return JSON.stringify(object, null, 4);
+    // });
+
+    // const impactAnalysisResultsDir = ".sfpowerscripts/impactAnalysis"
+    // fs.mkdirpSync(impactAnalysisResultsDir);
+
+    // const screenshotDir = path.join(
+    //   impactAnalysisResultsDir,
+    //   "screenshots"
+    // );
+    // fs.mkdirpSync(screenshotDir);
+
+    // let resourcesDir: string = path.join(
+    //   __dirname,
+    //   "..",
+    //   "..",
+    //   "..",
+    //   "resources"
+    // );
+
+    // this.copyDependencies(resourcesDir, impactAnalysisResultsDir);
+
+    // let browser;
+    // try{
+    //   browser = await puppeteer.launch({
+    //     defaultViewport: {width: 1920, height: 1080},
+    //     args: ["--no-sandbox"]
+    //   });
+
+    //   for (let entrypoint of entrypoints) {
+    //     let { nodes, edges } = await this.createGraphElements(entrypoint, connection);
+
+    //     // skip graphs with single node
+    //     if (nodes.length === 1) continue;
+
+    //     await this.generateGraphFilesForEntrypoint(
+    //       nodes,
+    //       edges,
+    //       resourcesDir,
+    //       impactAnalysisResultsDir,
+    //       entrypoint.name
+    //     );
+
+    //     const page = await browser.newPage();
+
+    //     await page.goto(
+    //       `file://` +
+    //       path.resolve(impactAnalysisResultsDir, `${entrypoint.name}.html`) +
+    //       `?depth=2`
+    //     );
+
+    //     await page.screenshot({
+    //       path: path.join(
+    //         screenshotDir,
+    //         entrypoint.name + '.png'
+    //       ),
+    //       fullPage: true
+    //     });
+    //   }
+    // } finally {
+    //   if (browser)  await browser.close();
+    // }
   }
 
   private async generateGraphFilesForEntrypoint(
@@ -195,32 +231,35 @@ export default class DependencyAnalysis {
    * @param componentSuccesses
    */
   private getEntrypoints(
-    componentApiNames: string[],
-    componentSuccesses: any[]
-  ): {name: string, type: string, id: string}[] {
-    let entrypoints: {name: string, type: string, id: string}[] = [];
-
+    components: Component[]
+  ): Entrypoint[] {
     // component names that cannot be ID'ed are excluded / undetected
-    componentApiNames.forEach((name) => {
-      entrypoints = entrypoints.concat(
-        componentSuccesses
-          .filter((component) => {
-            return component.fullName === name;
-          })
-          .map((component) => {
-            return {
-              name: component.fullName,
-              type: component.componentType,
-              id: component.id
-            };
-          })
-      );
+    // components.forEach((component) => {
+    //   entrypoints = entrypoints.concat(
+    //     componentSuccesses
+    //       .filter((component) => {
+    //         return component.fullName === name && component.id
+    //       })
+    //       .map((component) => {
+    //         return {
+    //           name: component.fullName,
+    //           type: component.componentType,
+    //           id: component.id
+    //         };
+    //       })
+    //   );
+    // });
+
+    // if (entrypoints.length === 0)
+    //   throw new Error("Unable to retrieve ID of the changed components");
+
+    return components.map(component => {
+      return {
+        name: component.fullName,
+        type: component.type,
+        id: component.id
+      } as Entrypoint
     });
-
-    if (entrypoints.length === 0)
-      throw new Error("Unable to retrieve ID of the changed components");
-
-    return entrypoints;
   }
 
   /**
@@ -364,4 +403,19 @@ export default class DependencyAnalysis {
       )
     );
   }
+}
+
+export interface Component {
+  id: string,
+  fullName: string,
+  type: string,
+  file: string,
+  package: string,
+  indexOfPackage: number
+}
+
+export interface Entrypoint {
+  name: string,
+  type: string,
+  id: string
 }
