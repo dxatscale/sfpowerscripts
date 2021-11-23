@@ -1,30 +1,23 @@
 import { Connection } from "@salesforce/core";
 const sfdcSoup = require("sfdc-soup");
-import { Component, Entrypoint } from "./DependencyAnalysis";
-import { ComponentSet, MetadataResolver } from '@salesforce/source-deploy-retrieve';
-import PackageManifest from "@dxatscale/sfpowerscripts.core/lib/package/PackageManifest";
-import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import { component2entrypoint } from "./Entrypoint";
+import Component from "./Component";
+import DependencyViolation from "./DependencyViolation";
+import { ComponentSet } from '@salesforce/source-deploy-retrieve';
+import PackageManifest from "../package/PackageManifest";
+import ProjectConfig from "../project/ProjectConfig";
 import * as fs from "fs-extra";
-const Table = require("cli-table");
-import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 
-export default class CyclicalDependencyAnalyzer {
-  constructor(private entrypoints: Entrypoint[], private conn: Connection, private components: Component[]) {
+export default class DependencyAnalysis {
+  constructor(
+    private conn: Connection,
+    private components: Component[]
+  ) {}
 
-  }
+  async exec(): Promise<DependencyViolation[]> {
+    const violations: DependencyViolation[] = [];
 
-  async exec() {
-    const violations: {
-      package: string,
-      indexOfPackage: number,
-      files: string[],
-      fullName: string
-      type: string,
-      dependency: Component,
-      description: string
-    }[] = [];
-
-    let connection = {
+    const soupApiConnection = {
       token: this.conn.accessToken,
       url: this.conn.instanceUrl,
       apiVersion: '50.0'
@@ -32,9 +25,9 @@ export default class CyclicalDependencyAnalyzer {
 
     const projectConfig = ProjectConfig.getSFDXPackageManifest(null);
 
-    for (const entrypoint of this.entrypoints) {
-      console.log(entrypoint);
-      let soupApi = sfdcSoup(connection, entrypoint);
+    const entrypoints = component2entrypoint(this.components);
+    for (const entrypoint of entrypoints) {
+      const soupApi = sfdcSoup(soupApiConnection, entrypoint);
       let usageResponse;
       try {
         usageResponse = await soupApi.getUsage();
@@ -42,18 +35,15 @@ export default class CyclicalDependencyAnalyzer {
         console.log(error.message);
       }
 
-      console.log(JSON.stringify(usageResponse, null, 4));
-
       const componentsDependentOnEntrypoint = [];
       for (let cmps of Object.values<any>(usageResponse.usageTree)) {
+        // flatten usage tree
         cmps.forEach(cmp => {
           componentsDependentOnEntrypoint.push(cmp);
         });
       }
 
       if (componentsDependentOnEntrypoint.length > 0) {
-        console.log("componentsDependentOnEntrypoint", componentsDependentOnEntrypoint);
-
         const cmps = componentsDependentOnEntrypoint.map(cmp => {
           return {
             fullName: cmp.name,
@@ -69,16 +59,24 @@ export default class CyclicalDependencyAnalyzer {
 
         fs.writeFileSync(`.sfpowerscripts/package.xml`, packageManifest.manifestXml);
 
-        const componentSet = await ComponentSet.fromManifest(
-          {
-            manifestPath: '.sfpowerscripts/package.xml',
-            resolveSourcePaths: projectConfig.packageDirectories.map(pkg => pkg.path)
-          }
-        );
+        let componentSet: ComponentSet;
+        try {
+          componentSet = await ComponentSet.fromManifest(
+            {
+              manifestPath: '.sfpowerscripts/package.xml',
+              resolveSourcePaths: projectConfig.packageDirectories.map(pkg => pkg.path)
+            }
+          );
+        } catch (err) {
+          console.log(err.message);
+          continue;
+        }
+
 
 
         componentsDependentOnEntrypoint.forEach(cmp => {
           const componentFilenames = componentSet.getComponentFilenamesByNameAndType({fullName: cmp.name, type: cmp.type});
+
           cmp.files = componentFilenames;
 
           // Determine package
@@ -90,9 +88,6 @@ export default class CyclicalDependencyAnalyzer {
           cmp.package = projectConfig.packageDirectories[indexOfPackage].package;
         })
 
-        // packages dependent on entrypoint
-        console.log(JSON.stringify(componentsDependentOnEntrypoint, null, 4));
-
         // search for violations
         const component = this.components.find(cmp => cmp.fullName === entrypoint.name && cmp.type === entrypoint.type);
 
@@ -100,7 +95,7 @@ export default class CyclicalDependencyAnalyzer {
           if (cmp.indexOfPackage < component.indexOfPackage) {
             violations.push({
               package: cmp.package,
-              indexOfPackage: cmp.indexOfPackagge,
+              indexOfPackage: cmp.indexOfPackage,
               files: cmp.files,
               fullName: cmp.name,
               type: cmp.type,
@@ -114,15 +109,6 @@ export default class CyclicalDependencyAnalyzer {
       }
     }
 
-    const table = new Table({
-      head: ["API Name", "Type", "Package", "Files", "Problem"],
-    });
-
-    violations.forEach(violation => {
-      table.push([violation.fullName, violation.type, violation.package, violation.files.toString(), violation.description]);
-    })
-
-    SFPLogger.log(table.toString());
-
+    return violations;
   }
 }

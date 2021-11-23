@@ -13,7 +13,10 @@ import { Org } from "@salesforce/core";
 import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
 import ValidateError from "../../errors/ValidateError";
 
-import DependencyAnalysis from "./DependencyAnalysis";
+import ChangedComponentsFetcher from "@dxatscale/sfpowerscripts.core/lib/dependency/ChangedComponentsFetcher";
+import DependencyAnalysis from "@dxatscale/sfpowerscripts.core/lib/dependency/DependencyAnalysis";
+import DependencyViolationDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/DependencyViolationDisplayer";
+import ImpactAnalysis from "./ImpactAnalysis";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import InstalledArtifactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
@@ -26,6 +29,8 @@ import { COLOR_TIME } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger"
 
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import ScratchOrgInfoFetcher from "../../impl/pool/services/fetchers/ScratchOrgInfoFetcher";
+import Component from "@dxatscale/sfpowerscripts.core/lib/dependency/Component";
+import ValidateResult from "./ValidateResult";
 
 export enum ValidateMode {
   ORG,
@@ -42,19 +47,22 @@ export interface ValidateProps {
   shapeFile?: string,
   isDeleteScratchOrg?: boolean,
   keys?: string,
-  visualizeChangesAgainst?: string
+  baseBranch?: string,
+  isImpactAnalysis?: boolean,
+  isDependencyAnalysis?: boolean
 }
 
 export default class ValidateImpl {
+
+  private changedComponents: Component[];
 
   constructor (
     private props: ValidateProps
   ){}
 
-  public async exec(): Promise<DeploymentResult>{
+  public async exec(): Promise<ValidateResult>{
     let scratchOrgUsername: string;
     try {
-      let authDetails;
       if (this.props.validateMode === ValidateMode.ORG) {
         scratchOrgUsername = this.props.targetOrg;
 
@@ -92,22 +100,35 @@ export default class ValidateImpl {
       let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
       if (deploymentResult.failed.length > 0 || deploymentResult.error)
-        throw new ValidateError("Validation failed", deploymentResult);
+        throw new ValidateError("Validation failed", {deploymentResult});
       else {
-        if (this.props.visualizeChangesAgainst) {
-          try {
-            let dependencyAnalysis: DependencyAnalysis = new DependencyAnalysis(
-              this.props.visualizeChangesAgainst,
-              authDetails
-            );
-            await dependencyAnalysis.exec();
-          } catch(err){
-            console.log(err.message);
-            console.log("Failed to perform change analysis");
+        const connection = (await Org.create({aliasOrUsername: scratchOrgUsername})).getConnection();
+
+        if (this.props.isDependencyAnalysis) {
+          const changedComponents = await this.getChangedComponents();
+          const dependencyAnalysis = new DependencyAnalysis(connection, changedComponents);
+
+          const dependencyViolations = await dependencyAnalysis.exec()
+
+          if (dependencyViolations.length > 0) {
+            DependencyViolationDisplayer.printDependencyViolations(dependencyViolations);
+            throw new ValidateError("Failed dependency validation", {deploymentResult, dependencyViolations});
           }
         }
-        return deploymentResult;
+
+        if (this.props.isImpactAnalysis) {
+          const changedComponents = await this.getChangedComponents();
+          try {
+            const impactAnalysis = new ImpactAnalysis(connection, changedComponents);
+            await impactAnalysis.exec()
+          } catch(err){
+            console.log(err.message);
+            console.log("Failed to perform impact analysis");
+          }
+        }
       }
+
+      return {deploymentResult};
     } finally {
       if (this.props.isDeleteScratchOrg) {
         this.deleteScratchOrg(scratchOrgUsername);
@@ -123,6 +144,15 @@ export default class ValidateImpl {
         }
     }
 
+  }
+
+  /**
+   *
+   * @returns array of components that have changed, can be empty
+   */
+  private async getChangedComponents(): Promise<Component[]> {
+    if (this.changedComponents) return this.changedComponents;
+    else return new ChangedComponentsFetcher(this.props.baseBranch).fetch();
   }
 
   private async installPackageDependencies(scratchOrgUsername: string) {
