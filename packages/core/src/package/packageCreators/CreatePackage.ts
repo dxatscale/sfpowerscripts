@@ -145,12 +145,15 @@ export abstract class CreatePackage {
   }
 
   private  generateArtifact(packageDirectory: string) {
+
     //Get Artifact Detailes
     let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
       this.logger,
       this.projectDirectory,
       this.sfdx_package,
       packageDirectory,
+      this.packageDescriptor.destructiveChangePath,
+      null,
       this.pathToReplacementForceIgnore
     );
 
