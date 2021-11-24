@@ -110,6 +110,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 };
 
   public async execute(){
+    if (process.env.SFPOWERKIT_NOHEADER) {null};
     try {
       // Setup Logging Directory
       rimraf.sync("sfpowerscripts");
