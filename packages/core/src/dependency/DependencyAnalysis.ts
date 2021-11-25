@@ -94,14 +94,16 @@ export default class DependencyAnalysis {
           );
 
           cmp.indexOfPackage = indexOfPackage;
-          cmp.package = projectConfig.packageDirectories[indexOfPackage].package;
+          cmp.package = projectConfig.packageDirectories[indexOfPackage]?.package;
         });
 
+        // Filter out non-source-backed components
+        const sourceBackedDependencies  = componentsDependentOnEntrypoint.filter(cmp => cmp.files.length > 0);
 
         // search for violations
         const component = this.components.find(cmp => cmp.fullName === entrypoint.name && cmp.type === entrypoint.type);
 
-        componentsDependentOnEntrypoint.forEach(cmp => {
+        sourceBackedDependencies.forEach(cmp => {
           if (component.indexOfPackage < cmp.indexOfPackage) {
             violations.push({
               component: component,
