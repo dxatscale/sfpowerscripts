@@ -8,6 +8,7 @@ import PackageManifest from "../package/PackageManifest";
 import ProjectConfig from "../project/ProjectConfig";
 import * as fs from "fs-extra";
 import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+import InstalledPackagesFetcher from "../package/packageQuery/InstalledPackagesFetcher";
 
 const REGISTRY_SUPPORTED_TYPES = Object.values(registry.types).map(type => type.name);
 
@@ -19,6 +20,10 @@ export default class DependencyAnalysis {
 
   async exec(): Promise<DependencyViolation[]> {
     const violations: DependencyViolation[] = [];
+
+    // components belonging to managed package cannot be dependency violations
+    const managedPackages = await new InstalledPackagesFetcher(this.conn).fetchManagedPackages();
+    const managedPackageNamespaces = managedPackages.map(pkg => pkg.namespacePrefix);
 
     const soupApiConnection = {
       token: this.conn.accessToken,
@@ -43,7 +48,8 @@ export default class DependencyAnalysis {
       for (let cmps of Object.values<any>(dependencyResponse.dependencyTree[entrypointKey]?.references ?? [])) {
         // flatten usage tree
         cmps.forEach(cmp => {
-          if (REGISTRY_SUPPORTED_TYPES.includes(cmp.type)) {
+          const isComponentInManagedPackage = managedPackageNamespaces.find(namespace => cmp.name.startsWith(`${namespace}__`)) ? true : false;
+          if (REGISTRY_SUPPORTED_TYPES.includes(cmp.type) && !isComponentInManagedPackage) {
             // add component if it is a supported type in the registry json
             const pattern = new RegExp(`:::${cmp.id}$`);
             cmp.name = cmp.name.replace(pattern, ""); // strip id from api name
