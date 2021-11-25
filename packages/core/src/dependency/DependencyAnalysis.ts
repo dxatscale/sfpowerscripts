@@ -43,7 +43,7 @@ export default class DependencyAnalysis {
         SFPLogger.log(error.message, LoggerLevel.DEBUG);
       }
 
-      const componentsDependentOnEntrypoint = [];
+      const dependenciesOfEntrypoint = [];
       const entrypointKey = Object.keys(dependencyResponse.dependencyTree)[0];
       for (let cmps of Object.values<any>(dependencyResponse.dependencyTree[entrypointKey]?.references ?? [])) {
         // flatten usage tree
@@ -54,13 +54,13 @@ export default class DependencyAnalysis {
             const pattern = new RegExp(`:::${cmp.id}$`);
             cmp.name = cmp.name.replace(pattern, ""); // strip id from api name
 
-            componentsDependentOnEntrypoint.push(cmp);
+            dependenciesOfEntrypoint.push(cmp);
           }
         });
       }
 
-      if (componentsDependentOnEntrypoint.length > 0) {
-        const cmps = componentsDependentOnEntrypoint.map(cmp => {
+      if (dependenciesOfEntrypoint.length > 0) {
+        const cmps = dependenciesOfEntrypoint.map(cmp => {
           return {
             fullName: cmp.name,
             type: cmp.type
@@ -83,7 +83,7 @@ export default class DependencyAnalysis {
         );
 
 
-        componentsDependentOnEntrypoint.forEach(cmp => {
+        dependenciesOfEntrypoint.forEach(cmp => {
           const componentFilenames = componentSet.getComponentFilenamesByNameAndType({fullName: cmp.name, type: cmp.type});
 
           cmp.files = componentFilenames;
@@ -98,7 +98,7 @@ export default class DependencyAnalysis {
         });
 
         // Filter out non-source-backed components
-        const sourceBackedDependencies  = componentsDependentOnEntrypoint.filter(cmp => cmp.files.length > 0);
+        const sourceBackedDependencies  = dependenciesOfEntrypoint.filter(cmp => cmp.files.length > 0);
 
         // search for violations
         const component = this.components.find(cmp => cmp.fullName === entrypoint.name && cmp.type === entrypoint.type);
