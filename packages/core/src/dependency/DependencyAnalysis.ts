@@ -3,10 +3,13 @@ const sfdcSoup = require("sfdc-soup");
 import { component2entrypoint } from "./Entrypoint";
 import Component from "./Component";
 import DependencyViolation from "./DependencyViolation";
-import { ComponentSet } from '@salesforce/source-deploy-retrieve';
+import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
 import PackageManifest from "../package/PackageManifest";
 import ProjectConfig from "../project/ProjectConfig";
 import * as fs from "fs-extra";
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
+
+const REGISTRY_SUPPORTED_TYPES = Object.values(registry.types).map(type => type.name);
 
 export default class DependencyAnalysis {
   constructor(
@@ -28,18 +31,25 @@ export default class DependencyAnalysis {
     const entrypoints = component2entrypoint(this.components);
     for (const entrypoint of entrypoints) {
       const soupApi = sfdcSoup(soupApiConnection, entrypoint);
-      let usageResponse;
+      let dependencyResponse;
       try {
-        usageResponse = await soupApi.getUsage();
+        dependencyResponse = await soupApi.getDependencies();
       } catch (error) {
-        console.log(error.message);
+        SFPLogger.log(error.message, LoggerLevel.DEBUG);
       }
 
       const componentsDependentOnEntrypoint = [];
-      for (let cmps of Object.values<any>(usageResponse.usageTree)) {
+      const entrypointKey = Object.keys(dependencyResponse.dependencyTree)[0];
+      for (let cmps of Object.values<any>(dependencyResponse.dependencyTree[entrypointKey]?.references ?? [])) {
         // flatten usage tree
         cmps.forEach(cmp => {
-          componentsDependentOnEntrypoint.push(cmp);
+          if (REGISTRY_SUPPORTED_TYPES.includes(cmp.type)) {
+            // add component if it is a supported type in the registry json
+            const pattern = new RegExp(`:::${cmp.id}$`);
+            cmp.name = cmp.name.replace(pattern, ""); // strip id from api name
+
+            componentsDependentOnEntrypoint.push(cmp);
+          }
         });
       }
 
@@ -59,19 +69,12 @@ export default class DependencyAnalysis {
 
         fs.writeFileSync(`.sfpowerscripts/package.xml`, packageManifest.manifestXml);
 
-        let componentSet: ComponentSet;
-        try {
-          componentSet = await ComponentSet.fromManifest(
-            {
-              manifestPath: '.sfpowerscripts/package.xml',
-              resolveSourcePaths: projectConfig.packageDirectories.map(pkg => pkg.path)
-            }
-          );
-        } catch (err) {
-          console.log(err.message);
-          continue;
-        }
-
+        let componentSet: ComponentSet = await ComponentSet.fromManifest(
+          {
+            manifestPath: '.sfpowerscripts/package.xml',
+            resolveSourcePaths: projectConfig.packageDirectories.map(pkg => pkg.path)
+          }
+        );
 
 
         componentsDependentOnEntrypoint.forEach(cmp => {
@@ -86,21 +89,18 @@ export default class DependencyAnalysis {
 
           cmp.indexOfPackage = indexOfPackage;
           cmp.package = projectConfig.packageDirectories[indexOfPackage].package;
-        })
+        });
+
 
         // search for violations
         const component = this.components.find(cmp => cmp.fullName === entrypoint.name && cmp.type === entrypoint.type);
 
         componentsDependentOnEntrypoint.forEach(cmp => {
-          if (cmp.indexOfPackage < component.indexOfPackage) {
+          if (component.indexOfPackage < cmp.indexOfPackage) {
             violations.push({
-              package: cmp.package,
-              indexOfPackage: cmp.indexOfPackage,
-              files: cmp.files,
-              fullName: cmp.name,
-              type: cmp.type,
-              dependency: component,
-              description: `Missing Dependency: ${cmp.name} is dependent on ${component.fullName}`
+              component: component,
+              dependency: cmp,
+              description: `Invalid Dependency: ${component.fullName} is dependent on ${cmp.name} found in ${cmp.package}`
             });
           }
         })

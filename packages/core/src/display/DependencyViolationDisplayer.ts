@@ -1,6 +1,6 @@
 const Table = require("cli-table");
 import DependencyViolation from "../dependency/DependencyViolation";
-import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
+import SFPLogger from "../logger/SFPLogger";
 
 export default class DependencyViolationDisplayer {
 
@@ -9,7 +9,7 @@ export default class DependencyViolationDisplayer {
     if (!dependencyViolations || dependencyViolations.length === 0) return;
 
     const table = new Table({
-      head: ["API Name", "Type", "Package", "Files", "Problem"],
+      head: ["API Name", "Type", "Package", "Dependency", "Dependency Type", "Dependency Package", "Problem"],
     });
 
     SFPLogger.log(
@@ -17,7 +17,7 @@ export default class DependencyViolationDisplayer {
     );
 
     dependencyViolations.forEach(violation => {
-      table.push([violation.fullName, violation.type, violation.package, violation.files.toString(), violation.description]);
+      table.push([violation.component.fullName, violation.component.type, violation.component.package, violation.dependency.name, violation.dependency.type, violation.dependency.package, violation.description]);
     })
 
     SFPLogger.log(table.toString());

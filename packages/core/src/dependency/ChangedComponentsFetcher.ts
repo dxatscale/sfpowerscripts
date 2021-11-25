@@ -5,6 +5,7 @@ import MetadataFiles from "../metadata/MetadataFiles";
 import Component from "./Component";
 import * as fs from "fs-extra";
 import path = require("path");
+import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
 
 export default class ChangedComponentsFetcher {
 
@@ -66,7 +67,7 @@ export default class ChangedComponentsFetcher {
 
           components.push(component);
         } else {
-          console.log(`Unable to ID ${fullApiName}`);
+          SFPLogger.log(`Unable to find ID for ${fullApiName} in deployment reports`, LoggerLevel.DEBUG);
           // Ignore file if it's not an identifiable component
           continue;
         }
