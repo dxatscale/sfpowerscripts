@@ -110,7 +110,11 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 };
 
   public async execute(){
-    if (process.env.SFPOWERKIT_NOHEADER) {null};
+    // This is to prevent sfpowerkit header from printing
+    if (process.env.SFPOWERKIT_NOHEADER) {
+      return
+    };
+
     try {
       // Setup Logging Directory
       rimraf.sync("sfpowerscripts");
