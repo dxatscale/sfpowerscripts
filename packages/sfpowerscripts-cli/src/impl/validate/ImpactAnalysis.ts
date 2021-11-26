@@ -175,8 +175,8 @@ export default class ImpactAnalysis {
         connection: {token:string; url: string;},
         parentNodeId
         ) {
-        let usageApi = sfdcSoup.usageApi(connection, entrypoint);
-        let usageResponse = await usageApi.getUsage();
+        const soupApi = sfdcSoup(connection, entrypoint);
+        const usageResponse = await soupApi.getUsage();
         for (let metadataType of Object.values<any>(usageResponse.usageTree)) {
           for (let component of metadataType) {
             let childNodeId;
