@@ -14,6 +14,7 @@ import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/disp
 import ValidateError from "../../errors/ValidateError";
 
 import ChangedComponentsFetcher from "@dxatscale/sfpowerscripts.core/lib/dependency/ChangedComponentsFetcher";
+import DependencyViolation from "@dxatscale/sfpowerscripts.core/lib/dependency/DependencyViolation";
 import DependencyAnalysis from "@dxatscale/sfpowerscripts.core/lib/dependency/DependencyAnalysis";
 import DependencyViolationDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/DependencyViolationDisplayer";
 import ImpactAnalysis from "./ImpactAnalysis";
@@ -99,6 +100,8 @@ export default class ValidateImpl {
 
       let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
+      let dependencyViolations: DependencyViolation[];
+
       if (deploymentResult.failed.length > 0 || deploymentResult.error)
         throw new ValidateError("Validation failed", {deploymentResult});
       else {
@@ -108,11 +111,10 @@ export default class ValidateImpl {
           const changedComponents = await this.getChangedComponents();
           const dependencyAnalysis = new DependencyAnalysis(connection, changedComponents);
 
-          const dependencyViolations = await dependencyAnalysis.exec()
+          dependencyViolations = await dependencyAnalysis.exec()
 
           if (dependencyViolations.length > 0) {
             DependencyViolationDisplayer.printDependencyViolations(dependencyViolations);
-            throw new ValidateError("Failed dependency validation", {deploymentResult, dependencyViolations});
           }
         }
 
@@ -128,7 +130,7 @@ export default class ValidateImpl {
         }
       }
 
-      return {deploymentResult};
+      return {deploymentResult, dependencyViolations};
     } finally {
       if (this.props.isDeleteScratchOrg) {
         this.deleteScratchOrg(scratchOrgUsername);
