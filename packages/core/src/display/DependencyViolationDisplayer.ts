@@ -17,7 +17,7 @@ export default class DependencyViolationDisplayer {
     );
 
     dependencyViolations.forEach(violation => {
-      table.push([violation.component.fullName, violation.component.type, violation.component.package, violation.dependency.name, violation.dependency.type, violation.dependency.package, violation.description]);
+      table.push([violation.component.fullName, violation.component.type, violation.component.package, violation.dependency.fullName, violation.dependency.type, violation.dependency.package, violation.description]);
     })
 
     SFPLogger.log(table.toString());

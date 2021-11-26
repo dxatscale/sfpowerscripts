@@ -60,7 +60,7 @@ export default class ChangedComponentsFetcher {
             id: componentSuccess.id,
             fullName: componentSuccess.fullName,
             type: componentSuccess.componentType,
-            file: filepath,
+            files: [filepath],
             package: projectConfig.packageDirectories[indexOfPackage].package,
             indexOfPackage: indexOfPackage
           }
