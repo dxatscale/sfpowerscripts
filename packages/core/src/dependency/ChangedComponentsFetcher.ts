@@ -50,6 +50,8 @@ export default class ChangedComponentsFetcher {
           filepath.includes(pkg.path)
         );
 
+        const packageName = projectConfig.packageDirectories[indexOfPackage].package;
+
         const componentSuccess = componentSuccesses
           .find(component =>
             component.fullName === fullApiName && component.id
@@ -61,9 +63,10 @@ export default class ChangedComponentsFetcher {
             fullName: componentSuccess.fullName,
             type: componentSuccess.componentType,
             files: [filepath],
-            package: projectConfig.packageDirectories[indexOfPackage].package,
+            package: packageName,
+            packageType: ProjectConfig.getPackageType(projectConfig, packageName),
             indexOfPackage: indexOfPackage
-          }
+          };
 
           components.push(component);
         } else {

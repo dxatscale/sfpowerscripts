@@ -7,6 +7,7 @@ export default interface Component {
   type: string,
   files?: string[],
   package?: string,
+  packageType?: "Unlocked" | "Data" | "Source",
   indexOfPackage?: number,
   namespace?: string,
   dependencies?: Component[]

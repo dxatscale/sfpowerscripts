@@ -70,15 +70,20 @@ export default class DependencyAnalysis {
           );
 
           cmp.indexOfPackage = indexOfPackage;
-          cmp.package = projectConfig.packageDirectories[indexOfPackage]?.package;
+
+          const packageName = projectConfig.packageDirectories[indexOfPackage]?.package;
+          if (packageName) {
+            cmp.package = packageName;
+            cmp.packageType = ProjectConfig.getPackageType(projectConfig, packageName);
+          }
         });
 
         // Filter out non-source-backed components
         const sourceBackedDependencies  = component.dependencies.filter(cmp => cmp.files.length > 0);
 
         // search for violations
-
         sourceBackedDependencies.forEach(cmp => {
+          // check for misordered packages
           if (component.indexOfPackage < cmp.indexOfPackage) {
             violations.push({
               component: component,
@@ -86,9 +91,29 @@ export default class DependencyAnalysis {
               description: `Invalid Dependency: ${component.fullName} is dependent on ${cmp.fullName} found in ${cmp.package}`
             });
           }
-        })
+
+          // check for missing dependency for unlocked package
+          if (
+            component.packageType === "Unlocked" &&
+            cmp.packageType === "Unlocked" &&
+            component.package !== cmp.package
+          ) {
+            const isDependencyDefined = projectConfig.packageDirectories[component.indexOfPackage].dependencies.find(dependency => {
+              const packageName: string = dependency.package.split("@")[0];
+              return packageName === cmp.package;
+            }) ? true : false
+
+            if (!isDependencyDefined) {
+              violations.push({
+                component: component,
+                dependency: cmp,
+                description: `Missing Dependency: ${component.package} unlocked package is dependent on ${cmp.package}`
+              });
+            }
+          }
+        });
       } else {
-        // entrypoint has no dependencies
+        // component has no dependencies
         continue;
       }
     }
