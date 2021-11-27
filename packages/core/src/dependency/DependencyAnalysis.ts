@@ -36,6 +36,7 @@ export default class DependencyAnalysis {
 
 
       if (component.dependencies.length > 0) {
+        // determine package that dependency belongs to
         const cmps = component.dependencies.map(cmp => {
           return {
             fullName: cmp.fullName,
@@ -43,7 +44,6 @@ export default class DependencyAnalysis {
           }
         });
 
-        // Generate manifest
         const packageManifest = PackageManifest.createFromScratch(
           cmps,
           "50.0"
@@ -58,13 +58,11 @@ export default class DependencyAnalysis {
           }
         );
 
-
         component.dependencies.forEach(cmp => {
           const componentFilenames = componentSet.getComponentFilenamesByNameAndType({fullName: cmp.fullName, type: cmp.type});
 
           cmp.files = componentFilenames;
 
-          // Determine package
           const indexOfPackage = projectConfig.packageDirectories.findIndex(pkg =>
             componentFilenames.find(file => file.includes(pkg.path))
           );
