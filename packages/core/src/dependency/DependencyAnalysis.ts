@@ -36,45 +36,7 @@ export default class DependencyAnalysis {
 
 
       if (component.dependencies.length > 0) {
-        // determine package that dependency belongs to
-        const cmps = component.dependencies.map(cmp => {
-          return {
-            fullName: cmp.fullName,
-            type: cmp.type
-          }
-        });
-
-        const packageManifest = PackageManifest.createFromScratch(
-          cmps,
-          "50.0"
-        );
-
-        fs.writeFileSync(`.sfpowerscripts/package.xml`, packageManifest.manifestXml);
-
-        const componentSet: ComponentSet = await ComponentSet.fromManifest(
-          {
-            manifestPath: '.sfpowerscripts/package.xml',
-            resolveSourcePaths: projectConfig.packageDirectories.map(pkg => pkg.path)
-          }
-        );
-
-        component.dependencies.forEach(cmp => {
-          const componentFilenames = componentSet.getComponentFilenamesByNameAndType({fullName: cmp.fullName, type: cmp.type});
-
-          cmp.files = componentFilenames;
-
-          const indexOfPackage = projectConfig.packageDirectories.findIndex(pkg =>
-            componentFilenames.find(file => file.includes(pkg.path))
-          );
-
-          cmp.indexOfPackage = indexOfPackage;
-
-          const packageName = projectConfig.packageDirectories[indexOfPackage]?.package;
-          if (packageName) {
-            cmp.package = packageName;
-            cmp.packageType = ProjectConfig.getPackageType(projectConfig, packageName);
-          }
-        });
+        await this.populatePackageFieldsForDependencies(component.dependencies, projectConfig);
 
         // Filter out non-source-backed components
         const sourceBackedDependencies  = component.dependencies.filter(cmp => cmp.files.length > 0);
@@ -117,5 +79,49 @@ export default class DependencyAnalysis {
     }
 
     return violations;
+  }
+
+  /**
+   * Determine the package that dependencies belong to and populate package fields
+   * @param dependencies
+   * @param projectConfig
+   */
+  private async populatePackageFieldsForDependencies(dependencies: Component[], projectConfig: any) {
+    const cmps = dependencies.map(cmp => {
+      return {
+        fullName: cmp.fullName,
+        type: cmp.type
+      };
+    });
+
+    const packageManifest = PackageManifest.createFromScratch(
+      cmps,
+      "50.0"
+    );
+
+    fs.writeFileSync(`.sfpowerscripts/package.xml`, packageManifest.manifestXml);
+
+    const componentSet: ComponentSet = await ComponentSet.fromManifest(
+      {
+        manifestPath: '.sfpowerscripts/package.xml',
+        resolveSourcePaths: projectConfig.packageDirectories.map(pkg => pkg.path)
+      }
+    );
+
+    dependencies.forEach(cmp => {
+      const componentFilenames = componentSet.getComponentFilenamesByNameAndType({ fullName: cmp.fullName, type: cmp.type });
+
+      cmp.files = componentFilenames;
+
+      const indexOfPackage = projectConfig.packageDirectories.findIndex(pkg => componentFilenames.find(file => file.includes(pkg.path)));
+
+      cmp.indexOfPackage = indexOfPackage;
+
+      const packageName = projectConfig.packageDirectories[indexOfPackage]?.package;
+      if (packageName) {
+        cmp.package = packageName;
+        cmp.packageType = ProjectConfig.getPackageType(projectConfig, packageName);
+      }
+    });
   }
 }
