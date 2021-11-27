@@ -1,7 +1,4 @@
 import SfpowerscriptsError from "./SfpowerscriptsError";
-
-import { DeploymentResult } from "../impl/deploy/DeployImpl";
-import DependencyViolation from "@dxatscale/sfpowerscripts.core/lib/dependency/DependencyViolation";
 import ValidateResult from "../impl/validate/ValidateResult";
 
 export default class ValidateError extends SfpowerscriptsError {
