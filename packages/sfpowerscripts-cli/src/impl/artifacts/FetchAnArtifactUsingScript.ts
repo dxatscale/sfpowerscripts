@@ -1,4 +1,5 @@
 import SFPLogger, { COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { fs } from "@salesforce/core";
 import child_process = require("child_process");
 import FetchAnArtifact from "./FetchAnArtifact";
 
@@ -13,6 +14,10 @@ export class FetchAnArtifactUsingScript implements FetchAnArtifact {
   ) {
     try {
       let cmd: string;
+
+      //Create artifact Directory if it doesnt exist
+      if(!fs.existsSync(artifactDirectory))
+           fs.mkdirpSync(artifactDirectory)
 
       if (version) {
         if (process.platform !== "win32") {
