@@ -9,7 +9,7 @@ export class FetchAnArtifactUsingScript implements FetchAnArtifact {
     packageName: string,
     artifactDirectory: string,
     version: string,
-    isToContinueOnMissingArtifact?: boolean
+    isToContinueOnMissingArtifact: boolean
   ) {
     try {
       let cmd: string;
