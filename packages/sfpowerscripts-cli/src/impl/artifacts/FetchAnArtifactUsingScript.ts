@@ -1,5 +1,5 @@
 import SFPLogger, { COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import { fs } from "@salesforce/core";
+import { fs, LoggerLevel } from "@salesforce/core";
 import child_process = require("child_process");
 import FetchAnArtifact from "./FetchAnArtifact";
 
@@ -33,17 +33,23 @@ export class FetchAnArtifactUsingScript implements FetchAnArtifact {
         }
       }
 
-      console.log(`Fetching ${packageName} using ${cmd}`);
+      SFPLogger.log(`Fetching ${packageName} using ${cmd}`,LoggerLevel.INFO);
 
       child_process.execSync(cmd, {
         cwd: process.cwd(),
         stdio: "pipe",
       });
+
+      SFPLogger.log(`Successfully Fetched ${packageName}`,LoggerLevel.INFO);
+
     } catch (error) {
       if(!isToContinueOnMissingArtifact)
       throw error;
     else
-     SFPLogger.log( COLOR_WARNING(`Artifact  for ${packageName} missing in NPM Registry provided, This might result in deployment failures`))
+     {
+     SFPLogger.log(`Failed to execute script due to ${error.message}`,LoggerLevel.WARN);
+     SFPLogger.log( COLOR_WARNING(`Artifact  for ${packageName} missing in  Registry provided, This might result in deployment failures`));
+     }
     }
   }
 }
