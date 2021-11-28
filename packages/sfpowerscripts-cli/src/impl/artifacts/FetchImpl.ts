@@ -74,7 +74,7 @@ export default class FetchImpl {
         } else version = artifacts[i][1];
 
         let  artifactFetcher = new FetchArtifactSelector(scriptPath,scope,npmrcPath).getArtifactFetcher();  
-        artifactFetcher.fetchArtifact(artifacts[i][0],artifactDirectory,version)
+        artifactFetcher.fetchArtifact(artifacts[i][0],artifactDirectory,version,false)
      
         fetchedArtifacts.success.push(artifacts[i]);
       }
