@@ -83,6 +83,8 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
       }
     }
 
+    this.hidesfpowerkitlogs();
+
     SFPLogger.log(
       COLOR_HEADER(
         `-------------------------------------------------------------------------------------------`
@@ -146,6 +148,12 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
           break;
         }
       }
+    }
+  }
+
+  private hidesfpowerkitlogs() {
+    if (process.env.SFPOWERKIT_NOHEADER) {
+      console.log = function () {};
     }
   }
 
