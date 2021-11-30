@@ -131,7 +131,9 @@ export default class Validate extends SfpowerscriptsCommand {
     SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`validate`)}`));
     SFPLogger.log(COLOR_HEADER(`Pools being used: ${this.flags.pools}`));
     SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
+    SFPLogger.log(COLOR_HEADER(`Dependency Validation: ${this.flags.enabledependencyvalidation?'true':'false'}`));
     SFPLogger.log(COLOR_HEADER(`Using shapefile to override existing shape of the org: ${this.flags.shapefile?'true':'false'}`));
+  
     SFPLogger.log(
       COLOR_HEADER(
         `-------------------------------------------------------------------------------------------`
