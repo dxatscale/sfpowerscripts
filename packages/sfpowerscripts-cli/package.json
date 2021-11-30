@@ -35,7 +35,7 @@
     "puppeteer": "^7.1.0",
     "rimraf": "^3.0.2",
     "semver": "^7.3.4",
-    "sfdc-soup": "^1.0.1",
+    "sfdc-soup": "^12.0.0",
     "shelljs": "0.8.4",
     "simple-git": "^2.45.1",
     "snyk": "^1.630.0",

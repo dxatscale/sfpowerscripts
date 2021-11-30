@@ -1,59 +1,24 @@
-import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
-import IgnoreFiles from "@dxatscale/sfpowerscripts.core/lib/ignore/IgnoreFiles";
-import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
-import MetadataFiles from "@dxatscale/sfpowerscripts.core/lib/metadata/MetadataFiles";
 const sfdcSoup = require("sfdc-soup");
 const Handlebars = require("handlebars");
 const puppeteer = require("puppeteer");
+import Component from "@dxatscale/sfpowerscripts.core/lib/dependency/Component";
+import { component2entrypoint } from "@dxatscale/sfpowerscripts.core/lib/dependency/Entrypoint";
 import * as fs from "fs-extra";
 import path = require("path");
+import { Connection } from "@salesforce/core";
 
-export default class DependencyAnalysis {
+export default class ImpactAnalysis {
   constructor(
-    private baseBranch: string,
-    private authDetails
+    private conn: Connection,
+    private components: Component[]
   ){}
 
   public async exec() {
-    let git: Git = new Git();
 
-    let projectConfig = ProjectConfig.getSFDXPackageManifest(null);
-
-    let diff: string[] = await git.diff([
-      this.baseBranch,
-      `HEAD`,
-      `--no-renames`,
-      `--name-only`
-    ]);
-
-    // Filter diff to package directories
-    diff = diff.filter((filepath) =>
-      projectConfig.packageDirectories.find((pkg) =>
-          filepath.includes(pkg.path)
-      )
-    );
-
-    // Apply root forceignore to the diff
-    let ignoreFiles: IgnoreFiles = new IgnoreFiles(
-      fs.readFileSync(".forceignore", "utf8")
-    );
-    diff = ignoreFiles.filter(diff);
-
-    // Get api name of components that have changed
-    let componentApiNames: string[] = [];
-    if (diff.length > 0) {
-      diff.forEach((filepath) => {
-        componentApiNames.push(MetadataFiles.getFullApiName(filepath));
-      })
-    } else throw new Error("No changed components to analyse");
-
-    let componentSuccesses = this.getComponentSuccessesFromReports();
-
-    let entrypoints = this.getEntrypoints(componentApiNames, componentSuccesses);
-
-    let connection = {
-      token: this.authDetails.accessToken,
-      url: this.authDetails.instanceUrl
+    const soupApiConnection = {
+      token: this.conn.accessToken,
+      url: this.conn.instanceUrl,
+      apiVersion: '50.0'
     };
 
     // Register helper for stringifying JSON objects in hbs templates
@@ -87,8 +52,9 @@ export default class DependencyAnalysis {
         args: ["--no-sandbox"]
       });
 
+      const entrypoints = component2entrypoint(this.components);
       for (let entrypoint of entrypoints) {
-        let { nodes, edges } = await this.createGraphElements(entrypoint, connection);
+        let { nodes, edges } = await this.createGraphElements(entrypoint, soupApiConnection);
 
         // skip graphs with single node
         if (nodes.length === 1) continue;
@@ -172,56 +138,7 @@ export default class DependencyAnalysis {
     );
   }
 
-  /**
-   * Aggregates component successes from MDAPI deploy reports
-   */
-  private getComponentSuccessesFromReports(): any[] {
-    let componentSuccesses: any[] = [];
 
-    const reportsDir: string = ".sfpowerscripts/mdapiDeployReports";
-    let reports = fs.readdirSync(reportsDir);
-    reports.forEach((report) => {
-      let data = JSON.parse(
-        fs.readFileSync(path.join(reportsDir, report), "utf8")
-      );
-      componentSuccesses = componentSuccesses.concat(data.result.details.componentSuccesses);
-    });
-    return componentSuccesses;
-  }
-
-  /**
-   * Entrypoint ID's are found by filtering componentSuccesses against componentApiNames
-   * @param componentApiNames
-   * @param componentSuccesses
-   */
-  private getEntrypoints(
-    componentApiNames: string[],
-    componentSuccesses: any[]
-  ): {name: string, type: string, id: string}[] {
-    let entrypoints: {name: string, type: string, id: string}[] = [];
-
-    // component names that cannot be ID'ed are excluded / undetected
-    componentApiNames.forEach((name) => {
-      entrypoints = entrypoints.concat(
-        componentSuccesses
-          .filter((component) => {
-            return component.fullName === name;
-          })
-          .map((component) => {
-            return {
-              name: component.fullName,
-              type: component.componentType,
-              id: component.id
-            };
-          })
-      );
-    });
-
-    if (entrypoints.length === 0)
-      throw new Error("Unable to retrieve ID of the changed components");
-
-    return entrypoints;
-  }
 
   /**
    * Create graph elements for entrypoint and child components that are dependent on it
@@ -258,8 +175,8 @@ export default class DependencyAnalysis {
         connection: {token:string; url: string;},
         parentNodeId
         ) {
-        let usageApi = sfdcSoup.usageApi(connection, entrypoint);
-        let usageResponse = await usageApi.getUsage();
+        const soupApi = sfdcSoup(connection, entrypoint);
+        const usageResponse = await soupApi.getUsage();
         for (let metadataType of Object.values<any>(usageResponse.usageTree)) {
           for (let component of metadataType) {
             let childNodeId;

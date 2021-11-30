@@ -1,13 +1,12 @@
 import SfpowerscriptsError from "./SfpowerscriptsError";
-
-import { DeploymentResult } from "../impl/deploy/DeployImpl";
+import ValidateResult from "../impl/validate/ValidateResult";
 
 export default class ValidateError extends SfpowerscriptsError {
 
   /**
    * Payload for the results of the release
    */
-  readonly data: DeploymentResult;
+  readonly data: ValidateResult;
 
   /**
    * The underlying error that caused this error to be raised
@@ -16,7 +15,7 @@ export default class ValidateError extends SfpowerscriptsError {
 
   constructor(
     message: string,
-    data: DeploymentResult,
+    data: ValidateResult,
     cause?: Error
   ) {
     super(message);
