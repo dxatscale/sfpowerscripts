@@ -50,6 +50,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     else SFPLogger.enableColor();
 
     this.setLogLevel();
+    process.env.SFPOWERKIT_DISABLE_HEADER = "true";
 
     //If demo mode, display demo reel and return
     if (process.env.SFPOWERSCRIPTS_DEMO_MODE) {
@@ -164,11 +165,6 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         }
       }
     }
-  }
-
-  private  sfpowerkitCommand(): string {
-    let command = `sfdx sfpowerkit`;
-    return command;
   }
 
   private initializeStatsD() {
