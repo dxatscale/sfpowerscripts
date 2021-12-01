@@ -2,6 +2,7 @@ import { SfdxCommand } from "@salesforce/command";
 import { OutputFlags } from "@oclif/parser";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import * as rimraf from "rimraf";
+import child_process = require("child_process");
 import ProjectValidation from "./ProjectValidation";
 import DemoReelPlayer from "./impl/demoreelplayer/DemoReelPlayer";
 import { fs } from "@salesforce/core";
@@ -83,7 +84,21 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
       }
     }
 
-    this.hidesfpowerkitlogs();
+    // Control sfpowerkit logs
+    if (process.env.SFPOWERKIT_DISABLE_HEADER) {
+      let command = this.sfpowerkitCommand();
+      let child = child_process.exec(
+        command,
+        { encoding: "utf8" }
+      );
+  
+      child.stdout.on("data", data => {
+        SFPLogger.log(data.toString());
+      });
+      child.stderr.on("data", data => {
+        SFPLogger.log(data.toString());
+      });
+    }
 
     SFPLogger.log(
       COLOR_HEADER(
@@ -151,10 +166,9 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     }
   }
 
-  private hidesfpowerkitlogs() {
-    if (process.env.SFPOWERKIT_NOHEADER) {
-      console.log = function () {};
-    }
+  private  sfpowerkitCommand(): string {
+    let command = `sfdx sfpowerkit`;
+    return command;
   }
 
   private initializeStatsD() {
