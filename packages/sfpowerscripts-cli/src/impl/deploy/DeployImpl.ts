@@ -155,7 +155,7 @@ export default class DeployImpl {
                 queue[i].skipTesting,
                 this.props.waitTime.toString(),
                 pkgDescriptor,
-                false
+                this.props.skipIfPackageInstalled
               );
 
 
