@@ -155,7 +155,7 @@ export default class Release extends SfpowerscriptsCommand {
     if (this.flags.generatechangelog && !releaseDefinition.changelog)
       throw new Error("changelog parameters must be specified in release definition to generate changelog");
 
-    if(releaseDefinition.promotePackagesBeforeDeploymentToOrg && !this.flags.devhubalias)
+    if(releaseDefinition.promotePackagesBeforeDeploymentToOrg && this.flags.targetorg == releaseDefinition.promotePackagesBeforeDeploymentToOrg && !this.flags.devhubalias )
        throw new Error("DevHub is mandatory when promote is used within release defintion")
     
 
