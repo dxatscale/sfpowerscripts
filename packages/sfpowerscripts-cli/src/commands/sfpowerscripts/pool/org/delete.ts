@@ -1,15 +1,16 @@
-import { core, flags } from "@salesforce/command";
+import {flags } from "@salesforce/command";
 import { AnyJson } from "@salesforce/ts-types";
 import SfpowerscriptsCommand from "../../../../SfpowerscriptsCommand";
 import PoolOrgDeleteImpl from "../../../../impl/pool/PoolOrgDeleteImpl";
 import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { Messages } from "@salesforce/core";
 
 // Initialize Messages with the current plugin directory
-core.Messages.importMessagesDirectory(__dirname);
+Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = core.Messages.loadMessages(
+const messages = Messages.loadMessages(
   "@dxatscale/sfpowerscripts",
   "scratchorg_pool_org_delete"
 );

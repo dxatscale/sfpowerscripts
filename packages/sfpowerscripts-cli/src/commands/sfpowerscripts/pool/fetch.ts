@@ -1,5 +1,5 @@
-import { core, flags, SfdxCommand } from "@salesforce/command";
-import { Org } from "@salesforce/core";
+import { flags, SfdxCommand } from "@salesforce/command";
+import { Messages, Org } from "@salesforce/core";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import { AnyJson } from "@salesforce/ts-types";
 import PoolFetchImpl from "../../../impl/pool/PoolFetchImpl";
@@ -11,11 +11,11 @@ import InstalledPackageDisplayer from "@dxatscale/sfpowerscripts.core/lib/displa
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/packageQuery/InstalledPackagesFetcher";
 // Initialize Messages with the current plugin directory
-core.Messages.importMessagesDirectory(__dirname);
+Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = core.Messages.loadMessages(
+const messages = Messages.loadMessages(
   "@dxatscale/sfpowerscripts",
   "scratchorg_poolFetch"
 );

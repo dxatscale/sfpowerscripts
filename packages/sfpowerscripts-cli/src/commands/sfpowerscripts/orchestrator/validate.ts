@@ -4,8 +4,8 @@ import { flags } from '@salesforce/command';
 import ValidateImpl, {ValidateMode, ValidateProps} from "../../../impl/validate/ValidateImpl";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import { DeploymentResult } from "../../../impl/deploy/DeployImpl";
 import ValidateError from "../../../errors/ValidateError";
+import ValidateResult from "../../../impl/validate/ValidateResult";
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
@@ -74,7 +74,22 @@ export default class Validate extends SfpowerscriptsCommand {
     }),
     visualizechangesagainst: flags.string({
       char: 'c',
-      description: messages.getMessage("visualizeChangesAgainstFlagDescription")
+      description: messages.getMessage("visualizeChangesAgainstFlagDescription"),
+      deprecated: {
+        messageOverride:
+          "--visualizechangesagainst is deprecated, use --basebranch instead",
+      }
+    }),
+    basebranch: flags.string({
+      description: messages.getMessage("baseBranchFlagDescription")
+    }),
+    enableimpactanalysis: flags.boolean({
+      description: messages.getMessage("enableImpactAnalysisFlagDescription"),
+      dependsOn: ['basebranch']
+    }),
+    enabledependencyvalidation: flags.boolean({
+      description: messages.getMessage("enableDependencyValidation"),
+      dependsOn: ['basebranch']
     }),
     tag: flags.string({
       description: messages.getMessage("tagFlagDescription"),
@@ -112,11 +127,13 @@ export default class Validate extends SfpowerscriptsCommand {
       };
     }
 
-    
+
     SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`validate`)}`));
     SFPLogger.log(COLOR_HEADER(`Pools being used: ${this.flags.pools}`));
     SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
+    SFPLogger.log(COLOR_HEADER(`Dependency Validation: ${this.flags.enabledependencyvalidation?'true':'false'}`));
     SFPLogger.log(COLOR_HEADER(`Using shapefile to override existing shape of the org: ${this.flags.shapefile?'true':'false'}`));
+  
     SFPLogger.log(
       COLOR_HEADER(
         `-------------------------------------------------------------------------------------------`
@@ -124,7 +141,7 @@ export default class Validate extends SfpowerscriptsCommand {
     );
 
 
-    let validateResult: DeploymentResult;
+    let validateResult: ValidateResult;
     try {
 
       let validateProps: ValidateProps = {
@@ -136,7 +153,9 @@ export default class Validate extends SfpowerscriptsCommand {
         shapeFile: this.flags.shapefile,
         isDeleteScratchOrg: this.flags.deletescratchorg,
         keys: this.flags.keys,
-        visualizeChangesAgainst: this.flags.visualizechangesagainst
+        baseBranch: this.flags.basebranch,
+        isImpactAnalysis: this.flags.enableimpactanalysis,
+        isDependencyAnalysis: this.flags.enabledependencyvalidation
       }
 
       let validateImpl: ValidateImpl = new ValidateImpl( validateProps);
@@ -167,19 +186,19 @@ export default class Validate extends SfpowerscriptsCommand {
       if (validateResult) {
         SFPStatsSender.logGauge(
           "validate.packages.scheduled",
-          validateResult.scheduled,
+          validateResult.deploymentResult.scheduled,
           tags
         );
 
         SFPStatsSender.logGauge(
           "validate.packages.succeeded",
-          validateResult.deployed.length,
+          validateResult.deploymentResult.deployed.length,
           tags
         );
 
         SFPStatsSender.logGauge(
           "validate.packages.failed",
-          validateResult.failed.length,
+          validateResult.deploymentResult.failed.length,
           tags
         );
       }
