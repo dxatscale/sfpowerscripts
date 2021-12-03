@@ -29,6 +29,7 @@ export default class ChangelogImpl {
     private showAllArtifacts: boolean,
     private forcePush: boolean,
     private branch:string,
+    private isDryRun:boolean,
     private org?: string,
   ){
     this.org = org?.toLowerCase();
@@ -170,7 +171,8 @@ export default class ChangelogImpl {
         payload
       );
 
-      await this.pushChangelogToBranch(this.branch, git, this.forcePush);
+      if(!this.isDryRun)
+       await this.pushChangelogToBranch(this.branch, git, this.forcePush);
 
       console.log(`Successfully generated changelog`);
       return releaseChangelog;

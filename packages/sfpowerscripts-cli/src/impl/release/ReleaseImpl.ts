@@ -81,6 +81,7 @@ export default class ReleaseImpl {
           this.props.releaseDefinition.changelog.showAllArtifacts,
           false,
           this.props.branch,
+          this.props.isDryRun,
           this.props.targetOrg
         );
 
