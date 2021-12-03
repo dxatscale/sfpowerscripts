@@ -77,13 +77,20 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
 
       if (packageFound) {
         SFPLogger.log(
-          `Package to be installed was found in the target org ${packageFound}`,
+          `Package to be installed was found in the target org  ${this.targetusername}`,
           LoggerLevel.INFO,
           this.logger
         );
         return false;
       } else 
+      {
+        SFPLogger.log(
+          `Package to be installed was not found in the target org  ${this.targetusername}, Proceeding to instal.. `,
+          LoggerLevel.INFO,
+          this.logger
+        );
         return true;
+      }
      }
      else
      {

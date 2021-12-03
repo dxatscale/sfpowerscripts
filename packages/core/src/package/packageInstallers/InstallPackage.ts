@@ -62,7 +62,7 @@ export abstract class InstallPackage {
         }
         return { result: PackageInstallationStatus.Succeeded };
       } else {
-        SFPLogger.log("Skipping Package Installation", null, this.logger);
+        SFPLogger.log("Skipping Package Installation", LoggerLevel.INFO, this.logger);
         return { result: PackageInstallationStatus.Skipped };
       }
     } catch (error) {
