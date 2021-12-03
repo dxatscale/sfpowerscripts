@@ -143,7 +143,7 @@ export default class Release extends SfpowerscriptsCommand {
     if(releaseDefinition.baselineOrg)
       SFPLogger.log(COLOR_HEADER(`Baselined Against Org: ${releaseDefinition.baselineOrg}`));
     SFPLogger.log(COLOR_HEADER(`Dry-run: ${this.flags.dryrun}`));
-    if(releaseDefinition.promotePackagesBeforeDeploymentToOrg && releaseDefinition.promotePackagesBeforeDeploymentToOrg==this.flags.targetOrg){
+    if(releaseDefinition.promotePackagesBeforeDeploymentToOrg && releaseDefinition.promotePackagesBeforeDeploymentToOrg==this.flags.targetOrg)
      SFPLogger.log(COLOR_HEADER(`Promte Packages Before Deployment Activated?: true`));
 
     SFPLogger.log(
@@ -153,16 +153,16 @@ export default class Release extends SfpowerscriptsCommand {
     );
 
     if (this.flags.generatechangelog && !releaseDefinition.changelog)
-    throw new Error("changelog parameters must be specified in release definition to generate changelog");
+      throw new Error("changelog parameters must be specified in release definition to generate changelog");
 
+    if(releaseDefinition.promotePackagesBeforeDeploymentToOrg && !this.flags.devhubalias)
+       throw new Error("DevHub is mandatory when promote is used within release defintion")
+    
 
     let releaseResult: ReleaseResult;
     try {
 
-      if(releaseDefinition.promotePackagesBeforeDeploymentToOrg && !this.flags.devhubalias)
-      {
-         throw new Error("DevHub is mandatory when promote is used within release defintion")
-      }
+ 
 
       let props:ReleaseProps = {
         releaseDefinition:releaseDefinition,
