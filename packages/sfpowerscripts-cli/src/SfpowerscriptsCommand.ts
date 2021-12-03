@@ -50,7 +50,9 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     else SFPLogger.enableColor();
 
     this.setLogLevel();
-    process.env.SFPOWERKIT_DISABLE_HEADER = "true";
+
+    // Setting the environment variable for disabling sfpowerkit header
+  process.env.SFPOWERKIT_DISABLE_HEADER = 'true';
 
     //If demo mode, display demo reel and return
     if (process.env.SFPOWERSCRIPTS_DEMO_MODE) {
@@ -83,22 +85,6 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
       } else if (plugin.name == "@dxatscale/sfpowerscripts") {
         this.sfpowerscriptsConfig = plugin;
       }
-    }
-
-    // Control sfpowerkit logs
-    if (process.env.SFPOWERKIT_DISABLE_HEADER) {
-      let command = this.sfpowerkitCommand();
-      let child = child_process.exec(
-        command,
-        { encoding: "utf8" }
-      );
-  
-      child.stdout.on("data", data => {
-        SFPLogger.log(data.toString());
-      });
-      child.stderr.on("data", data => {
-        SFPLogger.log(data.toString());
-      });
     }
 
     SFPLogger.log(
