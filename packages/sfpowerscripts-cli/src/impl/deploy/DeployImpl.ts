@@ -525,7 +525,8 @@ export default class DeployImpl {
           packageMetadata,
           skipIfPackageInstalled,
           waitTime,
-          sourceDirectoryPath
+          sourceDirectoryPath,
+
         );
       } else if (packageType === "source") {
         let options = {
@@ -611,7 +612,8 @@ export default class DeployImpl {
       skip_if_package_installed,
       packageMetadata,
       sourceDirectoryPath,
-      this.props.packageLogger
+      this.props.packageLogger,
+      this.props.isDryRun
     );
 
     return installUnlockedPackageImpl.exec();
@@ -638,7 +640,8 @@ export default class DeployImpl {
         : null,
       this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
         ? DeploymentType.SOURCE_PUSH
-        : DeploymentType.MDAPI_DEPLOY
+        : DeploymentType.MDAPI_DEPLOY,
+      this.props.isDryRun
     );
 
     return installSourcePackageImpl.exec();
@@ -657,7 +660,9 @@ export default class DeployImpl {
       sourceDirectoryPath,
       packageMetadata,
       skip_if_package_installed,
-      this.props.packageLogger
+      this.props.packageLogger,
+      LoggerLevel.INFO,
+      this.props.isDryRun
     );
     return installDataPackageImpl.exec();
   }

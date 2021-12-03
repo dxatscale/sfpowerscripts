@@ -28,7 +28,8 @@ export abstract class InstallPackage {
     protected sourceDirectory: string,
     protected packageMetadata: PackageMetadata,
     protected skipIfPackageInstalled: boolean,
-    protected logger?: Logger
+    protected logger: Logger,
+    protected isDryRun:boolean
   ) {}
 
   public async exec(): Promise<PackageInstallationResult> {
@@ -47,6 +48,8 @@ export abstract class InstallPackage {
       });
 
       if (await this.isPackageToBeInstalled(this.skipIfPackageInstalled)) {
+        if(!this.isDryRun)
+        {
         //Package Has Permission Set Group
         if (this.packageMetadata.isPermissionSetGroupFound)
           await this.waitTillAllPermissionSetGroupIsUpdated();
@@ -56,6 +59,7 @@ export abstract class InstallPackage {
         await this.postInstall();
         await this.commitPackageInstallationStatus();
         this.sendMetricsWhenSuccessfullyInstalled();
+        }
         return { result: PackageInstallationStatus.Succeeded };
       } else {
         SFPLogger.log("Skipping Package Installation", null, this.logger);

@@ -168,7 +168,7 @@ export default class ReleaseImpl {
   }
 
   private async installPackageDependencies(
-    packageDependencies: {[p:string]: string},
+    packageDependencies: { [p: string]: string },
     targetOrg: string,
     keys: string,
     waitTime: number
@@ -176,13 +176,13 @@ export default class ReleaseImpl {
     let result: InstallDependenciesResult = {
       success: [],
       skipped: [],
-      failed: []
+      failed: [],
     };
 
     this.printOpenLoggingGroup("Installing package dependencies");
 
     try {
-      let packagesToKeys: {[p: string]: string};
+      let packagesToKeys: { [p: string]: string };
       if (keys) {
         packagesToKeys = this.parseKeys(keys);
       }
@@ -190,26 +190,33 @@ export default class ReleaseImpl {
       // print packages dependencies to install
 
       for (let pkg in packageDependencies) {
-        if (!await this.isPackageInstalledInOrg(packageDependencies[pkg], targetOrg)) {
-          let cmd = `sfdx force:package:install -p ${packageDependencies[pkg]} -u ${targetOrg} -w ${waitTime} -b ${waitTime} --noprompt`;
+        if (
+          !(await this.isPackageInstalledInOrg(
+            packageDependencies[pkg],
+            targetOrg
+          ))
+        ) {
+          if (this.props.isDryRun) {
+            SFPLogger.log(`Package Dependency ${packageDependencies[pkg]} will be installed`,LoggerLevel.INFO)
+          } else {
+            let cmd = `sfdx force:package:install -p ${packageDependencies[pkg]} -u ${targetOrg} -w ${waitTime} -b ${waitTime} --noprompt`;
 
-          if (packagesToKeys?.[pkg])
-            cmd += ` -k ${packagesToKeys[pkg]}`;
+            if (packagesToKeys?.[pkg]) cmd += ` -k ${packagesToKeys[pkg]}`;
 
-          SFPLogger.log(
-            `Installing package dependency ${pkg}: ${packageDependencies[pkg]}`,
-            LoggerLevel.INFO
-          );
-          child_process.execSync(
-            cmd,
-            {
-              stdio: 'inherit'
-            }
-          );
-          result.success.push([pkg, packageDependencies[pkg]]);
+            SFPLogger.log(
+              `Installing package dependency ${pkg}: ${packageDependencies[pkg]}`,
+              LoggerLevel.INFO
+            );
+            child_process.execSync(cmd, {
+              stdio: "inherit",
+            });
+            result.success.push([pkg, packageDependencies[pkg]]);
+          }
         } else {
           result.skipped.push([pkg, packageDependencies[pkg]]);
-          console.log(`Package dependency ${pkg}: ${packageDependencies[pkg]} is already installed in target org`);
+          SFPLogger.log(
+            `Package dependency ${pkg}: ${packageDependencies[pkg]} is already installed in target org`
+          );
           continue;
         }
       }
@@ -221,7 +228,7 @@ export default class ReleaseImpl {
 
       throw new ReleaseError(
         "Failed to install package dependencies",
-        {installDependenciesResult: result, deploymentResult: null},
+        { installDependenciesResult: result, deploymentResult: null },
         err
       );
     }

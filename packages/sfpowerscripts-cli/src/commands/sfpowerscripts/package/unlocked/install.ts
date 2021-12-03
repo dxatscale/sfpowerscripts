@@ -3,6 +3,7 @@ import { Messages } from "@salesforce/core";
 import InstallPackageCommand from "../../../../InstallPackageCommand";
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageImpl";
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult";
+import { ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 const fs = require("fs");
 
 // Initialize Messages with the current plugin directory
@@ -155,7 +156,9 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
         options,
         skipIfAlreadyInstalled,
         packageMetadata,
-        sourceDirectory
+        sourceDirectory,
+        new ConsoleLogger(),
+        false
       );
 
       let result = await installUnlockedPackageImpl.exec();

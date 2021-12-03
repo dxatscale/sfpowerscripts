@@ -15,8 +15,9 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
     options: any,
     skipIfPackageInstalled: boolean,
     packageMetadata: PackageMetadata,
-    sourceDirectory?: string,
-    logger?: Logger
+    sourceDirectory: string,
+    logger: Logger,
+    isDryRun:boolean
   ) {
     super(
       sfdxPackage,
@@ -24,7 +25,8 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
       sourceDirectory,
       packageMetadata,
       skipIfPackageInstalled,
-      logger
+      logger,
+      isDryRun
     );
     this.packageVersionId = packageMetadata.package_version_id;
     this.options = options;
