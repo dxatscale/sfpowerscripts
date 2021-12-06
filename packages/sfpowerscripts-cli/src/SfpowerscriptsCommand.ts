@@ -34,6 +34,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
   private isSfpowerkitFound: boolean;
   private sfpowerscriptsConfig;
+  private sfpowerkitConfig;
   private isSfdmuFound: boolean;
   /**
    * Command run code goes here
@@ -51,7 +52,8 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     this.setLogLevel();
 
     // Setting the environment variable for disabling sfpowerkit header
-    process.env.SFPOWERKIT_DISABLE_HEADER = 'true';
+    if (SFPLogger.logLevel <= LoggerLevel.DEBUG ) process.env.SFPOWERKIT_DISABLE_HEADER = "false";
+    else process.env.SFPOWERKIT_DISABLE_HEADER = "true";
 
     //If demo mode, display demo reel and return
     if (process.env.SFPOWERSCRIPTS_DEMO_MODE) {
