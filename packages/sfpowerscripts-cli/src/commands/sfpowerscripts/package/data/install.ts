@@ -1,8 +1,9 @@
 import { flags } from '@salesforce/command';
-import { Messages } from '@salesforce/core';
+import { LoggerLevel, Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
 import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallDataPackageImpl"
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
+import SFPLogger, { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 const fs = require("fs");
 
 // Initialize Messages with the current plugin directory
@@ -76,7 +77,10 @@ export default class InstallDataPackage extends InstallPackageCommand {
         targetOrg,
         sourceDirectory,
         packageMetadata,
-        skipIfAlreadyInstalled
+        skipIfAlreadyInstalled,
+        new ConsoleLogger(),
+        SFPLogger.logLevel,
+        false
       )
 
       let result = await installDataPackageImpl.exec();

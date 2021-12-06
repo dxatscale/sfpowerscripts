@@ -92,8 +92,7 @@ export default class Release extends SfpowerscriptsCommand {
     }),
     devhubalias: flags.string({
       char: "v",
-      description: messages.getMessage("devhubAliasFlagDescription"),
-      default: "HubOrg",
+      description: messages.getMessage("devhubAliasFlagDescription")
     }),
     loglevel: flags.enum({
       description: "logging level for this command invocation",
@@ -134,8 +133,6 @@ export default class Release extends SfpowerscriptsCommand {
       this.flags.releasedefinition
     ).releaseDefinition;
 
-    if (this.flags.generatechangelog && !releaseDefinition.changelog)
-      throw new Error("changelog parameters must be specified in release definition to generate changelog");
 
    
     SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`release`)}`));
@@ -146,20 +143,26 @@ export default class Release extends SfpowerscriptsCommand {
     if(releaseDefinition.baselineOrg)
       SFPLogger.log(COLOR_HEADER(`Baselined Against Org: ${releaseDefinition.baselineOrg}`));
     SFPLogger.log(COLOR_HEADER(`Dry-run: ${this.flags.dryrun}`));
+    if(releaseDefinition.promotePackagesBeforeDeploymentToOrg && releaseDefinition.promotePackagesBeforeDeploymentToOrg==this.flags.targetOrg)
+     SFPLogger.log(COLOR_HEADER(`Promte Packages Before Deployment Activated?: true`));
+
     SFPLogger.log(
       COLOR_HEADER(
         `-------------------------------------------------------------------------------------------`
       )
     );
 
+    if (this.flags.generatechangelog && !releaseDefinition.changelog)
+      throw new Error("changelog parameters must be specified in release definition to generate changelog");
+
+    if(releaseDefinition.promotePackagesBeforeDeploymentToOrg && this.flags.targetorg == releaseDefinition.promotePackagesBeforeDeploymentToOrg && !this.flags.devhubalias )
+       throw new Error("DevHub is mandatory when promote is used within release defintion")
+    
 
     let releaseResult: ReleaseResult;
     try {
 
-      if(releaseDefinition.promotePackagesBeforeDeploymentToOrg && !this.flags.devhubalias)
-      {
-         throw new Error("DevHub is mandatory when promote is used within release defintion")
-      }
+ 
 
       let props:ReleaseProps = {
         releaseDefinition:releaseDefinition,

@@ -15,8 +15,9 @@ export default class InstallDataPackageImpl extends InstallPackage {
     sourceDirectory: string,
     packageMetadata: PackageMetadata,
     skipIfPackageInstalled: boolean,
-    logger?: Logger,
-    private logLevel?: LoggerLevel
+    logger: Logger,
+    private logLevel: LoggerLevel,
+    isDryRun:boolean
   ) {
     super(
       sfdxPackage,
@@ -24,7 +25,8 @@ export default class InstallDataPackageImpl extends InstallPackage {
       sourceDirectory,
       packageMetadata,
       skipIfPackageInstalled,
-      logger
+      logger,
+      isDryRun
     );
   }
 

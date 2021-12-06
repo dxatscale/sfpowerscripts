@@ -15,8 +15,9 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
     options: any,
     skipIfPackageInstalled: boolean,
     packageMetadata: PackageMetadata,
-    sourceDirectory?: string,
-    logger?: Logger
+    sourceDirectory: string,
+    logger: Logger,
+    isDryRun:boolean
   ) {
     super(
       sfdxPackage,
@@ -24,7 +25,8 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
       sourceDirectory,
       packageMetadata,
       skipIfPackageInstalled,
-      logger
+      logger,
+      isDryRun
     );
     this.packageVersionId = packageMetadata.package_version_id;
     this.options = options;
@@ -75,13 +77,20 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
 
       if (packageFound) {
         SFPLogger.log(
-          `Package to be installed was found in the target org ${packageFound}`,
+          `Package to be installed was found in the target org  ${this.targetusername}`,
           LoggerLevel.INFO,
           this.logger
         );
         return false;
       } else 
+      {
+        SFPLogger.log(
+          `Package to be installed was not found in the target org  ${this.targetusername}, Proceeding to instal.. `,
+          LoggerLevel.INFO,
+          this.logger
+        );
         return true;
+      }
      }
      else
      {

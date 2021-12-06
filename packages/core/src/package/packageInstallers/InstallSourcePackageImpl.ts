@@ -29,9 +29,10 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     options: any,
     skipIfPackageInstalled: boolean,
     packageMetadata: PackageMetadata,
-    logger?: Logger,
-    pathToReplacementForceIgnore?: string,
-    deploymentType?: DeploymentType
+    logger: Logger,
+    pathToReplacementForceIgnore: string,
+    deploymentType: DeploymentType,
+    isDryRun:boolean
   ) {
     super(
       sfdxPackage,
@@ -39,7 +40,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
       sourceDirectory,
       packageMetadata,
       skipIfPackageInstalled,
-      logger
+      logger,
+      isDryRun
     );
     this.options = options;
     this.pathToReplacementForceIgnore = pathToReplacementForceIgnore;
