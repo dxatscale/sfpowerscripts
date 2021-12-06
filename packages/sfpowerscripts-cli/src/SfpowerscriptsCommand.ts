@@ -2,7 +2,6 @@ import { SfdxCommand } from "@salesforce/command";
 import { OutputFlags } from "@oclif/parser";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import * as rimraf from "rimraf";
-import child_process = require("child_process");
 import ProjectValidation from "./ProjectValidation";
 import DemoReelPlayer from "./impl/demoreelplayer/DemoReelPlayer";
 import { fs } from "@salesforce/core";
