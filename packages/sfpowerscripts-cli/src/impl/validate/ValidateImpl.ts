@@ -108,7 +108,12 @@ export default class ValidateImpl {
         const connection = (await Org.create({aliasOrUsername: scratchOrgUsername})).getConnection();
 
         if (this.props.isDependencyAnalysis) {
-          SFPLogger.log("Validating dependency  tree of changed components..",LoggerLevel.INFO);
+          SFPLogger.log(
+            COLOR_HEADER(
+              `-------------------------------------------------------------------------------------------`
+            )
+          );
+          SFPLogger.log(COLOR_KEY_MESSAGE("Validating dependency  tree of changed components.."),LoggerLevel.INFO);
           const changedComponents = await this.getChangedComponents();
           const dependencyAnalysis = new DependencyAnalysis(connection, changedComponents);
 
@@ -119,8 +124,14 @@ export default class ValidateImpl {
           }
           else
           {
-            SFPLogger.log("No Dependency violations found so far",LoggerLevel.INFO);
+            SFPLogger.log(COLOR_SUCCESS("No Dependency violations found so far"),LoggerLevel.INFO);
           }
+
+          SFPLogger.log(
+            COLOR_HEADER(
+              `-------------------------------------------------------------------------------------------`
+            )
+          );
         }
 
         if (this.props.isImpactAnalysis) {

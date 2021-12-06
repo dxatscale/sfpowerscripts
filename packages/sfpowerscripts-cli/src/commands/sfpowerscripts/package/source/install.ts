@@ -5,6 +5,8 @@ import InstallPackageCommand from "../../../../InstallPackageCommand";
 import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallSourcePackageImpl"
 import * as fs from "fs-extra"
 import { PackageInstallationStatus } from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult";
+import { ConsoleLogger } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import { DeploymentType } from "@dxatscale/sfpowerscripts.core/lib/sfpcommands/source/DeploymentExecutor"
 
 
 // Initialize Messages with the current plugin directory
@@ -121,7 +123,12 @@ export default class InstallSourcePackage extends InstallPackageCommand {
         sourceDirectory,
         options,
         skipIfAlreadyInstalled,
-        packageMetadata
+        packageMetadata,
+        new ConsoleLogger(),
+        null,
+        DeploymentType.MDAPI_DEPLOY,
+        false
+
       );
 
       let result = await installSourcePackageImpl.exec();
