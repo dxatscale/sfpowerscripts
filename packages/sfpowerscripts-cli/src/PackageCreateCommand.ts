@@ -123,8 +123,7 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
        let packageDiffImpl = new PackageDiffImpl(
          new ConsoleLogger(),
          this.sfdxPackage,
-         null,
-         this.getConfigFilePath()
+         null
        );
 
        let isToRunBuild = (await packageDiffImpl.exec()).isToBeBuilt;

@@ -230,16 +230,10 @@ export default class BuildImpl {
     let buildCollections = new BuildCollections(projectDirectory);
 
     for await (const pkg of allPackagesInRepo) {
-      let type = this.getPriorityandTypeOfAPackage(
-        this.projectConfig,
-        pkg
-      ).type;
-
       let diffImpl: PackageDiffImpl = new PackageDiffImpl(
         new ConsoleLogger(),
         pkg,
         this.props.projectDirectory,
-        type == "Data" || type == "Source" ? null : this.props.configFilePath,
         this.props.packagesToCommits,
         this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
       );

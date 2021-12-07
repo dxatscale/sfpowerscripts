@@ -13,15 +13,12 @@ export default class PackageDiffImpl {
     private logger:Logger,
     private sfdx_package: string,
     private project_directory: string,
-    private config_file_path?: string,
     private packagesToCommits?: {[p: string]: string},
     private pathToReplacementForceIgnore?: string
   ) {}
 
   public async exec(): Promise<{isToBeBuilt:boolean,reason:string,tag?:string}> {
     let git: Git = new Git(this.project_directory);
-
-    let config_file_path: string = this.config_file_path;
 
     let projectConfig = ProjectConfig.getSFDXPackageManifest(this.project_directory);
     let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(this.sfdx_package, projectConfig);
@@ -53,29 +50,13 @@ export default class PackageDiffImpl {
       if (packageType !== "Data")
         modified_files = this.applyForceIgnoreToModifiedFiles(modified_files);
 
-      const isUnlockedAndConfigFilePath = packageType === "Unlocked" && config_file_path != null;
-
-      if (isUnlockedAndConfigFilePath)
-        SFPLogger.log(`Checking for changes to ${config_file_path}`,LoggerLevel.INFO,this.logger);
-
       SFPLogger.log(`Checking for changes in source directory ${path.normalize(pkgDescriptor.path)}`,LoggerLevel.INFO,this.logger);
 
       // Check whether the package has been modified
-
       for (let filename of modified_files) {
-        if (isUnlockedAndConfigFilePath) {
-          if (
-              filename.includes(path.normalize(pkgDescriptor.path)) ||
-              filename === config_file_path
-          ) {
-              SFPLogger.log(`Found change(s) in ${filename}`,LoggerLevel.INFO,this.logger);
-              return {isToBeBuilt:true,reason:`Found change(s) in package/config`,tag:tag};
-          }
-        } else {
-          if (filename.includes(path.normalize(pkgDescriptor.path))) {
-            SFPLogger.log(`Found change(s) in ${filename}`,LoggerLevel.INFO,this.logger);
-            return {isToBeBuilt:true,reason:`Found change(s) in package`,tag:tag};
-          }
+        if (filename.includes(path.normalize(pkgDescriptor.path))) {
+          SFPLogger.log(`Found change(s) in ${filename}`,LoggerLevel.INFO,this.logger);
+          return {isToBeBuilt:true,reason:`Found change(s) in package`,tag:tag};
         }
       }
 
