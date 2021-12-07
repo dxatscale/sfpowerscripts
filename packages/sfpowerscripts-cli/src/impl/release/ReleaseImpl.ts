@@ -87,21 +87,19 @@ export default class ReleaseImpl {
 
         let releaseChangelog = await changelogImpl.exec();
 
-        let latestRelease = this.getLatestRelease(releaseChangelog);
-
-        let numberOfWorkItems = this.getNumberOfWorkItems(latestRelease);
+        const aggregatedNumberOfWorkItemsInRelease = this.getAggregatedNumberOfWorkItemsInRelease(releaseChangelog.releases);
 
         SFPStatsSender.logGauge(
           "release.workitems",
-          numberOfWorkItems,
+          aggregatedNumberOfWorkItemsInRelease,
           {releaseName: this.props.releaseDefinition.release}
         );
 
-        let numberOfCommits = this.getNumberOfCommits(latestRelease);
+        const aggregatedNumberOfCommitsInRelease = this.getAggregatedNumberOfCommitsInRelease(releaseChangelog.releases);
 
         SFPStatsSender.logGauge(
           "release.commits",
-          numberOfCommits,
+          aggregatedNumberOfCommitsInRelease,
           {releaseName: this.props.releaseDefinition.release}
         );
 
@@ -115,6 +113,36 @@ export default class ReleaseImpl {
     }
   }
 
+  /**
+   *
+   * @param releases
+   * @returns aggregated number of work items in a release
+   */
+  private getAggregatedNumberOfWorkItemsInRelease(releases: Release[]) {
+    let aggregatedNumberOfWorkItemsInRelease: number = 0;
+    releases.forEach(release => {
+      if (release.names.includes(this.props.releaseDefinition.release)) {
+        aggregatedNumberOfWorkItemsInRelease += this.getNumberOfWorkItems(release);
+      }
+    });
+    return aggregatedNumberOfWorkItemsInRelease;
+  }
+
+  /**
+   *
+   * @param releases
+   * @returns aggregated number of commits in a release
+   */
+  private getAggregatedNumberOfCommitsInRelease(releases: Release[]) {
+    let aggregatedNumberOfCommitsInRelease: number = 0;
+    releases.forEach(release => {
+      if (release.names.includes(this.props.releaseDefinition.release)) {
+        aggregatedNumberOfCommitsInRelease += this.getNumberOfCommits(release);
+      }
+    })
+    return aggregatedNumberOfCommitsInRelease;
+  }
+
   private getNumberOfWorkItems(release: Release) {
     return Object.keys(release.workItems).length;
   }
@@ -125,18 +153,6 @@ export default class ReleaseImpl {
     release.artifacts.forEach((artifact) => {numberOfCommits += artifact.commits.length});
 
     return numberOfCommits;
-  }
-
-  private getLatestRelease(releaseChangelog: ReleaseChangelog) {
-    let hashIdOfLatestRelease = releaseChangelog.orgs.find(
-      (org) => org.name === this.props.targetOrg.toLowerCase()
-    ).latestRelease.hashId;
-
-    let latestRelease = releaseChangelog.releases.find(
-      (release) => release.hashId === hashIdOfLatestRelease
-    );
-
-    return latestRelease;
   }
 
   private async deployArtifacts(
