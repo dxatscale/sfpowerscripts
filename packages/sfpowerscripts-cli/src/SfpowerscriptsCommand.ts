@@ -34,7 +34,6 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
   private isSfpowerkitFound: boolean;
   private sfpowerscriptsConfig;
-  private sfpowerkitConfig;
   private isSfdmuFound: boolean;
   /**
    * Command run code goes here
