@@ -51,7 +51,8 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     this.setLogLevel();
 
     // Setting the environment variable for disabling sfpowerkit header
-    if (SFPLogger.logLevel <= LoggerLevel.DEBUG ) process.env.SFPOWERKIT_DISABLE_HEADER = "false";
+    if (SFPLogger.logLevel <= LoggerLevel.DEBUG)
+      process.env.SFPOWERKIT_DISABLE_HEADER = "false";
     else process.env.SFPOWERKIT_DISABLE_HEADER = "true";
 
     //If demo mode, display demo reel and return
@@ -110,10 +111,12 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
       );
     }
 
-    if (!this.isSfdmuFound) {
-      throw new Error(
-        "sfpowerscripts require sfdmu to function, please install sfdmu and try again!"
-      );
+    if (!process.env.DISABLE_SFDMU_CHECK) {
+      if (!this.isSfdmuFound) {
+        throw new Error(
+          "sfpowerscripts require sfdmu to function, please install sfdmu and try again!"
+        );
+      }
     }
 
     // Execute command run code
