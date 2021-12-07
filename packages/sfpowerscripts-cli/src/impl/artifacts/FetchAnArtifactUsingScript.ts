@@ -21,13 +21,13 @@ export class FetchAnArtifactUsingScript implements FetchAnArtifact {
 
       if (version) {
         if (process.platform !== "win32") {
-          cmd = `bash -e "${this.scriptPath}" "${packageName}" "${version}" "${artifactDirectory}"`;
+          cmd = `sh -e "${this.scriptPath}" "${packageName}" "${version}" "${artifactDirectory}"`;
         } else {
           cmd = `cmd.exe /c "${this.scriptPath}" "${packageName}" "${version}" "${artifactDirectory}"`;
         }
       } else {
         if (process.platform !== "win32") {
-          cmd = `bash -e ${this.scriptPath} ${packageName} ${artifactDirectory}`;
+          cmd = `sh -e ${this.scriptPath} ${packageName} ${artifactDirectory}`;
         } else {
           cmd = `cmd.exe /c ${this.scriptPath} ${packageName}  ${artifactDirectory}`;
         }
