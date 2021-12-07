@@ -230,11 +230,6 @@ export default class BuildImpl {
     let buildCollections = new BuildCollections(projectDirectory);
 
     for await (const pkg of allPackagesInRepo) {
-      let type = this.getPriorityandTypeOfAPackage(
-        this.projectConfig,
-        pkg
-      ).type;
-
       let diffImpl: PackageDiffImpl = new PackageDiffImpl(
         new ConsoleLogger(),
         pkg,
