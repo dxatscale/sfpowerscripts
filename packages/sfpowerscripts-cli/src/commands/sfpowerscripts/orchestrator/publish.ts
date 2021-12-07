@@ -124,7 +124,7 @@ export default class Promote extends SfpowerscriptsCommand {
     let npmrcFilesToCleanup: string[] = [];
 
     try {
-   
+
     SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`publish`)}`));
     SFPLogger.log(COLOR_HEADER(`target: ${this.flags.scriptpath ? this.flags.scriptpath : "NPM"}`));
     SFPLogger.log(COLOR_HEADER(`Publish promoted artifacts only: ${this.flags.publishpromotedonly ? true : false}`));
@@ -346,7 +346,7 @@ export default class Promote extends SfpowerscriptsCommand {
   ) {
     let cmd: string;
     if (process.platform !== 'win32') {
-      cmd = `bash -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
+      cmd = `sh -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
     } else {
       cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
     }

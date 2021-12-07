@@ -12,7 +12,7 @@ export default class PackageInstallationHelpers {
   ) {
     let cmd: string;
     if (process.platform !== "win32") {
-      cmd = `bash -e ${script} ${sfdx_package} ${targetOrg}`;
+      cmd = `sh -e ${script} ${sfdx_package} ${targetOrg}`;
     } else {
       cmd = `cmd.exe /c ${script} ${sfdx_package} ${targetOrg}`;
     }
