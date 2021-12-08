@@ -6,7 +6,7 @@
 
 
 
-![](https://img.shields.io/badge/Compatible%20with%20sfdx--cli-7.120.0-green) 
+![](https://img.shields.io/badge/Compatible%20with%20sfdx--cli-7.129.0-green) 
 
 [![Join slack](https://i.imgur.com/FZZmA3g.png)](https://launchpass.com/dxatscale)
 
