@@ -117,7 +117,7 @@ export default class PrepareImpl {
 
       //During Prepare, there could be a race condition where a main is merged with a new package
       //but the package is not yet available in the validated package list and can cause prepare to fail
-      await Promise.all(packages.map(async (pkg) => {
+      for (const pkg of packages) {
         let version = await latestGitTagVersion.getVersionFromLatestTag(pkg.package);
         artifactFetcher.fetchArtifact(
           pkg.package,
@@ -125,7 +125,7 @@ export default class PrepareImpl {
           version,
           true
         );
-      }));
+      }
 
     } else {
       //Build All Artifacts
