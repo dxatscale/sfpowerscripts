@@ -241,7 +241,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
   private buildExecCommand(): string {
     let apexclasses;
 
-    let command = `sfdx force:mdapi:deploy -u ${this.target_org} --soapdeploy`;
+    let command = `sfdx force:mdapi:deploy -u ${this.target_org}`;
 
     if (this.deployment_options["checkonly"]) command += ` -c`;
 
