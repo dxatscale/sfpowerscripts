@@ -3,7 +3,7 @@ import { Org } from "@salesforce/core";
 import { PoolConfig } from "../pool/PoolConfig";
 import OrgDisplayImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/OrgDisplayImpl";
 import isValidSfdxAuthUrl from "../pool/prequisitecheck/IsValidSfdxAuthUrl";
-import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
 import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 import { Result } from "neverthrow";
@@ -118,6 +118,8 @@ export default class PrepareImpl {
       //During Prepare, there could be a race condition where a main is merged with a new package
       //but the package is not yet available in the validated package list and can cause prepare to fail
       for (const pkg of packages) {
+        try
+        {
         let version = await latestGitTagVersion.getVersionFromLatestTag(pkg.package);
         artifactFetcher.fetchArtifact(
           pkg.package,
@@ -125,6 +127,10 @@ export default class PrepareImpl {
           version,
           true
         );
+        }catch(error)
+        {
+          SFPLogger.log( COLOR_WARNING(`Git Tag for ${pkg.package} missing, This might result in deployment failures`))
+        }
       }
 
     } else {
