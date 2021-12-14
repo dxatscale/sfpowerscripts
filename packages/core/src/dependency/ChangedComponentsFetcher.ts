@@ -18,12 +18,10 @@ export default class ChangedComponentsFetcher {
 
     let projectConfig = ProjectConfig.getSFDXPackageManifest(null);
 
-    
-    //Most CI system checkouts detached head, this would needed to compare aginst
-    //the origin
-    if(!this.baseBranch.startsWith("origin"))
+    if(!this.baseBranch.includes("origin"))
     {
-     this.baseBranch=`origin/${this.baseBranch}`;
+      // for user convenience, use full ref name to avoid errors involving missing local refs
+     this.baseBranch=`remotes/origin/${this.baseBranch}`;
     }
 
     let diff: string[] = await git.diff([
