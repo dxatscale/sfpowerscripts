@@ -11,7 +11,7 @@
 [![Join slack](https://i.imgur.com/FZZmA3g.png)](https://launchpass.com/dxatscale)
 
 <p align="center">
-  <img alt="sfpowerscripts" src="https://repository-images.githubusercontent.com/248449736/5d08c600-728e-11ea-8267-ae1aceebea60" width="480" height="400">
+  <img alt="sfpowerscripts" src="https://repository-images.githubusercontent.com/248449736/efc1bf15-b87f-4926-a675-7841650c2433" width="480" height="400">
 </p>
 
 
