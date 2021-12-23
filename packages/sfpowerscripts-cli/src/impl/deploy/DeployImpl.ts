@@ -146,6 +146,7 @@ export default class DeployImpl {
 
               this.displayRetryHeader(this.props.isRetryOnFailure,count);
 
+              
               let installPackageResult = await this.installPackage(
                 packageType,
                 queue[i].package,
@@ -155,7 +156,8 @@ export default class DeployImpl {
                 queue[i].skipTesting,
                 this.props.waitTime.toString(),
                 pkgDescriptor,
-                this.props.skipIfPackageInstalled
+                false                           //Queue already filtered by deploy, there is no further need for individual
+                                                //commands to decide the skip logic. TODO: fix this incorrect pattern
               );
 
 
