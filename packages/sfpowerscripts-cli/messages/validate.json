@@ -13,5 +13,6 @@
   "baseBranchFlagDescription": "The pull request base branch",
   "enableImpactAnalysisFlagDescription": "Visualize components impacted by changes in pull request",
   "enableDependencyValidation": "Validate dependencies between packages for changed components",
-  "tagFlagDescription":"Tag the build with a label, useful to identify in metrics"
+  "tagFlagDescription":"Tag the build with a label, useful to identify in metrics",
+  "diffCheckFlagDescription": "Only build the packages which have changed by analyzing previous tags"
 }

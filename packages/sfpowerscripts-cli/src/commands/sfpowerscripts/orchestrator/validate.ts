@@ -94,6 +94,10 @@ export default class Validate extends SfpowerscriptsCommand {
     tag: flags.string({
       description: messages.getMessage("tagFlagDescription"),
     }),
+    diffcheck: flags.boolean({
+      description: messages.getMessage("diffCheckFlagDescription"),
+      default: true,
+    }),
     loglevel: flags.enum({
       description: "logging level for this command invocation",
       default: "info",
@@ -155,7 +159,8 @@ export default class Validate extends SfpowerscriptsCommand {
         keys: this.flags.keys,
         baseBranch: this.flags.basebranch,
         isImpactAnalysis: this.flags.enableimpactanalysis,
-        isDependencyAnalysis: this.flags.enabledependencyvalidation
+        isDependencyAnalysis: this.flags.enabledependencyvalidation,
+        diffcheck: this.flags.diffcheck
       }
 
       let validateImpl: ValidateImpl = new ValidateImpl( validateProps);

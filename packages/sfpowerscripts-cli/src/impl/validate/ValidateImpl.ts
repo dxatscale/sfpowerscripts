@@ -50,7 +50,8 @@ export interface ValidateProps {
   keys?: string,
   baseBranch?: string,
   isImpactAnalysis?: boolean,
-  isDependencyAnalysis?: boolean
+  isDependencyAnalysis?: boolean,
+  diffcheck?: boolean
 }
 
 export default class ValidateImpl {
@@ -260,7 +261,7 @@ export default class ValidateImpl {
        buildNumber:1,
        executorcount:10,
        waitTime:120,
-       isDiffCheckEnabled: this.props.validateMode===ValidateMode.POOL,
+       isDiffCheckEnabled: this.props.diffcheck,
        isQuickBuild:true,
        isBuildAllAsSourcePackages:true,
        packagesToCommits:packagesToCommits,
