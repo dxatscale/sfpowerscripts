@@ -29,10 +29,10 @@ A build system for package based development in Salesforce , delivered as a sfdx
 - Integrate with any CI/CD system of choice
 - All commands are enabled with statsD, for collecting metrics about your pipeline.
 
-There are lot more features to explore. Read more at  https://dxatscale.gitbook.io/sfpowerscripts/features
+There are lot more features to explore. Read more at  https://docs.dxatscale.io
 
-The project is delivered as a <b>SFDX CLI Plugin</b> that can be deployed in any CI/CD system, The plugin is available [here](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)
-
+The project is delivered as a <b>SFDX CLI Plugin</b> that can be deployed in any CI/CD system, The plugin is available in  [NPM](https://www.npmjs.com/package/@dxatscale/sfpowerscripts) or can be 
+used by using the [docker image](https://hub.docker.com/r/dxatscale/sfpowerscripts)
 
 #### Motivation
 
