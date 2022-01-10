@@ -58,7 +58,7 @@ export default class DependencyAnalysis {
             cmp.packageType === "Unlocked" &&
             component.package !== cmp.package
           ) {
-            const isDependencyDefined = projectConfig.packageDirectories[component.indexOfPackage].dependencies.find(dependency => {
+            const isDependencyDefined = projectConfig.packageDirectories[component.indexOfPackage].dependencies?.find(dependency => {
               const packageName: string = dependency.package.split("@")[0];
               return packageName === cmp.package;
             }) ? true : false
