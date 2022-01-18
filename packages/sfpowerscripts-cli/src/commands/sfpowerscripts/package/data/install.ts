@@ -88,7 +88,7 @@ export default class InstallDataPackage extends InstallPackageCommand {
 
       if (result.result === PackageInstallationStatus.Failed) {
         throw new Error(result.message);
-      } 
+      }
 
 
     } catch(err) {
