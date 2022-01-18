@@ -52,7 +52,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
     // Setting the environment variable for disabling sfpowerkit header
 
-    if (SFPLogger.logLevel > LoggerLevel.DEBUG ) 
+    if (SFPLogger.logLevel > LoggerLevel.DEBUG )
      process.env.SFPOWERKIT_NOHEADER = "true";
 
 
