@@ -4,7 +4,7 @@ import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 import * as fs from "fs-extra";
 import path = require("path");
 import lodash = require("lodash");
-
+import { URL } from "url";
 
 /**
  * Methods for getting information about artifacts
@@ -97,19 +97,55 @@ export default class ArtifactInquirer {
    * Verify that artifacts are from the same source repository
    */
   public validateArtifactsSourceRepository(): void {
-    let sourceRepository: string;
+    let remoteURL: RemoteURL;
+
     for (let artifact of this.artifacts) {
+      let currentRemoteURL: RemoteURL;
+
       let packageMetadata: PackageMetadata = JSON.parse(
         fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
       );
 
-      if (sourceRepository == null)
-        sourceRepository = packageMetadata.repository_url;
+      let isHttp: boolean = packageMetadata.repository_url.match(/^https?:\/\//) ? true : false
+      if (isHttp) {
+        const url = new URL(packageMetadata.repository_url);
+        currentRemoteURL = {
+          ref: url.toString(),
+          hostName: url.hostname,
+          pathName: url.pathname
+        }
+      } else {
+        // Handle SSH URL separately, as it is not supported by URL module
+        currentRemoteURL = {
+          ref: packageMetadata.repository_url,
+          hostName: null,
+          pathName: null
+        }
+      }
 
-      if (sourceRepository !== packageMetadata.repository_url)
+      if (remoteURL == null) {
+        remoteURL = currentRemoteURL;
+        continue;
+      }
+
+      let isValid: boolean;
+      if (isHttp) {
+        if (currentRemoteURL.hostName === remoteURL.hostName && currentRemoteURL.pathName === remoteURL.pathName)
+          isValid = true;
+        else
+          isValid = false;
+      } else {
+        if (currentRemoteURL.ref === remoteURL.ref ) isValid = true;
+        else isValid = false;
+      }
+
+      if (!isValid) {
+        SFPLogger.log(`remoteURL: ${JSON.stringify(remoteURL)}`, LoggerLevel.DEBUG, this.packageLogger);
+        SFPLogger.log(`currentRemoteURL: ${JSON.stringify(currentRemoteURL)}`, LoggerLevel.DEBUG, this.packageLogger);
         throw new Error(
-          "Artifacts must originate from the same source repository, for deployment to work"
+          `Artifacts must originate from the same source repository, for deployment to work. The artifact ${packageMetadata.package_name} has repository URL that doesn't meet the current repository URL ${currentRemoteURL}`
         );
+      }
     }
   }
 
@@ -151,4 +187,10 @@ export default class ArtifactInquirer {
 
     return prunedLatestPackageManifest;
   }
+}
+
+interface RemoteURL {
+  ref: string;
+  hostName: string;
+  pathName: string;
 }
