@@ -106,10 +106,8 @@ export default class ArtifactInquirer {
         fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
       );
 
-      let isHttp: boolean;
-      if (packageMetadata.repository_url.match(/^https?:\/\//)) {
-        isHttp = true;
-
+      let isHttp: boolean = packageMetadata.repository_url.match(/^https?:\/\//) ? true : false
+      if (isHttp) {
         const url = new URL(packageMetadata.repository_url);
         currentRemoteURL = {
           ref: url.toString(),
@@ -118,8 +116,6 @@ export default class ArtifactInquirer {
         }
       } else {
         // Handle SSH URL separately, as it is not supported by URL module
-        isHttp = false;
-
         currentRemoteURL = {
           ref: packageMetadata.repository_url,
           hostName: null,
