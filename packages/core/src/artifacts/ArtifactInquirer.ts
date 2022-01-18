@@ -4,7 +4,7 @@ import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
 import * as fs from "fs-extra";
 import path = require("path");
 import lodash = require("lodash");
-
+import { URL } from "url";
 
 /**
  * Methods for getting information about artifacts
@@ -97,19 +97,59 @@ export default class ArtifactInquirer {
    * Verify that artifacts are from the same source repository
    */
   public validateArtifactsSourceRepository(): void {
-    let sourceRepository: string;
+    let hostName: string;
+    let pathName: string;
+
     for (let artifact of this.artifacts) {
+      let currentHostName: string;
+      let currentPathName: string;
+
       let packageMetadata: PackageMetadata = JSON.parse(
         fs.readFileSync(artifact.packageMetadataFilePath, "utf8")
       );
 
-      if (sourceRepository == null)
-        sourceRepository = packageMetadata.repository_url;
 
-      if (sourceRepository !== packageMetadata.repository_url)
+      if (packageMetadata.repository_url.match(/^https?:\/\//)) {
+        const url = new URL(packageMetadata.repository_url);
+        currentHostName = url.hostname;
+        currentPathName = url.pathname;
+      } else {
+        // Handle SSH URL separately, as it is not supported by URL module
+        const hostAndPath = packageMetadata.repository_url.slice(packageMetadata.repository_url.indexOf("@")+1);
+
+        // Extract hostname and pathname
+        if (hostAndPath.indexOf("/") === -1) {
+          const host = hostAndPath;
+          if (host.indexOf(":") === -1) {
+            currentHostName = host;
+          } else {
+            currentHostName = host.slice(0, host.indexOf(":"));
+          }
+          currentPathName = "/";
+        } else {
+          const host = hostAndPath.slice(0, hostAndPath.indexOf("/"));
+          if (host.indexOf(":") === -1) {
+            currentHostName = host;
+          } else {
+            currentHostName = host.slice(0, host.indexOf(":"));
+          }
+          currentPathName = hostAndPath.slice(hostAndPath.indexOf("/"));
+        }
+      }
+
+      if (hostName == null && pathName == null) {
+        hostName = currentHostName;
+        pathName = currentPathName;
+        continue;
+      }
+
+      if (hostName !== currentHostName || pathName !== currentPathName) {
+        SFPLogger.log(`hostName: ${hostName}   pathName: ${pathName}`, LoggerLevel.DEBUG, this.packageLogger);
+        SFPLogger.log(`currentHostName: ${currentHostName}   currentPathName: ${currentPathName}`, LoggerLevel.DEBUG, this.packageLogger);
         throw new Error(
           "Artifacts must originate from the same source repository, for deployment to work"
         );
+      }
     }
   }
 
