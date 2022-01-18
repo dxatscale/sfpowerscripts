@@ -143,7 +143,7 @@ export default class ArtifactInquirer {
         SFPLogger.log(`remoteURL: ${JSON.stringify(remoteURL)}`, LoggerLevel.DEBUG, this.packageLogger);
         SFPLogger.log(`currentRemoteURL: ${JSON.stringify(currentRemoteURL)}`, LoggerLevel.DEBUG, this.packageLogger);
         throw new Error(
-          "Artifacts must originate from the same source repository, for deployment to work"
+          `Artifacts must originate from the same source repository, for deployment to work. The artifact ${packageMetadata.package_name} has repository URL that doesn't meet the current repository URL ${currentRemoteURL}`
         );
       }
     }
