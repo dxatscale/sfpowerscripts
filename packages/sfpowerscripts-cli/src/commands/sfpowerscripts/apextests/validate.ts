@@ -54,7 +54,7 @@ export default class ValidateApexCoverage extends SfpowerscriptsCommand {
       const test_coverage: string = this.flags.testcoverage;
 
 
-      let validateApexCoverageImpl:ValidateApexCoverageImpl = new ValidateApexCoverageImpl(target_org,Number(test_coverage));    
+      let validateApexCoverageImpl:ValidateApexCoverageImpl = new ValidateApexCoverageImpl(target_org,Number(test_coverage));
       await validateApexCoverageImpl.exec();
     } catch (err) {
       console.log(err);

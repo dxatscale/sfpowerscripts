@@ -183,5 +183,5 @@ export default class CreateUnlockedPackage extends PackageCreateCommand {
 
   protected getConfigFilePath(): string {
      return this.flags.configfilepath;
-  }  
+  }
 }
