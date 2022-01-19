@@ -73,7 +73,7 @@ export default class FetchImpl {
           version = await latestGitTagVersion.getVersionFromLatestTag(artifacts[i][0]);
         } else version = artifacts[i][1];
 
-        let  artifactFetcher = new FetchArtifactSelector(scriptPath,scope,npmrcPath).getArtifactFetcher();  
+        let  artifactFetcher = new FetchArtifactSelector(scriptPath,scope,npmrcPath).getArtifactFetcher();
         artifactFetcher.fetchArtifact(artifacts[i][0],artifactDirectory,version,false)
      
         fetchedArtifacts.success.push(artifacts[i]);
