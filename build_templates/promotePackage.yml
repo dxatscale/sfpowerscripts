@@ -1,0 +1,46 @@
+parameters:
+
+  - name: version
+    type: string
+    default: ''
+
+  - name: packageToPromote
+    type: object
+    default:
+      package: ''
+      pjson: ''
+
+
+
+steps:
+          - checkout: self
+
+          - task: NodeTool@0
+            inputs:
+             versionSpec: '14.x'
+
+          - task: CmdLine@2
+            displayName: "Set Git Config"
+            inputs:
+               script: |
+                 git config --global user.email "sfpowerkit.ci@dev.azure.com"
+                 git config --global user.name "sfpowerkitci"
+
+
+          - task: DownloadSecureFile@1
+            displayName: 'Download secure file .npmrc'
+            name: npmrc
+            inputs:
+                secureFile: '8abaf6dc-ff2e-427a-971b-a98cbd48af34' # Need to change this
+
+          - task: npmAuthenticate@0
+            inputs:
+              workingFile: $(npmrc.secureFilePath)
+
+
+          - task: CmdLine@2
+            displayName: 'Promote package ${{ parameters.packageToPromote.package }}'
+            inputs:
+                 script: |
+                    PKG_VERSION=$(jq -r ".version" ${{ parameters.packageToPromote.pjson }})
+                    npm dist-tag add ${{ parameters.packageToPromote.package }}@$PKG_VERSION ${{ parameters.version }}
