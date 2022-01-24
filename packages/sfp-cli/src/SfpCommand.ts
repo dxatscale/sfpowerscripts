@@ -16,7 +16,7 @@ export default abstract class SfpCommand extends Command {
   protected flags: OutputFlags<any>;
 
   // The parsed args for easy reference by this command; assigned in init
-  protected args: OutputArgs<any>;
+  protected args: OutputArgs;
 
   protected varargs?: any;
   protected projectName: string;

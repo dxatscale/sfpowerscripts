@@ -9,7 +9,7 @@ import cli from "cli-ux";
 import SFPLogger, { COLOR_ERROR, COLOR_KEY_MESSAGE, COLOR_SUCCESS, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
 import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
-import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/installedPackages/InstalledPackagesFetcher";
+import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/packageQuery/InstalledPackagesFetcher";
 import InstalledPackageDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer";
 import PoolFetchImpl from "../../impl/pool/PoolFetchImpl";
 import CreateScratchOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateScratchOrgImpl";

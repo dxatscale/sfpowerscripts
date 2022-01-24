@@ -8,7 +8,7 @@
   },
   "bugs": "https://github.com/dxatscale/sfp-cli/issues",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^12.2.0",
+    "@dxatscale/sfpowerscripts.core": "^15.2.5",
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/parser": "^3.8.5",
@@ -17,6 +17,7 @@
     "@oclif/plugin-warn-if-update-available": "^1.7.0",
     "@salesforce/core": "^2.27.2",
     "@salesforce/source-deploy-retrieve": "~4.4.0",
+    "adm-zip": "^0.5.9",
     "chalk": "^4.1.2",
     "cli-table": "^0.3.6",
     "fs-extra": "^10.0.0",
