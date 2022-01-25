@@ -1,7 +1,6 @@
 import {flags} from '@oclif/command'
 import inquirer = require('inquirer')
 import NewWorkItemWorkflow from '../workflows/workitems/NewWorkItemWorkflow'
-import SFPLogger, { COLOR_HEADER } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import CommandsWithInitCheck from '../sharedCommandBase/CommandsWithInitCheck';
 import DeleteWorkItemWorkflow from '../workflows/workitems/DeleteWorkItemWorkflow';
 import SubmitWorkItemWorkflow from '../workflows/workitems/SubmitWorkItemWorkflow';

@@ -1,14 +1,10 @@
 import { SimpleGit } from "simple-git";
 import { SfpProjectConfig } from "../../types/SfpProjectConfig";
-import SFPLogger, { LoggerLevel, ConsoleLogger, COLOR_KEY_MESSAGE, COLOR_KEY_VALUE, COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+import SFPLogger, { LoggerLevel, COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import SourceStatusWorkflow from '../source/SourceStatusWorkflow'
-import PickAnOrgWorkflow from "../org/PickAnOrgWorkflow";
 import inquirer = require('inquirer');
 import PullSourceWorkflow from "../source/PullSourceWorkflow";
 import CommitWorkflow from "../git/CommitWorkflow";
-import cli from "cli-ux";
-import SourcePush from "../../impl/sfdxwrappers/SourcePush";
-import PushErrorDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/PushErrorDisplayer";
 import PushSourceToOrg from "../../impl/sfpcommands/PushSourceToOrg";
 
 export default class SyncOrg {

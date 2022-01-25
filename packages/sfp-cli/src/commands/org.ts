@@ -1,11 +1,9 @@
 import SFPLogger, {
   COLOR_ERROR,
-  COLOR_WARNING,
 } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import { Command, flags } from "@oclif/command";
+import { flags } from "@oclif/command";
 import inquirer = require("inquirer");
 import simpleGit, { SimpleGit } from "simple-git";
-import OrgDelete from "../impl/sfdxwrappers/OrgDelete";
 import OrgOpen from "../impl/sfdxwrappers/OrgOpen";
 import CreateAnOrgWorkflow from "../workflows/org/CreateAnOrgWorkflow";
 import PickAnOrgWorkflow from "../workflows/org/PickAnOrgWorkflow";

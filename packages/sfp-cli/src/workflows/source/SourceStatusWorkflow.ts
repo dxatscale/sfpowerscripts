@@ -1,10 +1,5 @@
 import cli from "cli-ux";
 import SourceStatus from "../../impl/sfdxwrappers/SourceStatus";
-
-import inquirer = require("inquirer");
-import SFPLogger, {
-  LoggerLevel,
-} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import SourceStatusDisplayer from "../../impl/displayer/SourceStatusDisplayer";
 
 

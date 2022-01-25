@@ -1,5 +1,3 @@
-import { version } from "process";
-
 /**
  * TODO: Replace with class from core library
  */

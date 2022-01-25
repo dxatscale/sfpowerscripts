@@ -1,4 +1,3 @@
-import { flags } from "@oclif/command";
 import * as fs from "fs-extra";
 import inquirer = require("inquirer");
 import SFPlogger, {
@@ -133,8 +132,7 @@ export default class NewWorkItemWorkflow {
     }
 
     if (
-      this.sfpProjectConfig.workItems == null ||
-      this.sfpProjectConfig.workItems == undefined
+      this.sfpProjectConfig.workItems == null
     ) {
       this.sfpProjectConfig.workItems = {};
     } else {

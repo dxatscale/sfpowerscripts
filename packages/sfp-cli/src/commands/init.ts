@@ -1,8 +1,7 @@
 import { flags } from "@oclif/command";
 import inquirer = require("inquirer");
-import SFPlogger, {
+import {
   COLOR_ERROR,
-  COLOR_HEADER,
   COLOR_KEY_MESSAGE,
   COLOR_SUCCESS,
   COLOR_WARNING,
