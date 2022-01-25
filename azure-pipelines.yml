@@ -115,3 +115,28 @@ stages:
                 bump: 'patch'
                 version: 'latest'
                 publish: false
+
+
+- stage: prod_sfp_cli
+  condition: or(and(succeeded('Alpha'),eq(variables['build.sourceBranch'], 'refs/heads/develop')), and(succeeded('Hotfix'),startsWith(variables['build.sourceBranch'], 'refs/heads/release')))
+  dependsOn:
+    - Alpha
+    - Hotfix
+  jobs:
+
+
+  - deployment: PromoteSfpCli
+    displayName: sfp-cli
+    timeoutInMinutes: 30
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: prod
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+             - template: build_templates/promotePackage.yml
+                version: 'latest'
+                packageToPromote:
+                  package: '@dxatscale/sfp-cli'
+                  pjson: 'packages/sfp-cli/package.json'
