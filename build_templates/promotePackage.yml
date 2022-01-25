@@ -36,6 +36,7 @@ steps:
           - task: npmAuthenticate@0
             inputs:
               workingFile: $(npmrc.secureFilePath)
+              customEndpoint: npm
 
 
           - task: CmdLine@2
