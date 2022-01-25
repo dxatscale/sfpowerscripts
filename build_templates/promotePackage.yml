@@ -38,6 +38,11 @@ steps:
               workingFile: $(npmrc.secureFilePath)
               customEndpoint: npm
 
+          - task: CmdLine@2
+            displayName: "Move authenticated npmrc file to home directory "
+            inputs:
+              script: |
+               mv $(npmrc.secureFilePath)  ~/.npmrc
 
           - task: CmdLine@2
             displayName: 'Promote package ${{ parameters.packageToPromote.package }}'
