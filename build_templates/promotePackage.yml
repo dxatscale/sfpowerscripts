@@ -4,13 +4,11 @@ parameters:
     type: string
     default: ''
 
-  - name: package
-    type: string
-    default: ''
-
-  - name: pjson
-    type: string
-    default: ''
+  - name: packageToPromote
+    type: object
+    default:
+      package: ''
+      pjson: ''
 
 
 
@@ -41,8 +39,8 @@ steps:
 
 
           - task: CmdLine@2
-            displayName: 'Promote package ${{ parameters.package }}'
+            displayName: 'Promote package ${{ parameters.packageToPromote.package }}'
             inputs:
                  script: |
-                    PKG_VERSION=$(jq -r ".version" ${{ parameters.pjson }})
-                    npm dist-tag add ${{ parameters.package }}@$PKG_VERSION ${{ parameters.version }}
+                    PKG_VERSION=$(jq -r ".version" ${{ parameters.packageToPromote.pjson }})
+                    npm dist-tag add ${{ parameters.packageToPromote.package }}@$PKG_VERSION ${{ parameters.version }}

@@ -137,5 +137,6 @@ stages:
           steps:
              - template: build_templates/promotePackage.yml
                 version: 'latest'
-                package: '@dxatscale/sfp-cli'
-                pjson: 'packages/sfp-cli/package.json'
+                packageToPromote:
+                  package: '@dxatscale/sfp-cli'
+                  pjson: 'packages/sfp-cli/package.json'
