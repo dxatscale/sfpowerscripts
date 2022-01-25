@@ -55,7 +55,7 @@ export default abstract class SfpCommand extends Command {
 
   protected async init(): Promise<void> {
 
-    const { args, flags, argv } = this.parse({
+    const { args, flags } = this.parse({
       flags: this.statics.flags,
       args: this.statics.args,
     });

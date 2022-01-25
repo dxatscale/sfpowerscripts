@@ -186,7 +186,7 @@ export default class PackageVersionWorkflow
       if (pkgDir.package !== sfdxPackage) {
         if (pkgDir.dependencies) {
           const pattern = new RegExp(
-            `^${sfdxPackage}@[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+|\.LATEST)?$`
+            `^${sfdxPackage}@[0-9]+\\.[0-9]+\\.[0-9]+(\\.[0-9]+|\\.LATEST)?$`
           );
           pkgDir.dependencies.forEach((dependency) => {
             if (
