@@ -75,7 +75,7 @@ export default class SFPLogger {
       if(logger && logger.logType===LoggerType.console)
       {
         logger=null; //Make it nullable, so it goes to console
-      } 
+      }
      
       if (logger) {
         if (logger.logType === LoggerType.void) {
@@ -83,7 +83,7 @@ export default class SFPLogger {
         } else if (logger.logType === LoggerType.file) {
           let fileLogger = logger as FileLogger;
           fs.appendFileSync(fileLogger.path, message + EOL, "utf8");
-        } 
+        }
       } else {
         
         switch (logLevel) {

@@ -26,7 +26,7 @@ export default class ConvertSourceToMDAPIImpl extends SFDXCommand {
     let mdapiDirPath;
       if (this.project_directory != null)
            mdapiDirPath = path.resolve(this.project_directory, this.mdapiDir);
-      else 
+      else
        mdapiDirPath = path.resolve(this.mdapiDir);
       SFPLogger.log(
         `Converting to MDAPI  Format Completed at ${mdapiDirPath}`,
