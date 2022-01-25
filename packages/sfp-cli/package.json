@@ -81,8 +81,7 @@
     "build": "npm run clean && npm run compile",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json",
-    "prepack": "oclif-dev manifest",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "prepack": "oclif-dev manifest"
   },
   "types": "lib/index.d.ts"
 }
