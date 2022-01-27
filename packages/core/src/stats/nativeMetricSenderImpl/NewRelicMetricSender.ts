@@ -41,13 +41,13 @@ export class NewRelicMetricSender extends NativeMetricSender
       const guageMetric = new GaugeMetric(metric, value );
       guageMetric.attributes = tags as { [key: string]: string };
       const batch = new MetricBatch(
-        {},              
-        Date.now(),      
-        1            
+        {},
+        Date.now(),
+        1
       )
       batch.addMetric(guageMetric);
       this.nrMetricClient.send(
-        batch,(error,response,body)=>{ 
+        batch,(error,response,body)=>{
           if(response)
           {
           SFPLogger.log(`Transmitted metric ${metric} ${response.statusCode}`,LoggerLevel.TRACE,this.logger);
@@ -68,14 +68,14 @@ export class NewRelicMetricSender extends NativeMetricSender
     countMetric.record(1);
     countMetric.attributes = tags as { [key: string]: string };
     const batch = new MetricBatch(
-      {},              
-      Date.now(),      
-      1            
+      {},
+      Date.now(),
+      1
     )
     batch.addMetric(countMetric);
 
     this.nrMetricClient.send(
-      batch,(error,response,body)=>{ 
+      batch,(error,response,body)=>{
         if(response){
          SFPLogger.log(`Transmitted metric ${metric} ${response.statusCode}`,LoggerLevel.TRACE,this.logger);
         }
