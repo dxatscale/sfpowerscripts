@@ -15,7 +15,7 @@
     "test": "FORCE_COLOR=true jest --verbose --coverage --detectOpenHandles"
   },
   "dependencies": {
-    "@newrelic/telemetry-sdk": "^0.4.2",
+    "@newrelic/telemetry-sdk": "^0.6.0",
     "@salesforce/command": "4.2.2",
     "@salesforce/core": "2.35.0",
     "@salesforce/source-deploy-retrieve": "5.9.5",
