@@ -37,7 +37,7 @@
     "semver": "^7.3.4",
     "sfdc-soup": "^12.0.0",
     "simple-git": "^2.45.1",
-    "snyk": "^1.819.0",
+    "snyk": "^1.826.0",
     "ts-node": "^9.0.0"
   },
   "devDependencies": {
