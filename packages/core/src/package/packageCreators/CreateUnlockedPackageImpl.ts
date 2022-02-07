@@ -196,7 +196,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
     else
     {
       throw new Error(
-        `The build ${this.sfdx_package} was not completed in the wait time ${this.waitTime} provided.${EOL}
+        `The build for ${this.sfdx_package} was not completed in the wait time ${this.waitTime} provided.${EOL}
          You might want to increase the wait time or better check the dependencies or convert to different package type ${EOL}
          Read more about it here https://docs.dxatscale.io/development-practices/types-of-packaging/unlocked-packages#build-options-with-unlocked-packages`
       );
