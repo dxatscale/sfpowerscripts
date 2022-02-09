@@ -6,6 +6,8 @@ dist
 packages/azpipelines/.taskkey
 .npmrc
 lerna-debug.log
+tmp/
+oclif.manifest.json
 
  packages/azpipelines_release_management_extensions/BuildTasks/ManageReleaseTask/*
 

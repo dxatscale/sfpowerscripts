@@ -7,8 +7,8 @@ import ReleaseChangelogUpdater from "./ReleaseChangelogUpdater";
 import * as fs from "fs-extra"
 import path = require('path');
 const tmp = require('tmp');
-var marked = require('marked');
-var TerminalRenderer = require('marked-terminal');
+import {marked} from "marked"
+const TerminalRenderer = require('marked-terminal');
 const retry = require("async-retry");
 import { GitError } from "simple-git";
 import GitIdentity from "../git/GitIdentity";
