@@ -39,7 +39,7 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
 
       let cmd: string;
       if (this.scope)
-        cmd = `npm pack @${this.scope.toLocaleLowerCase()}/${packageName}_sfpowerscripts_artifact`;
+        cmd = `npm pack @${this.scope.toLowerCase()}/${packageName}_sfpowerscripts_artifact`;
       else cmd = `npm pack ${packageName}_sfpowerscripts_artifact`;
 
       cmd += `@${version}`;
