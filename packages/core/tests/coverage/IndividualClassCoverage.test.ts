@@ -7,7 +7,7 @@ describe("Given a test coverage report", () => {
 
  it("should be able to get a list of all classes and its test coverage",()=>{
     let individualClasCoverage:IndividualClassCoverage = new IndividualClassCoverage(testCoverage,new ConsoleLogger());
-    let expectedValue=[{"name":"CustomerServices","coveredPercent":87},{"name":"MarketServices","coveredPercent":100},{"name":"ReservationManagerController","coveredPercent":72},{"name":"ReservationManager","coveredPercent":93}];    
+    let expectedValue=[{"name":"CustomerServices","coveredPercent":87},{"name":"MarketServices","coveredPercent":100},{"name":"ReservationManagerController","coveredPercent":72},{"name":"ReservationManager","coveredPercent":93}];
     expect(individualClasCoverage.getIndividualClassCoverage()).toEqual(expectedValue);
  });
 

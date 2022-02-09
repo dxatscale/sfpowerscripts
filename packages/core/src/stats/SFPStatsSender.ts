@@ -23,7 +23,7 @@ export default class SFPStatsSender {
     SFPStatsSender.client = new StatsDClient(options);
   }
 
-  static initializeNativeMetrics(type:string, apiHost: string, apiKey: string,logger?:Logger) 
+  static initializeNativeMetrics(type:string, apiHost: string, apiKey: string,logger?:Logger)
   {
     switch(type)
     {
@@ -37,7 +37,7 @@ export default class SFPStatsSender {
                this.nativeMetricsSender.initialize(apiHost, apiKey);
               break;
 
-    default:  
+    default:
            throw new Error("Invalid Metric Type");
     }
   }

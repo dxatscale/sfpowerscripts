@@ -17,13 +17,13 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
         "versionName": "temp",
         "versionNumber": "1.0.0.0",
         "ignoreOnStage": ["prepare","validate","build"]
-      },   
+      },
       {
         "path": "packages/domains/core",
         "package": "core",
         "default": false,
         "versionName": "core",
-        "versionNumber": "1.0.0.0"  
+        "versionNumber": "1.0.0.0"
       },
       {
         "path": "packages/frameworks/mass-dataload",
@@ -31,8 +31,8 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
         "default": false,
         "type":"data",
         "versionName": "mass-dataload",
-        "versionNumber": "1.0.0.0"  
-      },    
+        "versionNumber": "1.0.0.0"
+      },
       {
         "path": "packages/access-mgmt",
         "package": "access-mgmt",
@@ -48,7 +48,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
         "versionName": "bi",
         "versionNumber": "1.0.0.0",
         "ignoreOnStage":["prepare","validate"]
-      }   
+      }
     ],
     "namespace": "",
     "sfdcLoginUrl": "https://login.salesforce.com",
@@ -76,7 +76,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
   });
 
    
- it("Fetches all the package", ()=>{ 
+ it("Fetches all the package", ()=>{
    const manifestHelperMock = jest.spyOn(ProjectConfig, "getSFDXPackageManifest");
    manifestHelperMock.mockImplementation((projectDirectory:string)=>{
      return sfdx_project
@@ -94,7 +94,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
  it("Gets the type of a package",()=>{
   expect(ProjectConfig.getPackageType(sfdx_project,"bi")).toBe("Unlocked");
   expect(ProjectConfig.getPackageType(sfdx_project,"core")).toBe("Source");
-  expect(ProjectConfig.getPackageType(sfdx_project,"mass-dataload")).toBe("Data"); 
+  expect(ProjectConfig.getPackageType(sfdx_project,"mass-dataload")).toBe("Data");
  });
 
  it("Gets the package descriptor of a provided package,provided directory",()=>{
@@ -103,7 +103,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
     "package": "core",
     "default": false,
     "versionName": "core",
-    "versionNumber": "1.0.0.0"  
+    "versionNumber": "1.0.0.0"
   };
   expect(ProjectConfig.getSFDXPackageDescriptor(null,"core")).toStrictEqual(corePackage);
  });
@@ -114,7 +114,7 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
     "package": "core",
     "default": false,
     "versionName": "core",
-    "versionNumber": "1.0.0.0"  
+    "versionNumber": "1.0.0.0"
   };
   expect(ProjectConfig.getPackageDescriptorFromConfig("core",sfdx_project)).toStrictEqual(corePackage);
  });
@@ -144,13 +144,13 @@ describe("Given a project directory or sfdx-project.json with multiple packages"
         "versionName": "temp",
         "versionNumber": "1.0.0.0",
         "ignoreOnStage": ["prepare","validate","build"]
-      } 
+      }
     ],
     "namespace": "",
     "sfdcLoginUrl": "https://login.salesforce.com",
     "sourceApiVersion": "50.0",
      "packageAliases":
-       { "bi":"0x002232323232" } 
+       { "bi":"0x002232323232" }
   }
 
   expect(ProjectConfig.cleanupMPDFromManifest(null,"temp")).toStrictEqual(cleaned_sfdx_project);

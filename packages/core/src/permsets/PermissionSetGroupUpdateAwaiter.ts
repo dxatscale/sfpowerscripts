@@ -16,8 +16,8 @@ export default class PermissionSetGroupUpdateAwaiter
   async waitTillAllPermissionSetGroupIsUpdated()
   {
 
-    SFPLogger.log(`Validating PermissionSetGroup Status, PermissionSetGroup Deployment might fail..` 
-                + `\n..if permission sets in the package are updating due to a previous deployment`,LoggerLevel.INFO,this.logger); 
+    SFPLogger.log(`Validating PermissionSetGroup Status, PermissionSetGroup Deployment might fail..`
+                + `\n..if permission sets in the package are updating due to a previous deployment`,LoggerLevel.INFO,this.logger);
      while(true) {
        try
        {
@@ -25,13 +25,13 @@ export default class PermissionSetGroupUpdateAwaiter
         let records = await QueryHelper.query(psGroupQuery,this.connection,false);
         if(records.length>0)
         {
-          SFPLogger.log(`Pausing deployment as ${records.length} PermissionSetGroups are being updated` ,LoggerLevel.INFO,this.logger); 
-          SFPLogger.log(`Retrying for status in next ${this.intervalBetweenRepeats/1000} seconds` ,LoggerLevel.INFO,this.logger); 
+          SFPLogger.log(`Pausing deployment as ${records.length} PermissionSetGroups are being updated` ,LoggerLevel.INFO,this.logger);
+          SFPLogger.log(`Retrying for status in next ${this.intervalBetweenRepeats/1000} seconds` ,LoggerLevel.INFO,this.logger);
           await delay(this.intervalBetweenRepeats);
         }
         else
         {
-          SFPLogger.log(`Proceeding with deployment,as no PermissionSetGroups are being updated` ,LoggerLevel.INFO,this.logger); 
+          SFPLogger.log(`Proceeding with deployment,as no PermissionSetGroups are being updated` ,LoggerLevel.INFO,this.logger);
           break;
         }
       

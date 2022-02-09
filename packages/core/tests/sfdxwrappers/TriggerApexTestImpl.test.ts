@@ -18,7 +18,7 @@ describe("Given a target org, trigger apex tests should trigger with the correct
     );
     let command = triggerApexTestsImpl.getGeneratedSFDXCommandWithParams();
     expect(command).toStrictEqual("sfdx force:apex:test:run -u test_org --wait=120 --resultformat=json --codecoverage --outputdir=ars --testlevel=RunSpecifiedTests --classnames=test1,test2");
-    });    
+    });
 
   it("if apextest suite option is used, generate apextestsuite command", () => {
     let triggerApexTestsImpl: TriggerApexTestImpl = new TriggerApexTestImpl(

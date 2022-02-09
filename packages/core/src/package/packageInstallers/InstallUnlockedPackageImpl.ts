@@ -82,7 +82,7 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
           this.logger
         );
         return false;
-      } else 
+      } else
       {
         SFPLogger.log(
           `Package to be installed was not found in the target org  ${this.targetusername}, Proceeding to instal.. `,

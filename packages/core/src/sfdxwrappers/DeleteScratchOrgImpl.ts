@@ -7,7 +7,7 @@ export default class DeleteScratchOrgImpl {
 
   public async exec(command: string): Promise<void> {
     let result = child_process.execSync(command, {
-      encoding: "utf8" 
+      encoding: "utf8"
 
     });
    SFPLogger.log(result);
