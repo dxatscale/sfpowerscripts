@@ -30,7 +30,7 @@ jobs:
           fetch-depth: 0
 
       - name: BuildCLI (sfdx-plugin)
-        uses: ./build_templates/buildcli.yml
+        uses: ./.github/workflow-templates/buildcli.yml
         timeout-minutes: 20
         with:
           commitToGit: true
@@ -55,7 +55,7 @@ jobs:
           fetch-depth: 0
 
       - name: BuildCLI (sfdx-plugin)
-        uses: ./build_templates/buildcli.yml
+        uses: ./.github/workflow-templates/buildcli.yml
         timeout-minutes: 20
         with:
           commitToGit: false
@@ -78,7 +78,7 @@ jobs:
           fetch-depth: 0
 
       - name: BuildCLI (sfdx-plugin)
-        uses: ./build_templates/buildcli.yml
+        uses: ./.github/workflow-templates/buildcli.yml
         timeout-minutes: 20
         with:
           commitToGit: false
@@ -102,7 +102,7 @@ jobs:
           fetch-depth: 0
 
       - name: BuildCLI (sfdx-plugin)
-        uses: ./build_templates/buildcli.yml
+        uses: ./.github/workflow-templates/buildcli.yml
         timeout-minutes: 30
         with:
           commitToGit: false
