@@ -1,6 +1,6 @@
-sfp-cli [PRE ALPHA]
+sfp-cli
 =======
-Developer CLI for Salesforce programs following the DX@Scale model.
+[Beta] Developer CLI for Salesforce programs following the DX@Scale model.
 
 Not comfortable with git, SFDX or the command-line? Take advantage of guided workflows provided by the sfp-cli, with its interactive prompt-driven UI.
 
@@ -25,7 +25,7 @@ $ npm install -g @dxatscale/sfp-cli
 ```
 
 # Usage
-The sfp-cli may be slightly different than the CLI's that you are accustomed to using. Firstly, the sfp-cli is its own CLI, and *not* a plugin of the Salesforce CLI, which means that to start using it all you have to type into the terminal is `$ sfp`. The other key difference is that the commands do not accept any flags or arguments. Sfp-cli is designed with an interactive prompt-based UI, which is as simple as following the instruction on the screen. Try it out for yourself by typing `$ sfp [COMMAND]` in the terminal, substituting `[COMMAND]` for one of the commands listed below.   
+The sfp-cli may be slightly different than the CLI's that you are accustomed to using. Firstly, the sfp-cli is its own CLI, and *not* a plugin of the Salesforce CLI, which means that to start using it all you have to type into the terminal is `$ sfp`. The other key difference is that the commands do not accept any flags or arguments. Sfp-cli is designed with an interactive prompt-based UI, which is as simple as following the instruction on the screen. Try it out for yourself by typing `$ sfp [COMMAND]` in the terminal, substituting `[COMMAND]` for one of the commands listed below.
 <!-- usage -->
 
 ```sh-session
@@ -38,10 +38,10 @@ running command...
 ```
 
 ## Work Items
-The sfp-cli is built around the idea of work items, which are units of work usually defined on an issue tracking system like Jira. Instead of using git directly to create a new branch, in which to do development work, use `$ sfp work` to create or switch between work items, which have their own associated branch as well as development org.  
+The sfp-cli is built around the idea of work items, which are units of work usually defined on an issue tracking system like Jira. Instead of using git directly to create a new branch, in which to do development work, use `$ sfp work` to create or switch between work items, which have their own associated branch as well as development org.
 
 ## Syncing changes
-The `$ sfp sync` command allows you to effortlessly sync changes between your source repository and development org. It abstracts the nitty-gritty details of git and SFDX commands into simple prompt-driven workflows, while also providing augmented functionality such as moving pulled components into packages and recommendations for packaging. 
+The `$ sfp sync` command allows you to effortlessly sync changes between your source repository and development org. It abstracts the nitty-gritty details of git and SFDX commands into simple prompt-driven workflows, while also providing augmented functionality such as moving pulled components into packages and recommendations for packaging.
 
 <!-- usagestop -->
 

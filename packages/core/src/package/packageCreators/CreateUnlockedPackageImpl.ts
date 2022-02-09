@@ -13,6 +13,7 @@ import PackageVersionCoverage from "../coverage/PackageVersionCoverage";
 import { AuthInfo, Connection } from "@salesforce/core";
 import { convertAliasToUsername } from "../../utils/AliasList";
 import SFPStatsSender from "../../stats/SFPStatsSender";
+import { EOL } from "os";
 const path = require("path");
 
 export default class CreateUnlockedPackageImpl extends CreatePackage {
@@ -183,11 +184,23 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
       LoggerLevel.TRACE,
       this.logger
     );
-    this.packageArtifactMetadata.package_version_id =
-      result.SubscriberPackageVersionId;
 
-    //Get the full details on the package
+
+    //Get the full details on the package and throw an error if the result is null, usually when the comamnd is timed out
+    if(result.SubscriberPackageVersionId)
+    {
+    this.packageArtifactMetadata.package_version_id =
+    result.SubscriberPackageVersionId;
     await this.getPackageInfo(this.packageArtifactMetadata.package_version_id);
+    }
+    else
+    {
+      throw new Error(
+        `The build for ${this.sfdx_package} was not completed in the wait time ${this.waitTime} provided.${EOL}
+         You might want to increase the wait time or better check the dependencies or convert to different package type ${EOL}
+         Read more about it here https://docs.dxatscale.io/development-practices/types-of-packaging/unlocked-packages#build-options-with-unlocked-packages`
+      );
+    }
 
     //Break if coverage is low
     if (this.isCoverageEnabled && !this.isOrgDependentPackage) {
