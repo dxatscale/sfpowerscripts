@@ -298,7 +298,7 @@ export default class Promote extends SfpowerscriptsCommand {
     let name: string = packageName.toLowerCase() + "_sfpowerscripts_artifact";
 
     if (this.flags.scope)
-      name = `@${this.flags.scope}/` + name;
+      name = `@${this.flags.scope.toLowerCase()}/` + name;
 
     let packageJson = {
       name: name,
