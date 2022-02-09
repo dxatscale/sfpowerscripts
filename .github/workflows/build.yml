@@ -1,0 +1,110 @@
+# This pipeline builds the sfpowerscripts plugin
+
+
+name: 'sfpowerscripts Build Pipeline'
+
+on:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - 'docs/**'
+
+  workflow_dispatch:
+
+
+jobs:
+
+#Merge to Develop, Deploy Alpha builds
+  alpha:
+    name: 'Alpha Builds'
+    runs-on: ubuntu-latest
+    if: contains(github.ref,'refs/heads/develop')
+    environment:
+      name: alpha
+    concurrency: alpha
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: BuildCLI (sfdx-plugin)
+        uses: ./build_templates/buildcli.yml
+        timeout-minutes: 20
+        with:
+          commitToGit: true
+          version: 'alpha'
+          publish: true
+
+
+
+# Beta Stage
+  beta:
+    name: 'Beta Builds'
+    runs-on: ubuntu-latest
+    if: contains(github.ref,'refs/heads/develop')
+    needs: alpha
+    environment:
+      name: beta
+    concurrency: beta
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: BuildCLI (sfdx-plugin)
+        uses: ./build_templates/buildcli.yml
+        timeout-minutes: 20
+        with:
+          commitToGit: false
+          version: 'beta'
+          publish: false
+
+
+# Hotfix stage
+  hotfix:
+    name: 'Hotfix'
+    runs-on: ubuntu-latest
+    if: contains(github.ref,'refs/heads/release')
+    environment:
+      name: hotfix
+    concurrency: hotfix
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: BuildCLI (sfdx-plugin)
+        uses: ./build_templates/buildcli.yml
+        timeout-minutes: 20
+        with:
+          commitToGit: false
+          version: 'hotfix'
+          publish: false
+
+
+# Prod Stage
+  prod:
+    name: 'prod Builds'
+    runs-on: ubuntu-latest
+    if: contains(github.ref,'refs/heads/release')
+    needs: [beta, hotfix]
+    environment:
+      name: prod
+    concurrency: prod
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: BuildCLI (sfdx-plugin)
+        uses: ./build_templates/buildcli.yml
+        timeout-minutes: 30
+        with:
+          commitToGit: false
+          version: 'prod'
+          publish: false
