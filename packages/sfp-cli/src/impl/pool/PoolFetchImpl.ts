@@ -172,6 +172,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
       ) {
         let soLogin: any = {};
         soLogin.sfdxAuthUrl = soDetail.sfdxAuthUrl;
+        soLogin.devHubId = this.hubOrg.getUsername();
         fs.writeFileSync("soAuth.json", JSON.stringify(soLogin));
 
         SFPLogger.log(
@@ -205,7 +206,8 @@ export default class PoolFetchImpl extends PoolBaseImpl {
       );
       return false;
     } finally {
-      fs.unlinkSync("soAuth.json");
+      if (fs.existsSync("soAuth.json"))
+        fs.unlinkSync("soAuth.json");
     }
   }
 
