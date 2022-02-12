@@ -1,7 +1,7 @@
 import AliasListImpl from "../sfdxwrappers/AliasListImpl";
 
-export  function convertAliasToUsername(alias: string) {
-  let aliasList = new AliasListImpl().exec();
+export async  function convertAliasToUsername(alias: string) {
+  let aliasList = await (new AliasListImpl()).exec();
 
   let matchedAlias = aliasList.find((elem) => {
     return elem.alias === alias;

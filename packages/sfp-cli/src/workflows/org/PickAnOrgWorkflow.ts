@@ -11,12 +11,6 @@ export default class PickAnOrgWorkflow {
 
   constructor(private defaultOrg?:{username?:string,alias?:string})
   {
-    if((defaultOrg?.username==null || defaultOrg?.username == undefined) && defaultOrg?.alias )
-    {
-      defaultOrg.username = convertAliasToUsername(defaultOrg.alias);
-    }
-
-
 
   }
 
@@ -79,6 +73,10 @@ export default class PickAnOrgWorkflow {
   public async getADevHub(): Promise<string> {
     await this.fetchOrgs();
 
+    if((this.defaultOrg?.username==null || this.defaultOrg?.username == undefined) && this.defaultOrg?.alias )
+    {
+      this.defaultOrg.username = await convertAliasToUsername(this.defaultOrg.alias);
+    }
 
     let devHubOrgUserNameList = this.getListOfAuthenticatedLocalDevHubs();
     let defaultChoiceIndex =devHubOrgUserNameList.findIndex(element=>element.alias==this.defaultOrg?.alias || element.value == this.defaultOrg?.username)
@@ -96,6 +94,12 @@ export default class PickAnOrgWorkflow {
   }
 
   public async getADevOrg(): Promise<string> {
+
+    if((this.defaultOrg?.username==null || this.defaultOrg?.username == undefined) && this.defaultOrg?.alias )
+    {
+      this.defaultOrg.username = await convertAliasToUsername(this.defaultOrg.alias);
+    }
+
     await this.fetchOrgs();
 
     let devOrgList = this.getListOfDevOrgs();

@@ -1,23 +1,23 @@
+import { Aliases, AliasGroup } from "@salesforce/core";
 import child_process = require("child_process");
+import { Dictionary } from '@salesforce/ts-types';
+
 
 /**
  * Returns list of aliases and their corresponding username, as an array of objects
  */
 export default class AliasListImpl {
 
-  public exec(): {alias: string, value: string}[] {
-    let aliasListJSON: string = child_process.execSync(
-      `sfdx alias:list --json`,
-      {
-        encoding: "utf8",
-        stdio: ["pipe", "pipe", "inherit"],
-      }
-    );
+  public async exec(): Promise<{ alias: string; value: string; }[]> {
 
-    let aliasList = JSON.parse(aliasListJSON);
-    if (aliasList.status === 0)
-      return aliasList.result;
-    else
-      throw new Error(`Failed to retrieve list of username aliases`);
+
+    const aliases = await Aliases.create(Aliases.getDefaultOptions());
+    const keyValues = (aliases.getGroup(AliasGroup.ORGS) as Dictionary<string>) || {};
+    const results = Object.keys(keyValues).map((alias) => ({
+      alias,
+      value: keyValues[alias],
+    }));
+
+    return results;
   }
 }
