@@ -1,5 +1,4 @@
 import { Aliases, AliasGroup } from "@salesforce/core";
-import child_process = require("child_process");
 import { Dictionary } from '@salesforce/ts-types';
 
 
