@@ -32,6 +32,7 @@ import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import ScratchOrgInfoFetcher from "../../impl/pool/services/fetchers/ScratchOrgInfoFetcher";
 import Component from "@dxatscale/sfpowerscripts.core/lib/dependency/Component";
 import ValidateResult from "./ValidateResult";
+import PoolOrgDeleteImpl from "../pool/PoolOrgDeleteImpl";
 
 export enum ValidateMode {
   ORG,
@@ -149,7 +150,7 @@ export default class ValidateImpl {
       return {deploymentResult, dependencyViolations};
     } finally {
       if (this.props.isDeleteScratchOrg) {
-        this.deleteScratchOrg(scratchOrgUsername);
+        await this.deleteScratchOrg(scratchOrgUsername);
       } else {
           fs.writeFileSync(
             ".env",
@@ -194,17 +195,15 @@ export default class ValidateImpl {
     this.printClosingLoggingGroup();
   }
 
-  private deleteScratchOrg(scratchOrgUsername: string): void {
+  private async deleteScratchOrg(scratchOrgUsername: string) {
     try {
       if (scratchOrgUsername && this.props.hubOrg.getUsername() ) {
           console.log(`Deleting scratch org`, scratchOrgUsername);
-          child_process.execSync(
-            `sfdx force:org:delete -p -u ${scratchOrgUsername} -v ${this.props.hubOrg.getUsername()}`,
-            {
-              stdio: 'inherit',
-              encoding: 'utf8'
-            }
+          let poolOrgDeleteImpl = new PoolOrgDeleteImpl(
+            this.props.hubOrg,
+            scratchOrgUsername
           );
+          await poolOrgDeleteImpl.execute();
       }
     } catch (error) {
       console.log(COLOR_WARNING(error.message));
