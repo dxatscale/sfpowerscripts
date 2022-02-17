@@ -20,8 +20,8 @@ export default class OrgDelete extends SFDXCommand
 
   getGeneratedParams(): string {
      let params = ` --targetusername ${this.aliasOrUsername} -p`;
-      if(this.devHubUserName) 
-           params+=`  --targetdevhubusername= ${this.devHubUserName}`
+     if(this.devHubUserName) 
+           params+=`  --targetdevhubusername=${this.devHubUserName}`
       return params;
   }
 
