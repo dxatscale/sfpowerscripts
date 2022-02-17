@@ -41,9 +41,10 @@ export abstract class InstallPackage {
         this.sfdxPackage
       );
 
+      let targetUsername = await convertAliasToUsername(this.targetusername);
       this.connection = await Connection.create({
         authInfo: await AuthInfo.create({
-          username: convertAliasToUsername(this.targetusername),
+          username: targetUsername,
         }),
       });
 

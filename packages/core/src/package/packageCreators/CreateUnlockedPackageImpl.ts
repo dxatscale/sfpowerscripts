@@ -53,9 +53,11 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
   }
 
   async preCreatePackage(packageDirectory: string, packageDescriptor: any) {
+
+    let devhubUsername = await convertAliasToUsername(this.devHub);
     this.connection = await Connection.create({
       authInfo: await AuthInfo.create({
-        username: convertAliasToUsername(this.devHub),
+        username: devhubUsername,
       }),
     });
 
