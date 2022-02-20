@@ -105,6 +105,46 @@ export default class ScratchOrgOperator {
     };
   }
 
+  public async shareScratchOrgThroughEmail(emailId: string,scratchOrg:ScratchOrg) {
+    let hubOrgUserName = this.hubOrg.getUsername();
+    let apiVersion = this.hubOrg.getConnection().retrieveMaxApiVersion();
+    let body = `${hubOrgUserName} has fetched a new scratch org from the Scratch Org Pool!\n
+   All the post scratch org scripts have been succesfully completed in this org!\n
+   The Login url for this org is : ${scratchOrg.loginURL}\n
+   Username: ${scratchOrg.username}\n
+   Password: ${scratchOrg.password}\n
+   Please use sfdx force:auth:web:login -r ${scratchOrg.loginURL} -a <alias>  command to authenticate against this Scratch org</p>
+   Thank you for using SFPLogger!`;
+
+    const options = {
+      method: "post",
+      body: JSON.stringify({
+        inputs: [
+          {
+            emailBody: body,
+            emailAddresses: emailId,
+            emailSubject: `${hubOrgUserName} created you a new Salesforce org`,
+            senderType: "CurrentUser",
+          },
+        ],
+      }),
+      url: `/services/data/v${apiVersion}actions/standard/emailSimple`,
+    };
+
+    await retry(
+      async (bail) => {
+        await this.hubOrg.getConnection().request(options);
+      },
+      { retries: 3, minTimeout: 30000 }
+    );
+
+    SFPLogger.log(
+      `Succesfully send email to ${emailId} for ${scratchOrg.username}`,
+      LoggerLevel.INFO
+    );
+  }
+
+
   private async setAliasForUsername(username: string,aliasToSet:string): Promise<void> {
       const alias = await Aliases.create(Aliases.getDefaultOptions());
       alias.set(aliasToSet, username);
