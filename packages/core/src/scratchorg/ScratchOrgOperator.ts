@@ -148,7 +148,7 @@ export default class ScratchOrgOperator {
   private async setAliasForUsername(username: string,aliasToSet:string): Promise<void> {
       const alias = await Aliases.create(Aliases.getDefaultOptions());
       alias.set(aliasToSet, username);
-      const result = await alias.write();
+      await alias.write();
   }
 
 
