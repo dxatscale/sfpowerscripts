@@ -1,9 +1,9 @@
 
-import { AuthInfo, Org } from "@salesforce/core";
+import { Aliases, AuthInfo, Org, ScratchOrgRequest } from "@salesforce/core";
 import ScratchOrg from "./ScratchOrg";
 import PasswordGenerator from "./PasswordGenerator";
 import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
-import CreateScratchOrgImpl from "../sfdxwrappers/CreateScratchOrgImpl";
+import { Duration } from '@salesforce/kit';
 
 
 
@@ -12,15 +12,12 @@ export default class CreateScratchOrg {
 
   public async createScratchOrg(
     id: number,
-    adminEmail: string,
     config_file_path: string,
     expiry: number
   ): Promise<ScratchOrg> {
     SFPLogger.log(
       "Parameters: " +
         id +
-        " " +
-        adminEmail +
         " " +
         config_file_path +
         " " +
@@ -29,35 +26,28 @@ export default class CreateScratchOrg {
       LoggerLevel.TRACE
     );
 
-    let result;
+    let scatchOrgResult=await this.requestScratchOrg(`SO${id}`,config_file_path,Duration.days(expiry));
+    SFPLogger.log(JSON.stringify(scatchOrgResult), LoggerLevel.TRACE);
 
-    try {
-      let createScratchOrgImpl: CreateScratchOrgImpl = new CreateScratchOrgImpl(
-        null,
-        config_file_path,
-        this.hubOrg.getUsername(),
-        `SO${id}`,
-        expiry,
-        adminEmail
-      );
-      result = await createScratchOrgImpl.exec(true);
-    } catch (error) {
-      //Poolcreateimpl to handle
-      console.log("EE",error);
-      throw error;
-    }
-
-    SFPLogger.log(JSON.stringify(result), LoggerLevel.TRACE);
-
+    //create scratchOrg object
     let scratchOrg: ScratchOrg = {
       alias: `SO${id}`,
-      orgId: result.orgId,
-      username: result.username,
-      signupEmail: adminEmail ? adminEmail : "",
+      orgId: scatchOrgResult.orgId,
+      username: scatchOrgResult.username,
+      loginURL:scatchOrgResult.loginURL,
     };
 
-    //Get FrontDoor URL
-    scratchOrg.loginURL = await this.getScratchOrgLoginURL(scratchOrg.username);
+
+    try
+    {
+    //Get Sfdx Auth URL
+    const authInfo = await AuthInfo.create({ username: scratchOrg.username });
+    scratchOrg.sfdxAuthUrl = authInfo.getSfdxAuthUrl();
+    }
+    catch(error)
+    {
+      throw new Error(`Unable to set auth URL, Ignoring this scratch org, as its not suitable for pool due to ${error.message}`);
+    }
 
 
     //Generate Password
@@ -67,21 +57,6 @@ export default class CreateScratchOrg {
 
     scratchOrg.password = passwordData.password;
 
-
-    try
-    {
-    //Get Sfdx Auth URL
-    const authInfo = await AuthInfo.create({ username: scratchOrg.username });
-
-    scratchOrg.sfdxAuthUrl = authInfo.getSfdxAuthUrl();
-    }
-    catch(error)
-    {
-      SFPLogger.log(
-        `Unable to set auth URL, Ignoring...`,
-        LoggerLevel.TRACE
-      );
-    }
 
 
     if (!passwordData.password) {
@@ -96,17 +71,35 @@ export default class CreateScratchOrg {
     return scratchOrg;
   }
 
-  private async getScratchOrgLoginURL(username: string): Promise<any> {
-    let conn = this.hubOrg.getConnection();
+  
+  private async requestScratchOrg(alias:string,definitionFile:string,expireIn:Duration)
+  {
+    const createCommandOptions: ScratchOrgRequest = {
+      durationDays: expireIn.days,
+      nonamespace: false,
+      noancestors: false,
+      wait: Duration.minutes(6),
+      retry: 3,
+      definitionfile: definitionFile
+    };
 
-    let query = `SELECT Id, SignupUsername, LoginUrl FROM ScratchOrgInfo WHERE SignupUsername = '${username}'`;
-    SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
-    const results = (await conn.query(query)) as any;
-    SFPLogger.log(
-      `Login URL Fetched: ${JSON.stringify(results)}`,
-      LoggerLevel.TRACE
-    );
+    const { username, scratchOrgInfo, authFields, warnings } = await this.hubOrg.scratchOrgCreate(createCommandOptions);
 
-    return results.records[0].LoginUrl;
+    await this.setAliasForUsername(username,alias);
+
+    return {
+      'username':username,
+      'loginURL':scratchOrgInfo.LoginUrl,
+      warnings,
+      orgId: authFields.orgId,
+    };
   }
+
+  private async setAliasForUsername(username: string,aliasToSet:string): Promise<void> {
+      const alias = await Aliases.create(Aliases.getDefaultOptions());
+      alias.set(aliasToSet, username);
+      const result = await alias.write();
+  }
+
+
 }

@@ -204,7 +204,6 @@ export default class PoolCreateImpl extends PoolBaseImpl
         try {
           let scratchOrg: ScratchOrg = await this.createScratchOrgOperator.createScratchOrg(
             count,
-            null,
             this.pool.configFilePath,
             this.pool.expiry
           );
