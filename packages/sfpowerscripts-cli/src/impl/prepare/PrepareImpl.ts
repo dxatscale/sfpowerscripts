@@ -1,7 +1,6 @@
 
 import { Org } from "@salesforce/core";
 import { PoolConfig } from "../pool/PoolConfig";
-import OrgDisplayImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/OrgDisplayImpl";
 import isValidSfdxAuthUrl from "../pool/prequisitecheck/IsValidSfdxAuthUrl";
 import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator";
@@ -18,6 +17,7 @@ import * as rimraf from "rimraf";
 import * as fs from "fs-extra";
 import { LatestGitTagVersion } from "../artifacts/LatestGitTagVersion";
 import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
+import OrgDetailsFetcher from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetailsFetcher";
 
 
 export default class PrepareImpl {
@@ -44,9 +44,8 @@ export default class PrepareImpl {
 
 
     SFPLogger.log(COLOR_KEY_MESSAGE("Validating Org Authentication Mechanism.."),LoggerLevel.INFO);
-    let orgDisplayImpl = new OrgDisplayImpl(null, this.hubOrg.getUsername());
-    let orgDisplayResult = await orgDisplayImpl.exec(true);
-
+    let orgDisplayResult = await new OrgDetailsFetcher(this.hubOrg.getUsername()).getOrgDetails();
+    
     if(!(orgDisplayResult.sfdxAuthUrl && isValidSfdxAuthUrl(orgDisplayResult.sfdxAuthUrl)))
       throw new  Error(`Pools have to be created using a DevHub authenticated with auth:web or auth:store or auth:accesstoken:store`);
 
