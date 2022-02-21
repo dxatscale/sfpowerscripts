@@ -11,9 +11,9 @@ import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/disp
 import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/packageQuery/InstalledPackagesFetcher";
 import InstalledPackageDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer";
 import PoolFetchImpl from "../../impl/pool/PoolFetchImpl";
-import CreateScratchOrgImpl from "@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/CreateScratchOrgImpl";
 import OrgOpen from "../../impl/sfdxwrappers/OrgOpen";
 import InstallDependenciesWorkflow from "../package/InstallDependenciesWorkflow";
+import ScratchOrgOperator from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator";
 
 export default class CreateAnOrgWorkflow
 {
@@ -136,15 +136,10 @@ export default class CreateAnOrgWorkflow
 
     switch (type) {
       case OrgType.SCRATCHORG:
-        cli.action.start(` Creating Org...`);
-        let creator: CreateScratchOrgImpl = new CreateScratchOrgImpl(
-          null,
-          "config/project-scratch-def.json",
-          sfpProjectConfig.defaultDevHub,
-          id,
-          10
-        );
-        let result = await creator.exec(true);
+        cli.action.start(` Creating A ScratchOrg with duration set to 10 days..`);
+        let hubOrg= await Org.create({aliasOrUsername:sfpProjectConfig.defaultDevHub})
+        let scratchOrgOperator: ScratchOrgOperator = new ScratchOrgOperator(hubOrg);
+        let result = await scratchOrgOperator.create(id,"config/project-scratch-def.json",10)
         cli.action.stop();
         SFPLogger.log(
           COLOR_KEY_MESSAGE(

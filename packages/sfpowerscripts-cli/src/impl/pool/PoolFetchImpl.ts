@@ -6,10 +6,10 @@ import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg
 import { getUserEmail } from "./services/fetchers/GetUserEmail";
 import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 import ScratchOrgInfoAssigner from "./services/updaters/ScratchOrgInfoAssigner";
-import ShareScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ShareScratchOrg";
 import * as fs from "fs-extra";
 import SourceTrackingResourceController from "./SourceTrackingResourceController";
 import isValidSfdxAuthUrl from "./prequisitecheck/IsValidSfdxAuthUrl";
+import ScratchOrgOperator from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator";
 
 
 export default class PoolFetchImpl extends PoolBaseImpl {
@@ -124,10 +124,9 @@ export default class PoolFetchImpl extends PoolBaseImpl {
       //Fetch the email for user id
       try {
         //Send an email for username
-        await new ShareScratchOrg(
-          this.hubOrg,
-          soDetail
-        ).shareScratchOrgThroughEmail(emaiId);
+        await new ScratchOrgOperator(
+          this.hubOrg
+        ).shareScratchOrgThroughEmail(emaiId, soDetail);
       } catch (error) {
         SFPLogger.log(
           "Unable to send the scratchorg details to specified user. Check whether the user exists in the org",
