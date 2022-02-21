@@ -1,6 +1,6 @@
 import { Org } from "@salesforce/core";
 import { PoolBaseImpl } from "./PoolBaseImpl";
-import DeleteScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/DeleteScratchOrg";
+import ScratchOrgOperator from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator";
 import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 
 export default class PoolOrgDeleteImpl extends PoolBaseImpl {
@@ -18,7 +18,7 @@ export default class PoolOrgDeleteImpl extends PoolBaseImpl {
       let scratchOrgId = await new ScratchOrgInfoFetcher(
         this.hubOrg
       ).getScratchOrgIdGivenUserName(this.username);
-      await new DeleteScratchOrg(this.hubOrg).deleteScratchOrg(
+      await new ScratchOrgOperator(this.hubOrg).delete(
         scratchOrgId
       );
     } catch (err) {

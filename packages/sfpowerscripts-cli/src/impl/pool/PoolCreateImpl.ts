@@ -1,7 +1,5 @@
 import { Org } from "@salesforce/core";
 import Bottleneck from "bottleneck";
-import CreateScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/CreateScratchOrg";
-import DeleteScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/DeleteScratchOrg";
 import { PoolConfig} from "./PoolConfig";
 import { PoolBaseImpl } from "./PoolBaseImpl";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
@@ -17,6 +15,7 @@ import { Result ,ok,err} from "neverthrow"
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { EOL } from "os";
 import OrgDetailsFetcher from "@dxatscale/sfpowerscripts.core/lib/org/OrgDetailsFetcher";
+import ScratchOrgOperator from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator"
 
 
 
@@ -29,8 +28,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
   private limits: any;
   private scratchOrgInfoFetcher: ScratchOrgInfoFetcher;
   private scratchOrgInfoAssigner: ScratchOrgInfoAssigner;
-  private createScratchOrgOperator: CreateScratchOrg;
-  private deleteScratchOrgOperator: DeleteScratchOrg;
+  private scratchOrgOperator: ScratchOrgOperator;
   private totalToBeAllocated: number;
   private totalAllocated: number=0;
 
@@ -65,9 +63,9 @@ export default class PoolCreateImpl extends PoolBaseImpl
    this.scratchOrgInfoFetcher = new ScratchOrgInfoFetcher(this.hubOrg);
    this.scratchOrgInfoAssigner = new ScratchOrgInfoAssigner(this.hubOrg);
 
-   //Create Operators
-   this.createScratchOrgOperator = new CreateScratchOrg(this.hubOrg);
-   this.deleteScratchOrgOperator = new DeleteScratchOrg(this.hubOrg);
+   //Create Operator
+   this.scratchOrgOperator = new ScratchOrgOperator(this.hubOrg);
+
 
     //Compute allocation
 
@@ -202,9 +200,8 @@ export default class PoolCreateImpl extends PoolBaseImpl
           `Creating Scratch  Org  ${count} of ${this.totalToBeAllocated}..`
         );
         try {
-          let scratchOrg: ScratchOrg = await this.createScratchOrgOperator.createScratchOrg(
-            count,
-            null,
+          let scratchOrg: ScratchOrg = await this.scratchOrgOperator.create(
+            `SO`+count,
             this.pool.configFilePath,
             this.pool.expiry
           );
@@ -273,7 +270,7 @@ export default class PoolCreateImpl extends PoolBaseImpl
             scratchOrg.orgId
           );
 
-          await this.deleteScratchOrgOperator.deleteScratchOrg(
+          await this.scratchOrgOperator.delete(
             [activeScratchOrgRecordId]
           );
           console.log(`Succesfully deleted scratchorg  ${scratchOrg.username}`);
