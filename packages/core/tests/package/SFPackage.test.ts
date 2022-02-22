@@ -40,11 +40,11 @@ jest.mock("../../src/generators/SourcePackageGenerator", () => {
   return SourcePackageGenerator;
 });
 
-jest.mock("../../src/sfdxwrappers/ConvertSourceToMDAPIImpl", () => {
-  class ConvertSourceToMDAPIImpl {
-    exec = jest.fn().mockReturnValueOnce(Promise.resolve("mdapidir"));
+jest.mock("../../src/package/packageFormatConvertors/SourceToMDAPIConvertor", () => {
+  class SourceToMDAPIConvertor {
+    convert = jest.fn().mockReturnValueOnce(Promise.resolve({packagePath:'mdapidir'}));
   }
-  return ConvertSourceToMDAPIImpl;
+  return SourceToMDAPIConvertor;
 });
 
 jest.mock("../../src/package/MetadataCount", () => {
