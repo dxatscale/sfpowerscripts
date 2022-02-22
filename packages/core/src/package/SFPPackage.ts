@@ -3,7 +3,7 @@ import ApexTypeFetcher, {
 } from "../apex/parser/ApexTypeFetcher";
 import ProjectConfig from "../project/ProjectConfig";
 import SourcePackageGenerator from "../generators/SourcePackageGenerator";
-import ConvertSourceToMDAPIImpl from "../sfdxwrappers/ConvertSourceToMDAPIImpl";
+import SourceToMDAPIConvertor from "./packageFormatConvertors/SourceToMDAPIConvertor";
 import PackageManifest from "./PackageManifest";
 import MetadataCount from "./MetadataCount";
 
@@ -12,6 +12,7 @@ import AssignPermissionSetFetcher from "./propertyFetchers/AssignPermissionSetFe
 import DestructiveManifestPathFetcher from "./propertyFetchers/DestructiveManifestPathFetcher";
 import ReconcilePropertyFetcher from "./propertyFetchers/ReconcileProfilePropertyFetcher";
 import { Logger } from "../logger/SFPLogger";
+
 
 export type ApexClasses = Array<string>;
 export default class SFPPackage {
@@ -142,11 +143,12 @@ export default class SFPPackage {
       pathToReplacementForceIgnore
     );
 
-    sfpPackage._mdapiDir = await new ConvertSourceToMDAPIImpl(
+    let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
       sfpPackage._workingDirectory,
       sfpPackage._packageDescriptor.path,
       packageLogger
-    ).exec(true);
+    );
+    sfpPackage._mdapiDir =  (await sourceToMdapiConvertor.convert()).packagePath;
 
     const packageManifest: PackageManifest = await PackageManifest.create(
       sfpPackage.mdapiDir
