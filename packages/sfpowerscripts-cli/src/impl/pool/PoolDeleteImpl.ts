@@ -2,8 +2,8 @@ import SFPLogger from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import {Org } from "@salesforce/core";
 import { PoolBaseImpl } from "./PoolBaseImpl";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
-import DeleteScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/DeleteScratchOrg";
 import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
+import ScratchOrgOperator from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator";
 
 
 
@@ -64,7 +64,7 @@ export default class PoolDeleteImpl extends PoolBaseImpl {
         if (activeScrathOrgs.records.length > 0) {
           for (let ScratchOrg of activeScrathOrgs.records) {
 
-            await new DeleteScratchOrg(this.hubOrg).deleteScratchOrg(
+            await new ScratchOrgOperator(this.hubOrg).delete(
               ScratchOrg.Id
             );
             SFPLogger.log(

@@ -11,10 +11,14 @@ export default class OrgDetailsFetcher {
   private static usernamesToOrgDetails: {[P: string]: OrgDetails} = {};
 
   constructor(private username: string) {
-    this.username = convertAliasToUsername(this.username);
+   
   }
 
   public async getOrgDetails(): Promise<OrgDetails> {
+
+    //Convert alias to username
+    this.username = await convertAliasToUsername(this.username);
+
     if (OrgDetailsFetcher.usernamesToOrgDetails[this.username])
       return OrgDetailsFetcher.usernamesToOrgDetails[this.username];
 
