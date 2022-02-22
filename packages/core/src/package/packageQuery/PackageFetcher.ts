@@ -19,11 +19,20 @@ export default class PackageFetcher
 
   public async listAllPackages()
   {
-    let records = await QueryHelper.query<any>(query, this.conn, true);
+    let records = await QueryHelper.query<PackageTypeInfo>(query, this.conn, true);
     records.forEach(record => {
       record.IsOrgDependent = record.ContainerOptions === 'Managed' ? 'N/A' : record.IsOrgDependent === true ? 'Yes' : 'No';
     });
   
     return records;
   }
+}
+
+export interface PackageTypeInfo {
+  Id: string,
+  Name:string,
+  Description:string,
+  NamespacePrefix:string,
+  ContainerOptions: string,
+  IsOrgDependent:boolean|string
 }

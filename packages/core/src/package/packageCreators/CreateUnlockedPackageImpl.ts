@@ -13,11 +13,11 @@ import { AuthInfo, Connection, Org } from "@salesforce/core";
 import { convertAliasToUsername } from "../../utils/AliasList";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import { EOL } from "os";
-import PackageFetcher from "../packageQuery/PackageFetcher";
+import PackageFetcher, { PackageTypeInfo } from "../packageQuery/PackageFetcher";
 const path = require("path");
 
 export default class CreateUnlockedPackageImpl extends CreatePackage {
-  private static packageTypeInfos: any[];
+  private static packageTypeInfos: PackageTypeInfo[];
   private isOrgDependentPackage: boolean = false;
   private connection: Connection;
   workingDirectory: string;
