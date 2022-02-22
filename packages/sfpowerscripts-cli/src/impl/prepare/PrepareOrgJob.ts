@@ -156,8 +156,8 @@ export default class PrepareOrgJob extends PoolJobExecutor {
           }
         );
 
-
-        this.pool.succeedOnDeploymentErrors
+        if (deploymentResult.failed.length > 0 || deploymentResult.error) {
+          this.pool.succeedOnDeploymentErrors
           ? this.handleDeploymentErrorsForPartialDeployment(
               scratchOrg,
               deploymentResult,
@@ -168,10 +168,19 @@ export default class PrepareOrgJob extends PoolJobExecutor {
               deploymentResult,
               packageLogger
             );
+        }
 
-        if (deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH) {
-          let sourceTrackingResourceController = new SourceTrackingResourceController(conn, packageLogger);
-          sourceTrackingResourceController.createSourceTrackingResources(deploymentResult);
+        if (
+          deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH &&
+          deploymentResult.deployed.length > 0
+        ) {
+          let sourceTrackingResourceController = new SourceTrackingResourceController(
+            conn,
+            packageLogger
+          );
+          sourceTrackingResourceController.createSourceTrackingResources(
+            deploymentResult
+          );
           await sourceTrackingResourceController.deploy();
         }
 
@@ -226,28 +235,25 @@ export default class PrepareOrgJob extends PoolJobExecutor {
     deploymentResult: DeploymentResult,
     packageLogger: any
   ) {
-    //Handle Deployment Failures
-    if (deploymentResult.failed.length > 0 || deploymentResult.error) {
-      //Write to Scratch Org Logs
-      SFPLogger.log(
-        `Following Packages failed to deploy in ${scratchOrg.alias}`,
-        LoggerLevel.INFO,
-        packageLogger
-      );
-      SFPLogger.log(
-        JSON.stringify(deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)),
-        LoggerLevel.INFO,
-        packageLogger
-      );
-      SFPLogger.log(
-        `Deployment of packages failed in ${scratchOrg.alias}, this scratch org will be deleted`,
-        LoggerLevel.INFO,
-        packageLogger
-      );
-      throw new Error(
-        "Following Packages failed to deploy:" + deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)
-      );
-    }
+    //Write to Scratch Org Logs
+    SFPLogger.log(
+      `Following Packages failed to deploy in ${scratchOrg.alias}`,
+      LoggerLevel.INFO,
+      packageLogger
+    );
+    SFPLogger.log(
+      JSON.stringify(deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)),
+      LoggerLevel.INFO,
+      packageLogger
+    );
+    SFPLogger.log(
+      `Deployment of packages failed in ${scratchOrg.alias}, this scratch org will be deleted`,
+      LoggerLevel.INFO,
+      packageLogger
+    );
+    throw new Error(
+      "Following Packages failed to deploy:" + deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)
+    );
   }
 
   private handleDeploymentErrorsForPartialDeployment(
@@ -255,31 +261,28 @@ export default class PrepareOrgJob extends PoolJobExecutor {
     deploymentResult: DeploymentResult,
     packageLogger: any
   ) {
-    //Handle Deployment Failures
-    if (deploymentResult.failed.length > 0 || deploymentResult.error) {
-      if (this.checkPointPackages.length > 0) {
-        let isCheckPointSucceded = this.checkPointPackages.some((pkg) =>
-          deploymentResult.deployed.map((packageInfo) => packageInfo.packageMetadata.package_name).includes(pkg)
-        );
-        if (!isCheckPointSucceded) {
-          SFPStatsSender.logCount("prepare.org.checkpointfailed");
-          SFPLogger.log(
-            `One or some of the check point packages ${this.checkPointPackages} failed to deploy, Deleting ${scratchOrg.alias}`,
-            LoggerLevel.INFO,
-            packageLogger
-          );
-          throw new Error(
-            `One or some of the check point Packages ${this.checkPointPackages} failed to deploy`
-          );
-        }
-      } else {
-        SFPStatsSender.logCount("prepare.org.partial");
+    if (this.checkPointPackages.length > 0) {
+      let isCheckPointSucceded = this.checkPointPackages.some((pkg) =>
+        deploymentResult.deployed.map((packageInfo) => packageInfo.packageMetadata.package_name).includes(pkg)
+      );
+      if (!isCheckPointSucceded) {
+        SFPStatsSender.logCount("prepare.org.checkpointfailed");
         SFPLogger.log(
-          `Cancelling any further packages to be deployed, Adding the scratchorg ${scratchOrg.alias} to the pool`,
+          `One or some of the check point packages ${this.checkPointPackages} failed to deploy, Deleting ${scratchOrg.alias}`,
           LoggerLevel.INFO,
           packageLogger
         );
+        throw new Error(
+          `One or some of the check point Packages ${this.checkPointPackages} failed to deploy`
+        );
       }
+    } else {
+      SFPStatsSender.logCount("prepare.org.partial");
+      SFPLogger.log(
+        `Cancelling any further packages to be deployed, Adding the scratchorg ${scratchOrg.alias} to the pool`,
+        LoggerLevel.INFO,
+        packageLogger
+      );
     }
   }
 
