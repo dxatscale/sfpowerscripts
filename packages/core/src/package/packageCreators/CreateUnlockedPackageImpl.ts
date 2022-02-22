@@ -4,16 +4,16 @@ import ProjectConfig from "../../project/ProjectConfig";
 import SFPLogger, { LoggerLevel, Logger } from "../../logger/SFPLogger";
 import * as fs from "fs-extra";
 import { delay } from "../../utils/Delay";
-import PackageVersionListImpl from "../../sfdxwrappers/PackageVersionListImpl";
 import SFPPackage from "../../package/SFPPackage";
 import { CreatePackage } from "./CreatePackage";
 import CreateUnlockedPackageVersionImpl from "../../sfdxwrappers/CreateUnlockedPackageVersionImpl";
 import PackageEmptyChecker from "../PackageEmptyChecker";
 import PackageVersionCoverage from "../coverage/PackageVersionCoverage";
-import { AuthInfo, Connection } from "@salesforce/core";
+import { AuthInfo, Connection, Org } from "@salesforce/core";
 import { convertAliasToUsername } from "../../utils/AliasList";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import { EOL } from "os";
+import PackageFetcher from "../packageQuery/PackageFetcher";
 const path = require("path");
 
 export default class CreateUnlockedPackageImpl extends CreatePackage {
@@ -307,9 +307,13 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
 
   private async getPackageTypeInfos() {
     if (CreateUnlockedPackageImpl.packageTypeInfos == null) {
-      CreateUnlockedPackageImpl.packageTypeInfos = await new PackageVersionListImpl(
-        this.devHub
-      ).exec();
+
+      //Create connection to DevHub
+      let connDevHub = (await Org.create({aliasOrUsername:this.devHub})).getConnection();
+
+      CreateUnlockedPackageImpl.packageTypeInfos = await new PackageFetcher(
+        connDevHub
+      ).listAllPackages();
     }
     return CreateUnlockedPackageImpl.packageTypeInfos;
   }
