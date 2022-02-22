@@ -3,9 +3,10 @@ import DeploymentExecutor, { DeploySourceResult } from "./DeploymentExecutor";
 import PushSourceImpl from "../../sfdxwrappers/PushSourceImpl";
 import PushErrorDisplayer from "../../display/PushErrorDisplayer";
 import { Logger } from "../../logger/SFPLogger";
-import ConvertSourceToMDAPIImpl from "../../sfdxwrappers/ConvertSourceToMDAPIImpl";
+import SourceToMDAPIConvertor from "../../package/packageFormatConvertors/SourceToMDAPIConvertor";
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import PackageManifest from "../../package/PackageManifest";
+
 
 export default class PushSourceToOrgImpl implements DeploymentExecutor {
 
@@ -18,11 +19,15 @@ export default class PushSourceToOrgImpl implements DeploymentExecutor {
 
   async exec(): Promise<DeploySourceResult> {
 
-    let mdapiDir = await new ConvertSourceToMDAPIImpl(
+
+    let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
       this.project_directory,
       this.source_directory,
       this.logger
-    ).exec(true);
+    );
+
+    let mdapiDir=(await sourceToMdapiConvertor.convert()).packagePath;
+    
 
     PackageMetadataPrinter.printMetadataToDeploy(
       (await PackageManifest.create(mdapiDir)).manifestJson,

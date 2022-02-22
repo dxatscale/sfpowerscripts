@@ -1,10 +1,10 @@
 import child_process = require("child_process");
 import { delay } from "../../utils/Delay";
 import { onExit } from "../../utils/OnExit";
-import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_TRACE, Logger, LoggerLevel } from "../../logger/SFPLogger";
+import SFPLogger, { COLOR_SUCCESS, COLOR_TRACE, Logger, LoggerLevel } from "../../logger/SFPLogger";
 import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
-import ConvertSourceToMDAPIImpl from "../../sfdxwrappers/ConvertSourceToMDAPIImpl";
+import SourceToMDAPIConvertor from "../../package/packageFormatConvertors/SourceToMDAPIConvertor";
 import PackageManifest from "../../package/PackageManifest";
 import DeployErrorDisplayer from "../../display/DeployErrorDisplayer";
 import * as fs from "fs-extra";
@@ -49,11 +49,15 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         this.packageLogger,
       );
 
-      this.mdapiDir = await new ConvertSourceToMDAPIImpl(
+      console.log(`Proj`,this.project_directory)
+      let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
         this.project_directory,
         this.source_directory,
         this.packageLogger
-      ).exec(true);
+      );
+
+      this.mdapiDir=(await sourceToMdapiConvertor.convert()).packagePath;
+
       PackageMetadataPrinter.printMetadataToDeploy(
         (await PackageManifest.create(this.mdapiDir)).manifestJson,
         this.packageLogger
@@ -71,7 +75,17 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
         let resultAsJSON = JSON.parse(result);
         deploy_id = resultAsJSON.result.id;
+        SFPLogger.log(
+          `Deploy request queued with ${deploy_id}`,
+          LoggerLevel.INFO,
+          this.packageLogger
+        );
       } catch (error) {
+        SFPLogger.log(
+          `Deploy request  ${deploy_id} failed due to ${error}`,
+          LoggerLevel.DEBUG,
+          this.packageLogger
+        );
         deploySourceResult.result = false;
         deploySourceResult.message = error;
         return deploySourceResult;
