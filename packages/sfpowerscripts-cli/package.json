@@ -36,9 +36,7 @@
     "rimraf": "^3.0.2",
     "semver": "^7.3.4",
     "sfdc-soup": "^12.0.0",
-    "simple-git": "^2.45.1",
-    "snyk": "^1.826.0",
-    "ts-node": "^9.0.0"
+    "simple-git": "^2.45.1"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.4.33",
@@ -48,7 +46,9 @@
     "dependency-cruiser": "^10.0.1",
     "jest": "^26.6.3",
     "ts-jest": "^26.5.0",
-    "typescript": "^4.1.3"
+    "typescript": "^4.1.3",
+    "snyk": "^1.826.0",
+    "ts-node": "^9.0.0"
   },
   "engines": {
     "node": ">=8.0.0"
