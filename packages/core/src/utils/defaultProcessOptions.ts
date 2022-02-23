@@ -1,4 +1,4 @@
-import { ChildProcess, CommonExecOptions, exec } from "child_process";
+import {CommonExecOptions} from "child_process";
 
 const MAX_BUFFER_DEFAULT: number = 1024 * 1024 * 5; // 5MB
 
