@@ -1,9 +1,10 @@
 import child_process = require("child_process");
 import SFPLogger, { COLOR_TRACE, Logger, LoggerLevel } from "../../logger/SFPLogger";
+import defaultProcessOptions from "../../utils/defaultProcessOptions";
 
 export default class ExecuteCommand
 {
- 
+
 
   public constructor(
     protected logger?: Logger,
@@ -22,10 +23,9 @@ export default class ExecuteCommand
       let childProcess;
 
        childProcess = child_process.exec(command, {
-        encoding: "utf8",
         cwd: workingdirectory,
-        maxBuffer: 1024*1024*5,
-        timeout: timeout
+        timeout: timeout,
+        ...defaultProcessOptions()
       });
 
 
