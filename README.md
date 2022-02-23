@@ -16,7 +16,7 @@
 </p>
 
 
-A build system for package based development in Salesforce , delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
+A build system for package based development in Salesforce , delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://docs.dxatscale.io/sfpowerscripts/overview
 
 
 #### Features
@@ -78,7 +78,7 @@ To debug and test plugin
 
 #### Maintainers
 
-List of Maintainers are available in the [link](https://dxatscale.gitbook.io/sfpowerscripts/maintainers)
+List of Maintainers are available in the [link](https://docs.dxatscale.io/about-us)
 
 
 #### Where do I reach for queries?
