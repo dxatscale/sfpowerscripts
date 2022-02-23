@@ -1,7 +1,7 @@
 {
   "name": "@dxatscale/sfpowerscripts",
   "description": "A build system for package based development in Salesforce,delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/",
-  "version": "10.3.1",
+  "version": "10.3.2",
   "author": "dxatscale",
   "release": "March 22",
   "bin": {
@@ -9,7 +9,7 @@
   },
   "bugs": "https://github.com/Accenture/sfpowerscripts/issues",
   "dependencies": {
-    "@dxatscale/sfpowerscripts.core": "^15.4.0",
+    "@dxatscale/sfpowerscripts.core": "^15.5.0",
     "@oclif/command": "1.8.16",
     "@oclif/config": "^1.18.1",
     "@oclif/errors": "^1.3.5",
@@ -36,9 +36,7 @@
     "rimraf": "^3.0.2",
     "semver": "^7.3.4",
     "sfdc-soup": "^12.0.0",
-    "simple-git": "^2.45.1",
-    "snyk": "^1.826.0",
-    "ts-node": "^9.0.0"
+    "simple-git": "^2.45.1"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.4.33",
@@ -48,7 +46,9 @@
     "dependency-cruiser": "^10.0.1",
     "jest": "^26.6.3",
     "ts-jest": "^26.5.0",
-    "typescript": "^4.1.3"
+    "typescript": "^4.1.3",
+    "snyk": "^1.826.0",
+    "ts-node": "^9.0.0"
   },
   "engines": {
     "node": ">=8.0.0"
