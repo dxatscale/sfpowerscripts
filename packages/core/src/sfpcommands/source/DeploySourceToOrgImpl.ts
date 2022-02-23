@@ -2,6 +2,7 @@ import child_process = require("child_process");
 import { delay } from "../../utils/Delay";
 import { onExit } from "../../utils/OnExit";
 import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_TRACE, Logger, LoggerLevel } from "../../logger/SFPLogger";
+import defaultProcessOptions from "../../utils/defaultProcessOptions";
 import PackageEmptyChecker from "../../package/PackageEmptyChecker";
 import PackageMetadataPrinter from "../../display/PackageMetadataPrinter";
 import ConvertSourceToMDAPIImpl from "../../sfdxwrappers/ConvertSourceToMDAPIImpl";
@@ -97,9 +98,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             `sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org}`,
             {
               cwd: this.project_directory,
-              encoding: "utf8",
               stdio: ["pipe", "pipe", "ignore"],
-              maxBuffer: 5*1024*1024
+              ... defaultProcessOptions()
             }
           );
         } catch (err) {
@@ -155,12 +155,12 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     try {
       let filepath=`sfpowerscripts/mdapiDeployReports`;
       fs.mkdirpSync(filepath);
+
       let child = child_process.exec(
         `sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org} -w 30`,
         {
           cwd: this.project_directory,
-          encoding: "utf8",
-          maxBuffer: 5*1024*1024
+          ... defaultProcessOptions()
         }
       );
 
