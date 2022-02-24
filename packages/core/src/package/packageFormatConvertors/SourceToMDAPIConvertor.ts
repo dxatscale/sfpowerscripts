@@ -23,10 +23,15 @@ export default class SourceToMDAPIConvertor {
     if (this.projectDirectory != null)
       mdapiDir = path.resolve(this.projectDirectory, mdapiDir);
 
+    //Source Directory is nested inside project directory when used with artifacts  
+    //TODO: projectDirectory nomenclature is incorrect, should be parentDirectory perhaps?
+    let resolvedSourceDirectory = this.sourceDirectory;
+    if (this.projectDirectory != null)
+      resolvedSourceDirectory = path.resolve(this.projectDirectory, this.sourceDirectory);
 
     //Build component set from provided source directory
     let componentSet = ComponentSet.fromSource({
-      fsPaths: [this.sourceDirectory],
+      fsPaths: [resolvedSourceDirectory],
     });
 
     const converter = new MetadataConverter();
