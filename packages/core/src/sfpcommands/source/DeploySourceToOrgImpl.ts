@@ -50,7 +50,6 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         this.packageLogger,
       );
 
-      console.log(`Proj`,this.project_directory)
       let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
         this.project_directory,
         this.source_directory,
