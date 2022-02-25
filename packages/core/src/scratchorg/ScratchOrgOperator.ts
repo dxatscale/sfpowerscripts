@@ -88,7 +88,7 @@ export default class ScratchOrgOperator {
       durationDays: expireIn.days,
       nonamespace: false,
       noancestors: false,
-      wait: Duration.minutes(6),
+      wait: Duration.minutes(20),
       retry: 3,
       definitionfile: definitionFile
     };
