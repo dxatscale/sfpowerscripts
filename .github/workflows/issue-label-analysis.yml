@@ -1,0 +1,14 @@
+name: issue-automation-initial-labeller
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  automate-issues-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: apply initial label
+        uses: andymckay/labeler@master
+        with:
+          add-labels: "analysis"
