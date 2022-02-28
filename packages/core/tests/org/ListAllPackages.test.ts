@@ -3,15 +3,17 @@ import { expect } from "@jest/globals";
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
 import { AnyJson  } from '@salesforce/ts-types'
 import { AuthInfo, Connection } from "@salesforce/core";
-import PackageFetcher from "../../../src/package/packageQuery/PackageFetcher"
+import SFPOrg from "../../lib/org/SFPOrg";
+
 const $$ = testSetup();
 
 
 describe("Retrieve all packages from devhub", () => {
-  it("should return all the packages provided a connection object", async () => {
+  it("should return all the packages provided a devhub", async () => {
   
     const testData = new MockTestOrgData();
-
+   
+   testData.makeDevHub();
     $$.setConfigStubContents('AuthInfoConfig', {
       contents:  await testData.getConfig(),
     });
@@ -46,13 +48,9 @@ describe("Retrieve all packages from devhub", () => {
      $$.fakeConnectionRequest = (request: AnyJson): Promise<AnyJson> => {
         return Promise.resolve(records);
     };
-    const connection: Connection = await Connection.create({
-      authInfo:  await AuthInfo.create({ username: testData.username })
-    });
+    const org: SFPOrg = await SFPOrg.create({aliasOrUsername:testData.username});
     
-    
-    let packageFetcher: PackageFetcher = new PackageFetcher( connection);
-    let packages = await packageFetcher.listAllPackages();
+    let packages = await org.listAllPackages();
     expect(packages).toHaveLength(2);
     expect(packages[0].Name).toMatch('async-framework');
     expect(packages[0].Id).toMatch('0Ho1P005000k9bNSXQ');

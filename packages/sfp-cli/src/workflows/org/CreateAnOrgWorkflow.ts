@@ -6,14 +6,13 @@ import { SfpProjectConfig } from "../../types/SfpProjectConfig";
 import { isEmpty } from "lodash";
 import cli from "cli-ux";
 import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_SUCCESS, LoggerLevel } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
-import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
 import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
-import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/packageQuery/InstalledPackagesFetcher";
 import InstalledPackageDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer";
 import PoolFetchImpl from "../../impl/pool/PoolFetchImpl";
 import OrgOpen from "../../impl/sfdxwrappers/OrgOpen";
 import InstallDependenciesWorkflow from "../package/InstallDependenciesWorkflow";
 import ScratchOrgOperator from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator";
+import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg"
 
 export default class CreateAnOrgWorkflow
 {
@@ -230,14 +229,12 @@ export default class CreateAnOrgWorkflow
     try {
 
 
-      const scratchOrgConnection = (
-        await Org.create({ aliasOrUsername: scratchOrg.username })
-      ).getConnection();
-      let installedPackagesFetcher = new InstalledPackagesFetcher(
-        scratchOrgConnection
-      );
+      const scratchOrgAsSFPOrg =  await SFPOrg.create({ aliasOrUsername: scratchOrg.username });
+      const scratchOrgConnection = scratchOrgAsSFPOrg.getConnection();
+
+
       let installedManagedPackages =
-        await installedPackagesFetcher.fetchManagedPackages();
+        await scratchOrgAsSFPOrg.getAllInstalledManagedPackages();
       SFPLogger.log("Installed managed packages:", LoggerLevel.INFO);
       InstalledPackageDisplayer.printInstalledPackages(
         installedManagedPackages,
@@ -245,7 +242,7 @@ export default class CreateAnOrgWorkflow
       );
 
       let installedArtifacts =
-        await InstalledAritfactsFetcher.getListofArtifacts(scratchOrg.username);
+        await scratchOrgAsSFPOrg.getInstalledArtifacts();
       InstalledArtifactsDisplayer.printInstalledArtifacts(
         installedArtifacts,
         null

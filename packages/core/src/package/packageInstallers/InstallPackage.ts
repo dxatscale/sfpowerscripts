@@ -9,18 +9,18 @@ import SFPStatsSender from "../../stats/SFPStatsSender";
 import PackageInstallationHelpers from "./PackageInstallationHelpers";
 import { AuthInfo, Connection, fs } from "@salesforce/core";
 import { convertAliasToUsername } from "../../utils/AliasList";
-import ArtifactInstallationStatusUpdater from "../../artifacts/ArtifactInstallationStatusUpdater";
-import ArtifactInstallationStatusChecker from "../../artifacts/ArtifactInstallationStatusChecker";
 import FileSystem from "../../utils/FileSystem";
 import OrgDetailsFetcher from "../../org/OrgDetailsFetcher";
 import path = require("path");
 import PermissionSetGroupUpdateAwaiter from "../../permsets/PermissionSetGroupUpdateAwaiter";
+import SFPOrg from "../../org/SFPOrg";
 
 export abstract class InstallPackage {
   private startTime: number;
   protected connection: Connection;
   protected packageDescriptor;
   protected packageDirectory;
+  protected org:SFPOrg;
 
   public constructor(
     protected sfdxPackage: string,
@@ -42,11 +42,8 @@ export abstract class InstallPackage {
       );
 
       let targetUsername = await convertAliasToUsername(this.targetusername);
-      this.connection = await Connection.create({
-        authInfo: await AuthInfo.create({
-          username: targetUsername,
-        }),
-      });
+      this.org = await SFPOrg.create({aliasOrUsername:targetUsername});
+      this.connection = this.org.getConnection();
 
       if (await this.isPackageToBeInstalled(this.skipIfPackageInstalled)) {
         if(!this.isDryRun)
@@ -160,9 +157,8 @@ export abstract class InstallPackage {
   }
 
   private async commitPackageInstallationStatus() {
-    await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
+    await this.org.updateArtifactInOrg(
       this.logger,
-      this.targetusername,
       this.packageMetadata
     );
   }
@@ -171,9 +167,8 @@ export abstract class InstallPackage {
     skipIfPackageInstalled: boolean
   ): Promise<boolean> {
     if (skipIfPackageInstalled) {
-      let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+      let installationStatus = await this.org.isArtifactInstalledInOrg(
         this.logger,
-        this.targetusername,
         this.packageMetadata
       );
       return !installationStatus.isInstalled;

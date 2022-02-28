@@ -5,14 +5,14 @@ import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
 import PackageManifest from "../package/PackageManifest";
 import ProjectConfig from "../project/ProjectConfig";
 import * as fs from "fs-extra";
-import InstalledPackagesFetcher from "../package/packageQuery/InstalledPackagesFetcher";
 import DependencyFetcher from "./DependencyFetcher";
+import SFPOrg from "../org/SFPOrg";
 
 const REGISTRY_SUPPORTED_TYPES = Object.values(registry.types).map(type => type.name);
 
 export default class DependencyAnalysis {
   constructor(
-    private conn: Connection,
+    private org: SFPOrg,
     private components: Component[],
   ) {}
 
@@ -21,10 +21,10 @@ export default class DependencyAnalysis {
 
     const projectConfig = ProjectConfig.getSFDXPackageManifest(null);
 
-    const managedPackages = await new InstalledPackagesFetcher(this.conn).fetchManagedPackages();
+    const managedPackages = await this.org.getAllInstalledManagedPackages();
     const managedPackageNamespaces = managedPackages.map(pkg => pkg.namespacePrefix);
 
-    const componentsWithDependencies = await new DependencyFetcher(this.conn, this.components).fetch();
+    const componentsWithDependencies = await new DependencyFetcher(this.org.getConnection(), this.components).fetch();
     for (const component of componentsWithDependencies) {
 
       component.dependencies = component.dependencies.filter(dependency => {

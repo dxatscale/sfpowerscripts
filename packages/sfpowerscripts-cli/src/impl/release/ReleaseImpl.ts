@@ -9,7 +9,8 @@ import ChangelogImpl from "../../impl/changelog/ChangelogImpl";
 import { Org } from "@salesforce/core";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { Release } from "../changelog/ReleaseChangelogInterfaces";
-import InstalledPackagesFetcher from "@dxatscale/sfpowerscripts.core/lib/package/packageQuery/InstalledPackagesFetcher";
+import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
+
 
 export interface ReleaseProps
 {
@@ -281,10 +282,12 @@ export default class ReleaseImpl {
 
   private async isPackageInstalledInOrg(packageVersionId: string, targetUsername: string): Promise<boolean> {
     try {
-      let conn = (await Org.create({aliasOrUsername: targetUsername})).getConnection(); // TODO: REFACTOR CLASS TO TAKE CONNECTION IN CONSTRUCTOR
+      
+      let targetOrg = await SFPOrg.create({aliasOrUsername: targetUsername});
+
 
       SFPLogger.log(`Checking Whether Package with ID ${packageVersionId} is installed in  ${targetUsername}`);
-      let installedPackages = await new InstalledPackagesFetcher(conn).fetchAllPackages();
+      let installedPackages = await targetOrg.getAllInstalled2GPPackages();
 
       let packageFound = installedPackages.find((installedPackage) => {
         return installedPackage.subscriberPackageVersionId === packageVersionId

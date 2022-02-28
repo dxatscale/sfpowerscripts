@@ -19,7 +19,6 @@ import DependencyAnalysis from "@dxatscale/sfpowerscripts.core/lib/dependency/De
 import DependencyViolationDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/DependencyViolationDisplayer";
 import ImpactAnalysis from "./ImpactAnalysis";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
-import InstalledArtifactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher";
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
 import { COLOR_ERROR } from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
@@ -33,6 +32,7 @@ import ScratchOrgInfoFetcher from "../../impl/pool/services/fetchers/ScratchOrgI
 import Component from "@dxatscale/sfpowerscripts.core/lib/dependency/Component";
 import ValidateResult from "./ValidateResult";
 import PoolOrgDeleteImpl from "../pool/PoolOrgDeleteImpl";
+import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
 
 export enum ValidateMode {
   ORG,
@@ -75,15 +75,20 @@ export default class ValidateImpl {
           this.props.pools
         );
 
+
         if (this.props.shapeFile) {
           this.deployShapeFile(this.props.shapeFile, scratchOrgUsername);
         }
         await this.installPackageDependencies(scratchOrgUsername);
       } else throw new Error(`Unknown mode ${this.props.validateMode}`);
 
+   
+      //Create Org 
+      let orgAsSFPOrg = await SFPOrg.create({aliasOrUsername:scratchOrgUsername});
+      let connToScratchOrg = orgAsSFPOrg.getConnection();
       let installedArtifacts;
       try {
-        installedArtifacts = await InstalledArtifactsFetcher.getListofArtifacts(scratchOrgUsername);
+        installedArtifacts = await orgAsSFPOrg.getInstalledArtifacts();
       } catch {
         console.log(COLOR_ERROR("Failed to query org for Sfpowerscripts Artifacts"));
         console.log(COLOR_KEY_MESSAGE("Building all packages"));
@@ -106,7 +111,7 @@ export default class ValidateImpl {
       if (deploymentResult.failed.length > 0 || deploymentResult.error)
         throw new ValidateError("Validation failed", {deploymentResult});
       else {
-        const connection = (await Org.create({aliasOrUsername: scratchOrgUsername})).getConnection();
+       
 
         if (this.props.isDependencyAnalysis) {
           SFPLogger.log(
@@ -116,7 +121,7 @@ export default class ValidateImpl {
           );
           SFPLogger.log(COLOR_KEY_MESSAGE("Validating dependency  tree of changed components.."),LoggerLevel.INFO);
           const changedComponents = await this.getChangedComponents();
-          const dependencyAnalysis = new DependencyAnalysis(connection, changedComponents);
+          const dependencyAnalysis = new DependencyAnalysis(orgAsSFPOrg, changedComponents);
 
           dependencyViolations = await dependencyAnalysis.exec()
 
@@ -138,7 +143,7 @@ export default class ValidateImpl {
         if (this.props.isImpactAnalysis) {
           const changedComponents = await this.getChangedComponents();
           try {
-            const impactAnalysis = new ImpactAnalysis(connection, changedComponents);
+            const impactAnalysis = new ImpactAnalysis(connToScratchOrg, changedComponents);
             await impactAnalysis.exec()
           } catch(err){
             console.log(err.message);

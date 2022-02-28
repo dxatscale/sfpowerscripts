@@ -2,8 +2,6 @@ import ArtifactFilePathFetcher, {
   ArtifactFilePaths,
 } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher";
 import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
-import ArtifactInstallationStatusChecker from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInstallationStatusChecker"
-import InstalledAritfactsFetcher from "@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher"
 import ArtifactInquirer from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInquirer";
 import fs = require("fs");
 import path = require("path");
@@ -29,6 +27,7 @@ import { PackageInstallationResult, PackageInstallationStatus } from "@dxatscale
 import InstallUnlockedPackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageImpl";
 import InstallSourcePackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallSourcePackageImpl";
 import InstallDataPackageImpl from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallDataPackageImpl";
+import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg"
 const Table = require("cli-table");
 const retry = require("async-retry");
 
@@ -58,6 +57,7 @@ export interface DeployProps {
 }
 
 export default class DeployImpl {
+
   constructor(private props: DeployProps) { }
   // TODO: Refactor to use exception pattern
   public async exec(): Promise<DeploymentResult> {
@@ -93,9 +93,10 @@ export default class DeployImpl {
 
       let packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
 
+
       queue = this.getPackagesToDeploy(
         packageManifest,
-        packagesToPackageInfo
+        packagesToPackageInfo   
       );
 
       if (this.props.skipIfPackageInstalled) {
@@ -389,17 +390,21 @@ export default class DeployImpl {
 
   private async filterByPackagesInstalledInTheOrg(packageManifest: any, queue: any[], packagesToPackageInfo: { [p: string]: PackageInfo }, targetUsername: string): Promise<any[]> {
 
+    //Create Org 
+    let org = await SFPOrg.create({aliasOrUsername:targetUsername});
+
+
     const clonedQueue = [];
     queue.forEach(val => clonedQueue.push(Object.assign({}, val)));
 
-    for (var i = queue.length - 1; i >= 0; i--) {
+    for (let i = queue.length - 1; i >= 0; i--) {
       let packageInfo = packagesToPackageInfo[clonedQueue[i].package];
       let packageMetadata: PackageMetadata = packageInfo.packageMetadata;
       let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(
         clonedQueue[i].package,
         packageManifest
       );
-      let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(this.props.packageLogger,targetUsername, packageMetadata);
+      let packageInstalledInTheOrg = await org.isArtifactInstalledInOrg(this.props.packageLogger,packageMetadata);
       if (packageInstalledInTheOrg.versionNumber)
         packageInfo.versionInstalledInOrg = packageInstalledInTheOrg.versionNumber;
       if (packageInstalledInTheOrg.isInstalled) {
@@ -410,10 +415,7 @@ export default class DeployImpl {
       }
     }
 
-    //Do a reset after this stage, as fetched artifacts are a static var, to reduce roundtrip, but this has side effects
-    InstalledAritfactsFetcher.resetFetchedArtifacts();
     return clonedQueue;
-
   }
 
   private printOpenLoggingGroup(message: string, pkg?: string) {
