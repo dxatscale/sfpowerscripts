@@ -1,17 +1,22 @@
-parameters:
-
-  - name: version
-    type: string
-    default: ''
-
-  - name: packageToPromote
-    type: object
-    default:
-      package: ''
-      pjson: ''
+# This pipeline is used as template to promote package
 
 
+name: 'sfpowerscripts Promote Package'
 
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: ''
+      packageToPromote:
+        type: object
+        default:
+          package: ''
+          pjson: ''
+
+
+# TODO: to be migrated to github actions syntax
 steps:
           - checkout: self
 

@@ -1,44 +1,41 @@
-parameters:
-
-  - name: commitToGit
-    type: boolean
-    default: false
-
-  - name: stageToDeploy
-    type: string
-    default: review
-
-  - name: version
-    type: string
-    default: ''
-
-  - name: environmentToDeploy
-    type: string
-    default: development
-
-  - name: organization
-    type: string
-    default: ''
+# This pipeline is used as template to build the sfpowerscripts plugin
 
 
-  - name: buildNumber
-    type: string
-    default: ''
+name: 'sfpowerscripts Plugin Build'
 
-  - name: toBuild
-    type: boolean
-    default: false
+on:
+  workflow_call:
+    inputs:
+      commitToGit:
+        type: boolean
+        default: false
+      stageToDeploy:
+        type: string
+        default: review
+      version:
+        type: string
+        default: ''
+      environmentToDeploy:
+        type: string
+        default: development
+      organization:
+        type: string
+        default: ''
+      buildNumber:
+        type: string
+        default: ''
+      toBuild:
+        type: boolean
+        default: false
+      bump:
+        type: string
+        default: 'patch'
+      publish:
+        type: boolean
+        default: false
 
-  - name: bump
-    type: string
-    default: 'patch'
 
-  - name: publish
-    type: boolean
-    default: false
-
-
-
+# TODO: to be migrated to github actions syntax
 steps:
           - checkout: self
 

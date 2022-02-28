@@ -7,8 +7,13 @@ on:
   push:
     branches:
       - develop
+      - release/**
     paths-ignore:
       - 'docs/**'
+      - '**.md'
+      - 'decision records/**'
+      - 'demoreel/**'
+      - 'prerequisites/**'
 
   workflow_dispatch:
 
@@ -19,7 +24,7 @@ jobs:
   alpha:
     name: 'Alpha Builds'
     runs-on: ubuntu-latest
-    if: contains(github.ref,'refs/heads/develop')
+    if: ${{ github.ref == 'refs/heads/develop' }}
     environment:
       name: alpha
     concurrency: alpha
@@ -29,8 +34,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: BuildCLI (sfdx-plugin)
-        uses: ./.github/workflow-templates/buildcli.yml
+      - name: Build Packages (sfdx-plugin)
+        uses: Accenture/sfpowerscripts/.github/workflows/buildcli.yml@develop
         timeout-minutes: 20
         with:
           commitToGit: true
@@ -43,7 +48,7 @@ jobs:
   beta:
     name: 'Beta Builds'
     runs-on: ubuntu-latest
-    if: contains(github.ref,'refs/heads/develop')
+    if: ${{ github.ref == 'refs/heads/develop' }}
     needs: alpha
     environment:
       name: beta
@@ -54,8 +59,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: BuildCLI (sfdx-plugin)
-        uses: ./.github/workflow-templates/buildcli.yml
+      - name: Build Packages (sfdx-plugin)
+        uses: Accenture/sfpowerscripts/.github/workflows/buildcli.yml@develop
         timeout-minutes: 20
         with:
           commitToGit: false
@@ -67,7 +72,7 @@ jobs:
   hotfix:
     name: 'Hotfix'
     runs-on: ubuntu-latest
-    if: contains(github.ref,'refs/heads/release')
+    if: ${{ github.ref == 'refs/heads/release/*' }}
     environment:
       name: hotfix
     concurrency: hotfix
@@ -77,8 +82,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: BuildCLI (sfdx-plugin)
-        uses: ./.github/workflow-templates/buildcli.yml
+      - name: Build Packages (sfdx-plugin)
+        uses: Accenture/sfpowerscripts/.github/workflows/buildcli.yml@develop
         timeout-minutes: 20
         with:
           commitToGit: false
@@ -88,9 +93,9 @@ jobs:
 
 # Prod Stage
   prod:
-    name: 'prod Builds'
+    name: 'Prod Builds'
     runs-on: ubuntu-latest
-    if: contains(github.ref,'refs/heads/release')
+    if: ${{ github.ref == 'refs/heads/release/*' }}
     needs: [beta, hotfix]
     environment:
       name: prod
@@ -101,8 +106,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: BuildCLI (sfdx-plugin)
-        uses: ./.github/workflow-templates/buildcli.yml
+      - name: Build Packages (sfdx-plugin)
+        uses: Accenture/sfpowerscripts/.github/workflows/buildcli.yml@develop
         timeout-minutes: 30
         with:
           commitToGit: false
