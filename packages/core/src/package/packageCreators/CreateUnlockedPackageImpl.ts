@@ -9,7 +9,7 @@ import { CreatePackage } from "./CreatePackage";
 import CreateUnlockedPackageVersionImpl from "../../sfdxwrappers/CreateUnlockedPackageVersionImpl";
 import PackageEmptyChecker from "../PackageEmptyChecker";
 import PackageVersionCoverage from "../coverage/PackageVersionCoverage";
-import {Connection, Org } from "@salesforce/core";
+import {Connection } from "@salesforce/core";
 import SFPStatsSender from "../../stats/SFPStatsSender";
 import { EOL } from "os";
 import SFPOrg, { PackageTypeInfo } from "../../org/SFPOrg";
@@ -305,10 +305,6 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
 
   private async getPackageTypeInfos() {
     if (CreateUnlockedPackageImpl.packageTypeInfos == null) {
-
-      //Create connection to DevHub
-      let connDevHub = (await Org.create({aliasOrUsername:this.devHub})).getConnection();
-
       CreateUnlockedPackageImpl.packageTypeInfos = await this.devhubOrg.listAllPackages();
     }
     return CreateUnlockedPackageImpl.packageTypeInfos;

@@ -6,7 +6,6 @@ import { Stage } from "../Stage";
 import child_process = require("child_process");
 import ReleaseError from "../../errors/ReleaseError";
 import ChangelogImpl from "../../impl/changelog/ChangelogImpl";
-import { Org } from "@salesforce/core";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import { Release } from "../changelog/ReleaseChangelogInterfaces";
 import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";

@@ -1,4 +1,3 @@
-import { Connection } from "@salesforce/core";
 import Component from "./Component";
 import DependencyViolation from "./DependencyViolation";
 import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';

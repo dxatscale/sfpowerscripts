@@ -230,9 +230,7 @@ export default class CreateAnOrgWorkflow
 
 
       const scratchOrgAsSFPOrg =  await SFPOrg.create({ aliasOrUsername: scratchOrg.username });
-      const scratchOrgConnection = scratchOrgAsSFPOrg.getConnection();
-
-
+ 
       let installedManagedPackages =
         await scratchOrgAsSFPOrg.getAllInstalledManagedPackages();
       SFPLogger.log("Installed managed packages:", LoggerLevel.INFO);

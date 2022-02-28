@@ -2,7 +2,6 @@
 import { expect } from "@jest/globals";
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
 import { AnyJson  } from '@salesforce/ts-types'
-import { AuthInfo, Connection } from "@salesforce/core";
 import SFPOrg from "../../lib/org/SFPOrg";
 
 const $$ = testSetup();

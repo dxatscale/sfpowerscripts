@@ -1,6 +1,5 @@
-import { jest, expect } from "@jest/globals";
+import { expect } from "@jest/globals";
 import { MockTestOrgData, testSetup } from "@salesforce/core/lib/testSetup";
-import child_process = require("child_process");
 import { VoidLogger } from "../../src/logger/SFPLogger";
 import artifactMetadata from "../../src/PackageMetadata";
 import {

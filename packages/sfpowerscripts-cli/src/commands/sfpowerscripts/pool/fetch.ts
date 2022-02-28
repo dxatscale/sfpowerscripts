@@ -1,5 +1,5 @@
 import { flags, SfdxCommand } from "@salesforce/command";
-import { Messages, Org } from "@salesforce/core";
+import { Messages } from "@salesforce/core";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import { AnyJson } from "@salesforce/ts-types";
 import PoolFetchImpl from "../../../impl/pool/PoolFetchImpl";
