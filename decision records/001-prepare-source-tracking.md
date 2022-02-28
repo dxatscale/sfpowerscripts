@@ -9,6 +9,7 @@ This decision record is made necessary by the [changes](https://github.com/force
 
 ## Options
 1. **Deploying source code from the commit ID of the leading artifact**
+
     Instead of deploying source code from each artifact, determine the latest commit ID from the artifacts, and then push the source code from the repository at the latest commit ID.
 
     Pros:
@@ -17,8 +18,10 @@ This decision record is made necessary by the [changes](https://github.com/force
     Cons:
     - If publishing artifacts is not dependent on a successful build stage, the latest commit ID taken from artifacts may contain undeployable changes.
 2. **Re-composing project directory from artifacts**
+
     In this option, the project directory is recomposed using the package directory and sfdx-project.json from each artifact. Like the previous option, source tracking information does not need to be merged, as the push is occurring from the project directory. The difference is that in this option, we can be certain that only source code from the latest validated artifacts are deployed.
 3. **Merging the objects from different git repositories??**
+
     Similar to the current implementation where `sourcePathInfos.json` from different artifacts are merged into one, this option involves merging the objects from git repositories across different artifacts into a single repository.
 
 ## Decision
