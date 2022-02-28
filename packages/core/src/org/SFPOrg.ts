@@ -1,4 +1,4 @@
-import { Connection, Org } from "@salesforce/core";
+import { Org } from "@salesforce/core";
 import SFPLogger, {
   COLOR_KEY_MESSAGE,
   Logger,
