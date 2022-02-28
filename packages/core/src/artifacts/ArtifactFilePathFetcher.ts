@@ -27,20 +27,12 @@ export default class ArtifactFilePathFetcher {
 
     let artifacts: string[] = this.findArtifacts(artifactDirectory, sfdx_package);
 
-    if (artifacts.length === 0) {
-      // For backwards compatibility, find artifact metadata
-      artifacts = ArtifactFilePathFetcher.findArtifactMetadata(artifactDirectory, sfdx_package);
-    }
-
+    
     SFPLogger.log(`Artifacts: ${JSON.stringify(artifacts)}`,LoggerLevel.TRACE,logger);
 
     for(let artifact of artifacts) {
       let artifactFilePaths: ArtifactFilePaths
-      if (path.basename(artifact) === "artifact_metadata.json") {
-        artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePathsFromFolder(
-          artifact
-        );
-      } else if (path.extname(artifact) === ".zip") {
+      if (path.extname(artifact) === ".zip") {
         artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePathsFromZipFile(
           artifact
         );
@@ -49,7 +41,7 @@ export default class ArtifactFilePathFetcher {
           artifact
         );
       } else {
-        throw new Error(`Unhandled artifact format ${artifact}, neither folder or zip file`);
+        throw new Error(`Unhandled artifact format ${artifact}, neither tar or zip file`);
       }
       result.push(artifactFilePaths);
     }
@@ -247,34 +239,6 @@ export default class ArtifactFilePathFetcher {
       return artifacts.find((artifact) => artifact.includes(latestVersion));
   }
 
-  /**
-   * Find artifact metadata json
-   * For backwards compatability with artifacts as a folder
-   * @param artifactDirectory
-   * @param sfdx_package
-   */
-  private static findArtifactMetadata(
-    artifactDirectory: string,
-    sfdx_package?: string
-  ): string[] {
-    let packageMetadataFilepaths: string[] = glob.sync(
-      `**/artifact_metadata.json`,
-      {
-        cwd: artifactDirectory,
-        absolute: true,
-      }
-    );
-
-    if (sfdx_package) {
-      // Filter and only return ArtifactFilePaths for sfdx_package
-      packageMetadataFilepaths = packageMetadataFilepaths.filter((filepath) => {
-        let artifactMetadata = JSON.parse(fs.readFileSync(filepath, "utf8"));
-        return artifactMetadata["package_name"] === sfdx_package;
-      });
-    }
-
-    return packageMetadataFilepaths;
-  }
 
   /**
    * Verify that artifact filepaths exist on the file system
