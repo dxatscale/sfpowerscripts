@@ -1,7 +1,7 @@
 import { Connection, Org } from "@salesforce/core";
-import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
-import QueryHelper from "../../queryHelper/QueryHelper";
-import { chunkArray } from "../../utils/ChunkArray";
+import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
+import QueryHelper from "../queryHelper/QueryHelper";
+import { chunkArray } from "../utils/ChunkArray";
 
 const CODECOV_AGGREGATE_QUERY = `SELECT Id FROM ApexCodeCoverageAggregate`;
 const APEX_TEST_RESULT_QUERY = `SELECT Id FROM ApexTestResult`;
@@ -15,13 +15,6 @@ export default class ClearTestResults {
    */
   public async clear() {
     this.conn = this.org.getConnection();
-
-    SFPLogger.log(
-      `Clearing Existing Coverage and Test Results`,
-      LoggerLevel.INFO,
-      this.logger
-    );
-
   
       SFPLogger.log(
         `Clearing Coverage Results`,
@@ -46,7 +39,7 @@ export default class ClearTestResults {
       SFPLogger.log(`Cleared Test Results`, LoggerLevel.DEBUG, this.logger);
 
       SFPLogger.log(
-        `Clearing Existing Coverage and Test Results`,
+        `Cleared Existing Coverage and Test Results`,
         LoggerLevel.INFO,
         this.logger
       );
