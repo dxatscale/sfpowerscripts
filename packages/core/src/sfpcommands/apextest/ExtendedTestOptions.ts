@@ -11,7 +11,8 @@ export class RunAllTestsInPackageOptions extends RunSpecifiedTestsOption {
     wait_time: number,
     outputdir: string
   ) {
-    super(wait_time, outputdir, _sfppackage.apexTestClassses.toString(), false);
+    //Set to synchronous execution mode, to check whether #836 will be fixed
+    super(wait_time, outputdir, _sfppackage.apexTestClassses.toString(), true);
   }
 
   public get sfppackage()
