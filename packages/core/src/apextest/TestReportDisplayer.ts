@@ -1,8 +1,8 @@
 import {
   RunApexTestSuitesOption,
   TestOptions,
-} from "../../sfdxwrappers/TestOptions";
-import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from "../../logger/SFPLogger";
+} from "./TestOptions";
+import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from "../logger/SFPLogger";
 import { RunAllTestsInPackageOptions } from "./ExtendedTestOptions";
 
 
