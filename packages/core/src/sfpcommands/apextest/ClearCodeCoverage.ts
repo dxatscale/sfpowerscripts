@@ -3,8 +3,8 @@ import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
 import QueryHelper from "../../queryHelper/QueryHelper";
 import { chunkArray } from "../../utils/ChunkArray";
 
-const CODECOVAGG_QUERY = `SELECT Id FROM ApexCodeCoverageAggregate`;
-const APEXTESTRESULT_QUERY = `SELECT Id FROM ApexTestResult`;
+const CODECOV_AGGREGATE_QUERY = `SELECT Id FROM ApexCodeCoverageAggregate`;
+const APEX_TEST_RESULT_QUERY = `SELECT Id FROM ApexTestResult`;
 
 export default class ClearTestResults {
   private conn: Connection;
@@ -28,17 +28,17 @@ export default class ClearTestResults {
         LoggerLevel.DEBUG,
         this.logger
       );
-      let codeCovAgg = await QueryHelper.query(
-        CODECOVAGG_QUERY,
+      let codeCoverageAggregate = await QueryHelper.query(
+        CODECOV_AGGREGATE_QUERY,
         this.conn,
         true
       );
-      await this.deleteRecords("ApexCodeCoverageAggregate", codeCovAgg);
+      await this.deleteRecords("ApexCodeCoverageAggregate", codeCoverageAggregate);
       SFPLogger.log(`Cleared Coverage Results`, LoggerLevel.DEBUG, this.logger);
 
       SFPLogger.log(`Clearing Test Results`, LoggerLevel.DEBUG, this.logger);
       let testResults = await QueryHelper.query(
-        APEXTESTRESULT_QUERY,
+        APEX_TEST_RESULT_QUERY,
         this.conn,
         true
       );
@@ -50,18 +50,16 @@ export default class ClearTestResults {
         LoggerLevel.INFO,
         this.logger
       );
-      return true;
-   
   }
 
   private async deleteRecords(objectType: string, records: any[]) {
     if (records && records.length > 0) {
       let idsList: string[] = records.map((elem) => elem.Id);
       let errors = [];
-      for (let idsTodelete of chunkArray(2000, idsList)) {
+      for (let idsToDelete of chunkArray(2000, idsList)) {
         const deleteResults: any = await this.conn.tooling.destroy(
           objectType,
-          idsTodelete
+          idsToDelete
         );
         deleteResults.forEach((elem) => {
           if (!elem.success) {
