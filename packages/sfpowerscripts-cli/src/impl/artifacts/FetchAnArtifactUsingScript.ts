@@ -2,7 +2,7 @@ import SFPLogger, { COLOR_WARNING } from "@dxatscale/sfpowerscripts.core/lib/log
 import { fs, LoggerLevel } from "@salesforce/core";
 import child_process = require("child_process");
 import FetchAnArtifact from "./FetchAnArtifact";
-import defaultLinuxShell from "@dxatscale/sfpowerscripts.core/lib/utils/DefaultLinuxShell"
+import defaultShell from "@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell"
 
 
 export class FetchAnArtifactUsingScript implements FetchAnArtifact {
@@ -23,13 +23,13 @@ export class FetchAnArtifactUsingScript implements FetchAnArtifact {
 
       if (version) {
         if (process.platform !== "win32") {
-          cmd = `${defaultLinuxShell()} -e "${this.scriptPath}" "${packageName}" "${version}" "${artifactDirectory}"`;
+          cmd = `${defaultShell()} -e "${this.scriptPath}" "${packageName}" "${version}" "${artifactDirectory}"`;
         } else {
           cmd = `cmd.exe /c "${this.scriptPath}" "${packageName}" "${version}" "${artifactDirectory}"`;
         }
       } else {
         if (process.platform !== "win32") {
-          cmd = `${defaultLinuxShell()} -e ${this.scriptPath} ${packageName} ${artifactDirectory}`;
+          cmd = `${defaultShell()} -e ${this.scriptPath} ${packageName} ${artifactDirectory}`;
         } else {
           cmd = `cmd.exe /c ${this.scriptPath} ${packageName}  ${artifactDirectory}`;
         }
