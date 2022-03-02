@@ -11,6 +11,7 @@ import SFPLogger, { COLOR_ERROR, COLOR_HEADER,COLOR_KEY_MESSAGE, COLOR_SUCCESS, 
 import getFormattedTime from '../../../utils/GetFormattedTime';
 import simplegit from "simple-git";
 import GitIdentity from "../../../impl/git/GitIdentity";
+import defaultShell from '@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
@@ -346,7 +347,7 @@ export default class Promote extends SfpowerscriptsCommand {
   ) {
     let cmd: string;
     if (process.platform !== 'win32') {
-      cmd = `sh -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
+      cmd = `${defaultShell()} -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
     } else {
       cmd = `cmd.exe /c ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${this.flags.publishpromotedonly ? true : false}`;
     }

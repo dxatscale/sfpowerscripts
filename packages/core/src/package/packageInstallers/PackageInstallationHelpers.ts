@@ -2,6 +2,7 @@ import { Connection } from "@salesforce/core";
 import ExecuteCommand from "../../command/commandExecutor/ExecuteCommand";
 import SFPLogger, { Logger, LoggerLevel } from "../../logger/SFPLogger";
 import AssignPermissionSets from "../../permsets/AssignPermissionSets";
+import defaultShell from "../../utils/DefaultShell";
 
 export default class PackageInstallationHelpers {
   static  async executeScript(
@@ -12,7 +13,7 @@ export default class PackageInstallationHelpers {
   ) {
     let cmd: string;
     if (process.platform !== "win32") {
-      cmd = `sh -e ${script} ${sfdx_package} ${targetOrg}`;
+      cmd = `${defaultShell()} -e ${script} ${sfdx_package} ${targetOrg}`;
     } else {
       cmd = `cmd.exe /c ${script} ${sfdx_package} ${targetOrg}`;
     }
