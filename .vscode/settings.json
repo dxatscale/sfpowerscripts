@@ -1,16 +1,16 @@
 {
-     "files.exclude": {
-         "**/.git": true,
-         "**/.svn": true,
-         "**/.hg": true,
-         "**/CVS": true,
-         "**/.DS_Store": true,
-         "**/node_modules":true,
-         "packages/azpipelines/build":true,
-         "**/lib":true
-     },
-     "files.associations": {
-        "*.log": "vt100",
-     },
-     "editor.tabSize": 2
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/node_modules": true,
+        "packages/azpipelines/build": true,
+        "**/lib": true
+    },
+    "files.associations": {
+        "*.log": "vt100"
+    },
+    "editor.tabSize": 2
 }

@@ -10,6 +10,6 @@
     "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
     "waitTimeFlagDescription": "Wait time for command to finish in minutes",
     "executorCountFlagDescription": "Number of parallel package task schedulors",
-    "branchFlagDescription":"The git branch that this build is triggered on, Useful for metrics and general identification purposes",
-    "tagFlagDescription":"Tag the build with a label, useful to identify in metrics"
+    "branchFlagDescription": "The git branch that this build is triggered on, Useful for metrics and general identification purposes",
+    "tagFlagDescription": "Tag the build with a label, useful to identify in metrics"
 }

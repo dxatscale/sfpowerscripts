@@ -1,127 +1,130 @@
-import { Connection } from "@salesforce/core";
-import Component from "./Component";
-import DependencyViolation from "./DependencyViolation";
+import { Connection } from '@salesforce/core';
+import Component from './Component';
+import DependencyViolation from './DependencyViolation';
 import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
-import PackageManifest from "../package/PackageManifest";
-import ProjectConfig from "../project/ProjectConfig";
-import * as fs from "fs-extra";
-import InstalledPackagesFetcher from "../package/packageQuery/InstalledPackagesFetcher";
-import DependencyFetcher from "./DependencyFetcher";
+import PackageManifest from '../package/PackageManifest';
+import ProjectConfig from '../project/ProjectConfig';
+import * as fs from 'fs-extra';
+import InstalledPackagesFetcher from '../package/packageQuery/InstalledPackagesFetcher';
+import DependencyFetcher from './DependencyFetcher';
 
-const REGISTRY_SUPPORTED_TYPES = Object.values(registry.types).map(type => type.name);
+const REGISTRY_SUPPORTED_TYPES = Object.values(registry.types).map((type) => type.name);
 
 export default class DependencyAnalysis {
-  constructor(
-    private conn: Connection,
-    private components: Component[],
-  ) {}
+    constructor(private conn: Connection, private components: Component[]) {}
 
-  async exec(): Promise<DependencyViolation[]> {
-    const violations: DependencyViolation[] = [];
+    async exec(): Promise<DependencyViolation[]> {
+        const violations: DependencyViolation[] = [];
 
-    const projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+        const projectConfig = ProjectConfig.getSFDXPackageManifest(null);
 
-    const managedPackages = await new InstalledPackagesFetcher(this.conn).fetchManagedPackages();
-    const managedPackageNamespaces = managedPackages.map(pkg => pkg.namespacePrefix);
+        const managedPackages = await new InstalledPackagesFetcher(this.conn).fetchManagedPackages();
+        const managedPackageNamespaces = managedPackages.map((pkg) => pkg.namespacePrefix);
 
-    const componentsWithDependencies = await new DependencyFetcher(this.conn, this.components).fetch();
-    for (const component of componentsWithDependencies) {
-
-      component.dependencies = component.dependencies.filter(dependency => {
-        const isComponentInManagedPackage = managedPackageNamespaces.find(namespace => namespace === dependency.namespace ) ? true : false;
-        // components belonging to managed package cannot be dependency violations
-        // component type must be in registry otherwise ComponentSet will fail
-        return REGISTRY_SUPPORTED_TYPES.includes(dependency.type) && !isComponentInManagedPackage;
-      });
-
-
-      if (component.dependencies.length > 0) {
-        await this.populatePackageFieldsForDependencies(component.dependencies, projectConfig);
-
-        // Filter out non-source-backed components
-        const sourceBackedDependencies  = component.dependencies.filter(cmp => cmp.files.length > 0);
-
-        // search for violations
-        sourceBackedDependencies.forEach(cmp => {
-          // check for misordered packages
-          if (component.indexOfPackage < cmp.indexOfPackage) {
-            violations.push({
-              component: component,
-              dependency: cmp,
-              description: `Invalid Dependency: ${component.fullName} is dependent on ${cmp.fullName} found in ${cmp.package}`
+        const componentsWithDependencies = await new DependencyFetcher(this.conn, this.components).fetch();
+        for (const component of componentsWithDependencies) {
+            component.dependencies = component.dependencies.filter((dependency) => {
+                const isComponentInManagedPackage = managedPackageNamespaces.find(
+                    (namespace) => namespace === dependency.namespace
+                )
+                    ? true
+                    : false;
+                // components belonging to managed package cannot be dependency violations
+                // component type must be in registry otherwise ComponentSet will fail
+                return REGISTRY_SUPPORTED_TYPES.includes(dependency.type) && !isComponentInManagedPackage;
             });
-          }
 
-          // check for missing dependency for unlocked package
-          if (
-            component.packageType === "Unlocked" &&
-            cmp.packageType === "Unlocked" &&
-            component.package !== cmp.package
-          ) {
-            const isDependencyDefined = projectConfig.packageDirectories[component.indexOfPackage].dependencies?.find(dependency => {
-              const packageName: string = dependency.package.split("@")[0];
-              return packageName === cmp.package;
-            }) ? true : false
+            if (component.dependencies.length > 0) {
+                await this.populatePackageFieldsForDependencies(component.dependencies, projectConfig);
 
-            if (!isDependencyDefined) {
-              violations.push({
-                component: component,
-                dependency: cmp,
-                description: `Missing Dependency: ${component.package} unlocked package is dependent on ${cmp.package}`
-              });
+                // Filter out non-source-backed components
+                const sourceBackedDependencies = component.dependencies.filter((cmp) => cmp.files.length > 0);
+
+                // search for violations
+                sourceBackedDependencies.forEach((cmp) => {
+                    // check for misordered packages
+                    if (component.indexOfPackage < cmp.indexOfPackage) {
+                        violations.push({
+                            component: component,
+                            dependency: cmp,
+                            description: `Invalid Dependency: ${component.fullName} is dependent on ${cmp.fullName} found in ${cmp.package}`,
+                        });
+                    }
+
+                    // check for missing dependency for unlocked package
+                    if (
+                        component.packageType === 'Unlocked' &&
+                        cmp.packageType === 'Unlocked' &&
+                        component.package !== cmp.package
+                    ) {
+                        const isDependencyDefined = projectConfig.packageDirectories[
+                            component.indexOfPackage
+                        ].dependencies?.find((dependency) => {
+                            const packageName: string = dependency.package.split('@')[0];
+                            return packageName === cmp.package;
+                        })
+                            ? true
+                            : false;
+
+                        if (!isDependencyDefined) {
+                            violations.push({
+                                component: component,
+                                dependency: cmp,
+                                description: `Missing Dependency: ${component.package} unlocked package is dependent on ${cmp.package}`,
+                            });
+                        }
+                    }
+                });
+            } else {
+                // component has no dependencies
+                continue;
             }
-          }
-        });
-      } else {
-        // component has no dependencies
-        continue;
-      }
+        }
+
+        return violations;
     }
 
-    return violations;
-  }
+    /**
+     * Determine the package that dependencies belong to and populate package fields
+     * @param dependencies
+     * @param projectConfig
+     */
+    private async populatePackageFieldsForDependencies(dependencies: Component[], projectConfig: any) {
+        const cmps = dependencies.map((cmp) => {
+            return {
+                fullName: cmp.fullName,
+                type: cmp.type,
+            };
+        });
 
-  /**
-   * Determine the package that dependencies belong to and populate package fields
-   * @param dependencies
-   * @param projectConfig
-   */
-  private async populatePackageFieldsForDependencies(dependencies: Component[], projectConfig: any) {
-    const cmps = dependencies.map(cmp => {
-      return {
-        fullName: cmp.fullName,
-        type: cmp.type
-      };
-    });
+        const packageManifest = PackageManifest.createFromScratch(cmps, '50.0');
 
-    const packageManifest = PackageManifest.createFromScratch(
-      cmps,
-      "50.0"
-    );
+        fs.writeFileSync(`.sfpowerscripts/package.xml`, packageManifest.manifestXml);
 
-    fs.writeFileSync(`.sfpowerscripts/package.xml`, packageManifest.manifestXml);
+        const componentSet: ComponentSet = await ComponentSet.fromManifest({
+            manifestPath: '.sfpowerscripts/package.xml',
+            resolveSourcePaths: projectConfig.packageDirectories.map((pkg) => pkg.path),
+        });
 
-    const componentSet: ComponentSet = await ComponentSet.fromManifest(
-      {
-        manifestPath: '.sfpowerscripts/package.xml',
-        resolveSourcePaths: projectConfig.packageDirectories.map(pkg => pkg.path)
-      }
-    );
+        dependencies.forEach((cmp) => {
+            const componentFilenames = componentSet.getComponentFilenamesByNameAndType({
+                fullName: cmp.fullName,
+                type: cmp.type,
+            });
 
-    dependencies.forEach(cmp => {
-      const componentFilenames = componentSet.getComponentFilenamesByNameAndType({ fullName: cmp.fullName, type: cmp.type });
+            cmp.files = componentFilenames;
 
-      cmp.files = componentFilenames;
+            const indexOfPackage = projectConfig.packageDirectories.findIndex((pkg) =>
+                componentFilenames.find((file) => file.includes(pkg.path))
+            );
 
-      const indexOfPackage = projectConfig.packageDirectories.findIndex(pkg => componentFilenames.find(file => file.includes(pkg.path)));
+            cmp.indexOfPackage = indexOfPackage;
 
-      cmp.indexOfPackage = indexOfPackage;
-
-      const packageName = projectConfig.packageDirectories[indexOfPackage]?.package;
-      if (packageName) {
-        cmp.package = packageName;
-        cmp.packageType = ProjectConfig.getPackageType(projectConfig, packageName);
-      }
-    });
-  }
+            const packageName = projectConfig.packageDirectories[indexOfPackage]?.package;
+            if (packageName) {
+                cmp.package = packageName;
+                cmp.packageType = ProjectConfig.getPackageType(projectConfig, packageName);
+            }
+        });
+    }
 }
