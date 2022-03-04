@@ -1,12 +1,11 @@
-
 export type PackageInstallationResult = {
-  result: PackageInstallationStatus
-  deploy_id?:string;
-  message?:string;
-}
+    result: PackageInstallationStatus;
+    deploy_id?: string;
+    message?: string;
+};
 
 export enum PackageInstallationStatus {
-  Skipped,
-  Succeeded,
-  Failed
+    Skipped,
+    Succeeded,
+    Failed,
 }

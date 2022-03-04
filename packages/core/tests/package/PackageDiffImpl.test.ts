@@ -1,153 +1,152 @@
-import { jest, expect } from "@jest/globals";
-import fs = require("fs");
-import { ConsoleLogger } from "../../src/logger/SFPLogger";
-import PackageDiffImpl from "../../src/package/PackageDiffImpl";
-import ProjectConfig from "../../src/project/ProjectConfig";
+import { jest, expect } from '@jest/globals';
+import fs = require('fs');
+import { ConsoleLogger } from '../../src/logger/SFPLogger';
+import PackageDiffImpl from '../../src/package/PackageDiffImpl';
+import ProjectConfig from '../../src/project/ProjectConfig';
 
 let gitTags: string[] = [];
 let gitDiff: string[] = [];
 let gitShow: string = '';
 
-jest.mock("../../src/git/Git", () => {
-  class Git {
-    diff = jest.fn().mockReturnValue(gitDiff);
-    show = jest.fn().mockReturnValue(gitShow);
-  }
+jest.mock('../../src/git/Git', () => {
+    class Git {
+        diff = jest.fn().mockReturnValue(gitDiff);
+        show = jest.fn().mockReturnValue(gitShow);
+    }
 
-  return Git;
+    return Git;
 });
 
-jest.mock("../../src/git/GitTags", () => {
-  class GitTags {
-    async listTagsOnBranch(): Promise<string[]>{
-      return gitTags;
-    };
-  }
+jest.mock('../../src/git/GitTags', () => {
+    class GitTags {
+        async listTagsOnBranch(): Promise<string[]> {
+            return gitTags;
+        }
+    }
 
-  return GitTags
+    return GitTags;
 });
 
 let ignoreFilterResult: string[] = [];
-jest.mock("../../src/ignore/IgnoreFiles", () => {
-  class IgnoreFiles {
+jest.mock('../../src/ignore/IgnoreFiles', () => {
+    class IgnoreFiles {
+        filter = jest.fn().mockReturnValue(ignoreFilterResult);
+    }
 
-    filter = jest.fn().mockReturnValue(ignoreFilterResult);
-  }
-
-  return IgnoreFiles;
+    return IgnoreFiles;
 });
 
-describe("Determines whether a given package has changed", () => {
+describe('Determines whether a given package has changed', () => {
+    beforeEach(() => {
+        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXPackageManifest');
+        projectConfigMock.mockImplementation(() => {
+            return JSON.parse(packageConfigJson);
+        });
 
-  beforeEach( () => {
-    const projectConfigMock = jest.spyOn(ProjectConfig, "getSFDXPackageManifest");
-    projectConfigMock.mockImplementation( () => {
-      return JSON.parse(packageConfigJson);
+        const fsMock = jest.spyOn(fs, 'readFileSync');
+        fsMock.mockImplementationOnce(() => {
+            return '**README.md';
+        });
     });
 
-    const fsMock = jest.spyOn(fs, "readFileSync");
-    fsMock.mockImplementationOnce( () => {
-      return "**README.md";
+    it('should throw error if package does not exist', () => {
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(
+            new ConsoleLogger(),
+            'UNKNOWN-PACKAGE',
+            null,
+            null,
+            null
+        );
+        expect(() => packageDiffImpl.exec()).rejects.toThrowError();
     });
-  });
 
-  it("should throw error if package does not exist", () => {
-    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),"UNKNOWN-PACKAGE", null, null, null);
-    expect(() => packageDiffImpl.exec()).rejects.toThrowError();
-  });
+    it('should return true if package metadata has changed', async () => {
+        gitTags = coreTags;
+        gitDiff = [`packages/domains/core/X/Y/Z/A-meta.xml`];
+        // No change in package config
+        gitShow = packageConfigJson;
 
-  it("should return true if package metadata has changed", async () => {
-    gitTags = coreTags;
-    gitDiff = [`packages/domains/core/X/Y/Z/A-meta.xml`];
-    // No change in package config
-    gitShow = packageConfigJson;
+        // Assume passthrough filter for ignore
+        ignoreFilterResult = gitDiff;
 
-    // Assume passthrough filter for ignore
-    ignoreFilterResult = gitDiff;
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null);
+        let result = await packageDiffImpl.exec();
+        expect(result.isToBeBuilt).toEqual(true);
+        expect(result.reason).toEqual(`Found change(s) in package`);
+    });
 
-    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),"core", null, null);
-    let result =  await packageDiffImpl.exec();
-    expect(result.isToBeBuilt).toEqual(true);
-    expect(result.reason).toEqual(`Found change(s) in package`);
+    it('should return true if package descriptor has changed', async () => {
+        gitTags = coreTags;
+        gitDiff = ['sfdx-project.json'];
+        gitShow = packageDescriptorChange;
 
-  });
+        // Assume passthrough filter for ignore
+        ignoreFilterResult = gitDiff;
 
-  it("should return true if package descriptor has changed", async () => {
-    gitTags = coreTags;
-    gitDiff = ['sfdx-project.json'];
-    gitShow = packageDescriptorChange;
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null);
+        let result = await packageDiffImpl.exec();
+        expect(result.isToBeBuilt).toEqual(true);
+        expect(result.reason).toEqual(`Package Descriptor Changed`);
+    });
 
-    // Assume passthrough filter for ignore
-    ignoreFilterResult = gitDiff;
+    it('should return false if only config file has changed', async () => {
+        gitDiff = ['config/project-scratch-def.json'];
 
-    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),"core", null, null);
-    let result = await packageDiffImpl.exec();
-    expect(result.isToBeBuilt).toEqual(true);
-    expect(result.reason).toEqual(`Package Descriptor Changed`);
-  });
+        // No change in package config
+        gitShow = packageConfigJson;
 
-  it("should return false if only config file has changed", async () => {
-    gitDiff = ['config/project-scratch-def.json']
+        // Assume passthrough filter for ignore
+        ignoreFilterResult = gitDiff;
 
-    // No change in package config
-    gitShow = packageConfigJson;
+        gitTags = coreTags;
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null);
+        let result = await packageDiffImpl.exec();
+        expect(result.isToBeBuilt).toEqual(false);
+        expect(result.reason).toEqual(`No changes found`);
+    });
 
-    // Assume passthrough filter for ignore
-    ignoreFilterResult = gitDiff;
+    it('should return true if package does not have any tags', async () => {
+        gitTags = [];
 
-    gitTags = coreTags;
-    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),"core", null, null);
-    let result =  await packageDiffImpl.exec();
-    expect(result.isToBeBuilt).toEqual(false);
-    expect(result.reason).toEqual(`No changes found`);
-  });
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null);
+        let result = await packageDiffImpl.exec();
+        expect(result.isToBeBuilt).toEqual(true);
+        expect(result.reason).toEqual(`Previous version not found`);
+    });
 
-  it("should return true if package does not have any tags", async () => {
-    gitTags = [];
+    it('should return true if packageToCommits is an empty object', async () => {
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, {});
+        let result = await packageDiffImpl.exec();
+        expect(result.isToBeBuilt).toEqual(true);
+        expect(result.reason).toEqual(`Previous version not found`);
+    });
 
-    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),"core", null, null);
-    let result =  await packageDiffImpl.exec();
-    expect(result.isToBeBuilt).toEqual(true);
-    expect(result.reason).toEqual(`Previous version not found`);
-  });
+    it('should return false if package metadata and package config has not changed', async () => {
+        gitTags = coreTags;
+        gitDiff = [`packages/access-mgmt/X/Y/Z/A-meta.xml`, `packages/bi/X/Y/Z/B-meta.xml`];
+        // No change in package config
+        gitShow = packageConfigJson;
 
-  it("should return true if packageToCommits is an empty object", async() => {
-    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),"core", null, {});
-    let result =  await packageDiffImpl.exec();
-    expect(result.isToBeBuilt).toEqual(true);
-    expect(result.reason).toEqual(`Previous version not found`);
-  });
+        // Assume passthrough filter for ignore
+        ignoreFilterResult = gitDiff;
 
-  it("should return false if package metadata and package config has not changed", async () => {
-    gitTags = coreTags;
-    gitDiff = [
-      `packages/access-mgmt/X/Y/Z/A-meta.xml`,
-      `packages/bi/X/Y/Z/B-meta.xml`
-    ];
-    // No change in package config
-    gitShow = packageConfigJson;
-
-    // Assume passthrough filter for ignore
-    ignoreFilterResult = gitDiff;
-
-    let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(),"core", null, null);
-    let result = await packageDiffImpl.exec();
-    expect(result.isToBeBuilt).toEqual(false);
-    expect(result.reason).toEqual(`No changes found`);
-  });
-
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null);
+        let result = await packageDiffImpl.exec();
+        expect(result.isToBeBuilt).toEqual(false);
+        expect(result.reason).toEqual(`No changes found`);
+    });
 });
 
 const coreTags = [
-`core_v1.0.0.2`,
-`core_v1.0.0.3`,
-`core_v1.0.0.5`,
-`core_v1.0.0.6`,
-`core_v1.0.0.7`,
-`core_v1.0.0.8`,
-`core_v1.0.0.9`,
-`core_v1.0.0.10`
-]
+    `core_v1.0.0.2`,
+    `core_v1.0.0.3`,
+    `core_v1.0.0.5`,
+    `core_v1.0.0.6`,
+    `core_v1.0.0.7`,
+    `core_v1.0.0.8`,
+    `core_v1.0.0.9`,
+    `core_v1.0.0.10`,
+];
 
 const packageConfigJson: string = `
 {

@@ -1,115 +1,115 @@
-import { AuthInfo, AuthFields, Org, Connection, sfdc } from "@salesforce/core";
-import extractDomainFromUrl from "../utils/extractDomainFromUrl";
-import { convertAliasToUsername } from "../utils/AliasList";
-import SFPLogger, { LoggerLevel } from "../logger/SFPLogger";
-import ScratchOrgInfoFetcher from "./ScratchOrgInfoFetcher";
-import OrganizationFetcher from "./OrganizationFetcher";
+import { AuthInfo, AuthFields, Org, Connection, sfdc } from '@salesforce/core';
+import extractDomainFromUrl from '../utils/extractDomainFromUrl';
+import { convertAliasToUsername } from '../utils/AliasList';
+import SFPLogger, { LoggerLevel } from '../logger/SFPLogger';
+import ScratchOrgInfoFetcher from './ScratchOrgInfoFetcher';
+import OrganizationFetcher from './OrganizationFetcher';
 
 export default class OrgDetailsFetcher {
+    private static usernamesToOrgDetails: { [P: string]: OrgDetails } = {};
 
+    constructor(private username: string) {}
 
-  private static usernamesToOrgDetails: {[P: string]: OrgDetails} = {};
+    public async getOrgDetails(): Promise<OrgDetails> {
+        //Convert alias to username
+        this.username = await convertAliasToUsername(this.username);
 
-  constructor(private username: string) {
-   
-  }
+        if (OrgDetailsFetcher.usernamesToOrgDetails[this.username])
+            return OrgDetailsFetcher.usernamesToOrgDetails[this.username];
 
-  public async getOrgDetails(): Promise<OrgDetails> {
+        const authInfo = await AuthInfo.create({ username: this.username });
 
-    //Convert alias to username
-    this.username = await convertAliasToUsername(this.username);
+        let authInfoFields = authInfo.getFields();
 
-    if (OrgDetailsFetcher.usernamesToOrgDetails[this.username])
-      return OrgDetailsFetcher.usernamesToOrgDetails[this.username];
+        let sfdxAuthUrl: string;
+        try {
+            sfdxAuthUrl = authInfo.getSfdxAuthUrl();
+        } catch (error) {
+            SFPLogger.log(`Unable to get SFDX Auth URL: ${error.message}`, LoggerLevel.TRACE, null);
+        }
 
-    const authInfo = await AuthInfo.create({ username: this.username });
+        const isScratchOrg = authInfoFields.devHubUsername;
+        let scratchOrgInfo = isScratchOrg
+            ? await this.getScratchOrgDetails(authInfoFields.orgId, authInfo)
+            : ({} as ScratchOrgDetails);
 
-    let authInfoFields = authInfo.getFields();
+        const organization = await this.getOrganization(authInfo);
 
-    let sfdxAuthUrl: string;
-    try {
-      sfdxAuthUrl = authInfo.getSfdxAuthUrl();
-    } catch (error) {
-      SFPLogger.log(`Unable to get SFDX Auth URL: ${error.message}`, LoggerLevel.TRACE, null);
+        OrgDetailsFetcher.usernamesToOrgDetails[this.username] = {
+            sfdxAuthUrl: sfdxAuthUrl,
+            ...authInfoFields,
+            ...scratchOrgInfo,
+            ...organization,
+        };
+
+        return OrgDetailsFetcher.usernamesToOrgDetails[this.username];
     }
 
-    const isScratchOrg = authInfoFields.devHubUsername;
-    let scratchOrgInfo = isScratchOrg ? await this.getScratchOrgDetails(authInfoFields.orgId, authInfo) : {} as ScratchOrgDetails;
+    public async getOrgDomainUrl(): Promise<string> {
+        await this.getOrgDetails();
 
-    const organization = await this.getOrganization(authInfo);
-
-    OrgDetailsFetcher.usernamesToOrgDetails[this.username] = {
-      sfdxAuthUrl: sfdxAuthUrl,
-      ...authInfoFields,
-      ...scratchOrgInfo,
-      ...organization
+        if (OrgDetailsFetcher.usernamesToOrgDetails[this.username].instanceUrl) {
+            let domain = extractDomainFromUrl(OrgDetailsFetcher.usernamesToOrgDetails[this.username].instanceUrl);
+            if (domain) return domain;
+            else return '';
+        } else {
+            return '';
+        }
     }
 
-    return OrgDetailsFetcher.usernamesToOrgDetails[this.username];
-  }
+    private async getScratchOrgDetails(orgId: string, authInfo: AuthInfo): Promise<ScratchOrgDetails> {
+        const hubOrg: Org = await (
+            await Org.create({
+                connection: await Connection.create({
+                    authInfo: authInfo,
+                }),
+            })
+        ).getDevHubOrg();
 
-  public async getOrgDomainUrl(): Promise<string> {
-    await this.getOrgDetails();
+        let scratchOrgInfo = (
+            await new ScratchOrgInfoFetcher(hubOrg).getScratchOrgInfoByOrgId([sfdc.trimTo15(orgId)])
+        )[0];
 
-    if (OrgDetailsFetcher.usernamesToOrgDetails[this.username].instanceUrl) {
-      let domain = extractDomainFromUrl(OrgDetailsFetcher.usernamesToOrgDetails[this.username].instanceUrl);
-      if (domain) return domain;
-      else return "";
-    } else {
-      return "";
+        if (scratchOrgInfo) {
+            return {
+                status: scratchOrgInfo.Status,
+            };
+        } else {
+            throw new Error(
+                `No information for scratch org with ID ${sfdc.trimTo15(
+                    orgId
+                )} found in Dev Hub ${hubOrg.getUsername()}`
+            );
+        }
     }
-  }
 
-  private async getScratchOrgDetails(orgId: string, authInfo: AuthInfo): Promise<ScratchOrgDetails> {
+    private async getOrganization(authInfo: AuthInfo) {
+        const connection = await Connection.create({
+            authInfo: authInfo,
+        });
 
-    const hubOrg: Org = await (
-      await Org.create({
-        connection: await Connection.create({
-          authInfo: authInfo,
-        }),
-      })
-    ).getDevHubOrg();
+        const results = await new OrganizationFetcher(connection).fetch();
 
-    let scratchOrgInfo = (
-      await new ScratchOrgInfoFetcher(hubOrg).getScratchOrgInfoByOrgId([sfdc.trimTo15(orgId)])
-    )[0];
-
-    if (scratchOrgInfo) {
-      return {
-        status: scratchOrgInfo.Status
-      }
-    } else {
-      throw new Error(`No information for scratch org with ID ${sfdc.trimTo15(orgId)} found in Dev Hub ${hubOrg.getUsername()}`);
+        if (results[0]) {
+            return {
+                isSandbox: results[0].IsSandbox,
+                organizationType: results[0].OrganizationType,
+            };
+        } else {
+            throw new Error(`No Organization records found for ${connection.getUsername()}`);
+        }
     }
-  }
-
-  private async getOrganization(authInfo: AuthInfo) {
-    const connection = await Connection.create({
-      authInfo: authInfo
-    });
-
-    const results = await new OrganizationFetcher(connection).fetch();
-
-    if (results[0]) {
-      return {
-        isSandbox: results[0].IsSandbox,
-        organizationType: results[0].OrganizationType
-      }
-    } else {
-      throw new Error(`No Organization records found for ${connection.getUsername()}`);
-    }
-  }
 }
 
 export interface OrgDetails extends ScratchOrgDetails, AuthFields, Organization {
-  sfdxAuthUrl: string;
-};
+    sfdxAuthUrl: string;
+}
 
 export interface ScratchOrgDetails {
-  status: string;
+    status: string;
 }
 
 export interface Organization {
-  isSandbox: boolean;
-  organizationType: string;
+    isSandbox: boolean;
+    organizationType: string;
 }
