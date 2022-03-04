@@ -1,6 +1,9 @@
 {
     "name": "sfpowerscripts",
     "private": true,
+    "scripts": {
+        "format": "npx prettier --write ."
+    },
     "devDependencies": {
         "@commitlint/cli": "^15.0.0",
         "@commitlint/config-conventional": "^15.0.0",
