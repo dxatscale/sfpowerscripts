@@ -1,15 +1,15 @@
-import { SfdxCommand } from "@salesforce/command";
-import { OutputFlags } from "@oclif/parser";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
-import * as rimraf from "rimraf";
-import ProjectValidation from "./ProjectValidation";
-import DemoReelPlayer from "./impl/demoreelplayer/DemoReelPlayer";
-import { fs } from "@salesforce/core";
+import { SfdxCommand } from '@salesforce/command';
+import { OutputFlags } from '@oclif/parser';
+import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
+import * as rimraf from 'rimraf';
+import ProjectValidation from './ProjectValidation';
+import DemoReelPlayer from './impl/demoreelplayer/DemoReelPlayer';
+import { fs } from '@salesforce/core';
 import SFPLogger, {
-  COLOR_HEADER,
-  ConsoleLogger,
-  LoggerLevel,
-} from "@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger";
+    COLOR_HEADER,
+    ConsoleLogger,
+    LoggerLevel,
+} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -17,197 +17,178 @@ import SFPLogger, {
  * @extends SfdxCommand
  */
 export default abstract class SfpowerscriptsCommand extends SfdxCommand {
-  /**
-   * List of recognised CLI inputs that are substituted with their
-   * corresponding environment variable at runtime
-   */
-  private readonly sfpowerscripts_variable_dictionary: string[] = [
-    "sfpowerscripts_incremented_project_version",
-    "sfpowerscripts_artifact_directory",
-    "sfpowerscripts_artifact_metadata_directory",
-    "sfpowerscripts_package_version_id",
-    "sfpowerscripts_package_version_number",
-    "sfpowerscripts_pmd_output_path",
-    "sfpowerscripts_scratchorg_username",
-    "sfpowerscripts_installsourcepackage_deployment_id",
-  ];
+    /**
+     * List of recognised CLI inputs that are substituted with their
+     * corresponding environment variable at runtime
+     */
+    private readonly sfpowerscripts_variable_dictionary: string[] = [
+        'sfpowerscripts_incremented_project_version',
+        'sfpowerscripts_artifact_directory',
+        'sfpowerscripts_artifact_metadata_directory',
+        'sfpowerscripts_package_version_id',
+        'sfpowerscripts_package_version_number',
+        'sfpowerscripts_pmd_output_path',
+        'sfpowerscripts_scratchorg_username',
+        'sfpowerscripts_installsourcepackage_deployment_id',
+    ];
 
-  private isSfpowerkitFound: boolean;
-  private sfpowerscriptsConfig;
-  private isSfdmuFound: boolean;
-  /**
-   * Command run code goes here
-   */
-  abstract execute(): Promise<any>;
+    private isSfpowerkitFound: boolean;
+    private sfpowerscriptsConfig;
+    private isSfdmuFound: boolean;
+    /**
+     * Command run code goes here
+     */
+    abstract execute(): Promise<any>;
 
-  /**
-   * Entry point of all commands
-   */
-  async run(): Promise<any> {
-    //Always enable color by default
-    if (process.env.SFPOWERSCRIPTS_NOCOLOR) SFPLogger.disableColor();
-    else SFPLogger.enableColor();
+    /**
+     * Entry point of all commands
+     */
+    async run(): Promise<any> {
+        //Always enable color by default
+        if (process.env.SFPOWERSCRIPTS_NOCOLOR) SFPLogger.disableColor();
+        else SFPLogger.enableColor();
 
-    this.setLogLevel();
+        this.setLogLevel();
 
-    // Setting the environment variable for disabling sfpowerkit header
+        // Setting the environment variable for disabling sfpowerkit header
 
-    if (SFPLogger.logLevel > LoggerLevel.DEBUG )
-     process.env.SFPOWERKIT_NOHEADER = "true";
+        if (SFPLogger.logLevel > LoggerLevel.DEBUG) process.env.SFPOWERKIT_NOHEADER = 'true';
 
-
-    //If demo mode, display demo reel and return
-    if (process.env.SFPOWERSCRIPTS_DEMO_MODE) {
-      await this.executeDemoMode();
-      return;
-    }
-
-    this.loadSfpowerscriptsVariables(this.flags);
-
-    this.validateFlags();
-
-    if (this.statics.requiresProject) {
-      let projectValidation = new ProjectValidation();
-      projectValidation.validateSFDXProjectJSON();
-      projectValidation.validatePackageBuildNumbers();
-    }
-
-    //Clear temp directory before every run
-    rimraf.sync(".sfpowerscripts");
-
-    //Initialise StatsD
-    this.initializeStatsD();
-
-    //Check sfpowerkit installation
-    for (const plugin of this.config.plugins) {
-      if (plugin.name == "sfpowerkit") {
-        this.isSfpowerkitFound = true;
-      } else if (plugin.name == "sfdmu") {
-        this.isSfdmuFound = true;
-      } else if (plugin.name == "@dxatscale/sfpowerscripts") {
-        this.sfpowerscriptsConfig = plugin;
-      }
-    }
-
-    SFPLogger.log(
-      COLOR_HEADER(
-        `-------------------------------------------------------------------------------------------`
-      )
-    );
-    SFPLogger.log(
-      COLOR_HEADER(
-        `sfpowerscripts  -- The DX@Scale CI/CD Orchestrator -Version:${this.sfpowerscriptsConfig.version} -Release:${this.sfpowerscriptsConfig.pjson.release}`
-      )
-    );
-
-    SFPLogger.log(
-      COLOR_HEADER(
-        `-------------------------------------------------------------------------------------------`
-      )
-    );
-
-    if (!this.isSfpowerkitFound) {
-      throw new Error(
-        "sfpowerscripts require sfpowerkit to function, please install sfpowerkit and try again!"
-      );
-    }
-
-    if (!process.env.DISABLE_SFDMU_CHECK) {
-      if (!this.isSfdmuFound) {
-        throw new Error(
-          "sfpowerscripts require sfdmu to function, please install sfdmu and try again!"
-        );
-      }
-    }
-
-    // Execute command run code
-    await this.execute();
-  }
-
-  /**
-   * Optional method for programmatically validating flags.
-   * Useful for complex flag behaviours that cannot be adequately defined using flag props
-   * e.g. making a flag required only if another flag that it depends on is passed
-   */
-  protected validateFlags(): void {}
-
-  /**
-   * Substitutes CLI inputs, that match the variable dictionary, with
-   * the corresponding environment variable
-   *
-   * @param flags
-   */
-  private loadSfpowerscriptsVariables(flags: OutputFlags<any>): void {
-    require("dotenv").config();
-
-    for (let flag in flags) {
-      for (let sfpowerscripts_variable of this
-        .sfpowerscripts_variable_dictionary) {
-        if (
-          typeof flags[flag] === "string" &&
-          flags[flag].includes(sfpowerscripts_variable)
-        ) {
-          console.log(
-            `Substituting ${flags[flag]} with ${process.env[flags[flag]]}`
-          );
-          flags[flag] = process.env[flags[flag]];
-          break;
+        //If demo mode, display demo reel and return
+        if (process.env.SFPOWERSCRIPTS_DEMO_MODE) {
+            await this.executeDemoMode();
+            return;
         }
-      }
-    }
-  }
 
-  private initializeStatsD() {
-    if (process.env.SFPOWERSCRIPTS_STATSD) {
-      SFPStatsSender.initialize(
-        process.env.SFPOWERSCRIPTS_STATSD_PORT,
-        process.env.SFPOWERSCRIPTS_STATSD_HOST,
-        process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL
-      );
-    }
-    if (process.env.SFPOWERSCRIPTS_DATADOG) {
-      SFPStatsSender.initializeNativeMetrics(
-        "DataDog",
-        process.env.SFPOWERSCRIPTS_DATADOG_HOST,
-        process.env.SFPOWERSCRIPTS_DATADOG_API_KEY,
-        new ConsoleLogger()
-      );
-    } else if (process.env.SFPOWERSCRIPTS_NEWRELIC) {
-      SFPStatsSender.initializeNativeMetrics(
-        "NewRelic",
-        null,
-        process.env.SFPOWERSCRIPTS_NEWRELIC_API_KEY,
-        new ConsoleLogger()
-      );
+        this.loadSfpowerscriptsVariables(this.flags);
+
+        this.validateFlags();
+
+        if (this.statics.requiresProject) {
+            let projectValidation = new ProjectValidation();
+            projectValidation.validateSFDXProjectJSON();
+            projectValidation.validatePackageBuildNumbers();
+        }
+
+        //Clear temp directory before every run
+        rimraf.sync('.sfpowerscripts');
+
+        //Initialise StatsD
+        this.initializeStatsD();
+
+        //Check sfpowerkit installation
+        for (const plugin of this.config.plugins) {
+            if (plugin.name == 'sfpowerkit') {
+                this.isSfpowerkitFound = true;
+            } else if (plugin.name == 'sfdmu') {
+                this.isSfdmuFound = true;
+            } else if (plugin.name == '@dxatscale/sfpowerscripts') {
+                this.sfpowerscriptsConfig = plugin;
+            }
+        }
+
+        SFPLogger.log(
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+        );
+        SFPLogger.log(
+            COLOR_HEADER(
+                `sfpowerscripts  -- The DX@Scale CI/CD Orchestrator -Version:${this.sfpowerscriptsConfig.version} -Release:${this.sfpowerscriptsConfig.pjson.release}`
+            )
+        );
+
+        SFPLogger.log(
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+        );
+
+        if (!this.isSfpowerkitFound) {
+            throw new Error('sfpowerscripts require sfpowerkit to function, please install sfpowerkit and try again!');
+        }
+
+        if (!process.env.DISABLE_SFDMU_CHECK) {
+            if (!this.isSfdmuFound) {
+                throw new Error('sfpowerscripts require sfdmu to function, please install sfdmu and try again!');
+            }
+        }
+
+        // Execute command run code
+        await this.execute();
     }
 
-    SFPStatsSender.initializeLogBasedMetrics();
-  }
+    /**
+     * Optional method for programmatically validating flags.
+     * Useful for complex flag behaviours that cannot be adequately defined using flag props
+     * e.g. making a flag required only if another flag that it depends on is passed
+     */
+    protected validateFlags(): void {}
 
-  private setLogLevel() {
-    if (this.flags.loglevel === "trace" || this.flags.loglevel === "TRACE")
-      SFPLogger.logLevel = LoggerLevel.TRACE;
-    else if (this.flags.loglevel === "debug" || this.flags.loglevel === "DEBUG")
-      SFPLogger.logLevel = LoggerLevel.DEBUG;
-    else if (this.flags.loglevel === "info" || this.flags.loglevel === "INFO")
-      SFPLogger.logLevel = LoggerLevel.INFO;
-    else if (this.flags.loglevel === "warn" || this.flags.loglevel === "WARN")
-      SFPLogger.logLevel = LoggerLevel.WARN;
-    else if (this.flags.loglevel === "error" || this.flags.loglevel === "ERROR")
-      SFPLogger.logLevel = LoggerLevel.ERROR;
-    else if (this.flags.loglevel === "fatal" || this.flags.loglevel === "FATAL")
-      SFPLogger.logLevel = LoggerLevel.FATAL;
-    else SFPLogger.logLevel = LoggerLevel.INFO;
-  }
+    /**
+     * Substitutes CLI inputs, that match the variable dictionary, with
+     * the corresponding environment variable
+     *
+     * @param flags
+     */
+    private loadSfpowerscriptsVariables(flags: OutputFlags<any>): void {
+        require('dotenv').config();
 
-  private async executeDemoMode() {
-    if (fs.existsSync(process.env.SFPOWERSCRIPTS_DEMOREEL_FOLDER_PATH)) {
-      let player: DemoReelPlayer = new DemoReelPlayer();
-      await player.execute(process.env.SFPOWERSCRIPTS_DEMOREEL_FOLDER_PATH);
-    } else {
-      console.log(
-        "Demo reel doesnt exist, Please check the path and try again"
-      );
+        for (let flag in flags) {
+            for (let sfpowerscripts_variable of this.sfpowerscripts_variable_dictionary) {
+                if (typeof flags[flag] === 'string' && flags[flag].includes(sfpowerscripts_variable)) {
+                    console.log(`Substituting ${flags[flag]} with ${process.env[flags[flag]]}`);
+                    flags[flag] = process.env[flags[flag]];
+                    break;
+                }
+            }
+        }
     }
-  }
+
+    private initializeStatsD() {
+        if (process.env.SFPOWERSCRIPTS_STATSD) {
+            SFPStatsSender.initialize(
+                process.env.SFPOWERSCRIPTS_STATSD_PORT,
+                process.env.SFPOWERSCRIPTS_STATSD_HOST,
+                process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL
+            );
+        }
+        if (process.env.SFPOWERSCRIPTS_DATADOG) {
+            SFPStatsSender.initializeNativeMetrics(
+                'DataDog',
+                process.env.SFPOWERSCRIPTS_DATADOG_HOST,
+                process.env.SFPOWERSCRIPTS_DATADOG_API_KEY,
+                new ConsoleLogger()
+            );
+        } else if (process.env.SFPOWERSCRIPTS_NEWRELIC) {
+            SFPStatsSender.initializeNativeMetrics(
+                'NewRelic',
+                null,
+                process.env.SFPOWERSCRIPTS_NEWRELIC_API_KEY,
+                new ConsoleLogger()
+            );
+        }
+
+        SFPStatsSender.initializeLogBasedMetrics();
+    }
+
+    private setLogLevel() {
+        if (this.flags.loglevel === 'trace' || this.flags.loglevel === 'TRACE') SFPLogger.logLevel = LoggerLevel.TRACE;
+        else if (this.flags.loglevel === 'debug' || this.flags.loglevel === 'DEBUG')
+            SFPLogger.logLevel = LoggerLevel.DEBUG;
+        else if (this.flags.loglevel === 'info' || this.flags.loglevel === 'INFO')
+            SFPLogger.logLevel = LoggerLevel.INFO;
+        else if (this.flags.loglevel === 'warn' || this.flags.loglevel === 'WARN')
+            SFPLogger.logLevel = LoggerLevel.WARN;
+        else if (this.flags.loglevel === 'error' || this.flags.loglevel === 'ERROR')
+            SFPLogger.logLevel = LoggerLevel.ERROR;
+        else if (this.flags.loglevel === 'fatal' || this.flags.loglevel === 'FATAL')
+            SFPLogger.logLevel = LoggerLevel.FATAL;
+        else SFPLogger.logLevel = LoggerLevel.INFO;
+    }
+
+    private async executeDemoMode() {
+        if (fs.existsSync(process.env.SFPOWERSCRIPTS_DEMOREEL_FOLDER_PATH)) {
+            let player: DemoReelPlayer = new DemoReelPlayer();
+            await player.execute(process.env.SFPOWERSCRIPTS_DEMOREEL_FOLDER_PATH);
+        } else {
+            console.log('Demo reel doesnt exist, Please check the path and try again');
+        }
+    }
 }
