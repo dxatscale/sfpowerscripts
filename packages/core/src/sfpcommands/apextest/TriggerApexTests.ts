@@ -9,6 +9,7 @@ import SFPLogger, { LoggerLevel } from '../../logger/SFPLogger';
 import { RunAllTestsInPackageOptions } from './ExtendedTestOptions';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import { Connection, Org } from '@salesforce/core';
+import ClearCodeCoverage from './ClearCodeCoverage';
 
 export default class TriggerApexTests {
     private conn: Connection;
@@ -28,7 +29,20 @@ export default class TriggerApexTests {
     }> {
         this.cleanupStaleTestArtifacts();
 
-        this.conn = (await Org.create({ aliasOrUsername: this.target_org })).getConnection();
+        let org = await Org.create({ aliasOrUsername: this.target_org });
+        this.conn = org.getConnection();
+
+        //Clear Code Coverage before triggering tests
+        try {
+            let clearCodeCoverage = new ClearCodeCoverage(org, this.fileLogger);
+            await clearCodeCoverage.clear();
+        } catch (error) {
+            SFPLogger.log(
+                `Ignoring error in clearing code coverage attributed to ${error}.`,
+                LoggerLevel.DEBUG,
+                this.fileLogger
+            );
+        }
 
         let startTime = Date.now();
         let testExecutionResult: boolean = false;
