@@ -50,6 +50,6 @@ jobs:
         - name: Commit changes
           uses: stefanzweifel/git-auto-commit-action@v4
           with:
-            commit_message: 'chore(prettier): Apply formatting changes'
+            commit_message: 'style(prettier): Apply formatting changes'
             branch: ${{ github.head_ref }}
             
