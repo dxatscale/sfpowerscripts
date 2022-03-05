@@ -31,7 +31,7 @@ export default class PrepareImpl {
 
         if (this.pool.succeedOnDeploymentErrors === undefined) this.pool.succeedOnDeploymentErrors = true;
 
-        if(this.pool.enableCompileOnDeploy == undefined) this.pool.enableCompileOnDeploy = true;
+        if (this.pool.enableCompileOnDeploy == undefined) this.pool.enableCompileOnDeploy = true;
     }
 
     public async exec() {
