@@ -13,7 +13,9 @@
 <!-- ignore-task-list-end -->
 
 #### Checklist
+All items have to be completed before a PR is merged
+
 - [x] Adhere to [Contribution Guidelines](https://docs.dxatscale.io/about-us/contributing-to-dx-scale)
-- [ ] If updates to documentation required, PR raised for docs
+- [ ] Updates to documentation
 - [ ] I have tested  that changes works
 - [ ] New and existing unit tests pass locally with my changes
