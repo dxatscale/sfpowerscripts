@@ -28,5 +28,5 @@ export interface PoolConfig {
     to_satisfy_max?: number;
     scratchOrgs?: ScratchOrg[];
     failedToCreate?: number;
-    enableCompileOnDeploy?:boolean
+    enableCompileOnDeploy?: boolean;
 }
