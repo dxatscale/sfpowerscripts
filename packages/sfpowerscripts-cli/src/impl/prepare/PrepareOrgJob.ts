@@ -20,6 +20,7 @@ import RelaxIPRange from '@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRang
 import SourceTrackingResourceController from '../pool/SourceTrackingResourceController';
 import VlocityPackUpdateSettings from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings';
 import VlocityInitialInstall from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall';
+import { UpsertResult } from 'jsforce';
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor {
@@ -114,6 +115,8 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                     poolName: this.pool.tag,
                 });
 
+                //
+
                 if (deploymentResult.failed.length > 0 || deploymentResult.error) {
                     this.pool.succeedOnDeploymentErrors
                         ? this.handleDeploymentErrorsForPartialDeployment(scratchOrg, deploymentResult, packageLogger)
@@ -125,6 +128,10 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                     sourceTrackingResourceController.createSourceTrackingResources(deploymentResult);
                     await sourceTrackingResourceController.deploy();
                 }
+            }
+
+            if (this.pool.enableCompileOnDeploy) {
+                await this.enableSynchronousCompileOnDeploy(conn, packageLogger);
             }
 
             return ok({ scratchOrgUsername: scratchOrg.username });
@@ -264,5 +271,22 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             LoggerLevel.INFO,
             logger
         );
+    }
+
+    //Enable Synchronus Compile on Deploy
+    private async enableSynchronousCompileOnDeploy(conn: Connection, logger: Logger) {
+        try {
+            let apexSettingMetadata = { fullName: 'ApexSettings', enableCompileOnDeploy: true };
+            let result: UpsertResult | UpsertResult[] = await conn.metadata.upsert('ApexSettings', apexSettingMetadata);
+            if ((result as UpsertResult).success) {
+                SFPLogger.log(`Enabled Synchronous Compile on Org succesfully`, LoggerLevel.INFO, logger);
+            }
+        } catch (error) {
+            SFPLogger.log(
+                `Skipping Synchronous Compile on Org succesfully due to ${error}..`,
+                LoggerLevel.INFO,
+                logger
+            );
+        }
     }
 }

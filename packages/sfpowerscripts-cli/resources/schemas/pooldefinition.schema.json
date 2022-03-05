@@ -84,6 +84,12 @@
       "type": "boolean",
       "default": "false"
     },
+    "enableCompileOnDeploy":{
+      "title": "Enable Compile On Deploy",
+      "description": "Enable Synchronous Compile on Deploy in the scratch org, This ensures accuracy in code coverage calculations during validate",
+      "type": "boolean",
+      "default": "true"
+    },
     "fetchArtifacts": {
       "title": "Fetch Artifacts using below mechanism",
       "description": "Fetch artifacts from artifact registry using below mechanism",
