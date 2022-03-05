@@ -1,7 +1,9 @@
 name: 'PR Tasks Completed Check'
 on: 
   pull_request:
-    types: [opened, edited]
+    types: [opened, edited, reopened]
+    branches:
+            - develop
 
 jobs:
   task-check:
