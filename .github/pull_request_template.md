@@ -3,14 +3,7 @@
 
 
 
-#### Issue Type
-<!-- ignore-task-list-start -->
-- [ ] Bug
-- [ ] New Feature
-- [ ] Enhancement
-- [ ] Refactor
 
-<!-- ignore-task-list-end -->
 
 #### Checklist
 All items have to be completed before a PR is merged
