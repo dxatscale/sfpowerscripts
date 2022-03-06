@@ -1,15 +1,11 @@
 {
-  "packages": [
-    "packages/core",
-    "packages/sfpowerscripts-cli",
-    "packages/sfp-cli"
-  ],
-  "version": "independent",
-  "command": {
-    "publish": {
-       "yes": true,
-       "ignoreChanges": ["*.md"],
-       "registry":"https://registry.npmjs.org"
+    "packages": ["packages/core", "packages/sfpowerscripts-cli", "packages/sfp-cli"],
+    "version": "independent",
+    "command": {
+        "publish": {
+            "yes": true,
+            "ignoreChanges": ["*.md"],
+            "registry": "https://registry.npmjs.org"
+        }
     }
-}
 }

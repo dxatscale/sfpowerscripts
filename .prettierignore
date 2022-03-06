@@ -1,0 +1,25 @@
+lib
+tsconfig.tsbuildinfo
+node_modules
+build
+dist
+.npmrc
+lerna-debug.log
+tmp/
+oclif.manifest.json
+packages/azpipelines_release_management_extensions/BuildTasks/ManageReleaseTask/*
+packages/core/coverage
+packages/sfpowerscripts-cli/coverage
+.DS_Store
+packages/core/resources
+packages/sfp-cli/resources
+packages/sfpowerscripts-cli/resources
+.dependency-cruiser.js
+.github
+decision records
+demoreel
+**/README.md
+Third Party Notices.md
+*.yml
+CONTRIBUTING.md
+prerequisites/scratchorgpool/**

@@ -1,14 +1,10 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-      "experimentalDecorators": true,
-      "outDir": "./lib",
-      "rootDir": "./src",
-      "skipLibCheck": true
+        "experimentalDecorators": true,
+        "outDir": "./lib",
+        "rootDir": "./src",
+        "skipLibCheck": true
     },
-    "exclude": [
-      "node_modules",
-      "dist",
-      "tests"
-    ]
+    "exclude": ["node_modules", "dist", "tests"]
 }

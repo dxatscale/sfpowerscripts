@@ -1,25 +1,19 @@
+import { SFDXCommand } from '@dxatscale/sfpowerscripts.core/lib/command/SFDXCommand';
 
-import { SFDXCommand } from "@dxatscale/sfpowerscripts.core/lib/command/SFDXCommand"
+export default class OrgList extends SFDXCommand {
+    public constructor() {
+        super(null, null);
+    }
 
-export default class OrgList extends SFDXCommand
-{
+    getSFDXCommand(): string {
+        return 'sfdx force:org:list';
+    }
 
-  public constructor(
-  ) {
-    super(null, null);
-  }
+    getCommandName(): string {
+        return 'OrgList';
+    }
 
-
-  getSFDXCommand(): string {
-   return "sfdx force:org:list"
-  }
-
-  getCommandName(): string {
-    return "OrgList"
-  }
-
-  getGeneratedParams(): string {
-    return "";
-  }
-
+    getGeneratedParams(): string {
+        return '';
+    }
 }
