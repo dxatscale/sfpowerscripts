@@ -29,32 +29,32 @@ DX@Scale implementations typically do not use synchronous compile on deploy for 
 
 ### 1. Allow users to decide the course of action
 
-   sfpowerscripts will not provide any additional features. The users would activate ```enableCompileOnDeploy=true``` in scratch org definition or other means such as deploying it as a pre-installation script. The same can also be activated in individual sandboxes as well.
+   sfpowerscripts will not provide any additional features. The users would activate `enableCompileOnDeploy=true` in scratch org definition or other means such as deploying it as a pre-installation script. The same can also be activated in individual sandboxes as well.
 
-   Pros:
-    - Non-opinionated, Good flexibility, helps the user to decide what they want
+   **Pros**
+   - Non-opinionated, Good flexibility, helps the user to decide what they want
 
-   Cons:
-     - Enabling on scratch orgs through definition can make preparation of scratch orgs during prepare slower, where this setting need not be activated. Hence, additional scratch org definition should be maintained
-     - Use of additional scripting to enable this setting as a pre-installation script
-     - Relatively obscure setting, with minimal documentation. Users will struggle with an issue resolution when they start to see the issue cropping up
+   **Cons:**
+   - Enabling on scratch orgs through definition can make preparation of scratch orgs during prepare slower, where this setting need not be activated. Hence, additional scratch org definition should be maintained
+   - Use of additional scripting to enable this setting as a pre-installation script
+   - Relatively obscure setting, with minimal documentation. Users will struggle with an issue resolution when they start to see the issue cropping up
 
 ### 2. Enhance sfpowerscripts with defaults
   
    sfpowerscripts will feature the following defaults:
 
-     - Prepare will enable synchronous compile on deploy as a default option for non source tracked pools.Pool configuration will have a new flag which can toggle on/off this setting. This will be executed as the  last step before a scratch org is added to the pool. This ensures prepare continues with the same speed as of now. 
-     - Deploy will enable synchronous compile on deploy to sandboxes unless turned off by a newly introduced flag. Package installation will also utilize ```---apexCompile=all``` as the default option. Deploy command will check the status of the setting and will execute it before installing any packages
-     - Release will follow the same option as deploy (as its basically deploy under the hood), but this functionality can be toggled through the release definiton
+   - Prepare will enable synchronous compile on deploy as a default option for non source tracked pools.Pool configuration will have a new flag which can toggle on/off this setting. This will be executed as the  last step before a scratch org is added to the pool. This ensures prepare continues with the same speed as of now. 
+   - Deploy will enable synchronous compile on deploy to sandboxes unless turned off by a newly introduced flag. Package installation will also utilize ```---apexCompile=all``` as the default option. Deploy command will check the status of the setting and will execute it before installing any packages
+   - Release will follow the same option as deploy (as its basically deploy under the hood), but this functionality can be toggled through the release definiton
 
    Pros:
-    - No intervention required from the users
-    - Safe defaults prevent issues from being surfaced later
+   - No intervention required from the users
+   - Safe defaults prevent issues from being surfaced later
 
    Cons:
-     - sfpowerscripts have so far stayed from dynamic configuration of the org. This may confuse users who have not read the documentation
-     - Users who are refactoring into packages have to explicitly turn this off in the early stages, as its quite common that in larger happy soup orgs, sandboxes are mostly in a non-compilable shape
-     - Increased duration of installation of a package can frustrate developers during onboarding to dx@scale
+   - sfpowerscripts have so far stayed from dynamic configuration of the org. This may confuse users who have not read the documentation
+   - Users who are refactoring into packages have to explicitly turn this off in the early stages, as its quite common that in larger happy soup orgs, sandboxes are mostly in a non-compilable shape
+   - Increased duration of installation of a package can frustrate developers during onboarding to dx@scale
 
 
 ## Decision
