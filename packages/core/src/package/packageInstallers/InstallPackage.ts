@@ -140,7 +140,13 @@ export abstract class InstallPackage {
     }
 
     private async commitPackageInstallationStatus() {
+        try
+        {
         await this.org.updateArtifactInOrg(this.logger, this.packageMetadata);
+        }catch(error)
+        {
+            SFPLogger.log('Unable to commit information about the package into org..Check whether prerequisities are installed', LoggerLevel.WARN, this.logger);
+        }
     }
 
     protected async isPackageToBeInstalled(skipIfPackageInstalled: boolean): Promise<boolean> {
