@@ -1,20 +1,21 @@
-import child_process = require('child_process');
-import { delay } from '../../utils/Delay';
-import { onExit } from '../../utils/OnExit';
-import defaultProcessOptions from '../../utils/defaultProcessOptions';
-import SFPLogger, { COLOR_SUCCESS, COLOR_TRACE, Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, Logger, LoggerLevel } from '../../logger/SFPLogger';
 import PackageEmptyChecker from '../../package/PackageEmptyChecker';
-import PackageMetadataPrinter from '../../display/PackageMetadataPrinter';
-import SourceToMDAPIConvertor from '../../package/packageFormatConvertors/SourceToMDAPIConvertor';
-import PackageManifest from '../../package/PackageManifest';
 import DeployErrorDisplayer from '../../display/DeployErrorDisplayer';
-import * as fs from 'fs-extra';
-const path = require('path');
+import { Duration } from '@salesforce/kit';
+import { convertAliasToUsername } from '../../utils/AliasList';
 import DeploymentExecutor, { DeploySourceResult } from './DeploymentExecutor';
+import {
+    CodeCoverageWarnings,
+    ComponentSet,
+    DeployResult,
+    Failures,
+    MetadataApiDeployOptions,
+} from '@salesforce/source-deploy-retrieve';
+import PackageComponentPrinter from '../../display/PackageComponentPrinter';
 const Table = require('cli-table');
 
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
-    private mdapiDir: string;
+
 
     public constructor(
         private target_org: string,
@@ -26,7 +27,6 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     ) {}
 
     public async exec(): Promise<DeploySourceResult> {
-        let commandExecStatus: boolean = false;
         let deploySourceResult = {} as DeploySourceResult;
 
         //Check empty conditions
@@ -44,170 +44,70 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             deploySourceResult.message = 'skip:' + status.message;
             return deploySourceResult;
         } else {
-            SFPLogger.log('Converting source to mdapi', LoggerLevel.DEBUG, this.packageLogger);
+            //Create path
+            let sourceDirPath = '';
+            if (this.project_directory) sourceDirPath = this.project_directory;
+            sourceDirPath.concat(this.source_directory);
 
-            let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
-                this.project_directory,
-                this.source_directory,
-                this.deployment_options['apiVersion'],
-                this.packageLogger
-            );
+            let componentSet = ComponentSet.fromSource(sourceDirPath);
+            let components = componentSet.getSourceComponents();
 
-            this.mdapiDir = (await sourceToMdapiConvertor.convert()).packagePath;
-
-            PackageMetadataPrinter.printMetadataToDeploy(
-                (await PackageManifest.create(this.mdapiDir)).manifestJson,
-                this.packageLogger
-            );
+            //Print components inside Component Set
+            PackageComponentPrinter.printComponentTable(components, this.packageLogger);
 
             //Get Deploy ID
-            let deploy_id = '';
-            try {
-                let command = this.buildExecCommand();
-                SFPLogger.log('Executing Command:' + command, null, this.packageLogger);
-                let result = child_process.execSync(command, {
-                    cwd: this.project_directory,
-                    encoding: 'utf8',
-                });
+            let result = await this.deploy(componentSet);
+            //Get Deploy ID
 
-                let resultAsJSON = JSON.parse(result);
-                deploy_id = resultAsJSON.result.id;
-                SFPLogger.log(`Deploy request queued with ${deploy_id}`, LoggerLevel.INFO, this.packageLogger);
-            } catch (error) {
-                SFPLogger.log(
-                    `Deploy request  ${deploy_id} failed due to ${error}`,
-                    LoggerLevel.DEBUG,
-                    this.packageLogger
-                );
+            if (result.response.success) {
+                deploySourceResult.message = `Successfully deployed`;
+                deploySourceResult.result = result.response.success;
+                deploySourceResult.deploy_id = result.response.id;
+            } else {
+                deploySourceResult.message = await this.displayErrors(result);
                 deploySourceResult.result = false;
-                deploySourceResult.message = error;
-                return deploySourceResult;
+                deploySourceResult.deploy_id = result.response.id;
             }
-
-            if (this.deployment_options['checkonly'])
-                SFPLogger.log(
-                    `Validation only deployment  is in progress....  Unleashing the power of your code!`,
-                    null,
-                    this.packageLogger
-                );
-            else
-                SFPLogger.log(
-                    `Deployment is in progress....  Unleashing the power of your code!`,
-                    null,
-                    this.packageLogger
-                );
-
-            // Loop till deployment completes to show status
-            let result;
-            while (true) {
-                try {
-                    result = child_process.execSync(
-                        `sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org}`,
-                        {
-                            cwd: this.project_directory,
-                            stdio: ['pipe', 'pipe', 'ignore'],
-                            ...defaultProcessOptions(),
-                        }
-                    );
-                } catch (err) {
-                    if (this.deployment_options['checkonly'])
-                        SFPLogger.log(`Validation Failed`, LoggerLevel.ERROR, this.packageLogger);
-                    else SFPLogger.log(`Deployment Failed`, LoggerLevel.ERROR, this.packageLogger);
-                    break;
-                }
-
-                let resultAsJSON = JSON.parse(result);
-                if (resultAsJSON['status'] == 1) {
-                    SFPLogger.log('Deployment Failed', LoggerLevel.ERROR, this.packageLogger);
-                    commandExecStatus = false;
-                    break;
-                } else if (
-                    resultAsJSON['result']['status'] == 'InProgress' ||
-                    resultAsJSON['result']['status'] == 'Pending'
-                ) {
-                    SFPLogger.log(
-                        `${COLOR_TRACE(
-                            `Processing ${resultAsJSON.result.numberComponentsDeployed} out of ${resultAsJSON.result.numberComponentsTotal}`
-                        )}`,
-                        LoggerLevel.INFO,
-                        this.packageLogger
-                    );
-                } else if (resultAsJSON['result']['status'] == 'Succeeded') {
-                    SFPLogger.log(COLOR_SUCCESS('Deployment Succeeded'), LoggerLevel.INFO, this.packageLogger);
-                    commandExecStatus = true;
-                    break;
-                }
-
-                await delay(30000);
-            }
-
-            deploySourceResult.message = await this.getFinalDeploymentStatus(deploy_id);
-            deploySourceResult.result = commandExecStatus;
-            deploySourceResult.deploy_id = deploy_id;
             return deploySourceResult;
         }
     }
 
-    private async getFinalDeploymentStatus(deploy_id: string): Promise<string> {
+    private async displayErrors(result: DeployResult): Promise<string> {
         SFPLogger.log(`Gathering Final Deployment Status`, null, this.packageLogger);
-        let reportAsJSON = '';
-        let deploymentReports = `.sfpowerscripts/mdapiDeployReports`;
-        fs.mkdirpSync(deploymentReports);
 
-        try {
-            let child = child_process.exec(
-                `sfdx force:mdapi:deploy:report --json -i ${deploy_id} -u ${this.target_org} -w 30`,
-                {
-                    cwd: this.project_directory,
-                    ...defaultProcessOptions(),
-                }
+        if (result.response.numberComponentErrors > 0) {
+            DeployErrorDisplayer.printMetadataFailedToDeploy(
+                result.response.details.componentFailures,
+                this.packageLogger
             );
-
-            child.stdout.on('data', (data) => {
-                reportAsJSON += data.toString();
-            });
-
-            await onExit(child);
-
-            return 'Succesfully Deployed';
-        } catch (err) {
-            let report = JSON.parse(reportAsJSON);
-
-            if (report.result.details.componentFailures && report.result.details.componentFailures.length > 0) {
-                DeployErrorDisplayer.printMetadataFailedToDeploy(
-                    report.result.details.componentFailures,
-                    this.packageLogger
-                );
-                return report.message;
-            } else if (report.result.details.runTestResult) {
-                if (report.result.details.runTestResult.codeCoverageWarnings) {
-                    this.displayCodeCoverageWarnings(report.result.details.runTestResult.codeCoverageWarnings);
-                }
-
-                if (report.result.details.runTestResult.failures?.length > 0) {
-                    this.displayTestFailures(report.result.details.runTestResult.failures);
-                }
-                return 'Unable to deploy due to unsatisfactory code coverage and/or test failures';
-            } else {
-                return 'Unable to fetch report';
+            return result.response.errorMessage;
+        } else if (result.response.details.runTestResult) {
+            if (result.response.details.runTestResult.codeCoverageWarnings) {
+                this.displayCodeCoverageWarnings(result.response.details.runTestResult.codeCoverageWarnings);
             }
-        } finally {
-            // Write deployment report to file
-            fs.writeFileSync(path.join(deploymentReports, `${deploy_id}.json`), reportAsJSON);
+
+            if (result.response.details.runTestResult.failures) {
+                this.displayTestFailures(result.response.details.runTestResult.failures);
+            }
+            return 'Unable to deploy due to unsatisfactory code coverage and/or test failures';
+        } else {
+            return 'Unable to fetch report';
         }
     }
 
-    private displayCodeCoverageWarnings(coverageWarnings: any) {
+    private displayCodeCoverageWarnings(codeCoverageWarnings: CodeCoverageWarnings | CodeCoverageWarnings[]) {
         let table = new Table({
             head: ['Name', 'Message'],
         });
-        if (Array.isArray(coverageWarnings)) {
-            coverageWarnings.forEach((element) => {
-                table.push([element.name, element.message]);
+
+        if (Array.isArray(codeCoverageWarnings)) {
+            codeCoverageWarnings.forEach((coverageWarningElement) => {
+                table.push([coverageWarningElement['name'], coverageWarningElement.message]);
             });
         } else {
-            table.push([coverageWarnings.name, coverageWarnings.message]);
+            table.push([codeCoverageWarnings['name'], codeCoverageWarnings.message]);
         }
+
         SFPLogger.log(
             'Unable to deploy due to unsatisfactory code coverage, Check the following classes:',
             LoggerLevel.WARN,
@@ -216,72 +116,93 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         SFPLogger.log(table.toString(), LoggerLevel.WARN, this.packageLogger);
     }
 
-    private displayTestFailures(testFailures) {
+    private displayTestFailures(testFailures: Failures | Failures[]) {
         let table = new Table({
             head: ['Test Name', 'Method Name', 'Message'],
         });
 
-        testFailures.forEach((elem) => {
-            table.push([elem.name, elem.methodName, elem.message]);
-        });
-
+        if (Array.isArray(testFailures)) {
+            testFailures.forEach((elem) => {
+                table.push([elem.name, elem.methodName, elem.message]);
+            });
+        } else {
+            table.push([testFailures.name, testFailures.methodName, testFailures.message]);
+        }
         SFPLogger.log('Unable to deploy due to test failures:', LoggerLevel.WARN, this.packageLogger);
         SFPLogger.log(table.toString(), LoggerLevel.WARN, this.packageLogger);
     }
 
-    private buildExecCommand(): string {
-        let apexclasses;
-
-        let command = `sfdx force:mdapi:deploy -u ${this.target_org}`;
-
-        if (this.deployment_options['checkonly']) command += ` -c`;
-
-        //directory
-        command += ` -d ${this.mdapiDir}`;
-
-        //add json
-        command += ` --json`;
+    private async buildDeploymentOptions(username: string): Promise<MetadataApiDeployOptions> {
+        username = await convertAliasToUsername(username);
+        let metdataDeployOptions: MetadataApiDeployOptions = {
+            usernameOrConnection: username,
+            apiOptions: {},
+        };
 
         if (this.deployment_options['testlevel'] == 'RunApexTestSuite') {
-            //testlevel
-            command += ` -l RunSpecifiedTests`;
-            apexclasses = this.convertApexTestSuiteToListOfApexClasses(this.deployment_options['apextestsuite']);
-            command += ` -r ${apexclasses}`;
+            metdataDeployOptions.apiOptions.testLevel = `RunSpecifiedTests`;
+            //TODO: check apex node for option
+            //let apexclasses =await this.convertApexTestSuiteToListOfApexClasses(this.deployment_options['apextestsuite']);
+            // metdataDeployOptions.apiOptions.runTests=apexclasses.split(',');
         } else if (this.deployment_options['testlevel'] == 'RunSpecifiedTests') {
-            command += ` -l RunSpecifiedTests`;
-            apexclasses = this.deployment_options['specified_tests'];
-            command += ` -r ${apexclasses}`;
+            metdataDeployOptions.apiOptions.testLevel = `RunSpecifiedTests`;
+            metdataDeployOptions.apiOptions.runTests = this.deployment_options['specified_tests'].split(`,`);
         } else {
-            command += ` -l ${this.deployment_options['testlevel']}`;
+            metdataDeployOptions.apiOptions.testLevel = this.deployment_options['testlevel'];
         }
 
         if (this.deployment_options['ignore_warnings']) {
-            command += ` --ignorewarnings`;
+            metdataDeployOptions.apiOptions.ignoreWarnings = true;
         }
         if (this.deployment_options['ignore_errors']) {
-            command += ` --ignoreerrors`;
+            metdataDeployOptions.apiOptions.rollbackOnError = false;
         }
 
-        return command;
+        return metdataDeployOptions;
     }
 
-    private convertApexTestSuiteToListOfApexClasses(apextestsuite: string): Promise<string> {
-        SFPLogger.log(
-            `Converting an apex test suite  ${apextestsuite} to its consituent apex test classes`,
-            null,
-            this.packageLogger
-        );
+    private async deploy(componentSet: ComponentSet) {
+        let deploymentOptions = await this.buildDeploymentOptions(this.target_org);
+        const deploy = await componentSet.deploy(deploymentOptions);
 
-        let result = child_process.execSync(
-            `sfdx sfpowerkit:source:apextestsuite:convert  -n ${apextestsuite} --json`,
-            { cwd: this.project_directory, encoding: 'utf8' }
-        );
+        let startTime = Date.now();
+        SFPLogger.log(`Deploying to ${this.target_org} with id:${deploy.id}`, LoggerLevel.INFO, this.packageLogger);
+        // Attach a listener to check the deploy status on each poll
+        deploy.onUpdate((response) => {
+            const { status, numberComponentsDeployed, numberComponentsTotal } = response;
+            const progress = `${numberComponentsDeployed}/${numberComponentsTotal}`;
+            const message = `Status: ${status} Progress: ${progress}`;
+            SFPLogger.log(message, LoggerLevel.INFO, this.packageLogger);
+        });
 
-        let resultAsJSON = JSON.parse(result);
-        if (resultAsJSON['status'] == 0) {
-            return resultAsJSON['result'];
-        } else {
-            throw new Error(`Unable to convert apex test suite ${apextestsuite} ${resultAsJSON['message']}`);
-        }
+        deploy.onFinish((response) => {
+            let deploymentDuration = Date.now() - startTime;
+            const deploymentDurationAsDate = new Date(deploymentDuration);
+
+            if (response.response.success) {
+                SFPLogger.log(
+                    COLOR_SUCCESS(
+                        `Succesfully Deployed ${COLOR_HEADER(
+                            response.response.numberComponentsDeployed
+                        )} components in ${deploymentDurationAsDate.getMinutes()}:${deploymentDurationAsDate.getSeconds()} mins`
+                    ),
+                    LoggerLevel.INFO,
+                    this.packageLogger
+                );
+            }
+            else 
+            SFPLogger.log(
+                COLOR_ERROR(
+                   `Failed to deploy after ${deploymentDurationAsDate.getMinutes()}:${deploymentDurationAsDate.getSeconds()} mins`
+                ),
+                LoggerLevel.INFO,
+                this.packageLogger
+            );
+
+        });
+
+        // Wait for polling to finish and get the DeployResult object
+        const result = await deploy.pollStatus({ frequency: Duration.seconds(10), timeout: Duration.hours(2) });
+        return result;
     }
 }
