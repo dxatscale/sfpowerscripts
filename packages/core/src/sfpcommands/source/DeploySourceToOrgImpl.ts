@@ -190,7 +190,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
                     this.packageLogger
                 );
             }
-            else 
+            else
             SFPLogger.log(
                 COLOR_ERROR(
                    `Failed to deploy after ${deploymentDurationAsDate.getMinutes()}:${deploymentDurationAsDate.getSeconds()} mins`
