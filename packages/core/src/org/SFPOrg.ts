@@ -7,25 +7,24 @@ import ObjectCRUDHelper from '../utils/ObjectCRUDHelper';
 import InstalledPackagesQueryExecutor from './packageQuery/InstalledPackagesQueryExecutor';
 
 export default class SFPOrg extends Org {
-
     /**
      * Get list of all artifacts in an org
      */
     public async getInstalledArtifacts() {
-            try {
-                let records = await QueryHelper.query<SfpowerscriptsArtifact2__c>(
-                    'SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c',
-                    this.getConnection(),
-                    false
-                );
-                return records;
-            } catch (error) {
-                throw new Error(
-                    'Unable to fetch any sfpowerscripts artifacts in the org\n' +
-                        '1. sfpowerscripts package is notinstalled in the org\n' +
-                        '2. The required prerequisite object is not deployed to this org\n'
-                );
-            }
+        try {
+            let records = await QueryHelper.query<SfpowerscriptsArtifact2__c>(
+                'SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c',
+                this.getConnection(),
+                false
+            );
+            return records;
+        } catch (error) {
+            throw new Error(
+                'Unable to fetch any sfpowerscripts artifacts in the org\n' +
+                    '1. sfpowerscripts package is notinstalled in the org\n' +
+                    '2. The required prerequisite object is not deployed to this org\n'
+            );
+        }
     }
     /**
      * Check whether an artifact is installed in a Org
