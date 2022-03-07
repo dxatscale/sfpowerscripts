@@ -91,10 +91,11 @@ export default class TriggerApexTests {
             );
 
             //Poll for tests completion
+            let startTime=Date.now();
             while (true) {
                 let runStatus = await this.checkRunStatus(testRunIdResult.testRunId);
                 SFPLogger.log(
-                    `Executed Tests ... ${runStatus.ClassesCompleted} of ${runStatus.ClassesEnqueued}`,
+                    `Executed Tests ... ${runStatus.ClassesCompleted} of ${runStatus.ClassesEnqueued}  Elapsed Time so far: ${Math.floor(Date.now()-startTime)/1000}`,
                     LoggerLevel.INFO,
                     this.fileLogger
                 );
@@ -279,7 +280,7 @@ export default class TriggerApexTests {
         const testRunSummaryResults = (await this.conn.tooling.autoFetchQuery(testRunSummaryQuery)) as any;
 
         if (testRunSummaryResults.records.length === 0) {
-            throw new Error(`0 liengt`);
+            throw new Error(`Test Summary records not available`);
         }
 
         return testRunSummaryResults.records[0];
