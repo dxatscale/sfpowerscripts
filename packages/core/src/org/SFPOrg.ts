@@ -7,20 +7,17 @@ import ObjectCRUDHelper from '../utils/ObjectCRUDHelper';
 import InstalledPackagesQueryExecutor from './packageQuery/InstalledPackagesQueryExecutor';
 
 export default class SFPOrg extends Org {
-    private installedArtifacts: SfpowerscriptsArtifact2__c[];
 
     /**
      * Get list of all artifacts in an org
      */
     public async getInstalledArtifacts() {
-        if (this.installedArtifacts == null) {
             try {
                 let records = await QueryHelper.query<SfpowerscriptsArtifact2__c>(
                     'SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c',
                     this.getConnection(),
                     false
                 );
-                this.installedArtifacts = records;
                 return records;
             } catch (error) {
                 throw new Error(
@@ -29,9 +26,6 @@ export default class SFPOrg extends Org {
                         '2. The required prerequisite object is not deployed to this org\n'
                 );
             }
-        } else {
-            return this.installedArtifacts;
-        }
     }
     /**
      * Check whether an artifact is installed in a Org
