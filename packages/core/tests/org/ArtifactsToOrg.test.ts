@@ -152,7 +152,7 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             records: [
                 {
                     attributes: {
-                        type: 'Sfpowerscriptspackage__c',
+                        type: 'SfpowerscriptsArtifact2__c',
                         url: '/services/data/v50.0/sobjects/Sfpowerscriptspackage__c/a0zR0000003F1FuIAK',
                     },
                     Id: 'a0zR0000003F1FuIAK',
