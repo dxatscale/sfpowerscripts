@@ -9,17 +9,17 @@ import { CreatePackage } from './CreatePackage';
 import CreateUnlockedPackageVersionImpl from '../../sfdxwrappers/CreateUnlockedPackageVersionImpl';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import PackageVersionCoverage from '../coverage/PackageVersionCoverage';
-import { AuthInfo, Connection, Org } from '@salesforce/core';
-import { convertAliasToUsername } from '../../utils/AliasList';
+import { Connection } from '@salesforce/core';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import { EOL } from 'os';
-import PackageFetcher, { PackageTypeInfo } from '../packageQuery/PackageFetcher';
+import SFPOrg, { PackageTypeInfo } from '../../org/SFPOrg';
 const path = require('path');
 
 export default class CreateUnlockedPackageImpl extends CreatePackage {
     private static packageTypeInfos: PackageTypeInfo[];
     private isOrgDependentPackage: boolean = false;
     private connection: Connection;
+    private devhubOrg: SFPOrg;
     workingDirectory: string;
 
     public constructor(
@@ -53,12 +53,9 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
     }
 
     async preCreatePackage(packageDirectory: string, packageDescriptor: any) {
-        let devhubUsername = await convertAliasToUsername(this.devHub);
-        this.connection = await Connection.create({
-            authInfo: await AuthInfo.create({
-                username: devhubUsername,
-            }),
-        });
+        this.devhubOrg = await SFPOrg.create({ aliasOrUsername: this.devHub });
+
+        this.connection = this.devhubOrg.getConnection();
 
         let projectManifest = ProjectConfig.getSFDXPackageManifest(this.projectDirectory);
 
@@ -240,10 +237,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
 
     private async getPackageTypeInfos() {
         if (CreateUnlockedPackageImpl.packageTypeInfos == null) {
-            //Create connection to DevHub
-            let connDevHub = (await Org.create({ aliasOrUsername: this.devHub })).getConnection();
-
-            CreateUnlockedPackageImpl.packageTypeInfos = await new PackageFetcher(connDevHub).listAllPackages();
+            CreateUnlockedPackageImpl.packageTypeInfos = await this.devhubOrg.listAllPackages();
         }
         return CreateUnlockedPackageImpl.packageTypeInfos;
     }

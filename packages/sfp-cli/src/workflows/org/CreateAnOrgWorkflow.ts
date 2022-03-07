@@ -10,14 +10,13 @@ import SFPLogger, {
     COLOR_SUCCESS,
     LoggerLevel,
 } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import InstalledAritfactsFetcher from '@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
-import InstalledPackagesFetcher from '@dxatscale/sfpowerscripts.core/lib/package/packageQuery/InstalledPackagesFetcher';
 import InstalledPackageDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer';
 import PoolFetchImpl from '../../impl/pool/PoolFetchImpl';
 import OrgOpen from '../../impl/sfdxwrappers/OrgOpen';
 import InstallDependenciesWorkflow from '../package/InstallDependenciesWorkflow';
 import ScratchOrgOperator from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 
 export default class CreateAnOrgWorkflow {
     private isOrgCreated = false;
@@ -156,13 +155,13 @@ export default class CreateAnOrgWorkflow {
 
     private async displayOrgContents(scratchOrg: ScratchOrg) {
         try {
-            const scratchOrgConnection = (await Org.create({ aliasOrUsername: scratchOrg.username })).getConnection();
-            let installedPackagesFetcher = new InstalledPackagesFetcher(scratchOrgConnection);
-            let installedManagedPackages = await installedPackagesFetcher.fetchManagedPackages();
+            const scratchOrgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrg.username });
+
+            let installedManagedPackages = await scratchOrgAsSFPOrg.getAllInstalledManagedPackages();
             SFPLogger.log('Installed managed packages:', LoggerLevel.INFO);
             InstalledPackageDisplayer.printInstalledPackages(installedManagedPackages, null);
 
-            let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(scratchOrg.username);
+            let installedArtifacts = await scratchOrgAsSFPOrg.getInstalledArtifacts();
             InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
         } catch (error) {
             SFPLogger.log('Failed to query packages/artifacts installed in the org', LoggerLevel.ERROR);
