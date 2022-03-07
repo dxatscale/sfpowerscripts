@@ -4,20 +4,21 @@ import PackageMetadata from '../../PackageMetadata';
 import ProjectConfig from '../../project/ProjectConfig';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import PackageInstallationHelpers from './PackageInstallationHelpers';
-import { AuthInfo, Connection, fs } from '@salesforce/core';
+import { Connection } from '@salesforce/core';
+import * as fs from 'fs-extra';
 import { convertAliasToUsername } from '../../utils/AliasList';
-import ArtifactInstallationStatusUpdater from '../../artifacts/ArtifactInstallationStatusUpdater';
-import ArtifactInstallationStatusChecker from '../../artifacts/ArtifactInstallationStatusChecker';
 import FileSystem from '../../utils/FileSystem';
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import path = require('path');
 import PermissionSetGroupUpdateAwaiter from '../../permsets/PermissionSetGroupUpdateAwaiter';
+import SFPOrg from '../../org/SFPOrg';
 
 export abstract class InstallPackage {
     private startTime: number;
     protected connection: Connection;
     protected packageDescriptor;
     protected packageDirectory;
+    protected org: SFPOrg;
 
     public constructor(
         protected sfdxPackage: string,
@@ -36,11 +37,8 @@ export abstract class InstallPackage {
             this.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(this.sourceDirectory, this.sfdxPackage);
 
             let targetUsername = await convertAliasToUsername(this.targetusername);
-            this.connection = await Connection.create({
-                authInfo: await AuthInfo.create({
-                    username: targetUsername,
-                }),
-            });
+            this.org = await SFPOrg.create({ aliasOrUsername: targetUsername });
+            this.connection = this.org.getConnection();
 
             if (await this.isPackageToBeInstalled(this.skipIfPackageInstalled)) {
                 if (!this.isDryRun) {
@@ -142,20 +140,20 @@ export abstract class InstallPackage {
     }
 
     private async commitPackageInstallationStatus() {
-        await ArtifactInstallationStatusUpdater.updatePackageInstalledInOrg(
-            this.logger,
-            this.targetusername,
-            this.packageMetadata
-        );
+        try {
+            await this.org.updateArtifactInOrg(this.logger, this.packageMetadata);
+        } catch (error) {
+            SFPLogger.log(
+                'Unable to commit information about the package into org..Check whether prerequisities are installed',
+                LoggerLevel.WARN,
+                this.logger
+            );
+        }
     }
 
     protected async isPackageToBeInstalled(skipIfPackageInstalled: boolean): Promise<boolean> {
         if (skipIfPackageInstalled) {
-            let installationStatus = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
-                this.logger,
-                this.targetusername,
-                this.packageMetadata
-            );
+            let installationStatus = await this.org.isArtifactInstalledInOrg(this.logger, this.packageMetadata);
             return !installationStatus.isInstalled;
         } else return true; // Always install packages if skipIfPackageInstalled is false
     }

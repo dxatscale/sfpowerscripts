@@ -2,8 +2,6 @@ import ArtifactFilePathFetcher, {
     ArtifactFilePaths,
 } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher';
 import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
-import ArtifactInstallationStatusChecker from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInstallationStatusChecker';
-import InstalledAritfactsFetcher from '@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher';
 import ArtifactInquirer from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInquirer';
 import fs = require('fs');
 import path = require('path');
@@ -29,6 +27,7 @@ import {
 import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageImpl';
 import InstallSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallSourcePackageImpl';
 import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallDataPackageImpl';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 const Table = require('cli-table');
 const retry = require('async-retry');
 
@@ -395,16 +394,18 @@ export default class DeployImpl {
         packagesToPackageInfo: { [p: string]: PackageInfo },
         targetUsername: string
     ): Promise<any[]> {
+        //Create Org
+        let org = await SFPOrg.create({ aliasOrUsername: targetUsername });
+
         const clonedQueue = [];
         queue.forEach((val) => clonedQueue.push(Object.assign({}, val)));
 
-        for (var i = queue.length - 1; i >= 0; i--) {
+        for (let i = queue.length - 1; i >= 0; i--) {
             let packageInfo = packagesToPackageInfo[clonedQueue[i].package];
             let packageMetadata: PackageMetadata = packageInfo.packageMetadata;
             let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(clonedQueue[i].package, packageManifest);
-            let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+            let packageInstalledInTheOrg = await org.isArtifactInstalledInOrg(
                 this.props.packageLogger,
-                targetUsername,
                 packageMetadata
             );
             if (packageInstalledInTheOrg.versionNumber)
@@ -417,8 +418,6 @@ export default class DeployImpl {
             }
         }
 
-        //Do a reset after this stage, as fetched artifacts are a static var, to reduce roundtrip, but this has side effects
-        InstalledAritfactsFetcher.resetFetchedArtifacts();
         return clonedQueue;
     }
 
