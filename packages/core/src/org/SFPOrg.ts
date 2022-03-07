@@ -182,7 +182,7 @@ export default class SFPOrg extends Org {
             });
 
             return records;
-        } else throw new Error('Only applicable in a DevHub');
+        } else throw new Error('Package Type Information can only be fetched from a DevHub');
     }
 }
 
