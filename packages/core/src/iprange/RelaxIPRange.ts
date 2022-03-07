@@ -8,6 +8,7 @@ import { delay } from '../utils/Delay';
 import xml2json from '../utils/xml2json';
 const xml2js = require('xml2js');
 
+//TODO: Use jsForce upsert rather than full mdapi deploy
 export default class RelaxIPRange {
     public constructor(private logger: Logger) {}
 
