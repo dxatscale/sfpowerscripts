@@ -15,8 +15,6 @@ import PackageComponentPrinter from '../../display/PackageComponentPrinter';
 const Table = require('cli-table');
 
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
-
-
     public constructor(
         private target_org: string,
         private project_directory: string,
@@ -189,16 +187,14 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
                     LoggerLevel.INFO,
                     this.packageLogger
                 );
-            }
-            else
-            SFPLogger.log(
-                COLOR_ERROR(
-                   `Failed to deploy after ${deploymentDurationAsDate.getMinutes()}:${deploymentDurationAsDate.getSeconds()} mins`
-                ),
-                LoggerLevel.INFO,
-                this.packageLogger
-            );
-
+            } else
+                SFPLogger.log(
+                    COLOR_ERROR(
+                        `Failed to deploy after ${deploymentDurationAsDate.getMinutes()}:${deploymentDurationAsDate.getSeconds()} mins`
+                    ),
+                    LoggerLevel.INFO,
+                    this.packageLogger
+                );
         });
 
         // Wait for polling to finish and get the DeployResult object
