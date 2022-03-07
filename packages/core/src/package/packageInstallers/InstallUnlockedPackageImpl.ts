@@ -2,7 +2,6 @@ import PackageMetadata from '../../PackageMetadata';
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 import PackageMetadataPrinter from '../../display/PackageMetadataPrinter';
 import { InstallPackage } from './InstallPackage';
-import InstalledPackagesFetcher from '../packageQuery/InstalledPackagesFetcher';
 import InstallUnlockedPackageWrapper from '../../sfdxwrappers/InstallUnlockedPackageImpl';
 
 export default class InstallUnlockedPackageImpl extends InstallPackage {
@@ -54,7 +53,7 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
                     null,
                     this.logger
                 );
-                let installedPackages = await new InstalledPackagesFetcher(this.connection).fetchAllPackages();
+                let installedPackages = await this.org.getAllInstalled2GPPackages();
 
                 let packageFound = installedPackages.find((installedPackage) => {
                     return installedPackage.subscriberPackageVersionId === this.packageVersionId;
