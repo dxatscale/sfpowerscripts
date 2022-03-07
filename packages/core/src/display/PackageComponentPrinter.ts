@@ -1,10 +1,9 @@
 const Table = require('cli-table');
-import {  LazyCollection, SourceComponent } from '@salesforce/source-deploy-retrieve';
+import { LazyCollection, SourceComponent } from '@salesforce/source-deploy-retrieve';
 import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
 
 export default class PackageComponentPrinter {
-
-    public static printComponentTable(components:LazyCollection<SourceComponent> , logger: Logger) {
+    public static printComponentTable(components: LazyCollection<SourceComponent>, logger: Logger) {
         //If Manifest is null, just return
         if (components === null || components === undefined) return;
 
@@ -13,7 +12,7 @@ export default class PackageComponentPrinter {
         });
 
         let componentArray = components.toArray();
-        componentArray.sort((a,b)=>a.type.name.localeCompare(b.type.name));
+        componentArray.sort((a, b) => a.type.name.localeCompare(b.type.name));
 
         for (const component of componentArray) {
             let item = [component.type.name, component.fullName];
