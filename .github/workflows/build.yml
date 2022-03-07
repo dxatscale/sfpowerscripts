@@ -1,6 +1,5 @@
 # This pipeline builds the sfpowerscripts plugin
 
-
 name: 'sfpowerscripts Build Pipeline'
 
 on:
@@ -19,7 +18,6 @@ on:
 
 
 jobs:
-
 #Merge to Develop, Deploy Alpha builds
   alpha:
     name: 'Alpha Builds'
@@ -41,8 +39,6 @@ jobs:
           commitToGit: true
           version: 'alpha'
           publish: true
-
-
 
 # Beta Stage
   beta:
@@ -67,7 +63,6 @@ jobs:
           version: 'beta'
           publish: false
 
-
 # Hotfix stage
   hotfix:
     name: 'Hotfix'
@@ -89,7 +84,6 @@ jobs:
           commitToGit: false
           version: 'hotfix'
           publish: false
-
 
 # Prod Stage
   prod:

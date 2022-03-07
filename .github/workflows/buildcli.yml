@@ -35,112 +35,104 @@ on:
         default: false
 
 
-# TODO: to be migrated to github actions syntax
-steps:
-          - checkout: self
+jobs:
+  build:
+    name: 'Build Plugin'
+    runs-on: ubuntu-latest
 
-          - task: CmdLine@2
-            displayName: "Update Build Number"
-            condition: or ( eq( '${{ parameters.version }}', 'alpha'), eq( '${{ parameters.version }}', 'hotfix'))
-            inputs:
-              workingDirectory: '$(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli'
-              script: |
-               PKG_VERSION=$(jq -r ".version" package.json)
-               echo "##vso[build.updatebuildnumber]${PKG_VERSION}"
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
+      - name: 'Update Build Number'
+        if: ${{ inputs.version == 'alpha' }} || ${{ inputs.version == 'hotfix' }}
+        run: |
+          PKG_VERSION=$(jq -r ".version" package.json)
+          echo "##vso[build.updatebuildnumber]${PKG_VERSION}"
+        working-directory: '$(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli'
 
-          - task: NodeTool@0
-            inputs:
-             versionSpec: '14.x' 
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14' 
 
-          - task: CmdLine@2
-            displayName: "Set Git Config"
-            inputs:
-               script: |
-                 git config --global user.email "sfpowerkit.ci@dev.azure.com"
-                 git config --global user.name "sfpowerkitci"
+      - name: 'Set Git Config'
+        run: |
+          git config --global user.email "sfpowerkit.ci@dev.azure.com"
+          git config --global user.name "sfpowerkitci"
 
-
-          - task: DownloadSecureFile@1
-            displayName: 'Download secure file .npmrc'
-            name: npmrc
-            inputs:
-                secureFile: '8abaf6dc-ff2e-427a-971b-a98cbd48af34' # Need to change this
-
-
-          - task: CmdLine@2
-            displayName: "Copy npmrc file to packages"
-            inputs:
-              script: |
-               cp $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)/.npmrc
-               cp $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)/packages/core/.npmrc
-               cp $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli/.npmrc
+# TODO: find equivalent for gh actions / for confirmation with Alan
+      - name: 'Download secure file .npmrc'
+        id: DownloadSecureFile@1 
+        with:
+          secureFile: '8abaf6dc-ff2e-427a-971b-a98cbd48af34' # Need to change this
 
 
-          - task: npmAuthenticate@0
-            displayName: 'npm Authenticate .npmrc'
-            inputs:
-                workingFile: .npmrc
-                customEndpoint: npm
-
-          - task: npmAuthenticate@0
-            displayName: 'npm Authenticate packages/core/.npmrc'
-            inputs:
-                workingFile: packages/core/.npmrc
-                customEndpoint: npm
-
-          - task: npmAuthenticate@0
-            displayName: 'npm Authenticate packages/sfpowerscripts-cli/.npmrc'
-            inputs:
-                workingFile: 'packages/sfpowerscripts-cli/.npmrc'
-                customEndpoint: npm
+      - name: 'Copy npmrc file to packages'
+        run: |
+          cp $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)/.npmrc
+          cp $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)/packages/core/.npmrc
+          cp $(npmrc.secureFilePath)  $(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli/.npmrc
 
 
-          - script: 'npx lerna bootstrap'
-            displayName: 'Bootstrap Lerna'
-            condition: or( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}', 'review') )
+      - name: 'npm Authenticate .npmrc'
+        id: npmAuthenticate@0
+        with:
+          workingFile: .npmrc
+          customEndpoint: npm
+
+      - name: 'npm Authenticate packages/core/.npmrc'
+        id: npmAuthenticate@0
+        with:
+          workingFile: packages/core/.npmrc
+          customEndpoint: npm
+
+      - name: 'npm Authenticate packages/sfpowerscripts-cli/.npmrc'
+        id: npmAuthenticate@0
+        with:
+          workingFile: 'packages/sfpowerscripts-cli/.npmrc'
+          customEndpoint: npm
+# TODO: until this part only
+
+      - name: 'Bootstrap Lerna'
+        if: ${{ inputs.publish == 'true' }} || ${{ inputs.version == 'review' }}
+        run: npx lerna bootstrap
 
 
-          - script: 'npx lerna run build'
-            displayName: 'Build  All  Packages'
-            condition: or( eq( ${{ parameters.publish }},true), eq( '${{ parameters.version }}', 'review') )
+      - name: 'Build  All  Packages'
+        if: ${{ inputs.publish == 'true' }} || ${{ inputs.version == 'review' }}
+        run: npx lerna run build
 
                  
-          - task: CmdLine@2
-            displayName: 'Run Core Unit Tests'
-            condition: eq( ${{ parameters.publish }},true)
-            inputs:
-                 script: 'npm run test'
-                 workingDirectory: '$(System.DefaultWorkingDirectory)/packages/core'
-
-          - task: CmdLine@2
-            displayName: 'Run CLI Unit Tests'
-            condition: eq( ${{ parameters.publish }},true)
-            inputs:
-                 script: 'npm run test'
-                 workingDirectory: '$(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli'
-
-          - task: CmdLine@2
-            displayName: 'Upload Coverage Results'
-            condition: eq( ${{ parameters.publish }},true)
-            inputs:
-                 script: 'bash <(curl -s https://codecov.io/bash)'
-                 workingDirectory: '$(System.DefaultWorkingDirectory)/packages/core'
+      - name: 'Run Core Unit Tests'
+        if: ${{ inputs.publish == 'true' }}
+        run: npm run test
+        working-directory: $(System.DefaultWorkingDirectory)/packages/core
 
 
-          - task: CmdLine@2
-            displayName: 'Publish CLI/Core'
-            condition: eq( ${{ parameters.publish }},true)
-            inputs:
-                 script: 'npx lerna publish from-package --yes --dist-tag ${{ parameters.version }}'
-                 workingDirectory: '$(System.DefaultWorkingDirectory)'
+      - name: 'Run CLI Unit Tests'
+        if: ${{ inputs.publish == 'true' }}
+        run: 'npm run test'
+        working-directory: $(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli
 
-          - task: CmdLine@2
-            displayName: 'Promote package'
-            condition: or( eq( '${{ parameters.version }}', 'beta'), eq( '${{ parameters.version }}', 'latest') )
-            inputs:
-                 script: |
-                    CORE_VERSION=$(jq -r ".version" packages/core/package.json)
-                    CLI_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)
-                    npm dist-tag add @dxatscale/sfpowerscripts.core@${CORE_VERSION} ${{ parameters.version }}
-                    npm dist-tag add @dxatscale/sfpowerscripts@${CLI_VERSION} ${{ parameters.version }}
+
+      - name: 'Upload Coverage Results'
+        if: ${{ inputs.publish == 'true' }}
+        run: 'curl -s https://codecov.io/bash'
+        shell: bash
+        working-directory: $(System.DefaultWorkingDirectory)/packages/core
+
+
+      - name: 'Publish CLI/Core'
+        if: ${{ inputs.publish == 'true' }}
+        run: 'npx lerna publish from-package --yes --dist-tag ${{ inputs.version }}'
+        working-directory: $(System.DefaultWorkingDirectory)
+
+
+      - name: 'Promote package'
+        if: ${{ inputs.version == 'beta' }} || ${{ inputs.version == 'latest' }}
+        run: |
+          CORE_VERSION=$(jq -r ".version" packages/core/package.json)
+          CLI_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)
+          npm dist-tag add @dxatscale/sfpowerscripts.core@${CORE_VERSION} ${{ inputs.version }}
+          npm dist-tag add @dxatscale/sfpowerscripts@${CLI_VERSION} ${{ inputs.version }}

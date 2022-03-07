@@ -17,41 +17,42 @@ on:
 
 
 # TODO: to be migrated to github actions syntax
-steps:
-          - checkout: self
+jobs:
+  promotePackage:
+    name: 'Promote Package'
+    runs-on: ubuntu-latest
 
-          - task: NodeTool@0
-            inputs:
-             versionSpec: '14.x'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-          - task: CmdLine@2
-            displayName: "Set Git Config"
-            inputs:
-               script: |
-                 git config --global user.email "sfpowerkit.ci@dev.azure.com"
-                 git config --global user.name "sfpowerkitci"
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14' 
 
+      - name: 'Set Git Config'
+        run: |
+          git config --global user.email "sfpowerkit.ci@dev.azure.com"
+          git config --global user.name "sfpowerkitci"
 
-          - task: DownloadSecureFile@1
-            displayName: 'Download secure file .npmrc'
-            name: npmrc
-            inputs:
-                secureFile: '8abaf6dc-ff2e-427a-971b-a98cbd48af34' # Need to change this
+# TODO: find equivalent for gh actions / for confirmation with Alan
+      - task: DownloadSecureFile@1
+        displayName: 'Download secure file .npmrc'
+        name: npmrc
+        inputs:
+            secureFile: '8abaf6dc-ff2e-427a-971b-a98cbd48af34' # Need to change this
 
-          - task: npmAuthenticate@0
-            inputs:
-              workingFile: $(npmrc.secureFilePath)
-              customEndpoint: npm
+      - task: npmAuthenticate@0
+        inputs:
+          workingFile: $(npmrc.secureFilePath)
+          customEndpoint: npm
 
-          - task: CmdLine@2
-            displayName: "Move authenticated npmrc file to home directory "
-            inputs:
-              script: |
-               mv $(npmrc.secureFilePath)  ~/.npmrc
+      - name: 'Move authenticated npmrc file to home directory'
+        run: |
+          mv $(npmrc.secureFilePath)  ~/.npmrc
 
-          - task: CmdLine@2
-            displayName: 'Promote package ${{ parameters.packageToPromote.package }}'
-            inputs:
-                 script: |
-                    PKG_VERSION=$(jq -r ".version" ${{ parameters.packageToPromote.pjson }})
-                    npm dist-tag add ${{ parameters.packageToPromote.package }}@$PKG_VERSION ${{ parameters.version }}
+      - name: 'Promote package ${{ inputs.packageToPromote.package }}'
+        script: |
+          PKG_VERSION=$(jq -r ".version" ${{ inputs.packageToPromote.pjson }})
+          npm dist-tag add ${{ inputs.packageToPromote.package }}@$PKG_VERSION ${{ inputs.version }}
