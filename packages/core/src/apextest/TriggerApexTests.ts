@@ -18,7 +18,6 @@ import ClearCodeCoverage from './ClearCodeCoverage';
 import {
     TestLevel,
     TestResult,
-    TestRunIdResult,
     TestService,
     JUnitReporter,
     Progress,
@@ -358,9 +357,7 @@ export class ProgressReporter implements Progress<ApexTestProgressValue> {
                     let statusString = '';
 
                     //Compute total
-                    let total: number = 0,
-                        queue: number,
-                        completed: number;
+                    let total: number = 0;
                     for (const [key, value] of Object.entries(count)) {
                         total += value as number;
                     }
