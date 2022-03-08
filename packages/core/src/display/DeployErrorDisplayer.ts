@@ -3,7 +3,10 @@ import { DeployMessage } from '@salesforce/source-deploy-retrieve';
 import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
 
 export default class DeployErrorDisplayer {
-    public static printMetadataFailedToDeploy(componentFailures: DeployMessage | DeployMessage[], packageLogger: Logger) {
+    public static printMetadataFailedToDeploy(
+        componentFailures: DeployMessage | DeployMessage[],
+        packageLogger: Logger
+    ) {
         if (componentFailures === null || componentFailures === undefined) return;
 
         let table = new Table({
