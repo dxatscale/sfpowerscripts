@@ -10,17 +10,27 @@ import {
 import IndividualClassCoverage, { CoverageOptions } from '../apex/coverage/IndividualClassCoverage';
 import { TestReportDisplayer } from './TestReportDisplayer';
 import PackageTestCoverage from '../package/coverage/PackageTestCoverage';
-import SFPLogger, { LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '../logger/SFPLogger';
 import { RunAllTestsInPackageOptions } from './ExtendedTestOptions';
 import SFPStatsSender from '../stats/SFPStatsSender';
 import { Connection, Org } from '@salesforce/core';
 import ClearCodeCoverage from './ClearCodeCoverage';
-import { TestLevel, TestResult, TestRunIdResult, TestService, JUnitReporter } from '@salesforce/apex-node';
-import { delay } from '../utils/Delay';
+import {
+    TestLevel,
+    TestResult,
+    TestRunIdResult,
+    TestService,
+    JUnitReporter,
+    Progress,
+    ApexTestProgressValue,
+    CancellationTokenSource,
+} from '@salesforce/apex-node';
 import { CliJsonFormat, JsonReporter } from './JSONReporter';
+import { Duration } from '@salesforce/kit';
 
 export default class TriggerApexTests {
     private conn: Connection;
+    protected cancellationTokenSource = new CancellationTokenSource();
 
     public constructor(
         private target_org: string,
@@ -37,6 +47,15 @@ export default class TriggerApexTests {
     }> {
         let org = await Org.create({ aliasOrUsername: this.target_org });
         this.conn = org.getConnection();
+
+        // graceful shutdown
+        const exitHandler = async (): Promise<void> => {
+            await this.cancellationTokenSource.asyncCancel();
+            process.exit();
+        };
+
+        process.on('SIGINT', exitHandler);
+        process.on('SIGTERM', exitHandler);
 
         //Clear Code Coverage before triggering tests
         try {
@@ -76,38 +95,26 @@ export default class TriggerApexTests {
             else if (this.testOptions instanceof RunAllTestsInOrg) translatedTestLevel = TestLevel.RunAllTestsInOrg;
 
             //Trigger tests asynchronously
-            let testRunIdResult = (await this.triggerTestAsynchronously(
-                testService,
-                translatedTestLevel,
-                tests,
-                suites
-            )) as TestRunIdResult;
-
-            //Print Test Id
-            SFPLogger.log(
-                `Triggered tests with Run Id: ${testRunIdResult.testRunId}`,
-                LoggerLevel.INFO,
-                this.fileLogger
-            );
-
-            //Poll for tests completion
-            let startTime = Date.now();
-            while (true) {
-                let runStatus = await this.checkRunStatus(testRunIdResult.testRunId);
-                SFPLogger.log(
-                    `Executed Tests ... ${runStatus.ClassesCompleted} of ${
-                        runStatus.ClassesEnqueued
-                    }  Elapsed Time so far: ${Math.floor(Date.now() - startTime) / 1000}`,
-                    LoggerLevel.INFO,
-                    this.fileLogger
-                );
-                if (runStatus.Status == `Completed` || runStatus.Status == `Cancelled`) break;
-
-                await delay(30000);
+            let testRunResult;
+            try {
+                testRunResult = (await this.triggerTestAsynchronously(
+                    testService,
+                    translatedTestLevel,
+                    tests,
+                    suites
+                )) as TestResult;
+            } catch (error) {
+                return {
+                    result: false,
+                    id: null,
+                    message: error.message,
+                };
             }
 
+
+          
             //Fetch Test Results
-            const testResult = await testService.reportAsyncResults(testRunIdResult.testRunId, true);
+            const testResult = await testService.reportAsyncResults(testRunResult.summary.testRunId, true,this.cancellationTokenSource.token);
             const jsonOutput = this.formatResultInJson(testResult);
 
             //write output files
@@ -115,12 +122,12 @@ export default class TriggerApexTests {
 
             //Write files
             fs.writeJSONSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunIdResult.testRunId}.json`),
-                jsonOutput,
+                path.join(this.testOptions.outputdir, `test-result-${testRunResult.testRunId}.json`),
+                JSON.stringify(testResult),
                 { spaces: 4 }
             );
             fs.writeJSONSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunIdResult.testRunId}-coverage.json`),
+                path.join(this.testOptions.outputdir, `test-result-${testRunResult.testRunId}-coverage.json`),
                 jsonOutput.coverage.coverage,
                 { spaces: 4 }
             );
@@ -129,12 +136,12 @@ export default class TriggerApexTests {
             SFPLogger.log(
                 `Junit Report file available at ${path.join(
                     this.testOptions.outputdir,
-                    `test-result-${testRunIdResult.testRunId}-junit.xml`
+                    `test-result-${testRunResult.testRunId}-junit.xml`
                 )}`
             );
             let reportAsJUnitReport = new JUnitReporter().format(testResult);
             fs.writeFileSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunIdResult.testRunId}-junit.xml`),
+                path.join(this.testOptions.outputdir, `test-result-${testRunResult.testRunId}-junit.xml`),
                 reportAsJUnitReport
             );
 
@@ -244,16 +251,18 @@ export default class TriggerApexTests {
     }
 
     private formatResultInJson(result: TestResult): CliJsonFormat {
+        try
+        {
         const reporter = new JsonReporter();
         return reporter.format(result);
+        }
+        catch(error)
+        {
+            console.log(error);
+            return null;
+        }
     }
 
-    private async triggerTestSynchronously(testService: TestService, testMethod: string): Promise<TestResult> {
-        const payload = await testService.buildSyncPayload(TestLevel.RunSpecifiedTests, testMethod, null);
-        payload.skipCodeCoverage = false;
-        let result = (await testService.runTestSynchronous(payload, true, null)) as TestResult;
-        return result;
-    }
     /**
      * Trigger tests asynchronously
      * @param  {TestService} testService
@@ -269,23 +278,20 @@ export default class TriggerApexTests {
     ) {
         const payload = await testService.buildAsyncPayload(testLevel, null, tests, suites);
 
-        let result = await testService.runTestAsynchronous(payload, true, true, undefined, null);
+        let result = await testService.runTestAsynchronous(
+            payload,
+            true,
+            false,
+            new ProgressReporter(this.fileLogger),
+            this.cancellationTokenSource.token
+        );
 
-        return result;
-    }
-
-    public async checkRunStatus(testRunId: string): Promise<any | undefined> {
-        let testRunSummaryQuery = 'SELECT AsyncApexJobId, Status, ClassesCompleted, ClassesEnqueued, ';
-        testRunSummaryQuery += 'MethodsEnqueued, StartTime, EndTime, TestTime, UserId ';
-        testRunSummaryQuery += `FROM ApexTestRunResult WHERE AsyncApexJobId = '${testRunId}'`;
-
-        const testRunSummaryResults = (await this.conn.tooling.autoFetchQuery(testRunSummaryQuery)) as any;
-
-        if (testRunSummaryResults.records.length === 0) {
-            throw new Error(`Test Summary records not available`);
+ 
+        if (this.cancellationTokenSource.token.isCancellationRequested) {
+            throw new Error(`A previous run is being cancelled.. Please try after some time`);
         }
 
-        return testRunSummaryResults.records[0];
+        return result;
     }
 
     private async validateForApexCoverage(coverageReport: any): Promise<{
@@ -330,5 +336,45 @@ export default class TriggerApexTests {
                 );
             }
         }
+    }
+}
+export class ProgressReporter implements Progress<ApexTestProgressValue> {
+ 
+    private lastExecutedTime;
+    constructor(private logger: Logger) {
+        this.lastExecutedTime = Date.now();
+    }
+
+    report(value: ApexTestProgressValue): void {
+        try
+        {
+        let count={};
+        //Limit printing an update to 30 seconds
+        if (Date.now() - this.lastExecutedTime > Duration.seconds(30).milliseconds) {
+            if (value.type == 'TestQueueProgress') {
+                for (const elem of  value.value.records) {
+                    if (elem.Status) {
+                        if (!count[elem.Status]) {
+                              count[elem.Status] = 1;
+                        } else count[elem.Status]++;
+                    }
+                }
+                let statusString = '';
+              
+        
+                //Compute total
+                let total:number=0,queue:number,completed:number;
+                for (const [key, value] of Object.entries(count)) {
+                   total+=(value as number)
+                }
+                statusString=`Completed:${count[`Completed`]}/${total} Queued(${count['Queued']?count['Queued']:0}) Failed(${count['Failed']?count['Failed']:0})  `
+                SFPLogger.log(`Test Status: ` + COLOR_KEY_MESSAGE(statusString), LoggerLevel.INFO, this.logger);
+                this.lastExecutedTime = Date.now();
+            }
+        }
+       }  catch(error)
+       {
+           console.log(error);
+       }
     }
 }
