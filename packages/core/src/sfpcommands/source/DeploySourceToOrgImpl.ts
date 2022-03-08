@@ -55,8 +55,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             PackageComponentPrinter.printComponentTable(components, this.packageLogger);
 
             //Get Deploy ID
-            let result = await this.deploy(sourceDirPath,componentSet);
-    
+            let result = await this.deploy(sourceDirPath, componentSet);
+
             //Handle Responses
             if (result.response.success) {
                 deploySourceResult.message = `Successfully deployed`;
@@ -131,7 +131,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         SFPLogger.log(table.toString(), LoggerLevel.WARN, this.packageLogger);
     }
 
-    private async buildDeploymentOptions(sourceDir:string,username: string): Promise<MetadataApiDeployOptions> {
+    private async buildDeploymentOptions(sourceDir: string, username: string): Promise<MetadataApiDeployOptions> {
         username = await convertAliasToUsername(username);
         let metdataDeployOptions: MetadataApiDeployOptions = {
             usernameOrConnection: username,
@@ -140,8 +140,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
         if (this.deployment_options['testlevel'] == 'RunApexTestSuite') {
             metdataDeployOptions.apiOptions.testLevel = `RunSpecifiedTests`;
-            let apexTestSuite = new ApexTestSuite(sourceDir,this.deployment_options['apextestsuite']);
-             metdataDeployOptions.apiOptions.runTests=await apexTestSuite.getConstituentClasses();
+            let apexTestSuite = new ApexTestSuite(sourceDir, this.deployment_options['apextestsuite']);
+            metdataDeployOptions.apiOptions.runTests = await apexTestSuite.getConstituentClasses();
         } else if (this.deployment_options['testlevel'] == 'RunSpecifiedTests') {
             metdataDeployOptions.apiOptions.testLevel = `RunSpecifiedTests`;
             metdataDeployOptions.apiOptions.runTests = this.deployment_options['specified_tests'].split(`,`);
@@ -158,13 +158,13 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
         return metdataDeployOptions;
     }
-    
+
     convertApexTestSuiteToListOfApexClasses(apexTestSuite: any) {
         throw new Error('Method not implemented.');
     }
 
-    private async deploy(backingSourceDir:string,componentSet: ComponentSet) {
-        let deploymentOptions = await this.buildDeploymentOptions(backingSourceDir,this.target_org);
+    private async deploy(backingSourceDir: string, componentSet: ComponentSet) {
+        let deploymentOptions = await this.buildDeploymentOptions(backingSourceDir, this.target_org);
         const deploy = await componentSet.deploy(deploymentOptions);
 
         let startTime = Date.now();
