@@ -46,9 +46,9 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             return deploySourceResult;
         } else {
             //Create path
-            let sourceDirPath:string;
+            let sourceDirPath: string;
             if (this.project_directory) sourceDirPath = path.resolve(this.source_directory);
-            sourceDirPath = path.resolve(this.project_directory,this.source_directory);
+            sourceDirPath = path.resolve(this.project_directory, this.source_directory);
 
             let componentSet = ComponentSet.fromSource(sourceDirPath);
             let components = componentSet.getSourceComponents();
@@ -63,7 +63,6 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
             //Handle Responses
             if (result.response.success) {
-
                 deploySourceResult.message = `Successfully deployed`;
                 deploySourceResult.result = result.response.success;
                 deploySourceResult.deploy_id = result.response.id;
@@ -169,7 +168,6 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
         return metdataDeployOptions;
     }
-
 
     private async deploy(backingSourceDir: string, componentSet: ComponentSet) {
         let deploymentOptions = await this.buildDeploymentOptions(backingSourceDir, this.target_org);
