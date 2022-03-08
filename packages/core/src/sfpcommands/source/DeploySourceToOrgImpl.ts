@@ -13,7 +13,9 @@ import {
 } from '@salesforce/source-deploy-retrieve';
 import PackageComponentPrinter from '../../display/PackageComponentPrinter';
 import ApexTestSuite from '../../apextest/ApexTestSuite';
+import path from 'path/posix';
 const Table = require('cli-table');
+import * as fs from 'fs-extra';
 
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public constructor(
@@ -44,9 +46,9 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             return deploySourceResult;
         } else {
             //Create path
-            let sourceDirPath = '';
-            if (this.project_directory) sourceDirPath = this.project_directory;
-            sourceDirPath.concat(this.source_directory);
+            let sourceDirPath:string;
+            if (this.project_directory) sourceDirPath = path.resolve(this.source_directory);
+            sourceDirPath = path.resolve(this.project_directory,this.source_directory);
 
             let componentSet = ComponentSet.fromSource(sourceDirPath);
             let components = componentSet.getSourceComponents();
@@ -57,8 +59,11 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             //Get Deploy ID
             let result = await this.deploy(sourceDirPath, componentSet);
 
+            this.writeResultToReport(result);
+
             //Handle Responses
             if (result.response.success) {
+
                 deploySourceResult.message = `Successfully deployed`;
                 deploySourceResult.result = result.response.success;
                 deploySourceResult.deploy_id = result.response.id;
@@ -69,6 +74,12 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             }
             return deploySourceResult;
         }
+    }
+
+    private writeResultToReport(result: DeployResult) {
+        let deploymentReports = `.sfpowerscripts/mdapiDeployReports`;
+        fs.mkdirpSync(deploymentReports);
+        fs.writeFileSync(path.join(deploymentReports, `${result.response.id}.json`), JSON.stringify(result));
     }
 
     private async displayErrors(result: DeployResult): Promise<string> {
@@ -159,9 +170,6 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         return metdataDeployOptions;
     }
 
-    convertApexTestSuiteToListOfApexClasses(apexTestSuite: any) {
-        throw new Error('Method not implemented.');
-    }
 
     private async deploy(backingSourceDir: string, componentSet: ComponentSet) {
         let deploymentOptions = await this.buildDeploymentOptions(backingSourceDir, this.target_org);
@@ -186,7 +194,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
                     COLOR_SUCCESS(
                         `Succesfully Deployed ${COLOR_HEADER(
                             response.response.numberComponentsDeployed
-                        )} components in ${deploymentDurationAsDate.getMinutes()}:${deploymentDurationAsDate.getSeconds()} mins`
+                        )} components in ${deploymentDurationAsDate.getHours()}:${deploymentDurationAsDate.getMinutes()}:${deploymentDurationAsDate.getSeconds()} mins`
                     ),
                     LoggerLevel.INFO,
                     this.packageLogger
@@ -194,7 +202,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             } else
                 SFPLogger.log(
                     COLOR_ERROR(
-                        `Failed to deploy after ${deploymentDurationAsDate.getMinutes()}:${deploymentDurationAsDate.getSeconds()} mins`
+                        `Failed to deploy after ${deploymentDurationAsDate.getHours()}:${deploymentDurationAsDate.getMinutes()}:${deploymentDurationAsDate.getSeconds()} mins`
                     ),
                     LoggerLevel.INFO,
                     this.packageLogger
