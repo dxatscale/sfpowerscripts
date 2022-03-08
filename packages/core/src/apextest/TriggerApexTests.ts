@@ -111,10 +111,12 @@ export default class TriggerApexTests {
                 };
             }
 
-
-          
             //Fetch Test Results
-            const testResult = await testService.reportAsyncResults(testRunResult.summary.testRunId, true,this.cancellationTokenSource.token);
+            const testResult = await testService.reportAsyncResults(
+                testRunResult.summary.testRunId,
+                true,
+                this.cancellationTokenSource.token
+            );
             const jsonOutput = this.formatResultInJson(testResult);
 
             //write output files
@@ -251,13 +253,10 @@ export default class TriggerApexTests {
     }
 
     private formatResultInJson(result: TestResult): CliJsonFormat {
-        try
-        {
-        const reporter = new JsonReporter();
-        return reporter.format(result);
-        }
-        catch(error)
-        {
+        try {
+            const reporter = new JsonReporter();
+            return reporter.format(result);
+        } catch (error) {
             console.log(error);
             return null;
         }
@@ -286,7 +285,6 @@ export default class TriggerApexTests {
             this.cancellationTokenSource.token
         );
 
- 
         if (this.cancellationTokenSource.token.isCancellationRequested) {
             throw new Error(`A previous run is being cancelled.. Please try after some time`);
         }
@@ -339,42 +337,42 @@ export default class TriggerApexTests {
     }
 }
 export class ProgressReporter implements Progress<ApexTestProgressValue> {
- 
     private lastExecutedTime;
     constructor(private logger: Logger) {
         this.lastExecutedTime = Date.now();
     }
 
     report(value: ApexTestProgressValue): void {
-        try
-        {
-        let count={};
-        //Limit printing an update to 30 seconds
-        if (Date.now() - this.lastExecutedTime > Duration.seconds(30).milliseconds) {
-            if (value.type == 'TestQueueProgress') {
-                for (const elem of  value.value.records) {
-                    if (elem.Status) {
-                        if (!count[elem.Status]) {
-                              count[elem.Status] = 1;
-                        } else count[elem.Status]++;
+        try {
+            let count = {};
+            //Limit printing an update to 30 seconds
+            if (Date.now() - this.lastExecutedTime > Duration.seconds(30).milliseconds) {
+                if (value.type == 'TestQueueProgress') {
+                    for (const elem of value.value.records) {
+                        if (elem.Status) {
+                            if (!count[elem.Status]) {
+                                count[elem.Status] = 1;
+                            } else count[elem.Status]++;
+                        }
                     }
+                    let statusString = '';
+
+                    //Compute total
+                    let total: number = 0,
+                        queue: number,
+                        completed: number;
+                    for (const [key, value] of Object.entries(count)) {
+                        total += value as number;
+                    }
+                    statusString = `Completed:${count[`Completed`]}/${total} Queued(${
+                        count['Queued'] ? count['Queued'] : 0
+                    }) Failed(${count['Failed'] ? count['Failed'] : 0})  `;
+                    SFPLogger.log(`Test Status: ` + COLOR_KEY_MESSAGE(statusString), LoggerLevel.INFO, this.logger);
+                    this.lastExecutedTime = Date.now();
                 }
-                let statusString = '';
-              
-        
-                //Compute total
-                let total:number=0,queue:number,completed:number;
-                for (const [key, value] of Object.entries(count)) {
-                   total+=(value as number)
-                }
-                statusString=`Completed:${count[`Completed`]}/${total} Queued(${count['Queued']?count['Queued']:0}) Failed(${count['Failed']?count['Failed']:0})  `
-                SFPLogger.log(`Test Status: ` + COLOR_KEY_MESSAGE(statusString), LoggerLevel.INFO, this.logger);
-                this.lastExecutedTime = Date.now();
             }
+        } catch (error) {
+            console.log(error);
         }
-       }  catch(error)
-       {
-           console.log(error);
-       }
     }
 }
