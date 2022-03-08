@@ -46,9 +46,9 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             return deploySourceResult;
         } else {
             //Create path
-            let sourceDirPath: string;
-            if (this.project_directory) sourceDirPath = path.resolve(this.source_directory);
-            sourceDirPath = path.resolve(this.project_directory, this.source_directory);
+            let sourceDirPath: string = path.resolve(this.source_directory);;
+            if (this.project_directory)
+               sourceDirPath = path.resolve(this.project_directory, this.source_directory);
 
             let componentSet = ComponentSet.fromSource(sourceDirPath);
             let components = componentSet.getSourceComponents();
