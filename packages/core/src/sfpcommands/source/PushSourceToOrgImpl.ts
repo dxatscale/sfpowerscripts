@@ -18,6 +18,7 @@ export default class PushSourceToOrgImpl implements DeploymentExecutor {
         let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
             this.project_directory,
             this.source_directory,
+            null,
             this.logger
         );
 

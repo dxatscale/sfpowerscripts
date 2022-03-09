@@ -132,6 +132,7 @@ export default class SFPPackage {
         );
 
         let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
+            ProjectConfig.getSFDXPackageManifest(sfpPackage._workingDirectory).sourceApiVersion,
             sfpPackage._workingDirectory,
             sfpPackage._packageDescriptor.path,
             packageLogger
