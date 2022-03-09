@@ -49,6 +49,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
                 this.project_directory,
                 this.source_directory,
+                this.deployment_options['apiVersion'],
                 this.packageLogger
             );
 
