@@ -1,7 +1,7 @@
 import { ComponentSet, MetadataConverter } from '@salesforce/source-deploy-retrieve';
 import path from 'path';
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
-import ProjectConfig from '../../project/ProjectConfig';
+
 
 export default class SourceToMDAPIConvertor {
     public constructor( private projectDirectory: string, private sourceDirectory: string, private sourceApiVersion:string,private logger?: Logger) {}
