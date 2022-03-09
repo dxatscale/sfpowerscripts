@@ -12,7 +12,8 @@ export default class InstallUnlockedPackageImpl extends SFDXCommand {
         private publishWaitTime?: string,
         private installationkey?: string,
         private securityType?: string,
-        private upgradeType?: string
+        private upgradeType?: string,
+        private apiVersion?: string
     ) {
         super(targetUserName, working_directory, logger, logLevel);
     }
@@ -36,6 +37,7 @@ export default class InstallUnlockedPackageImpl extends SFDXCommand {
         if (this.publishWaitTime) command += ` --publishwait=${this.publishWaitTime}`;
         if (this.securityType) command += ` --securitytype=${this.securityType}`;
         if (this.upgradeType) command += ` --upgradetype=${this.upgradeType}`;
+        if (this.apiVersion) command += ` --apiversion=${this.apiVersion}`;
 
         return command;
     }

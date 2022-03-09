@@ -7,7 +7,7 @@ import * as fs from 'fs-extra';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/source/DeploymentExecutor';
-
+import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
@@ -95,7 +95,7 @@ export default class InstallSourcePackage extends InstallPackageCommand {
         try {
             let artifactMetadataFilepath = this.artifactFilePaths.packageMetadataFilePath;
 
-            let packageMetadata = JSON.parse(fs.readFileSync(artifactMetadataFilepath).toString());
+            let packageMetadata: PackageMetadata = JSON.parse(fs.readFileSync(artifactMetadataFilepath).toString());
 
             console.log('Package Metadata:');
             console.log(packageMetadata);
@@ -106,6 +106,7 @@ export default class InstallSourcePackage extends InstallPackageCommand {
                 optimizeDeployment: optimizeDeployment,
                 skipTesting: skipTesting,
                 waitTime: wait_time,
+                apiVersion: packageMetadata.apiVersion || packageMetadata.payload.Package.version // Use package.xml version for backwards compat with old artifacts
             };
 
             let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(

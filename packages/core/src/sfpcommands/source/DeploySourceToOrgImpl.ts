@@ -49,7 +49,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
                 this.project_directory,
                 this.source_directory,
-                this.deployment_options['apiVersion'],
+                this.deployment_options.apiVersion,
                 this.packageLogger
             );
 
@@ -260,6 +260,10 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         }
         if (this.deployment_options['ignore_errors']) {
             command += ` --ignoreerrors`;
+        }
+
+        if (this.deployment_options.apiVersion) {
+            command += ` --apiversion ${this.deployment_options.apiVersion}`
         }
 
         return command;

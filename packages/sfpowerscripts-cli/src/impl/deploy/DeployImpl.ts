@@ -134,8 +134,9 @@ export default class DeployImpl {
                                 queue[i].skipTesting,
                                 this.props.waitTime.toString(),
                                 pkgDescriptor,
-                                false //Queue already filtered by deploy, there is no further need for individual
+                                false, //Queue already filtered by deploy, there is no further need for individual
                                 //commands to decide the skip logic. TODO: fix this incorrect pattern
+                                packageMetadata.apiVersion || packageMetadata.payload.Package.version, // Use package.xml version for backwards compat with old artifacts
                             );
 
                             if (
@@ -516,24 +517,35 @@ export default class DeployImpl {
         skipTesting: boolean,
         waitTime: string,
         pkgDescriptor: any,
-        skipIfPackageInstalled: boolean
+        skipIfPackageInstalled: boolean,
+        apiVersion: string
     ): Promise<PackageInstallationResult> {
         let packageInstallationResult: PackageInstallationResult;
 
         if (this.props.deploymentMode == DeploymentMode.NORMAL) {
             if (packageType === 'unlocked') {
+                let options = {
+                    installationkey: null,
+                    apexcompile: 'package',
+                    securitytype: 'AdminsOnly',
+                    upgradetype: 'Mixed',
+                    waitTime: waitTime,
+                    apiVersion: apiVersion
+                };
+
                 packageInstallationResult = await this.installUnlockedPackage(
                     targetUsername,
+                    sourceDirectoryPath,
                     packageMetadata,
-                    skipIfPackageInstalled,
-                    waitTime,
-                    sourceDirectoryPath
+                    options,
+                    skipIfPackageInstalled
                 );
             } else if (packageType === 'source') {
                 let options = {
                     optimizeDeployment: this.isOptimizedDeploymentForSourcePackage(pkgDescriptor),
                     skipTesting: skipTesting,
                     waitTime: waitTime,
+                    apiVersion: apiVersion
                 };
 
                 packageInstallationResult = await this.installSourcePackage(
@@ -549,8 +561,8 @@ export default class DeployImpl {
                     sfdx_package,
                     targetUsername,
                     sourceDirectoryPath,
-                    skipIfPackageInstalled,
-                    packageMetadata
+                    packageMetadata,
+                    skipIfPackageInstalled
                 );
             } else {
                 throw new Error(`Unhandled package type ${packageType}`);
@@ -579,8 +591,8 @@ export default class DeployImpl {
                     sfdx_package,
                     targetUsername,
                     sourceDirectoryPath,
-                    skipIfPackageInstalled,
-                    packageMetadata
+                    packageMetadata,
+                    skipIfPackageInstalled
                 );
             } else {
                 throw new Error(`Unhandled package type ${packageType}`);
@@ -591,19 +603,11 @@ export default class DeployImpl {
 
     private installUnlockedPackage(
         targetUsername: string,
+        sourceDirectoryPath: string,
         packageMetadata: PackageMetadata,
+        options: any,
         skip_if_package_installed: boolean,
-        waitTime: string,
-        sourceDirectoryPath: string
     ): Promise<PackageInstallationResult> {
-        let options = {
-            installationkey: null,
-            apexcompile: 'package',
-            securitytype: 'AdminsOnly',
-            upgradetype: 'Mixed',
-            waitTime: waitTime,
-        };
-
         let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
             packageMetadata.package_name,
             targetUsername,
@@ -650,8 +654,8 @@ export default class DeployImpl {
         sfdx_package: string,
         targetUsername: string,
         sourceDirectoryPath: string,
-        skip_if_package_installed: boolean,
-        packageMetadata: PackageMetadata
+        packageMetadata: PackageMetadata,
+        skip_if_package_installed: boolean
     ): Promise<PackageInstallationResult> {
         let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
             sfdx_package,
