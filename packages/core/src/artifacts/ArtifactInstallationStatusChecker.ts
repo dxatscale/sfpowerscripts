@@ -1,7 +1,7 @@
 import InstalledAritfactsFetcher from './InstalledAritfactsFetcher';
 import PackageMetadata from '../PackageMetadata';
 import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
-import ArtifactMigrator from './ArtifactMigrator';
+
 
 export default class ArtifactInstallationStatusChecker {
     public static async checkWhetherPackageIsIntalledInOrg(
