@@ -3,7 +3,7 @@ import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
 import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageImpl';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import PackageMetadata from "@dxatscale/sfpowerscripts.core/lib/PackageMetadata";
+import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 const fs = require('fs');
 
@@ -139,7 +139,7 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
                 upgradetype: upgrade_type,
                 waitTime: waitTime,
                 publishWaitTime: publishWaitTime,
-                apiVersion: packageMetadata.apiVersion || packageMetadata.payload.Package.version // Use package.xml version for backwards compat with old artifacts
+                apiVersion: packageMetadata.apiVersion || packageMetadata.payload.Package.version, // Use package.xml version for backwards compat with old artifacts
             };
 
             let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(

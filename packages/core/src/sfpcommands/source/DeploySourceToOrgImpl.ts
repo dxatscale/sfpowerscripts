@@ -263,7 +263,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         }
 
         if (this.deployment_options.apiVersion) {
-            command += ` --apiversion ${this.deployment_options.apiVersion}`
+            command += ` --apiversion ${this.deployment_options.apiVersion}`;
         }
 
         return command;

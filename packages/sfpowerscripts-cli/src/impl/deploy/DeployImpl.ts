@@ -136,7 +136,7 @@ export default class DeployImpl {
                                 pkgDescriptor,
                                 false, //Queue already filtered by deploy, there is no further need for individual
                                 //commands to decide the skip logic. TODO: fix this incorrect pattern
-                                packageMetadata.apiVersion || packageMetadata.payload.Package.version, // Use package.xml version for backwards compat with old artifacts
+                                packageMetadata.apiVersion || packageMetadata.payload.Package.version // Use package.xml version for backwards compat with old artifacts
                             );
 
                             if (
@@ -530,7 +530,7 @@ export default class DeployImpl {
                     securitytype: 'AdminsOnly',
                     upgradetype: 'Mixed',
                     waitTime: waitTime,
-                    apiVersion: apiVersion
+                    apiVersion: apiVersion,
                 };
 
                 packageInstallationResult = await this.installUnlockedPackage(
@@ -545,7 +545,7 @@ export default class DeployImpl {
                     optimizeDeployment: this.isOptimizedDeploymentForSourcePackage(pkgDescriptor),
                     skipTesting: skipTesting,
                     waitTime: waitTime,
-                    apiVersion: apiVersion
+                    apiVersion: apiVersion,
                 };
 
                 packageInstallationResult = await this.installSourcePackage(
@@ -606,7 +606,7 @@ export default class DeployImpl {
         sourceDirectoryPath: string,
         packageMetadata: PackageMetadata,
         options: any,
-        skip_if_package_installed: boolean,
+        skip_if_package_installed: boolean
     ): Promise<PackageInstallationResult> {
         let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
             packageMetadata.package_name,
