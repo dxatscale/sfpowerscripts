@@ -2,9 +2,13 @@ import { ComponentSet, MetadataConverter } from '@salesforce/source-deploy-retri
 import path from 'path';
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 
-
 export default class SourceToMDAPIConvertor {
-    public constructor( private projectDirectory: string, private sourceDirectory: string, private sourceApiVersion:string,private logger?: Logger) {}
+    public constructor(
+        private projectDirectory: string,
+        private sourceDirectory: string,
+        private sourceApiVersion: string,
+        private logger?: Logger
+    ) {}
 
     public async convert() {
         let mdapiDir = `.sfpowerscripts/${this.makefolderid(5)}_mdapi`;
@@ -22,9 +26,8 @@ export default class SourceToMDAPIConvertor {
             fsPaths: [resolvedSourceDirectory],
         });
 
-        if(this.sourceApiVersion)
-           componentSet.sourceApiVersion = this.sourceApiVersion;
-        
+        if (this.sourceApiVersion) componentSet.sourceApiVersion = this.sourceApiVersion;
+
         const converter = new MetadataConverter();
         let convertResult = await converter.convert(componentSet, 'metadata', {
             type: 'directory',
