@@ -51,8 +51,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
             let componentSet = ComponentSet.fromSource(sourceDirPath);
 
-           if(this.deployment_options['apiversion'])
-              componentSet.sourceApiVersion = this.deployment_options['apiversion'];
+            if (this.deployment_options['apiversion'])
+                componentSet.sourceApiVersion = this.deployment_options['apiversion'];
 
             let components = componentSet.getSourceComponents();
 
