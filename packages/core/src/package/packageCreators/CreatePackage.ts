@@ -7,6 +7,9 @@ import SourcePackageGenerator from '../../generators/SourcePackageGenerator';
 
 export abstract class CreatePackage {
     private startTime: number;
+
+    // Child classes parse the project config again, to avoid mutation
+    private packageManifest;
     private packageDescriptor;
     private packageDirectory;
 
@@ -18,17 +21,21 @@ export abstract class CreatePackage {
         protected logger?: Logger,
         protected pathToReplacementForceIgnore?: string,
         protected configFilePath?: string
-    ) {}
+    ) {
+        this.packageManifest = ProjectConfig.getSFDXPackageManifest(this.projectDirectory);
+        //Get Package Descriptor
+        this.packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(this.sfdx_package, this.packageManifest);
+        this.packageDirectory = this.packageDescriptor['path'];
+    }
 
     public async exec(): Promise<PackageMetadata> {
         //Get Type of Package
         this.packageArtifactMetadata.package_type = this.getTypeOfPackage();
+
+        this.packageArtifactMetadata.apiVersion = this.packageManifest.sourceApiVersion;
+
         //Capture Start Time
         this.startTime = Date.now();
-
-        //Get Package Descriptor
-        this.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(this.projectDirectory, this.sfdx_package);
-        this.packageDirectory = this.packageDescriptor['path'];
 
         //Print Header
         this.printHeader();

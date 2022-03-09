@@ -94,7 +94,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.options.waitTime,
                     this.options.optimizeDeployment,
                     this.options.skipTesting,
-                    this.targetusername
+                    this.targetusername,
+                    this.options.apiVersion
                 );
 
                 let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
@@ -299,12 +300,14 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         waitTime: string,
         optimizeDeployment: boolean,
         skipTest: boolean,
-        target_org: string
+        target_org: string,
+        apiVersion: string
     ): Promise<any> {
         let mdapi_options = {};
         mdapi_options['ignore_warnings'] = true;
         mdapi_options['wait_time'] = waitTime;
         mdapi_options['checkonly'] = false;
+        mdapi_options['apiVersion'] = apiVersion;
 
         if (skipTest) {
             let orgDetails: OrgDetails;
