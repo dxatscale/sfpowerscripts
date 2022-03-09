@@ -37,7 +37,8 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
             this.options['publishWaitTime'],
             this.options['installationkey'],
             this.options['securitytype'],
-            this.options['upgradetype']
+            this.options['upgradetype'],
+            this.options.apiVersion
         );
         SFPLogger.log(
             `Executing installation command: ${installUnlockedPackageWrapper.getGeneratedSFDXCommandWithParams()}`
@@ -45,6 +46,12 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
         await installUnlockedPackageWrapper.exec(false);
     }
 
+    /**
+     * Checks whether unlocked package version is installed in org.
+     * Overrides base class method.
+     * @param skipIfPackageInstalled
+     * @returns
+     */
     protected async isPackageToBeInstalled(skipIfPackageInstalled: boolean): Promise<boolean> {
         try {
             if (skipIfPackageInstalled) {

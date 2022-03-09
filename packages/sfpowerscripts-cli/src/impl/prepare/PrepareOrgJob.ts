@@ -9,7 +9,7 @@ import SFPLogger, {
 } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { Stage } from '../Stage';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl';
+import InstallUnlockedPackageWrapper from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
 import PoolJobExecutor, { JobError, ScriptExecutionResult } from '../pool/PoolJobExecutor';
 import { Connection, Org } from '@salesforce/core';
@@ -54,7 +54,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
             SFPLogger.log(`Installing sfpowerscripts_artifact package to the ${scratchOrg.alias}`, null, packageLogger);
 
-            let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
+            let installUnlockedPackageWrapper: InstallUnlockedPackageWrapper = new InstallUnlockedPackageWrapper(
                 packageLogger,
                 logLevel,
                 null,
@@ -65,7 +65,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                 '60'
             );
 
-            await installUnlockedPackageImpl.exec(true);
+            await installUnlockedPackageWrapper.exec(true);
 
             SFPLogger.log(`Installing package depedencies to the ${scratchOrg.alias}`, LoggerLevel.INFO, packageLogger);
             SFPLogger.log(`Installing Package Dependencies of this repo in ${scratchOrg.alias}`);
