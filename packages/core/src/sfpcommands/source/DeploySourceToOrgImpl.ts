@@ -49,8 +49,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             let sourceDirPath: string = path.resolve(this.source_directory);
             if (this.project_directory) sourceDirPath = path.resolve(this.project_directory, this.source_directory);
 
+            //Create component set from source directory
             let componentSet = ComponentSet.fromSource(sourceDirPath);
-
             if (this.deployment_options['apiversion'])
                 componentSet.sourceApiVersion = this.deployment_options['apiversion'];
 
@@ -171,7 +171,6 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         if (this.deployment_options['ignore_errors']) {
             metdataDeployOptions.apiOptions.rollbackOnError = false;
         }
-
         return metdataDeployOptions;
     }
 
