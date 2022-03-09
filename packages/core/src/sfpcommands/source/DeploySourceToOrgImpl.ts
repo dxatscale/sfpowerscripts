@@ -146,10 +146,9 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             usernameOrConnection: username,
             apiOptions: {},
         };
-         
 
-        if(this.deployment_options['apiversion'])
-           metdataDeployOptions.apiVersion = this.deployment_options['apiversion']
+        if (this.deployment_options['apiversion'])
+            metdataDeployOptions.apiVersion = this.deployment_options['apiversion'];
 
         if (this.deployment_options['testlevel'] == 'RunApexTestSuite') {
             metdataDeployOptions.apiOptions.testLevel = `RunSpecifiedTests`;
