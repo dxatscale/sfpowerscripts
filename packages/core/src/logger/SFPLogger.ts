@@ -80,7 +80,7 @@ export default class SFPLogger {
                     return;
                 } else if (logger.logType === LoggerType.file) {
                     let fileLogger = logger as FileLogger;
-                    message = message.replace(
+                    message = message?.toString().replace(
                         /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
                     fs.appendFileSync(fileLogger.path, message + EOL, 'utf8');
                 }
