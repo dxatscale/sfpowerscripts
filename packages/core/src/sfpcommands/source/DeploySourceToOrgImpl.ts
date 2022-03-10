@@ -13,9 +13,9 @@ import {
 } from '@salesforce/source-deploy-retrieve';
 import PackageComponentPrinter from '../../display/PackageComponentPrinter';
 import ApexTestSuite from '../../apextest/ApexTestSuite';
-import path from 'path/posix';
 const Table = require('cli-table');
 import * as fs from 'fs-extra';
+import path from 'path';
 
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public constructor(
