@@ -124,7 +124,7 @@ export default class TriggerApexTests {
             //Write files
             fs.writeJSONSync(
                 path.join(this.testOptions.outputdir, `test-result-${testRunResult.testRunId}.json`),
-                JSON.stringify(testResult),
+                testResult,
                 { spaces: 4 }
             );
             fs.writeJSONSync(
