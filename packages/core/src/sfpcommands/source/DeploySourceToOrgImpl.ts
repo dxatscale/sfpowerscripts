@@ -81,7 +81,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     private writeResultToReport(result: DeployResult) {
         let deploymentReports = `.sfpowerscripts/mdapiDeployReports`;
         fs.mkdirpSync(deploymentReports);
-        fs.writeFileSync(path.join(deploymentReports, `${result.response.id}.json`), JSON.stringify(result));
+        fs.writeFileSync(path.join(deploymentReports, `${result.response.id}.json`), JSON.stringify(result.response.details));
     }
 
     private async displayErrors(result: DeployResult): Promise<string> {
