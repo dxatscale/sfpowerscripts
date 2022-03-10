@@ -5,7 +5,8 @@
         "publish": {
             "yes": true,
             "ignoreChanges": ["*.md"],
-            "registry": "https://registry.npmjs.org"
+            "registry": "https://registry.npmjs.org",
+            "message": "chore(publish): update versions and publish to npm"
         }
     }
 }
