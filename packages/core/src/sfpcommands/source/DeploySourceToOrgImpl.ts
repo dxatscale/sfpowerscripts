@@ -17,6 +17,7 @@ const Table = require('cli-table');
 import * as fs from 'fs-extra';
 import path from 'path';
 
+
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public constructor(
         private target_org: string,
@@ -192,15 +193,14 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         });
 
         deploy.onFinish((response) => {
-            let deploymentDuration = Date.now() - startTime;
-            const deploymentDurationAsDate = new Date(deploymentDuration);
-
+            
+            let deploymentDuration =  new Duration(Date.now() - startTime,Duration.Unit.MILLISECONDS);
             if (response.response.success) {
                 SFPLogger.log(
                     COLOR_SUCCESS(
                         `Succesfully Deployed ${COLOR_HEADER(
                             response.response.numberComponentsDeployed
-                        )} components in ${deploymentDurationAsDate.getHours()}:${deploymentDurationAsDate.getMinutes()}:${deploymentDurationAsDate.getSeconds()} mins`
+                        )} components in ${deploymentDuration.hours}:${deploymentDuration.minutes}:${deploymentDuration.seconds}`
                     ),
                     LoggerLevel.INFO,
                     this.packageLogger
@@ -208,7 +208,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             } else
                 SFPLogger.log(
                     COLOR_ERROR(
-                        `Failed to deploy after ${deploymentDurationAsDate.getHours()}:${deploymentDurationAsDate.getMinutes()}:${deploymentDurationAsDate.getSeconds()} mins`
+                        `Failed to deploy after ${deploymentDuration.hours}:${deploymentDuration.minutes}:${deploymentDuration.seconds}`
                     ),
                     LoggerLevel.INFO,
                     this.packageLogger
