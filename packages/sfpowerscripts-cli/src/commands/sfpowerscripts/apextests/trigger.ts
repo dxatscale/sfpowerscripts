@@ -5,12 +5,12 @@ import {
     RunSpecifiedTestsOption,
     TestLevel,
     TestOptions,
-} from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions';
+} from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import {
     ExtendedTestOptions,
     RunAllTestsInPackageOptions,
-} from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions';
-import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/TriggerApexTests';
+} from '@dxatscale/sfpowerscripts.core/lib/apextest/ExtendedTestOptions';
+import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
@@ -64,6 +64,10 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
         }),
         synchronous: flags.boolean({
             char: 's',
+            deprecated: {
+                messageOverride:
+                    'synchronous mode is no longer supported, all tests are triggered asynchronously, Please use cli or disable parallel testing in the org ',
+            },
             description: messages.getMessage('synchronousFlagDescription'),
         }),
         specifiedtests: flags.string({

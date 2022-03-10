@@ -1,4 +1,4 @@
-import TriggerApexTestImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/TriggerApexTests';
+import TriggerApexTestImpl from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
 import {
     RunAllTestsInOrg,
     RunApexTestSuitesOption,
@@ -6,11 +6,11 @@ import {
     RunSpecifiedTestsOption,
     TestLevel,
     TestOptions,
-} from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions';
+} from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import {
     ExtendedTestOptions,
     RunAllTestsInPackageOptions,
-} from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions';
+} from '@dxatscale/sfpowerscripts.core/lib/apextest/ExtendedTestOptions';
 import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
 import SFPPackage, { ApexClasses } from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
 import PackageTestCoverage from '@dxatscale/sfpowerscripts.core/lib/package/coverage/PackageTestCoverage';

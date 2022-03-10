@@ -9,10 +9,10 @@ import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfpowerscripts.core/l
 import { EOL } from 'os';
 import { Stage } from '../Stage';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/TriggerApexTests';
+import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
 import SFPPackage from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
-import { RunAllTestsInPackageOptions } from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions';
-import { TestOptions } from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions';
+import { RunAllTestsInPackageOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/ExtendedTestOptions';
+import { TestOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import semver = require('semver');
 import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl';
 import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/source/DeploymentExecutor';
