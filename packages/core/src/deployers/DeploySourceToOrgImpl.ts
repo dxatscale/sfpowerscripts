@@ -1,8 +1,7 @@
-import SFPLogger, { COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, Logger, LoggerLevel } from '../../logger/SFPLogger';
-import PackageEmptyChecker from '../../package/PackageEmptyChecker';
-import DeployErrorDisplayer from '../../display/DeployErrorDisplayer';
+import SFPLogger, { COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, Logger, LoggerLevel } from '../logger/SFPLogger';
+import PackageEmptyChecker from '../package/PackageEmptyChecker';
+import DeployErrorDisplayer from '../display/DeployErrorDisplayer';
 import { Duration } from '@salesforce/kit';
-import { convertAliasToUsername } from '../../utils/AliasList';
 import DeploymentExecutor, { DeploySourceResult } from './DeploymentExecutor';
 import {
     CodeCoverageWarnings,
@@ -11,16 +10,17 @@ import {
     Failures,
     MetadataApiDeployOptions,
 } from '@salesforce/source-deploy-retrieve';
-import PackageComponentPrinter from '../../display/PackageComponentPrinter';
-import ApexTestSuite from '../../apextest/ApexTestSuite';
+import PackageComponentPrinter from '../display/PackageComponentPrinter';
+import ApexTestSuite from '../apextest/ApexTestSuite';
 const Table = require('cli-table');
 import * as fs from 'fs-extra';
 import path from 'path';
+import SFPOrg from '../org/SFPOrg';
 
 
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public constructor(
-        private target_org: string,
+        private org: SFPOrg,
         private project_directory: string,
         private source_directory: string,
         private deployment_options: any,
@@ -148,10 +148,10 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         SFPLogger.log(table.toString(), LoggerLevel.WARN, this.packageLogger);
     }
 
-    private async buildDeploymentOptions(sourceDir: string, username: string): Promise<MetadataApiDeployOptions> {
-        username = await convertAliasToUsername(username);
+    private async buildDeploymentOptions(sourceDir: string, org: SFPOrg): Promise<MetadataApiDeployOptions> {
+     
         let metdataDeployOptions: MetadataApiDeployOptions = {
-            usernameOrConnection: username,
+            usernameOrConnection: org.getConnection(),
             apiOptions: {},
         };
 
@@ -179,11 +179,11 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     }
 
     private async deploy(backingSourceDir: string, componentSet: ComponentSet) {
-        let deploymentOptions = await this.buildDeploymentOptions(backingSourceDir, this.target_org);
+        let deploymentOptions = await this.buildDeploymentOptions(backingSourceDir, this.org);
         const deploy = await componentSet.deploy(deploymentOptions);
 
         let startTime = Date.now();
-        SFPLogger.log(`Deploying to ${this.target_org} with id:${deploy.id}`, LoggerLevel.INFO, this.packageLogger);
+        SFPLogger.log(`Deploying to ${this.org.getUsername()} with id:${deploy.id}`, LoggerLevel.INFO, this.packageLogger);
         // Attach a listener to check the deploy status on each poll
         deploy.onUpdate((response) => {
             const { status, numberComponentsDeployed, numberComponentsTotal } = response;

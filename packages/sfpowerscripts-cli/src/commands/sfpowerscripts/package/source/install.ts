@@ -6,7 +6,7 @@ import InstallSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/package
 import * as fs from 'fs-extra';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/source/DeploymentExecutor';
+import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentExecutor';
 import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);

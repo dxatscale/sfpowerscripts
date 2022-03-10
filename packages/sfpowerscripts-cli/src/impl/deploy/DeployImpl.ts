@@ -15,7 +15,7 @@ import { RunAllTestsInPackageOptions } from '@dxatscale/sfpowerscripts.core/lib/
 import { TestOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import semver = require('semver');
 import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl';
-import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/source/DeploymentExecutor';
+import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentExecutor';
 import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
