@@ -1,6 +1,9 @@
 import * as fs from 'fs-extra';
 import { EOL } from 'os';
 import chalk = require('chalk');
+
+
+
 export enum LoggerLevel {
     TRACE = 10,
     DEBUG = 20,
@@ -77,6 +80,8 @@ export default class SFPLogger {
                     return;
                 } else if (logger.logType === LoggerType.file) {
                     let fileLogger = logger as FileLogger;
+                    message = message.replace(
+                        /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
                     fs.appendFileSync(fileLogger.path, message + EOL, 'utf8');
                 }
             } else {
