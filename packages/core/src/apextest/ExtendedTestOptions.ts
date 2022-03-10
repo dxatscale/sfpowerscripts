@@ -1,5 +1,5 @@
-import SFPPackage from '../../package/SFPPackage';
-import { RunSpecifiedTestsOption } from '../../sfdxwrappers/TestOptions';
+import SFPPackage from '../package/SFPPackage';
+import { RunSpecifiedTestsOption } from './TestOptions';
 
 export enum ExtendedTestOptions {
     RunAllTestsInPackage = 'RunAllTestsInPackage',
