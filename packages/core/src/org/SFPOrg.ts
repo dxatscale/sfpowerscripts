@@ -174,7 +174,7 @@ export default class SFPOrg extends Org {
      *  List all the packages created in DevHub, will throw an error, if its not a DevHub
      */
     public async listAllPackages() {
-        if (this.isDevHubOrg()) {
+        if (await this.determineIfDevHubOrg(true)) {
             let records = await QueryHelper.query<PackageTypeInfo>(packageQuery, this.getConnection(), true);
             records.forEach((record) => {
                 record.IsOrgDependent =
