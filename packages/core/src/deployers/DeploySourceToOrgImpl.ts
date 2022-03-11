@@ -1,4 +1,4 @@
-import SFPLogger, { COLOR_ERROR, COLOR_HEADER, COLOR_SUCCESS, Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { COLOR_ERROR, COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, Logger, LoggerLevel } from '../logger/SFPLogger';
 import PackageEmptyChecker from '../package/PackageEmptyChecker';
 import DeployErrorDisplayer from '../display/DeployErrorDisplayer';
 import { Duration } from '@salesforce/kit';
@@ -188,7 +188,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         deploy.onUpdate((response) => {
             const { status, numberComponentsDeployed, numberComponentsTotal } = response;
             const progress = `${numberComponentsDeployed}/${numberComponentsTotal}`;
-            const message = `Status: ${status} Progress: ${progress}`;
+            const message = `Status: ${COLOR_KEY_MESSAGE(status)} Progress: ${COLOR_KEY_MESSAGE(progress)}`;
             SFPLogger.log(message, LoggerLevel.INFO, this.packageLogger);
         });
 
