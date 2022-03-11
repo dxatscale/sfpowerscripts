@@ -46,7 +46,7 @@ export default class TriggerApexTests {
     }> {
         let org = await Org.create({ aliasOrUsername: this.target_org });
         this.conn = org.getConnection();
-        
+
         // graceful shutdown
         const exitHandler = async (): Promise<void> => {
             await this.cancellationTokenSource.asyncCancel();
@@ -84,17 +84,36 @@ export default class TriggerApexTests {
             if (this.testOptions instanceof RunSpecifiedTestsOption) {
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
                 tests = (this.testOptions as RunSpecifiedTestsOption).specifiedTests;
+                SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
             } else if (this.testOptions instanceof RunAllTestsInPackageOptions) {
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
                 tests = (this.testOptions as RunAllTestsInPackageOptions).specifiedTests;
+                SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
             } else if (this.testOptions instanceof RunApexTestSuitesOption) {
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
                 suites = (this.testOptions as RunApexTestSuitesOption).suiteNames;
-            } else if (this.testOptions instanceof RunLocalTests) translatedTestLevel = TestLevel.RunLocalTests;
-            else if (this.testOptions instanceof RunAllTestsInOrg) translatedTestLevel = TestLevel.RunAllTestsInOrg;
-
+                SFPLogger.log(
+                    `Test Suites to be executed: ${COLOR_KEY_MESSAGE(suites)}`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
+            } else if (this.testOptions instanceof RunLocalTests) {
+                translatedTestLevel = TestLevel.RunLocalTests;
+                SFPLogger.log(
+                    `Triggering all ${COLOR_KEY_MESSAGE(`local tests`)}in the org`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
+            } else if (this.testOptions instanceof RunAllTestsInOrg) {
+                SFPLogger.log(
+                    `Triggering all ${COLOR_KEY_MESSAGE(`all tests`)}in the org`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
+                translatedTestLevel = TestLevel.RunAllTestsInOrg;
+            }
             //Trigger tests asynchronously
-            let testRunResult:TestResult;
+            let testRunResult: TestResult;
             try {
                 testRunResult = (await this.triggerTestAsynchronously(
                     testService,
