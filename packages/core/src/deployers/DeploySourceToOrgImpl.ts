@@ -1,4 +1,11 @@
-import SFPLogger, { COLOR_ERROR, COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, {
+    COLOR_ERROR,
+    COLOR_HEADER,
+    COLOR_KEY_MESSAGE,
+    COLOR_SUCCESS,
+    Logger,
+    LoggerLevel,
+} from '../logger/SFPLogger';
 import PackageEmptyChecker from '../package/PackageEmptyChecker';
 import DeployErrorDisplayer from '../display/DeployErrorDisplayer';
 import { Duration } from '@salesforce/kit';
@@ -16,7 +23,6 @@ const Table = require('cli-table');
 import * as fs from 'fs-extra';
 import path from 'path';
 import SFPOrg from '../org/SFPOrg';
-
 
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public constructor(
@@ -149,7 +155,6 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     }
 
     private async buildDeploymentOptions(sourceDir: string, org: SFPOrg): Promise<MetadataApiDeployOptions> {
-     
         let metdataDeployOptions: MetadataApiDeployOptions = {
             usernameOrConnection: org.getConnection(),
             apiOptions: {},
@@ -183,7 +188,11 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         const deploy = await componentSet.deploy(deploymentOptions);
 
         let startTime = Date.now();
-        SFPLogger.log(`Deploying to ${this.org.getUsername()} with id:${deploy.id}`, LoggerLevel.INFO, this.packageLogger);
+        SFPLogger.log(
+            `Deploying to ${this.org.getUsername()} with id:${deploy.id}`,
+            LoggerLevel.INFO,
+            this.packageLogger
+        );
         // Attach a listener to check the deploy status on each poll
         deploy.onUpdate((response) => {
             const { status, numberComponentsDeployed, numberComponentsTotal } = response;
@@ -193,14 +202,15 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         });
 
         deploy.onFinish((response) => {
-            
-            let deploymentDuration =  new Duration(Date.now() - startTime,Duration.Unit.MILLISECONDS);
+            let deploymentDuration = new Duration(Date.now() - startTime, Duration.Unit.MILLISECONDS);
             if (response.response.success) {
                 SFPLogger.log(
                     COLOR_SUCCESS(
                         `Succesfully Deployed ${COLOR_HEADER(
                             response.response.numberComponentsDeployed
-                        )} components in ${deploymentDuration.hours}:${deploymentDuration.minutes}:${deploymentDuration.seconds}`
+                        )} components in ${deploymentDuration.hours}:${deploymentDuration.minutes}:${
+                            deploymentDuration.seconds
+                        }`
                     ),
                     LoggerLevel.INFO,
                     this.packageLogger

@@ -380,7 +380,7 @@ export class ProgressReporter implements Progress<ApexTestProgressValue> {
                     for (const [key, value] of Object.entries(count)) {
                         total += value as number;
                     }
-                    statusString = `Completed:${count[`Completed`? count['Completed'] : 0]}/${total} Queued(${
+                    statusString = `Completed:${count[`Completed` ? count['Completed'] : 0]}/${total} Queued(${
                         count['Queued'] ? count['Queued'] : 0
                     }) Failed(${count['Failed'] ? count['Failed'] : 0})  `;
                     SFPLogger.log(`Test Status: ` + COLOR_KEY_MESSAGE(statusString), LoggerLevel.INFO, this.logger);

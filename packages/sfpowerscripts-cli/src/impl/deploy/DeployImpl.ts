@@ -531,7 +531,7 @@ export default class DeployImpl {
                     upgradetype: 'Mixed',
                     waitTime: waitTime,
                     apiVersion: apiVersion,
-                    publishWaitTime: 60
+                    publishWaitTime: 60,
                 };
 
                 packageInstallationResult = await this.installUnlockedPackage(
