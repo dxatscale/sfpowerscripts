@@ -17,7 +17,7 @@ stages:
 
 #Merge to Develop, Deploy Alpha builds
 - stage: Alpha
-  condition: and(eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq(variables['Build.SourceVersionMessage'], 'Publish'))
+  condition: and(eq(variables['build.sourceBranch'], 'refs/heads/develop'), startsWith(variables['Build.SourceVersionMessage'], 'chore(publish)'))
   dependsOn: []
   jobs:
 

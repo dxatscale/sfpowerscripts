@@ -1,4 +1,4 @@
-import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../sfpcommands/source/DeploymentExecutor';
+import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../deployers/DeploymentExecutor';
 import ReconcileProfileAgainstOrgImpl from '../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl';
 import DeployDestructiveManifestToOrgImpl from '../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl';
 import PackageMetadata from '../../PackageMetadata';
@@ -9,10 +9,10 @@ const path = require('path');
 const glob = require('glob');
 const { EOL } = require('os');
 const tmp = require('tmp');
-import DeploySourceToOrgImpl from '../../sfpcommands/source/DeploySourceToOrgImpl';
-import PushSourceToOrgImpl from '../../sfpcommands/source/PushSourceToOrgImpl';
 import { InstallPackage } from './InstallPackage';
 import PackageManifest from '../PackageManifest';
+import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
+import DeploySourceToOrgImpl from '../../deployers/DeploySourceToOrgImpl';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private options: any;
@@ -94,11 +94,12 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.options.waitTime,
                     this.options.optimizeDeployment,
                     this.options.skipTesting,
-                    this.targetusername
+                    this.targetusername,
+                    this.options.apiVersion
                 );
 
                 let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
-                    this.targetusername,
+                    this.org,
                     this.sourceDirectory,
                     this.packageDirectory,
                     deploymentOptions,
@@ -280,7 +281,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             );
 
             let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
-                target_org,
+                this.org,
                 profileDeploymentStagingDirectory,
                 sourceDirectory,
                 deploymentOptions,
@@ -299,12 +300,14 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         waitTime: string,
         optimizeDeployment: boolean,
         skipTest: boolean,
-        target_org: string
+        target_org: string,
+        apiVersion: string
     ): Promise<any> {
         let mdapi_options = {};
         mdapi_options['ignore_warnings'] = true;
         mdapi_options['wait_time'] = waitTime;
         mdapi_options['checkonly'] = false;
+        mdapi_options['apiVersion'] = apiVersion;
 
         if (skipTest) {
             let orgDetails: OrgDetails;

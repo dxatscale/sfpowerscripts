@@ -1,5 +1,5 @@
-import { RunApexTestSuitesOption, TestOptions } from '../../sfdxwrappers/TestOptions';
-import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from '../../logger/SFPLogger';
+import { RunApexTestSuitesOption, TestOptions } from './TestOptions';
+import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from '../logger/SFPLogger';
 import { RunAllTestsInPackageOptions } from './ExtendedTestOptions';
 
 const Table = require('cli-table');

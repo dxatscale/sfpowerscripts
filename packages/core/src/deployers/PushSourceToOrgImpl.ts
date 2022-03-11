@@ -1,10 +1,10 @@
 import DeploymentExecutor, { DeploySourceResult } from './DeploymentExecutor';
-import PushSourceImpl from '../../sfdxwrappers/PushSourceImpl';
-import PushErrorDisplayer from '../../display/PushErrorDisplayer';
-import { Logger } from '../../logger/SFPLogger';
-import SourceToMDAPIConvertor from '../../package/packageFormatConvertors/SourceToMDAPIConvertor';
-import PackageMetadataPrinter from '../../display/PackageMetadataPrinter';
-import PackageManifest from '../../package/PackageManifest';
+import PushSourceImpl from '../sfdxwrappers/PushSourceImpl';
+import PushErrorDisplayer from '../display/PushErrorDisplayer';
+import { Logger } from '../logger/SFPLogger';
+import SourceToMDAPIConvertor from '../package/packageFormatConvertors/SourceToMDAPIConvertor';
+import PackageMetadataPrinter from '../display/PackageMetadataPrinter';
+import PackageManifest from '../package/PackageManifest';
 
 export default class PushSourceToOrgImpl implements DeploymentExecutor {
     constructor(
@@ -18,6 +18,7 @@ export default class PushSourceToOrgImpl implements DeploymentExecutor {
         let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
             this.project_directory,
             this.source_directory,
+            null,
             this.logger
         );
 
