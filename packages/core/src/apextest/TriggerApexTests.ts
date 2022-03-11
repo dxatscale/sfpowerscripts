@@ -10,7 +10,7 @@ import {
 import IndividualClassCoverage, { CoverageOptions } from '../apex/coverage/IndividualClassCoverage';
 import { TestReportDisplayer } from './TestReportDisplayer';
 import PackageTestCoverage from '../package/coverage/PackageTestCoverage';
-import SFPLogger, { COLOR_SUCCESS,COLOR_KEY_MESSAGE, Logger, LoggerLevel, COLOR_ERROR } from '../logger/SFPLogger';
+import SFPLogger, { COLOR_SUCCESS, COLOR_KEY_MESSAGE, Logger, LoggerLevel, COLOR_ERROR } from '../logger/SFPLogger';
 import { RunAllTestsInPackageOptions } from './ExtendedTestOptions';
 import SFPStatsSender from '../stats/SFPStatsSender';
 import { Connection, Org } from '@salesforce/core';
@@ -380,7 +380,7 @@ export class ProgressReporter implements Progress<ApexTestProgressValue> {
                     for (const [key, value] of Object.entries(count)) {
                         total += value as number;
                     }
-                    statusString = `Completed:${count['Completed']? count['Completed'] : 0}/${total} Queued(${
+                    statusString = `Completed:${count['Completed'] ? count['Completed'] : 0}/${total} Queued(${
                         count['Queued'] ? count['Queued'] : 0
                     }) Failed(${COLOR_ERROR(count['Failed'] ? count['Failed'] : 0)})  `;
                     SFPLogger.log(`Test Status: ` + COLOR_KEY_MESSAGE(statusString), LoggerLevel.INFO, this.logger);
