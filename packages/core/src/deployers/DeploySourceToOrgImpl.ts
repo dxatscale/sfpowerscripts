@@ -90,7 +90,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         fs.mkdirpSync(deploymentReports);
         fs.writeFileSync(
             path.join(deploymentReports, `${result.response.id}.json`),
-            JSON.stringify(result.response.details)
+            JSON.stringify(this.formatResultAsJSON(result.response))
         );
     }
 
@@ -228,5 +228,17 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         // Wait for polling to finish and get the DeployResult object
         const result = await deploy.pollStatus({ frequency: Duration.seconds(30), timeout: Duration.hours(2) });
         return result;
+    }
+
+    //For compatibilty with cli output
+    private formatResultAsJSON(result) {
+        const response = result?.response?result.response:{};
+        return {
+            ...response,
+            details: {
+                componentFailures: response?.details?.componentFailures,
+                runTestResult: response?.details?.runTestResult,
+            },
+        };
     }
 }
