@@ -46,7 +46,7 @@ export default class TriggerApexTests {
     }> {
         let org = await Org.create({ aliasOrUsername: this.target_org });
         this.conn = org.getConnection();
-
+        
         // graceful shutdown
         const exitHandler = async (): Promise<void> => {
             await this.cancellationTokenSource.asyncCancel();
@@ -94,7 +94,7 @@ export default class TriggerApexTests {
             else if (this.testOptions instanceof RunAllTestsInOrg) translatedTestLevel = TestLevel.RunAllTestsInOrg;
 
             //Trigger tests asynchronously
-            let testRunResult;
+            let testRunResult:TestResult;
             try {
                 testRunResult = (await this.triggerTestAsynchronously(
                     testService,
@@ -123,12 +123,12 @@ export default class TriggerApexTests {
 
             //Write files
             fs.writeJSONSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunResult.testRunId}.json`),
+                path.join(this.testOptions.outputdir, `test-result-${testRunResult.summary.testRunId}.json`),
                 testResult,
                 { spaces: 4 }
             );
             fs.writeJSONSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunResult.testRunId}-coverage.json`),
+                path.join(this.testOptions.outputdir, `test-result-${testRunResult.summary.testRunId}-coverage.json`),
                 jsonOutput.coverage.coverage,
                 { spaces: 4 }
             );
@@ -137,12 +137,12 @@ export default class TriggerApexTests {
             SFPLogger.log(
                 `Junit Report file available at ${path.join(
                     this.testOptions.outputdir,
-                    `test-result-${testRunResult.testRunId}-junit.xml`
+                    `test-result-${testRunResult.summary.testRunId}-junit.xml`
                 )}`
             );
             let reportAsJUnitReport = new JUnitReporter().format(testResult);
             fs.writeFileSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunResult.testRunId}-junit.xml`),
+                path.join(this.testOptions.outputdir, `test-result-${testRunResult.summary.testRunId}-junit.xml`),
                 reportAsJUnitReport
             );
 
