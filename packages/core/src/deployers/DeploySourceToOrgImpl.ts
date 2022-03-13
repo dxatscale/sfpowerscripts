@@ -90,7 +90,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         fs.mkdirpSync(deploymentReports);
         fs.writeFileSync(
             path.join(deploymentReports, `${result.response.id}.json`),
-            JSON.stringify(this.formatResultAsJSON(result.response))
+            JSON.stringify(this.formatResultAsJSON(result))
         );
     }
 
@@ -234,11 +234,14 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     private formatResultAsJSON(result) {
         const response = result?.response?result.response:{};
         return {
+            result:{
             ...response,
             details: {
+                componentSuccesses:response?.details?.componentSuccesses,
                 componentFailures: response?.details?.componentFailures,
                 runTestResult: response?.details?.runTestResult,
-            },
+            }
+           },
         };
     }
 }
