@@ -3,7 +3,7 @@ import ReconcileProfileAgainstOrgImpl from '../../sfpowerkitwrappers/ReconcilePr
 import DeployDestructiveManifestToOrgImpl from '../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl';
 import PackageMetadata from '../../PackageMetadata';
 import OrgDetailsFetcher, { OrgDetails } from '../../org/OrgDetailsFetcher';
-import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { COLOR_SUCCESS, Logger, LoggerLevel } from '../../logger/SFPLogger';
 import * as fs from 'fs-extra';
 const path = require('path');
 const glob = require('glob');
@@ -13,6 +13,7 @@ import { InstallPackage } from './InstallPackage';
 import PackageManifest from '../PackageManifest';
 import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl from '../../deployers/DeploySourceToOrgImpl';
+import defaultValidateDeploymentOption from '../../utils/DefaultValidateDeploymentOption';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private options: any;
@@ -98,9 +99,20 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.options.apiVersion
                 );
 
+                //Make a copy.. dont mutate sourceDirectory
+                let sourceDirectoryToBeDeployed = this.sourceDirectory;
+                if (
+                    defaultValidateDeploymentOption() === 'selective' &&
+                    fs.existsSync(path.join(this.sourceDirectory, 'diff'))
+                ) {
+                    SFPLogger.log(`${COLOR_SUCCESS(`Selective mode activated, Only changed components in package is deployed`)}`, LoggerLevel.INFO, this.logger);
+                    SFPLogger.log(`${`Toggle this feature by setting SFPOWERSCRIPTS_VALIDATE_DEPLOYMENT_OPTION to Full|Selective`}`, LoggerLevel.INFO, this.logger);
+                    sourceDirectoryToBeDeployed = path.join(this.sourceDirectory, 'diff');
+                }
+
                 let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
                     this.org,
-                    this.sourceDirectory,
+                    sourceDirectoryToBeDeployed,
                     this.packageDirectory,
                     deploymentOptions,
                     false,

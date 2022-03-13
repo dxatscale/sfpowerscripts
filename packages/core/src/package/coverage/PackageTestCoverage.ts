@@ -1,4 +1,4 @@
-import SFPLogger, { Logger } from '../../logger/SFPLogger';
+import SFPLogger, { COLOR_WARNING, Logger } from '../../logger/SFPLogger';
 import IndividualClassCoverage from '../../apex/coverage/IndividualClassCoverage';
 import SFPPackage from '../SFPPackage';
 import { Connection } from '@salesforce/core';
@@ -97,10 +97,10 @@ export default class PackageTestCoverage {
             if (this.packageTestCoverage < coverageThreshold) {
                 // Coverage inadequate, set result to false
                 return {
-                    result: false,
+                    result: true, //Changed to warning, as of Winter 22, coverage is really unstable
                     packageTestCoverage: this.packageTestCoverage,
                     classesCovered: classesCovered,
-                    message: `The package has an overall coverage of ${this.packageTestCoverage}%, which does not meet the required overall coverage of ${coverageThreshold}%`,
+                    message: `${COLOR_WARNING(`The package has an overall coverage of ${this.packageTestCoverage}%, which does not meet the required overall coverage of ${coverageThreshold}%`)}`,
                 };
             } else {
                 return {

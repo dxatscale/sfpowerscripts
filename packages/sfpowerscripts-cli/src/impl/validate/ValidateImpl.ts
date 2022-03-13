@@ -1,20 +1,18 @@
 import child_process = require('child_process');
 import BuildImpl, { BuildProps } from '../parallelBuilder/BuildImpl';
-import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../deploy/DeployImpl';
-import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator';
+import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult, PackageInfo } from '../deploy/DeployImpl';
+import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
 import { Stage } from '../Stage';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import fs = require('fs');
 import InstallPackageDependenciesImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import PoolFetchImpl from '../pool/PoolFetchImpl';
-import { Org } from '@salesforce/core';
+import { Connection, Org } from '@salesforce/core';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
 import ValidateError from '../../errors/ValidateError';
-
 import ChangedComponentsFetcher from '@dxatscale/sfpowerscripts.core/lib/dependency/ChangedComponentsFetcher';
-import DependencyViolation from '@dxatscale/sfpowerscripts.core/lib/dependency/DependencyViolation';
 import DependencyAnalysis from '@dxatscale/sfpowerscripts.core/lib/dependency/DependencyAnalysis';
 import DependencyViolationDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/DependencyViolationDisplayer';
 import ImpactAnalysis from './ImpactAnalysis';
@@ -24,15 +22,20 @@ import { COLOR_WARNING } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogg
 import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_SUCCESS } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import getFormattedTime from '../../utils/GetFormattedTime';
 import { COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import ScratchOrgInfoFetcher from '../../impl/pool/services/fetchers/ScratchOrgInfoFetcher';
 import Component from '@dxatscale/sfpowerscripts.core/lib/dependency/Component';
 import ValidateResult from './ValidateResult';
 import PoolOrgDeleteImpl from '../pool/PoolOrgDeleteImpl';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import SFPPackage from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
+import { TestOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
+import { RunAllTestsInPackageOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
+import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
+import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
+import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
+
 
 export enum ValidateMode {
     ORG,
@@ -56,6 +59,8 @@ export interface ValidateProps {
 
 export default class ValidateImpl {
     private changedComponents: Component[];
+    private logger = new ConsoleLogger();
+    private orgAsSFPOrg: SFPOrg;
 
     constructor(private props: ValidateProps) {}
 
@@ -66,7 +71,6 @@ export default class ValidateImpl {
                 scratchOrgUsername = this.props.targetOrg;
             } else if (this.props.validateMode === ValidateMode.POOL) {
                 scratchOrgUsername = await this.fetchScratchOrgFromPool(this.props.pools);
-
                 if (this.props.shapeFile) {
                     this.deployShapeFile(this.props.shapeFile, scratchOrgUsername);
                 }
@@ -74,11 +78,11 @@ export default class ValidateImpl {
             } else throw new Error(`Unknown mode ${this.props.validateMode}`);
 
             //Create Org
-            let orgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrgUsername });
-            let connToScratchOrg = orgAsSFPOrg.getConnection();
+            this.orgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrgUsername });
+            let connToScratchOrg = this.orgAsSFPOrg.getConnection();
             let installedArtifacts;
             try {
-                installedArtifacts = await orgAsSFPOrg.getInstalledArtifacts();
+                installedArtifacts = await this.orgAsSFPOrg.getInstalledArtifacts();
             } catch {
                 console.log(COLOR_ERROR('Failed to query org for Sfpowerscripts Artifacts'));
                 console.log(COLOR_KEY_MESSAGE('Building all packages'));
@@ -95,58 +99,84 @@ export default class ValidateImpl {
 
             let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
-            let dependencyViolations: DependencyViolation[];
-
             if (deploymentResult.failed.length > 0 || deploymentResult.error)
                 throw new ValidateError('Validation failed', { deploymentResult });
             else {
-                if (this.props.isDependencyAnalysis) {
-                    SFPLogger.log(
-                        COLOR_HEADER(
-                            `-------------------------------------------------------------------------------------------`
+                //Do dependency analysis
+                await this.dependencyAnalysis(this.orgAsSFPOrg, deploymentResult);
+
+                 //Display impact analysis
+                 await this.impactAnalysis(connToScratchOrg);
+
+                //Trigger Apex Test
+                let testFailures = await this.triggerTestsInEachPackages(
+                    scratchOrgUsername,
+                    deploymentResult.queue,
+                    deploymentResult.packagesToPackageInfo
+                );
+                if (testFailures.length > 0) {
+                    console.log(
+                        COLOR_ERROR(
+                            `\nTests failed for`,
+                            testFailures.map((packageInfo) => packageInfo.packageMetadata.package_name)
                         )
                     );
-                    SFPLogger.log(
-                        COLOR_KEY_MESSAGE('Validating dependency  tree of changed components..'),
-                        LoggerLevel.INFO
-                    );
-                    const changedComponents = await this.getChangedComponents();
-                    const dependencyAnalysis = new DependencyAnalysis(orgAsSFPOrg, changedComponents);
-
-                    dependencyViolations = await dependencyAnalysis.exec();
-
-                    if (dependencyViolations.length > 0) {
-                        DependencyViolationDisplayer.printDependencyViolations(dependencyViolations);
-                    } else {
-                        SFPLogger.log(COLOR_SUCCESS('No Dependency violations found so far'), LoggerLevel.INFO);
-                    }
-
-                    SFPLogger.log(
-                        COLOR_HEADER(
-                            `-------------------------------------------------------------------------------------------`
-                        )
-                    );
-                }
-
-                if (this.props.isImpactAnalysis) {
-                    const changedComponents = await this.getChangedComponents();
-                    try {
-                        const impactAnalysis = new ImpactAnalysis(connToScratchOrg, changedComponents);
-                        await impactAnalysis.exec();
-                    } catch (err) {
-                        console.log(err.message);
-                        console.log('Failed to perform impact analysis');
-                    }
+                    throw new ValidateError(`Test Failed for ${JSON.stringify(testFailures)}`,{testFailures:testFailures});
                 }
             }
 
-            return { deploymentResult, dependencyViolations };
+            return null;
         } finally {
             if (this.props.isDeleteScratchOrg) {
                 await this.deleteScratchOrg(scratchOrgUsername);
             } else {
                 fs.writeFileSync('.env', `sfpowerscripts_scratchorg_username=${scratchOrgUsername}\n`, { flag: 'a' });
                 console.log(`sfpowerscripts_scratchorg_username=${scratchOrgUsername}`);
+            }
+        }
+    }
+
+    private async dependencyAnalysis(orgAsSFPOrg: SFPOrg, deploymentResult: DeploymentResult) {
+        if (this.props.isDependencyAnalysis) {
+            this.printOpenLoggingGroup(`Validate Dependency tree`);
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `-------------------------------------------------------------------------------------------`
+                )
+            );
+            SFPLogger.log(COLOR_KEY_MESSAGE('Validating dependency  tree of changed components..'), LoggerLevel.INFO);
+            const changedComponents = await this.getChangedComponents();
+            const dependencyAnalysis = new DependencyAnalysis(orgAsSFPOrg, changedComponents);
+
+            let dependencyViolations = await dependencyAnalysis.exec();
+
+            if (dependencyViolations.length > 0) {
+                DependencyViolationDisplayer.printDependencyViolations(dependencyViolations);
+                deploymentResult.error = `Dependency analysis failed due to ${JSON.stringify(dependencyViolations)}`;
+                throw new ValidateError(`Dependency Analysis Failed`, { deploymentResult });
+            } else {
+                SFPLogger.log(COLOR_SUCCESS('No Dependency violations found so far'), LoggerLevel.INFO);
+            }
+
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `-------------------------------------------------------------------------------------------`
+                )
+            );
+            this.printClosingLoggingGroup();
+            return dependencyViolations;
+        }
+    }
+
+    private async impactAnalysis(connToScratchOrg) {
+        if (this.props.isImpactAnalysis) {
+            const changedComponents = await this.getChangedComponents();
+            try {
+                const impactAnalysis = new ImpactAnalysis(connToScratchOrg, changedComponents);
+                await impactAnalysis.exec();
+            } catch (err) {
+                console.log(err.message);
+                console.log('Failed to perform impact analysis');
             }
         }
     }
@@ -279,6 +309,60 @@ export default class ValidateImpl {
         return generatedPackages;
     }
 
+    private async triggerTestsInEachPackages(
+        targetUsername: string,
+        queue: any[],
+        packagesToPackageInfo: { [p: string]: PackageInfo }
+    ) {
+        SFPLogger.log(
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+        );
+        SFPLogger.log(COLOR_KEY_MESSAGE('Trigger Apex Tests..'), LoggerLevel.INFO);
+
+        let testFailure: PackageInfo[] = [];
+        for (let i = 0; i < queue.length; i++) {
+            let packageInfo = packagesToPackageInfo[queue[i].package];
+            let packageMetadata: PackageMetadata = packageInfo.packageMetadata;
+
+            //Trigger Tests for Validate Deployment
+            if (packageMetadata.isApexFound) {
+                if (!queue[i].skipTesting) {
+                    this.printOpenLoggingGroup('Trigger Tests for ', queue[i].package);
+
+                    let testResult;
+                    try {
+                        testResult = await this.triggerApexTests(
+                            packageMetadata.package_name,
+                            targetUsername,
+                            queue[i].skipCoverageValidation,
+                            this.props.coverageThreshold
+                        );
+                    } catch (error) {
+                        //Print Any errors, Report that as execution failed for reporting
+                        console.log(COLOR_ERROR(error.message));
+                        testResult = {
+                            result: false,
+                            message: 'Test Execution failed',
+                        };
+                     
+                    }
+
+                    if (!testResult.result) {
+                        SFPLogger.log(`Test Failed for ${packageInfo.packageMetadata.package_name}`, LoggerLevel.ERROR, this.logger);
+                        testFailure.push(packageInfo);
+                        break;
+                    } else {
+                        SFPLogger.log(testResult.message, LoggerLevel.INFO, this.logger);
+
+                        this.printClosingLoggingGroup();
+                    }
+                } else {
+                    SFPLogger.log(`Skipping testing of ${queue[i].package}\n`, LoggerLevel.INFO, this.logger);
+                }
+            }
+        }
+        return testFailure;
+    }
     private getPackagesToCommits(installedArtifacts: any): { [p: string]: string } {
         let packagesToCommits: { [p: string]: string } = {};
 
@@ -288,6 +372,57 @@ export default class ValidateImpl {
         });
 
         return packagesToCommits;
+    }
+
+    private async triggerApexTests(
+        sfdx_package: string,
+        targetUsername: string,
+        skipCoverageValidation: boolean,
+        coverageThreshold: number
+    ): Promise<{
+        id: string;
+        result: boolean;
+        message: string;
+    }> {
+
+      
+        let sfPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
+            this.logger,
+            null,
+            sfdx_package,
+            null
+        );
+
+        SFPLogger.log(
+            COLOR_HEADER(
+                `-------------------------------------------------------------------------------------------`
+            )
+        );
+        SFPLogger.log(`Triggering Apex tests for ${sfPackage.package_name}`,LoggerLevel.INFO);
+        SFPLogger.log(
+            COLOR_HEADER(
+                `-------------------------------------------------------------------------------------------`
+            )
+        );
+       
+        let testOptions: TestOptions = new RunAllTestsInPackageOptions(sfPackage, 60, '.testresults');
+        let testCoverageOptions: CoverageOptions = {
+            isIndividualClassCoverageToBeValidated: false,
+            isPackageCoverageToBeValidated: !skipCoverageValidation,
+            coverageThreshold: coverageThreshold || 75,
+        };
+
+        let triggerApexTests: TriggerApexTests = new TriggerApexTests(
+            targetUsername,
+            testOptions,
+            testCoverageOptions,
+            null,
+            this.logger
+        );
+     
+
+        return triggerApexTests.exec();
+
     }
 
     private printArtifactVersions(installedArtifacts: any) {
@@ -382,9 +517,6 @@ export default class ValidateImpl {
             )
         );
 
-        if (deploymentResult.testFailure)
-            console.log(COLOR_ERROR(`\nTests failed for`, deploymentResult.testFailure.packageMetadata.package_name));
-
         if (deploymentResult.failed.length > 0) {
             console.log(
                 COLOR_ERROR(
@@ -393,6 +525,7 @@ export default class ValidateImpl {
                 )
             );
         }
+
         console.log(
             COLOR_HEADER(
                 `----------------------------------------------------------------------------------------------------`
@@ -401,9 +534,9 @@ export default class ValidateImpl {
         this.printClosingLoggingGroup();
     }
 
-    private printOpenLoggingGroup(message: string) {
+    private printOpenLoggingGroup(message: string, pkg?: string) {
         if (this.props.logsGroupSymbol?.[0])
-            SFPLogger.log(`${this.props.logsGroupSymbol[0]} ${message}`, LoggerLevel.INFO);
+            SFPLogger.log(`${this.props.logsGroupSymbol[0]} ${message} ${pkg ? pkg : ''}`, LoggerLevel.INFO);
     }
 
     private printClosingLoggingGroup() {

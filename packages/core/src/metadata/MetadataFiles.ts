@@ -1,3 +1,4 @@
+//TODO: Replace with SDR
 import * as path from 'path';
 import { MetadataInfo, METADATA_INFO, MetadataDescribe, SOURCE_EXTENSION_REGEX } from './MetadataInfo';
 import FileUtils from '../utils/Fileutils';

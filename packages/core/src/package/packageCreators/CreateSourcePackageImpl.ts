@@ -45,7 +45,9 @@ export default class CreateSourcePackageImpl extends CreatePackage {
             this.projectDirectory,
             this.sfdx_package,
             null,
-            this.pathToReplacementForceIgnore
+            this.pathToReplacementForceIgnore,
+            this.revisionFrom,
+            this.revisionTo
         );
 
         this.packageArtifactMetadata.payload = sfppackage.payload;

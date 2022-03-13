@@ -17,7 +17,7 @@ import SFPLogger, {
     COLOR_TIME,
     COLOR_KEY_MESSAGE,
 } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import getFormattedTime from '../../../utils/GetFormattedTime';
+import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { PoolConfig } from '../../../impl/pool/PoolConfig';
 import { COLOR_WARNING } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 

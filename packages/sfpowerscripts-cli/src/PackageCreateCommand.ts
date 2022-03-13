@@ -1,4 +1,4 @@
-import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator';
+import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
 import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';

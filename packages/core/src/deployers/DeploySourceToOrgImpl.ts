@@ -23,6 +23,7 @@ const Table = require('cli-table');
 import * as fs from 'fs-extra';
 import path from 'path';
 import SFPOrg from '../org/SFPOrg';
+import getFormattedTime from '../utils/GetFormattedTime';
 
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public constructor(
@@ -202,15 +203,13 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         });
 
         deploy.onFinish((response) => {
-            let deploymentDuration = new Duration(Date.now() - startTime, Duration.Unit.MILLISECONDS);
+            let deploymentDuration = Date.now() - startTime
             if (response.response.success) {
                 SFPLogger.log(
                     COLOR_SUCCESS(
                         `Succesfully Deployed ${COLOR_HEADER(
                             response.response.numberComponentsDeployed
-                        )} components in ${deploymentDuration.hours}:${deploymentDuration.minutes}:${
-                            deploymentDuration.seconds
-                        }`
+                        )} components in ${getFormattedTime(deploymentDuration)}`
                     ),
                     LoggerLevel.INFO,
                     this.packageLogger
@@ -218,7 +217,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             } else
                 SFPLogger.log(
                     COLOR_ERROR(
-                        `Failed to deploy after ${deploymentDuration.hours}:${deploymentDuration.minutes}:${deploymentDuration.seconds}`
+                        `Failed to deploy after ${getFormattedTime(deploymentDuration)}`
                     ),
                     LoggerLevel.INFO,
                     this.packageLogger
@@ -232,16 +231,16 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
     //For compatibilty with cli output
     private formatResultAsJSON(result) {
-        const response = result?.response?result.response:{};
+        const response = result?.response ? result.response : {};
         return {
-            result:{
-            ...response,
-            details: {
-                componentSuccesses:response?.details?.componentSuccesses,
-                componentFailures: response?.details?.componentFailures,
-                runTestResult: response?.details?.runTestResult,
-            }
-           },
+            result: {
+                ...response,
+                details: {
+                    componentSuccesses: response?.details?.componentSuccesses,
+                    componentFailures: response?.details?.componentFailures,
+                    runTestResult: response?.details?.runTestResult,
+                },
+            },
         };
     }
 }

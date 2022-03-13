@@ -6,15 +6,14 @@ import {
     RunApexTestSuitesOption,
     RunLocalTests,
     RunAllTestsInOrg,
+    RunAllTestsInPackageOptions,
 } from './TestOptions';
 import IndividualClassCoverage, { CoverageOptions } from '../apex/coverage/IndividualClassCoverage';
 import { TestReportDisplayer } from './TestReportDisplayer';
 import PackageTestCoverage from '../package/coverage/PackageTestCoverage';
-import SFPLogger, { COLOR_SUCCESS,COLOR_KEY_MESSAGE, Logger, LoggerLevel, COLOR_ERROR } from '../logger/SFPLogger';
-import { RunAllTestsInPackageOptions } from './ExtendedTestOptions';
+import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel, COLOR_ERROR } from '../logger/SFPLogger';
 import SFPStatsSender from '../stats/SFPStatsSender';
 import { Connection, Org } from '@salesforce/core';
-import ClearCodeCoverage from './ClearCodeCoverage';
 import {
     TestLevel,
     TestResult,
@@ -27,6 +26,7 @@ import {
 import { CliJsonFormat, JsonReporter } from './JSONReporter';
 import { Duration } from '@salesforce/kit';
 import { UpsertResult } from 'jsforce';
+import ClearCodeCoverage from './ClearCodeCoverage';
 
 export default class TriggerApexTests {
     private conn: Connection;
@@ -57,18 +57,6 @@ export default class TriggerApexTests {
         process.on('SIGINT', exitHandler);
         process.on('SIGTERM', exitHandler);
 
-        //Clear Code Coverage before triggering tests
-        try {
-            let clearCodeCoverage = new ClearCodeCoverage(org, this.fileLogger);
-            await clearCodeCoverage.clear();
-        } catch (error) {
-            SFPLogger.log(
-                `Ignoring error in clearing code coverage attributed to ${error}.`,
-                LoggerLevel.DEBUG,
-                this.fileLogger
-            );
-        }
-
         let startTime = Date.now();
         let testExecutionResult: boolean = false;
         let testsRan;
@@ -77,18 +65,47 @@ export default class TriggerApexTests {
         try {
             const testService = new TestService(this.conn);
 
+            //Clear Code Coverage before triggering tests
+            try {
+                let clearCodeCoverage = new ClearCodeCoverage(org, this.fileLogger);
+                await clearCodeCoverage.clear();
+            } catch (error) {
+                SFPLogger.log(
+                    `Ignoring error in clearing code coverage attributed to ${error}.`,
+                    LoggerLevel.DEBUG,
+                    this.fileLogger
+                );
+            }
+
             //Translate Tests to test levels used by apex-node
             let translatedTestLevel: TestLevel;
             //Fetch tests passed in the testOptions
             let tests: string = null;
             let suites: string = null;
-            if (this.testOptions instanceof RunSpecifiedTestsOption) {
-                translatedTestLevel = TestLevel.RunSpecifiedTests;
-                tests = (this.testOptions as RunSpecifiedTestsOption).specifiedTests;
-                SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
-            } else if (this.testOptions instanceof RunAllTestsInPackageOptions) {
+            if (this.testOptions instanceof RunAllTestsInPackageOptions) {
+                SFPLogger.log(
+                    `Test Mode Descriptor in Package 'testSynchronous': ${this.testOptions.sfppackage.packageDescriptor.testSynchronous?this.testOptions.sfppackage.packageDescriptor.testSynchronous:false}`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
+                SFPLogger.log(
+                    `Test Mode: ${COLOR_KEY_MESSAGE(
+                        this.testOptions.sfppackage.packageDescriptor.testSynchronous == true ? 'serial' : 'parallel'
+                    )}`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
+                await this.toggleParallelApexTesting(
+                    this.conn,
+                    this.fileLogger,
+                    this.testOptions.sfppackage.packageDescriptor.testSynchronous == true ? true : false
+                );
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
                 tests = (this.testOptions as RunAllTestsInPackageOptions).specifiedTests;
+                SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
+            } else if (this.testOptions instanceof RunSpecifiedTestsOption) {
+                translatedTestLevel = TestLevel.RunSpecifiedTests;
+                tests = (this.testOptions as RunSpecifiedTestsOption).specifiedTests;
                 SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
             } else if (this.testOptions instanceof RunApexTestSuitesOption) {
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
@@ -325,7 +342,6 @@ export default class TriggerApexTests {
         }[];
     }> {
         if (this.testOptions instanceof RunAllTestsInPackageOptions) {
-            await this.toggleParallelApexTesting(this.conn,this.fileLogger,this.testOptions.sfppackage.packageDescriptor.testInParallel?false:true)
             let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
                 this.testOptions.sfppackage,
                 coverageReport,
@@ -356,16 +372,13 @@ export default class TriggerApexTests {
         }
     }
     //Enable Synchronus Compile on Deploy
-    private async toggleParallelApexTesting(conn: Connection, logger: Logger,toEnable:boolean) {
+    private async toggleParallelApexTesting(conn: Connection, logger: Logger, toEnable: boolean) {
         try {
+            SFPLogger.log(`Set enableDisableParallelApexTesting:${toEnable}`, LoggerLevel.TRACE, logger);
             let apexSettingMetadata = { fullName: 'ApexSettings', enableDisableParallelApexTesting: toEnable };
             let result: UpsertResult | UpsertResult[] = await conn.metadata.upsert('ApexSettings', apexSettingMetadata);
             if ((result as UpsertResult).success) {
-                SFPLogger.log(
-                    `Set enableDisableParallelApexTesting:${toEnable}`,
-                    LoggerLevel.INFO,
-                    logger
-                );
+                SFPLogger.log(`Successfully updated apex testing setting`, LoggerLevel.TRACE, logger);
             }
         } catch (error) {
             SFPLogger.log(
@@ -402,7 +415,7 @@ export class ProgressReporter implements Progress<ApexTestProgressValue> {
                     for (const [key, value] of Object.entries(count)) {
                         total += value as number;
                     }
-                    statusString = `Completed:${count['Completed']? count['Completed'] : 0}/${total} Queued(${
+                    statusString = `Completed:${count['Completed'] ? count['Completed'] : 0}/${total} Queued(${
                         count['Queued'] ? count['Queued'] : 0
                     }) Failed(${COLOR_ERROR(count['Failed'] ? count['Failed'] : 0)})  `;
                     SFPLogger.log(`Test Status: ` + COLOR_KEY_MESSAGE(statusString), LoggerLevel.INFO, this.logger);
@@ -413,7 +426,4 @@ export class ProgressReporter implements Progress<ApexTestProgressValue> {
             console.log(error);
         }
     }
-
-   
-
 }

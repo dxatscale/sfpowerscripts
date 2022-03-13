@@ -1,6 +1,6 @@
 import ApexTypeFetcher, { ApexSortedByType } from '../apex/parser/ApexTypeFetcher';
 import ProjectConfig from '../project/ProjectConfig';
-import SourcePackageGenerator from '../generators/SourcePackageGenerator';
+import SourcePackageGenerator from './generators/SourcePackageGenerator';
 import SourceToMDAPIConvertor from './packageFormatConvertors/SourceToMDAPIConvertor';
 import PackageManifest from './PackageManifest';
 import MetadataCount from './MetadataCount';
@@ -30,6 +30,7 @@ export default class SFPPackage {
     private _apexClassesSortedByTypes: ApexSortedByType;
     private _workingDirectory: string;
     private _isProfileSupportedMetadataInPackage: boolean;
+    private _isParallelTestingEnabled: boolean;
 
     private readonly _propertyFetchers: PropertyFetcher[] = [
         new AssignPermissionSetFetcher(),
@@ -105,7 +106,9 @@ export default class SFPPackage {
         projectDirectory: string,
         sfdx_package: string,
         configFilePath?: string,
-        pathToReplacementForceIgnore?: string
+        pathToReplacementForceIgnore?: string,
+        revisionFrom?: string,
+        revisionTo?: string
     ) {
         let sfpPackage: SFPPackage = new SFPPackage(packageLogger);
         sfpPackage._package_name = sfdx_package;
@@ -121,14 +124,16 @@ export default class SFPPackage {
         }
 
         // Requires destructiveChangesPath which is set by the property fetcher
-        sfpPackage._workingDirectory = SourcePackageGenerator.generateSourcePackageArtifact(
+        sfpPackage._workingDirectory = await SourcePackageGenerator.generateSourcePackageArtifact(
             sfpPackage._logger,
             sfpPackage._projectDirectory,
             sfpPackage._package_name,
             sfpPackage._packageDescriptor.path,
             sfpPackage.destructiveChangesPath,
             sfpPackage._configFilePath,
-            pathToReplacementForceIgnore
+            pathToReplacementForceIgnore,
+            revisionFrom,
+            revisionTo
         );
 
         let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
