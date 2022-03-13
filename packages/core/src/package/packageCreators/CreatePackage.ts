@@ -3,7 +3,7 @@ import PackageMetadata from '../../PackageMetadata';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import ProjectConfig from '../../project/ProjectConfig';
 import path from 'path';
-import SourcePackageGenerator from '../../generators/SourcePackageGenerator';
+import SourcePackageGenerator from '../generators/SourcePackageGenerator';
 
 export abstract class CreatePackage {
     private startTime: number;
@@ -12,6 +12,8 @@ export abstract class CreatePackage {
     private packageManifest;
     private packageDescriptor;
     private packageDirectory;
+    protected revisionFrom;
+    protected revisionTo;
 
     constructor(
         protected projectDirectory: string,
@@ -59,7 +61,7 @@ export abstract class CreatePackage {
         this.writeDeploymentStepsToArtifact(this.packageDescriptor);
 
         //Genrate Artifact
-        this.generateArtifact(resolvedPackageDirectory);
+        await this.generateArtifact(resolvedPackageDirectory);
 
         //Send Metrics to Logging system
         this.sendMetricsWhenSuccessfullyCreated();
@@ -68,9 +70,15 @@ export abstract class CreatePackage {
     }
 
     abstract getTypeOfPackage();
+
     abstract preCreatePackage(packageDirectory: string, packageDescriptor: any);
     abstract createPackage(packageDirectory: string, packageDescriptor: any);
     abstract postCreatePackage(packageDirectory: string, packageDescriptor: any);
+
+    public setDiffRevisons(revisionFrom: string, revisionTo: string) {
+        this.revisionFrom = revisionFrom;
+        this.revisionTo = revisionTo;
+    }
 
     private sendMetricsWhenSuccessfullyCreated() {
         let elapsedTime = Date.now() - this.startTime;
@@ -119,16 +127,18 @@ export abstract class CreatePackage {
         }
     }
 
-    private generateArtifact(packageDirectory: string) {
+    private async generateArtifact(packageDirectory: string) {
         //Get Artifact Detailes
-        let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
+        let sourcePackageArtifactDir = await SourcePackageGenerator.generateSourcePackageArtifact(
             this.logger,
             this.projectDirectory,
             this.sfdx_package,
             packageDirectory,
             this.packageDescriptor.destructiveChangePath,
             this.configFilePath,
-            this.pathToReplacementForceIgnore
+            this.pathToReplacementForceIgnore,
+            this.revisionFrom,
+            this.revisionTo
         );
 
         this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;

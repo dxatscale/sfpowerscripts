@@ -1,4 +1,4 @@
-import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator';
+import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 
 import { EOL } from 'os';
 import { flags } from '@salesforce/command';

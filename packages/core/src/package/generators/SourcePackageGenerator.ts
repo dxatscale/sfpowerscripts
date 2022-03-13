@@ -1,20 +1,23 @@
-import ProjectConfig from '../project/ProjectConfig';
+import ProjectConfig from '../../project/ProjectConfig';
 import * as rimraf from 'rimraf';
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 import { mkdirpSync } from 'fs-extra';
 import * as fs from 'fs-extra';
+import PackageComponentDiff from '../diff/PackageComponentDiff';
 let path = require('path');
 
 export default class SourcePackageGenerator {
-    public static generateSourcePackageArtifact(
+    public static async generateSourcePackageArtifact(
         logger: Logger,
         projectDirectory: string,
         sfdx_package: string,
         packageDirectory: string,
         destructiveManifestFilePath?: string,
         configFilePath?: string,
-        pathToReplacementForceIgnore?: string
-    ): string {
+        pathToReplacementForceIgnore?: string,
+        revisionFrom?: string,
+        revisionTo?: string
+    ): Promise<string> {
         let artifactDirectory: string = `.sfpowerscripts/${this.makefolderid(5)}_source`,
             rootDirectory: string;
 
@@ -39,6 +42,18 @@ export default class SourcePackageGenerator {
         SourcePackageGenerator.createScripts(artifactDirectory, rootDirectory, sfdx_package);
 
         SourcePackageGenerator.createForceIgnores(artifactDirectory, rootDirectory);
+
+        //Compute diff
+        if (revisionFrom && revisionTo) {
+            let packageComponentDiffer: PackageComponentDiff = new PackageComponentDiff(
+                logger,
+                sfdx_package,
+                revisionFrom,
+                revisionTo,
+                true
+            );
+            await packageComponentDiffer.build(path.join(artifactDirectory, 'diff'));
+        }
 
         if (pathToReplacementForceIgnore)
             SourcePackageGenerator.replaceRootForceIgnore(artifactDirectory, pathToReplacementForceIgnore, logger);

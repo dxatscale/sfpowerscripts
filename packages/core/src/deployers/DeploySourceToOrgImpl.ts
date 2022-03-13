@@ -232,16 +232,16 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
     //For compatibilty with cli output
     private formatResultAsJSON(result) {
-        const response = result?.response?result.response:{};
+        const response = result?.response ? result.response : {};
         return {
-            result:{
-            ...response,
-            details: {
-                componentSuccesses:response?.details?.componentSuccesses,
-                componentFailures: response?.details?.componentFailures,
-                runTestResult: response?.details?.runTestResult,
-            }
-           },
+            result: {
+                ...response,
+                details: {
+                    componentSuccesses: response?.details?.componentSuccesses,
+                    componentFailures: response?.details?.componentFailures,
+                    runTestResult: response?.details?.runTestResult,
+                },
+            },
         };
     }
 }

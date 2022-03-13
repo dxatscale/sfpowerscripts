@@ -38,16 +38,16 @@ jest.mock('../../src/project/ProjectConfig', () => {
     return ProjectConfig;
 });
 
-jest.mock('../../src/generators/SourcePackageGenerator', () => {
+jest.mock('../../src/package/generators/SourcePackageGenerator', () => {
     class SourcePackageGenerator {
-        static generateSourcePackageArtifact(
+        static async generateSourcePackageArtifact(
             projectDirectory: string,
             sfdx_package: string,
             packageDirectory: string,
             destructiveManifestFilePath?: string,
             configFilePath?: string,
             pathToReplacementForceIgnore?: string
-        ): string {
+        ): Promise<string> {
             return '.sfpowerscripts/3sIRD_source';
         }
     }
