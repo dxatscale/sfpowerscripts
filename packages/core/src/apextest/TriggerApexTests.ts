@@ -74,6 +74,11 @@ export default class TriggerApexTests {
                 tests = (this.testOptions as RunSpecifiedTestsOption).specifiedTests;
                 SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
             } else if (this.testOptions instanceof RunAllTestsInPackageOptions) {
+                await this.toggleParallelApexTesting(
+                    this.conn,
+                    this.fileLogger,
+                    this.testOptions.sfppackage.packageDescriptor.testInParallel ? false : true
+                );
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
                 tests = (this.testOptions as RunAllTestsInPackageOptions).specifiedTests;
                 SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
@@ -312,11 +317,6 @@ export default class TriggerApexTests {
         }[];
     }> {
         if (this.testOptions instanceof RunAllTestsInPackageOptions) {
-            await this.toggleParallelApexTesting(
-                this.conn,
-                this.fileLogger,
-                this.testOptions.sfppackage.packageDescriptor.testInParallel ? false : true
-            );
             let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
                 this.testOptions.sfppackage,
                 coverageReport,
