@@ -10,7 +10,7 @@ import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 import FileUtils from '../../utils/Fileutils';
 import ProjectConfig from '../../project/ProjectConfig';
 import MetadataFiles from '../../metadata/MetadataFiles';
-import { SOURCE_EXTENSION_REGEX, MetadataInfo, METADATA_INFO } from '../../metadata/metadataInfo';
+import { SOURCE_EXTENSION_REGEX, MetadataInfo, METADATA_INFO } from '../../metadata/MetadataInfo';
 
 
 const deleteNotSupported = ['RecordType'];
