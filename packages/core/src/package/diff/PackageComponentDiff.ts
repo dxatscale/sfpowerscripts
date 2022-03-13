@@ -1,17 +1,17 @@
-/* eslint-disable @typescript-eslint/no-array-constructor */
-import MetadataFiles from '../../metadata/metadataFiles';
 
 import * as xml2js from 'xml2js';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as rimraf from 'rimraf';
-import { SOURCE_EXTENSION_REGEX, MetadataInfo, METADATA_INFO } from '../../metadata/metadataInfo';
 import * as _ from 'lodash';
 import DiffUtil, { DiffFile, DiffFileStatus } from './MetdataDiffUtil';
 import simplegit from 'simple-git';
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 import FileUtils from '../../utils/Fileutils';
 import ProjectConfig from '../../project/ProjectConfig';
+import MetadataFiles from '../../metadata/MetadataFiles';
+import { SOURCE_EXTENSION_REGEX, MetadataInfo, METADATA_INFO } from '../../metadata/metadataInfo';
+
 
 const deleteNotSupported = ['RecordType'];
 const git = simplegit();
