@@ -26,6 +26,7 @@ import {
 } from '@salesforce/apex-node';
 import { CliJsonFormat, JsonReporter } from './JSONReporter';
 import { Duration } from '@salesforce/kit';
+import { UpsertResult } from 'jsforce';
 
 export default class TriggerApexTests {
     private conn: Connection;
@@ -324,6 +325,7 @@ export default class TriggerApexTests {
         }[];
     }> {
         if (this.testOptions instanceof RunAllTestsInPackageOptions) {
+            await this.toggleParallelApexTesting(this.conn,this.fileLogger,this.testOptions.sfppackage.packageDescriptor.testInParallel?false:true)
             let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
                 this.testOptions.sfppackage,
                 coverageReport,
@@ -351,6 +353,26 @@ export default class TriggerApexTests {
                     coverageValidator.getIndividualClassCoverage()
                 );
             }
+        }
+    }
+    //Enable Synchronus Compile on Deploy
+    private async toggleParallelApexTesting(conn: Connection, logger: Logger,toEnable:boolean) {
+        try {
+            let apexSettingMetadata = { fullName: 'ApexSettings', enableDisableParallelApexTesting: toEnable };
+            let result: UpsertResult | UpsertResult[] = await conn.metadata.upsert('ApexSettings', apexSettingMetadata);
+            if ((result as UpsertResult).success) {
+                SFPLogger.log(
+                    `Set enableDisableParallelApexTesting:${toEnable}`,
+                    LoggerLevel.INFO,
+                    logger
+                );
+            }
+        } catch (error) {
+            SFPLogger.log(
+                `Skipping toggling of enableDisableParallelApexTesting due  to ${error}..`,
+                LoggerLevel.INFO,
+                logger
+            );
         }
     }
 }
@@ -391,4 +413,7 @@ export class ProgressReporter implements Progress<ApexTestProgressValue> {
             console.log(error);
         }
     }
+
+   
+
 }
