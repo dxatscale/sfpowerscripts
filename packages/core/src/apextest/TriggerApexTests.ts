@@ -86,7 +86,7 @@ export default class TriggerApexTests {
                 await this.toggleParallelApexTesting(
                     this.conn,
                     this.fileLogger,
-                    this.testOptions.sfppackage.packageDescriptor.testInParallel ? false : true
+                    this.testOptions.sfppackage.packageDescriptor.testSynchronous==true ? true : false
                 );
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
                 tests = (this.testOptions as RunAllTestsInPackageOptions).specifiedTests;
