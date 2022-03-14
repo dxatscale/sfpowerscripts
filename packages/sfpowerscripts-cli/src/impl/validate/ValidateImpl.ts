@@ -22,7 +22,7 @@ import { COLOR_WARNING } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogg
 import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_SUCCESS } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import getFormattedTime from '../../utils/GetFormattedTime';
+import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import ScratchOrgInfoFetcher from '../../impl/pool/services/fetchers/ScratchOrgInfoFetcher';
@@ -32,10 +32,10 @@ import PoolOrgDeleteImpl from '../pool/PoolOrgDeleteImpl';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import SFPPackage from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
 import { TestOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
-import { RunAllTestsInPackageOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/ExtendedTestOptions';
+import { RunAllTestsInPackageOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
 import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
-import { UpsertResult } from 'jsforce';
+
 
 export enum ValidateMode {
     ORG,
