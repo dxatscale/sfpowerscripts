@@ -83,20 +83,32 @@ export default class TriggerApexTests {
             let tests: string = null;
             let suites: string = null;
             if (this.testOptions instanceof RunAllTestsInPackageOptions) {
+                SFPLogger.log(
+                    `Test Mode Descriptor in Package 'testSynchronous': 
+                        ${this.testOptions.sfppackage.packageDescriptor.testSynchronous}`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
+                SFPLogger.log(
+                    `Test Mode: ${COLOR_KEY_MESSAGE(
+                        this.testOptions.sfppackage.packageDescriptor.testSynchronous == true ? 'serial' : 'parallel'
+                    )}`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
                 await this.toggleParallelApexTesting(
                     this.conn,
                     this.fileLogger,
-                    this.testOptions.sfppackage.packageDescriptor.testSynchronous==true ? true : false
+                    this.testOptions.sfppackage.packageDescriptor.testSynchronous == true ? true : false
                 );
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
                 tests = (this.testOptions as RunAllTestsInPackageOptions).specifiedTests;
                 SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
-            }
-            else if (this.testOptions instanceof RunSpecifiedTestsOption) {
+            } else if (this.testOptions instanceof RunSpecifiedTestsOption) {
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
                 tests = (this.testOptions as RunSpecifiedTestsOption).specifiedTests;
                 SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
-            }  else if (this.testOptions instanceof RunApexTestSuitesOption) {
+            } else if (this.testOptions instanceof RunApexTestSuitesOption) {
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
                 suites = (this.testOptions as RunApexTestSuitesOption).suiteNames;
                 SFPLogger.log(
@@ -363,11 +375,11 @@ export default class TriggerApexTests {
     //Enable Synchronus Compile on Deploy
     private async toggleParallelApexTesting(conn: Connection, logger: Logger, toEnable: boolean) {
         try {
-            SFPLogger.log(`Set enableDisableParallelApexTesting:${toEnable}`, LoggerLevel.INFO, logger);
+            SFPLogger.log(`Set enableDisableParallelApexTesting:${toEnable}`, LoggerLevel.TRACE, logger);
             let apexSettingMetadata = { fullName: 'ApexSettings', enableDisableParallelApexTesting: toEnable };
             let result: UpsertResult | UpsertResult[] = await conn.metadata.upsert('ApexSettings', apexSettingMetadata);
             if ((result as UpsertResult).success) {
-                SFPLogger.log(`Successfully updated apex testing setting`, LoggerLevel.INFO, logger);
+                SFPLogger.log(`Successfully updated apex testing setting`, LoggerLevel.TRACE, logger);
             }
         } catch (error) {
             SFPLogger.log(
