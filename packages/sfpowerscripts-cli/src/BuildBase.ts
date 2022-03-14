@@ -17,7 +17,7 @@ import SFPLogger, {
     COLOR_SUCCESS,
     COLOR_KEY_MESSAGE,
 } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import getFormattedTime from './utils/GetFormattedTime';
+import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);

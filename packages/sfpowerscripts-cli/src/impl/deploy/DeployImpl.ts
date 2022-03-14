@@ -395,7 +395,7 @@ export default class DeployImpl {
             let result: UpsertResult | UpsertResult[] = await conn.metadata.upsert('ApexSettings', apexSettingMetadata);
             if ((result as UpsertResult).success) {
                 SFPLogger.log(
-                    `Enabled Synchronous Compile on Org succesfully as this is the last package`,
+                    `${COLOR_KEY_MESSAGE('Enabled Synchronous Compile on Org succesfully as this is the last package in queue')}`,
                     LoggerLevel.INFO,
                     logger
                 );

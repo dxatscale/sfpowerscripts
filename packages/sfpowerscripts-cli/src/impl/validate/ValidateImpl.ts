@@ -22,7 +22,6 @@ import { COLOR_WARNING } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogg
 import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_SUCCESS } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import ScratchOrgInfoFetcher from '../../impl/pool/services/fetchers/ScratchOrgInfoFetcher';
@@ -35,6 +34,7 @@ import { TestOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOpt
 import { RunAllTestsInPackageOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
 import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
+import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 
 
 export enum ValidateMode {
@@ -136,6 +136,7 @@ export default class ValidateImpl {
 
     private async dependencyAnalysis(orgAsSFPOrg: SFPOrg, deploymentResult: DeploymentResult) {
         if (this.props.isDependencyAnalysis) {
+            this.printOpenLoggingGroup(`Validate Dependency tree`);
             SFPLogger.log(
                 COLOR_HEADER(
                     `-------------------------------------------------------------------------------------------`
@@ -160,6 +161,7 @@ export default class ValidateImpl {
                     `-------------------------------------------------------------------------------------------`
                 )
             );
+            this.printClosingLoggingGroup();
             return dependencyViolations;
         }
     }

@@ -100,10 +100,11 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 );
 
                 if (
-                    defaultValidateDeploymentOption() === 'diff' &&
+                    defaultValidateDeploymentOption() === 'selective' &&
                     fs.existsSync(path.join(this.sourceDirectory, 'diff'))
                 ) {
-                    SFPLogger.log(`${COLOR_SUCCESS(`Selective mode activated`)}`, LoggerLevel.INFO, this.logger);
+                    SFPLogger.log(`${COLOR_SUCCESS(`Selective mode activated, Only changed components in package is deployed`)}`, LoggerLevel.INFO, this.logger);
+                    SFPLogger.log(`${`Toggle this feature by setting SFPOWERSCRIPTS_VALIDATE_DEPLOYMENT_OPTION to Full|Selective`}`, LoggerLevel.INFO, this.logger);
                     this.sourceDirectory = path.join(this.sourceDirectory, 'diff');
                 }
 
