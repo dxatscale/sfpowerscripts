@@ -105,22 +105,24 @@ export default class ValidateImpl {
                 //Do dependency analysis
                 await this.dependencyAnalysis(this.orgAsSFPOrg, deploymentResult);
 
+                 //Display impact analysis
+                 await this.impactAnalysis(connToScratchOrg);
+
                 //Trigger Apex Test
                 let testFailures = await this.triggerTestsInEachPackages(
                     scratchOrgUsername,
                     deploymentResult.queue,
                     deploymentResult.packagesToPackageInfo
                 );
-                if (testFailures.length > 0)
+                if (testFailures.length > 0) {
                     console.log(
                         COLOR_ERROR(
                             `\nTests failed for`,
                             testFailures.map((packageInfo) => packageInfo.packageMetadata.package_name)
                         )
                     );
-
-                //Display impact analysis
-                await this.impactAnalysis(connToScratchOrg);
+                    throw new ValidateError(`Test Failed for ${JSON.stringify(testFailures)}`,{testFailures:testFailures});
+                }
             }
 
             return null;
@@ -342,10 +344,13 @@ export default class ValidateImpl {
                             result: false,
                             message: 'Test Execution failed',
                         };
+                     
                     }
 
                     if (!testResult.result) {
+                        SFPLogger.log(`Test Failed for ${packageInfo.packageMetadata.package_name}`, LoggerLevel.ERROR, this.logger);
                         testFailure.push(packageInfo);
+                        break;
                     } else {
                         SFPLogger.log(testResult.message, LoggerLevel.INFO, this.logger);
 
@@ -379,12 +384,27 @@ export default class ValidateImpl {
         result: boolean;
         message: string;
     }> {
+
+      
         let sfPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
             this.logger,
             null,
             sfdx_package,
             null
         );
+
+        SFPLogger.log(
+            COLOR_HEADER(
+                `-------------------------------------------------------------------------------------------`
+            )
+        );
+        SFPLogger.log(`Triggering Apex tests for ${sfPackage.package_name}`,LoggerLevel.INFO);
+        SFPLogger.log(
+            COLOR_HEADER(
+                `-------------------------------------------------------------------------------------------`
+            )
+        );
+       
         let testOptions: TestOptions = new RunAllTestsInPackageOptions(sfPackage, 60, '.testresults');
         let testCoverageOptions: CoverageOptions = {
             isIndividualClassCoverageToBeValidated: false,
@@ -399,8 +419,10 @@ export default class ValidateImpl {
             null,
             this.logger
         );
+     
 
         return triggerApexTests.exec();
+
     }
 
     private printArtifactVersions(installedArtifacts: any) {
