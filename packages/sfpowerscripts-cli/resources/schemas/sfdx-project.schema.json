@@ -121,6 +121,9 @@
           "skipCoverageValidation":{
             "$ref": "#/definitions/packageDirectory.skipCoverageValidation"
           },
+          "testSynchronous":{
+            "$ref": "#/definitions/packageDirectory.testSynchronous"
+          },
           "skipDeployOnOrgs":{
             "$ref": "#/definitions/packageDirectory.skipDeployOnOrgs"
           },
@@ -401,6 +404,12 @@
       "type": "boolean",
       "title": "Skip Test Coverage Validation",
       "description": "Skip the coverage validation of a package (unlocked/source)"
+    },
+    "packageDirectory.testSynchronous": {
+      "type": "boolean",
+      "title": "Trigger tests synchronously",
+      "description": "This will disable parallel testing in the org and tests packages",
+      "default":false
     },
     "packageDirectory.skipDeployOnOrgs": {
       "type": "array",
