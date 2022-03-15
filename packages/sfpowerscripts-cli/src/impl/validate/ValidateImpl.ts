@@ -9,7 +9,7 @@ import fs = require('fs');
 import InstallPackageDependenciesImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import PoolFetchImpl from '../pool/PoolFetchImpl';
-import { Connection, Org } from '@salesforce/core';
+import {  Org } from '@salesforce/core';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
 import ValidateError from '../../errors/ValidateError';
 import ChangedComponentsFetcher from '@dxatscale/sfpowerscripts.core/lib/dependency/ChangedComponentsFetcher';
@@ -264,6 +264,9 @@ export default class ValidateImpl {
     }
 
     private async buildChangedSourcePackages(packagesToCommits: { [p: string]: string }): Promise<any> {
+
+        this.printOpenLoggingGroup('Building Packages');
+
         let buildStartTime: number = Date.now();
 
         let buildProps: BuildProps = {
@@ -305,6 +308,8 @@ export default class ValidateImpl {
         let buildElapsedTime: number = Date.now() - buildStartTime;
 
         this.printBuildSummary(generatedPackages, failedPackages, buildElapsedTime);
+
+        this.printClosingLoggingGroup();
 
         return generatedPackages;
     }
