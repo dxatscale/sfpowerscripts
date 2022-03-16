@@ -44,6 +44,19 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             this.source_directory,
             this.isToBreakBuildIfEmpty
         );
+
+        //On a diff deployment, we might need to deploy full as version changed or scratch org config has changed
+        //In that case lets check again with the main directory and proceed ahead with deployment
+        if (this.project_directory.endsWith('diff') && status.result == 'skip') {
+            this.project_directory = this.project_directory.substring(0, this.project_directory.indexOf('/diff'));
+            //Check empty conditions
+            status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(
+                this.project_directory,
+                this.source_directory,
+                this.isToBreakBuildIfEmpty
+            );
+        }
+
         if (status.result == 'break') {
             deploySourceResult.result = false;
             deploySourceResult.message = status.message;
@@ -203,7 +216,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         });
 
         deploy.onFinish((response) => {
-            let deploymentDuration = Date.now() - startTime
+            let deploymentDuration = Date.now() - startTime;
             if (response.response.success) {
                 SFPLogger.log(
                     COLOR_SUCCESS(
@@ -216,9 +229,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
                 );
             } else
                 SFPLogger.log(
-                    COLOR_ERROR(
-                        `Failed to deploy after ${getFormattedTime(deploymentDuration)}`
-                    ),
+                    COLOR_ERROR(`Failed to deploy after ${getFormattedTime(deploymentDuration)}`),
                     LoggerLevel.INFO,
                     this.packageLogger
                 );
