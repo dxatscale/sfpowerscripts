@@ -133,7 +133,7 @@ export default class PackageComponentDiff {
                     else
                     {
                         await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
-                    } 
+                    }
                 }
 
             }
