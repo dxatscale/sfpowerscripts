@@ -84,7 +84,11 @@ export default class TriggerApexTests {
             let suites: string = null;
             if (this.testOptions instanceof RunAllTestsInPackageOptions) {
                 SFPLogger.log(
-                    `Test Mode Descriptor in Package 'testSynchronous': ${this.testOptions.sfppackage.packageDescriptor.testSynchronous?this.testOptions.sfppackage.packageDescriptor.testSynchronous:false}`,
+                    `Test Mode Descriptor in Package 'testSynchronous': ${
+                        this.testOptions.sfppackage.packageDescriptor.testSynchronous
+                            ? this.testOptions.sfppackage.packageDescriptor.testSynchronous
+                            : false
+                    }`,
                     LoggerLevel.INFO,
                     this.fileLogger
                 );

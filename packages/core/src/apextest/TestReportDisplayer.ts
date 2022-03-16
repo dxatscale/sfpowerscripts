@@ -1,7 +1,6 @@
 import { RunAllTestsInPackageOptions, RunApexTestSuitesOption, TestOptions } from './TestOptions';
 import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from '../logger/SFPLogger';
 
-
 const Table = require('cli-table');
 
 export class TestReportDisplayer {

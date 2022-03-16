@@ -474,7 +474,7 @@ export default class BuildImpl {
                     devhub_alias,
                     wait_time,
                     isSkipValidation
-                );            
+                );
             } else if (packageType === 'Source') {
                 result = await this.createSourcePackage(sfdx_package, commit_id, repository_url);
             } else if (packageType == 'Data') {
@@ -567,7 +567,7 @@ export default class BuildImpl {
             this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
         );
 
-        if (this.props.packagesToCommits && this.props.packagesToCommits[sfdx_package] )
+        if (this.props.packagesToCommits && this.props.packagesToCommits[sfdx_package])
             createSourcePackageImpl.setDiffRevisons(this.props.packagesToCommits[sfdx_package], 'HEAD');
 
         let result = createSourcePackageImpl.exec();
