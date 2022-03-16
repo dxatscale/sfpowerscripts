@@ -20,6 +20,9 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;
     private deploymentType: DeploymentType;
 
+    private isDiffFolderAvailable =
+        defaultValidateDeploymentOption() === 'selective' && fs.existsSync(path.join(this.sourceDirectory, 'diff'));
+
     public constructor(
         sfdxPackage: string,
         targetusername: string,
@@ -45,9 +48,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         try {
             this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(this.packageMetadata);
 
-            if (this.pathToReplacementForceIgnore) {
-                this.replaceForceIgnoreInSourceDirectory(this.sourceDirectory, this.pathToReplacementForceIgnore);
-            }
+            this.handleForceIgnores();
 
             // Apply Destructive Manifest
             if (this.packageMetadata.destructiveChanges) {
@@ -101,12 +102,17 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
                 //Make a copy.. dont mutate sourceDirectory
                 let sourceDirectoryToBeDeployed = this.sourceDirectory;
-                if (
-                    defaultValidateDeploymentOption() === 'selective' &&
-                    fs.existsSync(path.join(this.sourceDirectory, 'diff'))
-                ) {
-                    SFPLogger.log(`${COLOR_SUCCESS(`Selective mode activated, Only changed components in package is deployed`)}`, LoggerLevel.INFO, this.logger);
-                    SFPLogger.log(`${`Toggle this feature by setting SFPOWERSCRIPTS_VALIDATE_DEPLOYMENT_OPTION to Full|Selective`}`, LoggerLevel.INFO, this.logger);
+                if (this.isDiffFolderAvailable) {
+                    SFPLogger.log(
+                        `${COLOR_SUCCESS(`Selective mode activated, Only changed components in package is deployed`)}`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
+                    SFPLogger.log(
+                        `${`Toggle this feature by setting SFPOWERSCRIPTS_VALIDATE_DEPLOYMENT_OPTION to Full|Selective`}`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
                     sourceDirectoryToBeDeployed = path.join(this.sourceDirectory, 'diff');
                 }
 
@@ -149,6 +155,19 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         } catch (error) {
             tmpDirObj.removeCallback();
             throw error;
+        }
+    }
+
+    private handleForceIgnores() {
+        if (this.pathToReplacementForceIgnore) {
+            this.replaceForceIgnoreInSourceDirectory(this.sourceDirectory, this.pathToReplacementForceIgnore);
+
+            //Handle Diff condition
+            if (this.isDiffFolderAvailable)
+                this.replaceForceIgnoreInSourceDirectory(
+                    path.join(this.sourceDirectory, 'diff'),
+                    this.pathToReplacementForceIgnore
+                );
         }
     }
 
