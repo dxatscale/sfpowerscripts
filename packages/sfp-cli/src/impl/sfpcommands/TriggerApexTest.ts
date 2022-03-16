@@ -6,7 +6,7 @@ import {
     RunLocalTests,
     RunSpecifiedTestsOption,
     TestLevel,
-    TestOptions
+    TestOptions,
 } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
 import SFPPackage, { ApexClasses } from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';

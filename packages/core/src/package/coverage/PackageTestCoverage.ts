@@ -100,7 +100,9 @@ export default class PackageTestCoverage {
                     result: true, //Changed to warning, as of Winter 22, coverage is really unstable
                     packageTestCoverage: this.packageTestCoverage,
                     classesCovered: classesCovered,
-                    message: `${COLOR_WARNING(`The package has an overall coverage of ${this.packageTestCoverage}%, which does not meet the required overall coverage of ${coverageThreshold}%`)}`,
+                    message: `${COLOR_WARNING(
+                        `The package has an overall coverage of ${this.packageTestCoverage}%, which does not meet the required overall coverage of ${coverageThreshold}%`
+                    )}`,
                 };
             } else {
                 return {

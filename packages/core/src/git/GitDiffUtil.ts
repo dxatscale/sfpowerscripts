@@ -22,9 +22,7 @@ export interface DiffFile {
 const git: SimpleGit = simplegit();
 
 export default class GitDiffUtils {
-
-
-    private  gitTreeRevisionTo: {
+    private gitTreeRevisionTo: {
         revision: string;
         path: string;
     }[];

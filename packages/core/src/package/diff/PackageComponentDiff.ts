@@ -1,4 +1,3 @@
-
 import * as xml2js from 'xml2js';
 import * as path from 'path';
 import * as fs from 'fs-extra';
@@ -12,16 +11,13 @@ import { SOURCE_EXTENSION_REGEX, MetadataInfo, METADATA_INFO } from '../../metad
 import { MetadataResolver } from '@salesforce/source-deploy-retrieve';
 import GitDiffUtils, { DiffFile, DiffFileStatus } from '../../git/GitDiffUtil';
 
-
 const deleteNotSupported = ['RecordType'];
 const git = simplegit();
 const SEP = /\/|\\/;
 let sfdxManifest;
 
-
 export default class PackageComponentDiff {
-
-    private gitDiffUtils:GitDiffUtils;
+    private gitDiffUtils: GitDiffUtils;
 
     destructivePackageObjPre: any[];
     destructivePackageObjPost: any[];
@@ -56,7 +52,6 @@ export default class PackageComponentDiff {
     public async build(outputFolder: string) {
         rimraf.sync(outputFolder);
 
-    
         const sepRegex = /\n|\r/;
         let data = '';
 
@@ -99,7 +94,6 @@ export default class PackageComponentDiff {
             fs.mkdirSync(outputFolder);
         }
 
-       
         const resolver = new MetadataResolver();
 
         if (filesToCopy && filesToCopy.length > 0) {
@@ -108,37 +102,24 @@ export default class PackageComponentDiff {
 
                 let sourceComponents = resolver.getComponentsFromPath(filePath);
                 for (const sourceComponent of sourceComponents) {
-                    if(sourceComponent.type.strategies?.adapter==AdapterId.MatchingContentFile)
-                    {
+                    if (sourceComponent.type.strategies?.adapter == AdapterId.MatchingContentFile) {
                         await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
                         await this.gitDiffUtils.copyFile(sourceComponent.content, outputFolder, this.logger);
-                    }
-                    else if(sourceComponent.type.strategies?.adapter==AdapterId.MixedContent)
-                    {
+                    } else if (sourceComponent.type.strategies?.adapter == AdapterId.MixedContent) {
                         await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
                         await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
-                    }
-                    else if(sourceComponent.type.strategies?.adapter==AdapterId.Decomposed)
-                    {
+                    } else if (sourceComponent.type.strategies?.adapter == AdapterId.Decomposed) {
                         await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
-                    }
-                    else if(sourceComponent.type.strategies?.adapter==AdapterId.Bundle)
-                    {
+                    } else if (sourceComponent.type.strategies?.adapter == AdapterId.Bundle) {
                         await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
-                    }
-                    else if(sourceComponent.type.strategies?.adapter==AdapterId.Default)
-                    {
+                    } else if (sourceComponent.type.strategies?.adapter == AdapterId.Default) {
                         await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
-                    }
-                    else
-                    {
+                    } else {
                         await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
                     }
                 }
-
             }
         }
-        
 
         if (this.isDestructive) {
             SFPLogger.log('Creating Destructive Manifest..', LoggerLevel.TRACE, this.logger);
@@ -181,7 +162,6 @@ export default class PackageComponentDiff {
         return returnVal;
     }
 
- 
     private async createDestructiveChanges(filePaths: DiffFileStatus[], outputFolder: string) {
         if (_.isNil(this.destructivePackageObjPost)) {
             this.destructivePackageObjPost = new Array();
@@ -434,4 +414,4 @@ enum AdapterId {
     Default = 'default',
     MatchingContentFile = 'matchingContentFile',
     MixedContent = 'mixedContent',
-  }
+}

@@ -55,7 +55,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         if (SFPLogger.logLevel > LoggerLevel.DEBUG) process.env.SFPOWERKIT_NOHEADER = 'true';
 
         //Set Query Limit to max
-        process.env.SFDX_MAX_QUERY_LIMIT='50000'
+        process.env.SFDX_MAX_QUERY_LIMIT = '50000';
 
         //If demo mode, display demo reel and return
         if (process.env.SFPOWERSCRIPTS_DEMO_MODE) {

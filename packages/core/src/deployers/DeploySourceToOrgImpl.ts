@@ -203,7 +203,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         });
 
         deploy.onFinish((response) => {
-            let deploymentDuration = Date.now() - startTime
+            let deploymentDuration = Date.now() - startTime;
             if (response.response.success) {
                 SFPLogger.log(
                     COLOR_SUCCESS(
@@ -216,9 +216,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
                 );
             } else
                 SFPLogger.log(
-                    COLOR_ERROR(
-                        `Failed to deploy after ${getFormattedTime(deploymentDuration)}`
-                    ),
+                    COLOR_ERROR(`Failed to deploy after ${getFormattedTime(deploymentDuration)}`),
                     LoggerLevel.INFO,
                     this.packageLogger
                 );

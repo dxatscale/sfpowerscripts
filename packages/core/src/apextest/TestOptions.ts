@@ -1,4 +1,4 @@
-import SFPPackage from "../package/SFPPackage";
+import SFPPackage from '../package/SFPPackage';
 
 export class TestOptions {
     synchronous?: boolean;
