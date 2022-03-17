@@ -126,6 +126,12 @@ export default class PackageComponentDiff {
             await this.createDestructiveChanges(deletedFiles, outputFolder);
         }
 
+        //Folder is empty after all this operations, return without copying additional files
+        if (fs.readdirSync(outputFolder).length === 0) {
+            rimraf.sync(outputFolder);
+            return null;
+        }
+
         SFPLogger.log(`Generating output summary`, LoggerLevel.TRACE, this.logger);
 
         try {

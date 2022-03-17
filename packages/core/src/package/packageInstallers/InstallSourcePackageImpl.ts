@@ -14,6 +14,7 @@ import PackageManifest from '../PackageManifest';
 import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl from '../../deployers/DeploySourceToOrgImpl';
 import defaultValidateDeploymentOption from '../../utils/DefaultValidateDeploymentOption';
+import PackageEmptyChecker from '../PackageEmptyChecker';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private options: any;
@@ -101,7 +102,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 );
 
                 //Make a copy.. dont mutate sourceDirectory
-                let sourceDirectoryToBeDeployed = this.sourceDirectory;
+                let resolvedSourceDirectory = this.sourceDirectory;
+
                 if (this.isDiffFolderAvailable) {
                     SFPLogger.log(
                         `${COLOR_SUCCESS(`Selective mode activated, Only changed components in package is deployed`)}`,
@@ -113,61 +115,103 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                         LoggerLevel.INFO,
                         this.logger
                     );
-                    sourceDirectoryToBeDeployed = path.join(this.sourceDirectory, 'diff');
+                    resolvedSourceDirectory = path.join(this.sourceDirectory, 'diff');
                 }
 
-                let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
-                    this.org,
-                    sourceDirectoryToBeDeployed,
-                    this.packageDirectory,
-                    deploymentOptions,
-                    false,
-                    this.logger
-                );
+                let emptyCheck = this.handleEmptyPackage(resolvedSourceDirectory, this.packageDirectory);
 
-                result = await deploySourceToOrgImpl.exec();
-            }
-
-            if (result.message.startsWith('skip')) {
-                SFPLogger.log(
-                    `${COLOR_WARNING(`No components changed to deploy.. Skipping through this package`)}`,
-                    LoggerLevel.INFO,
-                    this.logger
-                );
-                SFPLogger.log(
-                    `Check Package Reason, Probably version or scratch org config change triggered the change`,
-                    LoggerLevel.INFO,
-                    this.logger
-                );
-            }
-
-            if (result.result && !result.message.startsWith('skip:')) {
-                //Apply PostDeployment Activities
-                try {
-                    if (isReconcileActivated) {
-                        //Bring back the original profiles, reconcile and redeploy again
-                        await this.reconcileAndRedeployProfiles(
-                            profileFolders,
-                            this.sourceDirectory,
-                            this.targetusername,
-                            this.packageDirectory,
-                            tempDir,
-                            deploymentOptions
-                        );
-                    }
-                } catch (error) {
+                if (emptyCheck.isToSkip == true) {
                     SFPLogger.log(
-                        'Failed to apply reconcile the second time, Partial Metadata applied',
+                        `${COLOR_SUCCESS(`Skipping the package as there is nothing to be deployed`)}`,
                         LoggerLevel.INFO,
                         this.logger
                     );
+                    return;
+                } else if (emptyCheck.isToSkip == false) {
+                    //Display a warning
+                    if (
+                        defaultValidateDeploymentOption() === 'selective' &&
+                        resolvedSourceDirectory != emptyCheck.resolvedSourceDirectory
+                    ) {
+                        SFPLogger.log(
+                            `${COLOR_WARNING(
+                                `Overriding selective mode to full deployment mode as selective component calculation was not successful`
+                            )}`,
+                            LoggerLevel.INFO,
+                            this.logger
+                        );
+                    }
+
+                    let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
+                        this.org,
+                        emptyCheck.resolvedSourceDirectory,
+                        this.packageDirectory,
+                        deploymentOptions,
+                        false,
+                        this.logger
+                    );
+
+                    result = await deploySourceToOrgImpl.exec();
+
+                    if (result.result) {
+                        //Apply PostDeployment Activities
+                        try {
+                            if (isReconcileActivated) {
+                                //Bring back the original profiles, reconcile and redeploy again
+                                await this.reconcileAndRedeployProfiles(
+                                    profileFolders,
+                                    this.sourceDirectory,
+                                    this.targetusername,
+                                    this.packageDirectory,
+                                    tempDir,
+                                    deploymentOptions
+                                );
+                            }
+                        } catch (error) {
+                            SFPLogger.log(
+                                'Failed to apply reconcile the second time, Partial Metadata applied',
+                                LoggerLevel.INFO,
+                                this.logger
+                            );
+                        }
+                    } else if (result.result === false) {
+                        throw new Error(result.message);
+                    }
                 }
-            } else if (result.result === false) {
-                throw new Error(result.message);
             }
         } catch (error) {
             tmpDirObj.removeCallback();
             throw error;
+        }
+    }
+
+    private handleEmptyPackage(
+        sourceDirectory: string,
+        packageDirectory: string
+    ): { isToSkip: boolean; resolvedSourceDirectory: string } {
+        //Check empty conditions
+        let status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(sourceDirectory, packageDirectory, false);
+
+        //On a diff deployment, we might need to deploy full as version changed or scratch org config has changed
+        //In that case lets check again with the main directory and proceed ahead with deployment
+        if (defaultValidateDeploymentOption() && status.result == 'skip') {
+            sourceDirectory = sourceDirectory.substring(0, this.sourceDirectory.indexOf('/diff'));
+            //Check empty conditions
+            status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(sourceDirectory, packageDirectory, false);
+        }
+
+        if (status.result == 'break') {
+            throw new Error('No compoments in the package, Please check your build again');
+        } else if (status.result == 'skip') {
+            return {
+                isToSkip: true,
+                resolvedSourceDirectory: sourceDirectory,
+            };
+        } else {
+            return {
+                isToSkip: false,
+                resolvedSourceDirectory: sourceDirectory,
+            };
         }
     }
 
