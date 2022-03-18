@@ -49,7 +49,7 @@ export default class SourcePackageGenerator {
         if (
             revisionFrom &&
             revisionTo &&
-            ProjectConfig.getSFDXPackageDescriptor(projectDirectory, sfdx_package).aliasfy == false
+            !ProjectConfig.getSFDXPackageDescriptor(projectDirectory, sfdx_package).aliasfy
         ) {
             try {
                 let packageComponentDiffer: PackageComponentDiff = new PackageComponentDiff(
