@@ -145,7 +145,7 @@ export default class DeployImpl {
                                 pkgDescriptor,
                                 false, //Queue already filtered by deploy, there is no further need for individual
                                 //commands to decide the skip logic. TODO: fix this incorrect pattern
-                                packageMetadata.apiVersion || packageMetadata.payload.Package.version // Use package.xml version for backwards compat with old artifacts
+                                packageMetadata.apiVersion || packageMetadata.payload?.Package?.version // Use package.xml version for backwards compat with old artifacts
                             );
 
                             if (
