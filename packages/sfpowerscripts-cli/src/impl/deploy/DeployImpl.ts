@@ -124,7 +124,7 @@ export default class DeployImpl {
                             //activate compile on deploy for the last package
                             //TODO: Refactor to its own method
                             if (i == queue.length - 1) {
-                                if (this.props.currentStage === 'prepare' || this.props.currentStage === 'validate') {
+                                if (this.props.currentStage === 'validate') {
                                     //Create Org
                                     let orgAsSFPOrg = await SFPOrg.create({
                                         aliasOrUsername: this.props.targetUsername,
