@@ -124,7 +124,7 @@ export default class DeployImpl {
                             //activate compile on deploy for the last package
                             //TODO: Refactor to its own method
                             if (i == queue.length - 1) {
-                                if (this.props.currentStage === 'prepare' || this.props.currentStage === 'validate') {
+                                if (this.props.currentStage === 'validate') {
                                     //Create Org
                                     let orgAsSFPOrg = await SFPOrg.create({
                                         aliasOrUsername: this.props.targetUsername,
@@ -145,7 +145,7 @@ export default class DeployImpl {
                                 pkgDescriptor,
                                 false, //Queue already filtered by deploy, there is no further need for individual
                                 //commands to decide the skip logic. TODO: fix this incorrect pattern
-                                packageMetadata.apiVersion || packageMetadata.payload.Package.version // Use package.xml version for backwards compat with old artifacts
+                                packageMetadata.apiVersion || packageMetadata.payload?.Package?.version // Use package.xml version for backwards compat with old artifacts
                             );
 
                             if (

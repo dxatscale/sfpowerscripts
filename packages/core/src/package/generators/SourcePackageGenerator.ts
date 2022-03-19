@@ -44,15 +44,25 @@ export default class SourcePackageGenerator {
         SourcePackageGenerator.createForceIgnores(artifactDirectory, rootDirectory);
 
         //Compute diff
-        if (revisionFrom && revisionTo) {
-            let packageComponentDiffer: PackageComponentDiff = new PackageComponentDiff(
-                logger,
-                sfdx_package,
-                revisionFrom,
-                revisionTo,
-                true
-            );
-            await packageComponentDiffer.build(path.join(artifactDirectory, 'diff'));
+        //Skip errors.. diff is not important we can always fall back
+        //Skip for aliasfied packages
+        if (
+            revisionFrom &&
+            revisionTo &&
+            !ProjectConfig.getSFDXPackageDescriptor(projectDirectory, sfdx_package).aliasfy
+        ) {
+            try {
+                let packageComponentDiffer: PackageComponentDiff = new PackageComponentDiff(
+                    logger,
+                    sfdx_package,
+                    revisionFrom,
+                    revisionTo,
+                    true
+                );
+                await packageComponentDiffer.build(path.join(artifactDirectory, 'diff'));
+            } catch (error) {
+                SFPLogger.log(`Unable to compute diff due to ${error}`, LoggerLevel.TRACE, logger);
+            }
         }
 
         if (pathToReplacementForceIgnore)

@@ -38,52 +38,36 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public async exec(): Promise<DeploySourceResult> {
         let deploySourceResult = {} as DeploySourceResult;
 
-        //Check empty conditions
-        let status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(
-            this.project_directory,
-            this.source_directory,
-            this.isToBreakBuildIfEmpty
-        );
-        if (status.result == 'break') {
-            deploySourceResult.result = false;
-            deploySourceResult.message = status.message;
-            return deploySourceResult;
-        } else if (status.result == 'skip') {
-            deploySourceResult.result = true;
-            deploySourceResult.message = 'skip:' + status.message;
-            return deploySourceResult;
+        //Create path
+        let sourceDirPath: string = path.resolve(this.source_directory);
+        if (this.project_directory) sourceDirPath = path.resolve(this.project_directory, this.source_directory);
+
+        //Create component set from source directory
+        let componentSet = ComponentSet.fromSource(sourceDirPath);
+        if (this.deployment_options['apiVersion'])
+            componentSet.sourceApiVersion = this.deployment_options['apiVersion'];
+
+        let components = componentSet.getSourceComponents();
+
+        //Print components inside Component Set
+        PackageComponentPrinter.printComponentTable(components, this.packageLogger);
+
+        //Get Deploy ID
+        let result = await this.deploy(sourceDirPath, componentSet);
+
+        this.writeResultToReport(result);
+
+        //Handle Responses
+        if (result.response.success) {
+            deploySourceResult.message = `Successfully deployed`;
+            deploySourceResult.result = result.response.success;
+            deploySourceResult.deploy_id = result.response.id;
         } else {
-            //Create path
-            let sourceDirPath: string = path.resolve(this.source_directory);
-            if (this.project_directory) sourceDirPath = path.resolve(this.project_directory, this.source_directory);
-
-            //Create component set from source directory
-            let componentSet = ComponentSet.fromSource(sourceDirPath);
-            if (this.deployment_options['apiVersion'])
-                componentSet.sourceApiVersion = this.deployment_options['apiVersion'];
-
-            let components = componentSet.getSourceComponents();
-
-            //Print components inside Component Set
-            PackageComponentPrinter.printComponentTable(components, this.packageLogger);
-
-            //Get Deploy ID
-            let result = await this.deploy(sourceDirPath, componentSet);
-
-            this.writeResultToReport(result);
-
-            //Handle Responses
-            if (result.response.success) {
-                deploySourceResult.message = `Successfully deployed`;
-                deploySourceResult.result = result.response.success;
-                deploySourceResult.deploy_id = result.response.id;
-            } else {
-                deploySourceResult.message = await this.displayErrors(result);
-                deploySourceResult.result = false;
-                deploySourceResult.deploy_id = result.response.id;
-            }
-            return deploySourceResult;
+            deploySourceResult.message = await this.displayErrors(result);
+            deploySourceResult.result = false;
+            deploySourceResult.deploy_id = result.response.id;
         }
+        return deploySourceResult;
     }
 
     private writeResultToReport(result: DeployResult) {
