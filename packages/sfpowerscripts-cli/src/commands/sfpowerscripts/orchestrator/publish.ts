@@ -16,7 +16,7 @@ import SFPLogger, {
     COLOR_SUCCESS,
     COLOR_TIME,
 } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import getFormattedTime from '../../../utils/GetFormattedTime';
+import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import simplegit from 'simple-git';
 import GitIdentity from '../../../impl/git/GitIdentity';
 import defaultShell from '@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell';

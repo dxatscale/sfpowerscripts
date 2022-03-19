@@ -1,3 +1,5 @@
+import SFPPackage from '../package/SFPPackage';
+
 export class TestOptions {
     synchronous?: boolean;
     wait_time: number;
@@ -49,9 +51,20 @@ export class RunAllTestsInOrg extends TestOptions {
     }
 }
 
+export class RunAllTestsInPackageOptions extends RunSpecifiedTestsOption {
+    public constructor(private _sfppackage: SFPPackage, wait_time: number, outputdir: string) {
+        super(wait_time, outputdir, _sfppackage.apexTestClassses.toString(), false);
+    }
+
+    public get sfppackage() {
+        return this._sfppackage;
+    }
+}
+
 export enum TestLevel {
     RunSpecifiedTests = 'RunSpecifiedTests',
     RunApexTestSuite = 'RunApexTestSuite',
     RunLocalTests = 'RunLocalTests',
     RunAllTestsInOrg = 'RunAllTestsInOrg',
+    RunAllTestsInPackage = 'RunAllTestsInPackage',
 }
