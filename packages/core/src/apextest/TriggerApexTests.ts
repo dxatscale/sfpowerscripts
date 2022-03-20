@@ -336,7 +336,7 @@ export default class TriggerApexTests {
                         if (!testToBeTriggered.includes(test.apexClass.fullName)) {
                             testClassesThatDonotContributedCoverage.push(test.apexClass.fullName);
                             if (!testToBeTriggered.includes(test.apexClass.fullName))
-                             testToBeTriggered.push(test.apexClass.fullName);
+                                testToBeTriggered.push(test.apexClass.fullName);
                         }
                     }
                 }
@@ -376,12 +376,12 @@ export default class TriggerApexTests {
                 let secondRuntestRunResult: TestResult;
                 await retry(
                     async (bail) => {
-                            secondRuntestRunResult = (await this.triggerTestAsynchronously(
-                                testService,
-                                translatedTestLevel,
-                                testToBeTriggered.toString(),
-                                null
-                            )) as TestResult;
+                        secondRuntestRunResult = (await this.triggerTestAsynchronously(
+                            testService,
+                            translatedTestLevel,
+                            testToBeTriggered.toString(),
+                            null
+                        )) as TestResult;
                     },
                     { retries: 2, minTimeout: 3000 }
                 );
