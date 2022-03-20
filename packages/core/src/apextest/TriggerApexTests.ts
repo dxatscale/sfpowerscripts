@@ -161,6 +161,7 @@ export default class TriggerApexTests {
                 this.cancellationTokenSource.token
             );
 
+            this.writeTestOutput(testResult);
             //Collect Failed Tests only if Parallel
             testResult = await this.triggerSecondRunInSerialForParallelFailedTests(
                 testResult,
@@ -168,36 +169,10 @@ export default class TriggerApexTests {
                 translatedTestLevel
             );
 
-            const jsonOutput = this.formatResultInJson(testResult);
-
-            //write output files
-            fs.ensureDirSync(this.testOptions.outputdir);
-
-            //Write files
-            fs.writeJSONSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunResult.summary.testRunId}.json`),
-                testResult,
-                { spaces: 4 }
-            );
-            fs.writeJSONSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunResult.summary.testRunId}-coverage.json`),
-                jsonOutput.coverage.coverage,
-                { spaces: 4 }
-            );
-
             //Write Junit Result no matter what
-            SFPLogger.log(
-                `Junit Report file available at ${path.join(
-                    this.testOptions.outputdir,
-                    `test-result-${testRunResult.summary.testRunId}-junit.xml`
-                )}`
-            );
-            let reportAsJUnitReport = new JUnitReporter().format(testResult);
-            fs.writeFileSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunResult.summary.testRunId}-junit.xml`),
-                reportAsJUnitReport
-            );
+            this.writeJUnit(testResult);
 
+            let jsonOutput = this.writeTestOutput(testResult);
             let testReportDisplayer = new TestReportDisplayer(jsonOutput, this.testOptions, this.fileLogger);
 
             commandTime = testResult.summary.commandTimeInMs;
@@ -303,6 +278,20 @@ export default class TriggerApexTests {
         }
     }
 
+    private writeJUnit(testResult: TestResult) {
+        SFPLogger.log(
+            `Junit Report file available at ${path.join(
+                this.testOptions.outputdir,
+                `test-result-${testResult.summary.testRunId}-junit.xml`
+            )}`
+        );
+        let reportAsJUnitReport = new JUnitReporter().format(testResult);
+        fs.writeFileSync(
+            path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}-junit.xml`),
+            reportAsJUnitReport
+        );
+    }
+
     private async triggerSecondRunInSerialForParallelFailedTests(
         testResult: TestResult,
         testService: TestService,
@@ -374,7 +363,7 @@ export default class TriggerApexTests {
 
                 //Trigger tests asynchronously
                 let secondRuntestRunResult: TestResult;
-                secondRuntestRunResult= await retry(
+                secondRuntestRunResult = await retry(
                     async (bail) => {
                         return (await this.triggerTestAsynchronously(
                             testService,
@@ -393,21 +382,17 @@ export default class TriggerApexTests {
                     this.cancellationTokenSource.token
                 );
 
-                //Replace original test result
-                for (const testInSecondTestResult of secondTestResult.tests) {
-                    let index = modifiedTestResult.tests.findIndex((test) => {
-                        test.methodName == testInSecondTestResult.methodName;
-                    });
-                    modifiedTestResult.tests[index] = testInSecondTestResult;
-                }
+                this.writeTestOutput(secondTestResult);
 
-                //Replace code coverage
-                for (const codeCoverage of secondTestResult.codecoverage) {
-                    let index = modifiedTestResult.codecoverage.findIndex((apexclass) => {
-                        apexclass.name == codeCoverage.name;
-                    });
-                    modifiedTestResult.codecoverage[index] = codeCoverage;
-                }
+                //Replace original test result
+                modifiedTestResult.tests=modifiedTestResult.tests.map(
+                    (obj) => secondTestResult.tests.find((o) => o.methodName === obj.methodName) || obj
+                );
+
+                //Replace original code coverage
+                modifiedTestResult.codecoverage=modifiedTestResult.codecoverage.map(
+                    (obj) => secondTestResult.codecoverage.find((o) => o.name === obj.name) || obj
+                );
 
                 //Now redo the math
                 modifiedTestResult.summary.failing = 0;
@@ -441,13 +426,34 @@ export default class TriggerApexTests {
                 delete modifiedTestResult.summary.coveredLines;
 
                 modifiedTestResult.summary.testRunId = modifiedTestResult.summary.testRunId.concat(
-                    ',',
+                    '_',
                     secondRuntestRunResult.summary.testRunId
                 );
             }
         }
 
         return modifiedTestResult;
+    }
+
+    private writeTestOutput(testResult: TestResult): CliJsonFormat {
+        const jsonOutput = this.formatResultInJson(testResult);
+
+        //write output files
+        fs.ensureDirSync(this.testOptions.outputdir);
+
+        //Write files
+        fs.writeJSONSync(
+            path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}.json`),
+            testResult,
+            { spaces: 4 }
+        );
+        fs.writeJSONSync(
+            path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}-coverage.json`),
+            jsonOutput.coverage.coverage,
+            { spaces: 4 }
+        );
+
+        return jsonOutput;
     }
 
     private formatResultInJson(result: TestResult): CliJsonFormat {
