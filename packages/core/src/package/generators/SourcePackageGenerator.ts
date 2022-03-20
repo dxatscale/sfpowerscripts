@@ -215,7 +215,7 @@ export default class SourcePackageGenerator {
                 );
             } catch (error) {
                 SFPLogger.log(error, LoggerLevel.TRACE, logger);
-                SFPLogger.log('Utilizing default config file path', LoggerLevel.INFO, logger);
+                SFPLogger.log('Utilizing default config file path', LoggerLevel.TRACE, logger);
             }
         }
     }
