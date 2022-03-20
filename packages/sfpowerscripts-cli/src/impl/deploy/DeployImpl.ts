@@ -126,15 +126,17 @@ export default class DeployImpl {
 
                 let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(queue[i].package, packageManifest);
 
-                //TODO:this is not accurate
-                let sfpPackage = await SFPPackage.buildPackageFromProjectConfig(
+               
+
+                this.printOpenLoggingGroup('Installing ', queue[i].package);
+                this.displayHeader(packageMetadata, pkgDescriptor, queue[i].package);
+
+                 //TODO:this is not accurate
+                 let sfpPackage = await SFPPackage.buildPackageFromProjectConfig(
                     this.props.packageLogger,
                     packageInfo.sourceDirectory,
                     queue[i].package
                 );
-
-                this.printOpenLoggingGroup('Installing ', queue[i].package);
-                this.displayHeader(packageMetadata, pkgDescriptor, queue[i].package);
 
                 let preHookStatus = await this._preDeployHook?.preDeployPackage(
                     sfpPackage,
