@@ -10,6 +10,7 @@ import AssignPermissionSetFetcher from './propertyFetchers/AssignPermissionSetFe
 import DestructiveManifestPathFetcher from './propertyFetchers/DestructiveManifestPathFetcher';
 import ReconcilePropertyFetcher from './propertyFetchers/ReconcileProfilePropertyFetcher';
 import { Logger } from '../logger/SFPLogger';
+import _ from 'lodash';
 
 export type ApexClasses = Array<string>;
 export default class SFPPackage {
@@ -122,6 +123,9 @@ export default class SFPPackage {
         for (const propertyFetcher of sfpPackage.propertyFetchers) {
             await propertyFetcher.getSfpowerscriptsProperties(sfpPackage, packageLogger);
         }
+
+        //No need to proceed further
+        if (sfpPackage._packageDescriptor.package_type == 'data') return sfpPackage;
 
         // Requires destructiveChangesPath which is set by the property fetcher
         sfpPackage._workingDirectory = await SourcePackageGenerator.generateSourcePackageArtifact(
