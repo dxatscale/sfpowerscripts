@@ -374,9 +374,9 @@ export default class TriggerApexTests {
 
                 //Trigger tests asynchronously
                 let secondRuntestRunResult: TestResult;
-                await retry(
+                secondRuntestRunResult= await retry(
                     async (bail) => {
-                        secondRuntestRunResult = (await this.triggerTestAsynchronously(
+                        return (await this.triggerTestAsynchronously(
                             testService,
                             translatedTestLevel,
                             testToBeTriggered.toString(),
