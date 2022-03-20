@@ -29,6 +29,7 @@ import { Duration } from '@salesforce/kit';
 import { UpsertResult } from 'jsforce';
 import ClearCodeCoverage from './ClearCodeCoverage';
 import _ from 'lodash';
+const retry = require('async-retry');
 
 export default class TriggerApexTests {
     private conn: Connection;
@@ -323,7 +324,7 @@ export default class TriggerApexTests {
                         test.message.includes(`Your request exceeded the time limit for processing`) ||
                         test.message.includes(`UNABLE_TO_LOCK_ROW`)
                     ) {
-                        if (!parallelFailedTestClasses.includes(test.apexClass.fullName)) {
+                        if (!testToBeTriggered.includes(test.apexClass.fullName)) {
                             parallelFailedTestClasses.push(test.apexClass.fullName);
                             testToBeTriggered.push(test.apexClass.fullName);
                         }
@@ -332,10 +333,10 @@ export default class TriggerApexTests {
 
                 if (test.outcome == ApexTestResultOutcome.Pass) {
                     if (!test.perClassCoverage) {
-                        if (!testClassesThatDonotContributedCoverage.includes(test.apexClass.fullName)) {
+                        if (!testToBeTriggered.includes(test.apexClass.fullName)) {
                             testClassesThatDonotContributedCoverage.push(test.apexClass.fullName);
                             if (!testToBeTriggered.includes(test.apexClass.fullName))
-                                testToBeTriggered.push(test.apexClass.fullName);
+                             testToBeTriggered.push(test.apexClass.fullName);
                         }
                     }
                 }
@@ -372,18 +373,18 @@ export default class TriggerApexTests {
                 await this.toggleParallelApexTesting(this.conn, this.fileLogger, true);
 
                 //Trigger tests asynchronously
-
                 let secondRuntestRunResult: TestResult;
-                try {
-                    secondRuntestRunResult = (await this.triggerTestAsynchronously(
-                        testService,
-                        translatedTestLevel,
-                        testToBeTriggered.toString(),
-                        null
-                    )) as TestResult;
-                } catch (error) {
-                    return modifiedTestResult;
-                }
+                await retry(
+                    async (bail) => {
+                            secondRuntestRunResult = (await this.triggerTestAsynchronously(
+                                testService,
+                                translatedTestLevel,
+                                testToBeTriggered.toString(),
+                                null
+                            )) as TestResult;
+                    },
+                    { retries: 2, minTimeout: 3000 }
+                );
 
                 //Fetch Test Results
                 const secondTestResult = await testService.reportAsyncResults(
@@ -538,7 +539,7 @@ export default class TriggerApexTests {
             let apexSettingMetadata = { fullName: 'ApexSettings', enableDisableParallelApexTesting: toEnable };
             let result: UpsertResult | UpsertResult[] = await conn.metadata.upsert('ApexSettings', apexSettingMetadata);
             if ((result as UpsertResult).success) {
-                SFPLogger.log(`Successfully updated apex testing setting`, LoggerLevel.TRACE, logger);
+                SFPLogger.log(`Successfully updated apex testing setting`, LoggerLevel.INFO, logger);
             }
         } catch (error) {
             SFPLogger.log(
