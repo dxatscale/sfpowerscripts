@@ -32,7 +32,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         private source_directory: string,
         private deployment_options: any,
         private isToBreakBuildIfEmpty: boolean,
-        private packageLogger?: Logger
+        private logger?: Logger
     ) {}
 
     public async exec(): Promise<DeploySourceResult> {
@@ -50,7 +50,10 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         let components = componentSet.getSourceComponents();
 
         //Print components inside Component Set
-        PackageComponentPrinter.printComponentTable(components, this.packageLogger);
+        PackageComponentPrinter.printComponentTable(components, this.logger);
+
+         //Display Options
+         this.printDeploymentOptions();
 
         //Get Deploy ID
         let result = await this.deploy(sourceDirPath, componentSet);
@@ -70,6 +73,59 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         return deploySourceResult;
     }
 
+    private printDeploymentOptions() {
+        SFPLogger.log(
+            `${COLOR_HEADER(`=================================================================================================`)}`,
+            LoggerLevel.INFO,
+            this.logger
+        );
+        SFPLogger.log(
+            `${COLOR_HEADER(`Deployment Options`)}`,
+            LoggerLevel.INFO,
+            this.logger
+        );
+        SFPLogger.log(
+            `${COLOR_HEADER(`=================================================================================================`)}`,
+            LoggerLevel.INFO,
+            this.logger
+        );
+        SFPLogger.log(
+            `TestLevel: ${COLOR_KEY_MESSAGE(this.deployment_options.testlevel)}`,
+            LoggerLevel.INFO,
+            this.logger
+        );
+        if (this.deployment_options.testlevel == 'RunSpecifiedTests')
+            SFPLogger.log(
+                `Tests to be triggered: ${COLOR_KEY_MESSAGE(this.deployment_options.specified_tests)}`,
+                LoggerLevel.INFO,
+                this.logger
+            );
+
+
+        SFPLogger.log(
+            `Ignore Warnings: ${COLOR_KEY_MESSAGE('true')}`,
+            LoggerLevel.INFO,
+            this.logger
+        );
+
+        SFPLogger.log(
+            `Roll Back on Error: ${COLOR_KEY_MESSAGE('true')}`,
+            LoggerLevel.INFO,
+            this.logger
+        );
+
+        SFPLogger.log(
+            `API Version: ${COLOR_KEY_MESSAGE(this.deployment_options.apiVersion)}`,
+            LoggerLevel.INFO,
+            this.logger
+        );
+        SFPLogger.log(
+            `${COLOR_HEADER(`=================================================================================================`)}`,
+            LoggerLevel.INFO,
+            this.logger
+        );
+    }
+
     private writeResultToReport(result: DeployResult) {
         let deploymentReports = `.sfpowerscripts/mdapiDeployReports`;
         fs.mkdirpSync(deploymentReports);
@@ -80,12 +136,12 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     }
 
     private async displayErrors(result: DeployResult): Promise<string> {
-        SFPLogger.log(`Gathering Final Deployment Status`, null, this.packageLogger);
+        SFPLogger.log(`Gathering Final Deployment Status`, null, this.logger);
 
         if (result.response.numberComponentErrors > 0) {
             DeployErrorDisplayer.printMetadataFailedToDeploy(
                 result.response.details.componentFailures,
-                this.packageLogger
+                this.logger
             );
             return result.response.errorMessage;
         } else if (result.response.details.runTestResult) {
@@ -118,9 +174,9 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         SFPLogger.log(
             'Unable to deploy due to unsatisfactory code coverage, Check the following classes:',
             LoggerLevel.WARN,
-            this.packageLogger
+            this.logger
         );
-        SFPLogger.log(table.toString(), LoggerLevel.WARN, this.packageLogger);
+        SFPLogger.log(table.toString(), LoggerLevel.WARN, this.logger);
     }
 
     private displayTestFailures(testFailures: Failures | Failures[]) {
@@ -135,8 +191,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         } else {
             table.push([testFailures.name, testFailures.methodName, testFailures.message]);
         }
-        SFPLogger.log('Unable to deploy due to test failures:', LoggerLevel.WARN, this.packageLogger);
-        SFPLogger.log(table.toString(), LoggerLevel.WARN, this.packageLogger);
+        SFPLogger.log('Unable to deploy due to test failures:', LoggerLevel.WARN, this.logger);
+        SFPLogger.log(table.toString(), LoggerLevel.WARN, this.logger);
     }
 
     private async buildDeploymentOptions(sourceDir: string, org: SFPOrg): Promise<MetadataApiDeployOptions> {
@@ -163,7 +219,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             metdataDeployOptions.apiOptions.ignoreWarnings = true;
         }
         if (this.deployment_options['ignore_errors']) {
-            metdataDeployOptions.apiOptions.rollbackOnError = false;
+            metdataDeployOptions.apiOptions.rollbackOnError = true;
         }
         return metdataDeployOptions;
     }
@@ -176,14 +232,14 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         SFPLogger.log(
             `Deploying to ${this.org.getUsername()} with id:${deploy.id}`,
             LoggerLevel.INFO,
-            this.packageLogger
+            this.logger
         );
         // Attach a listener to check the deploy status on each poll
         deploy.onUpdate((response) => {
             const { status, numberComponentsDeployed, numberComponentsTotal } = response;
             const progress = `${numberComponentsDeployed}/${numberComponentsTotal}`;
             const message = `Status: ${COLOR_KEY_MESSAGE(status)} Progress: ${COLOR_KEY_MESSAGE(progress)}`;
-            SFPLogger.log(message, LoggerLevel.INFO, this.packageLogger);
+            SFPLogger.log(message, LoggerLevel.INFO, this.logger);
         });
 
         deploy.onFinish((response) => {
@@ -196,13 +252,13 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
                         )} components in ${getFormattedTime(deploymentDuration)}`
                     ),
                     LoggerLevel.INFO,
-                    this.packageLogger
+                    this.logger
                 );
             } else
                 SFPLogger.log(
                     COLOR_ERROR(`Failed to deploy after ${getFormattedTime(deploymentDuration)}`),
                     LoggerLevel.INFO,
-                    this.packageLogger
+                    this.logger
                 );
         });
 

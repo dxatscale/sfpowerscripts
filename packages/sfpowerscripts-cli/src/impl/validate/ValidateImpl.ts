@@ -7,7 +7,10 @@ import { Stage } from '../Stage';
 import SFPLogger, { ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import fs = require('fs');
 import InstallPackageDependenciesImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl';
-import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
+import {
+    PackageInstallationResult,
+    PackageInstallationStatus,
+} from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import PoolFetchImpl from '../pool/PoolFetchImpl';
 import { Org } from '@salesforce/core';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
@@ -35,6 +38,7 @@ import { RunAllTestsInPackageOptions } from '@dxatscale/sfpowerscripts.core/lib/
 import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
 import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
+import { PostDeployHook } from '../deploy/PostDeployHook';
 
 export enum ValidateMode {
     ORG,
@@ -56,7 +60,7 @@ export interface ValidateProps {
     isDependencyAnalysis?: boolean;
 }
 
-export default class ValidateImpl {
+export default class ValidateImpl implements PostDeployHook {
     private changedComponents: Component[];
     private logger = new ConsoleLogger();
     private orgAsSFPOrg: SFPOrg;
@@ -106,24 +110,6 @@ export default class ValidateImpl {
 
                 //Display impact analysis
                 await this.impactAnalysis(connToScratchOrg);
-
-                //Trigger Apex Test
-                let testFailures = await this.triggerTestsInEachPackages(
-                    scratchOrgUsername,
-                    deploymentResult.queue,
-                    deploymentResult.packagesToPackageInfo
-                );
-                if (testFailures.length > 0) {
-                    console.log(
-                        COLOR_ERROR(
-                            `\nTests failed for`,
-                            testFailures.map((packageInfo) => packageInfo.packageMetadata.package_name)
-                        )
-                    );
-                    throw new ValidateError(`Test Failed for ${JSON.stringify(testFailures)}`, {
-                        testFailures: testFailures,
-                    });
-                }
             }
 
             return null;
@@ -257,6 +243,7 @@ export default class ValidateImpl {
         };
 
         let deployImpl: DeployImpl = new DeployImpl(deployProps);
+        deployImpl.postDeployHook = this;
 
         let deploymentResult = await deployImpl.exec();
 
@@ -264,6 +251,45 @@ export default class ValidateImpl {
         this.printDeploySummary(deploymentResult, deploymentElapsedTime);
 
         return deploymentResult;
+    }
+
+    private async triggerApexTests(
+        sfpPackage: SFPPackage,
+        targetUsername: string,
+        logger: Logger
+    ): Promise<{
+        id: string;
+        result: boolean;
+        message: string;
+    }> {
+        if (sfpPackage.packageDescriptor.skipTesting) return;
+
+        if (!sfpPackage.isApexInPackage) return;
+
+        SFPLogger.log(
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+        );
+        SFPLogger.log(`Triggering Apex tests for ${sfpPackage.package_name}`, LoggerLevel.INFO);
+        SFPLogger.log(
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+        );
+
+        let testOptions: TestOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
+        let testCoverageOptions: CoverageOptions = {
+            isIndividualClassCoverageToBeValidated: false,
+            isPackageCoverageToBeValidated: !sfpPackage.packageDescriptor.skipCoverageValidation,
+            coverageThreshold: this.props.coverageThreshold || 75,
+        };
+
+        let triggerApexTests: TriggerApexTests = new TriggerApexTests(
+            targetUsername,
+            testOptions,
+            testCoverageOptions,
+            null,
+            logger
+        );
+
+        return triggerApexTests.exec();
     }
 
     private async buildChangedSourcePackages(packagesToCommits: { [p: string]: string }): Promise<any> {
@@ -316,63 +342,6 @@ export default class ValidateImpl {
         return generatedPackages;
     }
 
-    private async triggerTestsInEachPackages(
-        targetUsername: string,
-        queue: any[],
-        packagesToPackageInfo: { [p: string]: PackageInfo }
-    ) {
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
-        SFPLogger.log(COLOR_KEY_MESSAGE('Trigger Apex Tests..'), LoggerLevel.INFO);
-
-        let testFailure: PackageInfo[] = [];
-        for (let i = 0; i < queue.length; i++) {
-            let packageInfo = packagesToPackageInfo[queue[i].package];
-            let packageMetadata: PackageMetadata = packageInfo.packageMetadata;
-
-            //Trigger Tests for Validate Deployment
-            if (packageMetadata.isApexFound) {
-                if (!queue[i].skipTesting) {
-                    this.printOpenLoggingGroup('Trigger Tests for ', queue[i].package);
-
-                    let testResult;
-                    try {
-                        testResult = await this.triggerApexTests(
-                            packageMetadata.package_name,
-                            targetUsername,
-                            queue[i].skipCoverageValidation,
-                            this.props.coverageThreshold
-                        );
-                    } catch (error) {
-                        //Print Any errors, Report that as execution failed for reporting
-                        console.log(COLOR_ERROR(error.message));
-                        testResult = {
-                            result: false,
-                            message: 'Test Execution failed',
-                        };
-                    }
-
-                    if (!testResult.result) {
-                        SFPLogger.log(
-                            `Test Failed for ${packageInfo.packageMetadata.package_name}`,
-                            LoggerLevel.ERROR,
-                            this.logger
-                        );
-                        testFailure.push(packageInfo);
-                        break;
-                    } else {
-                        SFPLogger.log(testResult.message, LoggerLevel.INFO, this.logger);
-
-                        this.printClosingLoggingGroup();
-                    }
-                } else {
-                    SFPLogger.log(`Skipping testing of ${queue[i].package}\n`, LoggerLevel.INFO, this.logger);
-                }
-            }
-        }
-        return testFailure;
-    }
     private getPackagesToCommits(installedArtifacts: any): { [p: string]: string } {
         let packagesToCommits: { [p: string]: string } = {};
 
@@ -382,49 +351,6 @@ export default class ValidateImpl {
         });
 
         return packagesToCommits;
-    }
-
-    private async triggerApexTests(
-        sfdx_package: string,
-        targetUsername: string,
-        skipCoverageValidation: boolean,
-        coverageThreshold: number
-    ): Promise<{
-        id: string;
-        result: boolean;
-        message: string;
-    }> {
-        let sfPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
-            this.logger,
-            null,
-            sfdx_package,
-            null
-        );
-
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
-        SFPLogger.log(`Triggering Apex tests for ${sfPackage.package_name}`, LoggerLevel.INFO);
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
-
-        let testOptions: TestOptions = new RunAllTestsInPackageOptions(sfPackage, 60, '.testresults');
-        let testCoverageOptions: CoverageOptions = {
-            isIndividualClassCoverageToBeValidated: false,
-            isPackageCoverageToBeValidated: !skipCoverageValidation,
-            coverageThreshold: coverageThreshold || 75,
-        };
-
-        let triggerApexTests: TriggerApexTests = new TriggerApexTests(
-            targetUsername,
-            testOptions,
-            testCoverageOptions,
-            null,
-            this.logger
-        );
-
-        return triggerApexTests.exec();
     }
 
     private printArtifactVersions(installedArtifacts: any) {
@@ -543,5 +469,25 @@ export default class ValidateImpl {
 
     private printClosingLoggingGroup() {
         if (this.props.logsGroupSymbol?.[1]) SFPLogger.log(this.props.logsGroupSymbol[1], LoggerLevel.INFO);
+    }
+
+    preDeployPackage(sfpPackage: SFPPackage, targetUsername: string, devhubUserName?: string): Promise<boolean> {
+        throw new Error('Method not implemented.');
+    }
+
+    async postDeployPackage(
+        sfpPackage: SFPPackage,
+        packageInstallationResult: PackageInstallationResult,
+        targetUsername: string,
+        devhubUserName?: string
+    ): Promise<{ isToFailDeployment: boolean; message?: string }> {
+        //Trigger Tests after installation of each package
+        if (sfpPackage.packageType && sfpPackage.packageType!='data') {
+            if (packageInstallationResult.result === PackageInstallationStatus.Succeeded && sfpPackage.isApexInPackage) {
+                let testResult = await this.triggerApexTests(sfpPackage, targetUsername, this.logger);
+                return { isToFailDeployment: !testResult.result, message: testResult.message };
+            }
+        }
+        return { isToFailDeployment: false };
     }
 }

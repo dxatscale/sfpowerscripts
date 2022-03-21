@@ -110,11 +110,15 @@ export default class SFPPackage {
         revisionFrom?: string,
         revisionTo?: string
     ) {
+
         let sfpPackage: SFPPackage = new SFPPackage(packageLogger);
         sfpPackage._package_name = sfdx_package;
         sfpPackage._packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(projectDirectory, sfdx_package);
 
         sfpPackage._projectDirectory = projectDirectory;
+
+        //No need to proceed further
+        if (sfpPackage._packageDescriptor.type == 'data') return sfpPackage;
 
         if (configFilePath == null) sfpPackage._configFilePath = 'config/project-scratch-def.json';
         else sfpPackage._configFilePath = configFilePath;

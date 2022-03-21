@@ -30,7 +30,7 @@ export class TestReportDisplayer {
             table.push(keyValuePair);
         });
 
-        SFPLogger.log(table.toString(), this.fileLogger);
+        SFPLogger.log(table.toString(),LoggerLevel.INFO, this.fileLogger);
         return table.toString();
     }
 
