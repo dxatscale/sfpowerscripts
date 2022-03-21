@@ -483,7 +483,7 @@ export default class ValidateImpl implements PostDeployHook {
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Trigger Tests after installation of each package
         if (sfpPackage.packageType && sfpPackage.packageType!='data') {
-            if (packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
+            if (packageInstallationResult.result === PackageInstallationStatus.Succeeded && sfpPackage.isApexInPackage) {
                 let testResult = await this.triggerApexTests(sfpPackage, targetUsername, this.logger);
                 return { isToFailDeployment: !testResult.result, message: testResult.message };
             }
