@@ -6,7 +6,6 @@ import SFPLogger, {
     Logger,
     LoggerLevel,
 } from '../logger/SFPLogger';
-import PackageEmptyChecker from '../package/PackageEmptyChecker';
 import DeployErrorDisplayer from '../display/DeployErrorDisplayer';
 import { Duration } from '@salesforce/kit';
 import DeploymentExecutor, { DeploySourceResult } from './DeploymentExecutor';
