@@ -5,7 +5,7 @@ import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata'
 import ArtifactInquirer from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInquirer';
 import fs = require('fs');
 import path = require('path');
-import SFPLogger, { COLOR_SUCCESS, Logger, LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { EOL } from 'os';
 import { Stage } from '../Stage';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
@@ -569,6 +569,7 @@ export default class DeployImpl {
     ): Promise<PackageInstallationResult> {
         let packageInstallationResult: PackageInstallationResult;
 
+     
         if (this.props.deploymentMode == DeploymentMode.NORMAL) {
             if (packageType === 'unlocked') {
                 let options = {
@@ -624,6 +625,7 @@ export default class DeployImpl {
                     optimizeDeployment: false,
                     skipTesting: true,
                     waitTime: waitTime,
+                    apiVersion: apiVersion,
                 };
 
                 packageInstallationResult = await this.installSourcePackage(
