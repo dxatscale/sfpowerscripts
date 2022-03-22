@@ -62,6 +62,7 @@ export class RunAllTestsInPackageOptions extends RunSpecifiedTestsOption {
 }
 
 export enum TestLevel {
+    RunNoTests = 'NoTestRun',
     RunSpecifiedTests = 'RunSpecifiedTests',
     RunApexTestSuite = 'RunApexTestSuite',
     RunLocalTests = 'RunLocalTests',

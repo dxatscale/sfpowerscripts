@@ -23,18 +23,21 @@ import * as fs from 'fs-extra';
 import path from 'path';
 import SFPOrg from '../org/SFPOrg';
 import getFormattedTime from '../utils/GetFormattedTime';
+import { TestLevel } from '../apextest/TestOptions';
+
 
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public constructor(
         private org: SFPOrg,
         private projectDirectory: string,
         private sourceDirectory: string,
-        private deploymentOptions: any,
+        private deploymentOptions: DeploymentOptions,
         private isToBreakBuildIfEmpty: boolean,
         private logger?: Logger
     ) {}
 
     public async exec(): Promise<DeploySourceResult> {
+
         let deploySourceResult = {} as DeploySourceResult;
 
         //Create path
@@ -43,8 +46,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
         //Create component set from source directory
         let componentSet = ComponentSet.fromSource(sourceDirPath);
-        if (this.deploymentOptions['apiVersion'])
-            componentSet.sourceApiVersion = this.deploymentOptions['apiVersion'];
+        if (this.deploymentOptions.apiVersion)
+            componentSet.sourceApiVersion = this.deploymentOptions.apiVersion;
 
         let components = componentSet.getSourceComponents();
 
@@ -89,20 +92,20 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             this.logger
         );
         SFPLogger.log(
-            `TestLevel: ${COLOR_KEY_MESSAGE(this.deploymentOptions.testlevel)}`,
+            `TestLevel: ${COLOR_KEY_MESSAGE(this.deploymentOptions.testLevel)}`,
             LoggerLevel.INFO,
             this.logger
         );
-        if (this.deploymentOptions.testlevel == 'RunSpecifiedTests')
+        if (this.deploymentOptions.testLevel == TestLevel.RunSpecifiedTests)
             SFPLogger.log(
-                `Tests to be triggered: ${COLOR_KEY_MESSAGE(this.deploymentOptions.specified_tests)}`,
+                `Tests to be triggered: ${COLOR_KEY_MESSAGE(this.deploymentOptions.specifiedTests)}`,
                 LoggerLevel.INFO,
                 this.logger
             );
 
 
         SFPLogger.log(
-            `Ignore Warnings: ${COLOR_KEY_MESSAGE('true')}`,
+            `Ignore Warnings: ${COLOR_KEY_MESSAGE(this.deploymentOptions.ignoreWarnings)}`,
             LoggerLevel.INFO,
             this.logger
         );
@@ -200,26 +203,26 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             apiOptions: {},
         };
 
-        if (this.deploymentOptions['apiVersion'])
-            metdataDeployOptions.apiVersion = this.deploymentOptions['apiVersion'];
+        if (this.deploymentOptions.apiVersion)
+            metdataDeployOptions.apiVersion = this.deploymentOptions.apiVersion;
 
-        if (this.deploymentOptions['testlevel'] == 'RunApexTestSuite') {
-            metdataDeployOptions.apiOptions.testLevel = `RunSpecifiedTests`;
-            let apexTestSuite = new ApexTestSuite(sourceDir, this.deploymentOptions['apextestsuite']);
+        if (this.deploymentOptions.testLevel == TestLevel.RunApexTestSuite) {
+            metdataDeployOptions.apiOptions.testLevel = TestLevel.RunSpecifiedTests;
+            let apexTestSuite = new ApexTestSuite(sourceDir, this.deploymentOptions.apexTestSuite);
             metdataDeployOptions.apiOptions.runTests = await apexTestSuite.getConstituentClasses();
-        } else if (this.deploymentOptions['testlevel'] == 'RunSpecifiedTests') {
-            metdataDeployOptions.apiOptions.testLevel = `RunSpecifiedTests`;
-            metdataDeployOptions.apiOptions.runTests = this.deploymentOptions['specified_tests'].split(`,`);
+        } else if (this.deploymentOptions.testLevel == TestLevel.RunSpecifiedTests) {
+            metdataDeployOptions.apiOptions.testLevel = TestLevel.RunSpecifiedTests;
+            metdataDeployOptions.apiOptions.runTests = this.deploymentOptions.specifiedTests.split(`,`);
         } else {
-            metdataDeployOptions.apiOptions.testLevel = this.deploymentOptions['testlevel'];
+            metdataDeployOptions.apiOptions.testLevel = TestLevel.RunNoTests;
         }
 
-        if (this.deploymentOptions['ignore_warnings']) {
+        if (this.deploymentOptions.ignoreWarnings) {
             metdataDeployOptions.apiOptions.ignoreWarnings = true;
         }
-        if (this.deploymentOptions['ignore_errors']) {
-            metdataDeployOptions.apiOptions.rollbackOnError = true;
-        }
+       //dont change this and is not part of the input
+        metdataDeployOptions.apiOptions.rollbackOnError = true;
+        
         return metdataDeployOptions;
     }
 
@@ -280,4 +283,15 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             },
         };
     }
+}
+
+export class DeploymentOptions
+{
+  ignoreWarnings:boolean;
+  waitTime:string;
+  checkOnly?:boolean;
+  apiVersion?:string;
+  testLevel?:TestLevel
+  apexTestSuite?:string;
+  specifiedTests?:string;
 }
