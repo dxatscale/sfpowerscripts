@@ -110,14 +110,11 @@ export default class SFPPackage {
         revisionFrom?: string,
         revisionTo?: string
     ) {
-
         let sfpPackage: SFPPackage = new SFPPackage(packageLogger);
         sfpPackage._package_name = sfdx_package;
         sfpPackage._packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(projectDirectory, sfdx_package);
 
         sfpPackage._projectDirectory = projectDirectory;
-
-       
 
         if (configFilePath == null) sfpPackage._configFilePath = 'config/project-scratch-def.json';
         else sfpPackage._configFilePath = configFilePath;
@@ -126,7 +123,9 @@ export default class SFPPackage {
             await propertyFetcher.getSfpowerscriptsProperties(sfpPackage, packageLogger);
         }
 
-        
+        //No need to proceed further
+        if (sfpPackage._packageType == 'data') return sfpPackage;
+
         // Requires destructiveChangesPath which is set by the property fetcher
         sfpPackage._workingDirectory = await SourcePackageGenerator.generateSourcePackageArtifact(
             sfpPackage._logger,
@@ -140,15 +139,10 @@ export default class SFPPackage {
             revisionTo
         );
 
-      
-         sfpPackage._packageType = ProjectConfig.getPackageType(
+        sfpPackage._packageType = ProjectConfig.getPackageType(
             ProjectConfig.getSFDXPackageManifest(sfpPackage._workingDirectory),
             sfdx_package
         );
-
-        //No need to proceed further
-         if (sfpPackage._packageType == 'data') return sfpPackage;
-
 
         let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
             sfpPackage._workingDirectory,
@@ -165,7 +159,7 @@ export default class SFPPackage {
         sfpPackage._isProfilesInPackage = packageManifest.isProfilesInPackage();
         sfpPackage._isPermissionSetGroupInPackage = packageManifest.isPermissionSetGroupsFoundInPackage();
         sfpPackage._isProfileSupportedMetadataInPackage = packageManifest.isPayLoadContainTypesSupportedByProfiles();
-       
+
         let apexFetcher: ApexTypeFetcher = new ApexTypeFetcher(sfpPackage._mdapiDir);
 
         sfpPackage._apexClassesSortedByTypes = apexFetcher.getClassesClassifiedByType();
