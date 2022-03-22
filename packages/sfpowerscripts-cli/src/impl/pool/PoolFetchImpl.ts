@@ -192,7 +192,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         return true;
       } else {
         SFPLogger.log(
-          "Unable to autenticate to the scratch org",
+          "Unable to autenticate to the scratch org, SFDX Auth URL for scratch org is undefined or invalid ",
           LoggerLevel.INFO
         );
         return false;
