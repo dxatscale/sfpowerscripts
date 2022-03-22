@@ -321,7 +321,11 @@ export default class TriggerApexTests {
                 }
 
                 if (test.outcome == ApexTestResultOutcome.Pass) {
-                    if (!test.perClassCoverage) {
+                    if (
+                        !test.perClassCoverage &&
+                        (this.coverageOptions.isPackageCoverageToBeValidated ||
+                            this.coverageOptions.isIndividualClassCoverageToBeValidated)
+                    ) {
                         if (!testToBeTriggered.includes(test.apexClass.fullName)) {
                             testClassesThatDonotContributedCoverage.push(test.apexClass.fullName);
                             if (!testToBeTriggered.includes(test.apexClass.fullName))
@@ -385,12 +389,12 @@ export default class TriggerApexTests {
                 this.writeTestOutput(secondTestResult);
 
                 //Replace original test result
-                modifiedTestResult.tests=modifiedTestResult.tests.map(
+                modifiedTestResult.tests = modifiedTestResult.tests.map(
                     (obj) => secondTestResult.tests.find((o) => o.methodName === obj.methodName) || obj
                 );
 
                 //Replace original code coverage
-                modifiedTestResult.codecoverage=modifiedTestResult.codecoverage.map(
+                modifiedTestResult.codecoverage = modifiedTestResult.codecoverage.map(
                     (obj) => secondTestResult.codecoverage.find((o) => o.name === obj.name) || obj
                 );
 
