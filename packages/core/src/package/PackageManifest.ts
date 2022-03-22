@@ -134,7 +134,7 @@ export default class PackageManifest {
                     break;
                 }
             }
-        } else if (this._manifestJson.Package.types.name === 'PermissionSetGroup') {
+        } else if (this._manifestJson?.Package?.types?.name === 'PermissionSetGroup') {
             isPermissionSetGroupFound = true;
         }
         return isPermissionSetGroupFound;
