@@ -399,7 +399,7 @@ export default class TriggerApexTests {
                 modifiedTestResult.summary.passing = 0;
                 modifiedTestResult.summary.skipped = 0;
 
-                for (const test of testResult.tests) {
+                for (const test of modifiedTestResult.tests) {
                     if (test.outcome === ApexTestResultOutcome.Pass) modifiedTestResult.summary.passing++;
                     else if (test.outcome === ApexTestResultOutcome.Fail) modifiedTestResult.summary.failing++;
                     else if (test.outcome === ApexTestResultOutcome.Skip) modifiedTestResult.summary.skipped++;
