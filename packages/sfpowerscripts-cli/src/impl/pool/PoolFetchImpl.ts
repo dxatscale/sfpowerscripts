@@ -131,7 +131,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
             if (isLoginSuccessFull) {
                 try {
                     const conn = (await Org.create({ aliasOrUsername: soDetail.username })).getConnection();
-                    let sourceTrackingResourceController = new SourceTrackingResourceController(conn, null);
+                    const sourceTrackingResourceController = await SourceTrackingResourceController.create(conn, null);
                     await sourceTrackingResourceController.retrieve();
                 } catch (error) {
                     SFPLogger.log('Retriveing Source Tracking skipped.. ' + error.message, LoggerLevel.TRACE);

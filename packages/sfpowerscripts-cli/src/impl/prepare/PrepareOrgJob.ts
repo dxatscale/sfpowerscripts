@@ -121,8 +121,8 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                 }
 
                 if (deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH && deploymentResult.deployed.length > 0) {
-                    let sourceTrackingResourceController = new SourceTrackingResourceController(conn, packageLogger);
-                    sourceTrackingResourceController.createSourceTrackingResources(deploymentResult);
+                    const sourceTrackingResourceController = await SourceTrackingResourceController.create(conn, packageLogger);
+                    await sourceTrackingResourceController.createSourceTrackingResources(deploymentResult);
                     await sourceTrackingResourceController.deploy();
                 }
             }

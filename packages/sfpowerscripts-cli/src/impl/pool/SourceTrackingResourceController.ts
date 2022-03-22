@@ -1,36 +1,65 @@
 const path = require('path');
 import * as fs from 'fs-extra';
-import lodash = require('lodash');
 import AdmZip = require('adm-zip');
 import child_process = require('child_process');
 import { DeploymentResult } from '../deploy/DeployImpl';
 import { Logger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import { Connection } from '@salesforce/core';
+import { Connection, SfdxProject } from '@salesforce/core';
+import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
+import { SourceTracking } from '@salesforce/source-tracking';
+import simplegit, { SimpleGit } from 'simple-git';
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+const tmp = require('tmp');
 
 export default class SourceTrackingResourceController {
-    private readonly aggregatedSourceTrackingDir = '.sfpowerscripts/sourceTrackingFiles';
-    private readonly aggregatedUsernameDir = path.join(this.aggregatedSourceTrackingDir, this.conn.getUsername());
+    private conn: Connection;
+    private org: SFPOrg;
+    private logger: Logger;
 
-    private readonly aggregatedMaxRevisionFilePath = path.join(this.aggregatedUsernameDir, 'maxRevision.json');
-    private readonly aggregatedSourcePathinfosFilePath = path.join(this.aggregatedUsernameDir, 'sourcePathInfos.json');
+    // file paths with "aggregated" prefix are for consolidating source tracking files across artifacts
+    private aggregatedSourceTrackingDir = '.sfpowerscripts/sourceTrackingFiles';
+    private aggregatedOrgIdDir;
+    private aggregatedMaxRevisionFilePath;
 
-    constructor(private conn: Connection, private logger: Logger) {
-        fs.mkdirpSync(this.aggregatedUsernameDir);
-        this.conn.metadata.pollTimeout = 33 * 60 * 1000;
-        this.conn.metadata.pollInterval = 30000;
+    private sfdxOrgIdDir;
+
+    private constructor() {}
+
+    static async create(conn: Connection, logger: Logger) {
+        const sourceTrackingResourceController = new SourceTrackingResourceController();
+
+        sourceTrackingResourceController.conn = conn;
+        conn.metadata.pollTimeout = 33 * 60 * 1000; // 33 minutes
+        conn.metadata.pollInterval = 30000; // 30 seconds
+
+        sourceTrackingResourceController.org = await SFPOrg.create({connection: sourceTrackingResourceController.conn});
+        sourceTrackingResourceController.logger = logger;
+
+        sourceTrackingResourceController.aggregatedOrgIdDir = path.join(
+            sourceTrackingResourceController.aggregatedSourceTrackingDir,
+            sourceTrackingResourceController.org.getOrgId()
+        );
+        fs.mkdirpSync(sourceTrackingResourceController.aggregatedOrgIdDir);
+        sourceTrackingResourceController.aggregatedMaxRevisionFilePath = path.join(
+            sourceTrackingResourceController.aggregatedOrgIdDir,
+            'maxRevision.json'
+        );
+
+        sourceTrackingResourceController.sfdxOrgIdDir = `.sfdx/orgs/${sourceTrackingResourceController.org.getOrgId()}`;
+
+        return sourceTrackingResourceController;
     }
 
     /**
      * Deploy source tracking resource to scratch org as a static resource
      */
     async deploy(): Promise<void> {
-        const pkgDir = path.join(this.aggregatedUsernameDir, 'pkg');
+        const pkgDir = path.join(this.aggregatedOrgIdDir, 'pkg');
         const staticResourcesDir = path.join(pkgDir, 'staticresources');
         fs.mkdirpSync(staticResourcesDir);
 
         let resourceZip = new AdmZip();
         resourceZip.addLocalFile(this.aggregatedMaxRevisionFilePath);
-        resourceZip.addLocalFile(this.aggregatedSourcePathinfosFilePath);
         resourceZip.writeZip(path.join(staticResourcesDir, 'sourceTrackingFiles.resource'));
 
         let metadataXml: string = `<?xml version="1.0" encoding="UTF-8"?>
@@ -53,9 +82,9 @@ export default class SourceTrackingResourceController {
 
         let metadataZip = new AdmZip();
         metadataZip.addLocalFolder(pkgDir, 'pkg');
-        metadataZip.writeZip(path.join(this.aggregatedUsernameDir, 'pkg.zip'));
+        metadataZip.writeZip(path.join(this.aggregatedOrgIdDir, 'pkg.zip'));
 
-        let metadataZipStream = fs.createReadStream(path.join(this.aggregatedUsernameDir, 'pkg.zip'));
+        let metadataZipStream = fs.createReadStream(path.join(this.aggregatedOrgIdDir, 'pkg.zip'));
 
         await this.conn.metadata
             .deploy(metadataZipStream, { runAllTests: false, checkOnly: false, rollbackOnError: true })
@@ -72,64 +101,54 @@ export default class SourceTrackingResourceController {
             })
             .complete()) as any;
 
-        fs.writeFileSync(path.join(this.aggregatedUsernameDir, 'pkg.zip'), retrieveResult.zipFile, {
+        fs.writeFileSync(path.join(this.aggregatedOrgIdDir, 'pkg.zip'), retrieveResult.zipFile, {
             encoding: 'base64',
         });
 
-        let pkgZip = new AdmZip(path.join(this.aggregatedUsernameDir, 'pkg.zip'));
-        pkgZip.extractAllTo(this.aggregatedUsernameDir, true);
+        let pkgZip = new AdmZip(path.join(this.aggregatedOrgIdDir, 'pkg.zip'));
+        pkgZip.extractAllTo(this.aggregatedOrgIdDir, true);
 
         let resourceZip = new AdmZip(
-            path.join(this.aggregatedUsernameDir, 'unpackaged', 'staticresources', 'sourceTrackingFiles.resource')
+            path.join(this.aggregatedOrgIdDir, 'unpackaged', 'staticresources', 'sourceTrackingFiles.resource')
         );
-        resourceZip.extractAllTo(path.join(this.aggregatedUsernameDir, 'unpackaged', 'staticresources'));
+        resourceZip.extractAllTo(path.join(this.aggregatedOrgIdDir, 'unpackaged', 'staticresources'));
 
-        let sfdxSourceTrackingResourceDir = `.sfdx/orgs/${this.conn.getUsername()}`;
-        let sfdxMaxRevisionFilePath = path.join(sfdxSourceTrackingResourceDir, 'maxRevision.json');
-        let sfdxSourcePathInfosFilePath = path.join(sfdxSourceTrackingResourceDir, 'sourcePathInfos.json');
-
-        fs.mkdirpSync(sfdxSourceTrackingResourceDir);
+        fs.mkdirpSync(this.sfdxOrgIdDir);
+        let sfdxMaxRevisionFilePath = path.join(this.sfdxOrgIdDir, 'maxRevision.json');
         fs.copySync(
-            path.join(this.aggregatedUsernameDir, 'unpackaged', 'staticresources', 'maxRevision.json'),
+            path.join(this.aggregatedOrgIdDir, 'unpackaged', 'staticresources', 'maxRevision.json'),
             sfdxMaxRevisionFilePath
         );
-        fs.copySync(
-            path.join(this.aggregatedUsernameDir, 'unpackaged', 'staticresources', 'sourcePathInfos.json'),
-            sfdxSourcePathInfosFilePath
-        );
 
-        let sfdxSourcePathInfos = fs.readJSONSync(sfdxSourcePathInfosFilePath, { encoding: 'UTF-8' });
-
-        this.untruncateSourcePathInfos(sfdxSourcePathInfos);
-
-        fs.writeJSONSync(sfdxSourcePathInfosFilePath, sfdxSourcePathInfos, { spaces: 2 });
+        await this.createLocalSourceTracking();
 
         // Prevent source tracking files from being shown as a remote addition
         this.trackStaticResource(sfdxMaxRevisionFilePath);
     }
 
     /**
-     * Create source tracking resources by aggregating maxRevision.json and sourcePathInfos.json across artifacts, for scratch org username
+     * Create source tracking resources by aggregating maxRevision.json and across artifacts, for scratch org ID
      */
-    createSourceTrackingResources(deploymentResult: DeploymentResult) {
+    async createSourceTrackingResources(deploymentResult: DeploymentResult) {
+
         for (let packageInfoOfDeployedArtifact of deploymentResult.deployed) {
             if (packageInfoOfDeployedArtifact.packageMetadata.package_type === 'data') continue;
 
             let orgsDir = path.join(packageInfoOfDeployedArtifact.sourceDirectory, '.sfdx', 'orgs');
-            let usernameDir = path.join(orgsDir, this.conn.getUsername());
+            let orgIdDir = path.join(orgsDir, this.org.getOrgId());
 
-            if (!fs.existsSync(usernameDir))
-                throw new Error(`Failed to consolidate source tracking files. Unable to find ${usernameDir}`);
+            if (!fs.existsSync(orgIdDir)) {
+                throw new Error(`Failed to consolidate source tracking files. Unable to find ${orgIdDir}`);
+            }
 
-            let maxRevisionFilePath = path.join(usernameDir, 'maxRevision.json');
-            let sourcePathInfosFilePath = path.join(usernameDir, 'sourcePathInfos.json');
+            let maxRevisionFilePath = path.join(orgIdDir, 'maxRevision.json');
 
-            if (!fs.existsSync(maxRevisionFilePath) || !fs.existsSync(sourcePathInfosFilePath))
+            if (!fs.existsSync(maxRevisionFilePath)) {
                 throw new Error(`Failed to consolidate source tracking files. Missing source tracking files`);
+            }
 
             if (
-                fs.existsSync(this.aggregatedMaxRevisionFilePath) &&
-                fs.existsSync(this.aggregatedSourcePathinfosFilePath)
+                fs.existsSync(this.aggregatedMaxRevisionFilePath)
             ) {
                 let aggregatedMaxRevision = fs.readJSONSync(this.aggregatedMaxRevisionFilePath, { encoding: 'UTF-8' });
                 let maxRevision = fs.readJSONSync(maxRevisionFilePath, { encoding: 'UTF-8' });
@@ -147,60 +166,56 @@ export default class SourceTrackingResourceController {
                     // Replace maxRevision.json
                     fs.copySync(maxRevisionFilePath, this.aggregatedMaxRevisionFilePath, { overwrite: true });
                 }
-
-                // Concatenate sourcePathInfos.json
-                let aggregatedSourcePathInfos = fs.readJSONSync(this.aggregatedSourcePathinfosFilePath, {
-                    encoding: 'UTF-8',
-                });
-                let sourcePathInfos = fs.readJSONSync(sourcePathInfosFilePath, { encoding: 'UTF-8' });
-
-                this.truncateSourcePathInfos(sourcePathInfos, packageInfoOfDeployedArtifact.sourceDirectory);
-
-                Object.assign(aggregatedSourcePathInfos, sourcePathInfos);
-
-                fs.writeJSONSync(this.aggregatedSourcePathinfosFilePath, aggregatedSourcePathInfos, { spaces: 2 });
             } else {
                 fs.copySync(maxRevisionFilePath, this.aggregatedMaxRevisionFilePath);
-                fs.copySync(sourcePathInfosFilePath, this.aggregatedSourcePathinfosFilePath);
-
-                let aggregatedSourcePathInfos = fs.readJSONSync(this.aggregatedSourcePathinfosFilePath, {
-                    encoding: 'UTF-8',
-                });
-                this.truncateSourcePathInfos(aggregatedSourcePathInfos, packageInfoOfDeployedArtifact.sourceDirectory);
-
-                fs.writeJSONSync(this.aggregatedSourcePathinfosFilePath, aggregatedSourcePathInfos, { spaces: 2 });
             }
         }
     }
 
     /**
-     * Truncate Source Path Infos by removing source directory and keeping just the package directory
-     * @param sourcePathInfos
-     * @param sourceDirectory
+     * Create local source tracking from sfpowerscripts artifacts installed in scratch org
      */
-    private truncateSourcePathInfos(sourcePathInfos: any, sourceDirectory: string) {
-        for (let entry of Object.entries<any>(sourcePathInfos)) {
-            let newPropName = entry[0].replace(path.resolve(sourceDirectory), '');
-            let newPropValue = lodash.cloneDeep(entry[1]);
-            newPropValue.sourcePath = newPropValue.sourcePath.replace(path.resolve(sourceDirectory), '');
-            sourcePathInfos[newPropName] = newPropValue;
+    private async createLocalSourceTracking() {
 
-            delete sourcePathInfos[entry[0]];
-        }
-    }
+        let tempDir = tmp.dirSync({ unsafeCleanup: true });
+        try {
+            let git: SimpleGit = simplegit();
+            const repoPath = (await git.getConfig('remote.origin.url')).value
+            await git.clone(repoPath, tempDir.name);
 
-    /**
-     * Un-truncate Source Path Infos by prepending source paths with CWD
-     * @param sourcePathInfos
-     */
-    private untruncateSourcePathInfos(sourcePathInfos: any) {
-        for (let entry of Object.entries<any>(sourcePathInfos)) {
-            let newPropName = path.join(process.cwd(), entry[0]);
-            let newPropValue = lodash.cloneDeep(entry[1]);
-            newPropValue.sourcePath = path.join(process.cwd(), newPropValue.sourcePath);
-            sourcePathInfos[newPropName] = newPropValue;
+            const sfpowerscriptsArtifacts = await this.org.getInstalledArtifacts();
 
-            delete sourcePathInfos[entry[0]];
+            const project = await SfdxProject.resolve(tempDir.name);
+
+            // Create local source tracking files in temp repo
+            const tracking = await SourceTracking.create({
+                org: this.org,
+                project: project
+            });
+            tracking.ensureLocalTracking();
+
+            git = simplegit(tempDir.name);
+            for (const artifact of sfpowerscriptsArtifacts) {
+                // Checkout version of source code from which artifact was created
+                git.checkout(artifact.CommitId__c);
+
+                const projectConfig = ProjectConfig.getSFDXPackageManifest(tempDir.name);
+
+                const packageType = ProjectConfig.getPackageType(projectConfig, artifact.Name);
+                if (packageType === "Unlocked" || packageType === "Source") {
+                    await tracking.updateLocalTracking({
+                        files: [
+                            ProjectConfig.getPackageDescriptorFromConfig(artifact.Name, projectConfig).path
+                        ]
+                    })
+                }
+            }
+
+            // Copy source tracking files from temp repo to actual repo
+            fs.mkdirpSync(path.join(this.sfdxOrgIdDir, "localSourceTracking"));
+            fs.copySync(path.join(tempDir.name, this.sfdxOrgIdDir, "localSourceTracking"), path.join(this.sfdxOrgIdDir, "localSourceTracking"));
+        } finally {
+            tempDir.removeCallback();
         }
     }
 
@@ -210,7 +225,7 @@ export default class SourceTrackingResourceController {
      * @param sfdxMaxRevisionFilePath
      */
     private trackStaticResource(sfdxMaxRevisionFilePath: string) {
-        child_process.execSync(`sfdx force:source:status -u ${this.conn.getUsername()}`, {
+        child_process.execSync(`sfdx force:source:beta:status -u ${this.conn.getUsername()}`, {
             encoding: 'utf8',
             stdio: 'pipe',
         });
