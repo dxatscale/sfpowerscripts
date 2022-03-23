@@ -28,7 +28,7 @@ This decision record is made necessary by the [changes](https://github.com/force
     Similar to the current implementation where `sourcePathInfos.json` from different artifacts are merged into one, this option involves merging the objects from git repositories across different artifacts into a single repository.
 
     Cons:
-    - Difficult to merge git objects, need to recreate and manipulate the commit and tree objects objects
+    - Difficult to merge git objects, need to recreate and manipulate the commit and tree objects
 
 4. **Create local source tracking using sfpowerscripts artifacts in the scratch org**
 
