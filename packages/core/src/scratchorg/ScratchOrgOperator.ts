@@ -1,17 +1,28 @@
-import { Aliases, AuthInfo, Org, ScratchOrgRequest } from '@salesforce/core';
+import { Aliases, AuthInfo, Org } from '@salesforce/core';
 import ScratchOrg from './ScratchOrg';
 import PasswordGenerator from './PasswordGenerator';
 import SFPLogger, { LoggerLevel } from '../logger/SFPLogger';
 import { Duration } from '@salesforce/kit';
+import { ScratchOrgRequest } from '@salesforce/core';
 const retry = require('async-retry');
 
 export default class ScratchOrgOperator {
     constructor(private hubOrg: Org) {}
 
-    public async create(alias: string, config_file_path: string, expiry: number): Promise<ScratchOrg> {
+    public async create(
+        alias: string,
+        config_file_path: string,
+        expiry: number,
+        waitTime: number=6
+    ): Promise<ScratchOrg> {
         SFPLogger.log('Parameters: ' + alias + ' ' + config_file_path + ' ' + expiry + ' ', LoggerLevel.TRACE);
 
-        let scatchOrgResult = await this.requestAScratchOrg(alias, config_file_path, Duration.days(expiry));
+        let scatchOrgResult = await this.requestAScratchOrg(
+            alias,
+            config_file_path,
+            Duration.days(expiry),
+            Duration.minutes(waitTime ? waitTime : 6)
+        );
         SFPLogger.log(JSON.stringify(scatchOrgResult), LoggerLevel.TRACE);
 
         //create scratchOrg object
@@ -50,19 +61,19 @@ export default class ScratchOrgOperator {
         let hubConn = this.hubOrg.getConnection();
 
         await retry(
-            async (bail) => {
+            async bail => {
                 await hubConn.sobject('ActiveScratchOrg').del(scratchOrgIds);
             },
             { retries: 3, minTimeout: 3000 }
         );
     }
 
-    private async requestAScratchOrg(alias: string, definitionFile: string, expireIn: Duration) {
+    private async requestAScratchOrg(alias: string, definitionFile: string, expireIn: Duration, waitTime: Duration) {
         const createCommandOptions: ScratchOrgRequest = {
             durationDays: expireIn.days,
             nonamespace: false,
             noancestors: false,
-            wait: Duration.minutes(6),
+            wait: waitTime,
             retry: 3,
             definitionfile: definitionFile,
         };
@@ -108,7 +119,7 @@ export default class ScratchOrgOperator {
         };
 
         await retry(
-            async (bail) => {
+            async bail => {
                 await this.hubOrg.getConnection().request(options);
             },
             { retries: 3, minTimeout: 30000 }
