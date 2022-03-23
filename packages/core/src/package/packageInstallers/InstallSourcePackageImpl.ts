@@ -447,7 +447,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.packageMetadata.apexTestClassses
                 );
             } else {
-                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                deploymentOptions.testLevel = TestLevel.RunLocalTests;
             }
         } else {
             deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
