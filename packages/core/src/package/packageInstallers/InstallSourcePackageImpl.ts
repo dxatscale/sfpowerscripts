@@ -23,7 +23,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     private deploymentType: DeploymentType;
 
     private isDiffFolderAvailable =
-        defaultValidateDeploymentOption() === 'selective' && fs.existsSync(path.join(this.sourceDirectory, 'diff'));
+        defaultValidateDeploymentOption().toLocaleLowerCase() === 'selective' &&
+        fs.existsSync(path.join(this.sourceDirectory, 'diff'));
 
     public constructor(
         sfdxPackage: string,
@@ -195,7 +196,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
         //On a diff deployment, we might need to deploy full as version changed or scratch org config has changed
         //In that case lets check again with the main directory and proceed ahead with deployment
-        if (defaultValidateDeploymentOption() && status.result == 'skip') {
+        if (defaultValidateDeploymentOption().toLocaleLowerCase() == 'selective' && status.result == 'skip') {
             sourceDirectory = sourceDirectory.substring(0, this.sourceDirectory.indexOf('/diff'));
             //Check empty conditions
             status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(sourceDirectory, packageDirectory, false);
