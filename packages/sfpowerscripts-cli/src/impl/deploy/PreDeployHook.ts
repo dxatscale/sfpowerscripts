@@ -1,4 +1,3 @@
-import { PackageInstallationResult } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import SFPPackage from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
 
 export interface PreDeployHook {
