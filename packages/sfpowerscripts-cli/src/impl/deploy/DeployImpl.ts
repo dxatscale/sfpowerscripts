@@ -126,13 +126,11 @@ export default class DeployImpl {
 
                 let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(queue[i].package, packageManifest);
 
-               
-
                 this.printOpenLoggingGroup('Installing ', queue[i].package);
                 this.displayHeader(packageMetadata, pkgDescriptor, queue[i].package);
 
-                 //TODO:this is not accurate
-                 let sfpPackage = await SFPPackage.buildPackageFromProjectConfig(
+                //TODO:this is not accurate
+                let sfpPackage = await SFPPackage.buildPackageFromProjectConfig(
                     this.props.packageLogger,
                     packageInfo.sourceDirectory,
                     queue[i].package
@@ -569,7 +567,6 @@ export default class DeployImpl {
     ): Promise<PackageInstallationResult> {
         let packageInstallationResult: PackageInstallationResult;
 
-     
         if (this.props.deploymentMode == DeploymentMode.NORMAL) {
             if (packageType === 'unlocked') {
                 let options = {

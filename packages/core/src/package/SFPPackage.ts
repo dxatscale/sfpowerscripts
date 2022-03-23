@@ -135,12 +135,11 @@ export default class SFPPackage {
             revisionTo
         );
 
-
         sfpPackage._packageType = ProjectConfig.getPackageType(
             ProjectConfig.getSFDXPackageManifest(sfpPackage._workingDirectory),
             sfdx_package
         );
-       
+
         if (sfpPackage._packageType != 'Data') {
             let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
                 sfpPackage._workingDirectory,
