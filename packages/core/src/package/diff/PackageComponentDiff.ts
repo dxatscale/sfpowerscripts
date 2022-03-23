@@ -188,7 +188,6 @@ export default class PackageComponentDiff {
                     extension = path.parse(filePath).ext;
                 }
 
- 
                 let name = MetadataInfo.getMetadataName(filePath);
 
                 if (name) {
