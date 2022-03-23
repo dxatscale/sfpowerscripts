@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfp-cli",
     "description": "Developer CLI for Salesforce programs following the DX@Scale model",
-    "version": "1.4.13",
+    "version": "1.4.14",
     "author": "dxatscale",
     "bin": {
         "sfp": "./bin/run"
