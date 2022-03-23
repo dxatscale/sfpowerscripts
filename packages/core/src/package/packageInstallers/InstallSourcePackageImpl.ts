@@ -47,7 +47,6 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         let tmpDirObj = tmp.dirSync({ unsafeCleanup: true });
         let tempDir = tmpDirObj.name;
 
-     
         try {
             this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(this.packageMetadata);
 
@@ -393,15 +392,14 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         target_org: string,
         apiVersion: string
     ): Promise<any> {
-        let deploymentOptions:DeploymentOptions = {
-            ignoreWarnings:true,
-            waitTime:waitTime,
-
+        let deploymentOptions: DeploymentOptions = {
+            ignoreWarnings: true,
+            waitTime: waitTime,
         };
-        deploymentOptions.ignoreWarnings= true;
+        deploymentOptions.ignoreWarnings = true;
         deploymentOptions.waitTime = waitTime;
-       
-        deploymentOptions.apiVersion= apiVersion;
+
+        deploymentOptions.apiVersion = apiVersion;
 
         if (skipTest) {
             let orgDetails: OrgDetails;
@@ -449,7 +447,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.packageMetadata.apexTestClassses
                 );
             } else {
-                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                deploymentOptions.testLevel = TestLevel.RunLocalTests;
             }
         } else {
             deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
