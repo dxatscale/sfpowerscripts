@@ -13,7 +13,7 @@ export default class ScratchOrgOperator {
         alias: string,
         config_file_path: string,
         expiry: number,
-        waitTime: number=6
+        waitTime: number = 6
     ): Promise<ScratchOrg> {
         SFPLogger.log('Parameters: ' + alias + ' ' + config_file_path + ' ' + expiry + ' ', LoggerLevel.TRACE);
 
@@ -61,7 +61,7 @@ export default class ScratchOrgOperator {
         let hubConn = this.hubOrg.getConnection();
 
         await retry(
-            async bail => {
+            async (bail) => {
                 await hubConn.sobject('ActiveScratchOrg').del(scratchOrgIds);
             },
             { retries: 3, minTimeout: 3000 }
@@ -119,7 +119,7 @@ export default class ScratchOrgOperator {
         };
 
         await retry(
-            async bail => {
+            async (bail) => {
                 await this.hubOrg.getConnection().request(options);
             },
             { retries: 3, minTimeout: 30000 }
