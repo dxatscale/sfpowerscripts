@@ -1,0 +1,13 @@
+export enum DEPLOYMENT_OPTION
+{
+    FULL_DEPLOYMENT= 'full',
+    SELECIVE_DEPLOYMENT='selective'
+}
+
+const SFPOWERSCRIPTS_DEFAULT_DEPLOYMENT_OPTION = DEPLOYMENT_OPTION.FULL_DEPLOYMENT;
+
+export default function defaultDeploymentOption(): string {
+    return process.env.SFPOWERSCRIPTS_DEPLOYMENT_OPTION
+        ? process.env.SFPOWERSCRIPTS_DEPLOYMENT_OPTION
+        : SFPOWERSCRIPTS_DEFAULT_DEPLOYMENT_OPTION;
+}
