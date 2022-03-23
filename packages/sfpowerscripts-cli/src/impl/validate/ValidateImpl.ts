@@ -262,9 +262,9 @@ export default class ValidateImpl implements PostDeployHook {
         result: boolean;
         message: string;
     }> {
-        if (sfpPackage.packageDescriptor.skipTesting) return {id:null,result:true,message:'No Tests To Run'};
+        if (sfpPackage.packageDescriptor.skipTesting) return { id: null, result: true, message: 'No Tests To Run' };
 
-        if (!sfpPackage.isApexInPackage) return {id:null,result:true,message:'No Tests To Run'};
+        if (!sfpPackage.isApexInPackage) return { id: null, result: true, message: 'No Tests To Run' };
 
         SFPLogger.log(
             COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
@@ -482,7 +482,7 @@ export default class ValidateImpl implements PostDeployHook {
         devhubUserName?: string
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Trigger Tests after installation of each package
-        if (sfpPackage.packageType && sfpPackage.packageType!='data') {
+        if (sfpPackage.packageType && sfpPackage.packageType != 'data') {
             if (packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
                 let testResult = await this.triggerApexTests(sfpPackage, targetUsername, this.logger);
                 return { isToFailDeployment: !testResult.result, message: testResult.message };

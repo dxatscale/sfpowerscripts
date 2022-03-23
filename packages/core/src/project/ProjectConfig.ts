@@ -96,7 +96,8 @@ export default class ProjectConfig {
             });
         }
 
-        if (sfdxPackageDescriptor == null) throw new Error(`Package ${sfdxPackage} does not exist,Pleasae check inputs`);
+        if (sfdxPackageDescriptor == null)
+            throw new Error(`Package ${sfdxPackage} does not exist,Pleasae check inputs`);
 
         return sfdxPackageDescriptor;
     }

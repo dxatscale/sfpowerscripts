@@ -25,7 +25,6 @@ import SFPOrg from '../org/SFPOrg';
 import getFormattedTime from '../utils/GetFormattedTime';
 import { TestLevel } from '../apextest/TestOptions';
 
-
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public constructor(
         private org: SFPOrg,
@@ -37,7 +36,6 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     ) {}
 
     public async exec(): Promise<DeploySourceResult> {
-
         let deploySourceResult = {} as DeploySourceResult;
 
         //Create path
@@ -46,16 +44,15 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
         //Create component set from source directory
         let componentSet = ComponentSet.fromSource(sourceDirPath);
-        if (this.deploymentOptions.apiVersion)
-            componentSet.sourceApiVersion = this.deploymentOptions.apiVersion;
+        if (this.deploymentOptions.apiVersion) componentSet.sourceApiVersion = this.deploymentOptions.apiVersion;
 
         let components = componentSet.getSourceComponents();
 
         //Print components inside Component Set
         PackageComponentPrinter.printComponentTable(components, this.logger);
 
-         //Display Options
-         this.printDeploymentOptions();
+        //Display Options
+        this.printDeploymentOptions();
 
         //Get Deploy ID
         let result = await this.deploy(sourceDirPath, componentSet);
@@ -77,17 +74,17 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
     private printDeploymentOptions() {
         SFPLogger.log(
-            `${COLOR_HEADER(`=================================================================================================`)}`,
+            `${COLOR_HEADER(
+                `=================================================================================================`
+            )}`,
             LoggerLevel.INFO,
             this.logger
         );
+        SFPLogger.log(`${COLOR_HEADER(`Deployment Options`)}`, LoggerLevel.INFO, this.logger);
         SFPLogger.log(
-            `${COLOR_HEADER(`Deployment Options`)}`,
-            LoggerLevel.INFO,
-            this.logger
-        );
-        SFPLogger.log(
-            `${COLOR_HEADER(`=================================================================================================`)}`,
+            `${COLOR_HEADER(
+                `=================================================================================================`
+            )}`,
             LoggerLevel.INFO,
             this.logger
         );
@@ -103,18 +100,13 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
                 this.logger
             );
 
-
         SFPLogger.log(
             `Ignore Warnings: ${COLOR_KEY_MESSAGE(this.deploymentOptions.ignoreWarnings)}`,
             LoggerLevel.INFO,
             this.logger
         );
 
-        SFPLogger.log(
-            `Roll Back on Error: ${COLOR_KEY_MESSAGE('true')}`,
-            LoggerLevel.INFO,
-            this.logger
-        );
+        SFPLogger.log(`Roll Back on Error: ${COLOR_KEY_MESSAGE('true')}`, LoggerLevel.INFO, this.logger);
 
         SFPLogger.log(
             `API Version: ${COLOR_KEY_MESSAGE(this.deploymentOptions.apiVersion)}`,
@@ -122,7 +114,9 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             this.logger
         );
         SFPLogger.log(
-            `${COLOR_HEADER(`=================================================================================================`)}`,
+            `${COLOR_HEADER(
+                `=================================================================================================`
+            )}`,
             LoggerLevel.INFO,
             this.logger
         );
@@ -141,10 +135,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         SFPLogger.log(`Gathering Final Deployment Status`, null, this.logger);
 
         if (result.response.numberComponentErrors > 0) {
-            DeployErrorDisplayer.printMetadataFailedToDeploy(
-                result.response.details.componentFailures,
-                this.logger
-            );
+            DeployErrorDisplayer.printMetadataFailedToDeploy(result.response.details.componentFailures, this.logger);
             return result.response.errorMessage;
         } else if (result.response.details.runTestResult) {
             if (result.response.details.runTestResult.codeCoverageWarnings) {
@@ -203,8 +194,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             apiOptions: {},
         };
 
-        if (this.deploymentOptions.apiVersion)
-            metdataDeployOptions.apiVersion = this.deploymentOptions.apiVersion;
+        if (this.deploymentOptions.apiVersion) metdataDeployOptions.apiVersion = this.deploymentOptions.apiVersion;
 
         if (this.deploymentOptions.testLevel == TestLevel.RunApexTestSuite) {
             metdataDeployOptions.apiOptions.testLevel = TestLevel.RunSpecifiedTests;
@@ -220,9 +210,9 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         if (this.deploymentOptions.ignoreWarnings) {
             metdataDeployOptions.apiOptions.ignoreWarnings = true;
         }
-       //dont change this and is not part of the input
+        //dont change this and is not part of the input
         metdataDeployOptions.apiOptions.rollbackOnError = true;
-        
+
         return metdataDeployOptions;
     }
 
@@ -231,11 +221,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         const deploy = await componentSet.deploy(deploymentOptions);
 
         let startTime = Date.now();
-        SFPLogger.log(
-            `Deploying to ${this.org.getUsername()} with id:${deploy.id}`,
-            LoggerLevel.INFO,
-            this.logger
-        );
+        SFPLogger.log(`Deploying to ${this.org.getUsername()} with id:${deploy.id}`, LoggerLevel.INFO, this.logger);
         // Attach a listener to check the deploy status on each poll
         deploy.onUpdate((response) => {
             const { status, numberComponentsDeployed, numberComponentsTotal } = response;
@@ -285,13 +271,12 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     }
 }
 
-export class DeploymentOptions
-{
-  ignoreWarnings:boolean;
-  waitTime:string;
-  checkOnly?:boolean;
-  apiVersion?:string;
-  testLevel?:TestLevel
-  apexTestSuite?:string;
-  specifiedTests?:string;
+export class DeploymentOptions {
+    ignoreWarnings: boolean;
+    waitTime: string;
+    checkOnly?: boolean;
+    apiVersion?: string;
+    testLevel?: TestLevel;
+    apexTestSuite?: string;
+    specifiedTests?: string;
 }
