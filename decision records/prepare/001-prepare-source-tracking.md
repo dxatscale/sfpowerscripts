@@ -1,6 +1,8 @@
 # Implementation of source tracking on prepare command
 
-* Status: investigating  <!-- optional -->
+* Status: Accepted  <!-- optional -->
+* Deciders: Azlam, Alan
+* Date: 23-03-2021
 
 
 ## Context and Problem Statement
