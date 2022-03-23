@@ -1,6 +1,6 @@
 import child_process = require('child_process');
 import BuildImpl, { BuildProps } from '../parallelBuilder/BuildImpl';
-import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult, PackageInfo } from '../deploy/DeployImpl';
+import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../deploy/DeployImpl';
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
 import { Stage } from '../Stage';

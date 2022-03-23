@@ -127,7 +127,7 @@ export default class PackageManifest {
 
     public isPermissionSetGroupsFoundInPackage(): boolean {
         let isPermissionSetGroupFound = false;
-        if (Array.isArray(this._manifestJson.Package.types)) {
+        if (Array.isArray(this._manifestJson?.Package?.types)) {
             for (let type of this._manifestJson.Package.types) {
                 if (type.name === 'PermissionSetGroup') {
                     isPermissionSetGroupFound = true;

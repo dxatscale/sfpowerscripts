@@ -183,13 +183,13 @@ export default class Validate extends SfpowerscriptsCommand {
             if (validateResult) {
                 SFPStatsSender.logGauge(
                     'validate.packages.scheduled',
-                    validateResult?.deploymentResult?.scheduled,
+                    validateResult.deploymentResult?.scheduled,
                     tags
                 );
 
                 SFPStatsSender.logGauge(
                     'validate.packages.succeeded',
-                    validateResult?.deploymentResult?.deployed?.length,
+                    validateResult.deploymentResult?.deployed?.length,
                     tags
                 );
 
