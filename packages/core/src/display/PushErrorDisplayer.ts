@@ -1,85 +1,72 @@
-const Table = require("cli-table");
-import SFPLogger, { Logger, LoggerLevel } from "../logger/SFPLogger";
+const Table = require('cli-table');
+import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
 
 export default class PushErrorDisplayer {
+    public static printMetadataFailedToPush(error: any, packageLogger: Logger) {
+        if (error == null) return;
 
-  public static printMetadataFailedToPush(error: any, packageLogger: Logger) {
+        let table;
+        let pushComponentFailureIntoTable;
+        if (error.name === 'sourceConflictDetected') {
+            table = new Table({
+                head: ['State', 'API Name', 'Metadata Type', 'File Path'],
+            });
 
-    if (error == null) return;
+            pushComponentFailureIntoTable = (componentFailure) => {
+                let item = [
+                    componentFailure.state,
+                    componentFailure.fullName,
+                    componentFailure.type,
+                    componentFailure.filePath,
+                ];
 
-    let table;
-    let pushComponentFailureIntoTable;
-    if (error.name === "sourceConflictDetected") {
-      table = new Table({
-        head: ["State", "API Name", "Metadata Type", "File Path"],
-      });
+                // Replace "undefined" values with "NA". cli-table breaks for undefined cells
+                item.forEach((elem, idx, item) => {
+                    if (elem === undefined) {
+                        item[idx] = 'NA';
+                    }
+                });
 
-      pushComponentFailureIntoTable = (componentFailure) => {
-        let item = [
-          componentFailure.state,
-          componentFailure.fullName,
-          componentFailure.type,
-          componentFailure.filePath
-        ];
+                table.push(item);
+            };
+        } else if (error.name === 'DeployFailed') {
+            table = new Table({
+                head: ['Metadata Type', 'API Name', 'Problem Type', 'Problem'],
+            });
 
-        // Replace "undefined" values with "NA". cli-table breaks for undefined cells
-        item.forEach((elem, idx, item) => {
-          if (elem === undefined) {
-            item[idx] = "NA";
-          }
-        });
+            pushComponentFailureIntoTable = (componentFailure) => {
+                let item = [
+                    componentFailure.type,
+                    componentFailure.fullName,
+                    componentFailure.problemType,
+                    componentFailure.error,
+                ];
 
-        table.push(item);
-      };
-    } else if (error.name === "DeployFailed") {
-      table = new Table({
-        head: ["Metadata Type", "API Name", "Problem Type", "Problem"],
-      });
+                // Replace "undefined" values with "NA". cli-table breaks for undefined cells
+                item.forEach((elem, idx, item) => {
+                    if (elem === undefined) {
+                        item[idx] = 'NA';
+                    }
+                });
 
-      pushComponentFailureIntoTable = (componentFailure) => {
-        let item = [
-          componentFailure.type,
-          componentFailure.fullName,
-          componentFailure.problemType,
-          componentFailure.error
-        ];
+                table.push(item);
+            };
+        } else {
+            SFPLogger.log('Unknown error type. Failed to print table.', LoggerLevel.ERROR, packageLogger);
+            return;
+        }
 
-        // Replace "undefined" values with "NA". cli-table breaks for undefined cells
-        item.forEach((elem, idx, item) => {
-          if (elem === undefined) {
-            item[idx] = "NA";
-          }
-        });
+        if (error.data instanceof Array) {
+            for (let componentFailure of error.data) {
+                pushComponentFailureIntoTable(componentFailure);
+            }
+        } else {
+            let failure = error.data;
+            pushComponentFailureIntoTable(failure);
+        }
 
-        table.push(item);
-    };
-    } else {
-      SFPLogger.log(
-        "Unknown error type. Failed to print table.",
-        LoggerLevel.ERROR,
-        packageLogger
-      );
-      return;
+        SFPLogger.log('The following components resulted in failures:', LoggerLevel.ERROR, packageLogger);
+
+        SFPLogger.log(table.toString(), LoggerLevel.ERROR, packageLogger);
     }
-
-
-
-
-    if (error.data instanceof Array) {
-      for (let componentFailure of error.data) {
-        pushComponentFailureIntoTable(componentFailure);
-      }
-    } else {
-      let failure = error.data;
-      pushComponentFailureIntoTable(failure);
-    }
-
-    SFPLogger.log(
-      "The following components resulted in failures:",
-      LoggerLevel.ERROR,
-      packageLogger
-    );
-
-    SFPLogger.log(table.toString(), LoggerLevel.ERROR,packageLogger);
-  }
 }

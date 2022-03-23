@@ -1,264 +1,248 @@
-import path from "path";
-import * as fs from "fs-extra";
-import { ApexClasses } from "./SFPPackage";
-import xml2json from "../utils/xml2json";
-const xml2js = require("xml2js");
+import path from 'path';
+import * as fs from 'fs-extra';
+import { ApexClasses } from './SFPPackage';
+import xml2json from '../utils/xml2json';
+const xml2js = require('xml2js');
 
-export default class PackageManifest
-{
+export default class PackageManifest {
+    private _manifestJson;
+    private _manifestXml: string;
 
-  private _manifestJson;
-  private _manifestXml: string;
+    /**
+     * Getter for package manifest JSON
+     */
+    get manifestJson() {
+        return this._manifestJson;
+    }
 
-  /**
-   * Getter for package manifest JSON
-   */
-  get manifestJson() {
-    return this._manifestJson;
-  }
+    /**
+     * Getter for package manifest XML
+     */
+    get manifestXml(): string {
+        return this._manifestXml;
+    }
 
-  /**
-   * Getter for package manifest XML
-   */
-  get manifestXml(): string {
-    return this._manifestXml;
-  }
+    private constructor() {}
 
-  private constructor(){};
+    /**
+     * Factory method
+     * @param mdapiDir directory containing package.xml
+     * @returns instance of PackageManifest
+     */
+    static async create(mdapiDir: string): Promise<PackageManifest> {
+        const packageManifest = new PackageManifest();
 
-  /**
-   * Factory method
-   * @param mdapiDir directory containing package.xml
-   * @returns instance of PackageManifest
-   */
-  static async create(mdapiDir: string): Promise<PackageManifest> {
-    const packageManifest = new PackageManifest();
+        const packageXml: string = fs.readFileSync(path.join(mdapiDir, 'package.xml'), 'utf8');
 
-    const packageXml: string = fs.readFileSync(
-      path.join(mdapiDir, "package.xml"),
-      "utf8"
-    );
+        packageManifest._manifestXml = packageXml;
+        packageManifest._manifestJson = await xml2json(packageXml);
 
-    packageManifest._manifestXml = packageXml;
-    packageManifest._manifestJson = await xml2json(packageXml);
+        return packageManifest;
+    }
 
-    return packageManifest;
-  }
+    /**
+     * Factory method
+     * @param components
+     * @param apiVersion
+     * @returns intance of PackageManifest
+     */
+    static createFromScratch(components: { fullName: string; type: string }[], apiVersion: string): PackageManifest {
+        const packageManifest = new PackageManifest();
 
-  /**
-   * Factory method
-   * @param components
-   * @param apiVersion
-   * @returns intance of PackageManifest
-   */
-  static createFromScratch(
-    components: {fullName: string, type: string}[],
-    apiVersion: string
-    ): PackageManifest {
-    const packageManifest = new PackageManifest();
-
-    const packageJson = {
-      $: { xmlns: "http://soap.sforce.com/2006/04/metadata" },
-      types: [],
-      version: apiVersion,
-    };
-
-    components.forEach(component => {
-      const type = packageJson.types.find(type => type.name === component.type);
-      if (type) {
-        // Add member to existing type
-        type.members.push(component.fullName);
-      } else {
-        // create new type
-        const newType = {
-          name: component.type,
-          members: [component.fullName]
+        const packageJson = {
+            $: { xmlns: 'http://soap.sforce.com/2006/04/metadata' },
+            types: [],
+            version: apiVersion,
         };
-        packageJson.types.push(newType);
-      }
-    });
 
-    const builder = new xml2js.Builder({
-      xmldec: { version: "1.0", encoding: "UTF-8" },
-    });
+        components.forEach((component) => {
+            const type = packageJson.types.find((type) => type.name === component.type);
+            if (type) {
+                // Add member to existing type
+                type.members.push(component.fullName);
+            } else {
+                // create new type
+                const newType = {
+                    name: component.type,
+                    members: [component.fullName],
+                };
+                packageJson.types.push(newType);
+            }
+        });
 
-    let packageObj = {
-      Package: packageJson,
-    };
+        const builder = new xml2js.Builder({
+            xmldec: { version: '1.0', encoding: 'UTF-8' },
+        });
 
-    packageManifest._manifestXml = builder.buildObject(packageObj);
-    packageManifest._manifestJson = packageObj;
+        let packageObj = {
+            Package: packageJson,
+        };
 
-    return packageManifest;
-  }
+        packageManifest._manifestXml = builder.buildObject(packageObj);
+        packageManifest._manifestJson = packageObj;
 
-  /**
-   * Factory method
-   * @param manifest package JSON
-   * @returns instance of PackageManifest
-   */
-     static async createWithJSONManifest(manifest: any): Promise<PackageManifest> {
-      const packageManifest = new PackageManifest();
-      packageManifest._manifestJson = manifest;
-
-      const builder = new xml2js.Builder({
-        xmldec: { version: "1.0", encoding: "UTF-8" },
-      });
-
-      packageManifest._manifestXml = builder.buildObject(manifest);
-
-      return packageManifest;
+        return packageManifest;
     }
 
+    /**
+     * Factory method
+     * @param manifest package JSON
+     * @returns instance of PackageManifest
+     */
+    static async createWithJSONManifest(manifest: any): Promise<PackageManifest> {
+        const packageManifest = new PackageManifest();
+        packageManifest._manifestJson = manifest;
 
+        const builder = new xml2js.Builder({
+            xmldec: { version: '1.0', encoding: 'UTF-8' },
+        });
 
-  /**
-   *
-   * @returns true or false, for whether there are profiles
-   */
-  public isProfilesInPackage(): boolean {
-    let isProfilesFound = false;
+        packageManifest._manifestXml = builder.buildObject(manifest);
 
-    if (this._manifestJson.Package.types) {
-      if (Array.isArray(this._manifestJson.Package.types)) {
-        for (const type of this._manifestJson.Package.types) {
-          if (type.name === "Profile") {
-            isProfilesFound = true;
-            break;
-          }
+        return packageManifest;
+    }
+
+    /**
+     *
+     * @returns true or false, for whether there are profiles
+     */
+    public isProfilesInPackage(): boolean {
+        let isProfilesFound = false;
+
+        if (this._manifestJson.Package.types) {
+            if (Array.isArray(this._manifestJson.Package.types)) {
+                for (const type of this._manifestJson.Package.types) {
+                    if (type.name === 'Profile') {
+                        isProfilesFound = true;
+                        break;
+                    }
+                }
+            } else if (this.manifestJson.Package.types.name === 'Profile') {
+                isProfilesFound = true;
+            }
         }
-      } else if (this.manifestJson.Package.types.name === "Profile") {
-        isProfilesFound = true;
-      }
+
+        return isProfilesFound;
     }
 
-    return isProfilesFound;
-  }
-
-  public isPermissionSetGroupsFoundInPackage():boolean {
-    let isPermissionSetGroupFound = false;
-    if (Array.isArray(this._manifestJson.Package.types)) {
-      for (let type of this._manifestJson.Package.types) {
-        if (type.name === "PermissionSetGroup") {
-          isPermissionSetGroupFound = true;
-          break;
+    public isPermissionSetGroupsFoundInPackage(): boolean {
+        let isPermissionSetGroupFound = false;
+        if (Array.isArray(this._manifestJson.Package.types)) {
+            for (let type of this._manifestJson.Package.types) {
+                if (type.name === 'PermissionSetGroup') {
+                    isPermissionSetGroupFound = true;
+                    break;
+                }
+            }
+        } else if (this._manifestJson?.Package?.types?.name === 'PermissionSetGroup') {
+            isPermissionSetGroupFound = true;
         }
-      }
-    } else if (this._manifestJson.Package.types.name === "PermissionSetGroup") {
-      isPermissionSetGroupFound = true;
+        return isPermissionSetGroupFound;
     }
-    return isPermissionSetGroupFound;
-  }
 
+    /**
+     *
+     * @returns true or false, for whether there are Apex classes and/or triggers
+     */
+    public isApexInPackage(): boolean {
+        let isApexFound = false;
 
-  /**
-   *
-   * @returns true or false, for whether there are Apex classes and/or triggers
-   */
-  public isApexInPackage(): boolean {
-    let isApexFound = false;
-
-    if (this._manifestJson.Package.types) {
-      if (Array.isArray(this._manifestJson.Package.types)) {
-        for (const type of this._manifestJson.Package.types) {
-          if (type.name === "ApexClass" || type.name === "ApexTrigger") {
-            isApexFound = true;
-            break;
-          }
+        if (this._manifestJson.Package.types) {
+            if (Array.isArray(this._manifestJson.Package.types)) {
+                for (const type of this._manifestJson.Package.types) {
+                    if (type.name === 'ApexClass' || type.name === 'ApexTrigger') {
+                        isApexFound = true;
+                        break;
+                    }
+                }
+            } else if (
+                this._manifestJson.Package.types.name === 'ApexClass' ||
+                this._manifestJson.Package.types.name === 'ApexTrigger'
+            ) {
+                isApexFound = true;
+            }
         }
-      } else if (
-        this._manifestJson.Package.types.name === "ApexClass" ||
-        this._manifestJson.Package.types.name === "ApexTrigger"
-      ) {
-        isApexFound = true;
-      }
+
+        return isApexFound;
     }
 
-    return isApexFound;
-  }
+    /**
+     *
+     * @returns Apex triggers if there are any, otherwise returns undefined
+     */
+    public fetchTriggers(): ApexClasses {
+        let triggers: string[];
 
-  /**
-   *
-   * @returns Apex triggers if there are any, otherwise returns undefined
-   */
-  public fetchTriggers(): ApexClasses {
-    let triggers: string[];
-
-    let types;
-    if (this._manifestJson.Package.types) {
-      if (this._manifestJson.Package.types instanceof Array) {
-        types = this._manifestJson.Package.types;
-      } else {
-        // Create array with single type
-        types = [this._manifestJson.Package.types];
-      }
-    }
-
-    if (types) {
-      for (const type of types) {
-        if (type.name === "ApexTrigger") {
-          if (type.members instanceof Array) {
-            triggers = type.members;
-          } else {
-            // Create array with single member
-            triggers = [type.members];
-          }
-          break;
+        let types;
+        if (this._manifestJson.Package.types) {
+            if (this._manifestJson.Package.types instanceof Array) {
+                types = this._manifestJson.Package.types;
+            } else {
+                // Create array with single type
+                types = [this._manifestJson.Package.types];
+            }
         }
-      }
-    }
 
-    return triggers;
-  }
-
-
-  public isPayloadContainTypesOtherThan(providedType: string): boolean {
-    let anyOtherType = false;
-    if (this._manifestJson.Package.types) {
-      if (Array.isArray(this._manifestJson.Package.types)) {
-        for (const type of this._manifestJson.Package.types) {
-          if (type.name !== providedType) {
-            anyOtherType = true;
-            break;
-          }
+        if (types) {
+            for (const type of types) {
+                if (type.name === 'ApexTrigger') {
+                    if (type.members instanceof Array) {
+                        triggers = type.members;
+                    } else {
+                        // Create array with single member
+                        triggers = [type.members];
+                    }
+                    break;
+                }
+            }
         }
-      } else if (this._manifestJson.Package.types.name !== providedType) {
-        anyOtherType = true;
-      }
+
+        return triggers;
     }
-    return anyOtherType;
-  }
 
-  public isPayLoadContainTypesSupportedByProfiles(): boolean {
-    const profileSupportedMetadataTypes = [
-      "ApexClass",
-      "CustomApplication",
-      "CustomObject",
-      "CustomField",
-      "Layout",
-      "ApexPage",
-      "CustomTab",
-      "RecordType",
-      "SystemPermissions",
-    ];
-
-    let containsProfileSupportedType = false;
-    if (this._manifestJson.Package.types) {
-      if (Array.isArray(this._manifestJson.Package.types)) {
-        for (const type of this._manifestJson.Package.types) {
-          if (profileSupportedMetadataTypes.includes(type.name)) {
-            containsProfileSupportedType = true;
-            break;
-          }
+    public isPayloadContainTypesOtherThan(providedType: string): boolean {
+        let anyOtherType = false;
+        if (this._manifestJson.Package.types) {
+            if (Array.isArray(this._manifestJson.Package.types)) {
+                for (const type of this._manifestJson.Package.types) {
+                    if (type.name !== providedType) {
+                        anyOtherType = true;
+                        break;
+                    }
+                }
+            } else if (this._manifestJson.Package.types.name !== providedType) {
+                anyOtherType = true;
+            }
         }
-      } else if (
-        profileSupportedMetadataTypes.includes(
-          this._manifestJson.Package.types.name
-        )
-      ) {
-        containsProfileSupportedType = true;
-      }
+        return anyOtherType;
     }
-    return containsProfileSupportedType;
-  }
+
+    public isPayLoadContainTypesSupportedByProfiles(): boolean {
+        const profileSupportedMetadataTypes = [
+            'ApexClass',
+            'CustomApplication',
+            'CustomObject',
+            'CustomField',
+            'Layout',
+            'ApexPage',
+            'CustomTab',
+            'RecordType',
+            'SystemPermissions',
+        ];
+
+        let containsProfileSupportedType = false;
+        if (this._manifestJson.Package.types) {
+            if (Array.isArray(this._manifestJson.Package.types)) {
+                for (const type of this._manifestJson.Package.types) {
+                    if (profileSupportedMetadataTypes.includes(type.name)) {
+                        containsProfileSupportedType = true;
+                        break;
+                    }
+                }
+            } else if (profileSupportedMetadataTypes.includes(this._manifestJson.Package.types.name)) {
+                containsProfileSupportedType = true;
+            }
+        }
+        return containsProfileSupportedType;
+    }
 }

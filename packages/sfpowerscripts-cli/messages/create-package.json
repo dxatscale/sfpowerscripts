@@ -5,7 +5,7 @@
     "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
     "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
     "diffCheckFlagDescription": "Only build when the package has changed",
-    "branchFlagDescription":"The git branch that this build is triggered on, Useful for metrics and general identification purposes",
+    "branchFlagDescription": "The git branch that this build is triggered on, Useful for metrics and general identification purposes",
     "gitTagFlagDescription": "Tag the current commit ID with an annotated tag containing the package name and version - does not push tag",
     "repoUrlFlagDescription": "Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config",
     "refNameFlagDescription": "Reference name to be prefixed to output variables",

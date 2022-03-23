@@ -1,6 +1,6 @@
 {
-  "commandDescription": "Promotes validated unlocked packages with code coverage greater than 75%",
-  "artifactDirectoryFlagDescription": "The directory where artifacts are located",
-  "outputDirectoryFlagDescription": "Output directory where promoted artifacts are written",
-  "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
+    "commandDescription": "Promotes validated unlocked packages with code coverage greater than 75%",
+    "artifactDirectoryFlagDescription": "The directory where artifacts are located",
+    "outputDirectoryFlagDescription": "Output directory where promoted artifacts are written",
+    "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
 }

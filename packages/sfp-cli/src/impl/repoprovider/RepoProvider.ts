@@ -1,14 +1,13 @@
-import { WorkItem } from "../../types/WorkItem";
+import { WorkItem } from '../../types/WorkItem';
 
 export interface RepoProvider {
+    name(): string;
 
-  name():string;
+    isCLIInstalled(): Promise<boolean>;
 
-  isCLIInstalled(): Promise<boolean>;
+    getInstallationMessage(platform: string): string;
 
-  getInstallationMessage(platform: string): string;
+    raiseAPullRequest(workItem: WorkItem);
 
-  raiseAPullRequest(workItem: WorkItem);
-
-  authenticate();
+    authenticate();
 }

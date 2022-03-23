@@ -1,13 +1,13 @@
-import ignore, {Ignore} from "ignore";
+import ignore, { Ignore } from 'ignore';
 
 export default class IgnoreFiles {
-  private _ignore: Ignore
+    private _ignore: Ignore;
 
-  constructor(pattern: string) {
-    this._ignore = ignore().add(pattern);
-  }
+    constructor(pattern: string) {
+        this._ignore = ignore().add(pattern);
+    }
 
-  filter(pathnames: string[]): string[] {
-    return this._ignore.filter(pathnames);
-  }
+    filter(pathnames: string[]): string[] {
+        return this._ignore.filter(pathnames);
+    }
 }
