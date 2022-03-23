@@ -81,11 +81,13 @@ export default class ChangedComponentsFetcher {
         let componentSuccesses: any[] = [];
 
         const reportsDir: string = '.sfpowerscripts/mdapiDeployReports';
-        let reports = fs.readdirSync(reportsDir);
-        reports.forEach((report) => {
-            let data = JSON.parse(fs.readFileSync(path.join(reportsDir, report), 'utf8'));
-            componentSuccesses = componentSuccesses.concat(data.result.details.componentSuccesses);
-        });
+        if (fs.existsSync(reportsDir)) {
+            let reports = fs.readdirSync(reportsDir);
+            reports.forEach((report) => {
+                let data = JSON.parse(fs.readFileSync(path.join(reportsDir, report), 'utf8'));
+                componentSuccesses = componentSuccesses.concat(data.result.details.componentSuccesses);
+            });
+        }
         return componentSuccesses;
     }
 }

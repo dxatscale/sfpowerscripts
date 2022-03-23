@@ -1,6 +1,5 @@
-import { RunApexTestSuitesOption, TestOptions } from '../../sfdxwrappers/TestOptions';
-import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from '../../logger/SFPLogger';
-import { RunAllTestsInPackageOptions } from './ExtendedTestOptions';
+import { RunAllTestsInPackageOptions, RunApexTestSuitesOption, TestOptions } from './TestOptions';
+import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from '../logger/SFPLogger';
 
 const Table = require('cli-table');
 
@@ -31,7 +30,7 @@ export class TestReportDisplayer {
             table.push(keyValuePair);
         });
 
-        SFPLogger.log(table.toString(), this.fileLogger);
+        SFPLogger.log(table.toString(), LoggerLevel.INFO, this.fileLogger);
         return table.toString();
     }
 

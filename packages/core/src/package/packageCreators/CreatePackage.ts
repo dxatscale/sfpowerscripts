@@ -3,12 +3,17 @@ import PackageMetadata from '../../PackageMetadata';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import ProjectConfig from '../../project/ProjectConfig';
 import path from 'path';
-import SourcePackageGenerator from '../../generators/SourcePackageGenerator';
+import SourcePackageGenerator from '../generators/SourcePackageGenerator';
 
 export abstract class CreatePackage {
     private startTime: number;
+
+    // Child classes parse the project config again, to avoid mutation
+    private packageManifest;
     private packageDescriptor;
     private packageDirectory;
+    protected revisionFrom;
+    protected revisionTo;
 
     constructor(
         protected projectDirectory: string,
@@ -18,17 +23,21 @@ export abstract class CreatePackage {
         protected logger?: Logger,
         protected pathToReplacementForceIgnore?: string,
         protected configFilePath?: string
-    ) {}
+    ) {
+        this.packageManifest = ProjectConfig.getSFDXPackageManifest(this.projectDirectory);
+        //Get Package Descriptor
+        this.packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(this.sfdx_package, this.packageManifest);
+        this.packageDirectory = this.packageDescriptor['path'];
+    }
 
     public async exec(): Promise<PackageMetadata> {
         //Get Type of Package
         this.packageArtifactMetadata.package_type = this.getTypeOfPackage();
+
+        this.packageArtifactMetadata.apiVersion = this.packageManifest.sourceApiVersion;
+
         //Capture Start Time
         this.startTime = Date.now();
-
-        //Get Package Descriptor
-        this.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(this.projectDirectory, this.sfdx_package);
-        this.packageDirectory = this.packageDescriptor['path'];
 
         //Print Header
         this.printHeader();
@@ -52,7 +61,7 @@ export abstract class CreatePackage {
         this.writeDeploymentStepsToArtifact(this.packageDescriptor);
 
         //Genrate Artifact
-        this.generateArtifact(resolvedPackageDirectory);
+        await this.generateArtifact(resolvedPackageDirectory);
 
         //Send Metrics to Logging system
         this.sendMetricsWhenSuccessfullyCreated();
@@ -61,9 +70,15 @@ export abstract class CreatePackage {
     }
 
     abstract getTypeOfPackage();
+
     abstract preCreatePackage(packageDirectory: string, packageDescriptor: any);
     abstract createPackage(packageDirectory: string, packageDescriptor: any);
     abstract postCreatePackage(packageDirectory: string, packageDescriptor: any);
+
+    public setDiffRevisons(revisionFrom: string, revisionTo: string) {
+        this.revisionFrom = revisionFrom;
+        this.revisionTo = revisionTo;
+    }
 
     private sendMetricsWhenSuccessfullyCreated() {
         let elapsedTime = Date.now() - this.startTime;
@@ -112,16 +127,18 @@ export abstract class CreatePackage {
         }
     }
 
-    private generateArtifact(packageDirectory: string) {
+    private async generateArtifact(packageDirectory: string) {
         //Get Artifact Detailes
-        let sourcePackageArtifactDir = SourcePackageGenerator.generateSourcePackageArtifact(
+        let sourcePackageArtifactDir = await SourcePackageGenerator.generateSourcePackageArtifact(
             this.logger,
             this.projectDirectory,
             this.sfdx_package,
             packageDirectory,
             this.packageDescriptor.destructiveChangePath,
             this.configFilePath,
-            this.pathToReplacementForceIgnore
+            this.pathToReplacementForceIgnore,
+            this.revisionFrom,
+            this.revisionTo
         );
 
         this.packageArtifactMetadata.sourceDir = sourcePackageArtifactDir;

@@ -566,6 +566,10 @@ export default class BuildImpl {
             new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`),
             this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
         );
+
+        if (this.props.packagesToCommits && this.props.packagesToCommits[sfdx_package])
+            createSourcePackageImpl.setDiffRevisons(this.props.packagesToCommits[sfdx_package], 'HEAD');
+
         let result = createSourcePackageImpl.exec();
 
         return result;

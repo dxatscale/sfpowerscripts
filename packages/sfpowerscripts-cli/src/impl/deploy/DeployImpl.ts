@@ -2,8 +2,6 @@ import ArtifactFilePathFetcher, {
     ArtifactFilePaths,
 } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher';
 import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
-import ArtifactInstallationStatusChecker from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInstallationStatusChecker';
-import InstalledAritfactsFetcher from '@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher';
 import ArtifactInquirer from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInquirer';
 import fs = require('fs');
 import path = require('path');
@@ -11,17 +9,11 @@ import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfpowerscripts.core/l
 import { EOL } from 'os';
 import { Stage } from '../Stage';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/TriggerApexTests';
-import SFPPackage from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
-import { RunAllTestsInPackageOptions } from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions';
-import { TestOptions } from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions';
 import semver = require('semver');
 import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl';
-import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/source/DeploymentExecutor';
-import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentExecutor';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
 import {
     PackageInstallationResult,
     PackageInstallationStatus,
@@ -29,6 +21,12 @@ import {
 import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageImpl';
 import InstallSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallSourcePackageImpl';
 import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallDataPackageImpl';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import { Connection } from '@salesforce/core';
+import { UpsertResult } from 'jsforce';
+import SFPPackage from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
+import { PostDeployHook } from './PostDeployHook';
+import { PreDeployHook } from './PreDeployHook';
 const Table = require('cli-table');
 const retry = require('async-retry');
 
@@ -58,13 +56,25 @@ export interface DeployProps {
 }
 
 export default class DeployImpl {
+    private _postDeployHook: PostDeployHook;
+    private _preDeployHook: PreDeployHook;
+
     constructor(private props: DeployProps) {}
+
+    public set postDeployHook(hook: PostDeployHook) {
+        this._postDeployHook = hook;
+    }
+
+    public set preDeployHook(hook: PreDeployHook) {
+        this._preDeployHook = hook;
+    }
+
     // TODO: Refactor to use exception pattern
     public async exec(): Promise<DeploymentResult> {
         let deployed: PackageInfo[] = [];
         let failed: PackageInfo[] = [];
-        let testFailure: PackageInfo;
         let queue;
+        let packagesToPackageInfo: { [p: string]: PackageInfo };
         try {
             let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
                 this.props.artifactDir,
@@ -82,7 +92,7 @@ export default class DeployImpl {
                 packageManifest = ProjectConfig.getSFDXPackageManifest(null);
             }
 
-            let packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
+            packagesToPackageInfo = this.getPackagesToPackageInfo(artifacts);
 
             queue = this.getPackagesToDeploy(packageManifest, packagesToPackageInfo);
 
@@ -119,12 +129,46 @@ export default class DeployImpl {
                 this.printOpenLoggingGroup('Installing ', queue[i].package);
                 this.displayHeader(packageMetadata, pkgDescriptor, queue[i].package);
 
+                //TODO:this is not accurate
+                let sfpPackage = await SFPPackage.buildPackageFromProjectConfig(
+                    this.props.packageLogger,
+                    packageInfo.sourceDirectory,
+                    queue[i].package
+                );
+
+                let preHookStatus = await this._preDeployHook?.preDeployPackage(
+                    sfpPackage,
+                    this.props.targetUsername,
+                    this.props.devhubUserName
+                );
+                if (preHookStatus?.isToFailDeployment) {
+                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
+                    throw new Error(
+                        preHookStatus.message
+                            ? preHookStatus.message
+                            : 'Hook Failed to execute, but didnt provide proper message'
+                    );
+                }
+
                 let packageInstallationResult: PackageInstallationResult = await retry(
                     async (bail, count) => {
                         try {
                             await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory, packageMetadata);
 
                             this.displayRetryHeader(this.props.isRetryOnFailure, count);
+
+                            //activate compile on deploy for the last package
+                            //TODO: Refactor to its own method
+                            if (i == queue.length - 1) {
+                                if (this.props.currentStage === 'validate') {
+                                    //Create Org
+                                    let orgAsSFPOrg = await SFPOrg.create({
+                                        aliasOrUsername: this.props.targetUsername,
+                                    });
+                                    let connToOrg = orgAsSFPOrg.getConnection();
+                                    await this.enableSynchronousCompileOnDeploy(connToOrg, this.props.packageLogger);
+                                }
+                            }
 
                             let installPackageResult = await this.installPackage(
                                 packageType,
@@ -135,8 +179,9 @@ export default class DeployImpl {
                                 queue[i].skipTesting,
                                 this.props.waitTime.toString(),
                                 pkgDescriptor,
-                                false //Queue already filtered by deploy, there is no further need for individual
+                                false, //Queue already filtered by deploy, there is no further need for individual
                                 //commands to decide the skip logic. TODO: fix this incorrect pattern
+                                packageMetadata.apiVersion || packageMetadata.payload?.Package?.version // Use package.xml version for backwards compat with old artifacts
                             );
 
                             if (
@@ -162,66 +207,42 @@ export default class DeployImpl {
 
                 if (packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
                     deployed.push(packageInfo);
-                    this.printClosingLoggingGroup();
                 } else if (packageInstallationResult.result === PackageInstallationStatus.Skipped) {
-                    this.printClosingLoggingGroup();
                     continue;
                 } else if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
+                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
+                }
+
+                let postHookStatus = await this._postDeployHook?.postDeployPackage(
+                    sfpPackage,
+                    packageInstallationResult,
+                    this.props.targetUsername,
+                    this.props.devhubUserName
+                );
+
+                if (postHookStatus?.isToFailDeployment) {
+                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
+                    throw new Error(
+                        postHookStatus.message
+                            ? postHookStatus.message
+                            : 'Hook Failed to execute, but didnt provide proper message'
+                    );
+                }
+
+                if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
                     failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
                     throw new Error(packageInstallationResult.message);
                 }
 
-                //Trigger Tests for Validate Deployment
-                if (this.props.isTestsToBeTriggered) {
-                    if (packageMetadata.isApexFound) {
-                        if (!queue[i].skipTesting) {
-                            this.printOpenLoggingGroup('Trigger Tests for ', queue[i].package);
-
-                            let testResult;
-                            try {
-                                testResult = await this.triggerApexTests(
-                                    queue[i].package,
-                                    this.props.targetUsername,
-                                    queue[i].skipCoverageValidation,
-                                    this.props.coverageThreshold
-                                );
-                            } catch (error) {
-                                //Print Any errors, Report that as execution failed for reporting
-                                console.log(COLOR_ERROR(error.message));
-                                testResult = {
-                                    result: false,
-                                    message: 'Test Execution failed',
-                                };
-                            }
-
-                            if (!testResult.result) {
-                                testFailure = packageInfo;
-
-                                if (i !== queue.length - 1)
-                                    failed = queue.slice(i + 1).map((pkg) => packagesToPackageInfo[pkg.package]);
-
-                                throw new Error(testResult.message);
-                            } else {
-                                SFPLogger.log(testResult.message, LoggerLevel.INFO, this.props.packageLogger);
-
-                                this.printClosingLoggingGroup();
-                            }
-                        } else {
-                            SFPLogger.log(
-                                `Skipping testing of ${queue[i].package}\n`,
-                                LoggerLevel.INFO,
-                                this.props.packageLogger
-                            );
-                        }
-                    }
-                }
+                this.printClosingLoggingGroup();
             }
 
             return {
                 scheduled: queue.length,
                 deployed: deployed,
                 failed: failed,
-                testFailure: testFailure,
+                queue: queue,
+                packagesToPackageInfo: packagesToPackageInfo,
                 error: null,
             };
         } catch (err) {
@@ -231,7 +252,8 @@ export default class DeployImpl {
                 scheduled: queue?.length ? queue.length : 0,
                 deployed: deployed,
                 failed: failed,
-                testFailure: testFailure,
+                queue: queue,
+                packagesToPackageInfo: packagesToPackageInfo,
                 error: err,
             };
         }
@@ -395,16 +417,18 @@ export default class DeployImpl {
         packagesToPackageInfo: { [p: string]: PackageInfo },
         targetUsername: string
     ): Promise<any[]> {
+        //Create Org
+        let org = await SFPOrg.create({ aliasOrUsername: targetUsername });
+
         const clonedQueue = [];
         queue.forEach((val) => clonedQueue.push(Object.assign({}, val)));
 
-        for (var i = queue.length - 1; i >= 0; i--) {
+        for (let i = queue.length - 1; i >= 0; i--) {
             let packageInfo = packagesToPackageInfo[clonedQueue[i].package];
             let packageMetadata: PackageMetadata = packageInfo.packageMetadata;
             let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(clonedQueue[i].package, packageManifest);
-            let packageInstalledInTheOrg = await ArtifactInstallationStatusChecker.checkWhetherPackageIsIntalledInOrg(
+            let packageInstalledInTheOrg = await org.isArtifactInstalledInOrg(
                 this.props.packageLogger,
-                targetUsername,
                 packageMetadata
             );
             if (packageInstalledInTheOrg.versionNumber)
@@ -417,9 +441,30 @@ export default class DeployImpl {
             }
         }
 
-        //Do a reset after this stage, as fetched artifacts are a static var, to reduce roundtrip, but this has side effects
-        InstalledAritfactsFetcher.resetFetchedArtifacts();
         return clonedQueue;
+    }
+
+    //Enable Synchronus Compile on Deploy
+    private async enableSynchronousCompileOnDeploy(conn: Connection, logger: Logger) {
+        try {
+            let apexSettingMetadata = { fullName: 'ApexSettings', enableCompileOnDeploy: true };
+            let result: UpsertResult | UpsertResult[] = await conn.metadata.upsert('ApexSettings', apexSettingMetadata);
+            if ((result as UpsertResult).success) {
+                SFPLogger.log(
+                    `${COLOR_KEY_MESSAGE(
+                        'Enabled Synchronous Compile on Org succesfully as this is the last package in queue'
+                    )}`,
+                    LoggerLevel.INFO,
+                    logger
+                );
+            }
+        } catch (error) {
+            SFPLogger.log(
+                `Skipping Synchronous Compile on Org succesfully due to ${error}..`,
+                LoggerLevel.INFO,
+                logger
+            );
+        }
     }
 
     private printOpenLoggingGroup(message: string, pkg?: string) {
@@ -517,24 +562,36 @@ export default class DeployImpl {
         skipTesting: boolean,
         waitTime: string,
         pkgDescriptor: any,
-        skipIfPackageInstalled: boolean
+        skipIfPackageInstalled: boolean,
+        apiVersion: string
     ): Promise<PackageInstallationResult> {
         let packageInstallationResult: PackageInstallationResult;
 
         if (this.props.deploymentMode == DeploymentMode.NORMAL) {
             if (packageType === 'unlocked') {
+                let options = {
+                    installationkey: null,
+                    apexcompile: 'package',
+                    securitytype: 'AdminsOnly',
+                    upgradetype: 'Mixed',
+                    waitTime: waitTime,
+                    apiVersion: apiVersion,
+                    publishWaitTime: 60,
+                };
+
                 packageInstallationResult = await this.installUnlockedPackage(
                     targetUsername,
+                    sourceDirectoryPath,
                     packageMetadata,
-                    skipIfPackageInstalled,
-                    waitTime,
-                    sourceDirectoryPath
+                    options,
+                    skipIfPackageInstalled
                 );
             } else if (packageType === 'source') {
                 let options = {
                     optimizeDeployment: this.isOptimizedDeploymentForSourcePackage(pkgDescriptor),
                     skipTesting: skipTesting,
                     waitTime: waitTime,
+                    apiVersion: apiVersion,
                 };
 
                 packageInstallationResult = await this.installSourcePackage(
@@ -550,8 +607,8 @@ export default class DeployImpl {
                     sfdx_package,
                     targetUsername,
                     sourceDirectoryPath,
-                    skipIfPackageInstalled,
-                    packageMetadata
+                    packageMetadata,
+                    skipIfPackageInstalled
                 );
             } else {
                 throw new Error(`Unhandled package type ${packageType}`);
@@ -565,6 +622,7 @@ export default class DeployImpl {
                     optimizeDeployment: false,
                     skipTesting: true,
                     waitTime: waitTime,
+                    apiVersion: apiVersion,
                 };
 
                 packageInstallationResult = await this.installSourcePackage(
@@ -580,8 +638,8 @@ export default class DeployImpl {
                     sfdx_package,
                     targetUsername,
                     sourceDirectoryPath,
-                    skipIfPackageInstalled,
-                    packageMetadata
+                    packageMetadata,
+                    skipIfPackageInstalled
                 );
             } else {
                 throw new Error(`Unhandled package type ${packageType}`);
@@ -592,19 +650,11 @@ export default class DeployImpl {
 
     private installUnlockedPackage(
         targetUsername: string,
+        sourceDirectoryPath: string,
         packageMetadata: PackageMetadata,
-        skip_if_package_installed: boolean,
-        waitTime: string,
-        sourceDirectoryPath: string
+        options: any,
+        skip_if_package_installed: boolean
     ): Promise<PackageInstallationResult> {
-        let options = {
-            installationkey: null,
-            apexcompile: 'package',
-            securitytype: 'AdminsOnly',
-            upgradetype: 'Mixed',
-            waitTime: waitTime,
-        };
-
         let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
             packageMetadata.package_name,
             targetUsername,
@@ -651,8 +701,8 @@ export default class DeployImpl {
         sfdx_package: string,
         targetUsername: string,
         sourceDirectoryPath: string,
-        skip_if_package_installed: boolean,
-        packageMetadata: PackageMetadata
+        packageMetadata: PackageMetadata,
+        skip_if_package_installed: boolean
     ): Promise<PackageInstallationResult> {
         let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
             sfdx_package,
@@ -665,40 +715,6 @@ export default class DeployImpl {
             this.props.isDryRun
         );
         return installDataPackageImpl.exec();
-    }
-
-    private async triggerApexTests(
-        sfdx_package: string,
-        targetUsername: string,
-        skipCoverageValidation: boolean,
-        coverageThreshold: number
-    ): Promise<{
-        id: string;
-        result: boolean;
-        message: string;
-    }> {
-        let sfPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
-            this.props.packageLogger,
-            null,
-            sfdx_package,
-            null
-        );
-        let testOptions: TestOptions = new RunAllTestsInPackageOptions(sfPackage, 60, '.testresults');
-        let testCoverageOptions: CoverageOptions = {
-            isIndividualClassCoverageToBeValidated: false,
-            isPackageCoverageToBeValidated: !skipCoverageValidation,
-            coverageThreshold: coverageThreshold || 75,
-        };
-
-        let triggerApexTests: TriggerApexTests = new TriggerApexTests(
-            targetUsername,
-            testOptions,
-            testCoverageOptions,
-            null,
-            this.props.packageLogger
-        );
-
-        return triggerApexTests.exec();
     }
 
     /**
@@ -763,7 +779,7 @@ export default class DeployImpl {
     }
 }
 
-interface PackageInfo {
+export interface PackageInfo {
     sourceDirectory: string;
     packageMetadata: PackageMetadata;
     versionInstalledInOrg?: string;
@@ -772,8 +788,9 @@ interface PackageInfo {
 
 export interface DeploymentResult {
     scheduled: number;
+    queue: any[];
+    packagesToPackageInfo: { [p: string]: PackageInfo };
     deployed: PackageInfo[];
     failed: PackageInfo[];
-    testFailure: PackageInfo;
     error: any;
 }

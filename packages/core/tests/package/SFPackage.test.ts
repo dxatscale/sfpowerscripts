@@ -15,7 +15,22 @@ jest.mock('../../src/project/ProjectConfig', () => {
             };
         }
 
-        static getSFDXPackageManifest = jest.fn();
+        static getSFDXPackageManifest(projectDirectory) {
+            return {
+                packageDirectories: [
+                    {
+                        path: 'packages/domains/core',
+                        package: 'core',
+                        default: false,
+                        versionName: 'core',
+                        versionNumber: '1.0.0.0',
+                    },
+                ],
+                namespace: '',
+                sfdcLoginUrl: 'https://login.salesforce.com',
+                sourceApiVersion: '50.0',
+            };
+        }
         static getPackageType(projectConfig: any, sfdxPackage: string) {
             return packageType;
         }
@@ -23,16 +38,16 @@ jest.mock('../../src/project/ProjectConfig', () => {
     return ProjectConfig;
 });
 
-jest.mock('../../src/generators/SourcePackageGenerator', () => {
+jest.mock('../../src/package/generators/SourcePackageGenerator', () => {
     class SourcePackageGenerator {
-        static generateSourcePackageArtifact(
+        static async generateSourcePackageArtifact(
             projectDirectory: string,
             sfdx_package: string,
             packageDirectory: string,
             destructiveManifestFilePath?: string,
             configFilePath?: string,
             pathToReplacementForceIgnore?: string
-        ): string {
+        ): Promise<string> {
             return '.sfpowerscripts/3sIRD_source';
         }
     }

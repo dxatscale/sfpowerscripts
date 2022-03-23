@@ -5,12 +5,9 @@ import {
     RunSpecifiedTestsOption,
     TestLevel,
     TestOptions,
-} from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions';
-import {
-    ExtendedTestOptions,
     RunAllTestsInPackageOptions,
-} from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions';
-import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/TriggerApexTests';
+} from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
+import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
@@ -64,6 +61,10 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
         }),
         synchronous: flags.boolean({
             char: 's',
+            deprecated: {
+                messageOverride:
+                    'synchronous mode is no longer supported, all tests are triggered asynchronously, Please use cli or disable parallel testing in the org ',
+            },
             description: messages.getMessage('synchronousFlagDescription'),
         }),
         specifiedtests: flags.string({
@@ -114,7 +115,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
 
             if (this.flags.testlevel === TestLevel.RunAllTestsInOrg.toString()) {
                 testOptions = new RunAllTestsInOrg(this.flags.waittime, outputdir, this.flags.synchronous);
-            } else if (this.flags.testlevel === ExtendedTestOptions.RunAllTestsInPackage.toString()) {
+            } else if (this.flags.testlevel === TestLevel.RunAllTestsInPackage.toString()) {
                 if (this.flags.package === null) {
                     throw new Error('Package name must be specified when test level is RunAllTestsInPackage');
                 }
@@ -146,7 +147,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
 
             if (
                 (this.flags.validateindividualclasscoverage || this.flags.validatepackagecoverage) &&
-                this.flags.testlevel !== ExtendedTestOptions.RunAllTestsInPackage.toString()
+                this.flags.testlevel !== TestLevel.RunAllTestsInPackage.toString()
             ) {
                 throw new Error('Code coverage validation is only available for test level RunAllTestsInPackage');
             } else {

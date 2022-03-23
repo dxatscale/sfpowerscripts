@@ -1,15 +1,14 @@
 import { flags, SfdxCommand } from '@salesforce/command';
-import { Messages, Org } from '@salesforce/core';
+import { Messages } from '@salesforce/core';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
 import { AnyJson } from '@salesforce/ts-types';
 import PoolFetchImpl from '../../../impl/pool/PoolFetchImpl';
 import * as fs from 'fs-extra';
 import SFPLogger, { LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import InstalledAritfactsFetcher from '@dxatscale/sfpowerscripts.core/lib/artifacts/InstalledAritfactsFetcher';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
 import InstalledPackageDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import InstalledPackagesFetcher from '@dxatscale/sfpowerscripts.core/lib/package/packageQuery/InstalledPackagesFetcher';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
@@ -122,13 +121,12 @@ export default class Fetch extends SfdxCommand {
      */
     private async displayOrgContents(soDetail: ScratchOrg) {
         try {
-            const scratchOrgConnection = (await Org.create({ aliasOrUsername: soDetail.username })).getConnection();
-            let installedPackagesFetcher = new InstalledPackagesFetcher(scratchOrgConnection);
-            let installedManagedPackages = await installedPackagesFetcher.fetchManagedPackages();
+            let scratchOrgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: soDetail.username });
+            let installedManagedPackages = await scratchOrgAsSFPOrg.getAllInstalledManagedPackages();
             SFPLogger.log('Installed managed packages:', LoggerLevel.INFO);
             InstalledPackageDisplayer.printInstalledPackages(installedManagedPackages, null);
 
-            let installedArtifacts = await InstalledAritfactsFetcher.getListofArtifacts(soDetail.username);
+            let installedArtifacts = await scratchOrgAsSFPOrg.getInstalledArtifacts();
             InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
         } catch (error) {
             SFPLogger.log('Failed to query packages/artifacts installed in the org', LoggerLevel.ERROR);

@@ -12,7 +12,9 @@ export default class InstallUnlockedPackageImpl extends SFDXCommand {
         private publishWaitTime?: string,
         private installationkey?: string,
         private securityType?: string,
-        private upgradeType?: string
+        private upgradeType?: string,
+        private apiVersion?: string,
+        private apexCompile: string = 'package'
     ) {
         super(targetUserName, working_directory, logger, logLevel);
     }
@@ -31,11 +33,12 @@ export default class InstallUnlockedPackageImpl extends SFDXCommand {
     }
 
     getGeneratedParams(): string {
-        let command = `--targetusername ${this.targetUserName} --package ${this.packageId} --apexcompile=package --noprompt --wait ${this.waitTime}`;
+        let command = `--targetusername ${this.targetUserName} --package ${this.packageId} --apexcompile=${this.apexCompile} --noprompt --wait ${this.waitTime}`;
         if (this.installationkey) command += ` --installationkey=${this.installationkey}`;
         if (this.publishWaitTime) command += ` --publishwait=${this.publishWaitTime}`;
         if (this.securityType) command += ` --securitytype=${this.securityType}`;
         if (this.upgradeType) command += ` --upgradetype=${this.upgradeType}`;
+        if (this.apiVersion) command += ` --apiversion=${this.apiVersion}`;
 
         return command;
     }

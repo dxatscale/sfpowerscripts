@@ -1,16 +1,13 @@
-import TriggerApexTestImpl from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/TriggerApexTests';
+import TriggerApexTestImpl from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
 import {
+    RunAllTestsInPackageOptions,
     RunAllTestsInOrg,
     RunApexTestSuitesOption,
     RunLocalTests,
     RunSpecifiedTestsOption,
     TestLevel,
     TestOptions,
-} from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/TestOptions';
-import {
-    ExtendedTestOptions,
-    RunAllTestsInPackageOptions,
-} from '@dxatscale/sfpowerscripts.core/lib/sfpcommands/apextest/ExtendedTestOptions';
+} from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
 import SFPPackage, { ApexClasses } from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
 import PackageTestCoverage from '@dxatscale/sfpowerscripts.core/lib/package/coverage/PackageTestCoverage';
@@ -22,7 +19,7 @@ const path = require('path');
 export default class TriggerApexTest {
     constructor(
         private targetOrg: string,
-        private testLevel: TestLevel | ExtendedTestOptions | 'RunAggregatedTests',
+        private testLevel: TestLevel | 'RunAggregatedTests',
         private specifiedTests: string,
         private apexTestSuite: string,
         private isSynchronous: boolean,
@@ -41,7 +38,7 @@ export default class TriggerApexTest {
 
         if (this.testLevel === TestLevel.RunAllTestsInOrg.toString()) {
             testOptions = new RunAllTestsInOrg(this.waitTime, outputdir, this.isSynchronous);
-        } else if (this.testLevel === ExtendedTestOptions.RunAllTestsInPackage.toString()) {
+        } else if (this.testLevel === TestLevel.RunAllTestsInPackage.toString()) {
             if (this.packages == null || this.packages[0] == null) {
                 throw new Error('Package name must be specified when test level is RunAllTestsInPackage');
             }
@@ -102,7 +99,7 @@ export default class TriggerApexTest {
 
         if (
             (this.isValidateIndividualClassCoverage || this.isValidatePackageCoverage) &&
-            this.testLevel !== ExtendedTestOptions.RunAllTestsInPackage.toString()
+            this.testLevel !== TestLevel.RunAllTestsInPackage.toString()
         ) {
             throw new Error('Code coverage validation is only available for test level RunAllTestsInPackage');
         } else {

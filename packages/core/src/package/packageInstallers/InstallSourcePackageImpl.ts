@@ -1,23 +1,30 @@
-import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../sfpcommands/source/DeploymentExecutor';
+import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../deployers/DeploymentExecutor';
 import ReconcileProfileAgainstOrgImpl from '../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl';
 import DeployDestructiveManifestToOrgImpl from '../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl';
 import PackageMetadata from '../../PackageMetadata';
 import OrgDetailsFetcher, { OrgDetails } from '../../org/OrgDetailsFetcher';
-import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '../../logger/SFPLogger';
 import * as fs from 'fs-extra';
 const path = require('path');
 const glob = require('glob');
 const { EOL } = require('os');
 const tmp = require('tmp');
-import DeploySourceToOrgImpl from '../../sfpcommands/source/DeploySourceToOrgImpl';
-import PushSourceToOrgImpl from '../../sfpcommands/source/PushSourceToOrgImpl';
 import { InstallPackage } from './InstallPackage';
 import PackageManifest from '../PackageManifest';
+import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
+import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
+import defaultValidateDeploymentOption from '../../utils/DefaultValidateDeploymentOption';
+import PackageEmptyChecker from '../PackageEmptyChecker';
+import { TestLevel } from '../../apextest/TestOptions';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private options: any;
     private pathToReplacementForceIgnore: string;
     private deploymentType: DeploymentType;
+
+    private isDiffFolderAvailable =
+        defaultValidateDeploymentOption().toLocaleLowerCase() === 'selective' &&
+        fs.existsSync(path.join(this.sourceDirectory, 'diff'));
 
     public constructor(
         sfdxPackage: string,
@@ -44,9 +51,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         try {
             this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(this.packageMetadata);
 
-            if (this.pathToReplacementForceIgnore) {
-                this.replaceForceIgnoreInSourceDirectory(this.sourceDirectory, this.pathToReplacementForceIgnore);
-            }
+            this.handleForceIgnores();
 
             // Apply Destructive Manifest
             if (this.packageMetadata.destructiveChanges) {
@@ -76,7 +81,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 }
             }
 
-            let deploymentOptions: any;
+            let deploymentOptions: DeploymentOptions;
 
             let result: DeploySourceResult;
             if (this.deploymentType === DeploymentType.SOURCE_PUSH) {
@@ -94,48 +99,134 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.options.waitTime,
                     this.options.optimizeDeployment,
                     this.options.skipTesting,
-                    this.targetusername
-                );
-
-                let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
                     this.targetusername,
-                    this.sourceDirectory,
-                    this.packageDirectory,
-                    deploymentOptions,
-                    false,
-                    this.logger
+                    this.options.apiVersion
                 );
 
-                result = await deploySourceToOrgImpl.exec();
-            }
+                //Make a copy.. dont mutate sourceDirectory
+                let resolvedSourceDirectory = this.sourceDirectory;
 
-            if (result.result && !result.message.startsWith('skip:')) {
-                //Apply PostDeployment Activities
-                try {
-                    if (isReconcileActivated) {
-                        //Bring back the original profiles, reconcile and redeploy again
-                        await this.reconcileAndRedeployProfiles(
-                            profileFolders,
-                            this.sourceDirectory,
-                            this.targetusername,
-                            this.packageDirectory,
-                            tempDir,
-                            deploymentOptions
-                        );
-                    }
-                } catch (error) {
+                if (this.isDiffFolderAvailable) {
                     SFPLogger.log(
-                        'Failed to apply reconcile the second time, Partial Metadata applied',
+                        `${COLOR_SUCCESS(`Selective mode activated, Only changed components in package is deployed`)}`,
                         LoggerLevel.INFO,
                         this.logger
                     );
+                    SFPLogger.log(
+                        `${`Toggle this feature by setting SFPOWERSCRIPTS_VALIDATE_DEPLOYMENT_OPTION to Full|Selective`}`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
+                    resolvedSourceDirectory = path.join(this.sourceDirectory, 'diff');
                 }
-            } else if (result.result === false) {
-                throw new Error(result.message);
+
+                let emptyCheck = this.handleEmptyPackage(resolvedSourceDirectory, this.packageDirectory);
+
+                if (emptyCheck.isToSkip == true) {
+                    SFPLogger.log(
+                        `${COLOR_SUCCESS(`Skipping the package as there is nothing to be deployed`)}`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
+                    return;
+                } else if (emptyCheck.isToSkip == false) {
+                    //Display a warning
+                    if (
+                        defaultValidateDeploymentOption() === 'selective' &&
+                        resolvedSourceDirectory != emptyCheck.resolvedSourceDirectory
+                    ) {
+                        SFPLogger.log(
+                            `${COLOR_WARNING(
+                                `Overriding selective mode to full deployment mode as selective component calculation was not successful`
+                            )}`,
+                            LoggerLevel.INFO,
+                            this.logger
+                        );
+                    }
+
+                    let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
+                        this.org,
+                        emptyCheck.resolvedSourceDirectory,
+                        this.packageDirectory,
+                        deploymentOptions,
+                        false,
+                        this.logger
+                    );
+
+                    result = await deploySourceToOrgImpl.exec();
+
+                    if (result.result) {
+                        //Apply PostDeployment Activities
+                        try {
+                            if (isReconcileActivated) {
+                                //Bring back the original profiles, reconcile and redeploy again
+                                await this.reconcileAndRedeployProfiles(
+                                    profileFolders,
+                                    this.sourceDirectory,
+                                    this.targetusername,
+                                    this.packageDirectory,
+                                    tempDir,
+                                    deploymentOptions
+                                );
+                            }
+                        } catch (error) {
+                            SFPLogger.log(
+                                'Failed to apply reconcile the second time, Partial Metadata applied',
+                                LoggerLevel.INFO,
+                                this.logger
+                            );
+                        }
+                    } else if (result.result === false) {
+                        throw new Error(result.message);
+                    }
+                }
             }
         } catch (error) {
             tmpDirObj.removeCallback();
             throw error;
+        }
+    }
+
+    private handleEmptyPackage(
+        sourceDirectory: string,
+        packageDirectory: string
+    ): { isToSkip: boolean; resolvedSourceDirectory: string } {
+        //Check empty conditions
+        let status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(sourceDirectory, packageDirectory, false);
+
+        //On a diff deployment, we might need to deploy full as version changed or scratch org config has changed
+        //In that case lets check again with the main directory and proceed ahead with deployment
+        if (defaultValidateDeploymentOption().toLocaleLowerCase() == 'selective' && status.result == 'skip') {
+            sourceDirectory = sourceDirectory.substring(0, this.sourceDirectory.indexOf('/diff'));
+            //Check empty conditions
+            status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(sourceDirectory, packageDirectory, false);
+        }
+
+        if (status.result == 'break') {
+            throw new Error('No compoments in the package, Please check your build again');
+        } else if (status.result == 'skip') {
+            return {
+                isToSkip: true,
+                resolvedSourceDirectory: sourceDirectory,
+            };
+        } else {
+            return {
+                isToSkip: false,
+                resolvedSourceDirectory: sourceDirectory,
+            };
+        }
+    }
+
+    private handleForceIgnores() {
+        if (this.pathToReplacementForceIgnore) {
+            this.replaceForceIgnoreInSourceDirectory(this.sourceDirectory, this.pathToReplacementForceIgnore);
+
+            //Handle Diff condition
+            if (this.isDiffFolderAvailable)
+                this.replaceForceIgnoreInSourceDirectory(
+                    path.join(this.sourceDirectory, 'diff'),
+                    this.pathToReplacementForceIgnore
+                );
         }
     }
 
@@ -280,7 +371,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             );
 
             let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
-                target_org,
+                this.org,
                 profileDeploymentStagingDirectory,
                 sourceDirectory,
                 deploymentOptions,
@@ -299,12 +390,17 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         waitTime: string,
         optimizeDeployment: boolean,
         skipTest: boolean,
-        target_org: string
+        target_org: string,
+        apiVersion: string
     ): Promise<any> {
-        let mdapi_options = {};
-        mdapi_options['ignore_warnings'] = true;
-        mdapi_options['wait_time'] = waitTime;
-        mdapi_options['checkonly'] = false;
+        let deploymentOptions: DeploymentOptions = {
+            ignoreWarnings: true,
+            waitTime: waitTime,
+        };
+        deploymentOptions.ignoreWarnings = true;
+        deploymentOptions.waitTime = waitTime;
+
+        deploymentOptions.apiVersion = apiVersion;
 
         if (skipTest) {
             let orgDetails: OrgDetails;
@@ -320,8 +416,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.logger
                 );
 
-                mdapi_options['testlevel'] = 'NoTestRun';
-                return mdapi_options;
+                deploymentOptions.testLevel = TestLevel.RunNoTests;
+                return deploymentOptions;
             }
 
             if (orgDetails && orgDetails.isSandbox) {
@@ -332,7 +428,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     LoggerLevel.DEBUG,
                     this.logger
                 );
-                mdapi_options['testlevel'] = 'NoTestRun';
+                deploymentOptions.testLevel = TestLevel.RunNoTests;
             } else {
                 SFPLogger.log(
                     ` -------------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
@@ -341,24 +437,24 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     LoggerLevel.WARN,
                     this.logger
                 );
-                mdapi_options['testlevel'] = 'RunLocalTests';
+                deploymentOptions.testLevel = TestLevel.RunNoTests;
             }
         } else if (this.packageMetadata.isApexFound) {
             if (this.packageMetadata.isTriggerAllTests) {
-                mdapi_options['testlevel'] = 'RunLocalTests';
+                deploymentOptions.testLevel = TestLevel.RunAllTestsInPackage;
             } else if (this.packageMetadata.apexTestClassses?.length > 0 && optimizeDeployment) {
-                mdapi_options['testlevel'] = 'RunSpecifiedTests';
-                mdapi_options['specified_tests'] = this.getAStringOfSpecificTestClasses(
+                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
                     this.packageMetadata.apexTestClassses
                 );
             } else {
-                mdapi_options['testlevel'] = 'RunLocalTests';
+                deploymentOptions.testLevel = TestLevel.RunLocalTests;
             }
         } else {
-            mdapi_options['testlevel'] = 'RunSpecifiedTests';
-            mdapi_options['specified_tests'] = 'skip';
+            deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+            deploymentOptions.specifiedTests = 'skip';
         }
-        return mdapi_options;
+        return deploymentOptions;
     }
 
     private getAStringOfSpecificTestClasses(apexTestClassses: string[]) {

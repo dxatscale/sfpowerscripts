@@ -17,7 +17,7 @@ stages:
 
 #Merge to Develop, Deploy Alpha builds
 - stage: Alpha
-  condition: and(eq(variables['build.sourceBranch'], 'refs/heads/develop'), eq(variables['Build.SourceVersionMessage'], 'Publish'))
+  condition: and(eq(variables['build.sourceBranch'], 'refs/heads/develop'), startsWith(variables['Build.SourceVersionMessage'], 'chore(publish)'))
   dependsOn: []
   jobs:
 
@@ -70,7 +70,7 @@ stages:
 - stage: Hotfix
   displayName: Hotfix
   dependsOn: []
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/release')
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/main')
 
   jobs:
   - deployment: BuildCLI
@@ -92,7 +92,7 @@ stages:
 
 #Prod Stage
 - stage: Prod
-  condition: or(and(succeeded('Beta'),eq(variables['build.sourceBranch'], 'refs/heads/develop')), and(succeeded('Hotfix'),startsWith(variables['build.sourceBranch'], 'refs/heads/release')))
+  condition: or(and(succeeded('Beta'),eq(variables['build.sourceBranch'], 'refs/heads/develop')), and(succeeded('Hotfix'),startsWith(variables['build.sourceBranch'], 'refs/heads/main')))
   dependsOn:
     - Beta
     - Hotfix
@@ -118,7 +118,7 @@ stages:
 
 
 - stage: prod_sfp_cli
-  condition: or(and(succeeded('Alpha'),eq(variables['build.sourceBranch'], 'refs/heads/develop')), and(succeeded('Hotfix'),startsWith(variables['build.sourceBranch'], 'refs/heads/release')))
+  condition: or(and(succeeded('Alpha'),eq(variables['build.sourceBranch'], 'refs/heads/develop')), and(succeeded('Hotfix'),startsWith(variables['build.sourceBranch'], 'refs/heads/main')))
   dependsOn:
     - Alpha
     - Hotfix
