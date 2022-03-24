@@ -21,7 +21,7 @@ export default class ScratchOrgOperator {
             alias,
             config_file_path,
             Duration.days(expiry),
-            Duration.minutes(waitTime ? waitTime : 6)
+            Duration.minutes(waitTime)
         );
         SFPLogger.log(JSON.stringify(scatchOrgResult), LoggerLevel.TRACE);
 
