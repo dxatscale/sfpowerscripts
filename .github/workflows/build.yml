@@ -6,7 +6,7 @@ on:
   push:
     branches:
       - develop
-      - release/**
+      - main
     paths-ignore:
       - 'docs/**'
       - '**.md'
@@ -67,7 +67,7 @@ jobs:
   hotfix:
     name: 'Hotfix'
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/release/*' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     environment:
       name: hotfix
     concurrency: hotfix
@@ -89,7 +89,7 @@ jobs:
   prod:
     name: 'Prod Builds'
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/release/*' }}
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
     needs: [beta, hotfix]
     environment:
       name: prod
