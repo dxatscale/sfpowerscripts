@@ -30,6 +30,8 @@ export default class PrepareImpl {
         if (!this.pool.batchSize) this.pool.batchSize = 5;
 
         if (this.pool.succeedOnDeploymentErrors === undefined) this.pool.succeedOnDeploymentErrors = true;
+
+        if (!this.pool.waitTime) this.pool.waitTime = 6;
     }
 
     public async exec() {

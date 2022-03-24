@@ -159,7 +159,8 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 let scratchOrg: ScratchOrg = await this.scratchOrgOperator.create(
                     `SO` + count,
                     this.pool.configFilePath,
-                    this.pool.expiry
+                    this.pool.expiry,
+                    this.pool.waitTime
                 );
 
                 let orgDetails = await new OrgDetailsFetcher(scratchOrg.username).getOrgDetails();
