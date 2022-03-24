@@ -8,7 +8,7 @@ import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
 import ScratchOrgInfoAssigner from './services/updaters/ScratchOrgInfoAssigner';
 import ScratchOrgOperator from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator';
 import * as fs from 'fs-extra';
-import SourceTrackingResourceController from './SourceTrackingResourceController';
+import ClientSourceTracking from './ClientSourceTracking';
 import isValidSfdxAuthUrl from './prequisitecheck/IsValidSfdxAuthUrl';
 
 export default class PoolFetchImpl extends PoolBaseImpl {
@@ -131,8 +131,8 @@ export default class PoolFetchImpl extends PoolBaseImpl {
             if (isLoginSuccessFull) {
                 try {
                     const conn = (await Org.create({ aliasOrUsername: soDetail.username })).getConnection();
-                    let sourceTrackingResourceController = new SourceTrackingResourceController(conn, null);
-                    await sourceTrackingResourceController.retrieve();
+                    let clientSourceTracking = await ClientSourceTracking.create(conn, null);
+                    await clientSourceTracking.creatSourceTrackingFiles();
                 } catch (error) {
                     SFPLogger.log('Retriveing Source Tracking skipped.. ' + error.message, LoggerLevel.TRACE);
                 }
