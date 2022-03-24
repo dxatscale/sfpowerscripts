@@ -12,9 +12,10 @@ const tmp = require('tmp');
 import { InstallPackage } from './InstallPackage';
 import PackageManifest from '../PackageManifest';
 import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
-import DeploySourceToOrgImpl from '../../deployers/DeploySourceToOrgImpl';
+import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import defaultValidateDeploymentOption from '../../utils/DefaultValidateDeploymentOption';
 import PackageEmptyChecker from '../PackageEmptyChecker';
+import { TestLevel } from '../../apextest/TestOptions';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private options: any;
@@ -22,7 +23,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     private deploymentType: DeploymentType;
 
     private isDiffFolderAvailable =
-        defaultValidateDeploymentOption() === 'selective' && fs.existsSync(path.join(this.sourceDirectory, 'diff'));
+        defaultValidateDeploymentOption().toLocaleLowerCase() === 'selective' &&
+        fs.existsSync(path.join(this.sourceDirectory, 'diff'));
 
     public constructor(
         sfdxPackage: string,
@@ -79,7 +81,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 }
             }
 
-            let deploymentOptions: any;
+            let deploymentOptions: DeploymentOptions;
 
             let result: DeploySourceResult;
             if (this.deploymentType === DeploymentType.SOURCE_PUSH) {
@@ -194,7 +196,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
         //On a diff deployment, we might need to deploy full as version changed or scratch org config has changed
         //In that case lets check again with the main directory and proceed ahead with deployment
-        if (defaultValidateDeploymentOption() && status.result == 'skip') {
+        if (defaultValidateDeploymentOption().toLocaleLowerCase() == 'selective' && status.result == 'skip') {
             sourceDirectory = sourceDirectory.substring(0, this.sourceDirectory.indexOf('/diff'));
             //Check empty conditions
             status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(sourceDirectory, packageDirectory, false);
@@ -391,11 +393,14 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         target_org: string,
         apiVersion: string
     ): Promise<any> {
-        let mdapi_options = {};
-        mdapi_options['ignore_warnings'] = true;
-        mdapi_options['wait_time'] = waitTime;
-        mdapi_options['checkonly'] = false;
-        mdapi_options['apiVersion'] = apiVersion;
+        let deploymentOptions: DeploymentOptions = {
+            ignoreWarnings: true,
+            waitTime: waitTime,
+        };
+        deploymentOptions.ignoreWarnings = true;
+        deploymentOptions.waitTime = waitTime;
+
+        deploymentOptions.apiVersion = apiVersion;
 
         if (skipTest) {
             let orgDetails: OrgDetails;
@@ -411,8 +416,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.logger
                 );
 
-                mdapi_options['testlevel'] = 'NoTestRun';
-                return mdapi_options;
+                deploymentOptions.testLevel = TestLevel.RunNoTests;
+                return deploymentOptions;
             }
 
             if (orgDetails && orgDetails.isSandbox) {
@@ -423,7 +428,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     LoggerLevel.DEBUG,
                     this.logger
                 );
-                mdapi_options['testlevel'] = 'NoTestRun';
+                deploymentOptions.testLevel = TestLevel.RunNoTests;
             } else {
                 SFPLogger.log(
                     ` -------------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
@@ -432,24 +437,24 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     LoggerLevel.WARN,
                     this.logger
                 );
-                mdapi_options['testlevel'] = 'RunLocalTests';
+                deploymentOptions.testLevel = TestLevel.RunNoTests;
             }
         } else if (this.packageMetadata.isApexFound) {
             if (this.packageMetadata.isTriggerAllTests) {
-                mdapi_options['testlevel'] = 'RunLocalTests';
+                deploymentOptions.testLevel = TestLevel.RunAllTestsInPackage;
             } else if (this.packageMetadata.apexTestClassses?.length > 0 && optimizeDeployment) {
-                mdapi_options['testlevel'] = 'RunSpecifiedTests';
-                mdapi_options['specified_tests'] = this.getAStringOfSpecificTestClasses(
+                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
                     this.packageMetadata.apexTestClassses
                 );
             } else {
-                mdapi_options['testlevel'] = 'RunLocalTests';
+                deploymentOptions.testLevel = TestLevel.RunLocalTests;
             }
         } else {
-            mdapi_options['testlevel'] = 'RunSpecifiedTests';
-            mdapi_options['specified_tests'] = 'skip';
+            deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+            deploymentOptions.specifiedTests = 'skip';
         }
-        return mdapi_options;
+        return deploymentOptions;
     }
 
     private getAStringOfSpecificTestClasses(apexTestClassses: string[]) {

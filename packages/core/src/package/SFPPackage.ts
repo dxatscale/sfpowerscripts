@@ -30,7 +30,6 @@ export default class SFPPackage {
     private _apexClassesSortedByTypes: ApexSortedByType;
     private _workingDirectory: string;
     private _isProfileSupportedMetadataInPackage: boolean;
-    private _isParallelTestingEnabled: boolean;
 
     private readonly _propertyFetchers: PropertyFetcher[] = [
         new AssignPermissionSetFetcher(),
@@ -136,36 +135,39 @@ export default class SFPPackage {
             revisionTo
         );
 
-        let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
-            sfpPackage._workingDirectory,
-            sfpPackage._packageDescriptor.path,
-            ProjectConfig.getSFDXPackageManifest(sfpPackage._workingDirectory).sourceApiVersion,
-            packageLogger
-        );
-        sfpPackage._mdapiDir = (await sourceToMdapiConvertor.convert()).packagePath;
-
-        const packageManifest: PackageManifest = await PackageManifest.create(sfpPackage.mdapiDir);
-        sfpPackage._payload = packageManifest.manifestJson;
-        sfpPackage._triggers = packageManifest.fetchTriggers();
-        sfpPackage._isApexInPackage = packageManifest.isApexInPackage();
-        sfpPackage._isProfilesInPackage = packageManifest.isProfilesInPackage();
-        sfpPackage._isPermissionSetGroupInPackage = packageManifest.isPermissionSetGroupsFoundInPackage();
-        sfpPackage._isProfileSupportedMetadataInPackage = packageManifest.isPayLoadContainTypesSupportedByProfiles();
         sfpPackage._packageType = ProjectConfig.getPackageType(
             ProjectConfig.getSFDXPackageManifest(sfpPackage._workingDirectory),
             sfdx_package
         );
 
-        let apexFetcher: ApexTypeFetcher = new ApexTypeFetcher(sfpPackage._mdapiDir);
+        if (sfpPackage._packageType != 'Data') {
+            let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
+                sfpPackage._workingDirectory,
+                sfpPackage._packageDescriptor.path,
+                ProjectConfig.getSFDXPackageManifest(sfpPackage._workingDirectory).sourceApiVersion,
+                packageLogger
+            );
+            sfpPackage._mdapiDir = (await sourceToMdapiConvertor.convert()).packagePath;
 
-        sfpPackage._apexClassesSortedByTypes = apexFetcher.getClassesClassifiedByType();
-        sfpPackage._apexTestClassses = apexFetcher.getTestClasses();
-        sfpPackage._metadataCount = MetadataCount.getMetadataCount(
-            sfpPackage._workingDirectory,
-            sfpPackage._packageDescriptor.path
-        );
-        sfpPackage._apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
+            const packageManifest: PackageManifest = await PackageManifest.create(sfpPackage.mdapiDir);
+            sfpPackage._payload = packageManifest.manifestJson;
+            sfpPackage._triggers = packageManifest.fetchTriggers();
+            sfpPackage._isApexInPackage = packageManifest.isApexInPackage();
+            sfpPackage._isProfilesInPackage = packageManifest.isProfilesInPackage();
+            sfpPackage._isPermissionSetGroupInPackage = packageManifest.isPermissionSetGroupsFoundInPackage();
+            sfpPackage._isProfileSupportedMetadataInPackage =
+                packageManifest.isPayLoadContainTypesSupportedByProfiles();
 
+            let apexFetcher: ApexTypeFetcher = new ApexTypeFetcher(sfpPackage._mdapiDir);
+
+            sfpPackage._apexClassesSortedByTypes = apexFetcher.getClassesClassifiedByType();
+            sfpPackage._apexTestClassses = apexFetcher.getTestClasses();
+            sfpPackage._metadataCount = MetadataCount.getMetadataCount(
+                sfpPackage._workingDirectory,
+                sfpPackage._packageDescriptor.path
+            );
+            sfpPackage._apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
+        }
         return sfpPackage;
     }
 

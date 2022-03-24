@@ -1,5 +1,5 @@
 import { flags } from '@salesforce/command';
-import { LoggerLevel, Messages } from '@salesforce/core';
+import {  Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
 import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallDataPackageImpl';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';

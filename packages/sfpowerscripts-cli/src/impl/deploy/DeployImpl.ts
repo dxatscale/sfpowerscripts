@@ -5,7 +5,7 @@ import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata'
 import ArtifactInquirer from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactInquirer';
 import fs = require('fs');
 import path = require('path');
-import SFPLogger, { COLOR_SUCCESS, Logger, LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { EOL } from 'os';
 import { Stage } from '../Stage';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
@@ -24,6 +24,9 @@ import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/p
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import { Connection } from '@salesforce/core';
 import { UpsertResult } from 'jsforce';
+import SFPPackage from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
+import { PostDeployHook } from './PostDeployHook';
+import { PreDeployHook } from './PreDeployHook';
 const Table = require('cli-table');
 const retry = require('async-retry');
 
@@ -53,7 +56,19 @@ export interface DeployProps {
 }
 
 export default class DeployImpl {
+    private _postDeployHook: PostDeployHook;
+    private _preDeployHook: PreDeployHook;
+
     constructor(private props: DeployProps) {}
+
+    public set postDeployHook(hook: PostDeployHook) {
+        this._postDeployHook = hook;
+    }
+
+    public set preDeployHook(hook: PreDeployHook) {
+        this._preDeployHook = hook;
+    }
+
     // TODO: Refactor to use exception pattern
     public async exec(): Promise<DeploymentResult> {
         let deployed: PackageInfo[] = [];
@@ -114,6 +129,27 @@ export default class DeployImpl {
                 this.printOpenLoggingGroup('Installing ', queue[i].package);
                 this.displayHeader(packageMetadata, pkgDescriptor, queue[i].package);
 
+                //TODO:this is not accurate
+                let sfpPackage = await SFPPackage.buildPackageFromProjectConfig(
+                    this.props.packageLogger,
+                    packageInfo.sourceDirectory,
+                    queue[i].package
+                );
+
+                let preHookStatus = await this._preDeployHook?.preDeployPackage(
+                    sfpPackage,
+                    this.props.targetUsername,
+                    this.props.devhubUserName
+                );
+                if (preHookStatus?.isToFailDeployment) {
+                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
+                    throw new Error(
+                        preHookStatus.message
+                            ? preHookStatus.message
+                            : 'Hook Failed to execute, but didnt provide proper message'
+                    );
+                }
+
                 let packageInstallationResult: PackageInstallationResult = await retry(
                     async (bail, count) => {
                         try {
@@ -171,14 +207,34 @@ export default class DeployImpl {
 
                 if (packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
                     deployed.push(packageInfo);
-                    this.printClosingLoggingGroup();
                 } else if (packageInstallationResult.result === PackageInstallationStatus.Skipped) {
-                    this.printClosingLoggingGroup();
                     continue;
                 } else if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
                     failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
+                }
+
+                let postHookStatus = await this._postDeployHook?.postDeployPackage(
+                    sfpPackage,
+                    packageInstallationResult,
+                    this.props.targetUsername,
+                    this.props.devhubUserName
+                );
+
+                if (postHookStatus?.isToFailDeployment) {
+                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
+                    throw new Error(
+                        postHookStatus.message
+                            ? postHookStatus.message
+                            : 'Hook Failed to execute, but didnt provide proper message'
+                    );
+                }
+
+                if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
+                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.package]);
                     throw new Error(packageInstallationResult.message);
                 }
+
+                this.printClosingLoggingGroup();
             }
 
             return {
@@ -566,6 +622,7 @@ export default class DeployImpl {
                     optimizeDeployment: false,
                     skipTesting: true,
                     waitTime: waitTime,
+                    apiVersion: apiVersion,
                 };
 
                 packageInstallationResult = await this.installSourcePackage(

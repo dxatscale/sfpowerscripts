@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfpowerscripts.core",
-    "version": "18.1.1",
+    "version": "18.2.14",
     "description": "Core Module used by sfpowerscripts",
     "main": "lib/index",
     "types": "lib/index",
@@ -18,7 +18,7 @@
         "@newrelic/telemetry-sdk": "^0.6.0",
         "@salesforce/apex-node": "~0.10.0",
         "@salesforce/command": "4.2.2",
-        "@salesforce/core": "2.35.1",
+        "@salesforce/core": "2.35.3",
         "@salesforce/source-deploy-retrieve": "5.12.2",
         "@salesforce/ts-sinon": "^1.3.21",
         "adm-zip": "^0.5.6",
@@ -37,7 +37,7 @@
         "semver": "^7.3.5",
         "sfdc-soup": "^15.0.0",
         "shelljs": "^0.8.4",
-        "simple-git": "^2.45.1",
+        "simple-git": "3.3.0",
         "tar": "^6.1.9",
         "tmp": "^0.2.1",
         "xml2js": "^0.4.23"
@@ -47,6 +47,7 @@
         "@types/datadog-metrics": "^0.6.1",
         "@types/jest": "^26.0.19",
         "@types/jsforce": "^1.9.29",
+        "@types/mocha": "^5.2.7",
         "jest": "^26.6.3",
         "ts-jest": "^26.4.4",
         "ts-node": "^9.1.1",
