@@ -13,7 +13,7 @@ import { InstallPackage } from './InstallPackage';
 import PackageManifest from '../PackageManifest';
 import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
-import defaultValidateDeploymentOption from '../../utils/DefaultValidateDeploymentOption';
+import defaultDeploymentOption, { DEPLOYMENT_OPTION } from './DefaultDeploymentOption';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
 
@@ -23,7 +23,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     private deploymentType: DeploymentType;
 
     private isDiffFolderAvailable =
-        defaultValidateDeploymentOption().toLocaleLowerCase() === 'selective' &&
+        defaultDeploymentOption().toLocaleLowerCase() === DEPLOYMENT_OPTION.SELECIVE_DEPLOYMENT &&
         fs.existsSync(path.join(this.sourceDirectory, 'diff'));
 
     public constructor(
@@ -132,7 +132,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 } else if (emptyCheck.isToSkip == false) {
                     //Display a warning
                     if (
-                        defaultValidateDeploymentOption() === 'selective' &&
+                        defaultDeploymentOption() === DEPLOYMENT_OPTION.SELECIVE_DEPLOYMENT &&
                         resolvedSourceDirectory != emptyCheck.resolvedSourceDirectory
                     ) {
                         SFPLogger.log(
@@ -196,7 +196,10 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
         //On a diff deployment, we might need to deploy full as version changed or scratch org config has changed
         //In that case lets check again with the main directory and proceed ahead with deployment
-        if (defaultValidateDeploymentOption().toLocaleLowerCase() == 'selective' && status.result == 'skip') {
+        if (
+            defaultDeploymentOption().toLocaleLowerCase() == DEPLOYMENT_OPTION.SELECIVE_DEPLOYMENT &&
+            status.result == 'skip'
+        ) {
             sourceDirectory = sourceDirectory.substring(0, this.sourceDirectory.indexOf('/diff'));
             //Check empty conditions
             status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(sourceDirectory, packageDirectory, false);
