@@ -17,7 +17,6 @@ import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectCon
 import { PoolConfig } from '../pool/PoolConfig';
 import { Result, ok, err } from 'neverthrow';
 import RelaxIPRange from '@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange';
-import SourceTrackingResourceController from '../pool/SourceTrackingResourceController';
 import VlocityPackUpdateSettings from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings';
 import VlocityInitialInstall from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall';
 
@@ -118,12 +117,6 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                     this.pool.succeedOnDeploymentErrors
                         ? this.handleDeploymentErrorsForPartialDeployment(scratchOrg, deploymentResult, packageLogger)
                         : this.handleDeploymentErrorsForFullDeployment(scratchOrg, deploymentResult, packageLogger);
-                }
-
-                if (deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH && deploymentResult.deployed.length > 0) {
-                    const sourceTrackingResourceController = await SourceTrackingResourceController.create(conn, packageLogger);
-                    await sourceTrackingResourceController.createSourceTrackingResources(deploymentResult);
-                    await sourceTrackingResourceController.deploy();
                 }
             }
 
