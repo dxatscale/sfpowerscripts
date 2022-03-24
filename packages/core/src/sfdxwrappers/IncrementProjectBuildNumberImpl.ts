@@ -1,4 +1,4 @@
-import { isNullOrUndefined, isNumber } from 'util';
+import { isNullOrUndefined } from 'util';
 import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
 const fs = require('fs');
 const path = require('path');

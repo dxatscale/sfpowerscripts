@@ -1,6 +1,6 @@
 import child_process = require('child_process');
 import SFPLogger, { COLOR_TRACE, Logger, LoggerLevel } from '../../logger/SFPLogger';
-import defaultProcessOptions from '../../utils/defaultProcessOptions';
+import defaultProcessOptions from './DefaultProcessOptions';
 
 export default class ExecuteCommand {
     public constructor(protected logger?: Logger, protected logLevel?: LoggerLevel, protected showProgress?: boolean) {}

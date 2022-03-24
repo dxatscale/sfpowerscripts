@@ -1,7 +1,0 @@
-const SFPOWERSCRIPTS_DEFAULT_VALIDATE_DEPLOYMENT_OPTION = `selective`;
-
-export default function defaultValidateDeploymentOption(): string {
-    return process.env.SFPOWERSCRIPTS_VALIDATE_DEPLOYMENT_OPTION
-        ? process.env.SFPOWERSCRIPTS_VALIDATE_DEPLOYMENT_OPTION
-        : SFPOWERSCRIPTS_DEFAULT_VALIDATE_DEPLOYMENT_OPTION;
-}
