@@ -32,8 +32,8 @@ jobs:
 
       - name: 'Set Git Config'
         run: |
-          git config --global user.email "sfpowerkit.ci@dev.azure.com"
-          git config --global user.name "sfpowerkitci"
+          git config --global user.email "ciuser@dxatscale.io"
+          git config --global user.name "ciuser"
 
 
       - name: 'Create .npmrc file in HOME directory'
