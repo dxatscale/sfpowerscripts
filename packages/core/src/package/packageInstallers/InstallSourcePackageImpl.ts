@@ -23,7 +23,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     private deploymentType: DeploymentType;
 
     private isDiffFolderAvailable =
-        defaultDeploymentOption().toLocaleLowerCase() === DEPLOYMENT_OPTION.SELECIVE_DEPLOYMENT &&
+        defaultDeploymentOption().toLocaleLowerCase() === DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
         fs.existsSync(path.join(this.sourceDirectory, 'diff'));
 
     public constructor(
@@ -132,7 +132,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 } else if (emptyCheck.isToSkip == false) {
                     //Display a warning
                     if (
-                        defaultDeploymentOption() === DEPLOYMENT_OPTION.SELECIVE_DEPLOYMENT &&
+                        defaultDeploymentOption() === DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
                         resolvedSourceDirectory != emptyCheck.resolvedSourceDirectory
                     ) {
                         SFPLogger.log(
@@ -197,7 +197,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         //On a diff deployment, we might need to deploy full as version changed or scratch org config has changed
         //In that case lets check again with the main directory and proceed ahead with deployment
         if (
-            defaultDeploymentOption().toLocaleLowerCase() == DEPLOYMENT_OPTION.SELECIVE_DEPLOYMENT &&
+            defaultDeploymentOption().toLocaleLowerCase() == DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
             status.result == 'skip'
         ) {
             sourceDirectory = sourceDirectory.substring(0, this.sourceDirectory.indexOf('/diff'));
