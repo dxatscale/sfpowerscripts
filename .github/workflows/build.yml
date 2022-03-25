@@ -34,7 +34,7 @@ jobs:
 # Hotfix stage
   hotfix:
     name: 'Hotfix'
-    uses: ./github/workflows/buildPackage.yml
+    uses: ./github/workflows/buildPackages.yml
     with:
       version: 'hotfix'
       publish: true
