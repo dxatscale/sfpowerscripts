@@ -29,28 +29,19 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: '14' 
+          node-version: '14'
 
       - name: 'Set Git Config'
         run: |
           git config --global user.email "sfpowerkit.ci@dev.azure.com"
           git config --global user.name "sfpowerkitci"
 
-# TODO: find equivalent for gh actions / for confirmation with Alan
-      - task: DownloadSecureFile@1
-        displayName: 'Download secure file .npmrc'
-        name: npmrc
-        inputs:
-            secureFile: '8abaf6dc-ff2e-427a-971b-a98cbd48af34' # Need to change this
-
-      - task: npmAuthenticate@0
-        inputs:
-          workingFile: $(npmrc.secureFilePath)
-          customEndpoint: npm
-
-      - name: 'Move authenticated npmrc file to home directory'
+      - name: 'Create .npmrc file in HOME directory'
         run: |
-          mv $(npmrc.secureFilePath)  ~/.npmrc
+           echo "${{ env.NPM_SCOPE }}:registry=https://registry.npmjs.org" > ~/.npmrc
+           echo  "_authToken=${AUTH_TOKEN}" >> ~/.npmrc
+        env:
+          AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: 'Promote package ${{ inputs.packageToPromote.package }}'
         script: |

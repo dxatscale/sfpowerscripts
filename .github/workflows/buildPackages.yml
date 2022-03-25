@@ -55,46 +55,12 @@ jobs:
           git config --global user.name "sfpowerkitci"
 
 
-      - name: 'Create .npmrc file'
+      - name: 'Create .npmrc file in HOME directory'
         run: |
            echo "${{ env.NPM_SCOPE }}:registry=https://registry.npmjs.org" > ~/.npmrc
            echo  "_authToken=${AUTH_TOKEN}" >> ~/.npmrc
         env:
-          AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} #Need to change this
-
-      - name: 'Create packages/core/.npmrc file'
-        run: |
-           echo "${{ env.NPM_SCOPE }}:registry=https://registry.npmjs.org" > packages/core/.npmrc
-           echo  "_authToken=${AUTH_TOKEN}" >> packages/core/.npmrc
-        env:
-          AUTH_TOKEN: ${{ secrets.PKG_CORE_NPM_TOKEN }} #Need to change this
-
-      - name: 'Create packages/sfpowerscripts-cli/.npmrc file'
-        run: |
-           echo "${{ env.NPM_SCOPE }}:registry=https://registry.npmjs.org" > packages/sfpowerscripts-cli/.npmrc
-           echo  "_authToken=${AUTH_TOKEN}" >> packages/sfpowerscripts-cli/.npmrc
-        env:
-          AUTH_TOKEN: ${{ secrets.PKG_SFPCLI_AUTH_TOKEN }} #Need to change this
-
-# TODO: find equivalent for gh actions
-      - name: 'npm Authenticate .npmrc'
-        id: npmAuthenticate@0
-        with:
-          workingFile: .npmrc
-          customEndpoint: npm
-
-      - name: 'npm Authenticate packages/core/.npmrc'
-        id: npmAuthenticate@0
-        with:
-          workingFile: packages/core/.npmrc
-          customEndpoint: npm
-
-      - name: 'npm Authenticate packages/sfpowerscripts-cli/.npmrc'
-        id: npmAuthenticate@0
-        with:
-          workingFile: 'packages/sfpowerscripts-cli/.npmrc'
-          customEndpoint: npm
-# TODO: until this part only
+          AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: 'Bootstrap Lerna'
         if: ${{ inputs.publish == 'true' }} || ${{ inputs.version == 'review' }}
