@@ -46,7 +46,7 @@ jobs:
     with:
       version: 'beta'
       pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
-      environment: beta
+      environment: sfpowerscripts-beta
     if: ${{ github.ref == 'refs/heads/develop' }}
     needs: alpha
 
@@ -56,7 +56,7 @@ jobs:
     with:
       version: 'latest'
       pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
-      environment: prod
+      environment: sfpowerscripts-prod
     if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
     needs: [sfpowerscripts-beta, hotfix]
 
@@ -66,7 +66,7 @@ jobs:
     with:
       version: 'beta'
       pathToPackageJson: 'packages/core/package.json'
-      environment: beta
+      environment: core-beta
     if: ${{ github.ref == 'refs/heads/develop' }}
     needs: alpha
 
@@ -76,7 +76,7 @@ jobs:
     with:
       version: 'latest'
       pathToPackageJson: 'packages/core/package.json'
-      environment: prod
+      environment: core-prod
     if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.core-beta.result == 'success')  }}
     needs: [core-beta, hotfix]
 
@@ -86,7 +86,7 @@ jobs:
     with:
       version: 'beta'
       pathToPackageJson: 'packages/sfp-cli/package.json'
-      environment: beta
+      environment: sfp-beta
     if: ${{ github.ref == 'refs/heads/develop' }}
     needs: alpha
 
@@ -96,6 +96,6 @@ jobs:
     with:
       version: 'latest'
       pathToPackageJson: 'packages/sfp-cli/package.json'
-      environment: prod
+      environment: sfp-prod
     if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfp-beta.result == 'success')  }}
     needs: [sfp-beta, hotfix]
