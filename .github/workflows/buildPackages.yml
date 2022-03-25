@@ -6,30 +6,9 @@ name: 'sfpowerscripts Plugin Build'
 on:
   workflow_call:
     inputs:
-      commitToGit:
-        type: boolean
-        default: false
-      stageToDeploy:
-        type: string
-        default: review
       version:
         type: string
         default: ''
-      environmentToDeploy:
-        type: string
-        default: development
-      organization:
-        type: string
-        default: ''
-      buildNumber:
-        type: string
-        default: ''
-      toBuild:
-        type: boolean
-        default: false
-      bump:
-        type: string
-        default: 'patch'
       publish:
         type: boolean
         default: false

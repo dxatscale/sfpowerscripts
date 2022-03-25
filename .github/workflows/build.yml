@@ -36,7 +36,6 @@ jobs:
         uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
         timeout-minutes: 20
         with:
-          commitToGit: true
           version: 'alpha'
           publish: true
 
@@ -59,7 +58,6 @@ jobs:
         uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
         timeout-minutes: 20
         with:
-          commitToGit: false
           version: 'beta'
           publish: false
 
@@ -81,7 +79,6 @@ jobs:
         uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
         timeout-minutes: 20
         with:
-          commitToGit: false
           version: 'hotfix'
           publish: false
 
@@ -104,6 +101,5 @@ jobs:
         uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
         timeout-minutes: 30
         with:
-          commitToGit: false
           version: 'prod'
           publish: false
