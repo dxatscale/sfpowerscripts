@@ -51,17 +51,9 @@ jobs:
         run: npx lerna run build
 
 
-      - name: 'Run Core Unit Tests'
+      - name: 'Run Unit Tests'
         if: ${{ inputs.publish == true }}
-        run: npm run test
-        working-directory: ./packages/core
-
-
-      - name: 'Run CLI Unit Tests'
-        if: ${{ inputs.publish == true }}
-        run: 'npm run test'
-        working-directory: ./packages/sfpowerscripts-cli
-
+        run: npx lerna run test -- --colors
 
       - name: 'Upload Coverage Results'
         if: ${{ inputs.publish == true }}
@@ -73,4 +65,3 @@ jobs:
       - name: 'Publish CLI/Core'
         if: ${{ inputs.publish == true }}
         run: 'npx lerna publish from-package --yes --dist-tag ${{ inputs.version }}'
-        working-directory: ./
