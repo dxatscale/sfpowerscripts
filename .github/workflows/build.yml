@@ -20,47 +20,32 @@ on:
 jobs:
 #Merge to Develop, Deploy Alpha builds
   alpha:
-    name: 'Alpha Builds'
+  name: 'Alpha'
+    uses: ./.github/workflows/buildPackages.yml
+    with:
+      version: 'alpha'
+      publish: true
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/develop' }}
     environment:
       name: alpha
     concurrency: alpha
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Build Packages
-        uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
-        timeout-minutes: 20
-        with:
-          version: 'alpha'
-          publish: true
 
 # Hotfix stage
   hotfix:
     name: 'Hotfix'
+    uses: ./github/workflows/buildPackage.yml
+    with:
+      version: 'hotfix'
+      publish: true
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
     environment:
       name: hotfix
     concurrency: hotfix
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Build Packages
-        uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
-        timeout-minutes: 20
-        with:
-          version: 'hotfix'
-          publish: true
 
   sfpowerscripts-beta:
+    name: 'sfpowerscripts Beta'
     uses: ./.github/workflows/promotePackage.yml
     with:
       version: 'beta'
@@ -69,6 +54,7 @@ jobs:
     needs: alpha
 
   sfpowerscripts-prod:
+    ame: 'sfpowerscripts Prod'
     uses: ./.github/workflows/promotePackage.yml
     with:
       version: 'latest'
@@ -77,6 +63,7 @@ jobs:
     needs: [beta, hotfix]
 
   core-beta:
+    name: 'core beta'
     uses: ./.github/workflows/promotePackage.yml
     with:
       version: 'beta'
@@ -85,6 +72,7 @@ jobs:
     needs: alpha
 
   core-prod:
+    name: 'core prod'
     uses: ./.github/workflows/promotePackage.yml
     with:
       version: 'latest'
@@ -93,6 +81,7 @@ jobs:
     needs: [beta, hotfix]
 
   sfp-beta:
+    name: 'sfp-cli beta'
     uses: ./.github/workflows/promotePackage.yml
     with:
       version: 'beta'
@@ -101,6 +90,7 @@ jobs:
     needs: alpha
 
   sfp-prod:
+    name: 'sfp-cli prod'
     uses: ./.github/workflows/promotePackage.yml
     with:
       version: 'latest'
