@@ -431,7 +431,6 @@ export default class DeployImpl {
         return clonedQueue;
     }
 
-
     private printOpenLoggingGroup(message: string, pkg?: string) {
         if (this.props.logsGroupSymbol?.[0])
             SFPLogger.log(

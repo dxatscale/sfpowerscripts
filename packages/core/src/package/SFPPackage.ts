@@ -155,8 +155,7 @@ export default class SFPPackage {
             sfpPackage._isApexInPackage = packageManifest.isApexInPackage();
             sfpPackage._isProfilesInPackage = packageManifest.isProfilesInPackage();
             sfpPackage._isPermissionSetGroupInPackage = packageManifest.isPermissionSetGroupsFoundInPackage();
-            sfpPackage._isProfileSupportedMetadataInPackage =
-                packageManifest.isPayLoadContainTypesSupportedByProfiles();
+            sfpPackage._isProfileSupportedMetadataInPackage = packageManifest.isPayLoadContainTypesSupportedByProfiles();
 
             let apexFetcher: ApexTypeFetcher = new ApexTypeFetcher(sfpPackage._mdapiDir);
 
