@@ -51,7 +51,7 @@ jobs:
     needs: alpha
 
   sfpowerscripts-prod:
-    ame: 'sfpowerscripts Prod'
+    name: 'sfpowerscripts Prod'
     uses: ./.github/workflows/promotePackage.yml
     with:
       version: 'latest'
