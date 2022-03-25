@@ -52,25 +52,25 @@ jobs:
 
 
       - name: 'Run Core Unit Tests'
-        if: ${{ inputs.publish == 'true' }}
+        if: ${{ inputs.publish == true }}
         run: npm run test
         working-directory: ./packages/core
 
 
       - name: 'Run CLI Unit Tests'
-        if: ${{ inputs.publish == 'true' }}
+        if: ${{ inputs.publish == true }}
         run: 'npm run test'
         working-directory: ./packages/sfpowerscripts-cli
 
 
       - name: 'Upload Coverage Results'
-        if: ${{ inputs.publish == 'true' }}
+        if: ${{ inputs.publish == true }}
         run: 'curl -s https://codecov.io/bash'
         shell: bash
         working-directory: ./packages/core
 
 
       - name: 'Publish CLI/Core'
-        if: ${{ inputs.publish == 'true' }}
+        if: ${{ inputs.publish == true }}
         run: 'npx lerna publish from-package --yes --dist-tag ${{ inputs.version }}'
         working-directory: ./
