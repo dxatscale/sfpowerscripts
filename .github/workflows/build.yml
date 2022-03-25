@@ -20,7 +20,7 @@ on:
 jobs:
 #Merge to Develop, Deploy Alpha builds
   alpha:
-  name: 'Alpha'
+    name: 'Alpha'
     uses: ./.github/workflows/buildPackages.yml
     with:
       version: 'alpha'
