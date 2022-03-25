@@ -74,13 +74,3 @@ jobs:
         if: ${{ inputs.publish == 'true' }}
         run: 'npx lerna publish from-package --yes --dist-tag ${{ inputs.version }}'
         working-directory: ./
-        # TODO: For confirmation with Alan if this still needs to run in working-directory
-
-
-      - name: 'Promote package'
-        if: ${{ inputs.version == 'beta' }} || ${{ inputs.version == 'latest' }}
-        run: |
-          CORE_VERSION=$(jq -r ".version" packages/core/package.json)
-          CLI_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)
-          npm dist-tag add @dxatscale/sfpowerscripts.core@${CORE_VERSION} ${{ inputs.version }}
-          npm dist-tag add @dxatscale/sfpowerscripts@${CLI_VERSION} ${{ inputs.version }}
