@@ -53,6 +53,7 @@ export interface DeployProps {
     isRetryOnFailure?: boolean;
     promotePackagesBeforeDeploymentToOrg?: string;
     devhubUserName?: string;
+    disableArtifactCommit?: boolean;
 }
 
 export default class DeployImpl {
@@ -629,7 +630,7 @@ export default class DeployImpl {
             this.props.packageLogger,
             this.props.isDryRun
         );
-
+        installUnlockedPackageImpl.disableArtifactCommit = this.props.disableArtifactCommit;
         return installUnlockedPackageImpl.exec();
     }
 
@@ -657,7 +658,7 @@ export default class DeployImpl {
                 : DeploymentType.MDAPI_DEPLOY,
             this.props.isDryRun
         );
-
+        installSourcePackageImpl.disableArtifactCommit = this.props.disableArtifactCommit;
         return installSourcePackageImpl.exec();
     }
 
@@ -678,6 +679,7 @@ export default class DeployImpl {
             LoggerLevel.INFO,
             this.props.isDryRun
         );
+        installDataPackageImpl.disableArtifactCommit = this.props.disableArtifactCommit;
         return installDataPackageImpl.exec();
     }
 

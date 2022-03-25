@@ -58,6 +58,8 @@ export interface ValidateProps {
     baseBranch?: string;
     isImpactAnalysis?: boolean;
     isDependencyAnalysis?: boolean;
+    diffcheck?: boolean;
+    disableArtifactCommit?: boolean;
 }
 
 export default class ValidateImpl implements PostDeployHook {
@@ -240,6 +242,7 @@ export default class ValidateImpl implements PostDeployHook {
             coverageThreshold: this.props.coverageThreshold,
             logsGroupSymbol: this.props.logsGroupSymbol,
             currentStage: Stage.VALIDATE,
+            disableArtifactCommit: this.props.disableArtifactCommit,
         };
 
         let deployImpl: DeployImpl = new DeployImpl(deployProps);
@@ -301,7 +304,7 @@ export default class ValidateImpl implements PostDeployHook {
             buildNumber: 1,
             executorcount: 10,
             waitTime: 120,
-            isDiffCheckEnabled: this.props.validateMode === ValidateMode.POOL,
+            isDiffCheckEnabled: this.props.diffcheck,
             isQuickBuild: true,
             isBuildAllAsSourcePackages: true,
             packagesToCommits: packagesToCommits,
