@@ -8,6 +8,7 @@ on:
         types: [opened, synchronize, reopened]
         branches:
             - develop
+            - main
 
 # Jobs to be executed
 jobs:

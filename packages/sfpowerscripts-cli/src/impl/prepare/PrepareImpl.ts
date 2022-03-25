@@ -6,7 +6,7 @@ import SFPLogger, {
     COLOR_WARNING,
     LoggerLevel,
 } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/generators/ArtifactGenerator';
+import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { Result } from 'neverthrow';
 import FetchAnArtifact from '../artifacts/FetchAnArtifact';
@@ -30,6 +30,8 @@ export default class PrepareImpl {
         if (!this.pool.batchSize) this.pool.batchSize = 5;
 
         if (this.pool.succeedOnDeploymentErrors === undefined) this.pool.succeedOnDeploymentErrors = true;
+
+        if (!this.pool.waitTime) this.pool.waitTime = 6;
     }
 
     public async exec() {

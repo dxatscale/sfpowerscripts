@@ -6,15 +6,14 @@ import {
     RunApexTestSuitesOption,
     RunLocalTests,
     RunAllTestsInOrg,
+    RunAllTestsInPackageOptions,
 } from './TestOptions';
 import IndividualClassCoverage, { CoverageOptions } from '../apex/coverage/IndividualClassCoverage';
 import { TestReportDisplayer } from './TestReportDisplayer';
 import PackageTestCoverage from '../package/coverage/PackageTestCoverage';
-import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '../logger/SFPLogger';
-import { RunAllTestsInPackageOptions } from './ExtendedTestOptions';
+import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel, COLOR_ERROR } from '../logger/SFPLogger';
 import SFPStatsSender from '../stats/SFPStatsSender';
 import { Connection, Org } from '@salesforce/core';
-import ClearCodeCoverage from './ClearCodeCoverage';
 import {
     TestLevel,
     TestResult,
@@ -23,9 +22,14 @@ import {
     Progress,
     ApexTestProgressValue,
     CancellationTokenSource,
+    ApexTestResultOutcome,
 } from '@salesforce/apex-node';
 import { CliJsonFormat, JsonReporter } from './JSONReporter';
 import { Duration } from '@salesforce/kit';
+import { UpsertResult } from 'jsforce';
+import ClearCodeCoverage from './ClearCodeCoverage';
+import _ from 'lodash';
+const retry = require('async-retry');
 
 export default class TriggerApexTests {
     private conn: Connection;
@@ -56,18 +60,6 @@ export default class TriggerApexTests {
         process.on('SIGINT', exitHandler);
         process.on('SIGTERM', exitHandler);
 
-        //Clear Code Coverage before triggering tests
-        try {
-            let clearCodeCoverage = new ClearCodeCoverage(org, this.fileLogger);
-            await clearCodeCoverage.clear();
-        } catch (error) {
-            SFPLogger.log(
-                `Ignoring error in clearing code coverage attributed to ${error}.`,
-                LoggerLevel.DEBUG,
-                this.fileLogger
-            );
-        }
-
         let startTime = Date.now();
         let testExecutionResult: boolean = false;
         let testsRan;
@@ -76,18 +68,51 @@ export default class TriggerApexTests {
         try {
             const testService = new TestService(this.conn);
 
+            //Clear Code Coverage before triggering tests
+            try {
+                let clearCodeCoverage = new ClearCodeCoverage(org, this.fileLogger);
+                await clearCodeCoverage.clear();
+            } catch (error) {
+                SFPLogger.log(
+                    `Ignoring error in clearing code coverage attributed to ${error}.`,
+                    LoggerLevel.DEBUG,
+                    this.fileLogger
+                );
+            }
+
             //Translate Tests to test levels used by apex-node
             let translatedTestLevel: TestLevel;
             //Fetch tests passed in the testOptions
             let tests: string = null;
             let suites: string = null;
-            if (this.testOptions instanceof RunSpecifiedTestsOption) {
-                translatedTestLevel = TestLevel.RunSpecifiedTests;
-                tests = (this.testOptions as RunSpecifiedTestsOption).specifiedTests;
-                SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
-            } else if (this.testOptions instanceof RunAllTestsInPackageOptions) {
+            if (this.testOptions instanceof RunAllTestsInPackageOptions) {
+                SFPLogger.log(
+                    `Test Mode Descriptor in Package 'testSynchronous': ${
+                        this.testOptions.sfppackage.packageDescriptor.testSynchronous
+                            ? this.testOptions.sfppackage.packageDescriptor.testSynchronous
+                            : false
+                    }`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
+                SFPLogger.log(
+                    `Test Mode: ${COLOR_KEY_MESSAGE(
+                        this.testOptions.sfppackage.packageDescriptor.testSynchronous == true ? 'serial' : 'parallel'
+                    )}`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
+                await this.toggleParallelApexTesting(
+                    this.conn,
+                    this.fileLogger,
+                    this.testOptions.sfppackage.packageDescriptor.testSynchronous == true ? true : false
+                );
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
                 tests = (this.testOptions as RunAllTestsInPackageOptions).specifiedTests;
+                SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
+            } else if (this.testOptions instanceof RunSpecifiedTestsOption) {
+                translatedTestLevel = TestLevel.RunSpecifiedTests;
+                tests = (this.testOptions as RunSpecifiedTestsOption).specifiedTests;
                 SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
             } else if (this.testOptions instanceof RunApexTestSuitesOption) {
                 translatedTestLevel = TestLevel.RunSpecifiedTests;
@@ -130,41 +155,24 @@ export default class TriggerApexTests {
             }
 
             //Fetch Test Results
-            const testResult = await testService.reportAsyncResults(
+            let testResult = await testService.reportAsyncResults(
                 testRunResult.summary.testRunId,
                 true,
                 this.cancellationTokenSource.token
             );
-            const jsonOutput = this.formatResultInJson(testResult);
 
-            //write output files
-            fs.ensureDirSync(this.testOptions.outputdir);
-
-            //Write files
-            fs.writeJSONSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunResult.summary.testRunId}.json`),
+            this.writeTestOutput(testResult);
+            //Collect Failed Tests only if Parallel
+            testResult = await this.triggerSecondRunInSerialForParallelFailedTests(
                 testResult,
-                { spaces: 4 }
-            );
-            fs.writeJSONSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunResult.summary.testRunId}-coverage.json`),
-                jsonOutput.coverage.coverage,
-                { spaces: 4 }
+                testService,
+                translatedTestLevel
             );
 
             //Write Junit Result no matter what
-            SFPLogger.log(
-                `Junit Report file available at ${path.join(
-                    this.testOptions.outputdir,
-                    `test-result-${testRunResult.summary.testRunId}-junit.xml`
-                )}`
-            );
-            let reportAsJUnitReport = new JUnitReporter().format(testResult);
-            fs.writeFileSync(
-                path.join(this.testOptions.outputdir, `test-result-${testRunResult.summary.testRunId}-junit.xml`),
-                reportAsJUnitReport
-            );
+            this.writeJUnit(testResult);
 
+            let jsonOutput = this.writeTestOutput(testResult);
             let testReportDisplayer = new TestReportDisplayer(jsonOutput, this.testOptions, this.fileLogger);
 
             commandTime = testResult.summary.commandTimeInMs;
@@ -270,12 +278,193 @@ export default class TriggerApexTests {
         }
     }
 
+    private writeJUnit(testResult: TestResult) {
+        SFPLogger.log(
+            `Junit Report file available at ${path.join(
+                this.testOptions.outputdir,
+                `test-result-${testResult.summary.testRunId}-junit.xml`
+            )}`
+        );
+        let reportAsJUnitReport = new JUnitReporter().format(testResult);
+        fs.writeFileSync(
+            path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}-junit.xml`),
+            reportAsJUnitReport
+        );
+    }
+
+    private async triggerSecondRunInSerialForParallelFailedTests(
+        testResult: TestResult,
+        testService: TestService,
+        translatedTestLevel: TestLevel
+    ) {
+        let modifiedTestResult = _.cloneDeep(testResult);
+        if (
+            this.testOptions instanceof RunAllTestsInPackageOptions &&
+            !this.testOptions.sfppackage.packageDescriptor.testSynchronous
+        ) {
+            let parallelFailedTestClasses: string[] = [];
+            let testClassesThatDonotContributedCoverage: string[] = [];
+
+            let testToBeTriggered: string[] = [];
+            for (const test of modifiedTestResult.tests) {
+                if (test.outcome == ApexTestResultOutcome.Fail) {
+                    //Check for messages
+                    if (
+                        test.message.includes(`Your request exceeded the time limit for processing`) ||
+                        test.message.includes(`UNABLE_TO_LOCK_ROW`)
+                    ) {
+                        if (!testToBeTriggered.includes(test.apexClass.fullName)) {
+                            parallelFailedTestClasses.push(test.apexClass.fullName);
+                            testToBeTriggered.push(test.apexClass.fullName);
+                        }
+                    }
+                }
+
+                if (test.outcome == ApexTestResultOutcome.Pass) {
+                    if (
+                        !test.perClassCoverage &&
+                        (this.coverageOptions.isPackageCoverageToBeValidated ||
+                            this.coverageOptions.isIndividualClassCoverageToBeValidated)
+                    ) {
+                        if (!testToBeTriggered.includes(test.apexClass.fullName)) {
+                            testClassesThatDonotContributedCoverage.push(test.apexClass.fullName);
+                            if (!testToBeTriggered.includes(test.apexClass.fullName))
+                                testToBeTriggered.push(test.apexClass.fullName);
+                        }
+                    }
+                }
+            }
+
+            if (parallelFailedTestClasses.length > 0) {
+                SFPLogger.log(
+                    `Failed Tests while triggered in parallel: ${COLOR_KEY_MESSAGE(
+                        parallelFailedTestClasses.toString()
+                    )}`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
+            }
+
+            if (testClassesThatDonotContributedCoverage.length > 0) {
+                SFPLogger.log(
+                    `Test Classes that were not able to contribute coverage: ${COLOR_KEY_MESSAGE(
+                        testClassesThatDonotContributedCoverage.toString()
+                    )}`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
+            }
+
+            if (testToBeTriggered.length > 0) {
+                SFPLogger.log(
+                    `Triggering tests synchronously: ${COLOR_KEY_MESSAGE(testToBeTriggered.toString())}`,
+                    LoggerLevel.INFO,
+                    this.fileLogger
+                );
+                //Trigger Second Test Run
+                //Convert to sequential
+                await this.toggleParallelApexTesting(this.conn, this.fileLogger, true);
+
+                //Trigger tests asynchronously
+                let secondRuntestRunResult: TestResult;
+                secondRuntestRunResult = await retry(
+                    async (bail) => {
+                        return (await this.triggerTestAsynchronously(
+                            testService,
+                            translatedTestLevel,
+                            testToBeTriggered.toString(),
+                            null
+                        )) as TestResult;
+                    },
+                    { retries: 2, minTimeout: 3000 }
+                );
+
+                //Fetch Test Results
+                const secondTestResult = await testService.reportAsyncResults(
+                    secondRuntestRunResult.summary.testRunId,
+                    true,
+                    this.cancellationTokenSource.token
+                );
+
+                this.writeTestOutput(secondTestResult);
+
+                //Replace original test result
+                modifiedTestResult.tests = modifiedTestResult.tests.map(
+                    (obj) => secondTestResult.tests.find((o) => o.methodName === obj.methodName) || obj
+                );
+
+                //Replace original code coverage
+                modifiedTestResult.codecoverage = modifiedTestResult.codecoverage.map(
+                    (obj) => secondTestResult.codecoverage.find((o) => o.name === obj.name) || obj
+                );
+
+                //Now redo the math
+                modifiedTestResult.summary.failing = 0;
+                modifiedTestResult.summary.passing = 0;
+                modifiedTestResult.summary.skipped = 0;
+
+                for (const test of modifiedTestResult.tests) {
+                    if (test.outcome === ApexTestResultOutcome.Pass) modifiedTestResult.summary.passing++;
+                    else if (test.outcome === ApexTestResultOutcome.Fail) modifiedTestResult.summary.failing++;
+                    else if (test.outcome === ApexTestResultOutcome.Skip) modifiedTestResult.summary.skipped++;
+                }
+
+                if (modifiedTestResult.summary.failing > 0) modifiedTestResult.summary.outcome = 'Failed';
+                else modifiedTestResult.summary.outcome = 'Passed';
+
+                modifiedTestResult.summary.passRate =
+                    (modifiedTestResult.summary.passing / modifiedTestResult.summary.testsRan) * 100 + '%';
+                modifiedTestResult.summary.failRate =
+                    (modifiedTestResult.summary.failing / modifiedTestResult.summary.testsRan) * 100 + '%';
+                modifiedTestResult.summary.commandTimeInMs =
+                    modifiedTestResult.summary.commandTimeInMs + secondRuntestRunResult.summary.commandTimeInMs;
+                modifiedTestResult.summary.testExecutionTimeInMs =
+                    modifiedTestResult.summary.testExecutionTimeInMs +
+                    secondRuntestRunResult.summary.testExecutionTimeInMs;
+                modifiedTestResult.summary.testTotalTimeInMs =
+                    modifiedTestResult.summary.testTotalTimeInMs + secondRuntestRunResult.summary.testTotalTimeInMs;
+
+                delete modifiedTestResult.summary.testRunCoverage;
+                delete modifiedTestResult.summary.orgWideCoverage;
+                delete modifiedTestResult.summary.totalLines;
+                delete modifiedTestResult.summary.coveredLines;
+
+                modifiedTestResult.summary.testRunId = modifiedTestResult.summary.testRunId.concat(
+                    '_',
+                    secondRuntestRunResult.summary.testRunId
+                );
+            }
+        }
+
+        return modifiedTestResult;
+    }
+
+    private writeTestOutput(testResult: TestResult): CliJsonFormat {
+        const jsonOutput = this.formatResultInJson(testResult);
+
+        //write output files
+        fs.ensureDirSync(this.testOptions.outputdir);
+
+        //Write files
+        fs.writeJSONSync(
+            path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}.json`),
+            testResult,
+            { spaces: 4 }
+        );
+        fs.writeJSONSync(
+            path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}-coverage.json`),
+            jsonOutput.coverage.coverage,
+            { spaces: 4 }
+        );
+
+        return jsonOutput;
+    }
+
     private formatResultInJson(result: TestResult): CliJsonFormat {
         try {
             const reporter = new JsonReporter();
             return reporter.format(result);
         } catch (error) {
-            console.log(error);
             return null;
         }
     }
@@ -310,7 +499,9 @@ export default class TriggerApexTests {
         return result;
     }
 
-    private async validateForApexCoverage(coverageReport: any): Promise<{
+    private async validateForApexCoverage(
+        coverageReport: any
+    ): Promise<{
         result: boolean;
         message?: string;
         packageTestCoverage?: number;
@@ -353,6 +544,23 @@ export default class TriggerApexTests {
             }
         }
     }
+    //Enable Synchronus Compile on Deploy
+    private async toggleParallelApexTesting(conn: Connection, logger: Logger, toEnable: boolean) {
+        try {
+            SFPLogger.log(`Set enableDisableParallelApexTesting:${toEnable}`, LoggerLevel.TRACE, logger);
+            let apexSettingMetadata = { fullName: 'ApexSettings', enableDisableParallelApexTesting: toEnable };
+            let result: UpsertResult | UpsertResult[] = await conn.metadata.upsert('ApexSettings', apexSettingMetadata);
+            if ((result as UpsertResult).success) {
+                SFPLogger.log(`Successfully updated apex testing setting`, LoggerLevel.INFO, logger);
+            }
+        } catch (error) {
+            SFPLogger.log(
+                `Skipping toggling of enableDisableParallelApexTesting due  to ${error}..`,
+                LoggerLevel.INFO,
+                logger
+            );
+        }
+    }
 }
 export class ProgressReporter implements Progress<ApexTestProgressValue> {
     private lastExecutedTime;
@@ -380,15 +588,15 @@ export class ProgressReporter implements Progress<ApexTestProgressValue> {
                     for (const [key, value] of Object.entries(count)) {
                         total += value as number;
                     }
-                    statusString = `Completed:${count[`Completed` ? count['Completed'] : 0]}/${total} Queued(${
+                    statusString = `Completed:${count['Completed'] ? count['Completed'] : 0}/${total} Queued(${
                         count['Queued'] ? count['Queued'] : 0
-                    }) Failed(${count['Failed'] ? count['Failed'] : 0})  `;
+                    }) Failed(${COLOR_ERROR(count['Failed'] ? count['Failed'] : 0)})  `;
                     SFPLogger.log(`Test Status: ` + COLOR_KEY_MESSAGE(statusString), LoggerLevel.INFO, this.logger);
                     this.lastExecutedTime = Date.now();
                 }
             }
         } catch (error) {
-            console.log(error);
+            //Ignore any results during reporting
         }
     }
 }

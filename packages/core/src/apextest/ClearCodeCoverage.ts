@@ -2,9 +2,9 @@ import { Connection, Org } from '@salesforce/core';
 import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
 import QueryHelper from '../queryHelper/QueryHelper';
 import { chunkArray } from '../utils/ChunkArray';
-
 const CODECOV_AGGREGATE_QUERY = `SELECT Id FROM ApexCodeCoverageAggregate`;
 const APEX_TEST_RESULT_QUERY = `SELECT Id FROM ApexTestResult`;
+import { delay } from '../utils/Delay';
 
 export default class ClearTestResults {
     private conn: Connection;
@@ -27,6 +27,9 @@ export default class ClearTestResults {
         SFPLogger.log(`Cleared Test Results`, LoggerLevel.DEBUG, this.logger);
 
         SFPLogger.log(`Cleared Existing Coverage and Test Results`, LoggerLevel.INFO, this.logger);
+
+        //allow org to catchup
+        await delay(10000);
     }
 
     private async deleteRecords(objectType: string, records: any[]) {

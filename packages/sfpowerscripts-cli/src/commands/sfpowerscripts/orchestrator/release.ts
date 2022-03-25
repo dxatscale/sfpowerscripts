@@ -9,7 +9,6 @@ import path = require('path');
 import SFPLogger, {
     COLOR_ERROR,
     COLOR_HEADER,
-    COLOR_INFO,
     COLOR_TIME,
     COLOR_SUCCESS,
     COLOR_WARNING,

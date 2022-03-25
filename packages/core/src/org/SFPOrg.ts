@@ -78,9 +78,9 @@ export default class SFPOrg extends Org {
 
         SFPLogger.log(
             COLOR_KEY_MESSAGE(
-                `Artifact record id for  ${packageMetadata.package_name} in Org ${
+                `Existing artifact record id for  ${packageMetadata.package_name} in Org for ${
                     packageMetadata.package_version_number
-                } is  ${artifactId ? artifactId : 'To be created'}`
+                }: ${artifactId ? artifactId : 'N/A'}`
             ),
             LoggerLevel.INFO,
             logger

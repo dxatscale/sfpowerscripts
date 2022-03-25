@@ -42,7 +42,9 @@ export default class ArtifactInquirer {
      * Gets latest package manifest from artifacts
      * Returns null if unable to find latest package manifest
      */
-    private getLatestPackageManifestFromArtifacts(artifacts: ArtifactFilePaths[]): {
+    private getLatestPackageManifestFromArtifacts(
+        artifacts: ArtifactFilePaths[]
+    ): {
         latestPackageManifest: any;
         pathToLatestPackageManifest: string;
     } {
