@@ -75,9 +75,7 @@ export default class PackageTestCoverage {
         return testCoverage;
     }
 
-    public async validateTestCoverage(
-        coverageThreshold?: number
-    ): Promise<{
+    public async validateTestCoverage(coverageThreshold?: number): Promise<{
         result: boolean;
         message?: string;
         packageTestCoverage: number;
