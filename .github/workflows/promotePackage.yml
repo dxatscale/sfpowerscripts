@@ -42,7 +42,7 @@ jobs:
         env:
           AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: 'Promote package $(jq -r ".name" ${{ inputs.pathToPackageJson }})'
+      - name: 'Promote package'
         run: |
           PKG_NAME=$(jq -r ".name" ${{ inputs.pathToPackageJson }})
           PKG_VERSION=$(jq -r ".version" ${{ inputs.pathToPackageJson }})
