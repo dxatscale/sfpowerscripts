@@ -157,19 +157,6 @@ export default class DeployImpl {
 
                             this.displayRetryHeader(this.props.isRetryOnFailure, count);
 
-                            //activate compile on deploy for the last package
-                            //TODO: Refactor to its own method
-                            if (i == queue.length - 1) {
-                                if (this.props.currentStage === 'validate') {
-                                    //Create Org
-                                    let orgAsSFPOrg = await SFPOrg.create({
-                                        aliasOrUsername: this.props.targetUsername,
-                                    });
-                                    let connToOrg = orgAsSFPOrg.getConnection();
-                                    await this.enableSynchronousCompileOnDeploy(connToOrg, this.props.packageLogger);
-                                }
-                            }
-
                             let installPackageResult = await this.installPackage(
                                 packageType,
                                 queue[i].package,
@@ -444,28 +431,6 @@ export default class DeployImpl {
         return clonedQueue;
     }
 
-    //Enable Synchronus Compile on Deploy
-    private async enableSynchronousCompileOnDeploy(conn: Connection, logger: Logger) {
-        try {
-            let apexSettingMetadata = { fullName: 'ApexSettings', enableCompileOnDeploy: true };
-            let result: UpsertResult | UpsertResult[] = await conn.metadata.upsert('ApexSettings', apexSettingMetadata);
-            if ((result as UpsertResult).success) {
-                SFPLogger.log(
-                    `${COLOR_KEY_MESSAGE(
-                        'Enabled Synchronous Compile on Org succesfully as this is the last package in queue'
-                    )}`,
-                    LoggerLevel.INFO,
-                    logger
-                );
-            }
-        } catch (error) {
-            SFPLogger.log(
-                `Skipping Synchronous Compile on Org succesfully due to ${error}..`,
-                LoggerLevel.INFO,
-                logger
-            );
-        }
-    }
 
     private printOpenLoggingGroup(message: string, pkg?: string) {
         if (this.props.logsGroupSymbol?.[0])
