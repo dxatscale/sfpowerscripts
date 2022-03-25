@@ -67,9 +67,6 @@ jobs:
       pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
     if: ${{ github.ref == 'refs/heads/develop' }}
     needs: alpha
-    concurrency: sfpowerscripts-beta
-    environment: beta
-
 
   sfpowerscripts-prod:
     uses: ./.github/workflows/promotePackage.yml
@@ -78,9 +75,6 @@ jobs:
       pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
     needs: [beta, hotfix]
-    concurrency: sfpowerscripts-prod
-    environment: prod
-
 
   core-beta:
     uses: ./.github/workflows/promotePackage.yml
@@ -89,8 +83,6 @@ jobs:
       pathToPackageJson: 'packages/core/package.json'
     if: ${{ github.ref == 'refs/heads/develop' }}
     needs: alpha
-    concurrency: core-beta
-    environment: beta
 
   core-prod:
     uses: ./.github/workflows/promotePackage.yml
@@ -99,8 +91,6 @@ jobs:
       pathToPackageJson: 'packages/core/package.json'
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
     needs: [beta, hotfix]
-    concurrency: core-prod
-    environment: prod
 
   sfp-beta:
     uses: ./.github/workflows/promotePackage.yml
@@ -109,8 +99,6 @@ jobs:
       pathToPackageJson: 'packages/sfp-cli/package.json'
     if: ${{ github.ref == 'refs/heads/develop' }}
     needs: alpha
-    concurrency: sfp-beta
-    environment: beta
 
   sfp-prod:
     uses: ./.github/workflows/promotePackage.yml
@@ -119,5 +107,3 @@ jobs:
       pathToPackageJson: 'packages/sfp-cli/package.json'
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
     needs: [beta, hotfix]
-    concurrency: sfp-prod
-    environment: prod
