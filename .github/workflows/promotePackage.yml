@@ -42,8 +42,8 @@ jobs:
         env:
           AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: 'Promote package $(jq -r ".name" ${{ inputs.packageToPackageJson }})'
+      - name: 'Promote package $(jq -r ".name" ${{ inputs.pathToPackageJson }})'
         run: |
-          PKG_NAME=$(jq -r ".name" ${{ inputs.packageToPackageJson }})
+          PKG_NAME=$(jq -r ".name" ${{ inputs.pathToPackageJson }})
           PKG_VERSION=$(jq -r ".version" ${{ inputs.pathToPackageJson }})
           npm dist-tag add $PKG_NAME@$PKG_VERSION ${{ inputs.version }}
