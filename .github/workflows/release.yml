@@ -1,6 +1,6 @@
 # This pipeline builds the sfpowerscripts plugin
 
-name: 'Build Pipeline'
+name: 'Release'
 
 on:
   push:
