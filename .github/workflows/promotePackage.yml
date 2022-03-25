@@ -8,12 +8,12 @@ on:
     inputs:
       version:
         type: string
-        default: ''
-      packageToPromote:
-        type: object
-        default:
-          package: ''
-          pjson: ''
+        required: true
+      pathToPackageJson:
+        type: string
+        required: true
+
+
 
 
 # TODO: to be migrated to github actions syntax
@@ -43,7 +43,8 @@ jobs:
         env:
           AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: 'Promote package ${{ inputs.packageToPromote.package }}'
+      - name: 'Promote package $(jq -r ".name" ${{ inputs.packageToPackageJson }})'
         script: |
-          PKG_VERSION=$(jq -r ".version" ${{ inputs.packageToPromote.pjson }})
-          npm dist-tag add ${{ inputs.packageToPromote.package }}@$PKG_VERSION ${{ inputs.version }}
+          PKG_NAME=$(jq -r ".name" ${{ inputs.packageToPackageJson }})
+          PKG_VERSION=$(jq -r ".version" ${{ inputs.pathToPackageJson }})
+          npm dist-tag add $PKG_NAME@$PKG_VERSION ${{ inputs.version }}

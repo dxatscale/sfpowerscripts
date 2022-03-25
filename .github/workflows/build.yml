@@ -32,34 +32,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build Packages (sfdx-plugin)
+      - name: Build Packages
         uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
         timeout-minutes: 20
         with:
           version: 'alpha'
           publish: true
-
-# Beta Stage
-  beta:
-    name: 'Beta Builds'
-    runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/develop' }}
-    needs: alpha
-    environment:
-      name: beta
-    concurrency: beta
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Build Packages (sfdx-plugin)
-        uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
-        timeout-minutes: 20
-        with:
-          version: 'beta'
-          publish: false
 
 # Hotfix stage
   hotfix:
@@ -75,31 +53,78 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build Packages (sfdx-plugin)
+      - name: Build Packages
         uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
         timeout-minutes: 20
         with:
           version: 'hotfix'
-          publish: false
+          publish: true
 
-# Prod Stage
-  prod:
-    name: 'Prod Builds'
+  sfpowerscripts-beta:
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'beta'
+      pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
+
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    needs: alpha
+    concurrency: sfpowerscripts-beta
+    environment: beta
+
+
+  sfpowerscripts-prod:
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'latest'
+      pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
     needs: [beta, hotfix]
-    environment:
-      name: prod
-    concurrency: prod
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+    concurrency: sfpowerscripts-prod
+    environment: prod
 
-      - name: Build Packages (sfdx-plugin)
-        uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
-        timeout-minutes: 30
-        with:
-          version: 'prod'
-          publish: false
+
+  core-beta:
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'beta'
+      pathToPackageJson: 'packages/core/package.json'
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    needs: alpha
+    concurrency: core-beta
+    environment: beta
+
+  core-prod:
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'latest'
+      pathToPackageJson: 'packages/core/package.json'
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
+    needs: [beta, hotfix]
+    concurrency: core-prod
+    environment: prod
+
+  sfp-beta:
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'beta'
+      pathToPackageJson: 'packages/sfp-cli/package.json'
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    needs: alpha
+    concurrency: sfp-beta
+    environment: beta
+
+  sfp-prod:
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'latest'
+      pathToPackageJson: 'packages/sfp-cli/package.json'
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
+    needs: [beta, hotfix]
+    concurrency: sfp-prod
+    environment: prod

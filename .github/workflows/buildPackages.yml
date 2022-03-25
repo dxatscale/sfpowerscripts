@@ -1,7 +1,7 @@
 # This pipeline is used as template to build the sfpowerscripts plugin
 
 
-name: 'sfpowerscripts Plugin Build'
+name: 'Build Packages'
 
 on:
   workflow_call:
@@ -42,12 +42,10 @@ jobs:
           AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: 'Bootstrap Lerna'
-        if: ${{ inputs.publish == 'true' }} || ${{ inputs.version == 'review' }}
         run: npx lerna bootstrap
 
 
       - name: 'Build  All  Packages'
-        if: ${{ inputs.publish == 'true' }} || ${{ inputs.version == 'review' }}
         run: npx lerna run build
 
 
