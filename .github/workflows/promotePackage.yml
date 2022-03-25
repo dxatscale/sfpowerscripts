@@ -12,16 +12,15 @@ on:
       pathToPackageJson:
         type: string
         required: true
+      environment:
+        type: string
+        required: true
 
-
-
-
-# TODO: to be migrated to github actions syntax
 jobs:
   promotePackage:
     name: 'Promote Package'
     runs-on: ubuntu-latest
-
+    environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v2
         with:

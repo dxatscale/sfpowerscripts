@@ -12,13 +12,15 @@ on:
       publish:
         type: boolean
         default: false
-
+      environment:
+        type: string
+        required: true
 
 jobs:
   build:
     name: 'Build Packages'
     runs-on: ubuntu-latest
-
+    environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v2
         with:
