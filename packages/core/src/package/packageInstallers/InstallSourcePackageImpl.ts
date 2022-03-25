@@ -132,7 +132,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 } else if (emptyCheck.isToSkip == false) {
                     //Display a warning
                     if (
-                        defaultDeploymentOption() === DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
+                        defaultDeploymentOption().toLocaleLowerCase() === DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
                         resolvedSourceDirectory != emptyCheck.resolvedSourceDirectory
                     ) {
                         SFPLogger.log(
