@@ -58,7 +58,7 @@ jobs:
       pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
       environment: prod
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
-    needs: [beta, hotfix]
+    needs: [sfpowerscripts-beta, hotfix]
 
   core-beta:
     name: 'core beta'
@@ -78,7 +78,7 @@ jobs:
       pathToPackageJson: 'packages/core/package.json'
       environment: prod
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
-    needs: [beta, hotfix]
+    needs: [core-beta, hotfix]
 
   sfp-beta:
     name: 'sfp-cli beta'
@@ -98,4 +98,4 @@ jobs:
       pathToPackageJson: 'packages/sfp-cli/package.json'
       environment: prod
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
-    needs: [beta, hotfix]
+    needs: [sfp-beta, hotfix]
