@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build Packages (sfdx-plugin)
-        uses: Accenture/sfpowerscripts/.github/workflows/buildcli.yml@develop
+        uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
         timeout-minutes: 20
         with:
           commitToGit: true
@@ -56,7 +56,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build Packages (sfdx-plugin)
-        uses: Accenture/sfpowerscripts/.github/workflows/buildcli.yml@develop
+        uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
         timeout-minutes: 20
         with:
           commitToGit: false
@@ -78,7 +78,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build Packages (sfdx-plugin)
-        uses: Accenture/sfpowerscripts/.github/workflows/buildcli.yml@develop
+        uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
         timeout-minutes: 20
         with:
           commitToGit: false
@@ -101,7 +101,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build Packages (sfdx-plugin)
-        uses: Accenture/sfpowerscripts/.github/workflows/buildcli.yml@develop
+        uses: Accenture/sfpowerscripts/.github/workflows/buildPackages.yml@develop
         timeout-minutes: 30
         with:
           commitToGit: false
