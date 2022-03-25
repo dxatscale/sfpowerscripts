@@ -45,13 +45,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 'Update Build Number'
-        if: ${{ inputs.version == 'alpha' }} || ${{ inputs.version == 'hotfix' }}
-        run: |
-          PKG_VERSION=$(jq -r ".version" package.json)
-          echo "##vso[build.updatebuildnumber]${PKG_VERSION}"
-        working-directory: '$(System.DefaultWorkingDirectory)/packages/sfpowerscripts-cli'
-
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
