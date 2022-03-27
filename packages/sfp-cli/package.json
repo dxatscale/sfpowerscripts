@@ -77,7 +77,11 @@
             "message": "<%= config.name %> update available from <%= chalk.greenBright(config.version) %> to <%= chalk.greenBright(latest) %>. Use <%= chalk.greenBright('npm update --global sfdx-cli') %> to update to the latest version."
         }
     },
-    "repository": "dxatscale/sfp-cli",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Accenture/sfpowerscripts.git",
+        "directory": "packages/sfp-cli"
+    },
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",

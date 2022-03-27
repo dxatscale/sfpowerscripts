@@ -15,6 +15,9 @@ on:
       environment:
         type: string
         required: true
+    secrets:
+      npm-token:
+        required: false
 
 jobs:
   build:
@@ -29,19 +32,13 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
+          registry-url: https://registry.npmjs.org/
 
       - name: 'Set Git Config'
         run: |
           git config --global user.email "ciuser@dxatscale.io"
           git config --global user.name "ciuser"
 
-
-      - name: 'Create .npmrc file in HOME directory'
-        run: |
-           echo "@dxatscale:registry=https://registry.npmjs.org" > ~/.npmrc
-           echo  "_authToken=${AUTH_TOKEN}" >> ~/.npmrc
-        env:
-          AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: 'Bootstrap Lerna'
         run: npx lerna bootstrap
@@ -61,3 +58,6 @@ jobs:
       - name: 'Publish CLI/Core'
         if: ${{ inputs.publish == true }}
         run: 'npx lerna publish from-package --yes --dist-tag ${{ inputs.version }}'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+          NPM_CONFIG_USERCONFIG: ~/.npmrc

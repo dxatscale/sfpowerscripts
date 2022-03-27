@@ -55,7 +55,8 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Accenture/sfpowerscripts.git"
+        "url": "https://github.com/Accenture/sfpowerscripts.git",
+        "directory": "packages/core"
     },
     "keywords": [
         "sfdx",
