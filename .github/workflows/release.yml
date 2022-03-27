@@ -26,7 +26,7 @@ jobs:
       version: 'alpha'
       publish: true
       environment: alpha
-    if: ${{ (github.ref == 'refs/heads/develop' && startsWith(github.event.commits[0].message, 'chore(publish)')) }}
+    if: ${{ (github.ref == 'refs/heads/develop') && startsWith(github.event.commits[0].message, 'chore(publish)') }}
     concurrency: alpha
 
 # Hotfix stage
