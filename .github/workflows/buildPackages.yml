@@ -38,7 +38,7 @@ jobs:
 
       - name: 'Create .npmrc file in HOME directory'
         run: |
-           echo "${{ secrets.NPM_SCOPE }}:registry=https://registry.npmjs.org" > ~/.npmrc
+           echo "@dxatscale:registry=https://registry.npmjs.org" > ~/.npmrc
            echo  "_authToken=${AUTH_TOKEN}" >> ~/.npmrc
         env:
           AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
