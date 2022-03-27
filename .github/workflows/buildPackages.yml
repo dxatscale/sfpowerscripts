@@ -55,12 +55,8 @@ jobs:
         if: ${{ inputs.publish == true }}
         run: npx lerna run test -- --colors
 
-      - name: 'Upload Coverage Results'
-        if: ${{ inputs.publish == true }}
-        run: 'curl -s https://codecov.io/bash'
-        shell: bash
-        working-directory: ./packages/core
-
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v1
 
       - name: 'Publish CLI/Core'
         if: ${{ inputs.publish == true }}
