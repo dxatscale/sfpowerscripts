@@ -6,7 +6,7 @@ export default class PushSourceImpl extends SFDXCommand {
     }
 
     public getSFDXCommand(): string {
-        return `sfdx force:source:beta:push`;
+        return `sfdx force:source:push`;
     }
 
     public getGeneratedParams(): string {
