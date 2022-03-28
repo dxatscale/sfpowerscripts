@@ -29,6 +29,7 @@ jobs:
       npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ github.ref == 'refs/heads/develop' }}
     concurrency: alpha
+    cancel-in-progress: true
 
 # Hotfix stage
   hotfix:
@@ -42,6 +43,7 @@ jobs:
       npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ github.ref == 'refs/heads/main' }}
     concurrency: hotfix
+    cancel-in-progress: true
 
   sfpowerscripts-beta:
     name: 'sfpowerscripts Beta'
