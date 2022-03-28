@@ -30,7 +30,6 @@ jobs:
     if: ${{ github.ref == 'refs/heads/develop' }}
     concurrency:
       group: alpha
-      cancel-in-progress: true
 
 # Hotfix stage
   hotfix:
@@ -45,7 +44,6 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     concurrency:
      group: hotfix
-     cancel-in-progress: true
 
   sfpowerscripts-beta:
     name: 'sfpowerscripts Beta'
