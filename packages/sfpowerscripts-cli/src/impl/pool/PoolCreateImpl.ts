@@ -215,8 +215,9 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             try {
                 //Delete scratchorgs that failed to execute script
 
-                let activeScratchOrgRecordId =
-                    await this.scratchOrgInfoFetcher.getActiveScratchOrgRecordIdGivenScratchOrg(scratchOrg.orgId);
+                let activeScratchOrgRecordId = await this.scratchOrgInfoFetcher.getActiveScratchOrgRecordIdGivenScratchOrg(
+                    scratchOrg.orgId
+                );
 
                 await this.scratchOrgOperator.delete([activeScratchOrgRecordId]);
                 console.log(`Succesfully deleted scratchorg  ${scratchOrg.username}`);
