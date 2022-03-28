@@ -16,7 +16,7 @@
     },
     "dependencies": {
         "@newrelic/telemetry-sdk": "^0.6.0",
-        "@salesforce/apex-node": "~0.10.0",
+        "@salesforce/apex-node": "0.11.0",
         "@salesforce/command": "4.2.2",
         "@salesforce/core": "2.35.3",
         "@salesforce/source-deploy-retrieve": "5.12.3",
