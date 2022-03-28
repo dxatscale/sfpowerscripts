@@ -19,7 +19,7 @@ export abstract class InstallPackage {
     protected packageDescriptor;
     protected packageDirectory;
     protected org: SFPOrg;
-    private isArtifactToBeCommitted: boolean = true;
+    private _isArtifactToBeCommittedInOrg: boolean = true;
 
     public constructor(
         protected sfdxPackage: string,
@@ -141,12 +141,12 @@ export abstract class InstallPackage {
     }
 
     //Set this to disable whethere info about the artifact has to be recorded in the org
-    public set disableArtifactCommit(disableArtifactCommit: boolean) {
-        this.isArtifactToBeCommitted = !disableArtifactCommit;
+    public set isArtifactToBeCommittedInOrg(toCommit: boolean) {
+        this._isArtifactToBeCommittedInOrg = toCommit;
     }
 
     private async commitPackageInstallationStatus() {
-        if (this.isArtifactToBeCommitted) {
+        if (this._isArtifactToBeCommittedInOrg) {
             try {
                 await this.org.updateArtifactInOrg(this.logger, this.packageMetadata);
             } catch (error) {
