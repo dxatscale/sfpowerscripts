@@ -16,7 +16,6 @@ on:
 
   workflow_dispatch:
 
-
 jobs:
 #Merge to Develop, Deploy Alpha builds
   alpha:
@@ -26,8 +25,12 @@ jobs:
       version: 'alpha'
       publish: true
       environment: alpha
-    if: ${{ (github.ref == 'refs/heads/develop' && startsWith(github.event.commits[0].message, 'chore(publish)')) }}
-    concurrency: alpha
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    concurrency:
+      group: alpha
+      cancel-in-progress: true
 
 # Hotfix stage
   hotfix:
@@ -37,8 +40,12 @@ jobs:
       version: 'hotfix'
       publish: true
       environment: hotfix
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ github.ref == 'refs/heads/main' }}
-    concurrency: hotfix
+    concurrency:
+     group: hotfix
+     cancel-in-progress: true
 
   sfpowerscripts-beta:
     name: 'sfpowerscripts Beta'
@@ -47,6 +54,8 @@ jobs:
       version: 'beta'
       pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
       environment: sfpowerscripts-beta
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ github.ref == 'refs/heads/develop' }}
     needs: alpha
 
@@ -57,6 +66,8 @@ jobs:
       version: 'latest'
       pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
       environment: sfpowerscripts-prod
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
     needs: [sfpowerscripts-beta, hotfix]
 
@@ -67,6 +78,8 @@ jobs:
       version: 'beta'
       pathToPackageJson: 'packages/core/package.json'
       environment: core-beta
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ github.ref == 'refs/heads/develop' }}
     needs: alpha
 
@@ -77,6 +90,8 @@ jobs:
       version: 'latest'
       pathToPackageJson: 'packages/core/package.json'
       environment: core-prod
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.core-beta.result == 'success')  }}
     needs: [core-beta, hotfix]
 
@@ -87,6 +102,8 @@ jobs:
       version: 'beta'
       pathToPackageJson: 'packages/sfp-cli/package.json'
       environment: sfp-beta
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ github.ref == 'refs/heads/develop' }}
     needs: alpha
 
@@ -97,5 +114,7 @@ jobs:
       version: 'latest'
       pathToPackageJson: 'packages/sfp-cli/package.json'
       environment: sfp-prod
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfp-beta.result == 'success')  }}
     needs: [sfp-beta, hotfix]
