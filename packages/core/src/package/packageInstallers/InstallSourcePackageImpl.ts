@@ -64,16 +64,13 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 isReconcileErrored = false;
             let profileFolders;
             if (this.packageMetadata.isProfilesFound && this.packageMetadata.reconcileProfiles !== false) {
-                ({
-                    profileFolders,
-                    isReconcileActivated,
-                    isReconcileErrored,
-                } = await this.reconcileProfilesBeforeDeployment(
-                    profileFolders,
-                    this.sourceDirectory,
-                    this.targetusername,
-                    tempDir
-                ));
+                ({ profileFolders, isReconcileActivated, isReconcileErrored } =
+                    await this.reconcileProfilesBeforeDeployment(
+                        profileFolders,
+                        this.sourceDirectory,
+                        this.targetusername,
+                        tempDir
+                    ));
 
                 //Reconcile Failed, Bring back the original profiles
                 if (isReconcileErrored && profileFolders.length > 0) {

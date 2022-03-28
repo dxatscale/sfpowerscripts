@@ -504,9 +504,7 @@ export default class TriggerApexTests {
         return result;
     }
 
-    private async validateForApexCoverage(
-        coverageReport: any
-    ): Promise<{
+    private async validateForApexCoverage(coverageReport: any): Promise<{
         result: boolean;
         message?: string;
         packageTestCoverage?: number;
