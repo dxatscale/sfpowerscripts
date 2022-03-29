@@ -13,7 +13,7 @@ import { InstallPackage } from './InstallPackage';
 import PackageManifest from '../PackageManifest';
 import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
-import defaultValidateDeploymentOption from '../../utils/DefaultValidateDeploymentOption';
+import defaultDeploymentOption, { DEPLOYMENT_OPTION } from './DefaultDeploymentOption';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
 
@@ -23,7 +23,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     private deploymentType: DeploymentType;
 
     private isDiffFolderAvailable =
-        defaultValidateDeploymentOption() === 'selective' && fs.existsSync(path.join(this.sourceDirectory, 'diff'));
+        defaultDeploymentOption().toLocaleLowerCase() === DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
+        fs.existsSync(path.join(this.sourceDirectory, 'diff'));
 
     public constructor(
         sfdxPackage: string,
@@ -47,7 +48,6 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         let tmpDirObj = tmp.dirSync({ unsafeCleanup: true });
         let tempDir = tmpDirObj.name;
 
-     
         try {
             this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(this.packageMetadata);
 
@@ -64,13 +64,16 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 isReconcileErrored = false;
             let profileFolders;
             if (this.packageMetadata.isProfilesFound && this.packageMetadata.reconcileProfiles !== false) {
-                ({ profileFolders, isReconcileActivated, isReconcileErrored } =
-                    await this.reconcileProfilesBeforeDeployment(
-                        profileFolders,
-                        this.sourceDirectory,
-                        this.targetusername,
-                        tempDir
-                    ));
+                ({
+                    profileFolders,
+                    isReconcileActivated,
+                    isReconcileErrored,
+                } = await this.reconcileProfilesBeforeDeployment(
+                    profileFolders,
+                    this.sourceDirectory,
+                    this.targetusername,
+                    tempDir
+                ));
 
                 //Reconcile Failed, Bring back the original profiles
                 if (isReconcileErrored && profileFolders.length > 0) {
@@ -113,7 +116,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                         this.logger
                     );
                     SFPLogger.log(
-                        `${`Toggle this feature by setting SFPOWERSCRIPTS_VALIDATE_DEPLOYMENT_OPTION to Full|Selective`}`,
+                        `${`Toggle this feature by setting SFPOWERSCRIPTS_DEPLOYMENT_OPTION to ${DEPLOYMENT_OPTION.FULL_DEPLOYMENT}|${DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT}`}`,
                         LoggerLevel.INFO,
                         this.logger
                     );
@@ -132,7 +135,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 } else if (emptyCheck.isToSkip == false) {
                     //Display a warning
                     if (
-                        defaultValidateDeploymentOption() === 'selective' &&
+                        defaultDeploymentOption().toLocaleLowerCase() === DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
                         resolvedSourceDirectory != emptyCheck.resolvedSourceDirectory
                     ) {
                         SFPLogger.log(
@@ -196,7 +199,10 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
         //On a diff deployment, we might need to deploy full as version changed or scratch org config has changed
         //In that case lets check again with the main directory and proceed ahead with deployment
-        if (defaultValidateDeploymentOption() && status.result == 'skip') {
+        if (
+            defaultDeploymentOption().toLocaleLowerCase() == DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
+            status.result == 'skip'
+        ) {
             sourceDirectory = sourceDirectory.substring(0, this.sourceDirectory.indexOf('/diff'));
             //Check empty conditions
             status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(sourceDirectory, packageDirectory, false);
@@ -393,15 +399,14 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         target_org: string,
         apiVersion: string
     ): Promise<any> {
-        let deploymentOptions:DeploymentOptions = {
-            ignoreWarnings:true,
-            waitTime:waitTime,
-
+        let deploymentOptions: DeploymentOptions = {
+            ignoreWarnings: true,
+            waitTime: waitTime,
         };
-        deploymentOptions.ignoreWarnings= true;
+        deploymentOptions.ignoreWarnings = true;
         deploymentOptions.waitTime = waitTime;
-       
-        deploymentOptions.apiVersion= apiVersion;
+
+        deploymentOptions.apiVersion = apiVersion;
 
         if (skipTest) {
             let orgDetails: OrgDetails;
@@ -449,7 +454,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.packageMetadata.apexTestClassses
                 );
             } else {
-                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                deploymentOptions.testLevel = TestLevel.RunLocalTests;
             }
         } else {
             deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;

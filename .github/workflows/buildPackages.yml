@@ -1,0 +1,63 @@
+# This pipeline is used as template to build the sfpowerscripts plugin
+
+
+name: 'Build Packages'
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: ''
+      publish:
+        type: boolean
+        default: false
+      environment:
+        type: string
+        required: true
+    secrets:
+      npm-token:
+        required: false
+
+jobs:
+  build:
+    name: 'Build Packages'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          registry-url: https://registry.npmjs.org/
+
+      - name: 'Set Git Config'
+        run: |
+          git config --global user.email "ciuser@dxatscale.io"
+          git config --global user.name "ciuser"
+
+
+      - name: 'Bootstrap Lerna'
+        run: npx lerna bootstrap
+
+
+      - name: 'Build  All  Packages'
+        run: npx lerna run build
+
+
+      - name: 'Run Unit Tests'
+        if: ${{ inputs.publish == true }}
+        run: npx lerna run test -- --colors
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v1
+
+      - name: 'Publish CLI/Core'
+        if: ${{ inputs.publish == true }}
+        run: 'npx lerna publish from-package --yes --dist-tag ${{ inputs.version }}'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+          NPM_CONFIG_USERCONFIG: ~/.npmrc

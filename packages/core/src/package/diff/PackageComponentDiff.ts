@@ -13,7 +13,6 @@ import GitDiffUtils, { DiffFile, DiffFileStatus } from '../../git/GitDiffUtil';
 
 const deleteNotSupported = ['RecordType'];
 const git = simplegit();
-const SEP = /\/|\\/;
 let sfdxManifest;
 
 export default class PackageComponentDiff {
@@ -189,8 +188,6 @@ export default class PackageComponentDiff {
                     extension = path.parse(filePath).ext;
                 }
 
-                let parsedPath = path.parse(filePath);
-                let filename = parsedPath.base;
                 let name = MetadataInfo.getMetadataName(filePath);
 
                 if (name) {

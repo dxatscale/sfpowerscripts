@@ -64,7 +64,9 @@ const skippedProperties = ['skipRate', 'coveredLines', 'totalLines'];
 const timeProperties = ['testExecutionTimeInMs', 'testTotalTimeInMs', 'commandTimeInMs'];
 
 export class JsonReporter {
-    public format(result: TestResult): {
+    public format(
+        result: TestResult
+    ): {
         summary: object;
         tests: CliTestResult[];
         coverage?: CliCoverageResult;

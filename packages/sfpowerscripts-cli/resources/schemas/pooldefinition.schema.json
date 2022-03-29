@@ -20,6 +20,12 @@
       "description": "Tag or name to identify the scratch org pool",
       "type": "string"
     },
+    "waitTime": {
+      "title": "wait time",
+      "description": "Time to wait for scratch org creation in minutes (default:6 mins)",
+      "type": "integer",
+      "default": 6
+    },
     "expiry": {
       "title": "expiry",
       "description": "Duration of the scratch org (in days) (default:2)",

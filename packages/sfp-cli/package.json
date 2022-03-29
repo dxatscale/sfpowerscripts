@@ -1,22 +1,22 @@
 {
     "name": "@dxatscale/sfp-cli",
     "description": "Developer CLI for Salesforce programs following the DX@Scale model",
-    "version": "1.4.11",
+    "version": "1.5.11",
     "author": "dxatscale",
     "bin": {
         "sfp": "./bin/run"
     },
     "bugs": "https://github.com/dxatscale/sfp-cli/issues",
     "dependencies": {
-        "@dxatscale/sfpowerscripts.core": "^18.2.11",
+        "@dxatscale/sfpowerscripts.core": "18.3.11",
         "@oclif/command": "^1.8.0",
-        "@oclif/config": "^1.17.0",
+        "@oclif/config": "1.18.3",
         "@oclif/parser": "^3.8.5",
         "@oclif/plugin-help": "^3.2.3",
         "@oclif/plugin-update": "^1.5.0",
         "@oclif/plugin-warn-if-update-available": "^1.7.0",
         "@salesforce/core": "2.35.3",
-        "@salesforce/source-deploy-retrieve": "5.9.5",
+        "@salesforce/source-deploy-retrieve": "5.12.3",
         "adm-zip": "^0.5.9",
         "chalk": "^4.1.2",
         "cli-table": "^0.3.6",
@@ -25,7 +25,7 @@
         "inquirer": "^8.1.2",
         "inquirer-autocomplete-prompt": "^1.4.0",
         "lodash": "^4.17.21",
-        "simple-git": "^2.45.0",
+        "simple-git": "3.3.0",
         "tslib": "^1.14.1",
         "xml2js": "^0.4.23"
     },
@@ -75,7 +75,11 @@
             "message": "<%= config.name %> update available from <%= chalk.greenBright(config.version) %> to <%= chalk.greenBright(latest) %>. Use <%= chalk.greenBright('npm update --global sfdx-cli') %> to update to the latest version."
         }
     },
-    "repository": "dxatscale/sfp-cli",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Accenture/sfpowerscripts.git",
+        "directory": "packages/sfp-cli"
+    },
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",

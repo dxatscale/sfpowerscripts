@@ -155,11 +155,15 @@ export default class TriggerApexTests {
             }
 
             //Fetch Test Results
-            let testResult = await testService.reportAsyncResults(
-                testRunResult.summary.testRunId,
-                true,
-                this.cancellationTokenSource.token
-            );
+            let testResult = await retry(
+                async (bail) => {
+                  return  await testService.reportAsyncResults(
+                        testRunResult.summary.testRunId,
+                        true,
+                        this.cancellationTokenSource.token
+                    );
+                }, { retries: 2, minTimeout: 3000 });
+
 
             this.writeTestOutput(testResult);
             //Collect Failed Tests only if Parallel
@@ -499,7 +503,9 @@ export default class TriggerApexTests {
         return result;
     }
 
-    private async validateForApexCoverage(coverageReport: any): Promise<{
+    private async validateForApexCoverage(
+        coverageReport: any
+    ): Promise<{
         result: boolean;
         message?: string;
         packageTestCoverage?: number;

@@ -1,0 +1,118 @@
+# This pipeline builds the sfpowerscripts plugin
+
+name: 'Release'
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'decision records/**'
+      - 'demoreel/**'
+      - 'prerequisites/**'
+
+  workflow_dispatch:
+
+jobs:
+#Merge to Develop, Deploy Alpha builds
+  alpha:
+    name: 'Alpha'
+    uses: ./.github/workflows/buildPackages.yml
+    with:
+      version: 'alpha'
+      publish: true
+      environment: alpha
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    concurrency:
+      group: alpha
+
+# Hotfix stage
+  hotfix:
+    name: 'Hotfix'
+    uses: ./.github/workflows/buildPackages.yml
+    with:
+      version: 'hotfix'
+      publish: true
+      environment: hotfix
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/main' }}
+    concurrency:
+     group: hotfix
+
+  sfpowerscripts-beta:
+    name: 'sfpowerscripts Beta'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'beta'
+      pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
+      environment: sfpowerscripts-beta
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    needs: alpha
+
+  sfpowerscripts-prod:
+    name: 'sfpowerscripts Prod'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'latest'
+      pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
+      environment: sfpowerscripts-prod
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
+    needs: [sfpowerscripts-beta, hotfix]
+
+  core-beta:
+    name: 'core beta'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'beta'
+      pathToPackageJson: 'packages/core/package.json'
+      environment: core-beta
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    needs: alpha
+
+  core-prod:
+    name: 'core prod'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'latest'
+      pathToPackageJson: 'packages/core/package.json'
+      environment: core-prod
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.core-beta.result == 'success')  }}
+    needs: [core-beta, hotfix]
+
+  sfp-beta:
+    name: 'sfp-cli beta'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'beta'
+      pathToPackageJson: 'packages/sfp-cli/package.json'
+      environment: sfp-beta
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    needs: alpha
+
+  sfp-prod:
+    name: 'sfp-cli prod'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'latest'
+      pathToPackageJson: 'packages/sfp-cli/package.json'
+      environment: sfp-prod
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfp-beta.result == 'success')  }}
+    needs: [sfp-beta, hotfix]
