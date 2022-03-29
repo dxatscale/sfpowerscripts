@@ -60,4 +60,4 @@ jobs:
         run: 'npx lerna publish from-package --yes --dist-tag ${{ inputs.version }}'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
-          NPM_CONFIG_USERCONFIG: ~/.npmrc
+
