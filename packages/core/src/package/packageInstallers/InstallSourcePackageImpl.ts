@@ -464,8 +464,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     }
 
     private getAStringOfSpecificTestClasses(apexTestClassses: string[]) {
-        const doublequote = '"';
-        let specifedTests = doublequote + apexTestClassses.join(',') + doublequote;
+        let specifedTests = apexTestClassses.join();
         return specifedTests;
     }
 
