@@ -1,4 +1,4 @@
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
+import ScratchOrg from '../ScratchOrg';
 
 export interface PoolConfig {
     tag: string;
@@ -18,7 +18,6 @@ export interface PoolConfig {
         npm?: {
             npmrcPath?: string;
             scope: string;
-            npmtag: string;
         };
     };
     enableVlocity?: boolean;

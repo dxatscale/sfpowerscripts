@@ -1,6 +1,6 @@
 import { Org } from '@salesforce/core';
-import { PoolConfig } from '../pool/PoolConfig';
-import isValidSfdxAuthUrl from '../pool/prequisitecheck/IsValidSfdxAuthUrl';
+import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
+import isValidSfdxAuthUrl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/prequisitecheck/IsValidSfdxAuthUrl';
 import SFPLogger, {
     COLOR_KEY_MESSAGE,
     COLOR_WARNING,
@@ -12,8 +12,8 @@ import { Result } from 'neverthrow';
 import FetchAnArtifact from '../artifacts/FetchAnArtifact';
 import FetchArtifactSelector from '../artifacts/FetchArtifactSelector';
 import BuildImpl, { BuildProps } from '../parallelBuilder/BuildImpl';
-import PoolCreateImpl from '../pool/PoolCreateImpl';
-import { PoolError } from '../pool/PoolError';
+import PoolCreateImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolCreateImpl';
+import { PoolError } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolError';
 import { Stage } from '../Stage';
 import PrepareOrgJob from './PrepareOrgJob';
 import * as rimraf from 'rimraf';

@@ -11,7 +11,7 @@ import {
     PackageInstallationResult,
     PackageInstallationStatus,
 } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import PoolFetchImpl from '../pool/PoolFetchImpl';
+import PoolFetchImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl';
 import { Org } from '@salesforce/core';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
 import ValidateError from '../../errors/ValidateError';
@@ -27,10 +27,10 @@ import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogge
 import { COLOR_SUCCESS } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import ScratchOrgInfoFetcher from '../../impl/pool/services/fetchers/ScratchOrgInfoFetcher';
+import ScratchOrgInfoFetcher from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher';
 import Component from '@dxatscale/sfpowerscripts.core/lib/dependency/Component';
 import ValidateResult from './ValidateResult';
-import PoolOrgDeleteImpl from '../pool/PoolOrgDeleteImpl';
+import PoolOrgDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import SFPPackage from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
 import { TestOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';

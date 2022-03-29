@@ -1,15 +1,15 @@
-import SFPLogger from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger from '../../logger/SFPLogger';
 import { LoggerLevel, Org, SfdxError } from '@salesforce/core';
 import child_process = require('child_process');
 import { PoolBaseImpl } from './PoolBaseImpl';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
+import ScratchOrg from '../ScratchOrg';
 import { getUserEmail } from './services/fetchers/GetUserEmail';
 import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
 import ScratchOrgInfoAssigner from './services/updaters/ScratchOrgInfoAssigner';
 import * as fs from 'fs-extra';
 import ClientSourceTracking from './ClientSourceTracking';
 import isValidSfdxAuthUrl from './prequisitecheck/IsValidSfdxAuthUrl';
-import ScratchOrgOperator from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator';
+import ScratchOrgOperator from '../ScratchOrgOperator';
 
 export default class PoolFetchImpl extends PoolBaseImpl {
     private tag: string;

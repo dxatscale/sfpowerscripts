@@ -1,10 +1,10 @@
 import { Org } from '@salesforce/core';
 import { PoolConfig } from './PoolConfig';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
+import ScratchOrg from '../ScratchOrg';
 import { Result } from 'neverthrow';
 import * as fs from 'fs-extra';
 import { EOL } from 'os';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '../../logger/SFPLogger';
 
 export default abstract class PoolJobExecutor {
     protected logToFilePath: string;

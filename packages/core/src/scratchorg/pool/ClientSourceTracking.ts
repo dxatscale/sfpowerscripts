@@ -1,12 +1,12 @@
 
 const path = require('path');
 import * as fs from 'fs-extra';
-import { Logger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { Logger } from '../../logger/SFPLogger';
 import { Connection, SfdxProject } from '@salesforce/core';
-import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
+import SFPOrg from "../../org/SFPOrg";
 import { SourceTracking } from '@salesforce/source-tracking';
 import simplegit, { SimpleGit } from 'simple-git';
-import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import ProjectConfig from "../../project/ProjectConfig";
 const tmp = require('tmp');
 
 export default class ClientSourceTracking {
