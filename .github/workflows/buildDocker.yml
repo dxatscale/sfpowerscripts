@@ -47,5 +47,5 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: dxatscale/sfpowerscripts:${{ env. PKG_VERSION}}
-          buildArgs:| 
+          buildArgs: | 
                   SFPOWERCRIPTS_VERSION=${{ env. PKG_VERSION}}
