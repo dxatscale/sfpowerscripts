@@ -431,7 +431,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
                         `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
                         `-------------------------------------------------------------------------------------------------------------`,
-                    LoggerLevel.DEBUG,
+                    LoggerLevel.WARN,
                     this.logger
                 );
                 deploymentOptions.testLevel = TestLevel.RunNoTests;
