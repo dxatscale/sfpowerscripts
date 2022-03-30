@@ -3,7 +3,7 @@
 name: 'Release'
 
 on:
-  push:
+   push:
     branches:
       - develop
       - main
@@ -14,10 +14,10 @@ on:
       - 'demoreel/**'
       - 'prerequisites/**'
 
-  workflow_dispatch:
+   workflow_dispatch:
 
 jobs:
-#Merge to Develop, Deploy Alpha builds
+#Merge to Develop, Deploy Alpha builds    
   alpha:
     name: 'Alpha'
     uses: ./.github/workflows/buildPackages.yml
@@ -30,6 +30,18 @@ jobs:
     if: ${{ github.ref == 'refs/heads/develop' }}
     concurrency:
       group: alpha
+
+  alpha-docker:
+    name: 'Alpha'
+    uses: ./.github/workflows/buildDocker.yml
+    with:
+      version: 'alpha'
+    secrets:
+      gh-token: ${{ secrets.GITHUB_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    concurrency:
+      group: alpha-docker
+    needs: [alpha]
 
 # Hotfix stage
   hotfix:
@@ -45,6 +57,18 @@ jobs:
     concurrency:
      group: hotfix
 
+  hotfix-docker:
+    name: 'build hotfix docker'
+    uses: ./.github/workflows/buildDocker.yml
+    with:
+      version: 'hotfix'
+    secrets:
+      gh-token: ${{ secrets.GITHUB_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/main' }}
+    concurrency:
+      group: hotfix-docker
+    needs: [hotfix]
+
   sfpowerscripts-beta:
     name: 'sfpowerscripts Beta'
     uses: ./.github/workflows/promotePackage.yml
@@ -55,7 +79,19 @@ jobs:
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ github.ref == 'refs/heads/develop' }}
-    needs: alpha
+    needs: [alpha, alpha-docker]
+  
+  beta-docker:
+    name: 'build beta docker'
+    uses: ./.github/workflows/buildDocker.yml
+    with:
+      version: 'beta'
+    secrets:
+      gh-token: ${{ secrets.GITHUB_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    concurrency:
+      group: beta-docker
+    needs: [sfpowerscripts-beta] 
 
   sfpowerscripts-prod:
     name: 'sfpowerscripts Prod'
@@ -67,6 +103,18 @@ jobs:
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
+    needs: [sfpowerscripts-beta, hotfix]
+
+  prod-docker:
+    name: 'build prod docker'
+    uses: ./.github/workflows/buildDocker.yml
+    with:
+      version: 'latest'
+    secrets:
+      gh-token: ${{ secrets.GITHUB_TOKEN }}
+    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
+    concurrency:
+      group: prod-docker
     needs: [sfpowerscripts-beta, hotfix]
 
   core-beta:

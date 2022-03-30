@@ -2,19 +2,14 @@ name: Build and Publish  Docker Image to DockerHub
 
 
 on:
-  workflow_dispatch:
-
-  push:
-    branches:
-      - develop
-      - main
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - 'decision records/**'
-      - 'demoreel/**'
-      - 'prerequisites/**'
-  
+  workflow_call:
+   inputs:
+    version:
+      type: string
+      default: 'alpha'
+   secrets:
+      gh-token:
+        required: true
 jobs:
 
   build:
@@ -23,15 +18,23 @@ jobs:
 
     steps:
 
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
+
+    - name: Expose GitHub Runtime
+      uses: crazy-max/ghaction-github-runtime@v1
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.gh-token }}
 
 
     - name: 'Get package version'
@@ -47,8 +50,10 @@ jobs:
           file: dockerfiles/Dockerfile.test
           context: dockerfiles
           push: true
-          tags: sfpowerscripts:${{ env. PKG_VERSION}}
-          cache-from: type=registry,ref=sfpowerscripts:buildcache
-          cache-to: type=registry,ref=sfpowerscripts:buildcache,mode=max
+          tags: |
+              ghcr.io/${{ github.repository_owner }}/sfpowerscripts:${{ env. PKG_VERSION}}
+              ghcr.io/${{ github.repository_owner }}/sfpowerscripts:{{ inputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: | 
                   SFPOWERCRIPTS_VERSION=${{ env. PKG_VERSION}}

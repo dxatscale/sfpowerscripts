@@ -1,40 +1,28 @@
-FROM ubuntu:20.04
-ARG  SFPOWERCRIPTS_VERSION=alpha
+FROM heroku/heroku:18
+
+ENV DEBIAN_FRONTEND=noninteractive
+ARG SFPOWERSCRIPTS_VERSION=alpha
 
 # Create symbolic link from sh to bash
-RUN ln -sf bash /bin/sh
+ENV SHELL /bin/bash
+
+# Install NODE
+RUN echo 'a0f23911d5d9c371e95ad19e4e538d19bffc0965700f187840eb39a91b0c3fb0  ./nodejs.tar.gz' > node-file-lock.sha \
+  && curl -s -o nodejs.tar.gz https://nodejs.org/dist/v16.13.2/node-v16.13.2-linux-x64.tar.gz \
+  && shasum --check node-file-lock.sha
+RUN mkdir /usr/local/lib/nodejs \
+  && tar xf nodejs.tar.gz -C /usr/local/lib/nodejs/ --strip-components 1 \
+  && rm nodejs.tar.gz node-file-lock.sha
 
 
-
-# Install OpenJDK-8
-RUN apt-get update -qq && \
-    DEBIAN_FRONTEND=noninteractive \
-    apt-get install -qq openjdk-8-jdk && \
-    apt-get clean -qq && \
-	  rm -rf /var/cache/oracle-jdk8-installer && \
-    rm -rf /var/lib/apt/lists/*
-
-ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
-RUN export JAVA_HOME
-
-
-# Install Node.js v16.x
-ENV NODE_VERSION=16.14.2
-RUN apt-get update -qq && \
-    DEBIAN_FRONTEND=noninteractive \
-    apt-get install -qq curl wget && \
-    apt-get clean -qq 
-RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-ENV NVM_DIR=/root/.nvm
-RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
-RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
-RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
-ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
-
-
+# Install OpenJDK-11
+RUN apt-get update && apt-get install --assume-yes openjdk-11-jdk-headless jq
+RUN apt-get autoremove --assume-yes \
+     && apt-get clean --assume-yes \
+     && rm -rf /var/lib/apt/lists/*
 
 # Install Python make and g++ for node-gyp rebuild
-RUN apt-get install -qq software-properties-common && \
+RUN apt-get update && apt-get install -qq software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive \
@@ -52,7 +40,6 @@ RUN apt-get update \
     && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
       --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
-
 
 
 # Set XDG environment variables explicitly so that GitHub Actions does not apply
@@ -73,14 +60,21 @@ RUN mkdir -p $XDG_DATA_HOME && \
 RUN export XDG_DATA_HOME && \
     export XDG_CONFIG_HOME && \
     export XDG_CACHE_HOME
-    
 
 
-# Install SFDX CLI   
-RUN  yarn global add sfdx-cli@7.144.0
-RUN  yarn global add vlocity@1.15.2
+ENV PATH=/usr/local/lib/nodejs/bin:$PATH
+RUN npm install --global sfdx-cli@7.144.0 --ignore-scripts
+RUN  npm -g install vlocity@1.15.2
 # Install sfdx plugins
 RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.8.0
 RUN echo 'y' | sfdx plugins:install sfdmu@4.13.0
 RUN echo 'y' | sfdx plugins:install sfpowerkit@4.1.5
-RUN echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts@$SFPOWERCRIPTS_VERSION
+RUN echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts@$SFPOWERSCRIPTS_VERSION
+
+
+
+ENV SFDX_CONTAINER_MODE true
+ENV DEBIAN_FRONTEND=dialog
+
+
+
