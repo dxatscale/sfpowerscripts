@@ -19,7 +19,7 @@ on:
 jobs:
 #Merge to Develop, Deploy Alpha builds    
   alpha:
-    name: 'Alpha'
+    name: 'build alpha packages'
     uses: ./.github/workflows/buildPackages.yml
     with:
       version: 'alpha'
@@ -32,7 +32,7 @@ jobs:
       group: alpha
 
   alpha-docker:
-    name: 'Alpha'
+    name: 'build alpha docker image'
     uses: ./.github/workflows/buildDocker.yml
     with:
       version: 'alpha'
@@ -45,7 +45,7 @@ jobs:
 
 # Hotfix stage
   hotfix:
-    name: 'Hotfix'
+    name: 'build hotfix packages'
     uses: ./.github/workflows/buildPackages.yml
     with:
       version: 'hotfix'
