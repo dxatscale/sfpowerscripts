@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfpowerscripts.core",
-    "version": "18.3.13",
+    "version": "18.3.14",
     "description": "Core Module used by sfpowerscripts",
     "main": "lib/index",
     "types": "lib/index",
@@ -45,10 +45,10 @@
     "devDependencies": {
         "@types/async-retry": "^1.4.2",
         "@types/datadog-metrics": "^0.6.1",
+        "@types/jest": "27.4.1",
         "@types/jsforce": "^1.9.29",
         "@types/mocha": "9.1.0",
         "jest": "^27.5.1",
-        "@types/jest": "27.4.1",
         "ts-jest": "27.1.4",
         "ts-node": "10.7.0",
         "typescript": "^4.1.3"
