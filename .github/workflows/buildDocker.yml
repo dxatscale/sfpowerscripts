@@ -51,7 +51,7 @@ jobs:
           context: dockerfiles
           push: true
           tags: |
-              ghcr.io/${{ github.repository_owner }}/sfpowerscripts:${{ env. PKG_VERSION}}
+              ghcr.io/${{ github.repository_owner }}/sfpowerscripts:${{ env. PKG_VERSION}}-{{ inputs.version }}
               ghcr.io/${{ github.repository_owner }}/sfpowerscripts:{{ inputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
