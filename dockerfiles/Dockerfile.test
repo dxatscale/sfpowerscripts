@@ -4,17 +4,6 @@ ARG  SFPOWERCRIPTS_VERSION=alpha
 # Create symbolic link from sh to bash
 RUN ln -sf bash /bin/sh
 
-# Install Node.js v16.x
-ENV NODE_VERSION=16.14.2
-RUN apt install -y curl
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-ENV NVM_DIR=/root/.nvm
-RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
-RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
-RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
-ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
-RUN node --version
-RUN npm --version
 
 
 # Install OpenJDK-8
@@ -29,11 +18,34 @@ ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
 RUN export JAVA_HOME
 
 
+# Install Node.js v16.x
+ENV NODE_VERSION=16.14.2
+RUN apt-get update -qq && \
+    DEBIAN_FRONTEND=noninteractive \
+    apt-get install -qq curl wget && \
+    apt-get clean -qq 
+RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+ENV NVM_DIR=/root/.nvm
+RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
+RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
+RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
+ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
+
+
+
+# Install Python make and g++ for node-gyp rebuild
+RUN apt-get install -qq software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update -qq && \
+    DEBIAN_FRONTEND=noninteractive \
+    apt-get install -qq python3.8 make  g++ && \
+    apt-get clean -qq 
+
 # Install latest chrome dev package and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and a few others)
 # Note: this installs the necessary libs to make the bundled version of Chromium that Puppeteer
 # installs, work.
 RUN apt-get update \
-    && apt-get install -y wget gnupg \
+    && apt-get install -y  gnupg \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
     && apt-get update \
@@ -62,8 +74,6 @@ RUN export XDG_DATA_HOME && \
     export XDG_CONFIG_HOME && \
     export XDG_CACHE_HOME
     
-# use yarn, as npm v6 is affected by caching issue
-RUN npm update -g &&  npm install --global yarn 
 
 
 # Install SFDX CLI   
