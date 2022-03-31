@@ -115,7 +115,7 @@ jobs:
     if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
     concurrency:
       group: prod-docker
-    needs: [sfpowerscripts-beta, hotfix]
+    needs: [sfpowerscripts-prod, hotfix]
 
   core-beta:
     name: 'core beta'
