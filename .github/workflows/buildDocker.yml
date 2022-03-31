@@ -7,15 +7,18 @@ on:
     version:
       type: string
       default: 'alpha'
+    environment:
+        type: string
+        required: true
    secrets:
       gh-token:
         required: true
 jobs:
 
   build:
-
+    name: 'Build docker image'
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
-
     steps:
 
     - uses: actions/checkout@v2
@@ -51,8 +54,8 @@ jobs:
           context: dockerfiles
           push: true
           tags: |
-              ghcr.io/${{ github.repository_owner }}/sfpowerscripts:${{ env. PKG_VERSION}}-{{ inputs.version }}
-              ghcr.io/${{ github.repository_owner }}/sfpowerscripts:{{ inputs.version }}
+              ghcr.io/dxatscale/sfpowerscripts:${{ env. PKG_VERSION}}-${{ inputs.version }}
+              ghcr.io/dxatscale/sfpowerscripts:${{ inputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: | 

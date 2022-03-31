@@ -109,6 +109,13 @@ describe('Retrieve assigned permsets provided username and a target org', () => 
 
         let permsetListImpl: PermissionSetFetcher = new PermissionSetFetcher(testData.username, connection);
 
-        expect(permsetListImpl.fetchAllPermsetAssignment()).rejects.toThrowError();
-    }, 1000000);
+        try
+        {
+            await permsetListImpl.fetchAllPermsetAssignment();
+        }
+        catch(error)
+        {
+            expect(error).toBeDefined();
+        }
+    },500000);
 });

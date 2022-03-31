@@ -19,7 +19,7 @@ on:
 jobs:
 #Merge to Develop, Deploy Alpha builds    
   alpha:
-    name: 'Alpha'
+    name: 'build alpha packages'
     uses: ./.github/workflows/buildPackages.yml
     with:
       version: 'alpha'
@@ -32,20 +32,21 @@ jobs:
       group: alpha
 
   alpha-docker:
-    name: 'Alpha'
+    name: 'build alpha docker image'
     uses: ./.github/workflows/buildDocker.yml
     with:
       version: 'alpha'
+      environment: 'alpha-docker'
     secrets:
-      gh-token: ${{ secrets.GITHUB_TOKEN }}
-    if: ${{ github.ref == 'refs/heads/develop' }}
+      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
+    if: ${{ always() }}
     concurrency:
       group: alpha-docker
     needs: [alpha]
 
 # Hotfix stage
   hotfix:
-    name: 'Hotfix'
+    name: 'build hotfix packages'
     uses: ./.github/workflows/buildPackages.yml
     with:
       version: 'hotfix'
@@ -62,8 +63,9 @@ jobs:
     uses: ./.github/workflows/buildDocker.yml
     with:
       version: 'hotfix'
+      environment: 'hotfix-docker'
     secrets:
-      gh-token: ${{ secrets.GITHUB_TOKEN }}
+      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
     if: ${{ github.ref == 'refs/heads/main' }}
     concurrency:
       group: hotfix-docker
@@ -86,12 +88,13 @@ jobs:
     uses: ./.github/workflows/buildDocker.yml
     with:
       version: 'beta'
+      environment: 'beta-docker'
     secrets:
-      gh-token: ${{ secrets.GITHUB_TOKEN }}
+      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
     if: ${{ github.ref == 'refs/heads/develop' }}
     concurrency:
       group: beta-docker
-    needs: [sfpowerscripts-beta] 
+    needs: [alpha-docker] 
 
   sfpowerscripts-prod:
     name: 'sfpowerscripts Prod'
@@ -110,12 +113,13 @@ jobs:
     uses: ./.github/workflows/buildDocker.yml
     with:
       version: 'latest'
+      environment: 'prod-docker'
     secrets:
-      gh-token: ${{ secrets.GITHUB_TOKEN }}
+      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
     if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
     concurrency:
       group: prod-docker
-    needs: [sfpowerscripts-prod, hotfix]
+    needs: [hotfix-docker, beta-docker]
 
   core-beta:
     name: 'core beta'

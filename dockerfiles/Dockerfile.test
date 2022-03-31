@@ -1,4 +1,4 @@
-FROM heroku/heroku:18
+FROM heroku/heroku:20
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG SFPOWERSCRIPTS_VERSION=alpha
@@ -21,7 +21,8 @@ RUN apt-get autoremove --assume-yes \
      && apt-get clean --assume-yes \
      && rm -rf /var/lib/apt/lists/*
 
-# Install Python make and g++ for node-gyp rebuild
+
+# ReInstall Python make and g++ for node-gyp rebuild
 RUN apt-get update && apt-get install -qq software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update -qq && \
