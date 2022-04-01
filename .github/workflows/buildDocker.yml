@@ -52,6 +52,7 @@ jobs:
           push: true
           tags: |
               ghcr.io/dxatscale/sfpowerscripts:${{ env. PKG_VERSION}}-${{ github.run_id }}
+              ghcr.io/dxatscale/sfpowerscripts:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: | 
