@@ -2,6 +2,8 @@ FROM heroku/heroku:20
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG SFPOWERSCRIPTS_VERSION=alpha
+ARG GIT_COMMIT
+
 
 # Create symbolic link from sh to bash
 ENV SHELL /bin/bash
@@ -78,4 +80,10 @@ ENV SFDX_CONTAINER_MODE true
 ENV DEBIAN_FRONTEND=dialog
 
 
-
+#Add Labels
+LABEL org.opencontainers.image.description "sfpowerscripts is a build system for modular development in Salesforce, its delivered as a sfdx plugin that can be implemented in any CI/CD system of choice"
+LABEL org.opencontainers.image.licenses "MIT"
+LABEL org.opencontainers.image.url "https://github.com/Accenture/sfpowerscripts"
+LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects/sfpowerscripts"
+LABEL org.opencontainers.image.revision $GIT_COMMIT
+LABEL org.opencontainers.image.vendor "DX@Scale"

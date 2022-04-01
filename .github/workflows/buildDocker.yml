@@ -57,3 +57,4 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: | 
                   SFPOWERSCRIPTS_VERSION=${{ env. PKG_VERSION}}
+                  GIT_COMMIT=${{ github.sha}}
