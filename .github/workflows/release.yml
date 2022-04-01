@@ -1,0 +1,225 @@
+# This pipeline builds the sfpowerscripts plugin
+
+name: 'Release'
+
+on:
+   push:
+    branches:
+      - develop
+      - main
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'decision records/**'
+      - 'demoreel/**'
+      - 'prerequisites/**'
+
+   workflow_dispatch:
+
+jobs:
+#Merge to Develop, create builds    
+  build:
+    name: 'build packages'
+    uses: ./.github/workflows/buildPackages.yml
+    with:
+      version: ${{ github.ref }}
+      publish: true
+      environment: build
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    concurrency:
+      group: build
+
+  #On successfull creation of packages,(or even if lerna skips), create docker image
+  build-docker:
+    name: 'build docker image'
+    uses: ./.github/workflows/buildDocker.yml
+    with:
+      environment: 'build-docker'
+    secrets:
+      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
+    needs: [ build ]
+    concurrency:
+      group: build
+
+
+
+
+
+# Integration Test Stage
+  test:
+    name: 'smoke test'
+    environment: test
+    runs-on: ubuntu-latest
+    needs: [build-docker]
+    steps:
+      - name: test builds
+        run:  |
+          echo "🍏 This job is just a placeholder"
+
+
+ #Promotion Stages
+
+# Sfpowercripts
+  hotfix:
+    name: 'build hotfix packages'
+    uses: ./.github/workflows/buildPackages.yml
+    with:
+      version: 'hotfix'
+      publish: true
+      environment: hotfix
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs: [ test]
+    concurrency:
+     group: hotfix
+
+  hotfix-docker:
+    name: 'build hotfix docker'
+    uses: ./.github/workflows/buildDocker.yml
+    with:
+      environment: 'hotfix-docker'
+    secrets:
+      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs: [ test]
+    concurrency:
+      group: hotfix
+
+  sfpowerscripts-alpha:
+    name: 'sfpowerscripts alpha'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'alpha'
+      pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
+      environment: sfpowerscripts-alpha
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    concurrency:
+      group: sfpowerscripts-alpha
+    needs: [test]
+  
+  alpha-docker:
+    name: 'build alpha docker'
+    uses: ./.github/workflows/promoteDocker.yml
+    with:
+      version: 'alpha'
+      environment: sfpowerscripts-alpha
+    secrets:
+      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    concurrency:
+      group: sfpowerscripts-alpha
+    needs: [test]
+
+
+ 
+  sfpowerscripts-beta:
+    name: 'sfpowerscripts beta'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'beta'
+      pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
+      environment: sfpowerscripts-beta
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    concurrency:
+      group: sfpowerscripts-beta
+    needs: [sfpowerscripts-alpha, alpha-docker]
+  
+  beta-docker:
+    name: 'build beta docker'
+    uses: ./.github/workflows/promoteDocker.yml
+    with:
+      version: 'beta'
+      environment: sfpowerscripts-beta
+    secrets:
+      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    concurrency:
+      group: sfpowerscripts-beta
+    needs: [sfpowerscripts-alpha, alpha-docker]
+
+  sfpowerscripts-prod:
+    name: 'sfpowerscripts prod'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'latest'
+      pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
+      environment: sfpowerscripts-prod
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
+    concurrency:
+      group: sfpowerscripts-prod
+    needs: [sfpowerscripts-beta, hotfix,hotfix-docker,beta-docker]
+
+  prod-docker:
+    name: 'build prod docker'
+    uses: ./.github/workflows/promoteDocker.yml
+    with:
+      version: 'latest'
+      environment: sfpowerscripts-prod
+    secrets:
+      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
+    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
+    concurrency:
+      group: sfpowerscripts-prod
+    needs: [sfpowerscripts-beta, hotfix,hotfix-docker,beta-docker]
+
+
+# sfp-cli
+  sfp-hotfix:
+    name: 'sfp-cli hotfix'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'hotfix'
+      pathToPackageJson: 'packages/sfp-cli/package.json'
+      environment: sfp-hotfix
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs: test
+
+
+
+  sfp-alpha:
+    name: 'sfp-cli alpha'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'alpha'
+      pathToPackageJson: 'packages/sfp-cli/package.json'
+      environment: sfp-alpha
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    needs: test
+
+
+
+  sfp-beta:
+    name: 'sfp-cli beta'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'beta'
+      pathToPackageJson: 'packages/sfp-cli/package.json'
+      environment: sfp-beta
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    needs: sfp-alpha
+
+  sfp-prod:
+    name: 'sfp-cli prod'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'latest'
+      pathToPackageJson: 'packages/sfp-cli/package.json'
+      environment: sfp-prod
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.sfp-hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfp-beta.result == 'success')  }}
+    needs: [sfp-beta, sfp-hotfix]

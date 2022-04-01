@@ -89,8 +89,11 @@ export default class IncrementBuildNumber extends SfpowerscriptsCommand {
                 runNumber
             );
 
-            let result: { status: boolean; ignore: boolean; versionNumber: string } =
-                await incrementProjectBuildNumberImpl.exec();
+            let result: {
+                status: boolean;
+                ignore: boolean;
+                versionNumber: string;
+            } = await incrementProjectBuildNumberImpl.exec();
 
             console.log('\nOutput variables:');
             if (this.flags.refname) {

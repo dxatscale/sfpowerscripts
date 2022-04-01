@@ -4,6 +4,7 @@ import { VoidLogger } from '../../src/logger/SFPLogger';
 import artifactMetadata from '../../src/PackageMetadata';
 import { AnyJson, ensureJsonMap, JsonMap, ensureString } from '@salesforce/ts-types';
 import SFPOrg from '../../src/org/SFPOrg';
+import { assert } from 'console';
 
 const $$ = testSetup();
 const createOrg = async () => {
@@ -66,7 +67,7 @@ describe('Fetch a list of sfpowerscripts artifacts from an org', () => {
             return Promise.reject('Failed');
         };
 
-        expect(org.getInstalledArtifacts()).rejects.toThrow();
+        expect(org.getInstalledArtifacts()).resolves.toStrictEqual([]);
     });
 });
 
@@ -182,6 +183,10 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             sourceVersion: '3232x232xc3e',
         };
 
-        expect(org.updateArtifactInOrg(new VoidLogger(), artifactMetadata)).resolves.toThrowError();
+        try {
+            await org.updateArtifactInOrg(new VoidLogger(), artifactMetadata);
+        } catch (error) {
+            expect(error.message).toContain('Aborted');
+        }
     });
 });

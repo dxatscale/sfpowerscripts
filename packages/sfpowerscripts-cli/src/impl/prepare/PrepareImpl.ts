@@ -30,6 +30,8 @@ export default class PrepareImpl {
         if (!this.pool.batchSize) this.pool.batchSize = 5;
 
         if (this.pool.succeedOnDeploymentErrors === undefined) this.pool.succeedOnDeploymentErrors = true;
+
+        if (!this.pool.waitTime) this.pool.waitTime = 6;
     }
 
     public async exec() {
@@ -106,13 +108,11 @@ export default class PrepareImpl {
         } else {
             //Build All Artifacts
             console.log('\n');
-            console.log('-------------------------------WARNING!!!!------------------------------------------------');
+            console.log('-------------------------------------WARNING!!!!------------------------------------------------');
             console.log('Building packages, as script to fetch artifacts was not provided');
             console.log('This is not ideal, as the artifacts are  built from the current head of the provided branch');
             console.log('Pools should be prepared with previously validated packages');
-            console.log(
-                '---------------------------------------------------------------------------------------------'
-            );
+            console.log('------------------------------------------------------------------------------------------------');
 
             let buildProps: BuildProps = {
                 configFilePath: this.pool.configFilePath,

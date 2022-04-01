@@ -93,16 +93,15 @@ export default class RelaxIPRange {
         let deployId: AsyncResult;
 
         var zipStream = fs.createReadStream(zipFile);
-        await conn.metadata.deploy(
-            zipStream,
-            { rollbackOnError: true, singlePackage: true },
-            function (error, result: AsyncResult) {
-                if (error) {
-                    return console.error(error);
-                }
-                deployId = result;
+        await conn.metadata.deploy(zipStream, { rollbackOnError: true, singlePackage: true }, function (
+            error,
+            result: AsyncResult
+        ) {
+            if (error) {
+                return console.error(error);
             }
-        );
+            deployId = result;
+        });
 
         let metadata_deploy_result: DeployResult = await this.checkDeploymentStatus(conn, deployId.id);
 

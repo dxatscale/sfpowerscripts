@@ -15,6 +15,7 @@ import {
     DeployResult,
     Failures,
     MetadataApiDeployOptions,
+    RequestStatus,
 } from '@salesforce/source-deploy-retrieve';
 import PackageComponentPrinter from '../display/PackageComponentPrinter';
 import ApexTestSuite from '../apextest/ApexTestSuite';
@@ -65,7 +66,11 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             deploySourceResult.result = result.response.success;
             deploySourceResult.deploy_id = result.response.id;
         } else {
-            deploySourceResult.message = await this.displayErrors(result);
+            if (result.response.status == RequestStatus.Canceled) {
+                deploySourceResult.message = `The deployment request ${result.response.id} was cancelled by ${result.response.canceledByName}`;
+            } else {
+                deploySourceResult.message = await this.displayErrors(result);
+            }
             deploySourceResult.result = false;
             deploySourceResult.deploy_id = result.response.id;
         }

@@ -1,0 +1,60 @@
+name: Build and Publish  Docker Image to DockerHub
+
+
+on:
+  workflow_call:
+   inputs:
+    environment:
+        type: string
+        required: true
+   secrets:
+      gh-token:
+        required: true
+jobs:
+
+  build:
+    name: 'build docker image'
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Expose GitHub Runtime
+      uses: crazy-max/ghaction-github-runtime@v1
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.gh-token }}
+
+
+    - name: 'Get package version'
+      run: |
+        echo "PKG_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)" >> $GITHUB_ENV
+
+
+
+    - name: Build and push
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+          file: dockerfiles/sfpowerscripts.Dockerfile
+          context: dockerfiles
+          push: true
+          tags: |
+              ghcr.io/dxatscale/sfpowerscripts:${{ env. PKG_VERSION}}-${{ github.run_id }}
+              ghcr.io/dxatscale/sfpowerscripts:${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: | 
+                  SFPOWERSCRIPTS_VERSION=${{ env. PKG_VERSION}}
+                  GIT_COMMIT=${{ github.sha}}

@@ -28,20 +28,22 @@ describe('Provided an apex test suite from a source directory', () => {
         resultTestClasses.push(`AccountAccountRelationTriggerTest`);
         resultTestClasses.push(`AccountContactRelationTriggerTest`);
         resultTestClasses.push(`AccountTeamMemberTriggerTest`);
+        resultTestClasses.push(`AccountTriggerTest`);
         resultTestClasses.push(`ContactTriggerTest`);
 
         let apexTestSuite = new ApexTestSuite(`dir`, `test`);
-        expect(apexTestSuite.getConstituentClasses()).resolves.toBe(resultTestClasses);
+        expect(apexTestSuite.getConstituentClasses()).resolves.toStrictEqual(resultTestClasses);
     });
 
-    it('should throw an error if apex test suite is not avaiable in the directory', () => {
+    it('should throw an error if apex test suite is not avaiable in the directory', async () => {
         const globMock = jest.spyOn(glob, 'sync');
         globMock.mockImplementation(() => {
             return new Array();
         });
 
         let apexTestSuite = new ApexTestSuite(`dir`, `test`);
-        expect(apexTestSuite.getConstituentClasses()).rejects.toThrow();
+    
+        expect(apexTestSuite.getConstituentClasses()).rejects.toThrowError();
     });
 
     it('should return apexclass even if there is only one', () => {
@@ -64,6 +66,6 @@ describe('Provided an apex test suite from a source directory', () => {
         resultTestClasses.push(`AccountAccountRelationTriggerTest`);
 
         let apexTestSuite = new ApexTestSuite(`dir`, `test`);
-        expect(apexTestSuite.getConstituentClasses()).resolves.toBe(resultTestClasses);
+        expect(apexTestSuite.getConstituentClasses()).resolves.toStrictEqual(resultTestClasses);
     });
 });

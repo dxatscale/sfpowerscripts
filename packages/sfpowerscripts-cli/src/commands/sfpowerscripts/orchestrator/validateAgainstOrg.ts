@@ -22,6 +22,14 @@ export default class Validate extends SfpowerscriptsCommand {
             description: messages.getMessage('coveragePercentFlagDescription'),
             default: 75,
         }),
+        diffcheck: flags.boolean({
+            description: messages.getMessage('diffCheckFlagDescription'),
+            default: false,
+        }),
+        disableartifactupdate: flags.boolean({
+            description: messages.getMessage('disableArtifactUpdateFlagDescription'),
+            default: false,
+        }),
         logsgroupsymbol: flags.array({
             char: 'g',
             description: messages.getMessage('logsGroupSymbolFlagDescription'),
@@ -66,6 +74,8 @@ export default class Validate extends SfpowerscriptsCommand {
                 coverageThreshold: this.flags.coveragepercent,
                 logsGroupSymbol: this.flags.logsgroupsymbol,
                 targetOrg: this.flags.targetorg,
+                diffcheck: this.flags.diffcheck,
+                disableArtifactCommit: this.flags.disableartifactupdate,
             };
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
 
