@@ -40,7 +40,7 @@ jobs:
         password: ${{ secrets.gh-token }}
 
 
-    - name: 'Get package version'
+    - name: 'Promote Images'
       run: |
         PKG_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)
         docker pull ghcr.io/dxatscale/sfpowerscripts:$PKG_VERSION-${{ github.run_id }}
