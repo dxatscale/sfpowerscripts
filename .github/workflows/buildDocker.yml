@@ -47,7 +47,7 @@ jobs:
       id: docker_build
       uses: docker/build-push-action@v2
       with:
-          file: dockerfiles/Dockerfile.test
+          file: dockerfiles/sfpowerscripts.Dockerfile
           context: dockerfiles
           push: true
           tags: |
@@ -55,4 +55,4 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: | 
-                  SFPOWERCRIPTS_VERSION=${{ env. PKG_VERSION}}
+                  SFPOWERSCRIPTS_VERSION=${{ env. PKG_VERSION}}
