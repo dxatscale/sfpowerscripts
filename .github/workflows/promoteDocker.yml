@@ -1,9 +1,12 @@
-name: Build and Publish  Docker Image to DockerHub
+name: Promote Docker Image
 
 
 on:
   workflow_call:
    inputs:
+    version:
+      type: string
+      default: 'alpha'
     environment:
         type: string
         required: true
@@ -13,7 +16,7 @@ on:
 jobs:
 
   build:
-    name: 'build docker image'
+    name: 'promote docker image'
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
@@ -39,20 +42,9 @@ jobs:
 
     - name: 'Get package version'
       run: |
-        echo "PKG_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)" >> $GITHUB_ENV
+        PKG_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)
+        docker pull ghcr.io/dxatscale/sfpowerscripts:$PKG_VERSION-${{ github.run_id }}
+        docker tag  ghcr.io/dxatscale/sfpowerscripts:$PKG_VERSION-${{ github.run_id }}  ghcr.io/dxatscale/sfpowerscripts:${{ inputs.version }}
+        docker push ghcr.io/dxatscale/sfpowerscripts:${{ inputs.version }}
 
 
-
-    - name: Build and push
-      id: docker_build
-      uses: docker/build-push-action@v2
-      with:
-          file: dockerfiles/Dockerfile.test
-          context: dockerfiles
-          push: true
-          tags: |
-              ghcr.io/dxatscale/sfpowerscripts:${{ env. PKG_VERSION}}-${{ github.run_id }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: | 
-                  SFPOWERCRIPTS_VERSION=${{ env. PKG_VERSION}}

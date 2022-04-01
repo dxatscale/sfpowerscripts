@@ -21,7 +21,7 @@ on:
 
 jobs:
   build:
-    name: 'Build Packages'
+    name: 'build packages'
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
