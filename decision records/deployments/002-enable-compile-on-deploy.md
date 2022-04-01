@@ -8,7 +8,7 @@
 
 DX@Scale implementations typically do not use synchronous compile on deploy for source packages nor doesn't use ```--apexcompile=all``` while installing a package to lower environments(sandbox) unless explicitly enabled. This has uncovered some scenarios on larger orgs.
 
-  Specified test executions are triggered asynchronously by default, unless the org is set to disable parallel testing. This results in each test class being executed in parallel. On large code bases, this results in the situation where code coverage of some test classes are skipped due to 'Code coverage from running this test class was not applied due to a conflicting recompilation task running at the same time'. Analysis using multiple runs with 'Disable parallel testing in org' seemed to resolve this issue for most runs (9/10 worked successfully). As a note, Salesforce disables parallel testing during package:version:create as well as during deployment to production for source packages (where apex classes are deployed with specified test classes)
+- Specified test executions are triggered asynchronously by default, unless the org is set to disable parallel testing. This results in each test class being executed in parallel. On large code bases, this results in the situation where code coverage of some test classes are skipped due to 'Code coverage from running this test class was not applied due to a conflicting recompilation task running at the same time'. Analysis using multiple runs with 'Disable parallel testing in org' seemed to resolve this issue for most runs (9/10 worked successfully). As a note, Salesforce disables parallel testing during package:version:create as well as during deployment to production for source packages (where apex classes are deployed with specified test classes)
 
 - Deployment to lower environments not accurate enough of what's happening in production
 
@@ -58,6 +58,4 @@ sfpowerscripts will feature the following defaults:
 
 ## Decision
 
-- After monitoring multiple runs, it was found that `enableCompileOnDeploy` didn't really solve the code coverage issues. So this functionality will be currently dropped from being implemented / alpha builds.
-
-- It still makes sense to install packages using ```apexCompile==all```, this will be made as the default option in a newer release, with ability to go back to the older mode using an environment variable.
+- After monitoring multiple runs, it was found that `enableCompileOnDeploy` didn't really solve the code coverage issues. So this functionality  doesnt immediately provide  any value other than making it deployments slower. It will be left to the user to determine the course of action, users could enable this setting through a scratch org definition or by making the change in sandbox through UI. sfpowerscripts will provide an option to install unlocked packages with ```apexCompile==all``` on specific orgs (as defined ) in release definition 
