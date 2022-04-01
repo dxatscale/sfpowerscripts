@@ -27,7 +27,7 @@
         "inquirer-autocomplete-prompt": "^1.4.0",
         "lodash": "^4.17.21",
         "neverthrow": "^4.2.2",
-        "simple-git": "3.3.0",
+        "simple-git": "3.5.0",
         "tslib": "^1.14.1",
         "xml2js": "^0.4.23"
     },
