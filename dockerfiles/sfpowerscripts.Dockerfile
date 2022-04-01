@@ -87,3 +87,4 @@ LABEL org.opencontainers.image.url "https://github.com/Accenture/sfpowerscripts"
 LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects/sfpowerscripts"
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
+LABEL org.opencontainers.image.source "https://github.com/Accenture/sfpowerscripts"
