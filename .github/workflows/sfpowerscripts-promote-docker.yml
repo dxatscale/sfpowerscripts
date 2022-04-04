@@ -1,0 +1,59 @@
+name: Promote Docker Image in ghcr
+
+
+on:
+  workflow_call:
+   inputs:
+    job-environment:
+      type: string
+      required: true
+    repo:
+      type: string
+      required: false
+    image:
+      type: string
+      required: false
+      default: sfpowerscripts
+    new-tag:
+      type: string
+      required: true
+   secrets:
+     username:
+        required: true
+     token:
+        required: true
+jobs:
+
+  build:
+    name: 'promote docker image'
+    environment: ${{ inputs.job-environment }}
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+
+    - name: 'Get package version'
+      run: |
+         echo "PKG_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)" >> $GITHUB_ENV
+
+    - name: 'Re expose secreates'
+      run: |
+         echo "DOCKER_TOKEN=${{ env.token }}" >> $GITHUB_ENV
+         echo "DOCKER_USERNAME=${{ env.username }}" >> $GITHUB_ENV
+      env:
+         token : ${{ secrets.token }}
+         username : ${{ secrets.username }}
+
+    - name: 'Tag Docker'
+      uses: ./.github/actions/tagDocker
+      with:
+         repo: ${{ inputs.repo }}
+         image: ${{ inputs.image }}
+         existing-tag: alpha
+         new-tag: ${{ inputs.new-tag }}
+         registry: ghcr.io
+         username:  ${{ env.DOCKER_USERNAME }}
+         token: ${{ env.DOCKER_TOKEN }}
