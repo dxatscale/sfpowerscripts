@@ -22,7 +22,7 @@ on:
 
 jobs:
   promotePackage:
-    name: 'Promote Package'
+    name: 'promote package'
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:

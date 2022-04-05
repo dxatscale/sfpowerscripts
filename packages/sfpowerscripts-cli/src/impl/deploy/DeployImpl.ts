@@ -53,6 +53,7 @@ export interface DeployProps {
     isRetryOnFailure?: boolean;
     promotePackagesBeforeDeploymentToOrg?: string;
     devhubUserName?: string;
+    disableArtifactCommit?: boolean;
 }
 
 export default class DeployImpl {
@@ -291,7 +292,7 @@ export default class DeployImpl {
 
         //Display header
         SFPLogger.log(
-            COLOR_HEADER(`-------------------------Installing Package------------------------------------`),
+            COLOR_HEADER(`----------------------------------Installing Package---------------------------------------------`),
             LoggerLevel.INFO,
             this.props.packageLogger
         );
@@ -328,7 +329,7 @@ export default class DeployImpl {
         if (alwaysDeployMessage) SFPLogger.log(alwaysDeployMessage, LoggerLevel.INFO, this.props.packageLogger);
 
         SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------`),
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------------`),
             LoggerLevel.INFO,
             this.props.packageLogger
         );
@@ -629,7 +630,7 @@ export default class DeployImpl {
             this.props.packageLogger,
             this.props.isDryRun
         );
-
+        installUnlockedPackageImpl.isArtifactToBeCommittedInOrg = !this.props.disableArtifactCommit;
         return installUnlockedPackageImpl.exec();
     }
 
@@ -657,7 +658,7 @@ export default class DeployImpl {
                 : DeploymentType.MDAPI_DEPLOY,
             this.props.isDryRun
         );
-
+        installSourcePackageImpl.isArtifactToBeCommittedInOrg = !this.props.disableArtifactCommit;
         return installSourcePackageImpl.exec();
     }
 
@@ -678,6 +679,7 @@ export default class DeployImpl {
             LoggerLevel.INFO,
             this.props.isDryRun
         );
+        installDataPackageImpl.isArtifactToBeCommittedInOrg = !this.props.disableArtifactCommit;
         return installDataPackageImpl.exec();
     }
 

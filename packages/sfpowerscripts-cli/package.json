@@ -1,15 +1,15 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "A build system for package based development in Salesforce,delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/",
-    "version": "12.3.11",
+    "version": "12.4.4",
     "author": "dxatscale",
-    "release": "March 22",
+    "release": "April 22",
     "bin": {
         "readVars": "./scripts/readVars.sh"
     },
     "bugs": "https://github.com/Accenture/sfpowerscripts/issues",
     "dependencies": {
-        "@dxatscale/sfpowerscripts.core": "18.3.11",
+        "@dxatscale/sfpowerscripts.core": "18.3.15",
         "@oclif/command": "1.8.16",
         "@oclif/config": "1.18.3",
         "@oclif/errors": "^1.3.5",
@@ -36,22 +36,22 @@
         "rimraf": "^3.0.2",
         "semver": "^7.3.4",
         "sfdc-soup": "^12.0.0",
-        "simple-git": "3.3.0"
+        "simple-git": "3.5.0"
     },
     "devDependencies": {
         "@types/adm-zip": "^0.4.33",
-        "@types/jest": "^26.0.20",
+        "@types/jest": "27.4.1",
         "@types/jsforce": "^1.9.29",
         "@types/marked": "4.0.2",
         "dependency-cruiser": "^10.0.1",
-        "jest": "^26.6.3",
+        "jest": "^27.5.1",
         "snyk": "^1.826.0",
-        "ts-jest": "^26.5.0",
-        "ts-node": "^9.0.0",
+        "ts-jest": "27.1.4",
+        "ts-node": "10.7.0",
         "typescript": "^4.1.3"
     },
     "engines": {
-        "node": ">=8.0.0"
+        "node": ">=14.0.0"
     },
     "files": [
         "/lib",

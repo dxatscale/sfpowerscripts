@@ -19,6 +19,7 @@ export abstract class InstallPackage {
     protected packageDescriptor;
     protected packageDirectory;
     protected org: SFPOrg;
+    private _isArtifactToBeCommittedInOrg: boolean = true;
 
     public constructor(
         protected sfdxPackage: string,
@@ -139,15 +140,22 @@ export abstract class InstallPackage {
         });
     }
 
+    //Set this to disable whethere info about the artifact has to be recorded in the org
+    public set isArtifactToBeCommittedInOrg(toCommit: boolean) {
+        this._isArtifactToBeCommittedInOrg = toCommit;
+    }
+
     private async commitPackageInstallationStatus() {
-        try {
-            await this.org.updateArtifactInOrg(this.logger, this.packageMetadata);
-        } catch (error) {
-            SFPLogger.log(
-                'Unable to commit information about the package into org..Check whether prerequisities are installed',
-                LoggerLevel.WARN,
-                this.logger
-            );
+        if (this._isArtifactToBeCommittedInOrg) {
+            try {
+                await this.org.updateArtifactInOrg(this.logger, this.packageMetadata);
+            } catch (error) {
+                SFPLogger.log(
+                    'Unable to commit information about the package into org..Check whether prerequisities are installed',
+                    LoggerLevel.WARN,
+                    this.logger
+                );
+            }
         }
     }
 

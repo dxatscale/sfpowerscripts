@@ -1,0 +1,45 @@
+name: Tag Docker Image in ghcr
+description: 'Tag an existing image in ghcr'
+
+inputs:
+    repo:
+      type: string
+      required: true
+    image:
+      type: string
+      required: true
+    existing-tag:
+      type: string
+      required: true
+    new-tag:
+      type: string
+      required: true
+    registry:
+      type: string
+      required: false
+      default: ghcr.io
+    username:
+      type: string
+      required: true
+    token:
+        type: string
+        required: true
+
+
+runs:
+    using: "composite"
+    steps:
+
+     - uses: actions/setup-go@v2
+       with:
+        go-version: 1.15
+
+     - uses: imjasonh/setup-crane@v0.1
+
+     - name: tag image
+       shell: bash
+       run: |
+         echo "${{ inputs.token }}" | crane auth login ${{ inputs.registry }} --username ${{ inputs.username }} --password-stdin
+         crane tag ${{ inputs.registry }}/${{ inputs.repo }}/${{ inputs.image }}:${{ inputs.existing-tag }} ${{ inputs.new-tag }}
+
+ 
