@@ -22,11 +22,8 @@
           "definitionFile": ["package", "versionNumber"],
           "dependencies": ["package", "versionNumber"],
           "package": ["versionNumber"],
-          "postInstallScript": ["package", "versionNumber"],
           "postInstallUrl": ["package", "versionNumber"],
           "releaseNotesUrl": ["package", "versionNumber"],
-          "uninstallScript": ["package", "versionNumber"],
-          "unpackagedMetadata": ["package", "versionNumber"],
           "versionDescription": ["package", "versionNumber"],
           "versionName": ["package", "versionNumber"],
           "versionNumber": ["package"]
@@ -61,17 +58,11 @@
           "path": {
             "$ref": "#/definitions/packageDirectory.path"
           },
-          "postInstallScript": {
-            "$ref": "#/definitions/packageDirectory.postInstallScript"
-          },
           "postInstallUrl": {
             "$ref": "#/definitions/packageDirectory.postInstallUrl"
           },
           "releaseNotesUrl": {
             "$ref": "#/definitions/packageDirectory.releaseNotesUrl"
-          },
-          "uninstallScript": {
-            "$ref": "#/definitions/packageDirectory.uninstallScript"
           },
           "versionDescription": {
             "$ref": "#/definitions/packageDirectory.versionDescription"
@@ -266,11 +257,6 @@
       "type": "string",
       "title": "Post Install Script",
       "description": "The post install script."
-    },
-    "packageDirectory.uninstallScript": {
-      "type": "string",
-      "title": "Uninstall Script",
-      "description": "The uninstall script."
     },
     "packageDirectory.includeProfileUserLicenses": {
       "type": "boolean",
