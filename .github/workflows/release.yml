@@ -155,7 +155,7 @@ jobs:
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
-    if: ${{ github.ref == 'refs/heads/develop' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     concurrency:
       group: sfpowerscripts-hotfix
     needs: [test]
