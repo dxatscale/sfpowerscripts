@@ -426,12 +426,15 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 return deploymentOptions;
             }
 
+            /* TODO: This should only be displayed during normal installation and not validate, as tests are skipped always
+              For addressing this, install source needs context on which stage package is installed
+              which we do not have here, hence changing this loglevel to DEBUG For now, */
             if (orgDetails && orgDetails.isSandbox) {
                 SFPLogger.log(
                     ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
                         `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
                         `-------------------------------------------------------------------------------------------------------------`,
-                    LoggerLevel.WARN,
+                    LoggerLevel.DEBUG,
                     this.logger
                 );
                 deploymentOptions.testLevel = TestLevel.RunNoTests;
