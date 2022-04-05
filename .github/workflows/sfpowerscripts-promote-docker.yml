@@ -52,7 +52,7 @@ jobs:
       with:
          repo: ${{ inputs.repo }}
          image: ${{ inputs.image }}
-         existing-tag: alpha
+         existing-tag: ${{ env.PKG_VERSION }}-${{ github.run_id }}
          new-tag: ${{ inputs.new-tag }}
          registry: ghcr.io
          username:  ${{ env.DOCKER_USERNAME }}
