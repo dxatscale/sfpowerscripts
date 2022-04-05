@@ -1,20 +1,32 @@
-name: Build and Publish  Docker Image to DockerHub
+name: Build and Publish sfpowerscripts Docker Image to ghcr
 
 
 on:
   workflow_call:
    inputs:
-    environment:
+    job-environment:
         type: string
         required: true
+    repo:
+      type: string
+      required: true
+    image:
+      type: string
+      required: false
+      default: sfpowerscripts
+    suffix-tag:
+      type: string
+      required: true
    secrets:
-      gh-token:
-        required: true
+      username:
+          required: true
+      token:
+          required: true
 jobs:
 
   build:
     name: 'build docker image'
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.job-environment }}
     runs-on: ubuntu-latest
     steps:
 
@@ -26,22 +38,18 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
-    - name: Expose GitHub Runtime
-      uses: crazy-max/ghaction-github-runtime@v1
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
         registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.gh-token }}
+        username: ${{ secrets.username }}
+        password: ${{ secrets.token }}
 
 
     - name: 'Get package version'
       run: |
         echo "PKG_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)" >> $GITHUB_ENV
-
-
 
     - name: Build and push
       id: docker_build
@@ -51,10 +59,7 @@ jobs:
           context: dockerfiles
           push: true
           tags: |
-              ghcr.io/dxatscale/sfpowerscripts:${{ env. PKG_VERSION}}-${{ github.run_id }}
-              ghcr.io/dxatscale/sfpowerscripts:${{ github.ref_name }}
-          cache-from: type=registry,ref=ghcr.io/dxatscale/sfpowerscripts:${{ github.ref_name }}
-          cache-to: type=registry,ref=ghcr.io/dxatscale/sfpowerscripts:${{ github.ref_name }},mode=max
+              ghcr.io/${{ inputs.repo }}/${{ inputs.image }}:${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
           build-args: | 
-                  SFPOWERSCRIPTS_VERSION=${{ env. PKG_VERSION}}
+                  SFPOWERSCRIPTS_VERSION=${{ env.PKG_VERSION }}
                   GIT_COMMIT=${{ github.sha}}

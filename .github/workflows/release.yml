@@ -1,4 +1,13 @@
-# This pipeline builds the sfpowerscripts plugin
+# This pipeline builds the sfpowerscripts & sfp cli plugin
+# Needs following secrets
+# NPM_TOKEN :  Token to npm.js for dx@scale scope
+# DOCKER_USERNAME : Token to username for ghcr.io for publishing docker
+# DOCKER_SECRET: Password/Token for ghcr.io for publishing docker
+#
+# Needs the following env vars
+# The repo name (for docker registry) has to be set in each job due to a limitiation with github actions
+# as global vars (non secrets) cant be passed down to other jobs
+
 
 name: 'Release'
 
@@ -16,8 +25,10 @@ on:
 
    workflow_dispatch:
 
-jobs:
-#Merge to Develop, create builds    
+
+
+# Merge to Develop, create builds   
+jobs: 
   build:
     name: 'build packages'
     uses: ./.github/workflows/buildPackages.yml
@@ -30,20 +41,20 @@ jobs:
     concurrency:
       group: build
 
-  #On successfull creation of packages,(or even if lerna skips), create docker image
+ # On successfull creation of packages,(or even if lerna skips), create docker image
   build-docker:
     name: 'build docker image'
-    uses: ./.github/workflows/buildDocker.yml
+    uses: ./.github/workflows/sfpowerscripts-build-docker.yml
     with:
-      environment: 'build-docker'
+      job-environment: 'build-docker'
+      suffix-tag: ${{ github.run_id }}
+      repo: 'dxatscale'
     secrets:
-      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
+       username: ${{ secrets.DOCKER_USERNAME }}
+       token: ${{ secrets.DOCKER_SECRET }}
     needs: [ build ]
     concurrency:
       group: build
-
-
-
 
 
 # Integration Test Stage
@@ -61,31 +72,6 @@ jobs:
  #Promotion Stages
 
 # Sfpowercripts
-  hotfix:
-    name: 'build hotfix packages'
-    uses: ./.github/workflows/buildPackages.yml
-    with:
-      version: 'hotfix'
-      publish: true
-      environment: hotfix
-    secrets:
-      npm-token: ${{ secrets.NPM_TOKEN }}
-    if: ${{ github.ref == 'refs/heads/main' }}
-    needs: [ test]
-    concurrency:
-     group: hotfix
-
-  hotfix-docker:
-    name: 'build hotfix docker'
-    uses: ./.github/workflows/buildDocker.yml
-    with:
-      environment: 'hotfix-docker'
-    secrets:
-      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
-    if: ${{ github.ref == 'refs/heads/main' }}
-    needs: [ test]
-    concurrency:
-      group: hotfix
 
   sfpowerscripts-alpha:
     name: 'sfpowerscripts alpha'
@@ -102,20 +88,20 @@ jobs:
     needs: [test]
   
   alpha-docker:
-    name: 'build alpha docker'
-    uses: ./.github/workflows/promoteDocker.yml
+    name: 'promote docker to alpha'
+    uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
-      version: 'alpha'
-      environment: sfpowerscripts-alpha
+      job-environment: 'sfpowerscripts-alpha'
+      new-tag: alpha   
+      repo: 'dxatscale'
     secrets:
-      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
+      username: ${{ secrets.DOCKER_USERNAME }}
+      token: ${{ secrets.DOCKER_SECRET }}
     if: ${{ github.ref == 'refs/heads/develop' }}
     concurrency:
       group: sfpowerscripts-alpha
     needs: [test]
 
-
- 
   sfpowerscripts-beta:
     name: 'sfpowerscripts beta'
     uses: ./.github/workflows/promotePackage.yml
@@ -131,17 +117,48 @@ jobs:
     needs: [sfpowerscripts-alpha, alpha-docker]
   
   beta-docker:
-    name: 'build beta docker'
-    uses: ./.github/workflows/promoteDocker.yml
+    name: 'promote docker to beta'
+    uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
-      version: 'beta'
-      environment: sfpowerscripts-beta
+      job-environment: 'sfpowerscripts-beta'
+      repo: 'dxatscale'
+      new-tag: beta   
     secrets:
-      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
+      username: ${{ secrets.DOCKER_USERNAME }}
+      token: ${{ secrets.DOCKER_SECRET }}
     if: ${{ github.ref == 'refs/heads/develop' }}
     concurrency:
       group: sfpowerscripts-beta
     needs: [sfpowerscripts-alpha, alpha-docker]
+ 
+  sfpowerscripts-hotfix:
+    name: 'sfpowerscripts hotfix'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'hotfix'
+      pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
+      environment: sfpowerscripts-hotfix
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    if: ${{ github.ref == 'refs/heads/main' }}
+    concurrency:
+      group: sfpowerscripts-hotfix
+    needs: [test]
+
+  hotfix-docker:
+    name: 'promote docker to hotfix'
+    uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
+    with:
+      job-environment: 'sfpowerscripts-hotfix'
+      repo: 'dxatscale'     
+      new-tag: hotfix   
+    secrets:
+      username: ${{ secrets.DOCKER_USERNAME }}
+      token: ${{ secrets.DOCKER_SECRET }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    concurrency:
+      group: sfpowerscripts-hotfix
+    needs: [test]
 
   sfpowerscripts-prod:
     name: 'sfpowerscripts prod'
@@ -152,26 +169,28 @@ jobs:
       environment: sfpowerscripts-prod
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
+    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.sfpowerscripts-hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
     concurrency:
       group: sfpowerscripts-prod
-    needs: [sfpowerscripts-beta, hotfix,hotfix-docker,beta-docker]
+    needs: [sfpowerscripts-beta, sfpowerscripts-hotfix,hotfix-docker,beta-docker]
 
   prod-docker:
-    name: 'build prod docker'
-    uses: ./.github/workflows/promoteDocker.yml
+    name: 'promote docker to prod'
+    uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
-      version: 'latest'
-      environment: sfpowerscripts-prod
+      job-environment: 'sfpowerscripts-prod'
+      repo: 'dxatscale'
+      new-tag: latest   
     secrets:
-      gh-token: ${{ secrets.CONTAINER_PAT_TOKEN }}
-    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
+      username: ${{ secrets.DOCKER_USERNAME }}
+      token: ${{ secrets.DOCKER_SECRET }}
+    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.sfpowerscripts-hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
     concurrency:
       group: sfpowerscripts-prod
-    needs: [sfpowerscripts-beta, hotfix,hotfix-docker,beta-docker]
+    needs: [sfpowerscripts-beta, sfpowerscripts-hotfix, hotfix-docker,beta-docker]
 
 
-# sfp-cli
+#sfp-cli
   sfp-hotfix:
     name: 'sfp-cli hotfix'
     uses: ./.github/workflows/promotePackage.yml
@@ -184,8 +203,6 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     needs: test
 
-
-
   sfp-alpha:
     name: 'sfp-cli alpha'
     uses: ./.github/workflows/promotePackage.yml
@@ -197,8 +214,6 @@ jobs:
       npm-token: ${{ secrets.NPM_TOKEN }}
     if: ${{ github.ref == 'refs/heads/develop' }}
     needs: test
-
-
 
   sfp-beta:
     name: 'sfp-cli beta'

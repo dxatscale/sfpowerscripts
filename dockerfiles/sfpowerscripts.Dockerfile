@@ -1,8 +1,7 @@
 FROM heroku/heroku:20
 
 ENV DEBIAN_FRONTEND=noninteractive
-ARG SFPOWERSCRIPTS_VERSION=alpha
-ARG GIT_COMMIT
+
 
 
 # Create symbolic link from sh to bash
@@ -17,19 +16,17 @@ RUN mkdir /usr/local/lib/nodejs \
   && rm nodejs.tar.gz node-file-lock.sha
 
 
+
 # Install OpenJDK-11
 RUN apt-get update && apt-get install --assume-yes openjdk-11-jdk-headless jq
 RUN apt-get autoremove --assume-yes \
      && apt-get clean --assume-yes \
      && rm -rf /var/lib/apt/lists/*
 
-
-# ReInstall Python make and g++ for node-gyp rebuild
-RUN apt-get update && apt-get install -qq software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update -qq && \
+# ReInstall make and g++ for node-gyp rebuild
+RUN apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive \
-    apt-get install -qq python3.8 make  g++ && \
+    apt-get install -qq  make  g++ && \
     apt-get clean -qq 
 
 # Install latest chrome dev package and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and a few others)
@@ -65,19 +62,28 @@ RUN export XDG_DATA_HOME && \
     export XDG_CACHE_HOME
 
 
+
+
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 RUN npm install --global sfdx-cli@7.144.0 --ignore-scripts
 RUN  npm -g install vlocity@1.15.2
+
+
+ENV SFDX_CONTAINER_MODE true
+
+
+
 # Install sfdx plugins
 RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.8.0
 RUN echo 'y' | sfdx plugins:install sfdmu@4.13.0
 RUN echo 'y' | sfdx plugins:install sfpowerkit@4.1.5
+
+ARG SFPOWERSCRIPTS_VERSION=alpha
+ARG GIT_COMMIT
+
 RUN echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts@$SFPOWERSCRIPTS_VERSION
 
 
-
-ENV SFDX_CONTAINER_MODE true
-ENV DEBIAN_FRONTEND=dialog
 
 
 #Add Labels
@@ -89,4 +95,3 @@ LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/Accenture/sfpowerscripts"
 LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - April 22"
-

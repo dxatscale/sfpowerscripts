@@ -1,0 +1,47 @@
+name: Promote Docker Image in ghcr manually
+
+
+on:
+  workflow_dispatch:
+   inputs:
+    repo:
+      type: string
+      required: true
+      default: dxatscale
+    image:
+      type: string
+      required: true
+      default: sfpowerscripts
+    existing-tag:
+      type: string
+      required: true
+      default: latest
+    new-tag:
+      type: string
+      required: true
+      default: latest
+
+jobs:
+
+  build:
+    name: 'tag sfpowerscripts docker image'
+    environment: tagger
+    runs-on: ubuntu-latest
+    steps:
+
+     - uses: actions/checkout@v2
+       with:
+        fetch-depth: 0
+
+
+     - name: 'Tag Docker'
+       uses: ./.github/actions/tagDocker
+       with:
+         repo: ${{ github.event.inputs.repo }} 
+         image: ${{ github.event.inputs.image }} 
+         existing-tag: ${{ github.event.existing-tag }} 
+         new-tag:  ${{ github.event.new-tag }} 
+         registry: ghcr.io
+         username:  ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+         token: ${{ secrets.DOCKER_REGISTRY_AUTH_TOKEN }}
+
