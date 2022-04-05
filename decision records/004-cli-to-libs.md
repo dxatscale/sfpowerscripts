@@ -1,6 +1,7 @@
 # Promote open source @salesforce node libraries as opposed to wrapping over CLI
 
 • Status: Approved
+
 • Issue: #883 #876 #847 #841 
 
 ## Context and Problem Statement
@@ -18,6 +19,7 @@ sfpowerscripts originated as an easy to use wrapper over the Salesforce CLI comm
 - Unnecessary processing due to usage of cli as an api
 
     sfpowerscripts dependency on the cli through the --json flag, makes it really difficult to display progress information for a particular operation. Consider the example of displaying a progress for mdapi deploy (used behind the scene for source ), this result in the following seqeuence of activities
+
       a). Trigger a deploy without waiting for results to retrieve the deploy id (mdapi:deploy)
       b). Use the deploy id to fetch the status display progress information over a polling interval (mdapi:deploy:report)
       c). Fetch the final report and then proceed with the appropriate coure of action (mdapi:deploy:report)
