@@ -42,6 +42,6 @@ jobs:
          existing-tag: ${{ github.event.existing-tag }} 
          new-tag:  ${{ github.event.new-tag }} 
          registry: ghcr.io
-         username:  ${{ secrets.DOCKER_REGISTRY_USERNAME }}
-         token: ${{ secrets.DOCKER_REGISTRY_AUTH_TOKEN }}
+         username:  ${{ secrets.DOCKER_USERNAME }}
+         token: ${{ secrets.DOCKER_SECRET }}
 
