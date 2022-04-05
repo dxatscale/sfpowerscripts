@@ -53,6 +53,9 @@ export default class BuildImpl {
     private failedPackages: string[];
     private generatedPackages: PackageMetadata[];
 
+    private repository_url: string;
+    private commit_id: string;
+
     private recursiveAll = (a) => Promise.all(a).then((r) => (r.length == a.length ? r : this.recursiveAll(a)));
 
     public constructor(private props: BuildProps) {
@@ -70,6 +73,15 @@ export default class BuildImpl {
         generatedPackages: PackageMetadata[];
         failedPackages: string[];
     }> {
+        const git = simplegit();
+        if (this.props.repourl == null) {
+            this.repository_url = (await git.getConfig('remote.origin.url')).value;
+        } else this.repository_url = this.props.repourl;
+
+        if (!this.repository_url) throw new Error("Remote origin must be set in repository");
+
+        this.commit_id = await git.revparse(['HEAD']);
+
         this.packagesToBeBuilt = this.getAllPackages(this.props.projectDirectory);
 
         this.validatePackageNames(this.packagesToBeBuilt);
@@ -453,14 +465,6 @@ export default class BuildImpl {
         isSkipValidation: boolean,
         isValidateMode: boolean
     ): Promise<PackageMetadata> {
-        let repository_url: string;
-        const git = simplegit();
-        if (this.props.repourl == null) {
-            repository_url = (await git.getConfig('remote.origin.url')).value;
-        } else repository_url = this.props.repourl;
-
-        let commit_id = await git.revparse(['HEAD']);
-
         console.log(COLOR_KEY_MESSAGE(`Package creation initiated for  ${sfdx_package}`));
 
         let result: PackageMetadata;
@@ -468,25 +472,25 @@ export default class BuildImpl {
             if (packageType === 'Unlocked') {
                 result = await this.createUnlockedPackage(
                     sfdx_package,
-                    commit_id,
-                    repository_url,
+                    this.commit_id,
+                    this.repository_url,
                     config_file_path,
                     devhub_alias,
                     wait_time,
                     isSkipValidation
                 );
             } else if (packageType === 'Source') {
-                result = await this.createSourcePackage(sfdx_package, commit_id, repository_url);
+                result = await this.createSourcePackage(sfdx_package, this.commit_id, this.repository_url);
             } else if (packageType == 'Data') {
-                result = await this.createDataPackage(sfdx_package, commit_id, repository_url);
+                result = await this.createDataPackage(sfdx_package, this.commit_id, this.repository_url);
             } else {
                 throw new Error(`Unknown package type ${packageType}`);
             }
         } else {
             if (packageType === 'Source' || packageType == 'Unlocked') {
-                result = await this.createSourcePackage(sfdx_package, commit_id, repository_url);
+                result = await this.createSourcePackage(sfdx_package, this.commit_id, this.repository_url);
             } else if (packageType == 'Data') {
-                result = await this.createDataPackage(sfdx_package, commit_id, repository_url);
+                result = await this.createDataPackage(sfdx_package, this.commit_id, this.repository_url);
             }
         }
 
