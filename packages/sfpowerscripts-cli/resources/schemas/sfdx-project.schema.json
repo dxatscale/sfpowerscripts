@@ -166,6 +166,10 @@
       "type": "number",
       "description": "By default, the OAuth port is 1717. However, change this port if this port is already in use, and you plan to create a connected app in your Dev Hub org to support JWT-based authorization."
     },
+    "pushPackageDirectoriesSequentially": {
+      "type": "boolean",
+      "description": "Whether to push package directories sequentially. If true, the package directories are pushed in the order they are listed in the project file. By default, the package directories are pushed in one deployment."
+    },
     "plugins": {
       "title": "CLI Plugins custom settings",
       "type": "object",
