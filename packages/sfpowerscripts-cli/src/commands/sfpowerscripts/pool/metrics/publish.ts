@@ -1,7 +1,7 @@
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import PoolListImpl from '../../../../impl/pool/PoolListImpl';
+import PoolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
 import LimitsFetcher from '@dxatscale/sfpowerscripts.core/lib/limits/LimitsFetcher';
 const Table = require('cli-table');

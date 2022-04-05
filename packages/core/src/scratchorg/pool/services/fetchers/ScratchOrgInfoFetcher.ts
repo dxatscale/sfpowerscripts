@@ -1,6 +1,6 @@
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '../../../../logger/SFPLogger';
 import { Org } from '@salesforce/core';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
+import ScratchOrg from '../../../ScratchOrg';
 const retry = require('async-retry');
 const ORDER_BY_FILTER = ' ORDER BY CreatedDate ASC';
 

@@ -8,7 +8,7 @@ import {
 } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import OrgAuth from '../impl/sfdxwrappers/OrgAuth';
 import PickAnOrgWorkflow from '../workflows/org/PickAnOrgWorkflow';
-import PoolListImpl from '../impl/pool/PoolListImpl';
+import PoolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl';
 import { isEmpty } from 'lodash';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
 import SfpCommand from '../SfpCommand';

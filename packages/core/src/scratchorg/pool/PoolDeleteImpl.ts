@@ -1,9 +1,9 @@
-import SFPLogger from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger from '../../logger/SFPLogger';
 import { Org } from '@salesforce/core';
 import { PoolBaseImpl } from './PoolBaseImpl';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
+import ScratchOrg from '../ScratchOrg';
 import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
-import ScratchOrgOperator from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator';
+import ScratchOrgOperator from '../ScratchOrgOperator';
 
 export default class PoolDeleteImpl extends PoolBaseImpl {
     private tag: string;

@@ -63,3 +63,15 @@ jobs:
           build-args: | 
                   SFPOWERSCRIPTS_VERSION=${{ env.PKG_VERSION }}
                   GIT_COMMIT=${{ github.sha}}
+
+   #Tag the image as develop
+    - name: 'Tag Docker'
+      uses: ./.github/actions/tagDocker
+      with:
+         repo: ${{ inputs.repo }}
+         image: ${{ inputs.image }}
+         existing-tag: ${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
+         new-tag: develop
+         registry: ghcr.io
+         username:   ${{ secrets.username }}
+         token: ${{ secrets.token }}

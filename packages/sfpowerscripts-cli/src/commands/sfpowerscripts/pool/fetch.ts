@@ -2,7 +2,7 @@ import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
 import { AnyJson } from '@salesforce/ts-types';
-import PoolFetchImpl from '../../../impl/pool/PoolFetchImpl';
+import PoolFetchImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl';
 import * as fs from 'fs-extra';
 import SFPLogger, { LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';

@@ -1,6 +1,6 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { AnyJson } from '@salesforce/ts-types';
-import poolListImpl from '../../../impl/pool/PoolListImpl';
+import poolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl';
 import { isNullOrUndefined } from 'util';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
 import SFPLogger, { LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';

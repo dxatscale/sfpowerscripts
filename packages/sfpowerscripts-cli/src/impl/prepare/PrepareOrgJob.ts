@@ -11,13 +11,12 @@ import { Stage } from '../Stage';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import InstallUnlockedPackageWrapper from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
-import PoolJobExecutor, { JobError, ScriptExecutionResult } from '../pool/PoolJobExecutor';
+import { Result, ok, err } from 'neverthrow';
+import PoolJobExecutor, { JobError, ScriptExecutionResult } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolJobExecutor';
 import { Connection, Org } from '@salesforce/core';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import { PoolConfig } from '../pool/PoolConfig';
-import { Result, ok, err } from 'neverthrow';
+import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
 import RelaxIPRange from '@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange';
-import SourceTrackingResourceController from '../pool/SourceTrackingResourceController';
 import VlocityPackUpdateSettings from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings';
 import VlocityInitialInstall from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall';
 
@@ -118,12 +117,6 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                     this.pool.succeedOnDeploymentErrors
                         ? this.handleDeploymentErrorsForPartialDeployment(scratchOrg, deploymentResult, packageLogger)
                         : this.handleDeploymentErrorsForFullDeployment(scratchOrg, deploymentResult, packageLogger);
-                }
-
-                if (deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH && deploymentResult.deployed.length > 0) {
-                    let sourceTrackingResourceController = new SourceTrackingResourceController(conn, packageLogger);
-                    sourceTrackingResourceController.createSourceTrackingResources(deploymentResult);
-                    await sourceTrackingResourceController.deploy();
                 }
             }
 
