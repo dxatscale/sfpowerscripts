@@ -1,7 +1,7 @@
 import { Org } from '@salesforce/core';
 import { PoolBaseImpl } from './PoolBaseImpl';
-import ScratchOrgOperator from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator';
 import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
+import ScratchOrgOperator from '../ScratchOrgOperator';
 
 export default class PoolOrgDeleteImpl extends PoolBaseImpl {
     username: string;

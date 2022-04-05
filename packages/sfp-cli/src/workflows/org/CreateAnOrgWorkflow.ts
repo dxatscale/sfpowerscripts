@@ -1,7 +1,7 @@
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
 import { Org } from '@salesforce/core';
 import inquirer = require('inquirer');
-import PoolListImpl from '../../impl/pool/PoolListImpl';
+import PoolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl';
 import { SfpProjectConfig } from '../../types/SfpProjectConfig';
 import { isEmpty } from 'lodash';
 import cli from 'cli-ux';
@@ -12,7 +12,7 @@ import SFPLogger, {
 } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
 import InstalledPackageDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer';
-import PoolFetchImpl from '../../impl/pool/PoolFetchImpl';
+import PoolFetchImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl';
 import OrgOpen from '../../impl/sfdxwrappers/OrgOpen';
 import InstallDependenciesWorkflow from '../package/InstallDependenciesWorkflow';
 import ScratchOrgOperator from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator';

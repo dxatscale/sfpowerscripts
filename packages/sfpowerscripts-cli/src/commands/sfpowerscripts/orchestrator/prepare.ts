@@ -5,10 +5,10 @@ import PrepareImpl from '../../../impl/prepare/PrepareImpl';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import { Stage } from '../../../impl/Stage';
 import * as fs from 'fs-extra';
-import ScratchOrgInfoFetcher from '../../../impl/pool/services/fetchers/ScratchOrgInfoFetcher';
+import ScratchOrgInfoFetcher from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher';
 import Ajv from 'ajv';
 import path = require('path');
-import { PoolErrorCodes } from '../../../impl/pool/PoolError';
+import { PoolErrorCodes } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolError';
 import SFPLogger, {
     LoggerLevel,
     COLOR_ERROR,
@@ -18,7 +18,7 @@ import SFPLogger, {
     COLOR_KEY_MESSAGE,
 } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
-import { PoolConfig } from '../../../impl/pool/PoolConfig';
+import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
 import { COLOR_WARNING } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 
 Messages.importMessagesDirectory(__dirname);

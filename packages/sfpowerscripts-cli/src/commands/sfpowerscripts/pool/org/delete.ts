@@ -1,7 +1,7 @@
 import { flags } from '@salesforce/command';
 import { AnyJson } from '@salesforce/ts-types';
 import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
-import PoolOrgDeleteImpl from '../../../../impl/pool/PoolOrgDeleteImpl';
+import PoolOrgDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl';
 import SFPLogger from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { Messages } from '@salesforce/core';
 

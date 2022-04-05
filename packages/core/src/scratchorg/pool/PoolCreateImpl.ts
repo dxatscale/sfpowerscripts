@@ -2,7 +2,7 @@ import { Org } from '@salesforce/core';
 import Bottleneck from 'bottleneck';
 import { PoolConfig } from './PoolConfig';
 import { PoolBaseImpl } from './PoolBaseImpl';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
+import ScratchOrg from '../ScratchOrg';
 import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
 import ScratchOrgLimitsFetcher from './services/fetchers/ScratchOrgLimitsFetcher';
 import ScratchOrgInfoAssigner from './services/updaters/ScratchOrgInfoAssigner';
@@ -10,12 +10,12 @@ import * as rimraf from 'rimraf';
 import * as fs from 'fs-extra';
 import PoolJobExecutor, { ScriptExecutionResult } from './PoolJobExecutor';
 import { PoolError, PoolErrorCodes } from './PoolError';
-import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from '../../logger/SFPLogger';
 import { Result, ok, err } from 'neverthrow';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
+import SFPStatsSender from '../../stats/SFPStatsSender';
 import { EOL } from 'os';
-import OrgDetailsFetcher from '@dxatscale/sfpowerscripts.core/lib/org/OrgDetailsFetcher';
-import ScratchOrgOperator from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator';
+import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
+import ScratchOrgOperator from '../ScratchOrgOperator';
 
 export default class PoolCreateImpl extends PoolBaseImpl {
     private limiter;
