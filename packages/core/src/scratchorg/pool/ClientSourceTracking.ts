@@ -49,7 +49,7 @@ export default class ClientSourceTracking {
      * Create local source tracking from sfpowerscripts artifacts installed in scratch org
      */
     private async createLocalSourceTracking() {
-        let tempDir = tmp.dirSync({ unsafeCleanup: true });    
+        let tempDir = tmp.dirSync({ unsafeCleanup: true });
         try {
             let git: SimpleGit = simplegit();
             const repoPath = (await git.getConfig('remote.origin.url')).value;
