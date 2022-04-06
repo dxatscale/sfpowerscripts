@@ -66,8 +66,8 @@ jobs:
     # https://github.com/docker/metadata-action
     - name: Extract Docker metadata
       id: meta
-       uses: docker/metadata-action@v3
-       with:
+      uses: docker/metadata-action@v3
+      with:
           images:  ghcr.io/${{ inputs.repo }}/${{ inputs.image }}
 
 
