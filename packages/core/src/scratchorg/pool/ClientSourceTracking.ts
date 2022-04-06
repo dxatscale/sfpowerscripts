@@ -49,7 +49,7 @@ export default class ClientSourceTracking {
      * Create local source tracking from sfpowerscripts artifacts installed in scratch org
      */
     private async createLocalSourceTracking() {
-        let tempDir = tmp.dirSync({ unsafeCleanup: true });
+        let tempDir = tmp.dirSync({ unsafeCleanup: true });    
         try {
             let git: SimpleGit = simplegit();
             const repoPath = (await git.getConfig('remote.origin.url')).value;
@@ -68,9 +68,9 @@ export default class ClientSourceTracking {
 
             git = simplegit(tempDir.name);
             for (const artifact of sfpowerscriptsArtifacts) {
-                SFPLogger.log(`Analyzing package ${COLOR_KEY_MESSAGE(artifact.Name)}`, LoggerLevel.INFO);
+                SFPLogger.log(`\nAnalyzing package ${COLOR_KEY_MESSAGE(artifact.Name)}`, LoggerLevel.INFO);
                 // Checkout version of source code from which artifact was created
-                git.checkout(artifact.CommitId__c);
+                await git.checkout(artifact.CommitId__c);
                 SFPLogger.log(`Version pushed while preparing this org ${artifact.Version__c}`, LoggerLevel.INFO);
                 SFPLogger.log(`Checked out SHA ${artifact.CommitId__c}`, LoggerLevel.INFO);
                 const projectConfig = ProjectConfig.getSFDXPackageManifest(tempDir.name);
@@ -78,7 +78,9 @@ export default class ClientSourceTracking {
                 try {
                     const packageType = ProjectConfig.getPackageType(projectConfig, artifact.Name);
                     if (packageType === 'Unlocked' || packageType === 'Source') {
-                        SFPLogger.log(`Fixing tracking for ${COLOR_KEY_MESSAGE(artifact.Name)}`, LoggerLevel.INFO);
+                        SFPLogger.log(`Updated tracking for package: ${artifact.Name}`, LoggerLevel.INFO);
+            
+
                         await tracking.updateLocalTracking({
                             files: [ProjectConfig.getPackageDescriptorFromConfig(artifact.Name, projectConfig).path],
                         });
@@ -87,7 +89,7 @@ export default class ClientSourceTracking {
                       SFPLogger.log(`Data Package Encountered.. skipping`, LoggerLevel.INFO);
                 } catch (error) {
                     SFPLogger.log(`Unable to update local source tracking due to ${error.message}`, LoggerLevel.INFO);
-                    SFPLogger.log(`Skipping package.. ${COLOR_KEY_MESSAGE(artifact.Name)}`,LoggerLevel.WARN);
+                    SFPLogger.log(`Skipping package.. ${ artifact.Name }`,LoggerLevel.WARN);
                 }
             }
 
