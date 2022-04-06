@@ -52,6 +52,8 @@ jobs:
     secrets:
        username: ${{ secrets.DOCKER_USERNAME }}
        token: ${{ secrets.DOCKER_SECRET }}
+       signing_secret: ${{ secrets.SIGNING_SECRET }}
+       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
     needs: [ build ]
     concurrency:
       group: build
