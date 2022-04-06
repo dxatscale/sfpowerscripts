@@ -22,6 +22,11 @@ on:
           required: true
       token:
           required: true
+      signing_secret:
+          required: true
+      cosign_password:
+          required: true
+      
 jobs:
 
   build:
@@ -35,6 +40,16 @@ jobs:
         fetch-depth: 0
 
 
+    # Install the cosign tool except on PR
+    # https://github.com/sigstore/cosign-installer
+    - name: Install cosign
+      uses: sigstore/cosign-installer@main
+      with:
+        cosign-release: 'v1.7.1'
+
+    - name: Write signing key to disk (only needed for `cosign sign --key`)
+      run: echo "${{ secrets.signing_secret }}" > cosign.key
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
@@ -45,6 +60,15 @@ jobs:
         registry: ghcr.io
         username: ${{ secrets.username }}
         password: ${{ secrets.token }}
+
+
+    # Extract metadata (tags, labels) for Docker
+    # https://github.com/docker/metadata-action
+    - name: Extract Docker metadata
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+          images:  ghcr.io/${{ inputs.repo }}/${{ inputs.image }}
 
 
     - name: 'Get package version'
@@ -58,11 +82,23 @@ jobs:
           file: dockerfiles/sfpowerscripts.Dockerfile
           context: dockerfiles
           push: true
+          labels: ${{ steps.meta.outputs.labels }}
           tags: |
               ghcr.io/${{ inputs.repo }}/${{ inputs.image }}:${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
           build-args: | 
                   SFPOWERSCRIPTS_VERSION=${{ env.PKG_VERSION }}
                   GIT_COMMIT=${{ github.sha}}
+
+
+    - name: Sign the published Docker image
+      run: | 
+          cosign sign --key cosign.key \
+            -a "repo=${{ github.repository }}" \
+            -a "workflow=${{ github.workflow }}" \
+            -a "ref=${{ github.sha }}" \
+             ghcr.io/${{ inputs.repo }}/${{ inputs.image }}:${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
+      env:
+       COSIGN_PASSWORD: ${{ secrets.cosign_password }}
 
    #Tag the image as develop
     - name: 'Tag Docker'

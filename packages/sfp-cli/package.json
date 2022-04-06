@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfp-cli",
     "description": "Developer CLI for Salesforce programs following the DX@Scale model",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "author": "dxatscale",
     "release": "April 22",
     "bin": {
@@ -9,7 +9,7 @@
     },
     "bugs": "https://github.com/dxatscale/sfp-cli/issues",
     "dependencies": {
-        "@dxatscale/sfpowerscripts.core": "^19.0.0",
+        "@dxatscale/sfpowerscripts.core": "19.0.1",
         "@oclif/command": "^1.8.0",
         "@oclif/config": "1.18.3",
         "@oclif/parser": "^3.8.5",
@@ -17,7 +17,7 @@
         "@oclif/plugin-update": "^1.5.0",
         "@oclif/plugin-warn-if-update-available": "^1.7.0",
         "@salesforce/core": "2.35.3",
-        "@salesforce/source-deploy-retrieve": "5.12.3",
+        "@salesforce/source-deploy-retrieve": "5.12.7",
         "adm-zip": "^0.5.9",
         "chalk": "^4.1.2",
         "cli-table": "^0.3.6",
