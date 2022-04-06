@@ -182,7 +182,6 @@
   },
   "definitions": {
     "packageDirectory.path": {
-      "title": "Path",
       "type": "string",
       "description": "If you don’t specify a path, the Salesforce CLI uses a placeholder when you create a package."
     },
@@ -252,11 +251,6 @@
       "type": "string",
       "title": "Post Install Url",
       "description": "The post install url."
-    },
-    "packageDirectory.postInstallScript": {
-      "type": "string",
-      "title": "Post Install Script",
-      "description": "The post install script."
     },
     "packageDirectory.includeProfileUserLicenses": {
       "type": "boolean",
