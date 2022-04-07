@@ -89,12 +89,10 @@ export default class ClientSourceTracking {
                     LoggerLevel.INFO,
                     this.logger
                 );
-                SFPLogger.log(`Analyzing package ${COLOR_KEY_MESSAGE(artifact.Name)}`, LoggerLevel.INFO, this.logger);
-
-                //Reset the project json before going for full track
-                await git.raw(['restore', 'sfdx-project.json']);
+                SFPLogger.log(`Analyzing package ${COLOR_KEY_MESSAGE(artifact.Name)}`, LoggerLevel.INFO, this.logger);         
                 // Checkout version of source code from which artifact was created
-                await git.checkout(artifact.CommitId__c);
+                await git.checkout(['-f',artifact.CommitId__c]);
+               
                 SFPLogger.log(
                     `Version pushed while preparing this org is ${artifact.Version__c} with SHA ${artifact.CommitId__c}`,
                     LoggerLevel.INFO,
