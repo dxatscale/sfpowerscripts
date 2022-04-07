@@ -89,7 +89,7 @@ export default class ClientSourceTracking {
                     LoggerLevel.INFO,
                     this.logger
                 );
-                SFPLogger.log(`Analyzing package ${COLOR_KEY_MESSAGE(artifact.Name)}`, LoggerLevel.INFO, this.logger);         
+                SFPLogger.log(`Analyzing package ${COLOR_KEY_MESSAGE(artifact.Name)}`, LoggerLevel.INFO, this.logger);
                 // Checkout version of source code from which artifact was created
                 await git.checkout(['-f',artifact.CommitId__c]);
                
