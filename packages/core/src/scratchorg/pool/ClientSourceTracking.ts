@@ -61,6 +61,10 @@ export default class ClientSourceTracking {
            
             const sfpowerscriptsArtifacts = await this.org.getInstalledArtifacts();
 
+            //clean up MPD to just one package, so that source tracking lib
+            //does do a full scan and break
+            this.cleanupSFDXProjectJsonTonOnePackage(tempDir.name, sfpowerscriptsArtifacts[0].Name);
+
             const project = await SfdxProject.resolve(tempDir.name);
 
             // Create local source tracking files in temp repo
@@ -68,23 +72,35 @@ export default class ClientSourceTracking {
                 org: this.org,
                 project: project,
             });
-            tracking.ensureLocalTracking();
 
             git = simplegit(tempDir.name);
 
-            SFPLogger.log(`Total Artifacts to Analyze: ${sfpowerscriptsArtifacts.length}`, LoggerLevel.INFO);
+            SFPLogger.log(
+                `Total Artifacts to Analyze: ${sfpowerscriptsArtifacts.length}`,
+                LoggerLevel.INFO,
+                this.logger
+            );
 
             let count = 1;
             for (const artifact of sfpowerscriptsArtifacts) {
-                SFPLogger.log(EOL, LoggerLevel.INFO);
-                SFPLogger.log(COLOR_HEADER(`Package ${count} of ${sfpowerscriptsArtifacts.length}`), LoggerLevel.INFO);
-                SFPLogger.log(`Analyzing package ${COLOR_KEY_MESSAGE(artifact.Name)}`, LoggerLevel.INFO);
+                SFPLogger.log(EOL, LoggerLevel.INFO, this.logger);
+                SFPLogger.log(
+                    COLOR_HEADER(`Package ${count} of ${sfpowerscriptsArtifacts.length}`),
+                    LoggerLevel.INFO,
+                    this.logger
+                );
+                SFPLogger.log(`Analyzing package ${COLOR_KEY_MESSAGE(artifact.Name)}`, LoggerLevel.INFO, this.logger);
                 // Checkout version of source code from which artifact was created
-                await git.checkout(artifact.CommitId__c);
+                await git.checkout(['-f',artifact.CommitId__c]);
+               
                 SFPLogger.log(
                     `Version pushed while preparing this org is ${artifact.Version__c} with SHA ${artifact.CommitId__c}`,
-                    LoggerLevel.INFO
+                    LoggerLevel.INFO,
+                    this.logger
                 );
+
+                //clean up MPD to per package, to speed up
+                this.cleanupSFDXProjectJsonTonOnePackage(tempDir.name, artifact.Name);
 
                 const projectConfig = ProjectConfig.getSFDXPackageManifest(tempDir.name);
 
@@ -115,18 +131,23 @@ export default class ClientSourceTracking {
                         });
                         SFPLogger.log(
                             `Updated source tracking for package: ${artifact.Name} with ${componentCount} items`,
-                            LoggerLevel.INFO
+                            LoggerLevel.INFO,
+                            this.logger
                         );
-                    } else SFPLogger.log(`Encountered data package... skipping`, LoggerLevel.INFO);
+                    } else SFPLogger.log(`Encountered data package... skipping`, LoggerLevel.INFO, this.logger);
                 } catch (error) {
-                    SFPLogger.log(`Unable to update local source tracking due to ${error.message}`, LoggerLevel.INFO);
-                    SFPLogger.log(`Skipping package.. ${artifact.Name}`, LoggerLevel.WARN);
+                    SFPLogger.log(
+                        `Unable to update local source tracking due to ${error.message}`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
+                    SFPLogger.log(`Skipping package.. ${artifact.Name}`, LoggerLevel.WARN, this.logger);
                 }
                 count++;
             }
 
-            SFPLogger.log(EOL, LoggerLevel.INFO);
-            SFPLogger.log(`Copying the temporary repository over to original location`, LoggerLevel.INFO);
+            SFPLogger.log(EOL, LoggerLevel.INFO, this.logger);
+            SFPLogger.log(`Copying the temporary repository over to original location`, LoggerLevel.INFO, this.logger);
             // Copy source tracking files from temp repo to actual repo
             fs.mkdirpSync(path.join(this.sfdxOrgIdDir, 'localSourceTracking'));
             fs.copySync(
@@ -134,9 +155,28 @@ export default class ClientSourceTracking {
                 path.join(this.sfdxOrgIdDir, 'localSourceTracking')
             );
         } catch (error) {
-            SFPLogger.log(`Unable to update local source tracking due to ${error.message}`, LoggerLevel.ERROR);
+            SFPLogger.log(
+                `Unable to update local source tracking due to ${error.message}`,
+                LoggerLevel.ERROR,
+                this.logger
+            );
         } finally {
             tempDir.removeCallback();
+        }
+    }
+
+    private cleanupSFDXProjectJsonTonOnePackage(projectDir: string, packageName: string) {
+        try {
+            let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromManifest(projectDir, packageName);
+            fs.writeJSONSync(path.join(projectDir, 'sfdx-project.json'), cleanedUpProjectManifest, {
+                spaces: 4,
+            });
+        } catch (error) {
+            SFPLogger.log(
+                `sfdx-project.json not found/unable to write, skipping..` + error.message,
+                LoggerLevel.DEBUG,
+                this.logger
+            );
         }
     }
 }
