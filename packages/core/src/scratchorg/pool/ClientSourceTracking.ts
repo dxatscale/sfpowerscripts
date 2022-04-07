@@ -58,6 +58,7 @@ export default class ClientSourceTracking {
             const repoPath = (await git.getConfig('remote.origin.url')).value;
             await git.clone(repoPath, tempDir.name);
 
+           
             const sfpowerscriptsArtifacts = await this.org.getInstalledArtifacts();
 
             const project = await SfdxProject.resolve(tempDir.name);
