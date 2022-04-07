@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfpowerscripts.core",
-    "version": "19.0.3",
+    "version": "19.0.4",
     "description": "Core Module used by sfpowerscripts",
     "main": "lib/index",
     "types": "lib/index",
