@@ -58,7 +58,8 @@ export default class ClientSourceTracking {
             const repoPath = (await git.getConfig('remote.origin.url')).value;
             await git.clone(repoPath, tempDir.name);
 
-            const sfpowerscriptsArtifacts = await this.org.getInstalledArtifacts();
+            //Order by commit id.. so that we can eliminate multiple checkouts
+            const sfpowerscriptsArtifacts = await this.org.getInstalledArtifacts('CommitId__c');
 
             const project = await SfdxProject.resolve(tempDir.name);
 

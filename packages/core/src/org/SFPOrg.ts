@@ -10,10 +10,10 @@ export default class SFPOrg extends Org {
     /**
      * Get list of all artifacts in an org
      */
-    public async getInstalledArtifacts() {
+    public async getInstalledArtifacts(orderBy:string=`CreatedDate`) {
         try {
             let records = await QueryHelper.query<SfpowerscriptsArtifact2__c>(
-                'SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c ORDER BY CommitId__c ASC',
+                `'SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c ORDER BY ${orderBy} ASC'`,
                 this.getConnection(),
                 false
             );
