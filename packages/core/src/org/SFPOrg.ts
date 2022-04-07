@@ -13,7 +13,7 @@ export default class SFPOrg extends Org {
     public async getInstalledArtifacts() {
         try {
             let records = await QueryHelper.query<SfpowerscriptsArtifact2__c>(
-                'SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c',
+                'SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c ORDER BY CommitId__c ASC',
                 this.getConnection(),
                 false
             );
