@@ -65,7 +65,7 @@ RUN export XDG_DATA_HOME && \
 
 
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
-RUN npm install --global sfdx-cli@7.144.2 --ignore-scripts
+RUN npm install --global sfdx-cli@7.145.0 --ignore-scripts
 RUN  npm -g install vlocity@1.15.2
 
 
