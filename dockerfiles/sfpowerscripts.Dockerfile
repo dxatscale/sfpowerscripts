@@ -2,12 +2,16 @@ FROM heroku/heroku:20
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+ARG PMD_VERSION=${PMD_VERSION:-6.39.0}
+ARG SFPOWERSCRIPTS_VERSION=alpha
+ARG GIT_COMMIT
+
 
 
 # Create symbolic link from sh to bash
 ENV SHELL /bin/bash
 
-# Install NODE
+# Install NODE as used by sfdx-cli
 RUN echo 'a0f23911d5d9c371e95ad19e4e538d19bffc0965700f187840eb39a91b0c3fb0  ./nodejs.tar.gz' > node-file-lock.sha \
   && curl -s -o nodejs.tar.gz https://nodejs.org/dist/v16.13.2/node-v16.13.2-linux-x64.tar.gz \
   && shasum --check node-file-lock.sha
@@ -72,14 +76,19 @@ RUN  npm -g install vlocity@1.15.2
 ENV SFDX_CONTAINER_MODE true
 
 
+# Install PMD
+RUN mkdir -p $HOME/sfpowerkit
+RUN cd $HOME/sfpowerkit \
+      && wget -nc -O pmd.zip https://github.com/pmd/pmd/releases/download/pmd_releases/${PMD_VERSION}/pmd-bin-${PMD_VERSION}.zip \
+      && unzip pmd.zip \
+      && rm -f pmd.zip 
+
 
 # Install sfdx plugins
 RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.8.0
 RUN echo 'y' | sfdx plugins:install sfdmu@4.13.0
-RUN echo 'y' | sfdx plugins:install sfpowerkit@4.1.5
+RUN echo 'y' | sfdx plugins:install sfpowerkit@4.2.5
 
-ARG SFPOWERSCRIPTS_VERSION=alpha
-ARG GIT_COMMIT
 
 RUN echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts@$SFPOWERSCRIPTS_VERSION
 
