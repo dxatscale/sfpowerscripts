@@ -95,6 +95,8 @@ export default class Fetch extends SfdxCommand {
             this.flags.setdefaultusername
         );
 
+        fetchImpl.setSourceTrackingOnFetch();
+
         if (this.flags.json) SFPLogger.logLevel = LoggerLevel.HIDE;
 
         let result = await fetchImpl.execute();
