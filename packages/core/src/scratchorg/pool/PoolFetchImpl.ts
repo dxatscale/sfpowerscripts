@@ -18,6 +18,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
     private alias: string;
     private setdefaultusername: boolean;
     private authURLEnabledScratchOrg: boolean;
+    private isSourceTrackingToBeSet: boolean = false;
 
     public constructor(
         hubOrg: Org,
@@ -35,6 +36,10 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         this.sendToUser = sendToUser;
         this.alias = alias;
         this.setdefaultusername = setdefaultusername;
+    }
+
+    public setSourceTrackingOnFetch() {
+        this.isSourceTrackingToBeSet = true;
     }
 
     protected async onExec(): Promise<ScratchOrg> {
@@ -128,7 +133,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
             //Login to the org
             let isLoginSuccessFull = this.loginToScratchOrgIfSfdxAuthURLExists(soDetail);
             //Attempt to Fetch Source Tracking Files and silently continue if it fails
-            if (isLoginSuccessFull) {
+            if (isLoginSuccessFull && this.isSourceTrackingToBeSet) {
                 try {
                     const conn = (await Org.create({ aliasOrUsername: soDetail.username })).getConnection();
                     const clientSourceTracking = await ClientSourceTracking.create(conn, null);
