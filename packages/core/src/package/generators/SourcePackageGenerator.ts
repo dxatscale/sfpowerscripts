@@ -140,11 +140,24 @@ export default class SourcePackageGenerator {
         let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
         let ignoreFiles = projectConfig.plugins?.sfpowerscripts?.ignoreFiles;
 
+        //TODO: Make this readable
+        //This is a fix when sfppackage is used in stages where build is not involved
+        //So it has to be build from the root of the unzipped directory 
+        //and whatever mentioned in .json is already translated
+
         let rootForceIgnore: string = path.join(projectDirectory, '.forceignore');
         let copyForceIgnoreForStage = (stage) => {
             if (ignoreFiles?.[stage])
-                if (fs.existsSync(ignoreFiles[stage]))
-                    fs.copySync(ignoreFiles[stage], path.join(forceIgnoresDir, '.' + stage + 'ignore'));
+                if (fs.existsSync(path.join(projectDirectory, ignoreFiles[stage])))
+                    fs.copySync(
+                        path.join(projectDirectory, ignoreFiles[stage]),
+                        path.join(forceIgnoresDir, '.' + stage + 'ignore')
+                    );
+                else if (fs.existsSync(path.join(projectDirectory, 'forceignores', '.' + stage + 'ignore')))
+                    fs.copySync(
+                        path.join(projectDirectory, 'forceignores', '.' + stage + 'ignore'),
+                        path.join(forceIgnoresDir, '.' + stage + 'ignore')
+                    );
                 else throw new Error(`${ignoreFiles[stage]} does not exist`);
             else fs.copySync(rootForceIgnore, path.join(forceIgnoresDir, '.' + stage + 'ignore'));
         };
