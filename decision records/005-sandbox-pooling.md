@@ -1,6 +1,6 @@
 **Context and Problem Statement**
 
-SFPowerScripts currently does not have the capability to perform environment pooling for sandboxes. For some teams it can be too complex or challenging and not a viable option to transition to scratch orgs and Sandboxes are the only option. In situations like this a middle ground can be found with Sandbox pooling, which would allow project teams to experience the benefits of environment provisioning in a similar manner to scratch orgs but with the ease of use that Sandboxes can offer.
+sfpowerscripts currently does not have the capability to perform environment pooling for sandboxes. For some teams it can be too complex or challenging and not a viable option to transition to scratch orgs and Sandboxes are the only option. In situations like this a middle ground can be found with Sandbox pooling, which would allow project teams to experience the benefits of environment provisioning in a similar manner to scratch orgs but with the ease of use that Sandboxes can offer.
 
 
 
@@ -14,8 +14,6 @@ To successfully build a pool we will need to recreate the capabilities of the Sc
 [SandboxInfoObject] -------------  [SandBoxInfo]
 
 Reference to tooling object: <https://developer.salesforce.com/docs/atlas.en-us.210.0.api_tooling.meta/api_tooling/tooling_api_objects_sandboxinfo.htm> 
-
-
 
 
 ## Sandbox Creation
@@ -36,7 +34,7 @@ The SFDX cli has a command sfdx force:org:create  which will generate a sandbox 
 
 Similarly, to the Rest API on execution of this command an ID is returned for the SandBoxInfo record that is associated to the Sandbox being provisioned.
 
-Given the direction the SFpowerscripts tooling is going in as to eliminating its dependency on the SFDX cli, the recommended approach would be to use the rest API to create environments.
+Given the direction the sfpowerscripts tooling is going in as to eliminating its dependency on the SFDX cli, the recommended approach would be to use the rest API to create environments.
 
 
 ## Expired Org purge
@@ -68,7 +66,3 @@ The Rest API currently does not have capability to pull the number of licenses f
 When a user wants to retrieve a Sandbox from the pool and begin development, they will first navigate to their repository and manually execute a pipeline or action which will prompt them to input their email address, This action will trigger an automated process where the CI server will authenticate against the DevHub, retrieve an unallocated SandBoxInfoObject, Authenticate against that Sandbox and create a user account associated to the input users email address. The end user will receive an email indicating their user account was created and will contain the user credentials for login.
 
 [START]-------------[Users execute action from repository and input email address]-------------[An unassigned SandBoxInfoObject record is retrieved and marked as assigned]-------------[The Org associated to the record is authenticated against]-------------[A new user account is created with the end users email address assigned]-------------[User receives an email and login details for their sandbox]
-
-**Decision**
-
-New functionality will be built for SFPowerScripts to support sandbox pooling and a new sObject will be built to support the capability.
