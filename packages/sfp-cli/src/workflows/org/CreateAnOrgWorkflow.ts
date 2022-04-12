@@ -101,7 +101,7 @@ export default class CreateAnOrgWorkflow {
 
     private async fetchOrg(hubOrg: Org, pool: string, alias: string): Promise<ScratchOrg> {
         let poolFetchImpl = new PoolFetchImpl(hubOrg, pool, false, false, null, alias, true);
-
+        poolFetchImpl.setSourceTrackingOnFetch();
         return poolFetchImpl.execute();
     }
 
