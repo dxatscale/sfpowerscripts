@@ -107,7 +107,7 @@ jobs:
          repo: ${{ inputs.repo }}
          image: ${{ inputs.image }}
          existing-tag: ${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
-         new-tag: develop
+         new-tag: ${{ github.ref_name }}
          registry: ghcr.io
          username:   ${{ secrets.username }}
          token: ${{ secrets.token }}
