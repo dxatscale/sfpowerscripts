@@ -26,7 +26,10 @@ RUN apt-get update && \
         gnupg \
 	      libxkbcommon-x11-0 \
         libdigest-sha-perl \
-        libxshmfence-dev
+        libxshmfence-dev \
+  &&   apt-get autoremove --assume-yes \
+  && apt-get clean --assume-yes \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install NODE 16
 RUN echo 'a0f23911d5d9c371e95ad19e4e538d19bffc0965700f187840eb39a91b0c3fb0  ./nodejs.tar.gz' > node-file-lock.sha \
@@ -39,8 +42,8 @@ ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 
 # Install OpenJDK-11
-RUN apt-get update && apt-get install --assume-yes openjdk-11-jdk-headless 
-RUN apt-get autoremove --assume-yes \
+RUN apt-get update && apt-get install --assume-yes openjdk-11-jdk-headless\ 
+     && apt-get autoremove --assume-yes \
      && apt-get clean --assume-yes \
      && rm -rf /var/lib/apt/lists/*
 
@@ -89,8 +92,19 @@ RUN apt-get update && apt-get install -qq gconf-service libappindicator1 libasou
                    && apt-get install -qq libatk-bridge2.0-0 libcairo-gobject2 libdrm2 libgbm1 libgconf-2-4 \
                    && apt-get install -qq libgtk-3-0 libnspr4 libnss3 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 \
                    && apt-get install -qq libxdamage1 libxfixes3 libxi6 libxinerama1 libxrandr2 libxshmfence1 libxss1 libxtst6 \
-                   && apt-get install -qq fonts-liberation fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf
+                   && apt-get install -qq fonts-liberation fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf \
+                   && apt-get autoremove --assume-yes \
+                   && apt-get clean --assume-yes \
+                   && rm -rf /var/lib/apt/lists/*
 
+
+
+# Install PMD
+RUN mkdir -p $HOME/sfpowerkit
+RUN cd $HOME/sfpowerkit \
+      && wget -nc -O pmd.zip https://github.com/pmd/pmd/releases/download/pmd_releases/${PMD_VERSION}/pmd-bin-${PMD_VERSION}.zip \
+      && unzip pmd.zip \
+      && rm -f pmd.zip 
 
 
 # Install sfdx plugins
@@ -103,12 +117,6 @@ RUN echo 'y' | sfdx plugins:install sfpowerkit@4.2.5
 RUN echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts@$SFPOWERSCRIPTS_VERSION
 
 
-# Install PMD
-RUN mkdir -p $HOME/sfpowerkit
-RUN cd $HOME/sfpowerkit \
-      && wget -nc -O pmd.zip https://github.com/pmd/pmd/releases/download/pmd_releases/${PMD_VERSION}/pmd-bin-${PMD_VERSION}.zip \
-      && unzip pmd.zip \
-      && rm -f pmd.zip 
 
 
 #Add Labels
