@@ -99,7 +99,7 @@ export default class PackageTestCoverage {
             if (this.packageTestCoverage < coverageThreshold) {
                 // Coverage inadequate, set result to false
                 return {
-                    result: true, //Changed to warning, as of Winter 22, coverage is really unstable
+                    result: false, // Had earlier Changed to warning in Apr-22, due to unstable coverage, now reverting 
                     packageTestCoverage: this.packageTestCoverage,
                     classesCovered: classesCovered,
                     message: `${COLOR_WARNING(
