@@ -43,7 +43,6 @@ export interface DeployProps {
     isTestsToBeTriggered: boolean;
     skipIfPackageInstalled: boolean;
     logsGroupSymbol?: string[];
-    coverageThreshold?: number;
     waitTime: number;
     tags?: any;
     packageLogger?: Logger;
@@ -54,6 +53,7 @@ export interface DeployProps {
     promotePackagesBeforeDeploymentToOrg?: string;
     devhubUserName?: string;
     disableArtifactCommit?: boolean;
+    isFastFeedbackMode?:boolean;
 }
 
 export default class DeployImpl {
