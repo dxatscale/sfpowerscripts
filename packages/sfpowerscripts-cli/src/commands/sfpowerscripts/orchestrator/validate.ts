@@ -31,7 +31,7 @@ export default class Validate extends SfpowerscriptsCommand {
             required: false,
             hidden: true,
         }),
-        pools: flags.array({ 
+        pools: flags.array({
             char: 'p',
             description: messages.getMessage('poolsFlagDescription'),
             required: true,
