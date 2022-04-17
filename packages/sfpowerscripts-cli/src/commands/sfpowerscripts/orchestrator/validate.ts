@@ -31,7 +31,7 @@ export default class Validate extends SfpowerscriptsCommand {
             required: false,
             hidden: true,
         }),
-        pools: flags.array({
+        pools: flags.array({ 
             char: 'p',
             description: messages.getMessage('poolsFlagDescription'),
             required: true,
@@ -103,6 +103,10 @@ export default class Validate extends SfpowerscriptsCommand {
             description: messages.getMessage('disableArtifactUpdateFlagDescription'),
             default: false,
         }),
+        fastfeedback: flags.boolean({
+            hidden:true,
+            description: messages.getMessage('disableArtifactUpdateFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -168,8 +172,12 @@ export default class Validate extends SfpowerscriptsCommand {
                 isDependencyAnalysis: this.flags.enabledependencyvalidation,
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
+                isFastFeedbackMode:this.flags.fastfeedback
             };
 
+            if(this.flags.fastfeedback)
+              process.env.SFPOWERSCRIPTS_DEPLOYMENT_OPTION='selective';
+              
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
 
             validateResult = await validateImpl.exec();
