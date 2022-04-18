@@ -276,16 +276,11 @@ export default class ValidateImpl implements PostDeployHook {
 
         if (!sfpPackage.isApexInPackage) return { id: null, result: true, message: 'No Tests To Run' };
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
-        SFPLogger.log(`Triggering Apex tests for ${sfpPackage.package_name}`, LoggerLevel.INFO);
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+      
         let testOptions: TestOptions, testCoverageOptions: CoverageOptions;
 
         if (!this.props.isFastFeedbackMode) {
+            this.displayTestHeader(sfpPackage);
             testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
             testCoverageOptions = {
                 isIndividualClassCoverageToBeValidated: false,
@@ -293,7 +288,7 @@ export default class ValidateImpl implements PostDeployHook {
                 coverageThreshold: this.props.coverageThreshold || 75,
             };
         } else {
-            SFPLogger.log(`${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`)
+           
             let changedComponents = await this.getChangedComponents();
             let impactedApexTestClassFetcher: ImpactedApexTestClassFetcher = new ImpactedApexTestClassFetcher(
                 sfpPackage,
@@ -305,6 +300,8 @@ export default class ValidateImpl implements PostDeployHook {
             if (impactedTestClasses.length == 0)
                 return { id: null, result: true, message: 'No Apex Classes were impacted, Skipping Tests' };
 
+            this.displayTestHeader(sfpPackage);
+            SFPLogger.log(`${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`)
             testOptions = new RunSpecifiedTestsOption(60, '.testResults', impactedTestClasses.join(), sfpPackage.packageDescriptor.testSynchronous);
             testCoverageOptions = {
                 isIndividualClassCoverageToBeValidated: false,
@@ -322,6 +319,16 @@ export default class ValidateImpl implements PostDeployHook {
         );
 
         return triggerApexTests.exec();
+    }
+
+    private displayTestHeader(sfpPackage: SFPPackage) {
+        SFPLogger.log(
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+        );
+        SFPLogger.log(`Triggering Apex tests for ${sfpPackage.package_name}`, LoggerLevel.INFO);
+        SFPLogger.log(
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+        );
     }
 
     private async buildChangedSourcePackages(packagesToCommits: { [p: string]: string }): Promise<any> {
