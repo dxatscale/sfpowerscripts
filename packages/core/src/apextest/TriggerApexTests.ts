@@ -290,12 +290,12 @@ export default class TriggerApexTests {
                     ? testOptions.sfppackage.packageDescriptor.testSynchronous
                     : false
             }`,
-            LoggerLevel.INFO,
+            LoggerLevel.TRACE,
             this.fileLogger
         );
         SFPLogger.log(
             `Test Mode: ${COLOR_KEY_MESSAGE(
-                testOptions.sfppackage.packageDescriptor.testSynchronous == true ? 'serial' : 'parallel'
+                testOptions.synchronous== true ? 'serial' : 'parallel'
             )}`,
             LoggerLevel.INFO,
             this.fileLogger
@@ -303,7 +303,7 @@ export default class TriggerApexTests {
         await this.toggleParallelApexTesting(
             this.conn,
             this.fileLogger,
-            testOptions.sfppackage.packageDescriptor.testSynchronous == true ? true : false
+            testOptions.synchronous== true ? true : false
         );
         let translatedTestLevel = TestLevel.RunSpecifiedTests;
         let tests = testOptions.specifiedTests;
@@ -318,10 +318,7 @@ export default class TriggerApexTests {
         isCoverageToBeFetched: boolean
     ) {
         let modifiedTestResult = _.cloneDeep(testResult);
-        if (
-            this.testOptions instanceof RunAllTestsInPackageOptions &&
-            !this.testOptions.sfppackage.packageDescriptor.testSynchronous
-        ) {
+        if ( !this.testOptions.synchronous) {
             let parallelFailedTestClasses: string[] = [];
             let testClassesThatDonotContributedCoverage: string[] = [];
 

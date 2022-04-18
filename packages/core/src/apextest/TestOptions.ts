@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import SFPPackage from '../package/SFPPackage';
 
 export class TestOptions {
@@ -54,6 +55,7 @@ export class RunAllTestsInOrg extends TestOptions {
 export class RunAllTestsInPackageOptions extends RunSpecifiedTestsOption {
     public constructor(private _sfppackage: SFPPackage, wait_time: number, outputdir: string) {
         super(wait_time, outputdir, _sfppackage.apexTestClassses.toString(), false);
+        this.synchronous = _sfppackage.packageDescriptor.testSynchronous == true ? true : false;
     }
 
     public get sfppackage() {
