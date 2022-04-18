@@ -303,9 +303,9 @@ export default class ValidateImpl implements PostDeployHook {
 
             let impactedTestClasses = await impactedApexTestClassFetcher.getImpactedTestClasses();
             if (impactedTestClasses.length == 0)
-                return { id: 'NaN', result: true, message: 'No Apex Classes were impacted, Skipping Tests' };
+                return { id: null, result: true, message: 'No Apex Classes were impacted, Skipping Tests' };
 
-            testOptions = new RunSpecifiedTestsOption(60, '.testResults', impactedTestClasses.join(), false);
+            testOptions = new RunSpecifiedTestsOption(60, '.testResults', impactedTestClasses.join(), sfpPackage.packageDescriptor.testSynchronous);
             testCoverageOptions = {
                 isIndividualClassCoverageToBeValidated: false,
                 isPackageCoverageToBeValidated: false,
