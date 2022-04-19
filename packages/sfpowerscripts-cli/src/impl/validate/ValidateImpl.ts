@@ -84,7 +84,10 @@ export default class ValidateImpl implements PostDeployHook {
             if (this.props.validateMode === ValidateMode.ORG) {
                 scratchOrgUsername = this.props.targetOrg;
             } else if (this.props.validateMode === ValidateMode.POOL) {
-                scratchOrgUsername = await this.fetchScratchOrgFromPool(this.props.pools);
+                if(process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG)
+                    scratchOrgUsername = process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG
+                else
+                    scratchOrgUsername = await this.fetchScratchOrgFromPool(this.props.pools);
                 if(!this.props.isFastFeedbackMode)
                   await this.installPackageDependencies(scratchOrgUsername);
             } else throw new Error(`Unknown mode ${this.props.validateMode}`);
