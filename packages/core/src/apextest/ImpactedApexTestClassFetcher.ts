@@ -5,7 +5,7 @@ import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
 import SFPPackage from '../package/SFPPackage';
 
 export default class ImpactedApexTestClassFetcher {
-   public constructor(
+    public constructor(
         private sfpPackage: SFPPackage,
         private changedComponents: Component[],
         private logger: Logger,
@@ -19,22 +19,45 @@ export default class ImpactedApexTestClassFetcher {
             (component) => component.package == this.sfpPackage.package_name
         );
 
-        SFPLogger.log(`Computing impacted apex class and associated tests`,LoggerLevel.INFO,this.logger);
-        
+        SFPLogger.log(`Computing impacted apex class and associated tests`, LoggerLevel.INFO, this.logger);
+
         let apexLinkImpl = new ApexLinkCheckImpl(this.sfpPackage.workingDirectory, this.logger, this.loglevel);
         let dependencies = (await apexLinkImpl.exec()).dependencies;
 
-        SFPLogger.log(`Dependencies: ${JSON.stringify(dependencies)}`,LoggerLevel.TRACE);
-        //invalidated apex class
+        SFPLogger.log(`Dependencies: ${JSON.stringify(dependencies)}`, LoggerLevel.TRACE);
+
+       
+
+        //compute invalidated apex classes
         for (const changedComponent of validatedChangedComponents) {
+
+            //If the component is a permset or profile, add every test class
+            //There is a change in security model, add all test classes as invalidated
+            if (_.includes(['Profile','PermissionSet','SharingRules'],changedComponent.type)) {
+                SFPLogger.log(
+                    `Change in Security Model, pushing all test classes through`,
+                    LoggerLevel.INFO,
+                    this.logger
+                );
+                invalidatedClasses.push(this.sfpPackage.apexTestClassses);
+                break;
+            }
+
             for (const apexClass of dependencies) {
+                // push any apex class or test class that is changed, which would then get filtered during subsequent matching with test class
+                if (apexClass.name == changedComponent.fullName) invalidatedClasses.push(apexClass.name);
+
+                // push any apex class or test class who is dependent on the changed entity
                 for (const dependsOn of apexClass.dependencies) {
                     if (changedComponent.fullName == dependsOn) invalidatedClasses.push(apexClass.name);
                 }
             }
         }
 
+        //Filter all apex classes by means of whats is detected in test classes list
         let invalidatedTestClasses = _.intersection(invalidatedClasses, this.sfpPackage.apexTestClassses);
+        SFPLogger.log(`Impacted classes: ${invalidatedClasses}`, LoggerLevel.INFO, this.logger);
+        SFPLogger.log(`Impacted test classes: ${invalidatedTestClasses}`, LoggerLevel.INFO, this.logger);
         return invalidatedTestClasses;
     }
 }
