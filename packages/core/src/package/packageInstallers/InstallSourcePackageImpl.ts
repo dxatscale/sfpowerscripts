@@ -115,11 +115,6 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                         LoggerLevel.INFO,
                         this.logger
                     );
-                    SFPLogger.log(
-                        `${`Toggle this feature by setting SFPOWERSCRIPTS_DEPLOYMENT_OPTION to ${DEPLOYMENT_OPTION.FULL_DEPLOYMENT}|${DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT}`}`,
-                        LoggerLevel.INFO,
-                        this.logger
-                    );
                     resolvedSourceDirectory = path.join(this.sourceDirectory, 'diff');
                 }
 
