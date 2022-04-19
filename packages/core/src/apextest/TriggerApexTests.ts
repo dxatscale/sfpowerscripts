@@ -148,7 +148,7 @@ export default class TriggerApexTests {
                 { retries: 2, minTimeout: 3000 }
             );
 
-            this.writeTestOutput(testResult);
+            
             //Collect Failed Tests only if Parallel
             testResult = await this.triggerSecondRunInSerialForParallelFailedTests(
                 testResult,
@@ -157,8 +157,6 @@ export default class TriggerApexTests {
                 isCoverageToBeFetched
             );
 
-            //Write Junit Result no matter what
-            this.writeJUnit(testResult);
 
             let jsonOutput = this.writeTestOutput(testResult);
             let testReportDisplayer = new TestReportDisplayer(jsonOutput, this.testOptions, this.fileLogger);
@@ -553,7 +551,7 @@ export default class TriggerApexTests {
 
         //write output files
         fs.ensureDirSync(this.testOptions.outputdir);
-
+   
         //Write files
         fs.writeJSONSync(
             path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}.json`),
@@ -565,6 +563,9 @@ export default class TriggerApexTests {
             jsonOutput.coverage.coverage,
             { spaces: 4 }
         );
+
+        //Write Junit Result no matter what
+        this.writeJUnit(testResult);
 
         return jsonOutput;
     }
