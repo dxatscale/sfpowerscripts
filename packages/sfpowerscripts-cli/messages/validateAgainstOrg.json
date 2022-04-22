@@ -4,5 +4,7 @@
     "coveragePercentFlagDescription": "Minimum required percentage coverage for validating code coverage of packages with Apex classes",
     "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.",
     "diffCheckFlagDescription": "Only build the packages which have changed by analyzing previous tags",
-    "disableArtifactUpdateFlagDescription": "Do not update information about deployed artifacts to the org"
+    "disableArtifactUpdateFlagDescription": "Do not update information about deployed artifacts to the org",
+    "baseBranchFlagDescription": "The pull request base branch",
+    "fastfeedbackFlagDescription": "Enable validation in fast feedback mode, In fast feedback mode, validation will only do selective deployment of changed components and selective tests"
 }
