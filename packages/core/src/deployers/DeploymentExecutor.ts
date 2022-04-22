@@ -11,4 +11,5 @@ export interface DeploySourceResult {
 export enum DeploymentType {
     SOURCE_PUSH,
     MDAPI_DEPLOY,
+    SELECTIVE_MDAPI_DEPLOY
 }

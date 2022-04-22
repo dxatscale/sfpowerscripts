@@ -655,7 +655,7 @@ export default class DeployImpl {
                 : null,
             this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
                 ? DeploymentType.SOURCE_PUSH
-                : DeploymentType.MDAPI_DEPLOY,
+                : this.props.isFastFeedbackMode?DeploymentType.SELECTIVE_MDAPI_DEPLOY:DeploymentType.MDAPI_DEPLOY,
             this.props.isDryRun
         );
         installSourcePackageImpl.isArtifactToBeCommittedInOrg = !this.props.disableArtifactCommit;

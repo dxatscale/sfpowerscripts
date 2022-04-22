@@ -6,7 +6,7 @@ import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import ValidateError from '../../../errors/ValidateError';
 import ValidateResult from '../../../impl/validate/ValidateResult';
-import { DEPLOYMENT_OPTION } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/DefaultDeploymentOption'
+
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
@@ -106,7 +106,8 @@ export default class Validate extends SfpowerscriptsCommand {
         }),
         fastfeedback: flags.boolean({
             hidden:true,
-            description: messages.getMessage('disableArtifactUpdateFlagDescription'),
+            description: messages.getMessage('fastfeedbackFlagDescription'),
+            dependsOn: ['basebranch'],
         }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
@@ -159,6 +160,8 @@ export default class Validate extends SfpowerscriptsCommand {
 
         let validateResult: ValidateResult;
         try {
+
+            
             let validateProps: ValidateProps = {
                 validateMode: ValidateMode.POOL,
                 coverageThreshold: this.flags.coveragepercent,
@@ -176,11 +179,7 @@ export default class Validate extends SfpowerscriptsCommand {
                 isFastFeedbackMode:this.flags.fastfeedback
             };
 
-            //TODO: Hacked solution, this has to goto a context
-            if(this.flags.fastfeedback)
-              process.env.SFPOWERSCRIPTS_DEPLOYMENT_OPTION=DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT;
-            else
-              process.env.SFPOWERSCRIPTS_DEPLOYMENT_OPTION=DEPLOYMENT_OPTION.FULL_DEPLOYMENT;
+           
               
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
 

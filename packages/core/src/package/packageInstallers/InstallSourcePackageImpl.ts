@@ -13,7 +13,6 @@ import { InstallPackage } from './InstallPackage';
 import PackageManifest from '../PackageManifest';
 import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
-import defaultDeploymentOption, { DEPLOYMENT_OPTION } from './DefaultDeploymentOption';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
 
@@ -22,9 +21,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;
     private deploymentType: DeploymentType;
 
-    private isDiffFolderAvailable =
-        defaultDeploymentOption().toLocaleLowerCase() === DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
-        fs.existsSync(path.join(this.sourceDirectory, 'diff'));
+    private isDiffFolderAvailable;
 
     public constructor(
         sfdxPackage: string,
@@ -42,6 +39,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         this.options = options;
         this.pathToReplacementForceIgnore = pathToReplacementForceIgnore;
         this.deploymentType = deploymentType;
+        this.isDiffFolderAvailable =  deploymentType === DeploymentType.SELECTIVE_MDAPI_DEPLOY &&
+        fs.existsSync(path.join(this.sourceDirectory, 'diff'));
     }
 
     public async install() {
@@ -130,7 +129,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 } else if (emptyCheck.isToSkip == false) {
                     //Display a warning
                     if (
-                        defaultDeploymentOption().toLocaleLowerCase() === DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
+                        this.deploymentType == DeploymentType.SELECTIVE_MDAPI_DEPLOY &&
                         resolvedSourceDirectory != emptyCheck.resolvedSourceDirectory
                     ) {
                         SFPLogger.log(
@@ -195,7 +194,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         //On a diff deployment, we might need to deploy full as version changed or scratch org config has changed
         //In that case lets check again with the main directory and proceed ahead with deployment
         if (
-            defaultDeploymentOption().toLocaleLowerCase() == DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
+          this.deploymentType == DeploymentType.SELECTIVE_MDAPI_DEPLOY &&
             status.result == 'skip'
         ) {
             sourceDirectory = sourceDirectory.substring(0, this.sourceDirectory.indexOf('/diff'));
