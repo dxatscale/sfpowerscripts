@@ -78,11 +78,7 @@ export default class Validate extends SfpowerscriptsCommand {
                 disableArtifactCommit: this.flags.disableartifactupdate,
             };
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
-
-            let validateResult = await validateImpl.exec();
-
-            if (validateResult) process.exitCode = 0;
-            else process.exitCode = 1;
+            await validateImpl.exec();
         } catch (error) {
             console.log(error.message);
             process.exitCode = 1;
