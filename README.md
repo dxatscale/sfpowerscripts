@@ -16,7 +16,7 @@
 </p>
 
 
-A build system for package based development in Salesforce, delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://docs.dxatscale.io/sfpowerscripts/overview
+A build system for package based development in Salesforce, delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://docs.dxatscale.io/projects/sfpowerscripts
 
 
 #### Features
