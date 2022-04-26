@@ -1,4 +1,5 @@
 import { Connection } from '@salesforce/core';
+import chunkCollection from '../../queryHelper/ChunkCollection';
 import QueryHelper from '../../queryHelper/QueryHelper';
 
 export default class ApexCodeCoverageAggregateFetcher {
@@ -10,16 +11,19 @@ export default class ApexCodeCoverageAggregateFetcher {
      * @returns
      */
     public async fetchACCAById(listOfApexClassOrTriggerId: string[]) {
-        let collection = listOfApexClassOrTriggerId
-            .map((ApexClassOrTriggerId) => `'${ApexClassOrTriggerId}'`)
-            .toString();
-        let query = `SELECT ApexClassorTriggerId, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassorTriggerId IN (${collection})`;
+        const chunks = chunkCollection(listOfApexClassOrTriggerId);
 
-        return QueryHelper.query<{
-            ApexClassOrTriggerId: string;
-            NumLinesCovered: number;
-            NumLinesUncovered: number;
-            Coverage: any;
-        }>(query, this.conn, true);
+        for (const chunk of chunks) {
+            const formattedChunk = chunk.map(elem => `'${elem}'`).toString();
+            let query = `SELECT ApexClassorTriggerId, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassorTriggerId IN (${formattedChunk})`;
+
+            return QueryHelper.query<{
+                ApexClassOrTriggerId: string;
+                NumLinesCovered: number;
+                NumLinesUncovered: number;
+                Coverage: any;
+            }>(query, this.conn, true);
+        }
+
     }
 }
