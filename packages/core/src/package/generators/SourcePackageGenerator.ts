@@ -7,6 +7,8 @@ import PackageComponentDiff from '../diff/PackageComponentDiff';
 let path = require('path');
 
 export default class SourcePackageGenerator {
+
+
     public static async generateSourcePackageArtifact(
         logger: Logger,
         projectDirectory: string,
@@ -36,8 +38,6 @@ export default class SourcePackageGenerator {
 
         //Create a new directory
         fs.mkdirsSync(path.join(artifactDirectory, packageDirectory));
-
-        SourcePackageGenerator.createPackageManifests(artifactDirectory, rootDirectory, sfdx_package);
 
         SourcePackageGenerator.createScripts(artifactDirectory, rootDirectory, sfdx_package);
 
@@ -81,6 +81,8 @@ export default class SourcePackageGenerator {
             SourcePackageGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory, logger);
         }
 
+        SourcePackageGenerator.createPackageManifests(artifactDirectory, rootDirectory, sfdx_package);
+
         fs.copySync(path.join(rootDirectory, packageDirectory), path.join(artifactDirectory, packageDirectory));
 
         return artifactDirectory;
@@ -88,10 +90,20 @@ export default class SourcePackageGenerator {
 
     private static createPackageManifests(artifactDirectory: string, projectDirectory: string, sfdx_package: string) {
         // Create pruned package manifest in source directory
-        fs.writeFileSync(
-            path.join(artifactDirectory, 'sfdx-project.json'),
-            JSON.stringify(ProjectConfig.cleanupMPDFromManifest(projectDirectory, sfdx_package))
-        );
+        let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromManifest(projectDirectory, sfdx_package);
+
+        //Setup preDeployment Script Path
+        if (fs.existsSync(path.join(artifactDirectory, 'scripts', `preDeployment`)))
+            cleanedUpProjectManifest.packageDirectories[0].preDeploymentScript = path.join('scripts', `preDeployment`);
+
+        //Setup postDeployment Script Path
+         if (fs.existsSync(path.join(artifactDirectory, 'scripts', `postDeployment`)))
+            cleanedUpProjectManifest.packageDirectories[0].postDeploymentScript = path.join(
+                'scripts',
+                `postDeployment`
+            );
+
+        fs.writeFileSync(path.join(artifactDirectory, 'sfdx-project.json'), JSON.stringify(cleanedUpProjectManifest));
 
         // Copy original package manifest
         let manifestsDir: string = path.join(artifactDirectory, `manifests`);
@@ -112,6 +124,12 @@ export default class SourcePackageGenerator {
         let packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(projectDirectory, sfdx_package);
 
         if (packageDescriptor.preDeploymentScript) {
+            if (projectDirectory)
+                packageDescriptor.preDeploymentScript = path.join(
+                    projectDirectory,
+                    packageDescriptor.preDeploymentScript
+                );
+
             if (fs.existsSync(packageDescriptor.preDeploymentScript)) {
                 fs.copySync(packageDescriptor.preDeploymentScript, path.join(scriptsDir, `preDeployment`));
             } else {
@@ -119,7 +137,14 @@ export default class SourcePackageGenerator {
             }
         }
 
+
         if (packageDescriptor.postDeploymentScript) {
+            if (projectDirectory)
+                packageDescriptor.postDeploymentScript = path.join(
+                    projectDirectory,
+                    packageDescriptor.postDeploymentScript
+                );
+
             if (fs.existsSync(packageDescriptor.postDeploymentScript)) {
                 fs.copySync(packageDescriptor.postDeploymentScript, path.join(scriptsDir, `postDeployment`));
             } else {
@@ -142,7 +167,7 @@ export default class SourcePackageGenerator {
 
         //TODO: Make this readable
         //This is a fix when sfppackage is used in stages where build is not involved
-        //So it has to be build from the root of the unzipped directory 
+        //So it has to be build from the root of the unzipped directory
         //and whatever mentioned in .json is already translated
 
         let rootForceIgnore: string = path.join(projectDirectory, '.forceignore');
