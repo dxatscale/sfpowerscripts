@@ -93,11 +93,11 @@ export default class SourcePackageGenerator {
         let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromManifest(projectDirectory, sfdx_package);
 
         //Setup preDeployment Script Path
-        if (fs.existsSync(path.join('scripts', `preDeployment`)))
+        if (fs.existsSync(path.join(artifactDirectory, 'scripts', `preDeployment`)))
             cleanedUpProjectManifest.packageDirectories[0].preDeploymentScript = path.join('scripts', `preDeployment`);
 
         //Setup postDeployment Script Path
-         if (fs.existsSync(path.join('scripts', `postDeployment`)))
+         if (fs.existsSync(path.join(artifactDirectory, 'scripts', `postDeployment`)))
             cleanedUpProjectManifest.packageDirectories[0].postDeploymentScript = path.join(
                 'scripts',
                 `postDeployment`
