@@ -7,8 +7,7 @@ import PackageComponentDiff from '../diff/PackageComponentDiff';
 let path = require('path');
 
 export default class SourcePackageGenerator {
-    public static isPreDeploymentScriptAvailable: boolean = false;
-    public static isPostDeploymentScriptAvailable: boolean = false;
+
 
     public static async generateSourcePackageArtifact(
         logger: Logger,
@@ -94,11 +93,11 @@ export default class SourcePackageGenerator {
         let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromManifest(projectDirectory, sfdx_package);
 
         //Setup preDeployment Script Path
-        if (this.isPreDeploymentScriptAvailable)
+        if (fs.existsSync(path.join('scripts', `preDeployment`)))
             cleanedUpProjectManifest.packageDirectories[0].preDeploymentScript = path.join('scripts', `preDeployment`);
 
         //Setup postDeployment Script Path
-        if (this.isPostDeploymentScriptAvailable)
+         if (fs.existsSync(path.join('scripts', `postDeployment`)))
             cleanedUpProjectManifest.packageDirectories[0].postDeploymentScript = path.join(
                 'scripts',
                 `postDeployment`
@@ -133,8 +132,6 @@ export default class SourcePackageGenerator {
 
             if (fs.existsSync(packageDescriptor.preDeploymentScript)) {
                 fs.copySync(packageDescriptor.preDeploymentScript, path.join(scriptsDir, `preDeployment`));
-
-                this.isPreDeploymentScriptAvailable = true;
             } else {
                 throw new Error(`preDeploymentScript ${packageDescriptor.preDeploymentScript} does not exist`);
             }
@@ -150,9 +147,6 @@ export default class SourcePackageGenerator {
 
             if (fs.existsSync(packageDescriptor.postDeploymentScript)) {
                 fs.copySync(packageDescriptor.postDeploymentScript, path.join(scriptsDir, `postDeployment`));
-
-                //Set a global var to handle the rename
-                this.isPostDeploymentScriptAvailable = true;
             } else {
                 throw new Error(`postDeploymentScript ${packageDescriptor.postDeploymentScript} does not exist`);
             }
