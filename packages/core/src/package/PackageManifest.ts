@@ -1,6 +1,6 @@
 import path from 'path';
 import * as fs from 'fs-extra';
-import { ApexClasses } from './SFPPackage';
+import { ApexClasses } from './SfpPackage';
 import xml2json from '../utils/xml2json';
 const xml2js = require('xml2js');
 

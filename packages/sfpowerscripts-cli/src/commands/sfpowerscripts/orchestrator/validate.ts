@@ -7,7 +7,6 @@ import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfpowersc
 import ValidateError from '../../../errors/ValidateError';
 import ValidateResult from '../../../impl/validate/ValidateResult';
 
-
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
 
@@ -105,7 +104,7 @@ export default class Validate extends SfpowerscriptsCommand {
             default: false,
         }),
         fastfeedback: flags.boolean({
-            hidden:true,
+            hidden: true,
             description: messages.getMessage('fastfeedbackFlagDescription'),
             dependsOn: ['basebranch'],
         }),
@@ -160,8 +159,6 @@ export default class Validate extends SfpowerscriptsCommand {
 
         let validateResult: ValidateResult;
         try {
-
-            
             let validateProps: ValidateProps = {
                 validateMode: ValidateMode.POOL,
                 coverageThreshold: this.flags.coveragepercent,
@@ -176,11 +173,9 @@ export default class Validate extends SfpowerscriptsCommand {
                 isDependencyAnalysis: this.flags.enabledependencyvalidation,
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
-                isFastFeedbackMode:this.flags.fastfeedback
+                isFastFeedbackMode: this.flags.fastfeedback,
             };
 
-           
-              
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
 
             validateResult = await validateImpl.exec();

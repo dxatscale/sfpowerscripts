@@ -7,7 +7,12 @@ import * as fs from 'fs-extra';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentExecutor';
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
+import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
+import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
+import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
@@ -83,7 +88,7 @@ export default class InstallSourcePackage extends InstallPackageCommand {
     };
 
     public async install(): Promise<any> {
-        const target_org: string = this.flags.targetorg;
+
         const sfdx_package: string = this.flags.package;
         const optimizeDeployment: boolean = this.flags.optimizedeployment;
         const skipTesting: boolean = this.flags.skiptesting;
@@ -93,36 +98,24 @@ export default class InstallSourcePackage extends InstallPackageCommand {
         console.log('sfpowerscripts.Install Source Package To Org');
 
         try {
-            let artifactMetadataFilepath = this.artifactFilePaths.packageMetadataFilePath;
-
-            let packageMetadata: PackageMetadata = JSON.parse(fs.readFileSync(artifactMetadataFilepath).toString());
-
-            console.log('Package Metadata:');
-            console.log(packageMetadata);
-
-            let sourceDirectory: string = this.artifactFilePaths.sourceDirectoryPath;
-
-            let options = {
+            let options: SfpPackageInstallationOptions = {
                 optimizeDeployment: optimizeDeployment,
                 skipTesting: skipTesting,
                 waitTime: wait_time,
-                apiVersion: packageMetadata.apiVersion || packageMetadata.payload.Package.version, // Use package.xml version for backwards compat with old artifacts
+                deploymentType: DeploymentType.MDAPI_DEPLOY,
+                apiVersion: this.sfpPackage.apiVersion || this.sfpPackage.payload.Package.version, // Use package.xml version for backwards compat with old artifacts
+                disableArtifactCommit: false,
+                skipIfPackageInstalled : skipIfAlreadyInstalled
             };
 
-            let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
-                sfdx_package,
-                target_org,
-                sourceDirectory,
-                options,
-                skipIfAlreadyInstalled,
-                packageMetadata,
-                new ConsoleLogger(),
-                null,
-                DeploymentType.MDAPI_DEPLOY,
-                false
+        
+            let result = await SfpPackageInstaller.installPackage(
+               new ConsoleLogger(),
+                this.sfpPackage,
+                this.sfpOrg,
+                options
             );
-
-            let result = await installSourcePackageImpl.exec();
+        
 
             if (result.result == PackageInstallationStatus.Failed) {
                 throw new Error(result.message);

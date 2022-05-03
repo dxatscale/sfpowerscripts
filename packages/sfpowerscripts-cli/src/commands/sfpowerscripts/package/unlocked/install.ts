@@ -3,8 +3,9 @@ import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
 import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageImpl';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
+import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
 const fs = require('fs');
 
 // Initialize Messages with the current plugin directory
@@ -112,7 +113,6 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
 
     public async install() {
         try {
-            const targetOrg: string = this.flags.targetorg;
             const installationkey = this.flags.installationkey;
             const apexcompileonlypackage = this.flags.apexcompileonlypackage;
             const security_type = this.flags.securitytype;
@@ -120,40 +120,25 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
             const waitTime = this.flags.waittime;
             const publishWaitTime = this.flags.publishwaittime;
             const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
-            let packageMetadata: PackageMetadata;
-            let sourceDirectory;
 
-            // Figure out the package version id from the artifact
-
-            let package_version_id_file_path = this.artifactFilePaths.packageMetadataFilePath;
-            sourceDirectory = this.artifactFilePaths.sourceDirectoryPath;
-
-            packageMetadata = JSON.parse(fs.readFileSync(package_version_id_file_path).toString());
-            console.log('Package Metadata:');
-            console.log(packageMetadata);
-
-            let options = {
+            let options: SfpPackageInstallationOptions = {
                 installationkey: installationkey,
                 apexcompile: apexcompileonlypackage ? `package` : `all`,
                 securitytype: security_type,
                 upgradetype: upgrade_type,
                 waitTime: waitTime,
                 publishWaitTime: publishWaitTime,
-                apiVersion: packageMetadata.apiVersion || packageMetadata.payload.Package.version, // Use package.xml version for backwards compat with old artifacts
+                disableArtifactCommit: false,
+                skipIfPackageInstalled: skipIfAlreadyInstalled,
+                apiVersion: this.sfpPackage.apiVersion || this.sfpPackage.payload.Package.version, // Use package.xml version for backwards compat with old artifacts
             };
 
-            let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
-                this.flags.package,
-                targetOrg,
-                options,
-                skipIfAlreadyInstalled,
-                packageMetadata,
-                sourceDirectory,
+            let result = await SfpPackageInstaller.installPackage(
                 new ConsoleLogger(),
-                false
-            );
-
-            let result = await installUnlockedPackageImpl.exec();
+                 this.sfpPackage,
+                 this.sfpOrg,
+                 options
+             );
 
             if (result.result === PackageInstallationStatus.Failed) {
                 throw new Error(result.message);

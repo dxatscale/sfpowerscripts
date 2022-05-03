@@ -4,7 +4,7 @@ import BuildCollections from '../../../src/impl/parallelBuilder/BuildCollections
 let packageManifest = null;
 jest.mock('../../../../core/lib/project/ProjectConfig', () => {
     class ProjectConfig {
-        static getSFDXPackageManifest(projectDirectory: string) {
+        static getSFDXProjectConfig(projectDirectory: string) {
             return packageManifest;
         }
     }

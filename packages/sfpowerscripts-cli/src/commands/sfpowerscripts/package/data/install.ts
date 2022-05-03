@@ -4,6 +4,9 @@ import InstallPackageCommand from '../../../../InstallPackageCommand';
 import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallDataPackageImpl';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import SFPLogger, { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
+import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 const fs = require('fs');
 
 // Initialize Messages with the current plugin directory
@@ -64,31 +67,21 @@ export default class InstallDataPackage extends InstallPackageCommand {
 
     public async install() {
         try {
-            const targetOrg: string = this.flags.targetorg;
-            const sfdx_package: string = this.flags.package;
+          
             const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
+            let options: SfpPackageInstallationOptions = {
+                skipIfPackageInstalled: skipIfAlreadyInstalled
+            };
 
-            let artifactMetadataFilepath = this.artifactFilePaths.packageMetadataFilePath;
-
-            let packageMetadata = JSON.parse(fs.readFileSync(artifactMetadataFilepath).toString());
-
-            console.log('Package Metadata:');
-            console.log(packageMetadata);
-
-            let sourceDirectory: string = this.artifactFilePaths.sourceDirectoryPath;
-
-            let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
-                sfdx_package,
-                targetOrg,
-                sourceDirectory,
-                packageMetadata,
-                skipIfAlreadyInstalled,
-                new ConsoleLogger(),
-                SFPLogger.logLevel,
-                false
+        
+            let result = await SfpPackageInstaller.installPackage(
+               new ConsoleLogger(),
+                this.sfpPackage,
+                this.sfpOrg,
+                options
             );
+        
 
-            let result = await installDataPackageImpl.exec();
 
             if (result.result === PackageInstallationStatus.Failed) {
                 throw new Error(result.message);

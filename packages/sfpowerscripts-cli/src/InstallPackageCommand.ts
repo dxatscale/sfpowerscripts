@@ -1,10 +1,12 @@
 import SfpowerscriptsCommand from './SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import { flags } from '@salesforce/command';
-import ArtifactFilePathFetcher, {
-    ArtifactFilePaths,
-} from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher';
+import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
 import * as rimraf from 'rimraf';
+import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_package_command');
@@ -15,6 +17,8 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_pac
  * @extends SfpowerscriptsCommand
  */
 export default abstract class InstallPackageCommand extends SfpowerscriptsCommand {
+    protected sfpPackage: SfpPackage;
+    protected sfpOrg: SFPOrg;
     /**
      * Flags that are common/required on all package installation commands
      */
@@ -39,7 +43,7 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
         }),
     };
 
-    protected artifactFilePaths: ArtifactFilePaths;
+    protected artifact: Artifact;
 
     /**
      * Procedures unique to the type of package installation
@@ -51,7 +55,7 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
      *
      */
     async execute(): Promise<any> {
-        this.preInstall();
+        await this.preInstall();
 
         await this.install();
 
@@ -62,13 +66,8 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
      * Procedures common to all install commands, and to be run BEFORE
      * the primary install
      */
-    private preInstall(): void {
-        let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-            this.flags.artifactdir,
-            this.flags.package,
-            null
-        );
-
+    private async preInstall(): Promise<void> {
+        let artifacts = ArtifactFetcher.fetchArtifacts(this.flags.artifactdir, this.flags.package, null);
         if (artifacts.length === 0) {
             if (!this.flags.skiponmissingartifact) {
                 throw new Error(
@@ -80,7 +79,12 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
                 );
                 process.exit(0);
             }
-        } else this.artifactFilePaths = artifacts[0];
+        } else this.artifact = artifacts[0];
+
+        this.sfpPackage = await SfpPackageBuilder.buildPackageFromArtifact(this.artifact, new ConsoleLogger());
+
+        //Create SfP Org
+        this.sfpOrg = await SFPOrg.create({aliasOrUsername:this.flags.targetorg});
     }
 
     /**

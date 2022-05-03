@@ -18,7 +18,7 @@ export default class Package extends CommandsWithInitCheck {
             let packageVersionWorkflow: PackageVersionWorkflow = new PackageVersionWorkflow();
             await packageVersionWorkflow.execute();
         } else if (commandSelected == PackageCommand.CREATE_PACKAGE_COMMAND) {
-            const projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+            const projectConfig = ProjectConfig.getSFDXProjectConfig(null);
             let createPackageWorkflow: CreatePackageWorkflow = new CreatePackageWorkflow(projectConfig);
             let newPackage = await createPackageWorkflow.stageANewPackage();
             await createPackageWorkflow.commitStagedPackage(

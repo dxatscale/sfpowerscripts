@@ -6,10 +6,11 @@ import * as fs from 'fs-extra';
 import PackageComponentDiff from '../diff/PackageComponentDiff';
 let path = require('path');
 
-export default class SourcePackageGenerator {
+export default class SfpPackageContentGenerator {
+    public static isPreDeploymentScriptAvailable: boolean = false;
+    public static isPostDeploymentScriptAvailable: boolean = false;
 
-
-    public static async generateSourcePackageArtifact(
+    public static async generateSfpPackageDirectory(
         logger: Logger,
         projectDirectory: string,
         sfdx_package: string,
@@ -39,9 +40,9 @@ export default class SourcePackageGenerator {
         //Create a new directory
         fs.mkdirsSync(path.join(artifactDirectory, packageDirectory));
 
-        SourcePackageGenerator.createScripts(artifactDirectory, rootDirectory, sfdx_package);
+        SfpPackageContentGenerator.createScripts(artifactDirectory, rootDirectory, sfdx_package);
 
-        SourcePackageGenerator.createForceIgnores(artifactDirectory, rootDirectory);
+        SfpPackageContentGenerator.createForceIgnores(artifactDirectory, rootDirectory);
 
         //Compute diff
         //Skip errors.. diff is not important we can always fall back
@@ -66,10 +67,10 @@ export default class SourcePackageGenerator {
         }
 
         if (pathToReplacementForceIgnore)
-            SourcePackageGenerator.replaceRootForceIgnore(artifactDirectory, pathToReplacementForceIgnore, logger);
+            SfpPackageContentGenerator.replaceRootForceIgnore(artifactDirectory, pathToReplacementForceIgnore, logger);
 
         if (destructiveManifestFilePath) {
-            SourcePackageGenerator.copyDestructiveManifests(
+            SfpPackageContentGenerator.copyDestructiveManifests(
                 destructiveManifestFilePath,
                 artifactDirectory,
                 rootDirectory,
@@ -78,10 +79,10 @@ export default class SourcePackageGenerator {
         }
 
         if (configFilePath) {
-            SourcePackageGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory, logger);
+            SfpPackageContentGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory, logger);
         }
 
-        SourcePackageGenerator.createPackageManifests(artifactDirectory, rootDirectory, sfdx_package);
+        SfpPackageContentGenerator.createPackageManifests(artifactDirectory, rootDirectory, sfdx_package);
 
         fs.copySync(path.join(rootDirectory, packageDirectory), path.join(artifactDirectory, packageDirectory));
 
@@ -137,7 +138,6 @@ export default class SourcePackageGenerator {
             }
         }
 
-
         if (packageDescriptor.postDeploymentScript) {
             if (projectDirectory)
                 packageDescriptor.postDeploymentScript = path.join(
@@ -162,7 +162,7 @@ export default class SourcePackageGenerator {
         let forceIgnoresDir: string = path.join(artifactDirectory, `forceignores`);
         mkdirpSync(forceIgnoresDir);
 
-        let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let ignoreFiles = projectConfig.plugins?.sfpowerscripts?.ignoreFiles;
 
         //TODO: Make this readable

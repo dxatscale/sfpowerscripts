@@ -23,7 +23,7 @@ export default class ProjectConfig {
      * @param projectDirectory
      */
     public static getAllPackages(projectDirectory: string): string[] {
-        let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let sfdxpackages = [];
         projectConfig['packageDirectories'].forEach((pkg) => {
             sfdxpackages.push(pkg['package']);
@@ -35,7 +35,7 @@ export default class ProjectConfig {
      * Returns package manifest as JSON object
      * @param projectDirectory
      */
-    public static getSFDXPackageManifest(projectDirectory: string): any {
+    public static getSFDXProjectConfig(projectDirectory: string): any {
         let projectConfigJSON: string;
 
         if (projectDirectory) {
@@ -73,7 +73,7 @@ export default class ProjectConfig {
      * @param sfdxPackage
      */
     public static getSFDXPackageDescriptor(projectDirectory: string, sfdxPackage: string): any {
-        let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
 
         let sfdxPackageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(sfdxPackage, projectConfig);
 
@@ -110,7 +110,7 @@ export default class ProjectConfig {
         let packageDirectory: string;
         let sfdxPackageDescriptor: any;
 
-        let projectConfig = this.getSFDXPackageManifest(projectDirectory);
+        let projectConfig = this.getSFDXProjectConfig(projectDirectory);
 
         //Return the default package directory
         projectConfig['packageDirectories'].forEach((pkg) => {
@@ -130,7 +130,7 @@ export default class ProjectConfig {
      * @param sfdxPackage
      */
     public static cleanupMPDFromManifest(projectDirectory: string, sfdxPackage: string): any {
-        let sfdxManifest = this.getSFDXPackageManifest(projectDirectory);
+        let sfdxManifest = this.getSFDXProjectConfig(projectDirectory);
 
         if (sfdxPackage) {
             let i = sfdxManifest['packageDirectories'].length;

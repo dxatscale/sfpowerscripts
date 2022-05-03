@@ -10,7 +10,7 @@ export default class DependencyHelper {
     }
 
     public static getChildsOfAllPackages(projectDirectory: string, filterByPackages?: string[]): AdjacentList {
-        let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let dag: AdjacentList = {};
 
         for (const sfdx_package of projectConfig['packageDirectories']) {
@@ -38,7 +38,7 @@ export default class DependencyHelper {
     }
 
     public static getParentsOfAllPackages(projectDirectory: string, filterByPackages?: string[]): AdjacentList {
-        let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let dag: AdjacentList = {};
 
         //Get The packages in the project directory

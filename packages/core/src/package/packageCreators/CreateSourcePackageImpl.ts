@@ -1,30 +1,22 @@
 import SFPLogger, { LoggerLevel, Logger } from '../../logger/SFPLogger';
-import PackageMetadata from '../../PackageMetadata';
 import { EOL } from 'os';
 import { ApexSortedByType, FileDescriptor } from '../../apex/parser/ApexTypeFetcher';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import PackageEmptyChecker from '../PackageEmptyChecker';
-import SFPPackage from '../SFPPackage';
+import SfpPackage, { SfpPackageParams } from '../SfpPackage';
 import { CreatePackage } from './CreatePackage';
+import { PackageCreationParams } from '../SfpPackageBuilder';
 const Table = require('cli-table');
 
 export default class CreateSourcePackageImpl extends CreatePackage {
     public constructor(
-        projectDirectory: string,
-        sfdx_package: string,
-        packageArtifactMetadata: PackageMetadata,
-        breakBuildIfEmpty: boolean = true,
-        logger?: Logger,
-        pathToReplacementForceIgnore?: string
+        protected projectDirectory: string,
+        protected sfpPackage: SfpPackage,
+        protected packageCreationParams: PackageCreationParams,
+        protected logger?: Logger,
+        protected params?: SfpPackageParams
     ) {
-        super(
-            projectDirectory,
-            sfdx_package,
-            packageArtifactMetadata,
-            breakBuildIfEmpty,
-            logger,
-            pathToReplacementForceIgnore
-        );
+        super(projectDirectory, sfpPackage, packageCreationParams, logger, params);
     }
 
     getTypeOfPackage() {
@@ -33,54 +25,31 @@ export default class CreateSourcePackageImpl extends CreatePackage {
 
     printAdditionalPackageSpecificHeaders() {}
 
-    isEmptyPackage(packageDirectory: string) {
-        return PackageEmptyChecker.isEmptyFolder(this.projectDirectory, packageDirectory);
+    isEmptyPackage(projectDirectory: string, packageDirectory: string) {
+        return PackageEmptyChecker.isEmptyFolder(projectDirectory, packageDirectory);
     }
 
-    preCreatePackage(packageDirectory: string, packageDescriptor: any) {}
+    preCreatePackage(sfpPackage: SfpPackage) {}
 
-    public async createPackage(packageDirectory: string, packageDescriptor: any) {
-        let sfppackage = await SFPPackage.buildPackageFromProjectConfig(
-            this.logger,
-            this.projectDirectory,
-            this.sfdx_package,
-            null,
-            this.pathToReplacementForceIgnore,
-            this.revisionFrom,
-            this.revisionTo
-        );
+    public async createPackage(sfpPackage: SfpPackage) {
+        this.handleApexTestClasses(sfpPackage);
 
-        this.packageArtifactMetadata.payload = sfppackage.payload;
-        this.packageArtifactMetadata.metadataCount = sfppackage.metadataCount;
-        this.packageArtifactMetadata.isApexFound = sfppackage.isApexInPackage;
-        this.packageArtifactMetadata.isProfilesFound = sfppackage.isProfilesInPackage;
-        this.packageArtifactMetadata.assignPermSetsPreDeployment = sfppackage.assignPermSetsPreDeployment;
-        this.packageArtifactMetadata.assignPermSetsPostDeployment = sfppackage.assignPermSetsPostDeployment;
-        this.packageArtifactMetadata.reconcileProfiles = sfppackage.reconcileProfiles;
-        this.packageArtifactMetadata.isPermissionSetGroupFound = sfppackage.isPermissionSetGroupInPackage;
-
-        if (sfppackage.destructiveChanges) {
-            this.packageArtifactMetadata.destructiveChanges = sfppackage.destructiveChanges;
-        }
-
-        this.handleApexTestClasses(sfppackage);
-
-        SFPStatsSender.logGauge('package.metadatacount', this.packageArtifactMetadata.metadataCount, {
-            package: this.packageArtifactMetadata.package_name,
-            type: this.packageArtifactMetadata.package_type,
+        SFPStatsSender.logGauge('package.metadatacount', sfpPackage.metadataCount, {
+            package: sfpPackage.packageName,
+            type: sfpPackage.packageType,
         });
     }
 
-    postCreatePackage(packageDirectory: string, packageDescriptor: any) {}
+    postCreatePackage(sfpPackage) {}
 
-    private handleApexTestClasses(mdapiPackage: SFPPackage) {
-        let classTypes: ApexSortedByType = mdapiPackage.apexClassesSortedByTypes;
+    private handleApexTestClasses(sfpPackage: SfpPackage) {
+        let classTypes: ApexSortedByType = sfpPackage.apexClassesSortedByTypes;
 
-        if (!this.packageArtifactMetadata.isTriggerAllTests) {
-            if (this.packageArtifactMetadata.isApexFound && classTypes?.testClass?.length == 0) {
+        if (!sfpPackage.isTriggerAllTests) {
+            if (sfpPackage.isApexFound && classTypes?.testClass?.length == 0) {
                 this.printSlowDeploymentWarning();
-                this.packageArtifactMetadata.isTriggerAllTests = true;
-            } else if (this.packageArtifactMetadata.isApexFound && classTypes?.testClass?.length > 0) {
+                sfpPackage.isTriggerAllTests = true;
+            } else if (sfpPackage.isApexFound && classTypes?.testClass?.length > 0) {
                 if (classTypes?.parseError?.length > 0) {
                     SFPLogger.log(
                         '---------------------------------------------------------------------------------------',
@@ -93,14 +62,14 @@ export default class CreateSourcePackageImpl extends CreatePackage {
                         this.logger
                     );
                     this.printClassesIdentified(classTypes?.parseError);
-                    this.packageArtifactMetadata.isTriggerAllTests = true;
+                    sfpPackage.isTriggerAllTests = true;
                 } else {
                     this.printHintForOptimizedDeployment();
-                    this.packageArtifactMetadata.isTriggerAllTests = false;
+                    sfpPackage.isTriggerAllTests = false;
                     this.printClassesIdentified(classTypes?.testClass);
-                    this.packageArtifactMetadata.apexTestClassses = [];
+                    sfpPackage.apexTestClassses = [];
                     classTypes?.testClass.forEach((element) => {
-                        this.packageArtifactMetadata.apexTestClassses.push(element.name);
+                        sfpPackage.apexTestClassses.push(element.name);
                     });
                 }
             }
@@ -151,15 +120,11 @@ export default class CreateSourcePackageImpl extends CreatePackage {
         if (fetchedClasses === null || fetchedClasses === undefined) return;
 
         let table = new Table({
-            head: ['Class', 'Path', 'Error'],
+            head: ['Class', 'Error'],
         });
 
         for (let fetchedClass of fetchedClasses) {
-            let item = [
-                fetchedClass.name,
-                fetchedClass.filepath,
-                fetchedClass.error ? JSON.stringify(fetchedClass.error) : 'N/A',
-            ];
+            let item = [fetchedClass.name, fetchedClass.error ? JSON.stringify(fetchedClass.error) : 'N/A'];
             table.push(item);
         }
         SFPLogger.log('Following apex test classes were identified', LoggerLevel.INFO, this.logger);

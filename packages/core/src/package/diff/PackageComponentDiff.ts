@@ -44,7 +44,7 @@ export default class PackageComponentDiff {
         this.destructivePackageObjPre = new Array();
         this.resultOutput = [];
 
-        sfdxManifest = ProjectConfig.getSFDXPackageManifest(null);
+        sfdxManifest = ProjectConfig.getSFDXProjectConfig(null);
         this.gitDiffUtils = new GitDiffUtils();
     }
 

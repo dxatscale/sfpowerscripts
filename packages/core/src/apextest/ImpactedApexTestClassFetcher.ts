@@ -2,11 +2,11 @@ import * as _ from 'lodash';
 import ApexLinkCheckImpl from '../apexLinkWrapper/ApexLinkCheckImpl';
 import Component from '../dependency/Component';
 import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, Logger, LoggerLevel } from '../logger/SFPLogger';
-import SFPPackage from '../package/SFPPackage';
+import SfpPackage from '../package/SfpPackage';
 
 export default class ImpactedApexTestClassFetcher {
     public constructor(
-        private sfpPackage: SFPPackage,
+        private sfpPackage: SfpPackage,
         private changedComponents: Component[],
         private logger: Logger,
         private loglevel?: LoggerLevel
@@ -16,7 +16,7 @@ export default class ImpactedApexTestClassFetcher {
         let invalidatedClasses = [];
 
         let validatedChangedComponents = this.changedComponents.filter(
-            (component) => component.package == this.sfpPackage.package_name
+            (component) => component.package == this.sfpPackage.packageName
         );
 
         SFPLogger.log(`Computing impacted apex class and associated tests`, LoggerLevel.INFO, this.logger);
@@ -26,20 +26,17 @@ export default class ImpactedApexTestClassFetcher {
 
         SFPLogger.log(`Dependencies: ${JSON.stringify(dependencies)}`, LoggerLevel.TRACE);
 
-       
-
         //compute invalidated apex classes
         for (const changedComponent of validatedChangedComponents) {
-
             //If the component is a permset or profile, add every test class
             //There is a change in security model, add all test classes as invalidated
-            if (_.includes(['Profile','PermissionSet','SharingRules'],changedComponent.type)) {
+            if (_.includes(['Profile', 'PermissionSet', 'SharingRules'], changedComponent.type)) {
                 SFPLogger.log(
                     COLOR_WARNING(`Change in Security Model, pushing all test classes through`),
                     LoggerLevel.INFO,
                     this.logger
                 );
-                invalidatedClasses=invalidatedClasses.concat(this.sfpPackage.apexTestClassses);
+                invalidatedClasses = invalidatedClasses.concat(this.sfpPackage.apexTestClassses);
                 break;
             }
 
@@ -57,7 +54,11 @@ export default class ImpactedApexTestClassFetcher {
         SFPLogger.log(`Impacted classes: ${COLOR_KEY_MESSAGE(invalidatedClasses)}`, LoggerLevel.INFO, this.logger);
         //Filter all apex classes by means of whats is detected in test classes list
         let invalidatedTestClasses = _.intersection(invalidatedClasses, this.sfpPackage.apexTestClassses);
-        SFPLogger.log(`Impacted test classes: ${COLOR_KEY_MESSAGE(invalidatedTestClasses)}`, LoggerLevel.INFO, this.logger);
+        SFPLogger.log(
+            `Impacted test classes: ${COLOR_KEY_MESSAGE(invalidatedTestClasses)}`,
+            LoggerLevel.INFO,
+            this.logger
+        );
         return invalidatedTestClasses;
     }
 }

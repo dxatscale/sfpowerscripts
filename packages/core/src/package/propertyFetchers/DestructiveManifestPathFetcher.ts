@@ -1,11 +1,11 @@
 import * as fs from 'fs-extra';
-import SFPPackage from '../SFPPackage';
+import SfpPackage from '../SfpPackage';
 import PropertyFetcher from './PropertyFetcher';
 import xml2json from '../../utils/xml2json';
 import { Logger } from '../../logger/SFPLogger';
 
 export default class DestructiveManifestPathFetcher implements PropertyFetcher {
-    public async getSfpowerscriptsProperties(packageContents: SFPPackage, packageLogger?: Logger) {
+    public async getSfpowerscriptsProperties(packageContents: SfpPackage, packageLogger?: Logger) {
         let destructiveChangesPath: string;
 
         if (packageContents.packageDescriptor === null || packageContents.packageDescriptor === undefined) {

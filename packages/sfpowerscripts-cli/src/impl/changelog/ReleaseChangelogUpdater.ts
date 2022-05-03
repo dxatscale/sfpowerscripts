@@ -1,17 +1,17 @@
 import { ReleaseChangelog, Release, Artifact } from './ReleaseChangelogInterfaces';
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
 import CommitUpdater from './CommitUpdater';
 import WorkItemUpdater from './WorkItemUpdater';
 import OrgsUpdater from './OrgsUpdater';
 import ReadPackageChangelog from './ReadPackageChangelog';
 import * as fs from 'fs-extra';
+import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 var hash = require('object-hash');
 
 export default class ReleaseChangelogUpdater {
     constructor(
         private releaseChangelog: ReleaseChangelog,
         private releaseName: string,
-        private artifactsToPackageMetadata: { [p: string]: PackageMetadata },
+        private artifactsToSfpPackage: { [p: string]: SfpPackage },
         private packagesToChangelogFilePaths: { [p: string]: string },
         private workItemFilter: string,
         private org: string
@@ -25,11 +25,7 @@ export default class ReleaseChangelogUpdater {
             buildNumber = 1;
         }
 
-        let latestRelease: Release = this.initLatestRelease(
-            this.releaseName,
-            buildNumber,
-            this.artifactsToPackageMetadata
-        );
+        let latestRelease: Release = this.initLatestRelease(this.releaseName, buildNumber, this.artifactsToSfpPackage);
 
         let releaseWithMatchingHashId = this.findRelease(this.releaseChangelog.releases, latestRelease.hashId);
         if (!releaseWithMatchingHashId) {
@@ -113,13 +109,13 @@ export default class ReleaseChangelogUpdater {
     /**
      * Initalise latest release
      * @param releaseName
-     * @param artifactsToPackageMetadata
+     * @param artifactsToSfpPackage
      * @returns
      */
     private initLatestRelease(
         releaseName: string,
         buildNumber: number,
-        artifactsToPackageMetadata: { [p: string]: PackageMetadata }
+        artifactsToSfpPackage: { [p: string]: SfpPackage }
     ): Release {
         let latestRelease: Release = {
             names: [releaseName],
@@ -129,12 +125,12 @@ export default class ReleaseChangelogUpdater {
             hashId: undefined,
         };
 
-        for (let packageMetadata of Object.values(artifactsToPackageMetadata)) {
+        for (let sfpPackage of Object.values(artifactsToSfpPackage)) {
             let artifact: Artifact = {
-                name: packageMetadata['package_name'],
+                name: sfpPackage.packageName,
                 from: undefined,
-                to: packageMetadata['sourceVersion']?.slice(0, 8) || packageMetadata['sourceVersionTo']?.slice(0, 8),
-                version: packageMetadata['package_version_number'],
+                to: sfpPackage.sourceVersionFrom?.slice(0, 8) || sfpPackage.sourceVersionTo.slice(0, 8),
+                version: sfpPackage.package_version_number,
                 latestCommitId: undefined,
                 commits: undefined,
             };

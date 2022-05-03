@@ -9,7 +9,7 @@ export default class ProjectValidation {
     resourcesDir: string;
 
     constructor() {
-        this.projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+        this.projectConfig = ProjectConfig.getSFDXProjectConfig(null);
         this.ajv = new Ajv({ allErrors: true });
         this.resourcesDir = path.join(__dirname, '..', 'resources', 'schemas');
     }

@@ -1,9 +1,10 @@
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import CreateUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateUnlockedPackageImpl';
 import PackageCreateCommand from '../../../../PackageCreateCommand';
 import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -119,7 +120,7 @@ export default class CreateUnlockedPackage extends PackageCreateCommand {
         }),
     };
 
-    public async create(): Promise<PackageMetadata> {
+    public async create(): Promise<SfpPackage> {
         let tag: string = this.flags.tag;
         let installationkeybypass = this.flags.installationkeybypass;
         let isCoverageEnabled: boolean = this.flags.enablecoverage;
@@ -132,35 +133,29 @@ export default class CreateUnlockedPackage extends PackageCreateCommand {
             installationkeybypass = true;
         }
 
-        let packageMetadata: PackageMetadata = {
-            package_name: this.sfdxPackage,
-            package_type: 'unlocked',
-            package_version_number: this.versionNumber,
-            sourceVersion: this.commitId,
-            repository_url: this.repositoryURL,
-            tag: tag,
-            branch: this.branch,
-        };
-
-        let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
+        let sfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
+            new ConsoleLogger(),
+            null,
             this.sfdxPackage,
-            this.versionNumber,
-            this.getConfigFilePath(),
-            installationkeybypass,
-            installationkey,
-            null,
-            this.hubOrg.getUsername(),
-            waitTime,
-            isCoverageEnabled,
-            isSkipValidation,
-            packageMetadata,
-            null,
-            new ConsoleLogger()
+            {
+                packageVersionNumber: this.versionNumber,
+                sourceVersion: this.commitId,
+                repositoryUrl: this.repositoryURL,
+                branch: this.branch,
+                configFilePath: this.flags.configfilepath,
+            },
+            {
+                devHub: this.hubOrg.getUsername(),
+                installationkeybypass: installationkeybypass as boolean,
+                breakBuildIfEmpty: true,
+                waitTime: waitTime as string,
+                isCoverageEnabled: isCoverageEnabled as boolean,
+                isSkipValidation: isSkipValidation as boolean,
+            }
         );
 
-        let result = await createUnlockedPackageImpl.exec();
-        console.log(COLOR_SUCCESS(`Created unlocked package ${packageMetadata.package_name}`));
-        return result;
+        console.log(COLOR_SUCCESS(`Created unlocked package ${sfpPackage.packageName}`));
+        return sfpPackage;
     }
 
     protected getConfigFilePath(): string {

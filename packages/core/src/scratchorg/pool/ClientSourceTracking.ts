@@ -58,7 +58,6 @@ export default class ClientSourceTracking {
             const repoPath = (await git.getConfig('remote.origin.url')).value;
             await git.clone(repoPath, tempDir.name);
 
-           
             const sfpowerscriptsArtifacts = await this.org.getInstalledArtifacts();
 
             //clean up MPD to just one package, so that source tracking lib
@@ -91,8 +90,8 @@ export default class ClientSourceTracking {
                 );
                 SFPLogger.log(`Analyzing package ${COLOR_KEY_MESSAGE(artifact.Name)}`, LoggerLevel.INFO, this.logger);
                 // Checkout version of source code from which artifact was created
-                await git.checkout(['-f',artifact.CommitId__c]);
-               
+                await git.checkout(['-f', artifact.CommitId__c]);
+
                 SFPLogger.log(
                     `Version pushed while preparing this org is ${artifact.Version__c} with SHA ${artifact.CommitId__c}`,
                     LoggerLevel.INFO,
@@ -102,7 +101,7 @@ export default class ClientSourceTracking {
                 //clean up MPD to per package, to speed up
                 this.cleanupSFDXProjectJsonTonOnePackage(tempDir.name, artifact.Name);
 
-                const projectConfig = ProjectConfig.getSFDXPackageManifest(tempDir.name);
+                const projectConfig = ProjectConfig.getSFDXProjectConfig(tempDir.name);
 
                 try {
                     const packageType = ProjectConfig.getPackageType(projectConfig, artifact.Name);

@@ -164,7 +164,7 @@ export default class TriggerApexTests {
                     SFPStatsSender.logGauge('apextest.testcoverage', coverageResults.packageTestCoverage, {
                         package:
                             this.testOptions instanceof RunAllTestsInPackageOptions
-                                ? this.testOptions.sfppackage.package_name
+                                ? this.testOptions.sfppackage.packageName
                                 : null,
                     });
                     return {
@@ -180,7 +180,7 @@ export default class TriggerApexTests {
                         {
                             package:
                                 this.testOptions instanceof RunAllTestsInPackageOptions
-                                    ? this.testOptions.sfppackage.package_name
+                                    ? this.testOptions.sfppackage.packageName
                                     : null,
                         }
                     );
@@ -623,15 +623,14 @@ export default class TriggerApexTests {
         if (testMetrics.testExecutionResult)
             SFPStatsSender.logGauge('apextest.tests.ran', testMetrics.testsRan, {
                 test_result: String(testMetrics.testExecutionResult),
-                package:
-                    testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.package_name : null,
+                package: testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.packageName : null,
                 type: testOptions.testLevel,
                 target_org: testMetrics.targetOrg,
             });
 
         SFPStatsSender.logGauge('apextest.testtotal.time', elapsedTime, {
             test_result: String(testMetrics.testExecutionResult),
-            package: testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.package_name : null,
+            package: testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.packageName : null,
             type: testOptions['testlevel'],
             target_org: testMetrics.targetOrg,
         });
@@ -639,15 +638,14 @@ export default class TriggerApexTests {
         if (testMetrics.commandTime)
             SFPStatsSender.logGauge('apextest.command.time', testMetrics.commandTime, {
                 test_result: String(testMetrics.testExecutionResult),
-                package:
-                    testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.package_name : null,
+                package: testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.packageName : null,
                 type: testOptions.testLevel,
                 target_org: testMetrics.targetOrg,
             });
 
         SFPStatsSender.logCount('apextests.triggered', {
             test_result: String(testMetrics.testExecutionResult),
-            package: testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.package_name : null,
+            package: testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.packageName : null,
             type: testOptions.testLevel,
             target_org: testMetrics.targetOrg,
         });

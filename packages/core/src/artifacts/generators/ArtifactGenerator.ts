@@ -1,24 +1,22 @@
 import path = require('path');
 import * as fs from 'fs-extra';
-import PackageMetadata from '../../PackageMetadata';
 import GeneratePackageChangelog from '../../changelog/GeneratePackageChangelog';
 import { Changelog } from '../../changelog/interfaces/GenericChangelogInterfaces';
 import * as rimraf from 'rimraf';
 import SFPLogger, { LoggerLevel } from '../../logger/SFPLogger';
 import AdmZip = require('adm-zip');
+import SfpPackage from '../../package/SfpPackage';
 
 export default class ArtifactGenerator {
     //Generates the universal artifact used by the CLI and AZP
     public static async generateArtifact(
-        sfdx_package: string,
+        sfpPackage: SfpPackage,
         project_directory: string,
-        artifact_directory: string,
-        packageArtifactMetadata: PackageMetadata
+        artifact_directory: string
     ): Promise<string> {
         try {
             // Artifact folder consisting of artifact metadata, changelog & source
-            let artifactFolder: string =
-                sfdx_package == null ? 'sfpowerscripts_artifact' : `${sfdx_package}_sfpowerscripts_artifact`;
+            let artifactFolder: string = `${sfpPackage.packageName}_sfpowerscripts_artifact`;
 
             // Absolute filepath of artifact
             let artifactFilepath: string;
@@ -33,24 +31,21 @@ export default class ArtifactGenerator {
 
             let sourcePackage: string = path.join(artifactFilepath, `source`);
             fs.mkdirpSync(sourcePackage);
-            fs.copySync(packageArtifactMetadata.sourceDir, sourcePackage);
-
-            rimraf.sync(packageArtifactMetadata.sourceDir);
+            fs.copySync(sfpPackage.workingDirectory, sourcePackage);
+            rimraf.sync(sfpPackage.workingDirectory);
 
             //Modify Source Directory to the new source directory inside the artifact
-            packageArtifactMetadata.sourceDir = `source`;
+            sfpPackage.sourceDir = `source`;
 
             let artifactMetadataFilePath: string = path.join(artifactFilepath, `artifact_metadata.json`);
 
-            fs.writeFileSync(artifactMetadataFilePath, JSON.stringify(packageArtifactMetadata, null, 4));
+            fs.writeFileSync(artifactMetadataFilePath, JSON.stringify(sfpPackage, null, 4));
 
             // Generate package changelog
             let generatePackageChangelog: GeneratePackageChangelog = new GeneratePackageChangelog(
-                sfdx_package,
-                packageArtifactMetadata.sourceVersionFrom,
-                packageArtifactMetadata.sourceVersionTo
-                    ? packageArtifactMetadata.sourceVersionTo
-                    : packageArtifactMetadata.sourceVersion,
+                sfpPackage.packageName,
+                sfpPackage.sourceVersionFrom,
+                sfpPackage.sourceVersionTo ? sfpPackage.sourceVersionTo : sfpPackage.sourceVersion,
                 project_directory
             );
 
@@ -67,14 +62,14 @@ export default class ArtifactGenerator {
             SFPLogger.log(`Zipping ${artifactFolder}`, LoggerLevel.DEBUG);
 
             let packageVersionNumber: string = ArtifactGenerator.substituteBuildNumberWithPreRelease(
-                packageArtifactMetadata.package_version_number
+                sfpPackage.package_version_number
             );
 
             let zipArtifactFilepath: string = artifactFilepath + `_` + packageVersionNumber + `.zip`;
             zip.writeZip(zipArtifactFilepath);
 
             SFPLogger.log(
-                `Artifact Generation Completed for ${sfdx_package} to ${zipArtifactFilepath}`,
+                `Artifact Generation Completed for ${sfpPackage.packageType} to ${zipArtifactFilepath}`,
                 LoggerLevel.INFO
             );
 

@@ -163,7 +163,7 @@ export default class Deploy extends SfpowerscriptsCommand {
                 SFPLogger.log(
                     COLOR_ERROR(
                         `\nPackages Failed to Deploy`,
-                        deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)
+                        deploymentResult.failed.map((packageInfo) => packageInfo.sfpPackage.packageName)
                     )
                 );
             }

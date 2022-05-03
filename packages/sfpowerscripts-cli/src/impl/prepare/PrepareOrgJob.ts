@@ -12,7 +12,10 @@ import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import InstallUnlockedPackageWrapper from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
 import { Result, ok, err } from 'neverthrow';
-import PoolJobExecutor, { JobError, ScriptExecutionResult } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolJobExecutor';
+import PoolJobExecutor, {
+    JobError,
+    ScriptExecutionResult,
+} from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolJobExecutor';
 import { Connection, Org } from '@salesforce/core';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
@@ -165,7 +168,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         //Write to Scratch Org Logs
         SFPLogger.log(`Following Packages failed to deploy in ${scratchOrg.alias}`, LoggerLevel.INFO, packageLogger);
         SFPLogger.log(
-            JSON.stringify(deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)),
+            JSON.stringify(deploymentResult.failed.map((packageInfo) => packageInfo.sfpPackage.packageName)),
             LoggerLevel.INFO,
             packageLogger
         );
@@ -176,7 +179,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         );
         throw new Error(
             'Following Packages failed to deploy:' +
-                deploymentResult.failed.map((packageInfo) => packageInfo.packageMetadata.package_name)
+                deploymentResult.failed.map((packageInfo) => packageInfo.sfpPackage.packageName)
         );
     }
 
@@ -187,7 +190,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
     ) {
         if (this.checkPointPackages.length > 0) {
             let isCheckPointSucceded = this.checkPointPackages.some((pkg) =>
-                deploymentResult.deployed.map((packageInfo) => packageInfo.packageMetadata.package_name).includes(pkg)
+                deploymentResult.deployed.map((packageInfo) => packageInfo.sfpPackage.packageName).includes(pkg)
             );
             if (!isCheckPointSucceded) {
                 SFPStatsSender.logCount('prepare.org.checkpointfailed');
@@ -211,7 +214,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
     //Fetch all checkpoints
     private getcheckPointPackages(logger: FileLogger) {
         SFPLogger.log('Fetching checkpoints for prepare if any.....', LoggerLevel.INFO, logger);
-        let projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
         let checkPointPackages = [];
         projectConfig['packageDirectories'].forEach((pkg) => {
             if (pkg.checkpointForPrepare) checkPointPackages.push(pkg['package']);
