@@ -37,6 +37,7 @@ export interface BuildProps {
     branch?: string;
     packagesToCommits?: { [p: string]: string };
     currentStage: Stage;
+    baseBranch?:string;
 }
 export default class BuildImpl {
     private limiter: Bottleneck;
@@ -474,6 +475,7 @@ export default class BuildImpl {
                 isCoverageEnabled: !this.props.isQuickBuild,
                 isSkipValidation: this.props.isQuickBuild,
                 breakBuildIfEmpty: true,
+                baseBranch:this.props.baseBranch
             }
         );
     }

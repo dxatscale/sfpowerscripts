@@ -286,21 +286,24 @@ export default class ValidateImpl implements PostDeployHook {
                 coverageThreshold: this.props.coverageThreshold || 75,
             };
         } else {
-            let changedComponents = await this.getChangedComponents();
-            let impactedApexTestClassFetcher: ImpactedApexTestClassFetcher = new ImpactedApexTestClassFetcher(
-                sfpPackage,
-                changedComponents,
-                this.logger
-            );
+          
 
-            let impactedTestClasses = await impactedApexTestClassFetcher.getImpactedTestClasses();
-            if (impactedTestClasses.length == 0)
+            let impactedTestClasses = sfpPackage.diffPackageMetadata?.invalidatedTestClasses;
+            if (!impactedTestClasses || impactedTestClasses.length == 0)
                 return { id: null, result: true, message: 'No Apex Classes were impacted, Skipping Tests' };
 
             this.displayTestHeader(sfpPackage);
             SFPLogger.log(
                 `${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`
             );
+
+            if(sfpPackage.diffPackageMetadata?.isProfilesFound 
+                || sfpPackage.diffPackageMetadata?.isPermissionSetFound
+                || sfpPackage.diffPackageMetadata?.isPermissionSetGroupFound)
+                SFPLogger.log(
+                    `${COLOR_HEADER('Change in security model, all test classses will be triggered')}`
+                );
+
             testOptions = new RunSpecifiedTestsOption(
                 60,
                 '.testResults',
@@ -349,6 +352,7 @@ export default class ValidateImpl implements PostDeployHook {
             isBuildAllAsSourcePackages: true,
             packagesToCommits: packagesToCommits,
             currentStage: Stage.VALIDATE,
+            baseBranch: this.props.baseBranch
         };
 
         let buildImpl: BuildImpl = new BuildImpl(buildProps);

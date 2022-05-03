@@ -100,17 +100,21 @@ export default class SfpPackage extends PackageInfo {
 }
 
 export interface DiffPackageMetadata {
+  
+ 
     sourceVersionFrom?: string;
     sourceVersionTo?: string;
     isProfilesFound?: boolean;
     apexTestClassses?: string[];
     isApexFound?: boolean;
     isPermissionSetGroupFound?: boolean;
+    isPermissionSetFound?: boolean;
     payload?: any;
     metadataCount?: number;
     profilesToReconcile?: number;
     destructiveChanges?: any;
     sourceDir?: string;
+    invalidatedTestClasses?: ApexClasses;
 }
 export interface SfpPackageParams {
     overridePackageTypeWith?: string;

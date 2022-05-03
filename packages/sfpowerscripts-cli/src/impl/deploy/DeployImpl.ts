@@ -315,12 +315,20 @@ export default class DeployImpl {
             this.props.packageLogger
         );
         if (sfpPackage.packageType == 'source' || sfpPackage.packageType == 'unlocked') {
-            if (!pkgDescriptor.aliasfy)
-                SFPLogger.log(
-                    `Metadata Count: ${COLOR_KEY_MESSAGE(sfpPackage.metadataCount)}`,
-                    LoggerLevel.INFO,
-                    this.props.packageLogger
-                );
+            if (!pkgDescriptor.aliasfy) {
+                if (this.props.isFastFeedbackMode && sfpPackage.diffPackageMetadata?.metadataCount)
+                    SFPLogger.log(
+                        `Metadata to be deployed: ${COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata?.metadataCount)} / ${COLOR_KEY_MESSAGE(sfpPackage.metadataCount)}`,
+                        LoggerLevel.INFO,
+                        this.props.packageLogger
+                    );
+                else
+                    SFPLogger.log(
+                        `Metadata to be deployed: ${COLOR_KEY_MESSAGE(sfpPackage.metadataCount)}`,
+                        LoggerLevel.INFO,
+                        this.props.packageLogger
+                    );
+            }
         }
         if (alwaysDeployMessage) SFPLogger.log(alwaysDeployMessage, LoggerLevel.INFO, this.props.packageLogger);
 
@@ -554,9 +562,9 @@ export default class DeployImpl {
             installationOptions.skipTesting = true;
         }
 
-        installationOptions.skipIfPackageInstalled=skipIfPackageInstalled;
-        installationOptions.isDryRun=this.props.isDryRun;
-        
+        installationOptions.skipIfPackageInstalled = skipIfPackageInstalled;
+        installationOptions.isDryRun = this.props.isDryRun;
+
         return SfpPackageInstaller.installPackage(
             this.props.packageLogger,
             sfpPackage,

@@ -15,9 +15,10 @@ import AssignPermissionSetFetcher from './propertyFetchers/AssignPermissionSetFe
 import DestructiveManifestPathFetcher from './propertyFetchers/DestructiveManifestPathFetcher';
 import ReconcilePropertyFetcher from './propertyFetchers/ReconcileProfilePropertyFetcher';
 import CreateUnlockedPackageImpl from './packageCreators/CreateUnlockedPackageImpl';
-import { CreatePackage } from './packageCreators/CreatePackage';
 import CreateSourcePackageImpl from './packageCreators/CreateSourcePackageImpl';
 import CreateDataPackageImpl from './packageCreators/CreateDataPackageImpl';
+import ChangedComponentsFetcher from '../dependency/ChangedComponentsFetcher';
+import ImpactedApexTestClassFetcher from '../apextest/ImpactedApexTestClassFetcher';
 
 export default class SfpPackageBuilder {
     public static async buildPackageFromProjectDirectory(
@@ -105,7 +106,7 @@ export default class SfpPackageBuilder {
             sfpPackage.apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
 
             //Introspect Diff Package Created
-            await this.introspectDiffPackageCreated(sfpPackage, logger);
+            await this.introspectDiffPackageCreated(sfpPackage, packageCreationParams,logger);
         }
 
         //Create the actual package
@@ -165,7 +166,7 @@ export default class SfpPackageBuilder {
         return sfpPackage;
     }
 
-    private static async introspectDiffPackageCreated(sfpPackage: SfpPackage, logger: Logger): Promise<void> {
+    private static async introspectDiffPackageCreated(sfpPackage: SfpPackage, packageCreationParams:PackageCreationParams,logger: Logger): Promise<void> {
         let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
         if (fs.existsSync(workingDirectory)) {
             let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
@@ -174,17 +175,33 @@ export default class SfpPackageBuilder {
                 ProjectConfig.getSFDXProjectConfig(workingDirectory).sourceApiVersion,
                 logger
             );
+        
+            
 
             let mdapiDirPath = (await sourceToMdapiConvertor.convert()).packagePath;
+
+            //Compute Changed Components
+            let changedComponents=await (new ChangedComponentsFetcher(packageCreationParams.baseBranch,false)).fetch();
+
+            let impactedApexTestClassFetcher: ImpactedApexTestClassFetcher = new ImpactedApexTestClassFetcher(
+                sfpPackage,
+                changedComponents,
+                logger
+            );
+            let impactedTestClasses = await impactedApexTestClassFetcher.getImpactedTestClasses();
+         
             const packageManifest: PackageManifest = await PackageManifest.create(mdapiDirPath);
             let diffPackageInfo: DiffPackageMetadata = {};
+            diffPackageInfo.invalidatedTestClasses = impactedTestClasses;
             diffPackageInfo.isApexFound = packageManifest.isApexInPackage();
             diffPackageInfo.isProfilesFound = packageManifest.isProfilesInPackage();
+            diffPackageInfo.isPermissionSetFound =  packageManifest.isPermissionSetsInPackage();
             diffPackageInfo.isPermissionSetGroupFound = packageManifest.isPermissionSetGroupsFoundInPackage();
             diffPackageInfo.metadataCount = MetadataCount.getMetadataCount(
                 workingDirectory,
                 sfpPackage.packageDescriptor.path
             );
+            sfpPackage.diffPackageMetadata = diffPackageInfo;
         }
     }
 }
@@ -197,4 +214,6 @@ export class PackageCreationParams {
     waitTime?: string;
     isCoverageEnabled?: boolean;
     isSkipValidation?: boolean;
+    isComputeDiffPackage?: boolean;
+    baseBranch?:string;
 }

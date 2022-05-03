@@ -125,6 +125,29 @@ export default class PackageManifest {
         return isProfilesFound;
     }
 
+    /**
+     *
+     * @returns true or false, for whether there are profiles
+     */
+     public isPermissionSetsInPackage(): boolean {
+        let isPermissionSetFound = false;
+
+        if (this._manifestJson.Package.types) {
+            if (Array.isArray(this._manifestJson.Package.types)) {
+                for (const type of this._manifestJson.Package.types) {
+                    if (type.name === 'PermissionSet') {
+                        isPermissionSetFound = true;
+                        break;
+                    }
+                }
+            } else if (this.manifestJson.Package.types.name === 'PermissionSet') {
+                isPermissionSetFound = true;
+            }
+        }
+
+        return isPermissionSetFound;
+    }
+
     public isPermissionSetGroupsFoundInPackage(): boolean {
         let isPermissionSetGroupFound = false;
         if (Array.isArray(this._manifestJson?.Package?.types)) {
