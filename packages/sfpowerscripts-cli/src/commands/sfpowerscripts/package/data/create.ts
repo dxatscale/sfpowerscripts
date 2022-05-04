@@ -1,7 +1,6 @@
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import CreateDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateDataPackageImpl';
 import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import PackageCreateCommand from '../../../../PackageCreateCommand';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
