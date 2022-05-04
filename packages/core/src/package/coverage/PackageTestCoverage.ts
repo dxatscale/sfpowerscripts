@@ -1,6 +1,6 @@
 import SFPLogger, { COLOR_WARNING, Logger } from '../../logger/SFPLogger';
 import IndividualClassCoverage from '../../apex/coverage/IndividualClassCoverage';
-import SFPPackage from '../SFPPackage';
+import SfpPackage from '../SfpPackage';
 import { Connection } from '@salesforce/core';
 import ApexClassFetcher from '../../apex/ApexClassFetcher';
 import ApexCodeCoverageAggregateFetcher from '../../apex/coverage/ApexCodeCoverageAggregateFetcher';
@@ -11,7 +11,7 @@ export default class PackageTestCoverage {
     private packageTestCoverage: number = -1; // Set inital value
 
     public constructor(
-        private pkg: SFPPackage,
+        private pkg: SfpPackage,
         private codeCoverage: any,
         private logger: Logger,
         private readonly conn: Connection
@@ -99,7 +99,7 @@ export default class PackageTestCoverage {
             if (this.packageTestCoverage < coverageThreshold) {
                 // Coverage inadequate, set result to false
                 return {
-                    result: false, // Had earlier Changed to warning in Apr-22, due to unstable coverage, now reverting 
+                    result: false, // Had earlier Changed to warning in Apr-22, due to unstable coverage, now reverting
                     packageTestCoverage: this.packageTestCoverage,
                     classesCovered: classesCovered,
                     message: `${COLOR_WARNING(

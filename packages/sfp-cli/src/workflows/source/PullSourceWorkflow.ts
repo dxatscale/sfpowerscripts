@@ -49,7 +49,7 @@ export default class PullSourceWorkflow {
             COLOR_KEY_MESSAGE(`  Found ${remoteAdditions.length} new metadata components, which require a new home`)
         );
 
-        const projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+        const projectConfig = ProjectConfig.getSFDXProjectConfig(null);
         const newPackagesDirectories: string[] = [];
 
         let mergePlan: Instruction[] = [];

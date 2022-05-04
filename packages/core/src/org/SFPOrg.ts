@@ -1,7 +1,7 @@
 import { Org } from '@salesforce/core';
 import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '../logger/SFPLogger';
 import PackageDetails from '../package/PackageDetails';
-import PackageMetadata from '../PackageMetadata';
+import SfpPackage from '../package/SfpPackage';
 import QueryHelper from '../queryHelper/QueryHelper';
 import ObjectCRUDHelper from '../utils/ObjectCRUDHelper';
 import InstalledPackagesQueryExecutor from './packageQuery/InstalledPackagesQueryExecutor';
@@ -10,7 +10,7 @@ export default class SFPOrg extends Org {
     /**
      * Get list of all artifacts in an org
      */
-    public async getInstalledArtifacts(orderBy:string=`CreatedDate`) {
+    public async getInstalledArtifacts(orderBy: string = `CreatedDate`) {
         try {
             let records = await QueryHelper.query<SfpowerscriptsArtifact2__c>(
                 `SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c ORDER BY ${orderBy} ASC`,
@@ -29,28 +29,24 @@ export default class SFPOrg extends Org {
     /**
      * Check whether an artifact is installed in a Org
      * @param  {Logger} logger
-     * @param  {PackageMetadata} packageMetadata
+     * @param  {SfpPackage} sfpPackage
      */
     public async isArtifactInstalledInOrg(
         logger: Logger,
-        packageMetadata: PackageMetadata
+        sfpPackage: SfpPackage
     ): Promise<{ isInstalled: boolean; versionNumber?: string }> {
         let result: { isInstalled: boolean; versionNumber?: string } = {
             isInstalled: false,
         };
         try {
-            SFPLogger.log(
-                `Querying for version of  ${packageMetadata.package_name} in the Org..`,
-                LoggerLevel.INFO,
-                logger
-            );
+            SFPLogger.log(`Querying for version of  ${sfpPackage.packageName} in the Org..`, LoggerLevel.INFO, logger);
             result.isInstalled = false;
             let installedArtifacts = await this.getInstalledArtifacts();
-            let packageName = packageMetadata.package_name;
+            let packageName = sfpPackage.packageName;
             for (const artifact of installedArtifacts) {
                 if (artifact.Name === packageName) {
                     result.versionNumber = artifact.Version__c;
-                    if (artifact.Version__c === packageMetadata.package_version_number) {
+                    if (artifact.Version__c === sfpPackage.package_version_number) {
                         result.isInstalled = true;
                         return result;
                     }
@@ -71,22 +67,22 @@ export default class SFPOrg extends Org {
     /**
      * Updates or Create information about an artifact in the org
      * @param  {Logger} logger
-     * @param  {PackageMetadata} packageMetadata
+     * @param  {SfpPackage} sfpPackage
      */
-    public async updateArtifactInOrg(logger: Logger, packageMetadata: PackageMetadata): Promise<string> {
-        let artifactId = await this.getArtifactRecordId(packageMetadata);
+    public async updateArtifactInOrg(logger: Logger, sfpPackage: SfpPackage): Promise<string> {
+        let artifactId = await this.getArtifactRecordId(sfpPackage);
 
         SFPLogger.log(
             COLOR_KEY_MESSAGE(
-                `Existing artifact record id for  ${packageMetadata.package_name} in Org for ${
-                    packageMetadata.package_version_number
+                `Existing artifact record id for  ${sfpPackage.packageName} in Org for ${
+                    sfpPackage.package_version_number
                 }: ${artifactId ? artifactId : 'N/A'}`
             ),
             LoggerLevel.INFO,
             logger
         );
 
-        let packageName = packageMetadata.package_name;
+        let packageName = sfpPackage.packageName;
 
         if (artifactId == null) {
             artifactId = await ObjectCRUDHelper.createRecord<SfpowerscriptsArtifact2__c>(
@@ -94,9 +90,9 @@ export default class SFPOrg extends Org {
                 'SfpowerscriptsArtifact2__c',
                 {
                     Name: packageName,
-                    Tag__c: packageMetadata.tag,
-                    Version__c: packageMetadata.package_version_number,
-                    CommitId__c: packageMetadata.sourceVersion,
+                    Tag__c: sfpPackage.tag,
+                    Version__c: sfpPackage.package_version_number,
+                    CommitId__c: sfpPackage.sourceVersion,
                 }
             );
         } else {
@@ -106,16 +102,16 @@ export default class SFPOrg extends Org {
                 {
                     Id: artifactId,
                     Name: packageName,
-                    Tag__c: packageMetadata.tag,
-                    Version__c: packageMetadata.package_version_number,
-                    CommitId__c: packageMetadata.sourceVersion,
+                    Tag__c: sfpPackage.tag,
+                    Version__c: sfpPackage.package_version_number,
+                    CommitId__c: sfpPackage.sourceVersion,
                 }
             );
         }
 
         SFPLogger.log(
             COLOR_KEY_MESSAGE(
-                `Updated Org with new Artifact ${packageName} ${packageMetadata.package_version_number} ${
+                `Updated Org with new Artifact ${packageName} ${sfpPackage.package_version_number} ${
                     artifactId ? artifactId : ''
                 }`
             ),
@@ -125,10 +121,10 @@ export default class SFPOrg extends Org {
         return artifactId;
     }
 
-    private async getArtifactRecordId(packageMetadata: PackageMetadata): Promise<string> {
+    private async getArtifactRecordId(sfpPackage: SfpPackage): Promise<string> {
         let installedArtifacts = await this.getInstalledArtifacts();
 
-        let packageName = packageMetadata.package_name;
+        let packageName = sfpPackage.packageName;
         for (const artifact of installedArtifacts) {
             if (artifact.Name === packageName) {
                 return artifact.Id;

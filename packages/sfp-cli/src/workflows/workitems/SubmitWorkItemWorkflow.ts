@@ -47,7 +47,7 @@ export default class SubmitWorkItemWorkflow {
         }
 
         if (await this.isPmdAnalysis()) {
-            const selectPackageWorkflow = new SelectPackageWorkflow(ProjectConfig.getSFDXPackageManifest(null));
+            const selectPackageWorkflow = new SelectPackageWorkflow(ProjectConfig.getSFDXProjectConfig(null));
             const descriptorofChosenPackages = await selectPackageWorkflow.choosePackages(true);
             const pathOfPackages = descriptorofChosenPackages.map((descriptor) => descriptor.path);
 
@@ -57,7 +57,7 @@ export default class SubmitWorkItemWorkflow {
         if (await this.isRunApexTests()) {
             const devOrg = await this.getDevOrg(git);
 
-            const selectPackageWorkflow = new SelectPackageWorkflow(ProjectConfig.getSFDXPackageManifest(null));
+            const selectPackageWorkflow = new SelectPackageWorkflow(ProjectConfig.getSFDXProjectConfig(null));
             const descriptorofChosenPackages = await selectPackageWorkflow.choosePackages(true);
             const packages = descriptorofChosenPackages.map((descriptor) => descriptor.package);
 

@@ -48,7 +48,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
             packageAliases: { bi: '04t000000000000' },
         };
 
-        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXPackageManifest');
+        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
         projectConfigMock.mockImplementation(() => {
             return sfdx_project;
         });
@@ -99,7 +99,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
             packageAliases: { bi: '04t000000000000' },
         };
 
-        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXPackageManifest');
+        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
         projectConfigMock.mockImplementation(() => {
             return sfdx_project;
         });
@@ -175,7 +175,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
             },
         };
 
-        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXPackageManifest');
+        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
         projectConfigMock.mockImplementation(() => {
             return sfdx_project;
         });
@@ -243,7 +243,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
             packageAliases: { bi: '04t000000000000' },
         };
 
-        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXPackageManifest');
+        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
         projectConfigMock.mockImplementation(() => {
             return sfdx_project;
         });
@@ -278,7 +278,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
             packageAliases: { core: '04t000000000000' },
         };
 
-        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXPackageManifest');
+        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
         projectConfigMock.mockImplementation(() => {
             return sfdx_project;
         });
@@ -313,7 +313,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
             sourceApiVersion: '50.0',
         };
 
-        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXPackageManifest');
+        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
         projectConfigMock.mockImplementation(() => {
             return sfdx_project;
         });

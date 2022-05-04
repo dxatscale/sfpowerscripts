@@ -15,7 +15,7 @@ export default class DependencyAnalysis {
     async exec(): Promise<DependencyViolation[]> {
         const violations: DependencyViolation[] = [];
 
-        const projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+        const projectConfig = ProjectConfig.getSFDXProjectConfig(null);
 
         const managedPackages = await this.org.getAllInstalledManagedPackages();
         const managedPackageNamespaces = managedPackages.map((pkg) => pkg.namespacePrefix);

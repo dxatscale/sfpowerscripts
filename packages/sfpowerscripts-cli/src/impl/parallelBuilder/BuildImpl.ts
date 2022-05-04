@@ -1,5 +1,4 @@
 import BatchingTopoSort from './BatchingTopoSort';
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
 import DependencyHelper from './DependencyHelper';
 import Bottleneck from 'bottleneck';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
@@ -10,15 +9,14 @@ import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import { Stage } from '../Stage';
 import * as fs from 'fs-extra';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import CreateUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateUnlockedPackageImpl';
-import CreateSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateSourcePackageImpl';
-import CreateDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateDataPackageImpl';
 import BuildCollections from './BuildCollections';
 const Table = require('cli-table');
 import { ConsoleLogger, FileLogger, VoidLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -39,19 +37,20 @@ export interface BuildProps {
     branch?: string;
     packagesToCommits?: { [p: string]: string };
     currentStage: Stage;
+    baseBranch?:string;
 }
 export default class BuildImpl {
     private limiter: Bottleneck;
     private parentsToBeFulfilled;
     private childs;
     private packagesToBeBuilt: string[];
-    private packageCreationPromises: Array<Promise<PackageMetadata>>;
+    private packageCreationPromises: Array<Promise<SfpPackage>>;
     private projectConfig: { any: any };
     private parents: any;
     private packagesInQueue: string[];
     private packagesBuilt: string[];
     private failedPackages: string[];
-    private generatedPackages: PackageMetadata[];
+    private generatedPackages: SfpPackage[];
 
     private repository_url: string;
     private commit_id: string;
@@ -70,7 +69,7 @@ export default class BuildImpl {
     }
 
     public async exec(): Promise<{
-        generatedPackages: PackageMetadata[];
+        generatedPackages: SfpPackage[];
         failedPackages: string[];
     }> {
         const git = simplegit();
@@ -78,7 +77,7 @@ export default class BuildImpl {
             this.repository_url = (await git.getConfig('remote.origin.url')).value;
         } else this.repository_url = this.props.repourl;
 
-        if (!this.repository_url) throw new Error("Remote origin must be set in repository");
+        if (!this.repository_url) throw new Error('Remote origin must be set in repository');
 
         this.commit_id = await git.revparse(['HEAD']);
 
@@ -87,7 +86,7 @@ export default class BuildImpl {
         this.validatePackageNames(this.packagesToBeBuilt);
 
         // Read Manifest
-        this.projectConfig = ProjectConfig.getSFDXPackageManifest(this.props.projectDirectory);
+        this.projectConfig = ProjectConfig.getSFDXProjectConfig(this.props.projectDirectory);
 
         //Do a diff Impl
         let table;
@@ -134,21 +133,13 @@ export default class BuildImpl {
         let pushedPackages = [];
         for (const pkg of sortedBatch[0]) {
             let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg);
-            let packagePromise: Promise<PackageMetadata> = this.limiter
+            let packagePromise: Promise<SfpPackage> = this.limiter
                 .schedule({ id: pkg, priority: priority }, () =>
-                    this.createPackage(
-                        type,
-                        pkg,
-                        this.props.configFilePath,
-                        this.props.devhubAlias,
-                        this.props.waitTime.toString(),
-                        this.props.isQuickBuild,
-                        this.props.isBuildAllAsSourcePackages
-                    )
+                    this.createPackage(type, pkg, this.props.isBuildAllAsSourcePackages)
                 )
                 .then(
-                    (packageMetadata: PackageMetadata) => {
-                        this.generatedPackages.push(packageMetadata);
+                    (sfpPackage: SfpPackage) => {
+                        this.generatedPackages.push(sfpPackage);
                         SFPStatsSender.logCount('build.succeeded.packages', {
                             package: pkg,
                             type: type,
@@ -156,7 +147,7 @@ export default class BuildImpl {
                             is_dependency_validated: this.props.isQuickBuild ? 'false' : 'true',
                             pr_mode: String(this.props.isBuildAllAsSourcePackages),
                         });
-                        this.queueChildPackages(packageMetadata);
+                        this.queueChildPackages(sfpPackage);
                     },
                     (reason: any) => this.handlePackageError(reason, pkg)
                 );
@@ -252,7 +243,7 @@ export default class BuildImpl {
     }
 
     private getAllPackages(projectDirectory: string): string[] {
-        let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let sfdxpackages = [];
 
         let packageDescriptors = projectConfig['packageDirectories'].filter((pkg) => {
@@ -330,14 +321,14 @@ export default class BuildImpl {
         console.log(COLOR_HEADER(`${EOL}-----------------------------------------`));
     }
 
-    private queueChildPackages(packageMetadata: PackageMetadata): any {
-        this.packagesBuilt.push(packageMetadata.package_name);
-        this.printPackageDetails(packageMetadata);
+    private queueChildPackages(sfpPackage: SfpPackage): any {
+        this.packagesBuilt.push(sfpPackage.packageName);
+        this.printPackageDetails(sfpPackage);
 
         //let all my childs know, I am done building  and remove myself from
         this.packagesToBeBuilt.forEach((pkg) => {
             const unFullfilledParents = this.parentsToBeFulfilled[pkg]?.filter(
-                (pkg_name) => pkg_name !== packageMetadata.package_name
+                (pkg_name) => pkg_name !== sfpPackage.packageName
             );
             this.parentsToBeFulfilled[pkg] = unFullfilledParents;
         });
@@ -347,20 +338,12 @@ export default class BuildImpl {
         this.packagesToBeBuilt.forEach((pkg) => {
             if (this.parentsToBeFulfilled[pkg]?.length == 0) {
                 let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg);
-                let packagePromise: Promise<PackageMetadata> = this.limiter
+                let packagePromise: Promise<SfpPackage> = this.limiter
                     .schedule({ id: pkg, priority: priority }, () =>
-                        this.createPackage(
-                            type,
-                            pkg,
-                            this.props.configFilePath,
-                            this.props.devhubAlias,
-                            this.props.waitTime.toString(),
-                            this.props.isQuickBuild,
-                            this.props.isBuildAllAsSourcePackages
-                        )
+                        this.createPackage(type, pkg, this.props.isBuildAllAsSourcePackages)
                     )
                     .then(
-                        (packageMetadata: PackageMetadata) => {
+                        (sfpPackage: SfpPackage) => {
                             SFPStatsSender.logCount('build.succeeded.packages', {
                                 package: pkg,
                                 type: type,
@@ -368,8 +351,8 @@ export default class BuildImpl {
                                 is_dependency_validated: this.props.isQuickBuild ? 'false' : 'true',
                                 pr_mode: String(this.props.isBuildAllAsSourcePackages),
                             });
-                            this.generatedPackages.push(packageMetadata);
-                            this.queueChildPackages(packageMetadata);
+                            this.generatedPackages.push(sfpPackage);
+                            this.queueChildPackages(sfpPackage);
                         },
                         (reason: any) => this.handlePackageError(reason, pkg)
                     );
@@ -391,7 +374,7 @@ export default class BuildImpl {
         this.packagesToBeBuilt = this.packagesToBeBuilt.filter((el) => {
             return !pushedPackages.includes(el);
         });
-        this.packagesInQueue = this.packagesInQueue.filter((pkg_name) => pkg_name !== packageMetadata.package_name);
+        this.packagesInQueue = this.packagesInQueue.filter((pkg_name) => pkg_name !== sfpPackage.packageName);
 
         this.printQueueDetails();
     }
@@ -414,208 +397,87 @@ export default class BuildImpl {
         return { priority, type };
     }
 
-    private printPackageDetails(packageMetadata: PackageMetadata) {
+    private printPackageDetails(sfpPackage: SfpPackage) {
         console.log(
             COLOR_HEADER(
-                `${EOL}${packageMetadata.package_name} package created in ${this.getFormattedTime(
-                    packageMetadata.creation_details.creation_time
+                `${EOL}${sfpPackage.packageName} package created in ${this.getFormattedTime(
+                    sfpPackage.creation_details.creation_time
                 )}`
             )
         );
         console.log(COLOR_HEADER(`-- Package Details:--`));
         console.log(
             COLOR_HEADER(`-- Package Version Number:        `),
-            COLOR_KEY_MESSAGE(packageMetadata.package_version_number)
+            COLOR_KEY_MESSAGE(sfpPackage.package_version_number)
         );
 
-        if (packageMetadata.package_type !== 'data') {
-            if (packageMetadata.package_type == 'unlocked') {
+        if (sfpPackage.package_type !== 'data') {
+            if (sfpPackage.package_type == 'unlocked') {
                 console.log(
                     COLOR_HEADER(`-- Package Version Id:             `),
-                    COLOR_KEY_MESSAGE(packageMetadata.package_version_id)
+                    COLOR_KEY_MESSAGE(sfpPackage.package_version_id)
                 );
                 console.log(
                     COLOR_HEADER(`-- Package Test Coverage:          `),
-                    COLOR_KEY_MESSAGE(packageMetadata.test_coverage)
+                    COLOR_KEY_MESSAGE(sfpPackage.test_coverage)
                 );
                 console.log(
                     COLOR_HEADER(`-- Package Coverage Check Passed:  `),
-                    COLOR_KEY_MESSAGE(packageMetadata.has_passed_coverage_check)
+                    COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check)
                 );
             }
 
             console.log(
                 COLOR_HEADER(`-- Apex In Package:             `),
-                COLOR_KEY_MESSAGE(packageMetadata.isApexFound ? 'Yes' : 'No')
+                COLOR_KEY_MESSAGE(sfpPackage.isApexFound ? 'Yes' : 'No')
             );
             console.log(
                 COLOR_HEADER(`-- Profiles In Package:         `),
-                COLOR_KEY_MESSAGE(packageMetadata.isProfilesFound ? 'Yes' : 'No')
+                COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? 'Yes' : 'No')
             );
-            console.log(COLOR_HEADER(`-- Metadata Count:         `), COLOR_KEY_MESSAGE(packageMetadata.metadataCount));
+            console.log(COLOR_HEADER(`-- Metadata Count:         `), COLOR_KEY_MESSAGE(sfpPackage.metadataCount));
         }
     }
 
     private async createPackage(
         packageType: string,
         sfdx_package: string,
-        config_file_path: string,
-        devhub_alias: string,
-        wait_time: string,
-        isSkipValidation: boolean,
         isValidateMode: boolean
-    ): Promise<PackageMetadata> {
+    ): Promise<SfpPackage> {
         console.log(COLOR_KEY_MESSAGE(`Package creation initiated for  ${sfdx_package}`));
 
-        let result: PackageMetadata;
-        if (!isValidateMode) {
-            if (packageType === 'Unlocked') {
-                result = await this.createUnlockedPackage(
-                    sfdx_package,
-                    this.commit_id,
-                    this.repository_url,
-                    config_file_path,
-                    devhub_alias,
-                    wait_time,
-                    isSkipValidation
-                );
-            } else if (packageType === 'Source') {
-                result = await this.createSourcePackage(sfdx_package, this.commit_id, this.repository_url);
-            } else if (packageType == 'Data') {
-                result = await this.createDataPackage(sfdx_package, this.commit_id, this.repository_url);
-            } else {
-                throw new Error(`Unknown package type ${packageType}`);
-            }
-        } else {
-            if (packageType === 'Source' || packageType == 'Unlocked') {
-                result = await this.createSourcePackage(sfdx_package, this.commit_id, this.repository_url);
-            } else if (packageType == 'Data') {
-                result = await this.createDataPackage(sfdx_package, this.commit_id, this.repository_url);
-            }
-        }
-
-        return result;
-    }
-
-    private createUnlockedPackage(
-        sfdx_package: string,
-        commit_id: string,
-        repository_url: string,
-        config_file_path: string,
-        devhub_alias: string,
-        wait_time: string,
-        isSkipValidation: boolean
-    ): Promise<PackageMetadata> {
-        let packageMetadata: PackageMetadata = {
-            package_name: sfdx_package,
-            package_type: 'unlocked',
-            sourceVersion: commit_id,
-            repository_url: repository_url,
-            branch: this.props.branch,
-        };
-
-        let createUnlockedPackageImpl: CreateUnlockedPackageImpl = new CreateUnlockedPackageImpl(
-            sfdx_package,
-            null,
-            this.props.configFilePath,
-            true,
-            null,
-            this.props.projectDirectory,
-            devhub_alias,
-            wait_time,
-            !isSkipValidation,
-            isSkipValidation,
-            packageMetadata,
-            this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage),
-            new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`)
-        );
-
-        let result = createUnlockedPackageImpl.exec();
-        return result;
-    }
-
-    private createSourcePackage(
-        sfdx_package: string,
-        commit_id: string,
-        repository_url: string
-    ): Promise<PackageMetadata> {
-        let incrementedVersionNumber;
-        if (this.props.buildNumber) {
-            let incrementBuildNumber = new IncrementProjectBuildNumberImpl(
-                new VoidLogger(),
-                this.props.projectDirectory,
-                sfdx_package,
-                'BuildNumber',
-                true,
-                this.props.buildNumber.toString()
-            );
-            incrementedVersionNumber = incrementBuildNumber.exec();
-        }
-
-        let packageMetadata: PackageMetadata = {
-            package_name: sfdx_package,
-            sourceVersion: commit_id,
-            package_version_number: incrementedVersionNumber?.versionNumber,
-            repository_url: repository_url,
-            package_type: 'source',
-            apextestsuite: null,
-            branch: this.props.branch,
-        };
-
-        let createSourcePackageImpl = new CreateSourcePackageImpl(
-            this.props.projectDirectory,
-            sfdx_package,
-            packageMetadata,
-            false,
+        return SfpPackageBuilder.buildPackageFromProjectDirectory(
             new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`),
-            this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
-        );
-
-        if (this.props.packagesToCommits && this.props.packagesToCommits[sfdx_package])
-            createSourcePackageImpl.setDiffRevisons(this.props.packagesToCommits[sfdx_package], 'HEAD');
-
-        let result = createSourcePackageImpl.exec();
-
-        return result;
-    }
-
-    private createDataPackage(
-        sfdx_package: string,
-        commit_id: string,
-        repository_url: string
-    ): Promise<PackageMetadata> {
-        let incrementedVersionNumber;
-        if (this.props.buildNumber) {
-            let incrementBuildNumber = new IncrementProjectBuildNumberImpl(
-                new VoidLogger(),
-                this.props.projectDirectory,
-                sfdx_package,
-                'BuildNumber',
-                true,
-                this.props.buildNumber.toString()
-            );
-            incrementedVersionNumber = incrementBuildNumber.exec();
-        }
-
-        let packageMetadata: PackageMetadata = {
-            package_name: sfdx_package,
-            sourceVersion: commit_id,
-            package_version_number: incrementedVersionNumber?.versionNumber,
-            repository_url: repository_url,
-            package_type: 'data',
-            branch: this.props.branch,
-        };
-
-        let createDataPackageImpl = new CreateDataPackageImpl(
             this.props.projectDirectory,
             sfdx_package,
-            packageMetadata,
-            false,
-            new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`)
+            {
+                overridePackageTypeWith: isValidateMode && packageType != 'Data' ? 'Source' : undefined,
+                packageVersionNumber: this.getVersionNumber(sfdx_package, packageType, isValidateMode),
+                branch: this.props.branch,
+                sourceVersion: this.commit_id,
+                repositoryUrl: this.repository_url,
+                configFilePath: this.props.configFilePath,
+                pathToReplacementForceIgnore: this.getPathToForceIgnoreForCurrentStage(
+                    this.projectConfig,
+                    this.props.currentStage
+                ),
+                revisionFrom:
+                    this.props.packagesToCommits && this.props.packagesToCommits[sfdx_package]
+                        ? this.props.packagesToCommits[sfdx_package]
+                        : null,
+                revisionTo: this.props.packagesToCommits && this.props.packagesToCommits[sfdx_package] ? 'HEAD' : null,
+            },
+            {
+                devHub: this.props.devhubAlias,
+                installationkeybypass: true,
+                installationkey: undefined,
+                waitTime: this.props.waitTime.toString(),
+                isCoverageEnabled: !this.props.isQuickBuild,
+                isSkipValidation: this.props.isQuickBuild,
+                breakBuildIfEmpty: true,
+                baseBranch:this.props.baseBranch
+            }
         );
-        let result = createDataPackageImpl.exec();
-
-        return result;
     }
 
     /**
@@ -649,5 +511,25 @@ export default class BuildImpl {
         date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
         let timeString = date.toISOString().substr(11, 8);
         return timeString;
+    }
+
+    private getVersionNumber(sfdx_package: string, packageType: string, isValidateMode: boolean): string {
+        let incrementedVersionNumber;
+        if (isValidateMode || packageType != 'Unlocked') {
+            if (this.props.buildNumber) {
+                let incrementBuildNumber = new IncrementProjectBuildNumberImpl(
+                    new VoidLogger(),
+                    this.props.projectDirectory,
+                    sfdx_package,
+                    'BuildNumber',
+                    true,
+                    this.props.buildNumber.toString()
+                );
+                incrementedVersionNumber = incrementBuildNumber.exec();
+            }
+        }
+
+        if (isValidateMode) return incrementedVersionNumber?.versionNumber;
+        else return packageType !== 'Unlocked' ? incrementedVersionNumber?.versionNumber : undefined;
     }
 }

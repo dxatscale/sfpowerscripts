@@ -1,4 +1,4 @@
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
+import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 
 export interface DeploymentResult {
     scheduled: number;
@@ -10,7 +10,7 @@ export interface DeploymentResult {
 
 export interface PackageInfo {
     sourceDirectory: string;
-    packageMetadata: PackageMetadata;
+    sfpPackage: SfpPackage;
     versionInstalledInOrg?: string;
     isPackageInstalled?: boolean;
 }

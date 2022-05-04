@@ -71,7 +71,7 @@ export default class PrepareImpl {
 
     private async getPackageArtifacts() {
         //Filter Packages to be ignore from prepare to be fetched
-        let packages = ProjectConfig.getSFDXPackageManifest(null)['packageDirectories'].filter((pkg) => {
+        let packages = ProjectConfig.getSFDXProjectConfig(null)['packageDirectories'].filter((pkg) => {
             if (
                 pkg.ignoreOnStage?.find((stage) => {
                     stage = stage.toLowerCase();
@@ -108,11 +108,15 @@ export default class PrepareImpl {
         } else {
             //Build All Artifacts
             console.log('\n');
-            console.log('-------------------------------------WARNING!!!!------------------------------------------------');
+            console.log(
+                '-------------------------------------WARNING!!!!------------------------------------------------'
+            );
             console.log('Building packages, as script to fetch artifacts was not provided');
             console.log('This is not ideal, as the artifacts are  built from the current head of the provided branch');
             console.log('Pools should be prepared with previously validated packages');
-            console.log('------------------------------------------------------------------------------------------------');
+            console.log(
+                '------------------------------------------------------------------------------------------------'
+            );
 
             let buildProps: BuildProps = {
                 configFilePath: this.pool.configFilePath,
@@ -134,12 +138,7 @@ export default class PrepareImpl {
                 throw new Error('Unable to build packages, Following packages failed to build' + failedPackages);
 
             for (let generatedPackage of generatedPackages) {
-                await ArtifactGenerator.generateArtifact(
-                    generatedPackage.package_name,
-                    process.cwd(),
-                    'artifacts',
-                    generatedPackage
-                );
+                await ArtifactGenerator.generateArtifact(generatedPackage, process.cwd(), 'artifacts');
             }
         }
     }

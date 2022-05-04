@@ -70,7 +70,7 @@ describe('Given a project directory or sfdx-project.json with multiple packages'
     });
 
     it('Fetches all the package', () => {
-        const manifestHelperMock = jest.spyOn(ProjectConfig, 'getSFDXPackageManifest');
+        const manifestHelperMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
         manifestHelperMock.mockImplementation((projectDirectory: string) => {
             return sfdx_project;
         });
@@ -84,7 +84,7 @@ describe('Given a project directory or sfdx-project.json with multiple packages'
     });
 
     it('Get manifest, provided a directory', () => {
-        expect(ProjectConfig.getSFDXPackageManifest(null)).toStrictEqual(sfdx_project);
+        expect(ProjectConfig.getSFDXProjectConfig(null)).toStrictEqual(sfdx_project);
     });
 
     it('Gets the type of a package', () => {

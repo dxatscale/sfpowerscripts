@@ -14,7 +14,7 @@ import {
     ParseTreeWalker,
 } from 'apex-parser';
 import SFPLogger, { LoggerLevel } from '../../logger/SFPLogger';
-import { ApexClasses } from '../../package/SFPPackage';
+import { ApexClasses } from '../../package/SfpPackage';
 
 /**
  * Get Apex type of cls files in a search directory.

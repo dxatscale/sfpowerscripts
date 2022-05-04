@@ -6,19 +6,15 @@ import AdmZip = require('adm-zip');
 import semver = require('semver');
 import tar = require('tar');
 
-export default class ArtifactFilePathFetcher {
+export default class ArtifactFetcher {
     /**
      * Decider for which artifact retrieval method to use
      * Returns empty array if no artifacts are found
      * @param artifactDirectory
      * @param sfdx_package
      */
-    public static fetchArtifactFilePaths(
-        artifactDirectory: string,
-        sfdx_package?: string,
-        logger?: Logger
-    ): ArtifactFilePaths[] {
-        let result: ArtifactFilePaths[] = [];
+    public static fetchArtifacts(artifactDirectory: string, sfdx_package?: string, logger?: Logger): Artifact[] {
+        let result: Artifact[] = [];
 
         if (!fs.existsSync(artifactDirectory)) {
             throw new Error(`Artifact directory ${path.resolve(artifactDirectory)} does not exist`);
@@ -29,11 +25,11 @@ export default class ArtifactFilePathFetcher {
         SFPLogger.log(`Artifacts: ${JSON.stringify(artifacts)}`, LoggerLevel.TRACE, logger);
 
         for (let artifact of artifacts) {
-            let artifactFilePaths: ArtifactFilePaths;
+            let artifactFilePaths: Artifact;
             if (path.extname(artifact) === '.zip') {
-                artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePathsFromZipFile(artifact);
+                artifactFilePaths = ArtifactFetcher.fetchArtifactFilePathsFromZipFile(artifact);
             } else if (path.extname(artifact) === '.tgz') {
-                artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePathsFromTarball(artifact);
+                artifactFilePaths = ArtifactFetcher.fetchArtifactFilePathsFromTarball(artifact);
             } else {
                 throw new Error(`Unhandled artifact format ${artifact}, neither tar or zip file`);
             }
@@ -47,18 +43,18 @@ export default class ArtifactFilePathFetcher {
      * Helper method for retrieving the ArtifactFilePaths of an artifact folder
      * @param packageMetadataFilePath
      */
-    private static fetchArtifactFilePathsFromFolder(packageMetadataFilePath: string): ArtifactFilePaths {
+    private static fetchArtifactFilePathsFromFolder(packageMetadataFilePath: string): Artifact {
         let sourceDirectory = path.join(path.dirname(packageMetadataFilePath), `source`);
 
         let changelogFilePath = path.join(path.dirname(packageMetadataFilePath), `changelog.json`);
 
-        let artifactFilePaths: ArtifactFilePaths = {
+        let artifactFilePaths: Artifact = {
             packageMetadataFilePath: packageMetadataFilePath,
             sourceDirectoryPath: sourceDirectory,
             changelogFilePath: changelogFilePath,
         };
 
-        ArtifactFilePathFetcher.existsArtifactFilepaths(artifactFilePaths);
+        ArtifactFetcher.existsArtifactFilepaths(artifactFilePaths);
 
         return artifactFilePaths;
     }
@@ -67,7 +63,7 @@ export default class ArtifactFilePathFetcher {
      * Helper method for retrieving ArtifactFilePaths of an artifact zip
      * @param artifact
      */
-    private static fetchArtifactFilePathsFromZipFile(artifact: string): ArtifactFilePaths {
+    private static fetchArtifactFilePathsFromZipFile(artifact: string): Artifact {
         let unzippedArtifactsDirectory: string = `.sfpowerscripts/unzippedArtifacts/${this.makefolderid(8)}`;
 
         fs.mkdirpSync(unzippedArtifactsDirectory);
@@ -87,13 +83,13 @@ export default class ArtifactFilePathFetcher {
 
         let changelogFilePath = path.join(unzippedArtifactsDirectory, artifactName, `changelog.json`);
 
-        let artifactFilePaths: ArtifactFilePaths = {
+        let artifactFilePaths: Artifact = {
             packageMetadataFilePath: packageMetadataFilePath,
             sourceDirectoryPath: sourceDirectory,
             changelogFilePath: changelogFilePath,
         };
 
-        ArtifactFilePathFetcher.existsArtifactFilepaths(artifactFilePaths);
+        ArtifactFetcher.existsArtifactFilepaths(artifactFilePaths);
 
         return artifactFilePaths;
     }
@@ -102,7 +98,7 @@ export default class ArtifactFilePathFetcher {
      * Helper method for retrieving ArtifactFilePaths of a tarball
      * @param artifact
      */
-    private static fetchArtifactFilePathsFromTarball(artifact: string): ArtifactFilePaths {
+    private static fetchArtifactFilePathsFromTarball(artifact: string): Artifact {
         let unzippedArtifactsDirectory: string = `.sfpowerscripts/unzippedArtifacts/${this.makefolderid(8)}`;
         fs.mkdirpSync(unzippedArtifactsDirectory);
 
@@ -118,13 +114,13 @@ export default class ArtifactFilePathFetcher {
 
         let changelogFilePath = path.join(unzippedArtifactsDirectory, 'package', `changelog.json`);
 
-        let artifactFilePaths: ArtifactFilePaths = {
+        let artifactFilePaths: Artifact = {
             packageMetadataFilePath: packageMetadataFilePath,
             sourceDirectoryPath: sourceDirectory,
             changelogFilePath: changelogFilePath,
         };
 
-        ArtifactFilePathFetcher.existsArtifactFilepaths(artifactFilePaths);
+        ArtifactFetcher.existsArtifactFilepaths(artifactFilePaths);
 
         return artifactFilePaths;
     }
@@ -151,7 +147,7 @@ export default class ArtifactFilePathFetcher {
 
         if (sfdx_package && artifacts.length > 1) {
             SFPLogger.log(`Found more than one artifact for ${sfdx_package}`, LoggerLevel.INFO);
-            let latestArtifact: string = ArtifactFilePathFetcher.getLatestArtifact(artifacts);
+            let latestArtifact: string = ArtifactFetcher.getLatestArtifact(artifacts);
             SFPLogger.log(`Using latest artifact ${latestArtifact}`, LoggerLevel.INFO);
             return [latestArtifact];
         } else return artifacts;
@@ -188,7 +184,7 @@ export default class ArtifactFilePathFetcher {
      * Verify that artifact filepaths exist on the file system
      * @param artifactFilePaths
      */
-    private static existsArtifactFilepaths(artifactFilePaths: ArtifactFilePaths): void {
+    private static existsArtifactFilepaths(artifactFilePaths: Artifact): void {
         Object.values(artifactFilePaths).forEach((filepath) => {
             if (!fs.existsSync(filepath)) throw new Error(`Artifact filepath ${filepath} does not exist`);
         });
@@ -199,7 +195,7 @@ export default class ArtifactFilePathFetcher {
      * @param artifacts_filepaths
      * @param isToSkipOnMissingArtifact
      */
-    public static missingArtifactDecider(artifacts: ArtifactFilePaths[], isToSkipOnMissingArtifact: boolean): boolean {
+    public static missingArtifactDecider(artifacts: Artifact[], isToSkipOnMissingArtifact: boolean): boolean {
         if (artifacts.length === 0 && !isToSkipOnMissingArtifact) {
             throw new Error(`Artifact not found, Please check the inputs`);
         } else if (artifacts.length === 0 && isToSkipOnMissingArtifact) {
@@ -221,7 +217,7 @@ export default class ArtifactFilePathFetcher {
     }
 }
 
-export interface ArtifactFilePaths {
+export interface Artifact {
     packageMetadataFilePath: string;
     sourceDirectoryPath?: string;
     changelogFilePath?: string;

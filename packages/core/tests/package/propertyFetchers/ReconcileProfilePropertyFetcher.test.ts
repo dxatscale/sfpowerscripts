@@ -1,36 +1,40 @@
 import { jest, expect } from '@jest/globals';
+import { Logger } from '../../../src/logger/SFPLogger';
+import PropertyFetcher from '../../../src/package/propertyFetchers/PropertyFetcher';
 import ReconcileProfilePropertyFetcher from '../../../src/package/propertyFetchers/ReconcileProfilePropertyFetcher';
-import SFPPackage from '../../../src/package/SFPPackage';
+import SfpPackage from '../../../src/package/SfpPackage';
+import SfpPackageBuilder from '../../../src/package/SfpPackageBuilder';
 
-jest.mock('../../../src/package/SFPPackage', () => {
-    class SFPPackage {
-        private _packageDescriptor: any;
+jest.mock('../../../src/package/SfpPackageBuilder', () => {
+    class SfpPackageBuilder {
 
-        public reconcileProfiles: boolean;
+        public assignPermSetsPreDeployment?: string[];
+        public assignPermSetsPostDeployment?: string[];
 
-        get packageDescriptor(): any {
-            return this._packageDescriptor;
-        }
-
-        public static async buildPackageFromProjectConfig(
+        public static async buildPackageFromProjectDirectory(
+            logger: Logger,
             projectDirectory: string,
-            sfdx_package: string,
-            configFilePath?: string,
-            packageLogger?: any
+            sfdx_package: string
         ) {
-            let sfpPackage: SFPPackage = new SFPPackage();
-            sfpPackage._packageDescriptor = packageDescriptor;
+            let propertyFetchers: PropertyFetcher[] = [new ReconcileProfilePropertyFetcher()];
+
+            let sfpPackage: SfpPackage = new SfpPackage();
+             sfpPackage.packageDescriptor = packageDescriptor;
+             for (const propertyFetcher of propertyFetchers) {
+                await propertyFetcher.getSfpowerscriptsProperties(sfpPackage, logger);
+            }
+
             return sfpPackage;
         }
     }
 
-    return SFPPackage;
+    return SfpPackageBuilder;
 });
 
 describe('Given a package descriptor with reconcileProfiles', () => {
-    it('Should set reconcileProfiles property in SFPPackage', async () => {
+    it('Should set reconcileProfiles property in SfpPackage', async () => {
         let reconcileProfilePropertyFetcher: ReconcileProfilePropertyFetcher = new ReconcileProfilePropertyFetcher();
-        let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null, null, null);
+        let sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(null, null, null);
         reconcileProfilePropertyFetcher.getSfpowerscriptsProperties(sfpPackage);
         expect(sfpPackage.reconcileProfiles).toBe(false);
     });

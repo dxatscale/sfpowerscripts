@@ -11,10 +11,11 @@ import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/Trigge
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import SFPPackage from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
+import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
+import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 const path = require('path');
 
 // Initialize Messages with the current plugin directory
@@ -119,7 +120,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
                 if (this.flags.package === null) {
                     throw new Error('Package name must be specified when test level is RunAllTestsInPackage');
                 }
-                let pkg: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
+                let pkg: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
                     new ConsoleLogger(),
                     null,
                     this.flags.package

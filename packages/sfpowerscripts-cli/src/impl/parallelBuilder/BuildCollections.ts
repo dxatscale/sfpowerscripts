@@ -23,7 +23,7 @@ export default class BuildCollections {
     private createGraphOfBuildCollections(projectDirectory: string) {
         this._graph = new UndirectedGraph();
 
-        let projectConfig = ProjectConfig.getSFDXPackageManifest(projectDirectory);
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         for (let pkg of projectConfig.packageDirectories) {
             if (pkg.buildCollection) {
                 if (pkg.buildCollection instanceof Array) {

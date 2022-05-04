@@ -1,10 +1,10 @@
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import * as fs from 'fs-extra';
 import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl';
-import ArtifactFilePathFetcher from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher';
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
+import ArtifactFetcher from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
+import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'promote');
@@ -64,7 +64,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
         let unpromotedPackages: { name: string; error: string }[] = [];
         try {
-            let artifacts = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);
+            let artifacts = ArtifactFetcher.fetchArtifacts(this.flags.artifactdir);
 
             if (artifacts.length === 0) {
                 throw new Error(`No artifacts found at ${this.flags.artifactdir}`);
@@ -73,26 +73,23 @@ export default class Promote extends SfpowerscriptsCommand {
             let result: boolean = true;
             let promotedPackages: string[] = [];
             for (let artifact of artifacts) {
-                let packageMetadata: PackageMetadata = JSON.parse(
-                    fs.readFileSync(artifact.packageMetadataFilePath, 'utf8')
-                );
-
+                let sfpPackage = await SfpPackageBuilder.buildPackageFromArtifact(artifact, new ConsoleLogger());
                 try {
-                    if (packageMetadata.package_type === 'unlocked') {
+                    if (sfpPackage.package_type === 'unlocked') {
                         let promoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
                             artifact.sourceDirectoryPath,
-                            packageMetadata.package_version_id,
+                            sfpPackage.package_version_id,
                             this.hubOrg.getUsername()
                         );
                         await promoteUnlockedPackageImpl.exec();
                     }
 
-                    promotedPackages.push(packageMetadata.package_name);
+                    promotedPackages.push(sfpPackage.packageName);
                 } catch (err) {
                     result = false;
 
                     unpromotedPackages.push({
-                        name: packageMetadata.package_name,
+                        name: sfpPackage.packageName,
                         error: err.message,
                     });
                 }

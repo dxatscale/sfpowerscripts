@@ -1,33 +1,38 @@
 import { jest, expect } from '@jest/globals';
 import DestructiveManifestPathFetcher from '../../../src/package/propertyFetchers/DestructiveManifestPathFetcher';
-import SFPPackage from '../../../src/package/SFPPackage';
+import SfpPackage from '../../../src/package/SfpPackage';
 import fs from 'fs-extra';
+import { Logger } from '../../../src/logger/SFPLogger';
+import PropertyFetcher from '../../../src/package/propertyFetchers/PropertyFetcher';
+import SfpPackageBuilder from '../../../src/package/SfpPackageBuilder';
 
-jest.mock('../../../src/package/SFPPackage', () => {
-    class SFPPackage {
-        private _packageDescriptor: any;
 
-        public destructiveChangesPath: string;
-        public destructiveChanges?: any;
+jest.mock('../../../src/package/SfpPackageBuilder', () => {
+    class SfpPackageBuilder {
 
-        get packageDescriptor(): any {
-            return this._packageDescriptor;
-        }
+        public assignPermSetsPreDeployment?: string[];
+        public assignPermSetsPostDeployment?: string[];
 
-        public static async buildPackageFromProjectConfig(
+        public static async buildPackageFromProjectDirectory(
+            logger: Logger,
             projectDirectory: string,
-            sfdx_package: string,
-            configFilePath?: string,
-            packageLogger?: any
+            sfdx_package: string
         ) {
-            let sfpPackage: SFPPackage = new SFPPackage();
-            sfpPackage._packageDescriptor = packageDescriptor;
+            let propertyFetchers: PropertyFetcher[] = [new DestructiveManifestPathFetcher()];
+
+            let sfpPackage: SfpPackage = new SfpPackage();
+             sfpPackage.packageDescriptor = packageDescriptor;
+             for (const propertyFetcher of propertyFetchers) {
+                await propertyFetcher.getSfpowerscriptsProperties(sfpPackage, logger);
+            }
+
             return sfpPackage;
         }
     }
 
-    return SFPPackage;
+    return SfpPackageBuilder;
 });
+
 
 describe('Given a package descriptor with a destructiveChangePath', () => {
     beforeEach(() => {
@@ -36,16 +41,16 @@ describe('Given a package descriptor with a destructiveChangePath', () => {
         });
     });
 
-    it('Should set destructiveChangesPath property in SFPPackage', async () => {
+    it('Should set destructiveChangesPath property in SfpPackage', async () => {
         let destructiveManifestPathFetcher: DestructiveManifestPathFetcher = new DestructiveManifestPathFetcher();
-        let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null, null, null);
+        let sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(null, null, null);
         await destructiveManifestPathFetcher.getSfpowerscriptsProperties(sfpPackage);
         expect(sfpPackage.destructiveChangesPath).toBe('destructiveChanges.xml');
     });
 
-    it('Should set destructiveChanges property in SFPPackage', async () => {
+    it('Should set destructiveChanges property in SfpPackage', async () => {
         let destructiveManifestPathFetcher: DestructiveManifestPathFetcher = new DestructiveManifestPathFetcher();
-        let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null, null, null);
+        let sfpPackage: SfpPackage = await  SfpPackageBuilder.buildPackageFromProjectDirectory(null, null, null);
         await destructiveManifestPathFetcher.getSfpowerscriptsProperties(sfpPackage);
         expect(sfpPackage.destructiveChanges).toStrictEqual(destructiveChanges);
     });

@@ -1,31 +1,27 @@
-import PackageMetadata from '../../PackageMetadata';
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 import PackageMetadataPrinter from '../../display/PackageMetadataPrinter';
-import { InstallPackage } from './InstallPackage';
+import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
 import InstallUnlockedPackageWrapper from '../../sfdxwrappers/InstallUnlockedPackageImpl';
+import SfpPackage from '../SfpPackage';
 
 export default class InstallUnlockedPackageImpl extends InstallPackage {
     private packageVersionId;
-    private options;
+
 
     public constructor(
-        sfdxPackage: string,
+        sfpPackage: SfpPackage,
         targetusername: string,
-        options: any,
-        skipIfPackageInstalled: boolean,
-        packageMetadata: PackageMetadata,
-        sourceDirectory: string,
+        options: SfpPackageInstallationOptions,
         logger: Logger,
-        isDryRun: boolean
     ) {
-        super(sfdxPackage, targetusername, sourceDirectory, packageMetadata, skipIfPackageInstalled, logger, isDryRun);
-        this.packageVersionId = packageMetadata.package_version_id;
+        super(sfpPackage, targetusername, logger,options);
+        this.packageVersionId = sfpPackage.package_version_id;
         this.options = options;
     }
 
     public async install() {
         //Print Metadata carried in the package
-        PackageMetadataPrinter.printMetadataToDeploy(this.packageMetadata?.payload, this.logger);
+        PackageMetadataPrinter.printMetadataToDeploy(this.sfpPackage?.payload, this.logger);
 
         let installUnlockedPackageWrapper: InstallUnlockedPackageWrapper = new InstallUnlockedPackageWrapper(
             this.logger,
@@ -33,11 +29,11 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
             null,
             this.targetusername,
             this.packageVersionId,
-            this.options['waitTime'],
-            this.options['publishWaitTime'],
-            this.options['installationkey'],
-            this.options['securitytype'],
-            this.options['upgradetype'],
+            this.options.waitTime,
+            this.options.publishWaitTime.toString(),
+            this.options.installationkey,
+            this.options.securitytype,
+            this.options.upgradetype,
             this.options.apiVersion
         );
         SFPLogger.log(

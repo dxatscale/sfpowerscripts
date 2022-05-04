@@ -1,22 +1,18 @@
-import { ArtifactFilePaths } from './ArtifactFilePathFetcher';
-import PackageMetadata from '../PackageMetadata';
 import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
 import * as fs from 'fs-extra';
 import path = require('path');
 import lodash = require('lodash');
 import { URL } from 'url';
+import SfpPackage from './SfpPackage';
 
 /**
  * Methods for getting information about artifacts
  */
-export default class ArtifactInquirer {
+export default class SfpPackageInquirer {
     private _latestPackageManifestFromArtifacts: any;
     private _pathToLatestPackageManifestFromArtifacts: string;
     private _prunedLatestPackageManifestFromArtifacts: any;
 
-    get latestPackageManifestFromArtifacts() {
-        return this._latestPackageManifestFromArtifacts;
-    }
     get pathToLatestPackageManifestFromArtifacts() {
         return this._pathToLatestPackageManifestFromArtifacts;
     }
@@ -24,8 +20,10 @@ export default class ArtifactInquirer {
         return this._prunedLatestPackageManifestFromArtifacts;
     }
 
-    constructor(private readonly artifacts: ArtifactFilePaths[], private packageLogger?: Logger) {
-        let latestPackageManifest = this.getLatestPackageManifestFromArtifacts(this.artifacts);
+    constructor(private readonly sfpPackages: SfpPackage[], private packageLogger?: Logger) {}
+
+    public getLatestProjectConfig() {
+        let latestPackageManifest = this.getLatestPackageManifestFromArtifacts(this.sfpPackages);
 
         if (latestPackageManifest) {
             this._latestPackageManifestFromArtifacts = latestPackageManifest.latestPackageManifest;
@@ -33,9 +31,10 @@ export default class ArtifactInquirer {
 
             this._prunedLatestPackageManifestFromArtifacts = this.pruneLatestPackageManifest(
                 latestPackageManifest.latestPackageManifest,
-                this.artifacts
+                this.sfpPackages
             );
         }
+        return this._latestPackageManifestFromArtifacts;
     }
 
     /**
@@ -43,7 +42,7 @@ export default class ArtifactInquirer {
      * Returns null if unable to find latest package manifest
      */
     private getLatestPackageManifestFromArtifacts(
-        artifacts: ArtifactFilePaths[]
+        sfpPackages: SfpPackage[]
     ): {
         latestPackageManifest: any;
         pathToLatestPackageManifest: string;
@@ -53,23 +52,15 @@ export default class ArtifactInquirer {
 
         this.validateArtifactsSourceRepository();
 
-        let latestPackageMetadata: PackageMetadata;
-        for (let artifact of artifacts) {
-            let packageMetadata: PackageMetadata = JSON.parse(
-                fs.readFileSync(artifact.packageMetadataFilePath, 'utf8')
-            );
-
+        let latestSfpPackage: SfpPackage;
+        for (let sfpPackage of sfpPackages) {
             if (
-                latestPackageMetadata == null ||
-                latestPackageMetadata.creation_details.timestamp < packageMetadata.creation_details.timestamp
+                latestSfpPackage == null ||
+                latestSfpPackage.creation_details.timestamp < sfpPackage.creation_details.timestamp
             ) {
-                latestPackageMetadata = packageMetadata;
+                latestSfpPackage = sfpPackage;
 
-                let pathToPackageManifest = path.join(
-                    artifact.sourceDirectoryPath,
-                    'manifests',
-                    'sfdx-project.json.ori'
-                );
+                let pathToPackageManifest = path.join(sfpPackage.sourceDir, 'manifests', 'sfdx-project.json.ori');
                 if (fs.existsSync(pathToPackageManifest)) {
                     latestPackageManifest = JSON.parse(fs.readFileSync(pathToPackageManifest, 'utf8'));
 
@@ -80,7 +71,7 @@ export default class ArtifactInquirer {
 
         if (latestPackageManifest) {
             SFPLogger.log(
-                `Found latest package manifest in ${latestPackageMetadata.package_name} artifact`,
+                `Found latest package manifest in ${latestSfpPackage.packageName} artifact`,
                 LoggerLevel.INFO,
                 this.packageLogger
             );
@@ -95,16 +86,12 @@ export default class ArtifactInquirer {
     public validateArtifactsSourceRepository(): void {
         let remoteURL: RemoteURL;
 
-        for (let artifact of this.artifacts) {
+        for (let sfpPackage of this.sfpPackages) {
             let currentRemoteURL: RemoteURL;
 
-            let packageMetadata: PackageMetadata = JSON.parse(
-                fs.readFileSync(artifact.packageMetadataFilePath, 'utf8')
-            );
-
-            let isHttp: boolean = packageMetadata.repository_url.match(/^https?:\/\//) ? true : false;
+            let isHttp: boolean = sfpPackage.repository_url.match(/^https?:\/\//) ? true : false;
             if (isHttp) {
-                const url = new URL(packageMetadata.repository_url);
+                const url = new URL(sfpPackage.repository_url);
                 currentRemoteURL = {
                     ref: url.toString(),
                     hostName: url.hostname,
@@ -113,7 +100,7 @@ export default class ArtifactInquirer {
             } else {
                 // Handle SSH URL separately, as it is not supported by URL module
                 currentRemoteURL = {
-                    ref: packageMetadata.repository_url,
+                    ref: sfpPackage.repository_url,
                     hostName: null,
                     pathName: null,
                 };
@@ -145,7 +132,7 @@ export default class ArtifactInquirer {
                     this.packageLogger
                 );
                 throw new Error(
-                    `Artifacts must originate from the same source repository, for deployment to work. The artifact ${packageMetadata.package_name} has repository URL that doesn't meet the current repository URL ${currentRemoteURL}`
+                    `Artifacts must originate from the same source repository, for deployment to work. The artifact ${sfpPackage.packageName} has repository URL that doesn't meet the current repository URL ${currentRemoteURL}`
                 );
             }
         }
@@ -156,13 +143,12 @@ export default class ArtifactInquirer {
      * @param latestPackageManifest
      * @param artifacts
      */
-    private pruneLatestPackageManifest(latestPackageManifest: any, artifacts: ArtifactFilePaths[]) {
+    private pruneLatestPackageManifest(latestPackageManifest: any, sfpPackages: SfpPackage[]) {
         let prunedLatestPackageManifest = lodash.cloneDeep(latestPackageManifest);
 
         let packagesWithArtifacts: string[] = [];
-        artifacts.forEach((artifact) => {
-            let packageMetadata = JSON.parse(fs.readFileSync(artifact.packageMetadataFilePath, 'utf8'));
-            packagesWithArtifacts.push(packageMetadata.package_name);
+        sfpPackages.forEach((sfpPackage) => {
+            packagesWithArtifacts.push(sfpPackage.packageName);
         });
 
         let i = prunedLatestPackageManifest.packageDirectories.length;

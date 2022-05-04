@@ -9,12 +9,13 @@ import {
     TestOptions,
 } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
-import SFPPackage, { ApexClasses } from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
+import SfpPackage, { ApexClasses } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import PackageTestCoverage from '@dxatscale/sfpowerscripts.core/lib/package/coverage/PackageTestCoverage';
 import { LoggerLevel, Org } from '@salesforce/core';
 import SFPLogger, { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import * as fs from 'fs-extra';
 const path = require('path');
+import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 export default class TriggerApexTest {
     constructor(
@@ -34,7 +35,7 @@ export default class TriggerApexTest {
         let testOptions: TestOptions;
         let coverageOptions: CoverageOptions;
         let outputdir = path.join('.testresults');
-        const sfpPackages: SFPPackage[] = [];
+        const sfpPackages: SfpPackage[] = [];
 
         if (this.testLevel === TestLevel.RunAllTestsInOrg.toString()) {
             testOptions = new RunAllTestsInOrg(this.waitTime, outputdir, this.isSynchronous);
@@ -42,7 +43,7 @@ export default class TriggerApexTest {
             if (this.packages == null || this.packages[0] == null) {
                 throw new Error('Package name must be specified when test level is RunAllTestsInPackage');
             }
-            let pkg: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
+            let pkg: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
                 new ConsoleLogger(),
                 null,
                 this.packages[0]
@@ -54,12 +55,12 @@ export default class TriggerApexTest {
             }
 
             const logLevelBackup = SFPLogger.logLevel;
-            SFPLogger.logLevel = LoggerLevel.WARN; // Ignore INFO logs from SFPPackage factory method
+            SFPLogger.logLevel = LoggerLevel.WARN; // Ignore INFO logs from SfpPackage factory method
 
             let apexTestClasses: ApexClasses = [];
             // aggregate test classes across packages
             for (const pkg of this.packages) {
-                const sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(
+                const sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
                     new ConsoleLogger(),
                     null,
                     pkg
@@ -139,7 +140,7 @@ export default class TriggerApexTest {
                 if (!result.result) {
                     isCoverageFailure = true;
                     console.log(
-                        `${sfpPackage.package_name} package does not meet coverage requirements. ${result.message}`
+                        `${sfpPackage.packageName} package does not meet coverage requirements. ${result.message}`
                     );
                 }
             }
