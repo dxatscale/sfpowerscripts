@@ -38,7 +38,7 @@ jest.mock('../../src/ignore/IgnoreFiles', () => {
 
 describe('Determines whether a given package has changed', () => {
     beforeEach(() => {
-        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXPackageManifest');
+        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
         projectConfigMock.mockImplementation(() => {
             return JSON.parse(packageConfigJson);
         });

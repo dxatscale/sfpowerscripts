@@ -20,7 +20,7 @@ export default class PackageDiffImpl {
     public async exec(): Promise<{ isToBeBuilt: boolean; reason: string; tag?: string }> {
         let git: Git = new Git(this.project_directory);
 
-        let projectConfig = ProjectConfig.getSFDXPackageManifest(this.project_directory);
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(this.project_directory);
         let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(this.sfdx_package, projectConfig);
 
         SFPLogger.log(

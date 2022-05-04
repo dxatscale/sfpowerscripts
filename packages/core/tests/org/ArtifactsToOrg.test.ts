@@ -1,10 +1,10 @@
 import { expect } from '@jest/globals';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
 import { VoidLogger } from '../../src/logger/SFPLogger';
-import artifactMetadata from '../../src/PackageMetadata';
 import { AnyJson, ensureJsonMap, JsonMap, ensureString } from '@salesforce/ts-types';
 import SFPOrg from '../../src/org/SFPOrg';
 import { assert } from 'console';
+import SfpPackage from '../../lib/package/SfpPackage';
 
 const $$ = testSetup();
 const createOrg = async () => {
@@ -91,14 +91,26 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             else return Promise.resolve(pushResult);
         };
 
-        let artifactMetadata: artifactMetadata = {
+        let sfpPackage: SfpPackage = {
             package_name: 'core',
             repository_url: 'https://example.com',
             package_version_number: '1.0.0.NEXT',
             sourceVersion: '3232x232xc3e',
+            projectDirectory: '',
+            workingDirectory: '',
+            mdapiDir: '',
+            destructiveChangesPath: '',
+            resolvedPackageDirectory: '',
+            version: '',
+            packageName: '',
+            versionNumber: '',
+            packageType: '',
+            toJSON: function () {
+                throw new Error('Function not implemented.');
+            }
         };
 
-        let result = await org.updateArtifactInOrg(new VoidLogger(), artifactMetadata);
+        let result = await org.updateArtifactInOrg(new VoidLogger(), sfpPackage);
 
         expect(result).toEqual(pushResult.id);
     });
@@ -134,14 +146,26 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             else return Promise.resolve(pushResult);
         };
 
-        let artifactMetadata: artifactMetadata = {
+        let sfpPackage: SfpPackage = {
             package_name: 'core',
             repository_url: 'https://example.com',
             package_version_number: '1.0.0.NEXT',
             sourceVersion: '3232x232xc3e',
+            projectDirectory: '',
+            workingDirectory: '',
+            mdapiDir: '',
+            destructiveChangesPath: '',
+            resolvedPackageDirectory: '',
+            version: '',
+            packageName: '',
+            versionNumber: '',
+            packageType: '',
+            toJSON: function (): any {
+                throw new Error('Function not implemented.');
+            }
         };
 
-        let result = await org.updateArtifactInOrg(new VoidLogger(), artifactMetadata);
+        let result = await org.updateArtifactInOrg(new VoidLogger(), sfpPackage);
 
         expect(result).toEqual(pushResult.id);
     });
@@ -176,15 +200,27 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             else return Promise.resolve(pushResult);
         };
 
-        let artifactMetadata: artifactMetadata = {
+        let sfpPackage: SfpPackage = {
             package_name: 'core',
             repository_url: 'https://example.com',
             package_version_number: '1.0.0.NEXT',
             sourceVersion: '3232x232xc3e',
+            projectDirectory: '',
+            workingDirectory: '',
+            mdapiDir: '',
+            destructiveChangesPath: '',
+            resolvedPackageDirectory: '',
+            version: '',
+            packageName: '',
+            versionNumber: '',
+            packageType: '',
+            toJSON: function () {
+                throw new Error('Function not implemented.');
+            }
         };
 
         try {
-            await org.updateArtifactInOrg(new VoidLogger(), artifactMetadata);
+            await org.updateArtifactInOrg(new VoidLogger(), sfpPackage);
         } catch (error) {
             expect(error.message).toContain('Aborted');
         }

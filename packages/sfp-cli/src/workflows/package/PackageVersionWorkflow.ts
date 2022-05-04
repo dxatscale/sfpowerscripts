@@ -13,7 +13,7 @@ import SFPLogger, {
 
 export default class PackageVersionWorkflow {
     public async execute() {
-        const projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+        const projectConfig = ProjectConfig.getSFDXProjectConfig(null);
         const oldProjectConfig = lodash.cloneDeep(projectConfig); // for comparison and printing of changes
 
         const updatedPackageDescriptors = [];

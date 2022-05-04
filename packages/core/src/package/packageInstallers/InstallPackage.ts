@@ -1,6 +1,5 @@
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 import { PackageInstallationResult, PackageInstallationStatus } from './PackageInstallationResult';
-import PackageMetadata from '../../PackageMetadata';
 import ProjectConfig from '../../project/ProjectConfig';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import PackageInstallationHelpers from './PackageInstallationHelpers';
@@ -12,6 +11,27 @@ import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import path = require('path');
 import PermissionSetGroupUpdateAwaiter from '../../permsets/PermissionSetGroupUpdateAwaiter';
 import SFPOrg from '../../org/SFPOrg';
+import SfpPackage from '../SfpPackage';
+import { DeploymentType } from '../../deployers/DeploymentExecutor';
+
+export class SfpPackageInstallationOptions {
+    installationkey?: string;
+    apexcompile?: string = 'package';
+    securitytype?: string = 'AdminsOnly';
+    upgradetype?: string = 'Mixed';
+    waitTime?: string;
+    apiVersion?: string;
+    publishWaitTime?: number = 60;
+    skipTesting?: boolean;
+    optimizeDeployment?: boolean;
+    deploymentType?: DeploymentType;
+    disableArtifactCommit?: boolean=false;
+    isInstallingForValidation?: boolean;
+    skipIfPackageInstalled: boolean;
+    isDryRun?: boolean=false;
+    pathToReplacementForceIgnore?: string;
+}
+
 
 export abstract class InstallPackage {
     private startTime: number;
@@ -22,30 +42,29 @@ export abstract class InstallPackage {
     private _isArtifactToBeCommittedInOrg: boolean = true;
 
     public constructor(
-        protected sfdxPackage: string,
+        protected sfpPackage: SfpPackage,
         protected targetusername: string,
-        protected sourceDirectory: string,
-        protected packageMetadata: PackageMetadata,
-        protected skipIfPackageInstalled: boolean,
         protected logger: Logger,
-        protected isDryRun: boolean
+        protected options: SfpPackageInstallationOptions
     ) {}
 
     public async exec(): Promise<PackageInstallationResult> {
         try {
             this.startTime = Date.now();
 
-            this.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(this.sourceDirectory, this.sfdxPackage);
+            this.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
+                this.sfpPackage.sourceDir,
+                this.sfpPackage.packageName
+            );
 
             let targetUsername = await convertAliasToUsername(this.targetusername);
             this.org = await SFPOrg.create({ aliasOrUsername: targetUsername });
             this.connection = this.org.getConnection();
 
-            if (await this.isPackageToBeInstalled(this.skipIfPackageInstalled)) {
-                if (!this.isDryRun) {
+            if (await this.isPackageToBeInstalled(this.options.skipIfPackageInstalled)) {
+                if (!this.options.isDryRun) {
                     //Package Has Permission Set Group
-                    if (this.packageMetadata.isPermissionSetGroupFound)
-                        await this.waitTillAllPermissionSetGroupIsUpdated();
+                    if (this.sfpPackage.isPermissionSetGroupFound) await this.waitTillAllPermissionSetGroupIsUpdated();
                     await this.preInstall();
                     await this.getPackageDirectoryForAliasifiedPackages();
                     await this.install();
@@ -77,7 +96,7 @@ export abstract class InstallPackage {
 
     protected async getPackageDirectoryForAliasifiedPackages() {
         if (this.packageDescriptor.aliasfy) {
-            const searchDirectory = path.join(this.sourceDirectory, this.packageDescriptor.path);
+            const searchDirectory = path.join(this.sfpPackage.sourceDir, this.packageDescriptor.path);
             const files = FileSystem.readdirRecursive(searchDirectory, true);
 
             let aliasDir: string;
@@ -103,7 +122,7 @@ export abstract class InstallPackage {
 
             if (!aliasDir) {
                 throw new Error(
-                    `Aliasfied package '${this.sfdxPackage}' does not have an alias with '${this.targetusername}'' or 'default' directory`
+                    `Aliasfied package '${this.sfpPackage.packageName}' does not have an alias with '${this.targetusername}'' or 'default' directory`
                 );
             }
 
@@ -112,7 +131,7 @@ export abstract class InstallPackage {
             this.packageDirectory = path.join(this.packageDescriptor['path']);
         }
 
-        let absPackageDirectory: string = path.join(this.sourceDirectory, this.packageDirectory);
+        let absPackageDirectory: string = path.join(this.sfpPackage.sourceDir, this.packageDirectory);
         if (!fs.existsSync(absPackageDirectory)) {
             throw new Error(`Package directory ${absPackageDirectory} does not exist`);
         }
@@ -120,8 +139,8 @@ export abstract class InstallPackage {
 
     private sendMetricsWhenFailed() {
         SFPStatsSender.logCount('package.installation.failure', {
-            package: this.packageMetadata.package_name,
-            type: this.packageMetadata.package_type,
+            package: this.sfpPackage.package_name,
+            type: this.sfpPackage.package_type,
             target_org: this.targetusername,
         });
     }
@@ -129,13 +148,13 @@ export abstract class InstallPackage {
     private sendMetricsWhenSuccessfullyInstalled() {
         let elapsedTime = Date.now() - this.startTime;
         SFPStatsSender.logElapsedTime('package.installation.elapsed_time', elapsedTime, {
-            package: this.packageMetadata.package_name,
-            type: this.packageMetadata.package_type,
+            package: this.sfpPackage.package_name,
+            type: this.sfpPackage.package_type,
             target_org: this.targetusername,
         });
         SFPStatsSender.logCount('package.installation', {
-            package: this.packageMetadata.package_name,
-            type: this.packageMetadata.package_type,
+            package: this.sfpPackage.package_name,
+            type: this.sfpPackage.package_type,
             target_org: this.targetusername,
         });
     }
@@ -148,7 +167,7 @@ export abstract class InstallPackage {
     private async commitPackageInstallationStatus() {
         if (this._isArtifactToBeCommittedInOrg) {
             try {
-                await this.org.updateArtifactInOrg(this.logger, this.packageMetadata);
+                await this.org.updateArtifactInOrg(this.logger, this.sfpPackage);
             } catch (error) {
                 SFPLogger.log(
                     'Unable to commit information about the package into org..Check whether prerequisities are installed',
@@ -161,21 +180,21 @@ export abstract class InstallPackage {
 
     protected async isPackageToBeInstalled(skipIfPackageInstalled: boolean): Promise<boolean> {
         if (skipIfPackageInstalled) {
-            let installationStatus = await this.org.isArtifactInstalledInOrg(this.logger, this.packageMetadata);
+            let installationStatus = await this.org.isArtifactInstalledInOrg(this.logger, this.sfpPackage);
             return !installationStatus.isInstalled;
         } else return true; // Always install packages if skipIfPackageInstalled is false
     }
 
     public async preInstall() {
-        let preDeploymentScript: string = path.join(this.sourceDirectory, `scripts`, `preDeployment`);
+        let preDeploymentScript: string = path.join(this.sfpPackage.sourceDir, `scripts`, `preDeployment`);
 
-        if (this.packageMetadata.assignPermSetsPreDeployment) {
+        if (this.sfpPackage.assignPermSetsPreDeployment) {
             SFPLogger.log('Assigning permission sets before deployment:', LoggerLevel.INFO, this.logger);
 
             await PackageInstallationHelpers.applyPermsets(
-                this.packageMetadata.assignPermSetsPreDeployment,
+                this.sfpPackage.assignPermSetsPreDeployment,
                 this.connection,
-                this.sourceDirectory,
+                this.sfpPackage.sourceDir,
                 this.logger
             );
         }
@@ -184,7 +203,7 @@ export abstract class InstallPackage {
             SFPLogger.log('Executing preDeployment script');
             await PackageInstallationHelpers.executeScript(
                 preDeploymentScript,
-                this.sfdxPackage,
+                this.sfpPackage.packageName,
                 this.targetusername,
                 this.logger
             );
@@ -194,15 +213,15 @@ export abstract class InstallPackage {
     abstract install();
 
     public async postInstall() {
-        let postDeploymentScript: string = path.join(this.sourceDirectory, `scripts`, `postDeployment`);
+        let postDeploymentScript: string = path.join(this.sfpPackage.sourceDir, `scripts`, `postDeployment`);
 
-        if (this.packageMetadata.assignPermSetsPostDeployment) {
+        if (this.sfpPackage.assignPermSetsPostDeployment) {
             SFPLogger.log('Assigning permission sets after deployment:', LoggerLevel.INFO, this.logger);
 
             await PackageInstallationHelpers.applyPermsets(
-                this.packageMetadata.assignPermSetsPostDeployment,
+                this.sfpPackage.assignPermSetsPostDeployment,
                 this.connection,
-                this.sourceDirectory,
+                this.sfpPackage.sourceDir,
                 this.logger
             );
         }
@@ -211,10 +230,11 @@ export abstract class InstallPackage {
             SFPLogger.log('Executing postDeployment script');
             await PackageInstallationHelpers.executeScript(
                 postDeploymentScript,
-                this.sfdxPackage,
+                this.sfpPackage.packageName,
                 this.targetusername,
                 this.logger
             );
         }
     }
 }
+

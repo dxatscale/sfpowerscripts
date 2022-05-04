@@ -1,4 +1,3 @@
-import PackageMetadata from '../../PackageMetadata';
 import fs = require('fs-extra');
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 import SFDMURunImpl from '../../sfdmuwrapper/SFDMURunImpl';
@@ -6,27 +5,24 @@ import VlocityPackDeployImpl from '../../vlocitywrapper/VlocityPackDeployImpl';
 import { SFDXCommand } from '../../command/SFDXCommand';
 const path = require('path');
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
-import { InstallPackage } from './InstallPackage';
+import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
+import SfpPackage from '../SfpPackage';
 
 export default class InstallDataPackageImpl extends InstallPackage {
     public constructor(
-        sfdxPackage: string,
+        sfpPackage: SfpPackage,
         targetusername: string,
-        sourceDirectory: string,
-        packageMetadata: PackageMetadata,
-        skipIfPackageInstalled: boolean,
         logger: Logger,
-        private logLevel: LoggerLevel,
-        isDryRun: boolean
+        options: SfpPackageInstallationOptions,
     ) {
-        super(sfdxPackage, targetusername, sourceDirectory, packageMetadata, skipIfPackageInstalled, logger, isDryRun);
+        super(sfpPackage, targetusername, logger,options);
     }
 
     public async install() {
         try {
             //Fetch the sfdxcommand executor for the type
             let dataPackageDeployer: SFDXCommand = await this.getSFDXCommand(
-                this.sourceDirectory,
+                this.sfpPackage.sourceDir,
                 this.packageDirectory
             );
 
@@ -36,7 +32,7 @@ export default class InstallDataPackageImpl extends InstallPackage {
             SFPLogger.log(result, LoggerLevel.INFO, this.logger);
         } catch (error) {
             let csvIssuesReportFilepath: string = path.join(
-                this.sourceDirectory,
+                this.sfpPackage.sourceDir,
                 this.packageDirectory,
                 `CSVIssuesReport.csv`
             );
@@ -66,11 +62,11 @@ export default class InstallDataPackageImpl extends InstallPackage {
                 orgDomainUrl,
                 packageDirectory,
                 this.logger,
-                this.logLevel
+                LoggerLevel.INFO
             );
         } else if (packageType === 'vlocity') {
             dataPackageDeployer = new VlocityPackDeployImpl(
-                this.sourceDirectory,
+                this.sfpPackage.sourceDir,
                 this.targetusername,
                 packageDirectory,
                 null,

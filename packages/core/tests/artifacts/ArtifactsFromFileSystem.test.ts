@@ -1,6 +1,6 @@
 import { jest, expect } from '@jest/globals';
 const glob = require('glob');
-import ArtifactFilePathFetcher from '../../src/artifacts/ArtifactFilePathFetcher';
+import ArtifactFetcher from '../../src/artifacts/ArtifactFetcher';
 
 describe('Provided a path to the artifacts folder containing sfpowerscripts artifact', () => {
     it('should return all the artifacts, if a package name is not provided', () => {
@@ -13,7 +13,7 @@ describe('Provided a path to the artifacts folder containing sfpowerscripts arti
                 '/path/to/my-package_sfpowerscripts_artifact_3.30.53-NEXT.tgz'
             );
         });
-        let artifacts = ArtifactFilePathFetcher.findArtifacts('artifacts');
+        let artifacts = ArtifactFetcher.findArtifacts('artifacts');
         expect(artifacts).toEqual(
             new Array(
                 '/path/to/core_sfpowerscripts_artifact_1.0.0-2.zip',
@@ -29,7 +29,7 @@ describe('Provided a path to the artifacts folder containing sfpowerscripts arti
         globMock.mockImplementation(() => {
             return new Array('/path/to/core_sfpowerscripts_artifact_1.0.0-2.zip');
         });
-        let artifacts = ArtifactFilePathFetcher.findArtifacts('artifacts', 'core');
+        let artifacts = ArtifactFetcher.findArtifacts('artifacts', 'core');
         expect(artifacts).toEqual(new Array('/path/to/core_sfpowerscripts_artifact_1.0.0-2.zip'));
     });
 
@@ -43,7 +43,7 @@ describe('Provided a path to the artifacts folder containing sfpowerscripts arti
                 '/path/to/core_sfpowerscripts_artifact_1.0.0-5.tgz'
             );
         });
-        let artifacts = ArtifactFilePathFetcher.findArtifacts('artifacts', 'core');
+        let artifacts = ArtifactFetcher.findArtifacts('artifacts', 'core');
         expect(artifacts).toEqual(new Array('/path/to/core_sfpowerscripts_artifact_1.0.0-5.tgz'));
     });
 });

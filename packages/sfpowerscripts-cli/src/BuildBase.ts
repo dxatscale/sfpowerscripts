@@ -8,7 +8,6 @@ import fs = require('fs');
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import BuildImpl from './impl/parallelBuilder/BuildImpl';
 import { Stage } from './impl/Stage';
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
 import SFPLogger, {
     COLOR_ERROR,
     COLOR_HEADER,
@@ -18,6 +17,7 @@ import SFPLogger, {
     COLOR_KEY_MESSAGE,
 } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
+import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -103,7 +103,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
     public async execute() {
         let buildExecResult: {
-            generatedPackages: PackageMetadata[];
+            generatedPackages: SfpPackage[];
             failedPackages: string[];
         };
         let totalElapsedTime: number;
@@ -161,15 +161,10 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
             for (let generatedPackage of buildExecResult.generatedPackages) {
                 try {
-                    await ArtifactGenerator.generateArtifact(
-                        generatedPackage.package_name,
-                        process.cwd(),
-                        artifactDirectory,
-                        generatedPackage
-                    );
+                    await ArtifactGenerator.generateArtifact(generatedPackage, process.cwd(), artifactDirectory);
                 } catch (error) {
                     SFPLogger.log(error.message);
-                    artifactCreationErrors.push(generatedPackage.package_name);
+                    artifactCreationErrors.push(generatedPackage.packageName);
                 }
             }
 
@@ -224,7 +219,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
                 for (let generatedPackage of buildExecResult.generatedPackages) {
                     buildResult['packages'].push({
-                        name: generatedPackage['package_name'],
+                        name: generatedPackage['packageName'],
                         version: generatedPackage['package_version_number'],
                         elapsed_time: generatedPackage['creation_details']?.creation_time,
                         status: 'succeeded',

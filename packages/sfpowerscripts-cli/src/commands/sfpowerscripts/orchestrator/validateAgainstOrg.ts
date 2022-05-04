@@ -38,7 +38,7 @@ export default class Validate extends SfpowerscriptsCommand {
             description: messages.getMessage('baseBranchFlagDescription'),
         }),
         fastfeedback: flags.boolean({
-            hidden:true,
+            hidden: true,
             description: messages.getMessage('fastfeedbackFlagDescription'),
             dependsOn: ['basebranch'],
         }),
@@ -85,7 +85,7 @@ export default class Validate extends SfpowerscriptsCommand {
                 diffcheck: this.flags.diffcheck,
                 baseBranch: this.flags.basebranch,
                 disableArtifactCommit: this.flags.disableartifactupdate,
-                isFastFeedbackMode: this.flags.fastfeedback
+                isFastFeedbackMode: this.flags.fastfeedback,
             };
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
             await validateImpl.exec();

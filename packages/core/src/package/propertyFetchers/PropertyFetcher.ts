@@ -1,11 +1,11 @@
 import { Logger } from '../../logger/SFPLogger';
-import SFPPackage from '../SFPPackage';
+import SfpPackage from '../SfpPackage';
 
 export default interface PropertyFetcher {
     /**
-     * Retrieves property from packageDescriptor and adds its to SFPPackage by reference
+     * Retrieves property from packageDescriptor and adds its to SfpPackage by reference
      * @param packageContents
      * @param packageLogger
      */
-    getSfpowerscriptsProperties(packageContents: SFPPackage, packageLogger?: Logger);
+    getSfpowerscriptsProperties(packageContents: SfpPackage, packageLogger?: Logger);
 }

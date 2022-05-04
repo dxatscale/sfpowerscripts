@@ -1,6 +1,10 @@
 import { jest, expect } from '@jest/globals';
-import SFPPackage from '../../src/package/SFPPackage';
+import SfpPackage, { SfpPackageParams } from '../../src/package/SfpPackage';
+import SfpPackageBuilder, { PackageCreationParams } from '../../src/package/SfpPackageBuilder';
+
 import fs from 'fs-extra';
+import { Logger } from '../../src/logger/SFPLogger';
+
 
 let packageType = 'Source';
 jest.mock('../../src/project/ProjectConfig', () => {
@@ -15,7 +19,7 @@ jest.mock('../../src/project/ProjectConfig', () => {
             };
         }
 
-        static getSFDXPackageManifest(projectDirectory) {
+        static getSFDXProjectConfig(projectDirectory) {
             return {
                 packageDirectories: [
                     {
@@ -38,9 +42,9 @@ jest.mock('../../src/project/ProjectConfig', () => {
     return ProjectConfig;
 });
 
-jest.mock('../../src/package/generators/SourcePackageGenerator', () => {
-    class SourcePackageGenerator {
-        static async generateSourcePackageArtifact(
+jest.mock('../../src/package/generators/SfpPackageContentGenerator', () => {
+    class SfpPackageContentGenerator {
+        static async generateSfpPackageDirectory(
             projectDirectory: string,
             sfdx_package: string,
             packageDirectory: string,
@@ -52,7 +56,7 @@ jest.mock('../../src/package/generators/SourcePackageGenerator', () => {
         }
     }
 
-    return SourcePackageGenerator;
+    return SfpPackageContentGenerator;
 });
 
 jest.mock('../../src/package/packageFormatConvertors/SourceToMDAPIConvertor', () => {
@@ -107,6 +111,64 @@ jest.mock('../../src/apex/parser/ApexTypeFetcher', () => {
     return ApexTypeFetcher;
 });
 
+jest.mock('../../src/package/packageCreators/CreateUnlockedPackageImpl', () => {
+    class CreateUnlockedPackageImpl {
+        public constructor(
+            protected projectDirectory: string,
+            protected sfpPackage: SfpPackage,
+            protected packageCreationParams: PackageCreationParams,
+            protected logger?: Logger,
+            protected params?: SfpPackageParams
+        ) {}
+
+        public async exec(): Promise<SfpPackage> {
+            return this.sfpPackage;
+        }
+    }
+    return CreateUnlockedPackageImpl;
+});
+
+// jest.mock('../../src/package/packageCreators/CreatePackage', () => {
+//     class CreatePackage {
+//         public constructor(
+//             protected projectDirectory: string,
+//             protected sfpPackage: SfpPackage,
+//             protected packageCreationParams: PackageCreationParams,
+//             protected logger?: Logger,
+//             protected params?: SfpPackageParams
+//         ) {}
+//     }
+//     return CreatePackage;
+// });
+
+jest.mock('../../src/package/packageCreators/CreateSourcePackageImpl', () => {
+
+
+    class CreateSourcePackageImpl {
+        public constructor(
+            protected projectDirectory: string,
+            protected sfpPackage: SfpPackage,
+            protected packageCreationParams: PackageCreationParams,
+            protected logger?: Logger,
+            protected params?: SfpPackageParams
+        ) {
+            
+        }
+
+        public async exec(): Promise<SfpPackage> {
+            this.sfpPackage.packageType = 'Source';
+            return this.sfpPackage;
+        }
+        getTypeOfPackage() {}
+        isEmptyPackage(projectDirectory: string, packageDirectory: string){}
+        preCreatePackage(sfpPackage: SfpPackage) {}
+        createPackage(sfpPackage: SfpPackage) {}
+        postCreatePackage(sfpPackage: SfpPackage) {}
+        printAdditionalPackageSpecificHeaders() {}
+    }
+    return CreateSourcePackageImpl;
+});
+
 describe('Given a sfdx package, build a sfpowerscripts package', () => {
     it('should build a sfpowerscripts package', async () => {
         const fsextraMock = jest.spyOn(fs, 'readFileSync');
@@ -114,10 +176,14 @@ describe('Given a sfdx package, build a sfpowerscripts package', () => {
             return packageManifestXML;
         });
 
-        let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null, null, 'ESBaseCodeLWC');
-        expect(sfpPackage.isProfilesInPackage).toStrictEqual(false);
-        expect(sfpPackage.isApexInPackage).toStrictEqual(true);
-        expect(sfpPackage.isPermissionSetGroupInPackage).toStrictEqual(true);
+        let sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
+            null,
+            null,
+            'ESBaseCodeLWC'
+        );
+        expect(sfpPackage.isProfilesFound).toStrictEqual(false);
+        expect(sfpPackage.isApexFound).toStrictEqual(true);
+        expect(sfpPackage.isPermissionSetGroupFound).toStrictEqual(true);
         expect(sfpPackage.triggers).toBeUndefined();
         expect(sfpPackage.packageType).toStrictEqual('Source');
         expect(sfpPackage.payload).toStrictEqual(packageManifestJSON);
@@ -162,9 +228,13 @@ describe('Given a sfdx package, build a sfpowerscripts package', () => {
             return packageManifestXML2;
         });
 
-        let sfpPackage: SFPPackage = await SFPPackage.buildPackageFromProjectConfig(null, null, 'ESBaseCodeLWC');
-        expect(sfpPackage.isProfilesInPackage).toStrictEqual(true);
-        expect(sfpPackage.isApexInPackage).toStrictEqual(false);
+        let sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
+            null,
+            null,
+            'ESBaseCodeLWC'
+        );
+        expect(sfpPackage.isProfilesFound).toStrictEqual(true);
+        expect(sfpPackage.isApexFound).toStrictEqual(false);
         expect(sfpPackage.triggers).toBeUndefined();
         expect(sfpPackage.packageType).toStrictEqual('Source');
         expect(sfpPackage.mdapiDir).toStrictEqual('mdapidir');

@@ -1,8 +1,8 @@
-import SFPPackage from '@dxatscale/sfpowerscripts.core/lib/package/SFPPackage';
+import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 
 export interface PreDeployHook {
     preDeployPackage(
-        sfpPackage: SFPPackage,
+        sfpPackage: SfpPackage,
         targetUsername: string,
         devhubUserName?: string
     ): Promise<{ isToFailDeployment: boolean; message?: string }>;

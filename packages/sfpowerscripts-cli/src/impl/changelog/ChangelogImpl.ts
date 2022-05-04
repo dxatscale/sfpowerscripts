@@ -1,8 +1,5 @@
 import simplegit, { SimpleGit } from 'simple-git';
-import ArtifactFilePathFetcher, {
-    ArtifactFilePaths,
-} from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher';
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
+import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
 import { ReleaseChangelog } from './ReleaseChangelogInterfaces';
 import ChangelogMarkdownGenerator from './ChangelogMarkdownGenerator';
 import ReleaseChangelogUpdater from './ReleaseChangelogUpdater';
@@ -14,6 +11,9 @@ const TerminalRenderer = require('marked-terminal');
 const retry = require('async-retry');
 import { GitError } from 'simple-git';
 import GitIdentity from '../git/GitIdentity';
+import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 marked.setOptions({
     // Define custom renderer
@@ -69,35 +69,34 @@ export default class ChangelogImpl {
         let tempDir = tmp.dirSync({ unsafeCleanup: true });
 
         try {
-            let artifact_filepaths: ArtifactFilePaths[] = ArtifactFilePathFetcher.fetchArtifactFilePaths(
-                this.artifactDir
-            );
+            let artifactFilePaths: Artifact[] = ArtifactFetcher.fetchArtifacts(this.artifactDir);
 
-            if (artifact_filepaths.length === 0) {
+            if (artifactFilePaths.length === 0) {
                 throw new Error(`No artifacts found at ${path.resolve(process.cwd(), this.artifactDir)}`);
             }
 
-            let artifactsToPackageMetadata: { [p: string]: PackageMetadata } = {};
+            let artifactsToSfpPackage: { [p: string]: SfpPackage } = {};
             let packagesToChangelogFilePaths: { [p: string]: string } = {};
             let artifactSourceBranch: string;
-            for (let artifactFilepaths of artifact_filepaths) {
-                let packageMetadata: PackageMetadata = JSON.parse(
-                    fs.readFileSync(artifactFilepaths.packageMetadataFilePath, 'utf8')
+            for (let artifactFilepath of artifactFilePaths) {
+                let sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromArtifact(
+                    artifactFilepath,
+                    new ConsoleLogger()
                 );
 
-                artifactsToPackageMetadata[packageMetadata.package_name] = packageMetadata;
-                packagesToChangelogFilePaths[packageMetadata.package_name] = artifactFilepaths.changelogFilePath;
+                artifactsToSfpPackage[sfpPackage.packageName] = sfpPackage;
+                packagesToChangelogFilePaths[sfpPackage.packageName] = sfpPackage.changelogFilePath;
 
                 if (artifactSourceBranch == null) {
-                    if (packageMetadata.branch) {
-                        artifactSourceBranch = packageMetadata.branch;
+                    if (sfpPackage.branch) {
+                        artifactSourceBranch = sfpPackage.branch;
                     } else {
-                        console.log(`${packageMetadata.package_name} artifact is missing branch information`);
+                        console.log(`${sfpPackage.packageName} artifact is missing branch information`);
                         console.log(
                             `This will cause an error in the future. Re-create the artifact using the latest version of sfpowerscripts to maintain compatibility.`
                         );
                     }
-                } else if (artifactSourceBranch !== packageMetadata.branch) {
+                } else if (artifactSourceBranch !== sfpPackage.branch) {
                     // TODO: throw error
                     console.log('Artifacts must be created from the same branch');
                 }
@@ -139,7 +138,7 @@ export default class ChangelogImpl {
             releaseChangelog = new ReleaseChangelogUpdater(
                 releaseChangelog,
                 this.releaseName,
-                artifactsToPackageMetadata,
+                artifactsToSfpPackage,
                 packagesToChangelogFilePaths,
                 this.workItemFilter,
                 this.org

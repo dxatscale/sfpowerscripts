@@ -1,9 +1,9 @@
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
-import CreateSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageCreators/CreateSourcePackageImpl';
 import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import PackageCreateCommand from '../../../../PackageCreateCommand';
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
+import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_source_package');
@@ -70,29 +70,23 @@ export default class CreateSourcePackage extends PackageCreateCommand {
         }),
     };
 
-    protected async create(): Promise<PackageMetadata> {
-        let packageMetadata: PackageMetadata = {
-            package_name: this.sfdxPackage,
-            package_version_number: this.versionNumber,
-            sourceVersion: this.commitId,
-            repository_url: this.repositoryURL,
-            package_type: 'source',
-            branch: this.branch,
-        };
-
-        //Convert to MDAPI
-        let createSourcePackageImpl = new CreateSourcePackageImpl(
+    protected async create(): Promise<SfpPackage> {
+        let sfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
+            new ConsoleLogger(),
             null,
             this.sfdxPackage,
-            packageMetadata,
-            true,
-            new ConsoleLogger()
+            {
+                overridePackageTypeWith: 'source',
+                packageVersionNumber: this.versionNumber,
+                sourceVersion: this.commitId,
+                repositoryUrl: this.repositoryURL,
+                branch: this.branch,
+            }
         );
-        packageMetadata = await createSourcePackageImpl.exec();
 
-        console.log(COLOR_SUCCESS(`Created source package ${packageMetadata.package_name}`));
+        console.log(COLOR_SUCCESS(`Created source package ${sfpPackage.packageName}`));
 
-        return packageMetadata;
+        return sfpPackage;
     }
 
     protected getConfigFilePath(): string {

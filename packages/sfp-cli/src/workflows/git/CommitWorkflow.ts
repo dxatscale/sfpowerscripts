@@ -9,7 +9,7 @@ export default class CommitWorkflow {
     constructor(private git: SimpleGit, private sfpProjectConfig: SfpProjectConfig) {}
 
     async execute(): Promise<void> {
-        const projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+        const projectConfig = ProjectConfig.getSFDXProjectConfig(null);
         const paths = projectConfig.packageDirectories.filter((elem) => !elem.default).map((elem) => elem.path);
         paths.push('sfdx-project.json');
 
