@@ -89,9 +89,15 @@ export default class DeployImpl {
                 sfdxProjectConfig = ProjectConfig.getSFDXProjectConfig(null);
             }
 
+            SFPLogger.log("Packages"+sfpPackages.length,LoggerLevel.TRACE,this.props.packageLogger);
+
             packagesToPackageInfo = await this.getPackagesToPackageInfo(sfpPackages);
 
+            SFPLogger.log("Packages"+JSON.stringify(packagesToPackageInfo),LoggerLevel.TRACE,this.props.packageLogger);
+
             queue = this.getPackagesToDeploy(sfdxProjectConfig, packagesToPackageInfo);
+
+            SFPLogger.log("queue:"+JSON.stringify(queue),LoggerLevel.TRACE,this.props.packageLogger);
 
             if (this.props.skipIfPackageInstalled) {
                 //Filter the queue based on what is deployed in the target org
