@@ -1,6 +1,4 @@
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import fs = require('fs');
-
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { EOL } from 'os';
 import { Stage } from '../Stage';

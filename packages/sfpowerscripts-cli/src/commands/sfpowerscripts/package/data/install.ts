@@ -5,7 +5,7 @@ import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/pa
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
-const fs = require('fs');
+
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
