@@ -296,7 +296,7 @@ export default class ValidateImpl implements PostDeployHook {
                 `${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`
             );
 
-            if(sfpPackage.diffPackageMetadata?.isProfilesFound 
+            if(sfpPackage.diffPackageMetadata?.isProfilesFound
                 || sfpPackage.diffPackageMetadata?.isPermissionSetFound
                 || sfpPackage.diffPackageMetadata?.isPermissionSetGroupFound)
                 SFPLogger.log(
