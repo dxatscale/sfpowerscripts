@@ -12,13 +12,17 @@ export default class ApexClassFetcher {
      * @returns
      */
     public async fetchApexClassByName(classNames: string[]): Promise<{ Id: string; Name: string }[]> {
-        const chunks = chunkCollection(classNames);
+        let result: {Id: string; Name: string}[] = [];
 
+        const chunks = chunkCollection(classNames);
         for (const chunk of chunks) {
             const formattedChunk = chunk.map(elem => `'${elem}'`).toString(); // transform into formatted string for query
             const query = `SELECT ID, Name FROM ApexClass WHERE Name IN (${formattedChunk})`;
 
-            return QueryHelper.query<{ Id: string; Name: string }>(query, this.conn, false);
+            const records = await QueryHelper.query<{ Id: string; Name: string }>(query, this.conn, false);
+            result = result.concat(records);
         }
+
+        return result;
     }
 }

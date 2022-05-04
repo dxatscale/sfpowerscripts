@@ -10,20 +10,33 @@ export default class ApexCodeCoverageAggregateFetcher {
      * @param listOfApexClassOrTriggerId
      * @returns
      */
-    public async fetchACCAById(listOfApexClassOrTriggerId: string[]) {
-        const chunks = chunkCollection(listOfApexClassOrTriggerId);
+    public async fetchACCAById(listOfApexClassOrTriggerId: string[]): Promise<{
+        ApexClassOrTriggerId: string;
+        NumLinesCovered: number;
+        NumLinesUncovered: number;
+        Coverage: any;
+    }[]> {
+        let result: {
+            ApexClassOrTriggerId: string;
+            NumLinesCovered: number;
+            NumLinesUncovered: number;
+            Coverage: any;
+        }[] = [];
 
+        const chunks = chunkCollection(listOfApexClassOrTriggerId);
         for (const chunk of chunks) {
             const formattedChunk = chunk.map(elem => `'${elem}'`).toString();
             let query = `SELECT ApexClassorTriggerId, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassorTriggerId IN (${formattedChunk})`;
 
-            return QueryHelper.query<{
+            const records = await QueryHelper.query<{
                 ApexClassOrTriggerId: string;
                 NumLinesCovered: number;
                 NumLinesUncovered: number;
                 Coverage: any;
             }>(query, this.conn, true);
+            result = result.concat(records);
         }
 
+        return result;
     }
 }
