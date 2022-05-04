@@ -121,6 +121,7 @@ export default class CreateUnlockedPackage extends PackageCreateCommand {
     };
 
     public async create(): Promise<SfpPackage> {
+        //TODO: Use tag info
         let tag: string = this.flags.tag;
         let installationkeybypass = this.flags.installationkeybypass;
         let isCoverageEnabled: boolean = this.flags.enablecoverage;

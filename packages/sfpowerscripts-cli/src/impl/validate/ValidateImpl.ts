@@ -41,7 +41,6 @@ import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverag
 import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { PostDeployHook } from '../deploy/PostDeployHook';
-import ImpactedApexTestClassFetcher from '@dxatscale/sfpowerscripts.core/lib/apextest/ImpactedApexTestClassFetcher';
 import * as rimraf from 'rimraf';
 
 export enum ValidateMode {

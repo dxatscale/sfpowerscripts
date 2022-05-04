@@ -527,8 +527,7 @@ export default class DeployImpl {
         skipIfPackageInstalled: boolean,
         apiVersion: string
     ): Promise<PackageInstallationResult> {
-        let overridePackageTypeWith: string = undefined;
-
+    
         //Compute Deployment Type
         let deploymentType =
             this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
@@ -555,9 +554,7 @@ export default class DeployImpl {
             this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES ||
             this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
         ) {
-            if (packageType === 'unlocked') {
-                overridePackageTypeWith = 'source';
-            }
+            
             installationOptions.optimizeDeployment = false;
             installationOptions.skipTesting = true;
         }
@@ -629,7 +626,7 @@ export default class DeployImpl {
             else return true;
         });
 
-        if (packagesToDeploy == null || packagesToDeploy.length === 0)
+        if (packagesToDeploy.length === 0)
             throw new Error(`No artifacts from project config to be deployed`);
         else return packagesToDeploy;
     }

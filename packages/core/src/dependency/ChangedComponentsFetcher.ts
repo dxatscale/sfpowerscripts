@@ -110,7 +110,7 @@ export default class ChangedComponentsFetcher {
 
             if (componentSuccess) {
                 const component: Component = {
-                    id: componentSuccess?.id,
+                    id: componentSuccess.id,
                     fullName: componentSuccess.fullName,
                     type: componentSuccess.componentType,
                     files: [filepath],

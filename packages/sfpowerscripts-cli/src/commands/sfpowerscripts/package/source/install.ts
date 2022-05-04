@@ -1,17 +1,12 @@
 import { Messages } from '@salesforce/core';
 import { flags } from '@salesforce/command';
-
 import InstallPackageCommand from '../../../../InstallPackageCommand';
-import InstallSourcePackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallSourcePackageImpl';
 import * as fs from 'fs-extra';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentExecutor';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);

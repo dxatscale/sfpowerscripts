@@ -1,5 +1,5 @@
 import path from 'path';
-import { Logger, LoggerLevel } from '../logger/SFPLogger';
+import { Logger } from '../logger/SFPLogger';
 import SFPOrg from '../org/SFPOrg';
 import InstallDataPackageImpl from './packageInstallers/InstallDataPackageImpl';
 import { SfpPackageInstallationOptions } from './packageInstallers/InstallPackage';

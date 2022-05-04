@@ -4,7 +4,7 @@ import SfpPackageBuilder, { PackageCreationParams } from '../../src/package/SfpP
 
 import fs from 'fs-extra';
 import { Logger } from '../../src/logger/SFPLogger';
-import { CreatePackage } from '../../src/package/packageCreators/CreatePackage';
+
 
 let packageType = 'Source';
 jest.mock('../../src/project/ProjectConfig', () => {

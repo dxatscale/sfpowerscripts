@@ -1,10 +1,8 @@
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import * as fs from 'fs-extra';
 import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl';
 import ArtifactFetcher from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 

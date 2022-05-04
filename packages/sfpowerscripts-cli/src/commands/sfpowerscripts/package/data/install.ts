@@ -1,10 +1,8 @@
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
-import InstallDataPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallDataPackageImpl';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import SFPLogger, { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 const fs = require('fs');

@@ -1,14 +1,13 @@
-import ApexTypeFetcher, { ApexSortedByType } from '../apex/parser/ApexTypeFetcher';
+import ApexTypeFetcher from '../apex/parser/ApexTypeFetcher';
 import ProjectConfig from '../project/ProjectConfig';
 import SfpPackageContentGenerator from './generators/SfpPackageContentGenerator';
 import SourceToMDAPIConvertor from './packageFormatConvertors/SourceToMDAPIConvertor';
 import PackageManifest from './PackageManifest';
 import MetadataCount from './MetadataCount';
-import { COLOR_KEY_MESSAGE, Logger } from '../logger/SFPLogger';
+import { Logger } from '../logger/SFPLogger';
 import * as fs from 'fs-extra';
 import path from 'path';
 import { Artifact } from '../artifacts/ArtifactFetcher';
-import _ from 'lodash';
 import SfpPackage, { DiffPackageMetadata, SfpPackageParams } from './SfpPackage';
 import PropertyFetcher from './propertyFetchers/PropertyFetcher';
 import AssignPermissionSetFetcher from './propertyFetchers/AssignPermissionSetFetcher';

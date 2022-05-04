@@ -1,6 +1,5 @@
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_WARNING, Logger, LoggerLevel } from '../../logger/SFPLogger';
 import SFPStatsSender from '../../stats/SFPStatsSender';
-import path from 'path';
 import SfpPackage, { SfpPackageParams } from '../SfpPackage';
 import { PackageCreationParams } from '../SfpPackageBuilder';
 

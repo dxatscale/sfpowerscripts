@@ -1,12 +1,11 @@
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../../InstallPackageCommand';
-import InstallUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageImpl';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
-const fs = require('fs');
+
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
