@@ -31,6 +31,13 @@ export default class ArtifactGenerator {
 
             let sourcePackage: string = path.join(artifactFilepath, `source`);
             fs.mkdirpSync(sourcePackage);
+
+            //Clean up temp directory
+            if (fs.existsSync(path.join(sfpPackage.workingDirectory, '.sfpowerscripts')))
+                rimraf.sync(path.join(sfpPackage.workingDirectory, '.sfpowerscripts'));
+            if (fs.existsSync(path.join(sfpPackage.workingDirectory, '.sfdx')))
+                rimraf.sync(path.join(sfpPackage.workingDirectory, '.sfdx'));
+
             fs.copySync(sfpPackage.workingDirectory, sourcePackage);
             rimraf.sync(sfpPackage.workingDirectory);
 
