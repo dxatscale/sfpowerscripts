@@ -306,7 +306,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
         child_process.execSync(cmd, {
             cwd: artifactRootDirectory,
-            stdio: 'pipe',
+            stdio: 'ignore',
         });
     }
 
