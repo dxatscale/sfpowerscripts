@@ -20,6 +20,7 @@ import { PreDeployHook } from './PreDeployHook';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
+import * as _ from 'lodash';
 
 const Table = require('cli-table');
 const retry = require('async-retry');
@@ -89,15 +90,19 @@ export default class DeployImpl {
                 sfdxProjectConfig = ProjectConfig.getSFDXProjectConfig(null);
             }
 
-            SFPLogger.log("Packages"+sfpPackages.length,LoggerLevel.TRACE,this.props.packageLogger);
+            SFPLogger.log('Packages' + sfpPackages.length, LoggerLevel.TRACE, this.props.packageLogger);
 
             packagesToPackageInfo = await this.getPackagesToPackageInfo(sfpPackages);
 
-            SFPLogger.log("Packages"+JSON.stringify(packagesToPackageInfo),LoggerLevel.TRACE,this.props.packageLogger);
+            SFPLogger.log(
+                'Packages' + JSON.stringify(packagesToPackageInfo),
+                LoggerLevel.TRACE,
+                this.props.packageLogger
+            );
 
             queue = this.getPackagesToDeploy(sfdxProjectConfig, packagesToPackageInfo);
 
-            SFPLogger.log("queue:"+JSON.stringify(queue),LoggerLevel.TRACE,this.props.packageLogger);
+            SFPLogger.log('queue:' + JSON.stringify(queue), LoggerLevel.TRACE, this.props.packageLogger);
 
             if (this.props.skipIfPackageInstalled) {
                 //Filter the queue based on what is deployed in the target org
@@ -115,6 +120,7 @@ export default class DeployImpl {
                     packagesToPackageInfo,
                     this.props.baselineOrg
                 );
+                SFPLogger.log('filtered queue:' + JSON.stringify(filteredDeploymentQueue), LoggerLevel.TRACE, this.props.packageLogger);
                 this.printArtifactVersionsWhenSkipped(queue, packagesToPackageInfo, isBaselinOrgModeActivated);
                 queue = filteredDeploymentQueue;
             } else {
@@ -322,7 +328,9 @@ export default class DeployImpl {
             if (!pkgDescriptor.aliasfy) {
                 if (this.props.isFastFeedbackMode && sfpPackage.diffPackageMetadata?.metadataCount)
                     SFPLogger.log(
-                        `Metadata to be deployed: ${COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata?.metadataCount)} / ${COLOR_KEY_MESSAGE(sfpPackage.metadataCount)}`,
+                        `Metadata to be deployed: ${COLOR_KEY_MESSAGE(
+                            sfpPackage.diffPackageMetadata?.metadataCount
+                        )} / ${COLOR_KEY_MESSAGE(sfpPackage.metadataCount)}`,
                         LoggerLevel.INFO,
                         this.props.packageLogger
                     );
@@ -415,14 +423,16 @@ export default class DeployImpl {
         packagesToPackageInfo: { [p: string]: PackageInfo },
         targetUsername: string
     ): Promise<any[]> {
-        const clonedQueue = [];
-        queue.forEach((val) => clonedQueue.push(Object.assign({}, val)));
+       
+        let targetOrg = await SFPOrg.create({ aliasOrUsername: targetUsername });
+
+        const clonedQueue = _.clone(queue);
 
         for (let i = queue.length - 1; i >= 0; i--) {
-            let packageInfo = packagesToPackageInfo[clonedQueue[i].package];
+            let packageInfo = packagesToPackageInfo[clonedQueue[i].packageName];
             let sfpPackage: SfpPackage = packageInfo.sfpPackage;
-            let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(clonedQueue[i].package, packageManifest);
-            let packageInstalledInTheOrg = await this.targetOrg.isArtifactInstalledInOrg(
+            let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(clonedQueue[i].packageName, packageManifest);
+            let packageInstalledInTheOrg = await targetOrg.isArtifactInstalledInOrg(
                 this.props.packageLogger,
                 sfpPackage
             );
@@ -531,7 +541,6 @@ export default class DeployImpl {
         skipIfPackageInstalled: boolean,
         apiVersion: string
     ): Promise<PackageInstallationResult> {
-    
         //Compute Deployment Type
         let deploymentType =
             this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
@@ -558,7 +567,6 @@ export default class DeployImpl {
             this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES ||
             this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
         ) {
-            
             installationOptions.optimizeDeployment = false;
             installationOptions.skipTesting = true;
         }
@@ -630,8 +638,7 @@ export default class DeployImpl {
             else return true;
         });
 
-        if (packagesToDeploy.length === 0)
-            throw new Error(`No artifacts from project config to be deployed`);
+        if (packagesToDeploy.length === 0) throw new Error(`No artifacts from project config to be deployed`);
         else return packagesToDeploy;
     }
 }
