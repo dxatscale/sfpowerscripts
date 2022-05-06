@@ -129,7 +129,7 @@ export default class ReleaseChangelogUpdater {
             let artifact: Artifact = {
                 name: sfpPackage.packageName,
                 from: undefined,
-                to: sfpPackage.sourceVersionFrom?.slice(0, 8) || sfpPackage.sourceVersionTo.slice(0, 8),
+                to: sfpPackage.sourceVersion?.slice(0, 8),
                 version: sfpPackage.package_version_number,
                 latestCommitId: undefined,
                 commits: undefined,

@@ -49,10 +49,11 @@ export default class ArtifactGenerator {
             fs.writeFileSync(artifactMetadataFilePath, JSON.stringify(sfpPackage, null, 4));
 
             // Generate package changelog
+            // Doesnt need a from version number, as it always generate from start
             let generatePackageChangelog: GeneratePackageChangelog = new GeneratePackageChangelog(
                 sfpPackage.packageName,
-                sfpPackage.sourceVersionFrom,
-                sfpPackage.sourceVersionTo ? sfpPackage.sourceVersionTo : sfpPackage.sourceVersion,
+                undefined,
+                sfpPackage.sourceVersion,
                 project_directory
             );
 

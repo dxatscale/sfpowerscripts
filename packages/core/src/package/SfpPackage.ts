@@ -13,8 +13,6 @@ class PackageInfo {
     has_passed_coverage_check?: boolean;
     repository_url?: string;
     sourceVersion?: string;
-    sourceVersionFrom?: string;
-    sourceVersionTo?: string;
     branch?: string;
     apextestsuite?: string;
     isApexFound?: boolean;
