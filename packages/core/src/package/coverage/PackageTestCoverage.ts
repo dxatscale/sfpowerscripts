@@ -95,7 +95,8 @@ export default class PackageTestCoverage {
             coverageThreshold = 75;
         }
 
-        if (this.pkg.packageType === 'Unlocked') {
+      
+        if (this.pkg.packageType.toLocaleLowerCase() === 'Unlocked'.toLocaleLowerCase()) {
             if (this.packageTestCoverage < coverageThreshold) {
                 // Coverage inadequate, set result to false
                 return {
@@ -114,7 +115,7 @@ export default class PackageTestCoverage {
                     message: `Package overall coverage is greater than ${coverageThreshold}%`,
                 };
             }
-        } else if (this.pkg.packageType === 'Source') {
+        } else if (this.pkg.packageType.toLocaleLowerCase() === 'Source'.toLocaleLowerCase()) {
             SFPLogger.log("Package type is 'source'. Validating individual class coverage");
 
             let individualClassValidationResults = this.individualClassCoverage.validateIndividualClassCoverage(
