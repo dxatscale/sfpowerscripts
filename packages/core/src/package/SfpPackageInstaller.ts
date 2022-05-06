@@ -6,7 +6,7 @@ import { SfpPackageInstallationOptions } from './packageInstallers/InstallPackag
 import InstallSourcePackageImpl from './packageInstallers/InstallSourcePackageImpl';
 import InstallUnlockedPackageImpl from './packageInstallers/InstallUnlockedPackageImpl';
 import { PackageInstallationResult } from './packageInstallers/PackageInstallationResult';
-import SfpPackage from './SfpPackage';
+import SfpPackage, { PackageType } from './SfpPackage';
 
 export default class SfpPackageInstaller {
     public static async installPackage(
@@ -17,11 +17,11 @@ export default class SfpPackageInstaller {
         installationContext?: SfPPackageInstallationContext,
         overridePackageTypeWith?: string
     ): Promise<PackageInstallationResult> {
-        let packageType = sfpPackage.packageType.toLocaleLowerCase();
+        let packageType = sfpPackage.packageType
         if (overridePackageTypeWith) packageType = overridePackageTypeWith;
 
         switch (packageType) {
-            case 'unlocked':
+            case PackageType.Unlocked:
                 let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
                     sfpPackage,
                     targetOrg.getUsername(),
@@ -30,7 +30,7 @@ export default class SfpPackageInstaller {
                 );
                 installUnlockedPackageImpl.isArtifactToBeCommittedInOrg = !installationOptions.disableArtifactCommit;
                 return installUnlockedPackageImpl.exec();
-            case 'source':
+            case PackageType.Source:
                 installationOptions.pathToReplacementForceIgnore =   installationContext?.currentStage == 'prepare'
                 ? path.join(sfpPackage.sourceDir, 'forceignores', '.prepareignore')
                 : null;
@@ -42,7 +42,7 @@ export default class SfpPackageInstaller {
                 );
                 installSourcePackageImpl.isArtifactToBeCommittedInOrg = !installationOptions.disableArtifactCommit;
                 return installSourcePackageImpl.exec();
-            case 'data':
+            case PackageType.Data:
                 let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
                     sfpPackage,
                     targetOrg.getUsername(),

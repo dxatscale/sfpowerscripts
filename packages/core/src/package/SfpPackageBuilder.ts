@@ -8,7 +8,7 @@ import { Logger } from '../logger/SFPLogger';
 import * as fs from 'fs-extra';
 import path from 'path';
 import { Artifact } from '../artifacts/ArtifactFetcher';
-import SfpPackage, { DiffPackageMetadata, SfpPackageParams } from './SfpPackage';
+import SfpPackage, { DiffPackageMetadata, PackageType, SfpPackageParams } from './SfpPackage';
 import PropertyFetcher from './propertyFetchers/PropertyFetcher';
 import AssignPermissionSetFetcher from './propertyFetchers/AssignPermissionSetFetcher';
 import DestructiveManifestPathFetcher from './propertyFetchers/DestructiveManifestPathFetcher';
@@ -78,7 +78,7 @@ export default class SfpPackageBuilder {
             );
 
         //Don't proceed further if packageType is Data
-        if (sfpPackage.package_type != 'Data') {
+        if (sfpPackage.package_type != PackageType.Data) {
             let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
                 sfpPackage.workingDirectory,
                 sfpPackage.packageDescriptor.path,
@@ -115,7 +115,7 @@ export default class SfpPackageBuilder {
 
         //Get Implementors
         switch (sfpPackage.packageType.toLocaleLowerCase()) {
-            case 'unlocked':
+            case PackageType.Unlocked:
                 createPackage = new CreateUnlockedPackageImpl(
                     sfpPackage.workingDirectory,
                     sfpPackage,
@@ -124,7 +124,7 @@ export default class SfpPackageBuilder {
                     params
                 );
                 break;
-            case 'source':
+            case PackageType.Source:
                 createPackage = new CreateSourcePackageImpl(
                     sfpPackage.workingDirectory,
                     sfpPackage,
@@ -133,7 +133,7 @@ export default class SfpPackageBuilder {
                     params
                 );
                 break;
-            case 'data':
+            case PackageType.Data:
                 createPackage = new CreateDataPackageImpl(
                     sfpPackage.workingDirectory,
                     sfpPackage,

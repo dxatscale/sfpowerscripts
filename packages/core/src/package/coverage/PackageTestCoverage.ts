@@ -1,6 +1,6 @@
 import SFPLogger, { COLOR_WARNING, Logger } from '../../logger/SFPLogger';
 import IndividualClassCoverage from '../../apex/coverage/IndividualClassCoverage';
-import SfpPackage from '../SfpPackage';
+import SfpPackage, { PackageType } from '../SfpPackage';
 import { Connection } from '@salesforce/core';
 import ApexClassFetcher from '../../apex/ApexClassFetcher';
 import ApexCodeCoverageAggregateFetcher from '../../apex/coverage/ApexCodeCoverageAggregateFetcher';
@@ -96,7 +96,7 @@ export default class PackageTestCoverage {
         }
 
       
-        if (this.pkg.packageType.toLocaleLowerCase() === 'Unlocked'.toLocaleLowerCase()) {
+        if (this.pkg.packageType === PackageType.Unlocked) {
             if (this.packageTestCoverage < coverageThreshold) {
                 // Coverage inadequate, set result to false
                 return {
@@ -115,8 +115,8 @@ export default class PackageTestCoverage {
                     message: `Package overall coverage is greater than ${coverageThreshold}%`,
                 };
             }
-        } else if (this.pkg.packageType.toLocaleLowerCase() === 'Source'.toLocaleLowerCase()) {
-            SFPLogger.log("Package type is 'source'. Validating individual class coverage");
+        } else if (this.pkg.packageType === PackageType.Source) {
+            SFPLogger.log("Package type is PackageType.Source. Validating individual class coverage");
 
             let individualClassValidationResults = this.individualClassCoverage.validateIndividualClassCoverage(
                 this.getIndividualClassCoverageByPackage(this.codeCoverage),

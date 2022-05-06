@@ -13,7 +13,7 @@ import {
     PackageInstallationStatus,
 } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageInquirer from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInquirer';
 import { PostDeployHook } from './PostDeployHook';
 import { PreDeployHook } from './PreDeployHook';
@@ -259,7 +259,7 @@ export default class DeployImpl {
 
     private async promotePackagesBeforeInstallation(sourceDirectory: string, sfpPackage: SfpPackage) {
         if (this.props.promotePackagesBeforeDeploymentToOrg === this.props.targetUsername) {
-            if (sfpPackage.packageType === 'unlocked') {
+            if (sfpPackage.packageType === PackageType.Unlocked) {
                 console.log(
                     COLOR_KEY_MESSAGE(`Attempting to promote package ${sfpPackage.packageName} before installation`)
                 );
@@ -324,7 +324,7 @@ export default class DeployImpl {
             LoggerLevel.INFO,
             this.props.packageLogger
         );
-        if (sfpPackage.packageType == 'source' || sfpPackage.packageType == 'unlocked') {
+        if (sfpPackage.packageType == PackageType.Source || sfpPackage.packageType == PackageType.Unlocked) {
             if (!pkgDescriptor.aliasfy) {
                 if (this.props.isFastFeedbackMode && sfpPackage.diffPackageMetadata?.metadataCount)
                     SFPLogger.log(

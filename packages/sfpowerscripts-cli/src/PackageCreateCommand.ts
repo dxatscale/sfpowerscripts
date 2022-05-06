@@ -7,7 +7,8 @@ import { EOL } from 'os';
 import SfpowerscriptsCommand from './SfpowerscriptsCommand';
 import simplegit from 'simple-git';
 import GitIdentity from './impl/git/GitIdentity';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage,{ PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create-package');
@@ -189,8 +190,8 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
             COLOR_KEY_MESSAGE(sfpPackage.package_version_number)
         );
 
-        if (sfpPackage.package_type !== 'data') {
-            if (sfpPackage.package_type == 'unlocked') {
+        if (sfpPackage.package_type !== PackageType.Data) {
+            if (sfpPackage.package_type == PackageType.Unlocked) {
                 console.log(
                     COLOR_HEADER(`-- Package Version Id:             `),
                     COLOR_KEY_MESSAGE(sfpPackage.package_version_id)

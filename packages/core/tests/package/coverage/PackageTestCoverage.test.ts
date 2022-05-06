@@ -7,11 +7,11 @@ import ApexCodeCoverageAggregateFetcher from '../../../src/apex/coverage/ApexCod
 
 import { Org } from '@salesforce/core';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
-import SfpPackage from '../../../src/package/SfpPackage';
+import SfpPackage, { PackageType } from '../../../src/package/SfpPackage';
 import SfpPackageBuilder from '../../../src/package/SfpPackageBuilder';
 const $$ = testSetup();
 
-let packageType = 'Unlocked';
+let packageType = PackageType.Unlocked;
 
 
 
@@ -114,7 +114,7 @@ describe('Given a sfpowerscripts package and code coverage report, a package cov
     it('should be able to provide the coverage of a provided source package', async () => {
         const conn = await setupConnection();
 
-        packageType = 'Source';
+        packageType = PackageType.Source;
         let sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(null, 'es-base-code', null, null);
         let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
             sfpPackage,
@@ -128,7 +128,7 @@ describe('Given a sfpowerscripts package and code coverage report, a package cov
     it('should able to validate whether the coverage of source  package is above a certain threshold', async () => {
         const conn = await setupConnection();
 
-        packageType = 'Source';
+        packageType = PackageType.Source;
         let sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(null, 'es-base-code', null, null);
         let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
             sfpPackage,
@@ -152,7 +152,7 @@ describe('Given a sfpowerscripts package and code coverage report, a package cov
     it('should able to validate whether the coverage of source  package is above mandatory threshold', async () => {
         const conn = await setupConnection();
 
-        packageType = 'Source';
+        packageType = PackageType.Source;
         let sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(null, 'es-base-code', null, null);
         let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
             sfpPackage,
@@ -187,7 +187,7 @@ describe('Given a sfpowerscripts package and code coverage report, a package cov
             { ApexClassOrTriggerId: '01p2O000003s9qcQAA', NumLinesCovered: 0, NumLinesUncovered: 4, Coverage: {} },
         ]);
 
-        packageType = 'Source';
+        packageType = PackageType.Source;
         let sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(null, 'es-base-code', null, null);
         let packageTestCoverage: PackageTestCoverage = new PackageTestCoverage(
             sfpPackage,

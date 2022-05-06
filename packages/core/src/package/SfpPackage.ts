@@ -69,7 +69,7 @@ export default class SfpPackage extends PackageInfo {
     }
 
     public get packageType(): string {
-        return this.package_type;
+        return this.package_type.toLocaleLowerCase();
     }
 
     public set packageType(packageType: string) {
@@ -95,6 +95,13 @@ export default class SfpPackage extends PackageInfo {
         delete castToPackageMetadata.isTriggerAllTests;
         return castToPackageMetadata;
     }
+}
+
+export enum PackageType 
+{
+   Unlocked = "unlocked",
+   Source = "source",
+   Data =  "data"
 }
 
 export interface DiffPackageMetadata {

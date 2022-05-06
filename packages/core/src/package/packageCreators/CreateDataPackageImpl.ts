@@ -2,7 +2,7 @@ import SFPLogger, { LoggerLevel, Logger } from '../../logger/SFPLogger';
 import path from 'path';
 import FileSystem from '../../utils/FileSystem';
 import { CreatePackage } from './CreatePackage';
-import SfpPackage, { SfpPackageParams } from '../SfpPackage';
+import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
 import { PackageCreationParams } from '../SfpPackageBuilder';
 
 const SFDMU_CONFIG = 'export.json';
@@ -20,7 +20,7 @@ export default class CreateDataPackageImpl extends CreatePackage {
     }
 
     getTypeOfPackage() {
-        return 'data';
+        return PackageType.Data;
     }
 
     isEmptyPackage(projectDirectory: string, packageDirectory: string): boolean {

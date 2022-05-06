@@ -8,6 +8,7 @@ import simplegit, { SimpleGit } from 'simple-git';
 import ProjectConfig from '../../project/ProjectConfig';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 import { EOL } from 'os';
+import { PackageType } from '../../package/SfpPackage';
 
 const tmp = require('tmp');
 
@@ -105,7 +106,7 @@ export default class ClientSourceTracking {
 
                 try {
                     const packageType = ProjectConfig.getPackageType(projectConfig, artifact.Name);
-                    if (packageType === 'Unlocked' || packageType === 'Source') {
+                    if (packageType === PackageType.Unlocked || packageType === PackageType.Source) {
                         let componentSet = ComponentSet.fromSource(
                             path.join(
                                 tempDir.name,

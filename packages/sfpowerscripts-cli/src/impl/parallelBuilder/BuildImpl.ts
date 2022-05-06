@@ -15,7 +15,7 @@ import { ConsoleLogger, FileLogger, VoidLogger } from '@dxatscale/sfpowerscripts
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
@@ -262,7 +262,7 @@ export default class BuildImpl {
             return !(
                 (this.props.currentStage === 'prepare' || this.props.currentStage === 'validate') &&
                 pkg.aliasfy &&
-                pkg.type !== 'data'
+                pkg.type !== PackageType.Data
             );
         });
 
@@ -383,12 +383,12 @@ export default class BuildImpl {
         let priority = 0;
         let childs = DependencyHelper.getChildsOfAllPackages(this.props.projectDirectory, this.packagesToBeBuilt);
         let type = ProjectConfig.getPackageType(projectConfig, pkg);
-        if (type === 'Unlocked') {
+        if (type === PackageType.Unlocked) {
             if (childs[pkg].length > 0) priority = PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY;
             else priority = PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY;
-        } else if (type === 'Source') {
+        } else if (type === PackageType.Source) {
             priority = PRIORITY_SOURCE_PKG;
-        } else if (type === 'Data') {
+        } else if (type === PackageType.Data) {
             priority = PRIORITY_DATA_PKG;
         } else {
             throw new Error(`Unknown package type ${type}`);
@@ -411,8 +411,8 @@ export default class BuildImpl {
             COLOR_KEY_MESSAGE(sfpPackage.package_version_number)
         );
 
-        if (sfpPackage.package_type !== 'data') {
-            if (sfpPackage.package_type == 'unlocked') {
+        if (sfpPackage.package_type !== PackageType.Data) {
+            if (sfpPackage.package_type == PackageType.Unlocked) {
                 console.log(
                     COLOR_HEADER(`-- Package Version Id:             `),
                     COLOR_KEY_MESSAGE(sfpPackage.package_version_id)
@@ -451,7 +451,7 @@ export default class BuildImpl {
             this.props.projectDirectory,
             sfdx_package,
             {
-                overridePackageTypeWith: isValidateMode && packageType != 'Data' ? 'Source' : undefined,
+                overridePackageTypeWith: isValidateMode && packageType != PackageType.Data ? PackageType.Source : undefined,
                 packageVersionNumber: this.getVersionNumber(sfdx_package, packageType, isValidateMode),
                 branch: this.props.branch,
                 sourceVersion: this.commit_id,
@@ -515,7 +515,7 @@ export default class BuildImpl {
 
     private getVersionNumber(sfdx_package: string, packageType: string, isValidateMode: boolean): string {
         let incrementedVersionNumber;
-        if (isValidateMode || packageType != 'Unlocked') {
+        if (isValidateMode || packageType != PackageType.Unlocked) {
             if (this.props.buildNumber) {
                 let incrementBuildNumber = new IncrementProjectBuildNumberImpl(
                     new VoidLogger(),
@@ -530,6 +530,6 @@ export default class BuildImpl {
         }
 
         if (isValidateMode) return incrementedVersionNumber?.versionNumber;
-        else return packageType !== 'Unlocked' ? incrementedVersionNumber?.versionNumber : undefined;
+        else return packageType !== PackageType.Unlocked ? incrementedVersionNumber?.versionNumber : undefined;
     }
 }

@@ -1,4 +1,5 @@
 import * as fs from 'fs-extra';
+import { PackageType } from '../package/SfpPackage';
 let path = require('path');
 
 /**
@@ -56,14 +57,14 @@ export default class ProjectConfig {
      * @param projectConfig
      * @param sfdxPackage
      */
-    public static getPackageType(projectConfig: any, sfdxPackage: string): 'Unlocked' | 'Data' | 'Source' {
+    public static getPackageType(projectConfig: any, sfdxPackage: string): PackageType.Unlocked | PackageType.Data | PackageType.Source {
         let packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(sfdxPackage, projectConfig);
 
         if (projectConfig['packageAliases']?.[sfdxPackage]) {
-            return 'Unlocked';
+            return PackageType.Unlocked;
         } else {
-            if (packageDescriptor.type?.toLowerCase() === 'data') return 'Data';
-            else return 'Source';
+            if (packageDescriptor.type?.toLowerCase() === PackageType.Data) return PackageType.Data;
+            else return PackageType.Source;
         }
     }
 

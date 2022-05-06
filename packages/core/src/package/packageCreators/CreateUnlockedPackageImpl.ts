@@ -3,7 +3,7 @@ import ProjectConfig from '../../project/ProjectConfig';
 import SFPLogger, { LoggerLevel, Logger } from '../../logger/SFPLogger';
 import * as fs from 'fs-extra';
 import { delay } from '../../utils/Delay';
-import SfpPackage, { SfpPackageParams } from '../SfpPackage';
+import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
 import { CreatePackage } from './CreatePackage';
 import CreateUnlockedPackageVersionImpl from '../../sfdxwrappers/CreateUnlockedPackageVersionImpl';
 import PackageEmptyChecker from '../PackageEmptyChecker';
@@ -33,7 +33,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
     }
 
     getTypeOfPackage() {
-        return 'unlocked';
+        return PackageType.Unlocked;
     }
 
     async preCreatePackage(sfpPackage: SfpPackage) {

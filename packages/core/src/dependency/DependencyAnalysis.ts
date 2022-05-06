@@ -6,6 +6,7 @@ import ProjectConfig from '../project/ProjectConfig';
 import * as fs from 'fs-extra';
 import DependencyFetcher from './DependencyFetcher';
 import SFPOrg from '../org/SFPOrg';
+import { PackageType } from '../package/SfpPackage';
 
 const REGISTRY_SUPPORTED_TYPES = Object.values(registry.types).map((type) => type.name);
 
@@ -55,8 +56,8 @@ export default class DependencyAnalysis {
 
                     // check for missing dependency for unlocked package
                     if (
-                        component.packageType === 'Unlocked' &&
-                        cmp.packageType === 'Unlocked' &&
+                        component.packageType === PackageType.Unlocked &&
+                        cmp.packageType === PackageType.Unlocked &&
                         component.package !== cmp.package
                     ) {
                         const isDependencyDefined = projectConfig.packageDirectories[

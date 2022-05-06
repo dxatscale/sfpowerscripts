@@ -31,7 +31,7 @@ import Component from '@dxatscale/sfpowerscripts.core/lib/dependency/Component';
 import ValidateResult from './ValidateResult';
 import PoolOrgDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import { TestOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import {
     RunAllTestsInPackageOptions,
@@ -523,7 +523,7 @@ export default class ValidateImpl implements PostDeployHook {
         devhubUserName?: string
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Trigger Tests after installation of each package
-        if (sfpPackage.packageType && sfpPackage.packageType != 'data') {
+        if (sfpPackage.packageType && sfpPackage.packageType != PackageType.Data) {
             if (packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
                 //Get Changed Components
                 let testResult = await this.triggerApexTests(sfpPackage, targetUsername, this.logger);

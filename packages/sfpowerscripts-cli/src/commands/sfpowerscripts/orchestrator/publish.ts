@@ -17,7 +17,7 @@ import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormat
 import simplegit from 'simple-git';
 import GitIdentity from '../../../impl/git/GitIdentity';
 import defaultShell from '@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
@@ -177,7 +177,7 @@ export default class Promote extends SfpowerscriptsCommand {
                 let packageType = sfpPackage.package_type;
                 let packageVersionId = sfpPackage.package_version_id;
 
-                if (this.flags.publishpromotedonly && packageType === 'unlocked') {
+                if (this.flags.publishpromotedonly && packageType === PackageType.Unlocked) {
                     let isReleased = this.isPackageVersionIdReleased(packageVersionList, packageVersionId);
 
                     if (!isReleased) {

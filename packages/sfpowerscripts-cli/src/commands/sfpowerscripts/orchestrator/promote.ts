@@ -5,6 +5,7 @@ import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxw
 import ArtifactFetcher from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
 import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'promote');
@@ -75,7 +76,7 @@ export default class Promote extends SfpowerscriptsCommand {
             for (let artifact of artifacts) {
                 let sfpPackage = await SfpPackageBuilder.buildPackageFromArtifact(artifact, new ConsoleLogger());
                 try {
-                    if (sfpPackage.package_type === 'unlocked') {
+                    if (sfpPackage.package_type === PackageType.Unlocked) {
                         let promoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
                             artifact.sourceDirectoryPath,
                             sfpPackage.package_version_id,

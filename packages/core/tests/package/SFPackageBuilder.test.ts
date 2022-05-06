@@ -1,12 +1,12 @@
 import { jest, expect } from '@jest/globals';
-import SfpPackage, { SfpPackageParams } from '../../src/package/SfpPackage';
+import SfpPackage, { PackageType, SfpPackageParams } from '../../src/package/SfpPackage';
 import SfpPackageBuilder, { PackageCreationParams } from '../../src/package/SfpPackageBuilder';
 
 import fs from 'fs-extra';
 import { Logger } from '../../src/logger/SFPLogger';
 
 
-let packageType = 'Source';
+let packageType = PackageType.Source;
 jest.mock('../../src/project/ProjectConfig', () => {
     class ProjectConfig {
         static getSFDXPackageDescriptor(projectDirectory, sfdx_package) {
@@ -156,7 +156,7 @@ jest.mock('../../src/package/packageCreators/CreateSourcePackageImpl', () => {
         }
 
         public async exec(): Promise<SfpPackage> {
-            this.sfpPackage.packageType = 'Source';
+            this.sfpPackage.packageType = PackageType.Source;
             return this.sfpPackage;
         }
         getTypeOfPackage() {}
@@ -185,7 +185,7 @@ describe('Given a sfdx package, build a sfpowerscripts package', () => {
         expect(sfpPackage.isApexFound).toStrictEqual(true);
         expect(sfpPackage.isPermissionSetGroupFound).toStrictEqual(true);
         expect(sfpPackage.triggers).toBeUndefined();
-        expect(sfpPackage.packageType).toStrictEqual('Source');
+        expect(sfpPackage.packageType).toStrictEqual(PackageType.Source);
         expect(sfpPackage.payload).toStrictEqual(packageManifestJSON);
         expect(sfpPackage.mdapiDir).toStrictEqual('mdapidir');
         expect(sfpPackage.packageDescriptor).toStrictEqual({
@@ -236,7 +236,7 @@ describe('Given a sfdx package, build a sfpowerscripts package', () => {
         expect(sfpPackage.isProfilesFound).toStrictEqual(true);
         expect(sfpPackage.isApexFound).toStrictEqual(false);
         expect(sfpPackage.triggers).toBeUndefined();
-        expect(sfpPackage.packageType).toStrictEqual('Source');
+        expect(sfpPackage.packageType).toStrictEqual(PackageType.Source);
         expect(sfpPackage.mdapiDir).toStrictEqual('mdapidir');
         expect(sfpPackage.packageDescriptor).toStrictEqual({
             path: 'packages/domains/core',
