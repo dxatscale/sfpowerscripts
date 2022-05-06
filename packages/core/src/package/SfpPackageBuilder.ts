@@ -69,13 +69,10 @@ export default class SfpPackageBuilder {
 
         sfpPackage.resolvedPackageDirectory = path.join(sfpPackage.workingDirectory, sfpPackage.packageDescriptor.path);
 
-        if (params?.overridePackageTypeWith) {
-            sfpPackage.package_type = params?.overridePackageTypeWith;
-        } else
-            sfpPackage.package_type = ProjectConfig.getPackageType(
-                ProjectConfig.getSFDXProjectConfig(sfpPackage.workingDirectory),
-                sfdx_package
-            );
+        sfpPackage.package_type = ProjectConfig.getPackageType(
+            ProjectConfig.getSFDXProjectConfig(sfpPackage.workingDirectory),
+            sfdx_package
+        );
 
         //Don't proceed further if packageType is Data
         if (sfpPackage.package_type != PackageType.Data) {
@@ -105,16 +102,20 @@ export default class SfpPackageBuilder {
             sfpPackage.apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
 
             //Introspect Diff Package Created
-            await this.introspectDiffPackageCreated(sfpPackage, packageCreationParams,logger);
+            await this.introspectDiffPackageCreated(sfpPackage, packageCreationParams, logger);
         }
 
         //Create the actual package
         let createPackage;
-        if (params?.overridePackageTypeWith) sfpPackage.packageType = params?.overridePackageTypeWith.toLocaleLowerCase();
+
         if (!packageCreationParams) packageCreationParams = { breakBuildIfEmpty: true };
 
+        let packageType=sfpPackage.packageType;
+        if (params?.overridePackageTypeWith)
+             packageType = params?.overridePackageTypeWith.toLocaleLowerCase();
+
         //Get Implementors
-        switch (sfpPackage.packageType.toLocaleLowerCase()) {
+        switch (packageType) {
             case PackageType.Unlocked:
                 createPackage = new CreateUnlockedPackageImpl(
                     sfpPackage.workingDirectory,
@@ -165,7 +166,11 @@ export default class SfpPackageBuilder {
         return sfpPackage;
     }
 
-    private static async introspectDiffPackageCreated(sfpPackage: SfpPackage, packageCreationParams:PackageCreationParams,logger: Logger): Promise<void> {
+    private static async introspectDiffPackageCreated(
+        sfpPackage: SfpPackage,
+        packageCreationParams: PackageCreationParams,
+        logger: Logger
+    ): Promise<void> {
         let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
         if (fs.existsSync(workingDirectory)) {
             let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
@@ -174,13 +179,11 @@ export default class SfpPackageBuilder {
                 ProjectConfig.getSFDXProjectConfig(workingDirectory).sourceApiVersion,
                 logger
             );
-        
-            
 
             let mdapiDirPath = (await sourceToMdapiConvertor.convert()).packagePath;
 
             //Compute Changed Components
-            let changedComponents=await (new ChangedComponentsFetcher(packageCreationParams.baseBranch,false)).fetch();
+            let changedComponents = await new ChangedComponentsFetcher(packageCreationParams.baseBranch, false).fetch();
 
             let impactedApexTestClassFetcher: ImpactedApexTestClassFetcher = new ImpactedApexTestClassFetcher(
                 sfpPackage,
@@ -188,13 +191,13 @@ export default class SfpPackageBuilder {
                 logger
             );
             let impactedTestClasses = await impactedApexTestClassFetcher.getImpactedTestClasses();
-         
+
             const packageManifest: PackageManifest = await PackageManifest.create(mdapiDirPath);
             let diffPackageInfo: DiffPackageMetadata = {};
             diffPackageInfo.invalidatedTestClasses = impactedTestClasses;
             diffPackageInfo.isApexFound = packageManifest.isApexInPackage();
             diffPackageInfo.isProfilesFound = packageManifest.isProfilesInPackage();
-            diffPackageInfo.isPermissionSetFound =  packageManifest.isPermissionSetsInPackage();
+            diffPackageInfo.isPermissionSetFound = packageManifest.isPermissionSetsInPackage();
             diffPackageInfo.isPermissionSetGroupFound = packageManifest.isPermissionSetGroupsFoundInPackage();
             diffPackageInfo.metadataCount = MetadataCount.getMetadataCount(
                 workingDirectory,
@@ -214,5 +217,5 @@ export class PackageCreationParams {
     isCoverageEnabled?: boolean;
     isSkipValidation?: boolean;
     isComputeDiffPackage?: boolean;
-    baseBranch?:string;
+    baseBranch?: string;
 }

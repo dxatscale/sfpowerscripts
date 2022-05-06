@@ -95,6 +95,7 @@ export default class PackageTestCoverage {
             coverageThreshold = 75;
         }
 
+        
       
         if (this.pkg.packageType === PackageType.Unlocked) {
             if (this.packageTestCoverage < coverageThreshold) {
@@ -116,7 +117,7 @@ export default class PackageTestCoverage {
                 };
             }
         } else if (this.pkg.packageType === PackageType.Source) {
-            SFPLogger.log("Package type is PackageType.Source. Validating individual class coverage");
+            SFPLogger.log("Package type is Source. Validating individual class coverage");
 
             let individualClassValidationResults = this.individualClassCoverage.validateIndividualClassCoverage(
                 this.getIndividualClassCoverageByPackage(this.codeCoverage),

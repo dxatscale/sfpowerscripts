@@ -17,7 +17,7 @@ export default class SfpPackageInstaller {
         installationContext?: SfPPackageInstallationContext,
         overridePackageTypeWith?: string
     ): Promise<PackageInstallationResult> {
-        let packageType = sfpPackage.packageType
+        let packageType = sfpPackage.packageType;
         if (overridePackageTypeWith) packageType = overridePackageTypeWith;
 
         switch (packageType) {
