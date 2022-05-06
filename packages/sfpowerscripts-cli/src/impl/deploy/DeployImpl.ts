@@ -581,7 +581,8 @@ export default class DeployImpl {
             installationOptions,
             {
                 currentStage: this.props.currentStage,
-            }
+            },
+           sfpPackage.packageType == PackageType.Unlocked && installationOptions.isInstallingForValidation ? PackageType.Source:undefined //Override to source
         );
     }
 
