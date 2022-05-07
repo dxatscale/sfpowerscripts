@@ -97,7 +97,7 @@ export default class SfpPackage extends PackageInfo {
     }
 }
 
-export enum PackageType 
+export enum PackageType
 {
    Unlocked = "unlocked",
    Source = "source",
