@@ -27,6 +27,7 @@ import { COLOR_SUCCESS } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogg
 import { COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import ScratchOrgInfoFetcher from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher';
+import ScratchOrgInfoAssigner from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/updaters/ScratchOrgInfoAssigner';
 import Component from '@dxatscale/sfpowerscripts.core/lib/dependency/Component';
 import ValidateResult from './ValidateResult';
 import PoolOrgDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl';
@@ -76,6 +77,7 @@ export default class ValidateImpl implements PostDeployHook {
     public async exec(): Promise<ValidateResult> {
         rimraf.sync('artifacts');
 
+        let deploymentResult: DeploymentResult;
         let scratchOrgUsername: string;
         try {
             if (this.props.validateMode === ValidateMode.ORG) {
@@ -107,7 +109,7 @@ export default class ValidateImpl implements PostDeployHook {
 
             await this.buildChangedSourcePackages(packagesToCommits);
 
-            let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
+            deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
             if (deploymentResult.failed.length > 0 || deploymentResult.error)
                 throw new ValidateError('Validation failed', { deploymentResult });
@@ -121,12 +123,7 @@ export default class ValidateImpl implements PostDeployHook {
 
             return null;
         } finally {
-            if (this.props.isDeleteScratchOrg) {
-                await this.deleteScratchOrg(scratchOrgUsername);
-            } else {
-                fs.writeFileSync('.env', `sfpowerscripts_scratchorg_username=${scratchOrgUsername}\n`, { flag: 'a' });
-                console.log(`sfpowerscripts_scratchorg_username=${scratchOrgUsername}`);
-            }
+            await this.handleScratchOrgStatus(scratchOrgUsername, deploymentResult, this.props.isDeleteScratchOrg);
         }
     }
 
@@ -211,15 +208,34 @@ export default class ValidateImpl implements PostDeployHook {
         this.printClosingLoggingGroup();
     }
 
-    private async deleteScratchOrg(scratchOrgUsername: string) {
-        try {
-            if (scratchOrgUsername && this.props.hubOrg.getUsername()) {
-                console.log(`Deleting scratch org`, scratchOrgUsername);
-                let poolOrgDeleteImpl = new PoolOrgDeleteImpl(this.props.hubOrg, scratchOrgUsername);
-                await poolOrgDeleteImpl.execute();
+    private async handleScratchOrgStatus(
+        scratchOrgUsername: string,
+        deploymentResult: DeploymentResult,
+        isToDelete: boolean
+    ) {
+        //No scratch org available.. just return
+        if (scratchOrgUsername == undefined) return;
+
+        //Proceed to delete
+        if (isToDelete) {
+            //If deploymentResult is not available, or there is 0 packages deployed, we can reuse the org
+            if (!deploymentResult || deploymentResult.deployed.length == 0) {
+                SFPLogger.log(`Attempting to return scratch org ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
+                let scratchOrgInfoAssigner = new ScratchOrgInfoAssigner(this.props.hubOrg);
+                let result = await scratchOrgInfoAssigner.setScrachOrgStatus(scratchOrgUsername, 'Available');
+                if (result) SFPLogger.log(`Succesfully returned ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
+                else console.log(COLOR_WARNING(`Unable to update status of scratch org,Please check permissions`));
+            } else {
+                try {
+                    if (scratchOrgUsername && this.props.hubOrg.getUsername()) {
+                        console.log(`Deleting scratch org`, scratchOrgUsername);
+                        let poolOrgDeleteImpl = new PoolOrgDeleteImpl(this.props.hubOrg, scratchOrgUsername);
+                        await poolOrgDeleteImpl.execute();
+                    }
+                } catch (error) {
+                    console.log(COLOR_WARNING(error.message));
+                }
             }
-        } catch (error) {
-            console.log(COLOR_WARNING(error.message));
         }
     }
 
@@ -285,8 +301,6 @@ export default class ValidateImpl implements PostDeployHook {
                 coverageThreshold: this.props.coverageThreshold || 75,
             };
         } else {
-          
-
             let impactedTestClasses = sfpPackage.diffPackageMetadata?.invalidatedTestClasses;
             if (!impactedTestClasses || impactedTestClasses.length == 0)
                 return { id: null, result: true, message: 'No Apex Classes were impacted, Skipping Tests' };
@@ -296,12 +310,12 @@ export default class ValidateImpl implements PostDeployHook {
                 `${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`
             );
 
-            if(sfpPackage.diffPackageMetadata?.isProfilesFound
-                || sfpPackage.diffPackageMetadata?.isPermissionSetFound
-                || sfpPackage.diffPackageMetadata?.isPermissionSetGroupFound)
-                SFPLogger.log(
-                    `${COLOR_HEADER('Change in security model, all test classses will be triggered')}`
-                );
+            if (
+                sfpPackage.diffPackageMetadata?.isProfilesFound ||
+                sfpPackage.diffPackageMetadata?.isPermissionSetFound ||
+                sfpPackage.diffPackageMetadata?.isPermissionSetGroupFound
+            )
+                SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
 
             testOptions = new RunSpecifiedTestsOption(
                 60,
@@ -351,7 +365,7 @@ export default class ValidateImpl implements PostDeployHook {
             isBuildAllAsSourcePackages: true,
             packagesToCommits: packagesToCommits,
             currentStage: Stage.VALIDATE,
-            baseBranch: this.props.baseBranch
+            baseBranch: this.props.baseBranch,
         };
 
         let buildImpl: BuildImpl = new BuildImpl(buildProps);
