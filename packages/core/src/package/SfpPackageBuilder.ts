@@ -4,7 +4,7 @@ import SfpPackageContentGenerator from './generators/SfpPackageContentGenerator'
 import SourceToMDAPIConvertor from './packageFormatConvertors/SourceToMDAPIConvertor';
 import PackageManifest from './PackageManifest';
 import MetadataCount from './MetadataCount';
-import { Logger } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
 import * as fs from 'fs-extra';
 import path from 'path';
 import { Artifact } from '../artifacts/ArtifactFetcher';
@@ -18,6 +18,7 @@ import CreateSourcePackageImpl from './packageCreators/CreateSourcePackageImpl';
 import CreateDataPackageImpl from './packageCreators/CreateDataPackageImpl';
 import ChangedComponentsFetcher from '../dependency/ChangedComponentsFetcher';
 import ImpactedApexTestClassFetcher from '../apextest/ImpactedApexTestClassFetcher';
+import * as rimraf from 'rimraf';
 
 export default class SfpPackageBuilder {
     public static async buildPackageFromProjectDirectory(
@@ -102,7 +103,17 @@ export default class SfpPackageBuilder {
             sfpPackage.apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
 
             //Introspect Diff Package Created
-            await this.introspectDiffPackageCreated(sfpPackage, packageCreationParams, logger);
+            //On Failure.. remove diff and move on
+            try {
+                await this.introspectDiffPackageCreated(sfpPackage, packageCreationParams, logger);
+            } catch (error) {
+                SFPLogger.log('Failed in diff compute with ' + error, LoggerLevel.DEBUG, logger);
+                let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
+                if (fs.existsSync(workingDirectory)) {
+                    rimraf.sync(workingDirectory);
+                }
+                sfpPackage.diffPackageMetadata = undefined;
+            }
         }
 
         //Create the actual package
@@ -110,9 +121,8 @@ export default class SfpPackageBuilder {
 
         if (!packageCreationParams) packageCreationParams = { breakBuildIfEmpty: true };
 
-        let packageType=sfpPackage.packageType;
-        if (params?.overridePackageTypeWith)
-             packageType = params?.overridePackageTypeWith.toLocaleLowerCase();
+        let packageType = sfpPackage.packageType;
+        if (params?.overridePackageTypeWith) packageType = params?.overridePackageTypeWith.toLocaleLowerCase();
 
         //Get Implementors
         switch (packageType) {

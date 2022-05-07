@@ -24,7 +24,7 @@ export default class ImpactedApexTestClassFetcher {
         let apexLinkImpl = new ApexLinkCheckImpl(this.sfpPackage.workingDirectory, this.logger, this.loglevel);
         let dependencies = (await apexLinkImpl.exec()).dependencies;
 
-        SFPLogger.log(`Dependencies: ${JSON.stringify(dependencies)}`, LoggerLevel.TRACE);
+        SFPLogger.log(`Dependencies: ${JSON.stringify(dependencies)}`, LoggerLevel.TRACE,this.logger);
 
         //compute invalidated apex classes
         for (const changedComponent of validatedChangedComponents) {
