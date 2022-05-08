@@ -105,9 +105,9 @@ export default class SfpPackageBuilder {
             //Introspect Diff Package Created
             //On Failure.. remove diff and move on
             try {
-                await this.introspectDiffPackageCreated(sfpPackage, packageCreationParams, logger);
+                await this.introspectDiffPackageCreated(sfpPackage, params, logger);
             } catch (error) {
-                SFPLogger.log('Failed in diff compute with ' + error, LoggerLevel.DEBUG, logger);
+                SFPLogger.log('Failed in diff compute with ' + JSON.stringify(error), LoggerLevel.INFO, logger);
                 let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
                 if (fs.existsSync(workingDirectory)) {
                     rimraf.sync(workingDirectory);
@@ -178,9 +178,12 @@ export default class SfpPackageBuilder {
 
     private static async introspectDiffPackageCreated(
         sfpPackage: SfpPackage,
-        packageCreationParams: PackageCreationParams,
+        packageParams: SfpPackageParams,
         logger: Logger
     ): Promise<void> {
+        //No base branch passed in, dont create diff
+        if (!packageParams.revisionFrom) return;
+
         let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
         if (fs.existsSync(workingDirectory)) {
             let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
@@ -192,8 +195,8 @@ export default class SfpPackageBuilder {
 
             let mdapiDirPath = (await sourceToMdapiConvertor.convert()).packagePath;
 
-            //Compute Changed Components
-            let changedComponents = await new ChangedComponentsFetcher(packageCreationParams.baseBranch, false).fetch();
+            //Compute Changed Components from the passed revision From, base branch is immaterial
+            let changedComponents = await new ChangedComponentsFetcher(undefined, false).fetch(packageParams.revisionFrom);
 
             let impactedApexTestClassFetcher: ImpactedApexTestClassFetcher = new ImpactedApexTestClassFetcher(
                 sfpPackage,
@@ -218,6 +221,8 @@ export default class SfpPackageBuilder {
     }
 }
 
+
+// Options while creating package
 export class PackageCreationParams {
     breakBuildIfEmpty: boolean = true;
     devHub?: string;

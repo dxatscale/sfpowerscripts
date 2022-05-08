@@ -11,19 +11,26 @@ import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 export default class ChangedComponentsFetcher {
     constructor(private baseBranch: string, private isToUseDeploymentReports: boolean = true) {}
 
-    async fetch(): Promise<Component[]> {
+    async fetch(fromCommitId?: string): Promise<Component[]> {
         let components: Component[] = [];
 
         let git: Git = new Git();
 
         let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
 
-        if (!this.baseBranch.includes('origin')) {
-            // for user convenience, use full ref name to avoid errors involving missing local refs
-            this.baseBranch = `remotes/origin/${this.baseBranch}`;
+        let fromSourceVersion;
+        //fromCommitId is provided then use that
+        if (fromCommitId) {
+            fromSourceVersion = fromCommitId;
+        } else  {
+            if(!this.baseBranch)
+              throw new Error('Atleast base branch or commit Id should be set to compute diff');
+             // for user convenience, use full ref name to avoid errors involving missing local refs
+            if (!this.baseBranch.includes('origin'))
+                fromSourceVersion= `remotes/origin/${this.baseBranch}`;
         }
 
-        let diff: string[] = await git.diff([this.baseBranch, `HEAD`, `--no-renames`, `--name-only`]);
+        let diff: string[] = await git.diff([fromSourceVersion, `HEAD`, `--diff-filter=ACM`,`--no-renames`, `--name-only`]);
 
         // Filter diff to package directories
         diff = diff.filter((filepath) =>
@@ -52,7 +59,6 @@ export default class ChangedComponentsFetcher {
             let componentSet = ComponentSet.fromSource(filepath);
 
             let individualComponentFromComponentSet = componentSet.getSourceComponents().first();
-            
 
             // find package that file belongs to
             const indexOfPackage = projectConfig.packageDirectories.findIndex((pkg) => filepath.includes(pkg.path));
