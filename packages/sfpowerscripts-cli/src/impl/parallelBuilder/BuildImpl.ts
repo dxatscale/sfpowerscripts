@@ -17,6 +17,7 @@ import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogge
 import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime'
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -37,7 +38,7 @@ export interface BuildProps {
     branch?: string;
     packagesToCommits?: { [p: string]: string };
     currentStage: Stage;
-    baseBranch?:string;
+    baseBranch?: string;
 }
 export default class BuildImpl {
     private limiter: Bottleneck;
@@ -400,7 +401,7 @@ export default class BuildImpl {
     private printPackageDetails(sfpPackage: SfpPackage) {
         console.log(
             COLOR_HEADER(
-                `${EOL}${sfpPackage.packageName} package created in ${this.getFormattedTime(
+                `${EOL}${sfpPackage.packageName} package created in ${getFormattedTime(
                     sfpPackage.creation_details.creation_time
                 )}`
             )
@@ -417,14 +418,16 @@ export default class BuildImpl {
                     COLOR_HEADER(`-- Package Version Id:             `),
                     COLOR_KEY_MESSAGE(sfpPackage.package_version_id)
                 );
-                console.log(
-                    COLOR_HEADER(`-- Package Test Coverage:          `),
-                    COLOR_KEY_MESSAGE(sfpPackage.test_coverage)
-                );
-                console.log(
-                    COLOR_HEADER(`-- Package Coverage Check Passed:  `),
-                    COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check)
-                );
+                if (sfpPackage.test_coverage)
+                    console.log(
+                        COLOR_HEADER(`-- Package Test Coverage:          `),
+                        COLOR_KEY_MESSAGE(sfpPackage.test_coverage)
+                    );
+                if (sfpPackage.has_passed_coverage_check)
+                    console.log(
+                        COLOR_HEADER(`-- Package Coverage Check Passed:  `),
+                        COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check)
+                    );
             }
 
             console.log(
@@ -451,7 +454,8 @@ export default class BuildImpl {
             this.props.projectDirectory,
             sfdx_package,
             {
-                overridePackageTypeWith: isValidateMode && packageType != PackageType.Data ? PackageType.Source : undefined,
+                overridePackageTypeWith:
+                    isValidateMode && packageType != PackageType.Data ? PackageType.Source : undefined,
                 packageVersionNumber: this.getVersionNumber(sfdx_package, packageType, isValidateMode),
                 branch: this.props.branch,
                 sourceVersion: this.commit_id,
@@ -475,7 +479,7 @@ export default class BuildImpl {
                 isCoverageEnabled: !this.props.isQuickBuild,
                 isSkipValidation: this.props.isQuickBuild,
                 breakBuildIfEmpty: true,
-                baseBranch:this.props.baseBranch
+                baseBranch: this.props.baseBranch,
             }
         );
     }
@@ -506,12 +510,7 @@ export default class BuildImpl {
         } else return null;
     }
 
-    private getFormattedTime(milliseconds: number): string {
-        let date = new Date(0);
-        date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
-        let timeString = date.toISOString().substr(11, 8);
-        return timeString;
-    }
+
 
     private getVersionNumber(sfdx_package: string, packageType: string, isValidateMode: boolean): string {
         let incrementedVersionNumber;
