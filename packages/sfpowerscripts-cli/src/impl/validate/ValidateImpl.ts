@@ -215,7 +215,6 @@ export default class ValidateImpl implements PostDeployHook {
         //No scratch org available.. just return
         if (scratchOrgUsername == undefined) return;
 
-        //Proceed to delete
         if (isToDelete) {
             //If deploymentResult is not available, or there is 0 packages deployed, we can reuse the org
             if (!deploymentResult || deploymentResult.deployed.length == 0) {
