@@ -16,9 +16,9 @@ import ReconcilePropertyFetcher from './propertyFetchers/ReconcileProfilePropert
 import CreateUnlockedPackageImpl from './packageCreators/CreateUnlockedPackageImpl';
 import CreateSourcePackageImpl from './packageCreators/CreateSourcePackageImpl';
 import CreateDataPackageImpl from './packageCreators/CreateDataPackageImpl';
-import ChangedComponentsFetcher from '../dependency/ChangedComponentsFetcher';
 import ImpactedApexTestClassFetcher from '../apextest/ImpactedApexTestClassFetcher';
 import * as rimraf from 'rimraf';
+import PackageToComponent from './PackageToComponent';
 
 export default class SfpPackageBuilder {
     public static async buildPackageFromProjectDirectory(
@@ -34,6 +34,7 @@ export default class SfpPackageBuilder {
             new ReconcilePropertyFetcher(),
         ];
 
+        let startTime = Date.now;
         let sfpPackage: SfpPackage = new SfpPackage();
         sfpPackage.package_name = sfdx_package;
         sfpPackage.projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
@@ -105,9 +106,9 @@ export default class SfpPackageBuilder {
             //Introspect Diff Package Created
             //On Failure.. remove diff and move on
             try {
-                await this.introspectDiffPackageCreated(sfpPackage, packageCreationParams, logger);
+                await this.introspectDiffPackageCreated(sfpPackage, params, logger);
             } catch (error) {
-                SFPLogger.log('Failed in diff compute with ' + error, LoggerLevel.DEBUG, logger);
+                SFPLogger.log('Failed in diff compute with ' + JSON.stringify(error), LoggerLevel.INFO, logger);
                 let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
                 if (fs.existsSync(workingDirectory)) {
                     rimraf.sync(workingDirectory);
@@ -178,11 +179,27 @@ export default class SfpPackageBuilder {
 
     private static async introspectDiffPackageCreated(
         sfpPackage: SfpPackage,
-        packageCreationParams: PackageCreationParams,
+        packageParams: SfpPackageParams,
         logger: Logger
     ): Promise<void> {
+        //No base branch passed in, dont create diff
+        if (!packageParams.revisionFrom) return;
+
         let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
         if (fs.existsSync(workingDirectory)) {
+            
+            let changedComponents = new PackageToComponent(
+                sfpPackage.packageName,
+                path.join(workingDirectory, sfpPackage.packageDirectory)
+            ).generateComponents();
+
+            let impactedApexTestClassFetcher: ImpactedApexTestClassFetcher = new ImpactedApexTestClassFetcher(
+                sfpPackage,
+                changedComponents,
+                logger
+            );
+            let impactedTestClasses = await impactedApexTestClassFetcher.getImpactedTestClasses();
+
             let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
                 workingDirectory,
                 sfpPackage.packageDescriptor.path,
@@ -192,23 +209,15 @@ export default class SfpPackageBuilder {
 
             let mdapiDirPath = (await sourceToMdapiConvertor.convert()).packagePath;
 
-            //Compute Changed Components
-            let changedComponents = await new ChangedComponentsFetcher(packageCreationParams.baseBranch, false).fetch();
-
-            let impactedApexTestClassFetcher: ImpactedApexTestClassFetcher = new ImpactedApexTestClassFetcher(
-                sfpPackage,
-                changedComponents,
-                logger
-            );
-            let impactedTestClasses = await impactedApexTestClassFetcher.getImpactedTestClasses();
-
             const packageManifest: PackageManifest = await PackageManifest.create(mdapiDirPath);
+
             let diffPackageInfo: DiffPackageMetadata = {};
             diffPackageInfo.invalidatedTestClasses = impactedTestClasses;
             diffPackageInfo.isApexFound = packageManifest.isApexInPackage();
             diffPackageInfo.isProfilesFound = packageManifest.isProfilesInPackage();
             diffPackageInfo.isPermissionSetFound = packageManifest.isPermissionSetsInPackage();
             diffPackageInfo.isPermissionSetGroupFound = packageManifest.isPermissionSetGroupsFoundInPackage();
+
             diffPackageInfo.metadataCount = MetadataCount.getMetadataCount(
                 workingDirectory,
                 sfpPackage.packageDescriptor.path
@@ -218,6 +227,7 @@ export default class SfpPackageBuilder {
     }
 }
 
+// Options while creating package
 export class PackageCreationParams {
     breakBuildIfEmpty: boolean = true;
     devHub?: string;

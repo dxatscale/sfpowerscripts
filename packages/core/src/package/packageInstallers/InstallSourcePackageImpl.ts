@@ -17,19 +17,18 @@ import { TestLevel } from '../../apextest/TestOptions';
 import SfpPackage, { PackageType } from '../SfpPackage';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
-
     private pathToReplacementForceIgnore: string;
     private deploymentType: DeploymentType;
 
-    private isDiffFolderAvailable;
+    private isDiffFolderAvailable: boolean;
 
     public constructor(
         sfpPackage: SfpPackage,
         targetusername: string,
         options: SfpPackageInstallationOptions,
-        logger: Logger,
+        logger: Logger
     ) {
-        super(sfpPackage, targetusername, logger,options);
+        super(sfpPackage, targetusername, logger, options);
         this.options = options;
         this.pathToReplacementForceIgnore = options.pathToReplacementForceIgnore;
         this.deploymentType = options.deploymentType;
@@ -245,7 +244,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     }
 
     private isAllTestsToBeTriggered(sfpPackage: SfpPackage) {
- if (
+        if (
             this.sfpPackage.packageType == PackageType.Source &&
             this.sfpPackage.isApexFound == true &&
             this.sfpPackage.apexTestClassses == null
@@ -308,8 +307,10 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     ) {
         //if no profile supported metadata, no point in
         //doing a reconcile
-        let packageManifest = await PackageManifest.createWithJSONManifest(this.sfpPackage.payload);
-        if (!packageManifest.isPayLoadContainTypesSupportedByProfiles()) return;
+
+        if (!this.sfpPackage.isProfilesFound) return;
+
+        if (this.isDiffFolderAvailable && !this.sfpPackage.isProfilesFound) return;
 
         if (profileFolders.length > 0) {
             profileFolders.forEach((folder) => {
