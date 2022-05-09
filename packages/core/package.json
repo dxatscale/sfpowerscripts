@@ -19,7 +19,7 @@
         "@salesforce/apex-node": "0.11.0",
         "@salesforce/command": "4.2.2",
         "@salesforce/core": "2.36.1",
-        "@salesforce/source-deploy-retrieve": "5.12.8",
+        "@salesforce/source-deploy-retrieve": "5.12.13",
         "@salesforce/source-tracking": "^1.3.1",
         "@salesforce/ts-sinon": "^1.3.21",
         "adm-zip": "^0.5.6",
