@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfpowerscripts.core",
-    "version": "21.0.10",
+    "version": "21.0.11",
     "description": "Core Module used by sfpowerscripts",
     "main": "lib/index",
     "types": "lib/index",
@@ -14,7 +14,6 @@
         "compile": "tsc -b tsconfig.json",
         "test": "FORCE_COLOR=true jest --clearCache --verbose --coverage --detectOpenHandles"
     },
-   
     "dependencies": {
         "@newrelic/telemetry-sdk": "^0.6.0",
         "@salesforce/apex-node": "0.11.0",
