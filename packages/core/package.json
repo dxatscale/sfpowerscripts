@@ -36,7 +36,7 @@
         "lodash": "^4.17.21",
         "neverthrow": "4.2.1",
         "rimraf": "^3.0.2",
-        "semver": "^7.3.5",
+        "semver": "7.3.6",
         "sfdc-soup": "^15.0.0",
         "shelljs": "^0.8.4",
         "simple-git": "3.5.0",
