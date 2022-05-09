@@ -220,21 +220,25 @@ export default class ValidateImpl implements PostDeployHook {
             if (!deploymentResult || deploymentResult.deployed.length == 0) {
                 SFPLogger.log(`Attempting to return scratch org ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
                 let scratchOrgInfoAssigner = new ScratchOrgInfoAssigner(this.props.hubOrg);
-                let result = await scratchOrgInfoAssigner.setScrachOrgStatus(scratchOrgUsername, 'Available');
+                let result = await scratchOrgInfoAssigner.setScratchOrgStatus(scratchOrgUsername, 'Available');
                 if (result) SFPLogger.log(`Succesfully returned ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
                 else console.log(COLOR_WARNING(`Unable to update status of scratch org,Please check permissions`));
             } else {
                 try {
                     if (scratchOrgUsername && this.props.hubOrg.getUsername()) {
-                        console.log(`Deleting scratch org`, scratchOrgUsername);
-                        let poolOrgDeleteImpl = new PoolOrgDeleteImpl(this.props.hubOrg, scratchOrgUsername);
-                        await poolOrgDeleteImpl.execute();
+                        await this.deleteScratchOrg(this.props.hubOrg,scratchOrgUsername);
                     }
                 } catch (error) {
                     console.log(COLOR_WARNING(error.message));
                 }
             }
         }
+    }
+
+    private async deleteScratchOrg(hubOrg:Org,scratchOrgUsername: string) {
+        console.log(`Deleting scratch org`, scratchOrgUsername);
+        let poolOrgDeleteImpl = new PoolOrgDeleteImpl(hubOrg, scratchOrgUsername);
+        await poolOrgDeleteImpl.execute();
     }
 
     private deployShapeFile(shapeFile: string, scratchOrgUsername: string): void {
