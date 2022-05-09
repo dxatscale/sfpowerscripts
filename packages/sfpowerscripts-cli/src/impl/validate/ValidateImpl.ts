@@ -4,7 +4,6 @@ import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../de
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import { Stage } from '../Stage';
 import SFPLogger, { ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import fs = require('fs');
 import InstallPackageDependenciesImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl';
 import {
     PackageInstallationResult,
