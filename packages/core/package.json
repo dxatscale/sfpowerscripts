@@ -12,8 +12,9 @@
         "build": "npm run clean && npm run compile",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
         "compile": "tsc -b tsconfig.json",
-        "test": "FORCE_COLOR=true jest --verbose --coverage --detectOpenHandles"
+        "test": "FORCE_COLOR=true jest --clearCache --verbose --coverage --detectOpenHandles"
     },
+   
     "dependencies": {
         "@newrelic/telemetry-sdk": "^0.6.0",
         "@salesforce/apex-node": "0.11.0",
@@ -47,11 +48,11 @@
     "devDependencies": {
         "@types/async-retry": "^1.4.2",
         "@types/datadog-metrics": "^0.6.1",
-        "@types/jest": "27.4.1",
+        "@types/jest": "^27.5.0",
         "@types/jsforce": "^1.9.29",
         "@types/mocha": "9.1.0",
         "jest": "27.5.1",
-        "ts-jest": "27.1.4",
+        "ts-jest": "^27.1.4",
         "ts-node": "10.7.0",
         "typescript": "^4.1.3"
     },
