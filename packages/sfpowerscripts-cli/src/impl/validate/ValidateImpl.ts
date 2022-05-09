@@ -226,7 +226,7 @@ export default class ValidateImpl implements PostDeployHook {
             } else {
                 try {
                     if (scratchOrgUsername && this.props.hubOrg.getUsername()) {
-                        await this.deleteScratchOrg(this.props.hubOrg,scratchOrgUsername);
+                        await this.deleteScratchOrg(this.props.hubOrg, scratchOrgUsername);
                     }
                 } catch (error) {
                     console.log(COLOR_WARNING(error.message));
@@ -235,7 +235,7 @@ export default class ValidateImpl implements PostDeployHook {
         }
     }
 
-    private async deleteScratchOrg(hubOrg:Org,scratchOrgUsername: string) {
+    private async deleteScratchOrg(hubOrg: Org, scratchOrgUsername: string) {
         console.log(`Deleting scratch org`, scratchOrgUsername);
         let poolOrgDeleteImpl = new PoolOrgDeleteImpl(hubOrg, scratchOrgUsername);
         await poolOrgDeleteImpl.execute();
@@ -294,42 +294,20 @@ export default class ValidateImpl implements PostDeployHook {
 
         let testOptions: TestOptions, testCoverageOptions: CoverageOptions;
 
-        if (!this.props.isFastFeedbackMode) {
-            this.displayTestHeader(sfpPackage);
-            testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
-            testCoverageOptions = {
-                isIndividualClassCoverageToBeValidated: false,
-                isPackageCoverageToBeValidated: !sfpPackage.packageDescriptor.skipCoverageValidation,
-                coverageThreshold: this.props.coverageThreshold || 75,
-            };
+        this.displayTestHeader(sfpPackage);
+
+        if (this.props.isFastFeedbackMode) {
+            ({ testOptions, testCoverageOptions } = this.getTestOptionsForFastFeedBackPackage(
+                testOptions,
+                sfpPackage,
+                testCoverageOptions
+            ));
         } else {
-            let impactedTestClasses = sfpPackage.diffPackageMetadata?.invalidatedTestClasses;
-            if (!impactedTestClasses || impactedTestClasses.length == 0)
-                return { id: null, result: true, message: 'No Apex Classes were impacted, Skipping Tests' };
-
-            this.displayTestHeader(sfpPackage);
-            SFPLogger.log(
-                `${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`
-            );
-
-            if (
-                sfpPackage.diffPackageMetadata?.isProfilesFound ||
-                sfpPackage.diffPackageMetadata?.isPermissionSetFound ||
-                sfpPackage.diffPackageMetadata?.isPermissionSetGroupFound
-            )
-                SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
-
-            testOptions = new RunSpecifiedTestsOption(
-                60,
-                '.testResults',
-                impactedTestClasses.join(),
-                sfpPackage.packageDescriptor.testSynchronous
-            );
-            testCoverageOptions = {
-                isIndividualClassCoverageToBeValidated: false,
-                isPackageCoverageToBeValidated: false,
-                coverageThreshold: 0,
-            };
+            ({ testOptions, testCoverageOptions } = this.getTestOptionsForFullPackageTest(
+                testOptions,
+                sfpPackage,
+                testCoverageOptions
+            ));
         }
 
         let triggerApexTests: TriggerApexTests = new TriggerApexTests(
@@ -341,6 +319,64 @@ export default class ValidateImpl implements PostDeployHook {
         );
 
         return triggerApexTests.exec();
+    }
+
+    private getTestOptionsForFullPackageTest(
+        testOptions: TestOptions,
+        sfpPackage: SfpPackage,
+        testCoverageOptions: CoverageOptions
+    ) {
+        testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
+        testCoverageOptions = {
+            isIndividualClassCoverageToBeValidated: false,
+            isPackageCoverageToBeValidated: !sfpPackage.packageDescriptor.skipCoverageValidation,
+            coverageThreshold: this.props.coverageThreshold || 75,
+        };
+        return { testOptions, testCoverageOptions };
+    }
+
+    private getTestOptionsForFastFeedBackPackage(
+        testOptions: TestOptions,
+        sfpPackage: SfpPackage,
+        testCoverageOptions: CoverageOptions
+    ) {
+        let impactedTestClasses = sfpPackage.diffPackageMetadata?.invalidatedTestClasses;
+
+        //No impacted test class available
+        if (!impactedTestClasses || impactedTestClasses.length == 0) {
+            SFPLogger.log(
+                `${COLOR_HEADER(
+                    'Unable to find impacted test classses or all package is changed, triggering all test classes'
+                )}`
+            );
+            if (sfpPackage.isApexFound)
+                return this.getTestOptionsForFullPackageTest(testOptions, sfpPackage, testCoverageOptions);
+        }
+
+        //Change in security model trigger full
+        if (
+            sfpPackage.diffPackageMetadata?.isProfilesFound ||
+            sfpPackage.diffPackageMetadata?.isPermissionSetFound ||
+            sfpPackage.diffPackageMetadata?.isPermissionSetGroupFound
+        ) {
+            SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
+            return this.getTestOptionsForFullPackageTest(testOptions, sfpPackage, testCoverageOptions);
+        }
+
+        SFPLogger.log(`${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`);
+
+        testOptions = new RunSpecifiedTestsOption(
+            60,
+            '.testResults',
+            impactedTestClasses.join(),
+            sfpPackage.packageDescriptor.testSynchronous
+        );
+        testCoverageOptions = {
+            isIndividualClassCoverageToBeValidated: false,
+            isPackageCoverageToBeValidated: false,
+            coverageThreshold: 0,
+        };
+        return { testOptions, testCoverageOptions };
     }
 
     private displayTestHeader(sfpPackage: SfpPackage) {
@@ -405,7 +441,12 @@ export default class ValidateImpl implements PostDeployHook {
         // Construct map of artifact and associated commit Id
         installedArtifacts.forEach((artifact) => {
             packagesToCommits[artifact.Name] = artifact.CommitId__c;
+            //Override for debugging purposes
+            if (process.env.VALIDATE_OVERRIDE_PKG)
+                packagesToCommits[process.env.VALIDATE_OVERRIDE_PKG] = process.env.VALIDATE_PKG_COMMIT_ID;
         });
+
+        if (process.env.VALIDATE_REMOVE_PKG) delete packagesToCommits[process.env.VALIDATE_REMOVE_PKG];
 
         return packagesToCommits;
     }
