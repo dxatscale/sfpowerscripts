@@ -13,7 +13,7 @@
         "@oclif/command": "1.8.16",
         "@oclif/config": "1.18.3",
         "@oclif/errors": "^1.3.5",
-        "@oclif/plugin-help": "5.1.11",
+        "@oclif/plugin-help": "5.1.12",
         "@salesforce/command": "4.2.2",
         "@salesforce/core": "2.36.1",
         "adm-zip": "^0.5.4",
