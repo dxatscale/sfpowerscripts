@@ -414,7 +414,7 @@ export default class ValidateImpl implements PostDeployHook {
 
         if (generatedPackages.length === 0) {
             throw new Error(
-                `No changes detected in the packages to be built \n, validate will only execute if there is a change in atleast one of the packages`
+                `No changes detected in the packages to be built\nvalidate will only execute if there is a change in atleast one of the packages`
             );
         }
 

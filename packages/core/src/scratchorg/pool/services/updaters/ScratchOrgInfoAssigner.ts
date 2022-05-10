@@ -22,8 +22,8 @@ export default class ScratchOrgInfoAssigner {
 
     public async setScratchOrgStatus(username: string, status: 'Allocate'|'Available'|'InProgress'): Promise<boolean> {
 
-        let scratchOrgId = await (new ScratchOrgInfoFetcher(this.hubOrg)).getScratchOrgIdGivenUserName(username);
-
+        let scratchOrgId = await (new ScratchOrgInfoFetcher(this.hubOrg)).getScratchOrgInfoIdGivenUserName(username);
+        
         return this.setScratchOrgInfo({
             Id: scratchOrgId,
             Allocation_status__c: status,
