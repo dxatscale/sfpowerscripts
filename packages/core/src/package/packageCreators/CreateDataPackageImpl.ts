@@ -30,6 +30,10 @@ export default class CreateDataPackageImpl extends CreatePackage {
 
         let hasCsvFile = files.find((file) => path.extname(file) === '.csv');
 
+        let hasYAMLFile = files.find((file) => path.extname(file) === '.yaml'); //check for vlocity config
+
+        if(hasYAMLFile) return false;
+
         if (!hasExportJson || !hasCsvFile) return true;
         else return false;
     }
