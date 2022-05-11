@@ -3,7 +3,7 @@ import { EOL } from 'os';
 import { ApexSortedByType, FileDescriptor } from '../../apex/parser/ApexTypeFetcher';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import PackageEmptyChecker from '../PackageEmptyChecker';
-import SfpPackage, { SfpPackageParams } from '../SfpPackage';
+import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
 import { CreatePackage } from './CreatePackage';
 import { PackageCreationParams } from '../SfpPackageBuilder';
 const Table = require('cli-table');
@@ -20,7 +20,7 @@ export default class CreateSourcePackageImpl extends CreatePackage {
     }
 
     getTypeOfPackage() {
-        return 'source';
+        return PackageType.Source;
     }
 
     printAdditionalPackageSpecificHeaders() {}

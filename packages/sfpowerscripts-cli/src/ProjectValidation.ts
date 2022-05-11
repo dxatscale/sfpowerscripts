@@ -2,6 +2,7 @@ import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectCon
 import Ajv from 'ajv';
 import path = require('path');
 import * as fs from 'fs-extra';
+import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 
 export default class ProjectValidation {
     private readonly projectConfig;
@@ -38,7 +39,7 @@ export default class ProjectValidation {
             let packageType = ProjectConfig.getPackageType(this.projectConfig, pkg.package);
 
             let pattern: RegExp = /NEXT$|LATEST$/i;
-            if (pkg.versionNumber.match(pattern) && (packageType === 'Source' || packageType === 'Data')) {
+            if (pkg.versionNumber.match(pattern) && (packageType === PackageType.Source || packageType === PackageType.Data)) {
                 throw new Error(
                     'sfdx-project.json validation failed for package "' +
                         pkg['package'] +

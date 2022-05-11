@@ -1,6 +1,7 @@
 import { LoggerLevel, Org } from '@salesforce/core';
 let retry = require('async-retry');
 import SFPLogger from '../../../../logger/SFPLogger';
+import ScratchOrgInfoFetcher from '../fetchers/ScratchOrgInfoFetcher';
 
 export default class ScratchOrgInfoAssigner {
     constructor(private hubOrg: Org) {}
@@ -10,16 +11,22 @@ export default class ScratchOrgInfoAssigner {
 
         return retry(
             async (bail) => {
-                try {
+
                     let result = await hubConn.sobject('ScratchOrgInfo').update(soInfo);
                     SFPLogger.log('Setting Scratch Org Info:' + JSON.stringify(result), LoggerLevel.TRACE);
                     return result.constructor !== Array ? result.success : true;
-                } catch (err) {
-                    SFPLogger.log('Failure at setting ScratchOrg Info' + err, LoggerLevel.TRACE);
-                    return false;
-                }
             },
             { retries: 3, minTimeout: 3000 }
         );
+    }
+
+    public async setScratchOrgStatus(username: string, status: 'Allocate'|'Available'|'InProgress'): Promise<boolean> {
+
+        let scratchOrgId = await (new ScratchOrgInfoFetcher(this.hubOrg)).getScratchOrgInfoIdGivenUserName(username);
+        
+        return this.setScratchOrgInfo({
+            Id: scratchOrgId,
+            Allocation_status__c: status,
+        });
     }
 }

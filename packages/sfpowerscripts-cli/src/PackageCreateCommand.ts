@@ -7,7 +7,8 @@ import { EOL } from 'os';
 import SfpowerscriptsCommand from './SfpowerscriptsCommand';
 import simplegit from 'simple-git';
 import GitIdentity from './impl/git/GitIdentity';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create-package');
@@ -178,7 +179,7 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
     protected printPackageDetails(sfpPackage: SfpPackage) {
         console.log(
             COLOR_HEADER(
-                `${EOL}${sfpPackage.packageName} package created in ${this.getFormattedTime(
+                `${EOL}${sfpPackage.packageName} package created in ${getFormattedTime(
                     sfpPackage.creation_details.creation_time
                 )}`
             )
@@ -189,20 +190,23 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
             COLOR_KEY_MESSAGE(sfpPackage.package_version_number)
         );
 
-        if (sfpPackage.package_type !== 'data') {
-            if (sfpPackage.package_type == 'unlocked') {
-                console.log(
-                    COLOR_HEADER(`-- Package Version Id:             `),
-                    COLOR_KEY_MESSAGE(sfpPackage.package_version_id)
-                );
-                console.log(
-                    COLOR_HEADER(`-- Package Test Coverage:          `),
-                    COLOR_KEY_MESSAGE(sfpPackage.test_coverage)
-                );
-                console.log(
-                    COLOR_HEADER(`-- Package Coverage Check Passed:  `),
-                    COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check)
-                );
+        if (sfpPackage.package_type !== PackageType.Data) {
+            if (sfpPackage.package_type == PackageType.Unlocked) {
+                if (sfpPackage.package_version_id)
+                    console.log(
+                        COLOR_HEADER(`-- Package Version Id:             `),
+                        COLOR_KEY_MESSAGE(sfpPackage.package_version_id)
+                    );
+                if (sfpPackage.test_coverage)
+                    console.log(
+                        COLOR_HEADER(`-- Package Test Coverage:          `),
+                        COLOR_KEY_MESSAGE(sfpPackage.test_coverage)
+                    );
+                if (sfpPackage.has_passed_coverage_check)
+                    console.log(
+                        COLOR_HEADER(`-- Package Coverage Check Passed:  `),
+                        COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check)
+                    );
             }
 
             console.log(
@@ -214,20 +218,24 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
                 COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? 'Yes' : 'No')
             );
             console.log(COLOR_HEADER(`-- Metadata Count:         `), COLOR_KEY_MESSAGE(sfpPackage.metadataCount));
-            if(sfpPackage.diffPackageMetadata)
-            {
-              console.log(COLOR_HEADER(`-- Source Version From:         `), COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom));
-              console.log(COLOR_HEADER(`-- Source Version To:         `), COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo));
-              console.log(COLOR_HEADER(`-- Metadata Count for Diff Package:         `), COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.metadataCount));
-              console.log(COLOR_HEADER(`-- Apex Test Class Invalidated:         `), COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.invalidatedTestClasses?.length));
+            if (sfpPackage.diffPackageMetadata) {
+                console.log(
+                    COLOR_HEADER(`-- Source Version From:         `),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom)
+                );
+                console.log(
+                    COLOR_HEADER(`-- Source Version To:         `),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo)
+                );
+                console.log(
+                    COLOR_HEADER(`-- Metadata Count for Diff Package:         `),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.metadataCount)
+                );
+                console.log(
+                    COLOR_HEADER(`-- Apex Test Class Invalidated:         `),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.invalidatedTestClasses?.length)
+                );
             }
         }
-    }
-
-    protected getFormattedTime(milliseconds: number): string {
-        let date = new Date(0);
-        date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
-        let timeString = date.toISOString().substr(11, 8);
-        return timeString;
     }
 }

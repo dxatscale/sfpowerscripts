@@ -150,6 +150,19 @@ export default class ScratchOrgInfoFetcher {
         );
     }
 
+    public async getScratchOrgInfoIdGivenUserName(username: string) {
+        let conn = this.hubOrg.getConnection();
+        let query = `SELECT Id FROM ScratchOrgInfo WHERE SignupUsername = '${username}'`;
+        return retry(
+            async (bail) => {
+                SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
+                const results = (await conn.query(query)) as any;
+                return results.records[0].Id;
+            },
+            { retries: 3, minTimeout: 3000 }
+        );
+    }
+
     private arrayToObject = (array, keyfield) =>
         array.reduce((obj, item) => {
             obj[item[keyfield]] = item;

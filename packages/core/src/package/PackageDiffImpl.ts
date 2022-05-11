@@ -7,6 +7,7 @@ import ProjectConfig from '../project/ProjectConfig';
 import GitTags from '../git/GitTags';
 import lodash = require('lodash');
 import { EOL } from 'os';
+import { PackageType } from './SfpPackage';
 
 export default class PackageDiffImpl {
     public constructor(
@@ -44,7 +45,7 @@ export default class PackageDiffImpl {
 
             let packageType: string = ProjectConfig.getPackageType(projectConfig, this.sfdx_package);
 
-            if (packageType !== 'Data') modified_files = this.applyForceIgnoreToModifiedFiles(modified_files);
+            if (packageType !== PackageType.Data) modified_files = this.applyForceIgnoreToModifiedFiles(modified_files);
 
             SFPLogger.log(
                 `Checking for changes in source directory ${path.normalize(pkgDescriptor.path)}`,

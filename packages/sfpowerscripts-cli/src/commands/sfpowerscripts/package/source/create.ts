@@ -2,7 +2,7 @@ import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import PackageCreateCommand from '../../../../PackageCreateCommand';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 Messages.importMessagesDirectory(__dirname);
@@ -76,7 +76,7 @@ export default class CreateSourcePackage extends PackageCreateCommand {
             null,
             this.sfdxPackage,
             {
-                overridePackageTypeWith: 'source',
+                overridePackageTypeWith: PackageType.Source,
                 packageVersionNumber: this.versionNumber,
                 sourceVersion: this.commitId,
                 repositoryUrl: this.repositoryURL,

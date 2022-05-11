@@ -31,6 +31,13 @@ export default class ArtifactGenerator {
 
             let sourcePackage: string = path.join(artifactFilepath, `source`);
             fs.mkdirpSync(sourcePackage);
+
+            //Clean up temp directory
+            if (fs.existsSync(path.join(sfpPackage.workingDirectory, '.sfpowerscripts')))
+                rimraf.sync(path.join(sfpPackage.workingDirectory, '.sfpowerscripts'));
+            if (fs.existsSync(path.join(sfpPackage.workingDirectory, '.sfdx')))
+                rimraf.sync(path.join(sfpPackage.workingDirectory, '.sfdx'));
+
             fs.copySync(sfpPackage.workingDirectory, sourcePackage);
             rimraf.sync(sfpPackage.workingDirectory);
 
@@ -42,10 +49,11 @@ export default class ArtifactGenerator {
             fs.writeFileSync(artifactMetadataFilePath, JSON.stringify(sfpPackage, null, 4));
 
             // Generate package changelog
+            // Doesnt need a from version number, as it always generate from start
             let generatePackageChangelog: GeneratePackageChangelog = new GeneratePackageChangelog(
                 sfpPackage.packageName,
-                sfpPackage.sourceVersionFrom,
-                sfpPackage.sourceVersionTo ? sfpPackage.sourceVersionTo : sfpPackage.sourceVersion,
+                undefined,
+                sfpPackage.sourceVersion,
                 project_directory
             );
 

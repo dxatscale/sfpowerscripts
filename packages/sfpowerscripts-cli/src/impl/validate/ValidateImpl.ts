@@ -4,7 +4,6 @@ import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../de
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import { Stage } from '../Stage';
 import SFPLogger, { ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import fs = require('fs');
 import InstallPackageDependenciesImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl';
 import {
     PackageInstallationResult,
@@ -27,11 +26,12 @@ import { COLOR_SUCCESS } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogg
 import { COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import ScratchOrgInfoFetcher from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher';
+import ScratchOrgInfoAssigner from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/updaters/ScratchOrgInfoAssigner';
 import Component from '@dxatscale/sfpowerscripts.core/lib/dependency/Component';
 import ValidateResult from './ValidateResult';
 import PoolOrgDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import { TestOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import {
     RunAllTestsInPackageOptions,
@@ -76,6 +76,7 @@ export default class ValidateImpl implements PostDeployHook {
     public async exec(): Promise<ValidateResult> {
         rimraf.sync('artifacts');
 
+        let deploymentResult: DeploymentResult;
         let scratchOrgUsername: string;
         try {
             if (this.props.validateMode === ValidateMode.ORG) {
@@ -107,7 +108,7 @@ export default class ValidateImpl implements PostDeployHook {
 
             await this.buildChangedSourcePackages(packagesToCommits);
 
-            let deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
+            deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
             if (deploymentResult.failed.length > 0 || deploymentResult.error)
                 throw new ValidateError('Validation failed', { deploymentResult });
@@ -121,12 +122,7 @@ export default class ValidateImpl implements PostDeployHook {
 
             return null;
         } finally {
-            if (this.props.isDeleteScratchOrg) {
-                await this.deleteScratchOrg(scratchOrgUsername);
-            } else {
-                fs.writeFileSync('.env', `sfpowerscripts_scratchorg_username=${scratchOrgUsername}\n`, { flag: 'a' });
-                console.log(`sfpowerscripts_scratchorg_username=${scratchOrgUsername}`);
-            }
+            await this.handleScratchOrgStatus(scratchOrgUsername, deploymentResult, this.props.isDeleteScratchOrg);
         }
     }
 
@@ -211,16 +207,38 @@ export default class ValidateImpl implements PostDeployHook {
         this.printClosingLoggingGroup();
     }
 
-    private async deleteScratchOrg(scratchOrgUsername: string) {
-        try {
-            if (scratchOrgUsername && this.props.hubOrg.getUsername()) {
-                console.log(`Deleting scratch org`, scratchOrgUsername);
-                let poolOrgDeleteImpl = new PoolOrgDeleteImpl(this.props.hubOrg, scratchOrgUsername);
-                await poolOrgDeleteImpl.execute();
+    private async handleScratchOrgStatus(
+        scratchOrgUsername: string,
+        deploymentResult: DeploymentResult,
+        isToDelete: boolean
+    ) {
+        //No scratch org available.. just return
+        if (scratchOrgUsername == undefined) return;
+
+        if (isToDelete) {
+            //If deploymentResult is not available, or there is 0 packages deployed, we can reuse the org
+            if (!deploymentResult || deploymentResult.deployed.length == 0) {
+                SFPLogger.log(`Attempting to return scratch org ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
+                let scratchOrgInfoAssigner = new ScratchOrgInfoAssigner(this.props.hubOrg);
+                let result = await scratchOrgInfoAssigner.setScratchOrgStatus(scratchOrgUsername, 'Available');
+                if (result) SFPLogger.log(`Succesfully returned ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
+                else console.log(COLOR_WARNING(`Unable to update status of scratch org,Please check permissions`));
+            } else {
+                try {
+                    if (scratchOrgUsername && this.props.hubOrg.getUsername()) {
+                        await this.deleteScratchOrg(this.props.hubOrg, scratchOrgUsername);
+                    }
+                } catch (error) {
+                    console.log(COLOR_WARNING(error.message));
+                }
             }
-        } catch (error) {
-            console.log(COLOR_WARNING(error.message));
         }
+    }
+
+    private async deleteScratchOrg(hubOrg: Org, scratchOrgUsername: string) {
+        console.log(`Deleting scratch org`, scratchOrgUsername);
+        let poolOrgDeleteImpl = new PoolOrgDeleteImpl(hubOrg, scratchOrgUsername);
+        await poolOrgDeleteImpl.execute();
     }
 
     private deployShapeFile(shapeFile: string, scratchOrgUsername: string): void {
@@ -276,44 +294,20 @@ export default class ValidateImpl implements PostDeployHook {
 
         let testOptions: TestOptions, testCoverageOptions: CoverageOptions;
 
-        if (!this.props.isFastFeedbackMode) {
-            this.displayTestHeader(sfpPackage);
-            testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
-            testCoverageOptions = {
-                isIndividualClassCoverageToBeValidated: false,
-                isPackageCoverageToBeValidated: !sfpPackage.packageDescriptor.skipCoverageValidation,
-                coverageThreshold: this.props.coverageThreshold || 75,
-            };
+        this.displayTestHeader(sfpPackage);
+
+        if (this.props.isFastFeedbackMode) {
+            ({ testOptions, testCoverageOptions } = this.getTestOptionsForFastFeedBackPackage(
+                testOptions,
+                sfpPackage,
+                testCoverageOptions
+            ));
         } else {
-          
-
-            let impactedTestClasses = sfpPackage.diffPackageMetadata?.invalidatedTestClasses;
-            if (!impactedTestClasses || impactedTestClasses.length == 0)
-                return { id: null, result: true, message: 'No Apex Classes were impacted, Skipping Tests' };
-
-            this.displayTestHeader(sfpPackage);
-            SFPLogger.log(
-                `${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`
-            );
-
-            if(sfpPackage.diffPackageMetadata?.isProfilesFound
-                || sfpPackage.diffPackageMetadata?.isPermissionSetFound
-                || sfpPackage.diffPackageMetadata?.isPermissionSetGroupFound)
-                SFPLogger.log(
-                    `${COLOR_HEADER('Change in security model, all test classses will be triggered')}`
-                );
-
-            testOptions = new RunSpecifiedTestsOption(
-                60,
-                '.testResults',
-                impactedTestClasses.join(),
-                sfpPackage.packageDescriptor.testSynchronous
-            );
-            testCoverageOptions = {
-                isIndividualClassCoverageToBeValidated: false,
-                isPackageCoverageToBeValidated: false,
-                coverageThreshold: 0,
-            };
+            ({ testOptions, testCoverageOptions } = this.getTestOptionsForFullPackageTest(
+                testOptions,
+                sfpPackage,
+                testCoverageOptions
+            ));
         }
 
         let triggerApexTests: TriggerApexTests = new TriggerApexTests(
@@ -325,6 +319,64 @@ export default class ValidateImpl implements PostDeployHook {
         );
 
         return triggerApexTests.exec();
+    }
+
+    private getTestOptionsForFullPackageTest(
+        testOptions: TestOptions,
+        sfpPackage: SfpPackage,
+        testCoverageOptions: CoverageOptions
+    ) {
+        testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
+        testCoverageOptions = {
+            isIndividualClassCoverageToBeValidated: false,
+            isPackageCoverageToBeValidated: !sfpPackage.packageDescriptor.skipCoverageValidation,
+            coverageThreshold: this.props.coverageThreshold || 75,
+        };
+        return { testOptions, testCoverageOptions };
+    }
+
+    private getTestOptionsForFastFeedBackPackage(
+        testOptions: TestOptions,
+        sfpPackage: SfpPackage,
+        testCoverageOptions: CoverageOptions
+    ) {
+        let impactedTestClasses = sfpPackage.diffPackageMetadata?.invalidatedTestClasses;
+
+        //No impacted test class available
+        if (!impactedTestClasses || impactedTestClasses.length == 0) {
+            SFPLogger.log(
+                `${COLOR_HEADER(
+                    'Unable to find impacted test classses or all package is changed, triggering all test classes'
+                )}`
+            );
+            if (sfpPackage.isApexFound)
+                return this.getTestOptionsForFullPackageTest(testOptions, sfpPackage, testCoverageOptions);
+        }
+
+        //Change in security model trigger full
+        if (
+            sfpPackage.diffPackageMetadata?.isProfilesFound ||
+            sfpPackage.diffPackageMetadata?.isPermissionSetFound ||
+            sfpPackage.diffPackageMetadata?.isPermissionSetGroupFound
+        ) {
+            SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
+            return this.getTestOptionsForFullPackageTest(testOptions, sfpPackage, testCoverageOptions);
+        }
+
+        SFPLogger.log(`${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`);
+
+        testOptions = new RunSpecifiedTestsOption(
+            60,
+            '.testResults',
+            impactedTestClasses.join(),
+            sfpPackage.packageDescriptor.testSynchronous
+        );
+        testCoverageOptions = {
+            isIndividualClassCoverageToBeValidated: false,
+            isPackageCoverageToBeValidated: false,
+            coverageThreshold: 0,
+        };
+        return { testOptions, testCoverageOptions };
     }
 
     private displayTestHeader(sfpPackage: SfpPackage) {
@@ -351,7 +403,7 @@ export default class ValidateImpl implements PostDeployHook {
             isBuildAllAsSourcePackages: true,
             packagesToCommits: packagesToCommits,
             currentStage: Stage.VALIDATE,
-            baseBranch: this.props.baseBranch
+            baseBranch: this.props.baseBranch,
         };
 
         let buildImpl: BuildImpl = new BuildImpl(buildProps);
@@ -362,7 +414,7 @@ export default class ValidateImpl implements PostDeployHook {
 
         if (generatedPackages.length === 0) {
             throw new Error(
-                `No changes detected in the packages to be built \n, validate will only execute if there is a change in atleast one of the packages`
+                `No changes detected in the packages to be built\nvalidate will only execute if there is a change in atleast one of the packages`
             );
         }
 
@@ -389,7 +441,12 @@ export default class ValidateImpl implements PostDeployHook {
         // Construct map of artifact and associated commit Id
         installedArtifacts.forEach((artifact) => {
             packagesToCommits[artifact.Name] = artifact.CommitId__c;
+            //Override for debugging purposes
+            if (process.env.VALIDATE_OVERRIDE_PKG)
+                packagesToCommits[process.env.VALIDATE_OVERRIDE_PKG] = process.env.VALIDATE_PKG_COMMIT_ID;
         });
+
+        if (process.env.VALIDATE_REMOVE_PKG) delete packagesToCommits[process.env.VALIDATE_REMOVE_PKG];
 
         return packagesToCommits;
     }
@@ -523,7 +580,7 @@ export default class ValidateImpl implements PostDeployHook {
         devhubUserName?: string
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Trigger Tests after installation of each package
-        if (sfpPackage.packageType && sfpPackage.packageType != 'data') {
+        if (sfpPackage.packageType && sfpPackage.packageType != PackageType.Data) {
             if (packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
                 //Get Changed Components
                 let testResult = await this.triggerApexTests(sfpPackage, targetUsername, this.logger);

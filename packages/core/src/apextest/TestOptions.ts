@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import * as _ from 'lodash';
 import SfpPackage from '../package/SfpPackage';
 
 export class TestOptions {

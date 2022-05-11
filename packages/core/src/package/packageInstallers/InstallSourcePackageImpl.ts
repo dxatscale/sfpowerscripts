@@ -14,22 +14,21 @@ import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
-import SfpPackage from '../SfpPackage';
+import SfpPackage, { PackageType } from '../SfpPackage';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
-
     private pathToReplacementForceIgnore: string;
     private deploymentType: DeploymentType;
 
-    private isDiffFolderAvailable;
+    private isDiffFolderAvailable: boolean;
 
     public constructor(
         sfpPackage: SfpPackage,
         targetusername: string,
         options: SfpPackageInstallationOptions,
-        logger: Logger,
+        logger: Logger
     ) {
-        super(sfpPackage, targetusername, logger,options);
+        super(sfpPackage, targetusername, logger, options);
         this.options = options;
         this.pathToReplacementForceIgnore = options.pathToReplacementForceIgnore;
         this.deploymentType = options.deploymentType;
@@ -90,6 +89,9 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 );
 
                 result = await pushSourceToOrgImpl.exec();
+                if (result.result == false) {
+                    throw new Error(`Pushing package ${this.sfpPackage.packageName} failed with following error ${result.message}`);
+                }
             } else {
                 //Construct Deploy Command for actual payload
                 deploymentOptions = await this.generateDeploymentOptions(
@@ -245,19 +247,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     }
 
     private isAllTestsToBeTriggered(sfpPackage: SfpPackage) {
-        if (sfpPackage.package_type == 'delta') {
-            SFPLogger.log(
-                ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT---------------------------------------------${EOL}` +
-                    `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
-                    `75% test coverage, However being a dynamically generated delta package, we will deploying via triggering all local tests${EOL}` +
-                    `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}` +
-                    `-------------------------------------------------------------------------------------------------------------`,
-                LoggerLevel.INFO,
-                this.logger
-            );
-            return true;
-        } else if (
-            this.sfpPackage.package_type == 'source' &&
+        if (
+            this.sfpPackage.packageType == PackageType.Source &&
             this.sfpPackage.isApexFound == true &&
             this.sfpPackage.apexTestClassses == null
         ) {
@@ -319,8 +310,10 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     ) {
         //if no profile supported metadata, no point in
         //doing a reconcile
-        let packageManifest = await PackageManifest.createWithJSONManifest(this.sfpPackage.payload);
-        if (!packageManifest.isPayLoadContainTypesSupportedByProfiles()) return;
+
+        if (!this.sfpPackage.isProfilesFound) return;
+
+        if (this.isDiffFolderAvailable && !this.sfpPackage.isProfilesFound) return;
 
         if (profileFolders.length > 0) {
             profileFolders.forEach((folder) => {

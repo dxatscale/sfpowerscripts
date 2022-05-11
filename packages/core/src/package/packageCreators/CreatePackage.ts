@@ -1,6 +1,6 @@
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_WARNING, Logger, LoggerLevel } from '../../logger/SFPLogger';
 import SFPStatsSender from '../../stats/SFPStatsSender';
-import SfpPackage, { SfpPackageParams } from '../SfpPackage';
+import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
 import { PackageCreationParams } from '../SfpPackageBuilder';
 
 export abstract class CreatePackage {
@@ -54,7 +54,7 @@ export abstract class CreatePackage {
             timestamp: Date.now(),
         };
 
-        if (this.getTypeOfPackage() === 'source' || this.getTypeOfPackage() === 'unlocked')
+        if (this.getTypeOfPackage() === PackageType.Source || this.getTypeOfPackage() === PackageType.Unlocked)
             SFPStatsSender.logGauge('package.metadatacount', this.sfpPackage.metadataCount, {
                 package: this.sfpPackage.package_name,
                 type: this.sfpPackage.package_type,

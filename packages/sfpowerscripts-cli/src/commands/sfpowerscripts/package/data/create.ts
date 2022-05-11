@@ -3,7 +3,7 @@ import { Messages } from '@salesforce/core';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import PackageCreateCommand from '../../../../PackageCreateCommand';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 Messages.importMessagesDirectory(__dirname);
@@ -76,8 +76,8 @@ export default class CreateDataPackage extends PackageCreateCommand {
 
     protected async create(): Promise<SfpPackage> {
         let packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(null, this.sfdxPackage);
-        if (packageDescriptor.type?.toLowerCase() !== 'data') {
-            throw new Error("Data packages must have 'type' property of 'data' defined in sfdx-project.json");
+        if (packageDescriptor.type?.toLowerCase() !== PackageType.Data) {
+            throw new Error("Data packages must have 'type' property of PackageType.Data defined in sfdx-project.json");
         }
 
         let sfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(

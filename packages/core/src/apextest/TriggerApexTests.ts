@@ -416,9 +416,11 @@ export default class TriggerApexTests {
                 );
 
                 //Replace original code coverage
-                modifiedTestResult.codecoverage = modifiedTestResult.codecoverage.map(
-                    (obj) => secondTestResult.codecoverage.find((o) => o.name === obj.name) || obj
-                );
+                if (isCoverageToBeFetched) {
+                    modifiedTestResult.codecoverage = modifiedTestResult.codecoverage.map(
+                        (obj) => secondTestResult.codecoverage.find((o) => o.name === obj.name) || obj
+                    );
+                }
 
                 //Now redo the math
                 modifiedTestResult = this.combineTestResult(modifiedTestResult, secondRuntestRunResult);

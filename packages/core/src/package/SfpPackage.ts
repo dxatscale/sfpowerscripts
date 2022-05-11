@@ -13,8 +13,6 @@ class PackageInfo {
     has_passed_coverage_check?: boolean;
     repository_url?: string;
     sourceVersion?: string;
-    sourceVersionFrom?: string;
-    sourceVersionTo?: string;
     branch?: string;
     apextestsuite?: string;
     isApexFound?: boolean;
@@ -71,7 +69,7 @@ export default class SfpPackage extends PackageInfo {
     }
 
     public get packageType(): string {
-        return this.package_type;
+        return this.package_type.toLocaleLowerCase();
     }
 
     public set packageType(packageType: string) {
@@ -97,6 +95,13 @@ export default class SfpPackage extends PackageInfo {
         delete castToPackageMetadata.isTriggerAllTests;
         return castToPackageMetadata;
     }
+}
+
+export enum PackageType
+{
+   Unlocked = "unlocked",
+   Source = "source",
+   Data =  "data"
 }
 
 export interface DiffPackageMetadata {
