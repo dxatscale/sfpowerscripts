@@ -89,6 +89,9 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 );
 
                 result = await pushSourceToOrgImpl.exec();
+                if (result.result == false) {
+                    throw new Error(`Pushing package ${this.sfpPackage.packageName} failed with following error ${result.message}`);
+                }
             } else {
                 //Construct Deploy Command for actual payload
                 deploymentOptions = await this.generateDeploymentOptions(
