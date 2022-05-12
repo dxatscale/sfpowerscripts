@@ -1,7 +1,7 @@
 import BatchingTopoSort from './BatchingTopoSort';
 import DependencyHelper from './DependencyHelper';
 import Bottleneck from 'bottleneck';
-import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
+import PackageDiffImpl, {PackageDiffOptions} from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
 import simplegit from 'simple-git';
 import IncrementProjectBuildNumberImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl';
 import { EOL } from 'os';
@@ -39,6 +39,7 @@ export interface BuildProps {
     packagesToCommits?: { [p: string]: string };
     currentStage: Stage;
     baseBranch?: string;
+    diffOptions?:PackageDiffOptions
 }
 export default class BuildImpl {
     private limiter: Bottleneck;
@@ -211,7 +212,8 @@ export default class BuildImpl {
                 pkg,
                 this.props.projectDirectory,
                 this.props.packagesToCommits,
-                this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage)
+                this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage),
+                this.props.diffOptions
             );
             let packageDiffCheck = await diffImpl.exec();
 
