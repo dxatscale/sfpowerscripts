@@ -104,9 +104,7 @@ export default class Validate extends SfpowerscriptsCommand {
             default: false,
         }),
         fastfeedback: flags.boolean({
-            hidden: true,
             description: messages.getMessage('fastfeedbackFlagDescription'),
-            dependsOn: ['basebranch'],
         }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
@@ -143,7 +141,11 @@ export default class Validate extends SfpowerscriptsCommand {
 
         SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`validate`)}`));
         SFPLogger.log(COLOR_HEADER(`Pools being used: ${this.flags.pools}`));
-        SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
+        if (this.flags.fastfeedback) SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Fast Feedback`)}`));
+        else {
+            SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Thorough`)}`));
+            SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
+        }
         SFPLogger.log(
             COLOR_HEADER(`Dependency Validation: ${this.flags.enabledependencyvalidation ? 'true' : 'false'}`)
         );
