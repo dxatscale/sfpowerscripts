@@ -9,13 +9,18 @@ import lodash = require('lodash');
 import { EOL } from 'os';
 import { PackageType } from './SfpPackage';
 
+export class PackageDiffOptions {
+    skipPackageDescriptorChange: boolean = false;
+}
+
 export default class PackageDiffImpl {
     public constructor(
         private logger: Logger,
         private sfdx_package: string,
         private project_directory: string,
         private packagesToCommits?: { [p: string]: string },
-        private pathToReplacementForceIgnore?: string
+        private pathToReplacementForceIgnore?: string,
+        private diffOptions?: PackageDiffOptions
     ) {}
 
     public async exec(): Promise<{ isToBeBuilt: boolean; reason: string; tag?: string }> {
@@ -123,7 +128,12 @@ export default class PackageDiffImpl {
 
         if (!lodash.isEqual(packageDescriptor, packageDescriptorFromLatestTag)) {
             SFPLogger.log(`Found change in ${this.sfdx_package} package descriptor`, LoggerLevel.INFO, this.logger);
-            return true;
+
+            //skip check and ignore
+            if (this.diffOptions?.skipPackageDescriptorChange) {
+                SFPLogger.log(`Ignoring changes in package desriptor as asked to..`, LoggerLevel.INFO, this.logger);
+                return false;
+            } else return true;
         } else return false;
     }
 

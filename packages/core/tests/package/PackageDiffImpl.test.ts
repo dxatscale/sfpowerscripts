@@ -89,6 +89,19 @@ describe('Determines whether a given package has changed', () => {
         expect(result.reason).toEqual(`Package Descriptor Changed`);
     });
 
+    it('should return false even if package descriptor has changed when asked to ignore ', async () => {
+      gitTags = coreTags;
+      gitDiff = ['sfdx-project.json'];
+      gitShow = packageDescriptorChange;
+
+      // Assume passthrough filter for ignore
+      ignoreFilterResult = gitDiff;
+
+      let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null,null,{skipPackageDescriptorChange:true});
+      let result = await packageDiffImpl.exec();
+      expect(result.isToBeBuilt).toEqual(false);
+  });
+
     it('should return false if only config file has changed', async () => {
         gitDiff = ['config/project-scratch-def.json'];
 

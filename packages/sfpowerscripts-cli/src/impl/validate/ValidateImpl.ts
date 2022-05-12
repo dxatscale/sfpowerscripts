@@ -9,6 +9,7 @@ import {
     PackageInstallationResult,
     PackageInstallationStatus,
 } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
+import  {PackageDiffOptions} from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
 import PoolFetchImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl';
 import { Org } from '@salesforce/core';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
@@ -405,6 +406,14 @@ export default class ValidateImpl implements PostDeployHook {
             currentStage: Stage.VALIDATE,
             baseBranch: this.props.baseBranch,
         };
+
+        //In fast feedback ignore package descriptor changes
+        if(this.props.isFastFeedbackMode)
+        {
+            let diffOptions:PackageDiffOptions = new PackageDiffOptions();
+            diffOptions.skipPackageDescriptorChange = true;
+            buildProps.diffOptions = diffOptions;
+        }
 
         let buildImpl: BuildImpl = new BuildImpl(buildProps);
 
