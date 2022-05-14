@@ -245,7 +245,7 @@ describe('Given a sfdx package, build a sfpowerscripts package', () => {
             versionName: 'core',
             versionNumber: '1.0.0.0',
         });
-        expect(sfpPackage.isProfileSupportedMetadataInPackage).toStrictEqual(false);
+        expect(sfpPackage.isPayLoadContainTypesSupportedByProfiles).toStrictEqual(false);
     });
 });
 

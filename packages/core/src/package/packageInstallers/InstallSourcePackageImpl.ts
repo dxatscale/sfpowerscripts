@@ -9,7 +9,6 @@ const glob = require('glob');
 const { EOL } = require('os');
 const tmp = require('tmp');
 import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
-import PackageManifest from '../PackageManifest';
 import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import PackageEmptyChecker from '../PackageEmptyChecker';
@@ -42,8 +41,10 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         let tempDir = tmpDirObj.name;
 
         try {
+            //TODO: This has to move to create package
             this.sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(this.sfpPackage);
 
+            //Handle the right force ignore file
             this.handleForceIgnores();
 
             // Apply Destructive Manifest
@@ -53,32 +54,16 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
             //Apply Reconcile if Profiles are found
             //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata
-            let isReconcileActivated = false,
-                isReconcileErrored = false;
+            let isReconcileActivated = false;
+            let isReconcileErrored = false;
             let profileFolders;
-            if (this.sfpPackage.isProfilesFound && this.sfpPackage.reconcileProfiles !== false) {
-                ({
-                    profileFolders,
-                    isReconcileActivated,
-                    isReconcileErrored,
-                } = await this.reconcileProfilesBeforeDeployment(
-                    profileFolders,
-                    this.sfpPackage.sourceDir,
-                    this.targetusername,
-                    tempDir
-                ));
-
-                //Reconcile Failed, Bring back the original profiles
-                if (isReconcileErrored && profileFolders.length > 0) {
-                    SFPLogger.log('Restoring original profiles as preprocessing failed', LoggerLevel.INFO, this.logger);
-                    profileFolders.forEach((folder) => {
-                        fs.copySync(path.join(tempDir, folder), path.join(this.sfpPackage.sourceDir, folder));
-                    });
-                }
-            }
+            ({
+                profileFolders,
+                isReconcileActivated,
+                isReconcileErrored,
+            } = await this.reconcileProfilesBeforeDeployment(this.sfpPackage.sourceDir, this.targetusername, tempDir));
 
             let deploymentOptions: DeploymentOptions;
-
             let result: DeploySourceResult;
             if (this.deploymentType === DeploymentType.SOURCE_PUSH) {
                 let pushSourceToOrgImpl: DeploymentExecutor = new PushSourceToOrgImpl(
@@ -90,7 +75,9 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
                 result = await pushSourceToOrgImpl.exec();
                 if (result.result == false) {
-                    throw new Error(`Pushing package ${this.sfpPackage.packageName} failed with following error ${result.message}`);
+                    throw new Error(
+                        `Pushing package ${this.sfpPackage.packageName} failed with following error ${result.message}`
+                    );
                 }
             } else {
                 //Construct Deploy Command for actual payload
@@ -266,16 +253,28 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         } else return false;
     }
 
-    private async reconcileProfilesBeforeDeployment(
-        profileFolders: any,
-        sourceDirectoryPath: string,
-        target_org: string,
-        tempDir: string
-    ) {
+    private async reconcileProfilesBeforeDeployment(sourceDirectoryPath: string, target_org: string, tempDir: string) {
+        let profileFolders: any;
         let isReconcileActivated: boolean = false;
         let isReconcileErrored: boolean = false;
         try {
-            SFPLogger.log('Attempting reconcile to profiles', LoggerLevel.INFO, this.logger);
+            //Hard exit.. no reconcile set in orchestrator
+            if (this.sfpPackage.reconcileProfiles == false) return { isReconcileActivated: false };
+
+            //Handle diff for fastfeedback
+            if (this.sfpPackage.isProfilesFound) {
+                if (this.isDiffFolderAvailable) {
+                    if (this.sfpPackage.diffPackageMetadata?.isProfilesFound == false)
+                        return { isReconcileActivated: false };
+                    else {
+                        sourceDirectoryPath = path.join(sourceDirectoryPath, 'diff');
+                    }
+                }
+            } else {
+                return { isReconcileActivated: false };
+            }
+
+            SFPLogger.log('Attempting reconcile to profiles as payload contain profiles', LoggerLevel.INFO, this.logger);
             //copy the original profiles to temporary location
             profileFolders = glob.sync('**/profiles', {
                 cwd: path.join(sourceDirectoryPath),
@@ -296,6 +295,12 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         } catch (err) {
             SFPLogger.log('Failed to reconcile profiles:' + err, LoggerLevel.INFO, this.logger);
             isReconcileErrored = true;
+            if (profileFolders.length > 0) {
+                SFPLogger.log('Restoring original profiles as preprocessing failed', LoggerLevel.INFO, this.logger);
+                profileFolders.forEach((folder) => {
+                    fs.copySync(path.join(tempDir, folder), path.join(this.sfpPackage.sourceDir, folder));
+                });
+            }
         }
         return { profileFolders, isReconcileActivated, isReconcileErrored };
     }
@@ -311,11 +316,21 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         //if no profile supported metadata, no point in
         //doing a reconcile
 
-        if (!this.sfpPackage.isProfilesFound) return;
+        //Handle diff for fastfeedback
+        if (this.isDiffFolderAvailable) {
+            if (this.sfpPackage.diffPackageMetadata?.isProfilesFound == false) return;
+            if (this.sfpPackage.diffPackageMetadata?.isPayLoadContainTypesSupportedByProfiles == false) return;
 
-        if (this.isDiffFolderAvailable && !this.sfpPackage.isProfilesFound) return;
+            if (this.sfpPackage.diffPackageMetadata?.isProfilesFound) {
+                sourceDirectoryPath = path.join(sourceDirectoryPath, 'diff');
+            }
+        } else {
+            if (this.sfpPackage.isProfilesFound == false) return;
+            if (this.sfpPackage.isPayLoadContainTypesSupportedByProfiles == false) return;
+        }
 
         if (profileFolders.length > 0) {
+            SFPLogger.log(`Restoring original profiles for reconcile and deploy`, LoggerLevel.INFO, this.logger);
             profileFolders.forEach((folder) => {
                 fs.copySync(path.join(tmpdir, folder), path.join(sourceDirectoryPath, folder));
             });
@@ -323,7 +338,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             //Now Reconcile
             let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
                 target_org,
-                path.join(sourceDirectoryPath),
+                sourceDirectoryPath,
                 this.logger
             );
             await reconcileProfileAgainstOrg.exec();
