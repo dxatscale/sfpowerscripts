@@ -111,7 +111,7 @@ RUN cd $HOME/sfpowerkit \
 RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.8.0
 RUN echo 'y' | sfdx plugins:install apexlink@2.3.2
 RUN echo 'y' | sfdx plugins:install sfdmu@4.13.0
-RUN echo 'y' | sfdx plugins:install sfpowerkit@4.2.5
+RUN echo 'y' | sfdx plugins:install sfpowerkit@4.2.7
 
 
 
