@@ -9,7 +9,7 @@ import {
     PackageInstallationResult,
     PackageInstallationStatus,
 } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import  {PackageDiffOptions} from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
+import { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
 import PoolFetchImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl';
 import { Org } from '@salesforce/core';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
@@ -298,17 +298,10 @@ export default class ValidateImpl implements PostDeployHook {
         this.displayTestHeader(sfpPackage);
 
         if (this.props.isFastFeedbackMode) {
-            ({ testOptions, testCoverageOptions } = this.getTestOptionsForFastFeedBackPackage(
-                testOptions,
-                sfpPackage,
-                testCoverageOptions
-            ));
+            ({ testOptions, testCoverageOptions } = this.getTestOptionsForFastFeedBackPackage(sfpPackage));
+            if (testOptions == undefined) return { id: null, result: true, message: 'No Tests To Run' };
         } else {
-            ({ testOptions, testCoverageOptions } = this.getTestOptionsForFullPackageTest(
-                testOptions,
-                sfpPackage,
-                testCoverageOptions
-            ));
+            ({ testOptions, testCoverageOptions } = this.getTestOptionsForFullPackageTest(sfpPackage));
         }
 
         let triggerApexTests: TriggerApexTests = new TriggerApexTests(
@@ -323,12 +316,10 @@ export default class ValidateImpl implements PostDeployHook {
     }
 
     private getTestOptionsForFullPackageTest(
-        testOptions: TestOptions,
-        sfpPackage: SfpPackage,
-        testCoverageOptions: CoverageOptions
-    ) {
-        testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
-        testCoverageOptions = {
+        sfpPackage: SfpPackage
+    ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
+        let testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
+        let testCoverageOptions = {
             isIndividualClassCoverageToBeValidated: false,
             isPackageCoverageToBeValidated: !sfpPackage.packageDescriptor.skipCoverageValidation,
             coverageThreshold: this.props.coverageThreshold || 75,
@@ -337,23 +328,8 @@ export default class ValidateImpl implements PostDeployHook {
     }
 
     private getTestOptionsForFastFeedBackPackage(
-        testOptions: TestOptions,
-        sfpPackage: SfpPackage,
-        testCoverageOptions: CoverageOptions
-    ) {
-        let impactedTestClasses = sfpPackage.diffPackageMetadata?.invalidatedTestClasses;
-
-        //No impacted test class available
-        if (!impactedTestClasses || impactedTestClasses.length == 0) {
-            SFPLogger.log(
-                `${COLOR_HEADER(
-                    'Unable to find impacted test classses or all package is changed, triggering all test classes'
-                )}`
-            );
-            if (sfpPackage.isApexFound)
-                return this.getTestOptionsForFullPackageTest(testOptions, sfpPackage, testCoverageOptions);
-        }
-
+        sfpPackage: SfpPackage
+    ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
         //Change in security model trigger full
         if (
             sfpPackage.diffPackageMetadata?.isProfilesFound ||
@@ -361,18 +337,30 @@ export default class ValidateImpl implements PostDeployHook {
             sfpPackage.diffPackageMetadata?.isPermissionSetGroupFound
         ) {
             SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
-            return this.getTestOptionsForFullPackageTest(testOptions, sfpPackage, testCoverageOptions);
+            return this.getTestOptionsForFullPackageTest(sfpPackage);
+        }
+
+        let impactedTestClasses = sfpPackage.diffPackageMetadata?.invalidatedTestClasses;
+
+        //No impacted test class available
+        if (!impactedTestClasses || impactedTestClasses.length == 0) {
+            SFPLogger.log(
+                `${COLOR_HEADER(
+                    'Unable to find any impacted test classses,skipping tests, You might need to use thorough option'
+                )}`
+            );
+            return { testOptions: undefined, testCoverageOptions: undefined };
         }
 
         SFPLogger.log(`${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`);
 
-        testOptions = new RunSpecifiedTestsOption(
+        let testOptions = new RunSpecifiedTestsOption(
             60,
             '.testResults',
             impactedTestClasses.join(),
             sfpPackage.packageDescriptor.testSynchronous
         );
-        testCoverageOptions = {
+        let testCoverageOptions = {
             isIndividualClassCoverageToBeValidated: false,
             isPackageCoverageToBeValidated: false,
             coverageThreshold: 0,
@@ -408,9 +396,8 @@ export default class ValidateImpl implements PostDeployHook {
         };
 
         //In fast feedback ignore package descriptor changes
-        if(this.props.isFastFeedbackMode)
-        {
-            let diffOptions:PackageDiffOptions = new PackageDiffOptions();
+        if (this.props.isFastFeedbackMode) {
+            let diffOptions: PackageDiffOptions = new PackageDiffOptions();
             diffOptions.skipPackageDescriptorChange = true;
             buildProps.diffOptions = diffOptions;
         }
