@@ -69,7 +69,12 @@ export abstract class CreatePackage {
         SFPStatsSender.logElapsedTime('package.elapsed.time', this.sfpPackage.creation_details.creation_time, {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
-            is_dependency_validated: 'false',
+            is_dependency_validated: String(this.sfpPackage.isDependencyValidated),
+        });
+        SFPStatsSender.logElapsedTime('package.creation.elapsed_time', this.sfpPackage.creation_details.creation_time, {
+            package: this.sfpPackage.package_name,
+            type: this.sfpPackage.package_type,
+            is_dependency_validated: String(this.sfpPackage.isDependencyValidated),
         });
     }
 
