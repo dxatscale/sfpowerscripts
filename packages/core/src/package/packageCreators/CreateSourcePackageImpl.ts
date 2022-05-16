@@ -45,33 +45,32 @@ export default class CreateSourcePackageImpl extends CreatePackage {
     private handleApexTestClasses(sfpPackage: SfpPackage) {
         let classTypes: ApexSortedByType = sfpPackage.apexClassesSortedByTypes;
 
-        if (!sfpPackage.isTriggerAllTests) {
-            if (sfpPackage.isApexFound && classTypes?.testClass?.length == 0) {
-                this.printSlowDeploymentWarning();
+        if (sfpPackage.isApexFound && classTypes?.testClass?.length == 0) {
+            this.printSlowDeploymentWarning();
+            sfpPackage.isTriggerAllTests = true;
+        } else if (sfpPackage.isApexFound && classTypes?.testClass?.length > 0) {
+            if (classTypes?.parseError?.length > 0) {
+                SFPLogger.log(
+                    '---------------------------------------------------------------------------------------',
+                    LoggerLevel.INFO,
+                    this.logger
+                );
+                SFPLogger.log(
+                    'Unable to parse these classes to correctly identify test classes, Its not your issue, its ours!'+
+                    'Please raise a issue in our repo!',
+                    LoggerLevel.INFO,
+                    this.logger
+                );
+                this.printClassesIdentified(classTypes?.parseError);
                 sfpPackage.isTriggerAllTests = true;
-            } else if (sfpPackage.isApexFound && classTypes?.testClass?.length > 0) {
-                if (classTypes?.parseError?.length > 0) {
-                    SFPLogger.log(
-                        '---------------------------------------------------------------------------------------',
-                        LoggerLevel.INFO,
-                        this.logger
-                    );
-                    SFPLogger.log(
-                        'Unable to parse these classes to correctly identify test classes, Its not your issue, its ours! Please raise a issue in our repo!',
-                        LoggerLevel.INFO,
-                        this.logger
-                    );
-                    this.printClassesIdentified(classTypes?.parseError);
-                    sfpPackage.isTriggerAllTests = true;
-                } else {
-                    this.printHintForOptimizedDeployment();
-                    sfpPackage.isTriggerAllTests = false;
-                    this.printClassesIdentified(classTypes?.testClass);
-                    sfpPackage.apexTestClassses = [];
-                    classTypes?.testClass.forEach((element) => {
-                        sfpPackage.apexTestClassses.push(element.name);
-                    });
-                }
+            } else {
+                this.printHintForOptimizedDeployment();
+                sfpPackage.isTriggerAllTests = false;
+                this.printClassesIdentified(classTypes?.testClass);
+                sfpPackage.apexTestClassses = [];
+                classTypes?.testClass.forEach((element) => {
+                    sfpPackage.apexTestClassses.push(element.name);
+                });
             }
         }
     }
@@ -84,8 +83,8 @@ export default class CreateSourcePackageImpl extends CreatePackage {
         );
         SFPLogger.log(
             `Following apex test classes were identified and can  be used for deploying this package,${EOL}` +
-                `in an optimal manner, provided each individual class meets the test coverage requirement of 75% and above${EOL}` +
-                `Ensure each apex class/trigger is validated for coverage in the validation stage`,
+            `in an optimal manner, provided each individual class meets the test coverage requirement of 75% and above${EOL}` +
+            `Ensure each apex class/trigger is validated for coverage in the validation stage`,
             null,
             this.logger
         );
@@ -104,8 +103,8 @@ export default class CreateSourcePackageImpl extends CreatePackage {
         );
         SFPLogger.log(
             `This package has apex classes/triggers, however apex test classes were not found, You would not be able to deploy${EOL}` +
-                `to production org optimally if each class do not have coverage of 75% and above,We will attempt deploying${EOL}` +
-                `this package by triggering all local tests in the org which could be realy costly in terms of deployment time!${EOL}`,
+            `to production org optimally if each class do not have coverage of 75% and above,We will attempt deploying${EOL}` +
+            `this package by triggering all local tests in the org which could be realy costly in terms of deployment time!${EOL}`,
             null,
             this.logger
         );

@@ -22,7 +22,6 @@ class PackageInfo {
     isTriggerAllTests?: boolean;
     isProfilesFound?: boolean;
     isPermissionSetGroupFound?: boolean;
-    isProfileSupportedMetadataInPackage?: boolean=false;
     isPromoted?: boolean;
     tag?: string;
     isDependencyValidated?: boolean;
@@ -120,6 +119,7 @@ export interface DiffPackageMetadata {
     destructiveChanges?: any;
     sourceDir?: string;
     invalidatedTestClasses?: ApexClasses;
+    isPayLoadContainTypesSupportedByProfiles?:boolean;
 }
 export interface SfpPackageParams {
     overridePackageTypeWith?: string;

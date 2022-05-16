@@ -7,15 +7,16 @@ const path = require('path');
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
 import SfpPackage from '../SfpPackage';
+import SFPOrg from '../../org/SFPOrg';
 
 export default class InstallDataPackageImpl extends InstallPackage {
     public constructor(
         sfpPackage: SfpPackage,
-        targetusername: string,
+        targetOrg:SFPOrg,
         logger: Logger,
         options: SfpPackageInstallationOptions,
     ) {
-        super(sfpPackage, targetusername, logger,options);
+        super(sfpPackage, targetOrg, logger,options);
     }
 
     public async install() {
@@ -54,11 +55,11 @@ export default class InstallDataPackageImpl extends InstallPackage {
         //Pick the type of SFDX command to use
         let dataPackageDeployer: SFDXCommand;
         if (packageType === 'sfdmu') {
-            let orgDomainUrl = await new OrgDetailsFetcher(this.targetusername).getOrgDomainUrl();
+            let orgDomainUrl = await new OrgDetailsFetcher( this.sfpOrg.getUsername()).getOrgDomainUrl();
 
             dataPackageDeployer = new SFDMURunImpl(
                 sourceDirectory,
-                this.targetusername,
+                 this.sfpOrg.getUsername(),
                 orgDomainUrl,
                 packageDirectory,
                 this.logger,
@@ -67,7 +68,7 @@ export default class InstallDataPackageImpl extends InstallPackage {
         } else if (packageType === 'vlocity') {
             dataPackageDeployer = new VlocityPackDeployImpl(
                 this.sfpPackage.sourceDir,
-                this.targetusername,
+                 this.sfpOrg.getUsername(),
                 packageDirectory,
                 null,
                 null
