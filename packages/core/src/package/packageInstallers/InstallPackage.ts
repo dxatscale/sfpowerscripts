@@ -5,12 +5,11 @@ import SFPStatsSender from '../../stats/SFPStatsSender';
 import PackageInstallationHelpers from './PackageInstallationHelpers';
 import { Connection } from '@salesforce/core';
 import * as fs from 'fs-extra';
-import { convertAliasToUsername } from '../../utils/AliasList';
 import FileSystem from '../../utils/FileSystem';
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import path = require('path');
 import PermissionSetGroupUpdateAwaiter from '../../permsets/PermissionSetGroupUpdateAwaiter';
-import SFPOrg from '../../org/SFPOrg';
+import SfpOrg from '../../org/SfpOrg';
 import SfpPackage from '../SfpPackage';
 import { DeploymentType } from '../../deployers/DeploymentExecutor';
 
@@ -38,12 +37,12 @@ export abstract class InstallPackage {
     protected connection: Connection;
     protected packageDescriptor;
     protected packageDirectory;
-    protected org: SFPOrg;
+
     private _isArtifactToBeCommittedInOrg: boolean = true;
 
     public constructor(
         protected sfpPackage: SfpPackage,
-        protected targetusername: string,
+        protected sfpOrg:SfpOrg,
         protected logger: Logger,
         protected options: SfpPackageInstallationOptions
     ) {}
@@ -57,9 +56,9 @@ export abstract class InstallPackage {
                 this.sfpPackage.packageName
             );
 
-            let targetUsername = await convertAliasToUsername(this.targetusername);
-            this.org = await SFPOrg.create({ aliasOrUsername: targetUsername });
-            this.connection = this.org.getConnection();
+           
+           
+            this.connection = this.sfpOrg.getConnection();
 
             if (await this.isPackageToBeInstalled(this.options.skipIfPackageInstalled)) {
                 if (!this.options.isDryRun) {
@@ -101,14 +100,17 @@ export abstract class InstallPackage {
 
             let aliasDir: string;
 
+            let alias = await this.sfpOrg.getAlias();
             aliasDir = files.find(
                 (file) =>
-                    path.basename(file) === this.targetusername &&
+                    path.basename(file) === alias &&
                     fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
             );
 
+            SFPLogger.log(`Using alias directory ${aliasDir}`,LoggerLevel.INFO,this.logger);
+
             if (!aliasDir) {
-                const orgDetails = await new OrgDetailsFetcher(this.targetusername).getOrgDetails();
+                const orgDetails = await new OrgDetailsFetcher(this.sfpOrg.getUsername()).getOrgDetails();
 
                 if (orgDetails.isSandbox) {
                     // If the target org is a sandbox, find a 'default' directory to use as package directory
@@ -122,7 +124,7 @@ export abstract class InstallPackage {
 
             if (!aliasDir) {
                 throw new Error(
-                    `Aliasfied package '${this.sfpPackage.packageName}' does not have an alias with '${this.targetusername}'' or 'default' directory`
+                    `Aliasfied package '${this.sfpPackage.packageName}' does not have an alias with '${alias}'' or 'default' directory`
                 );
             }
 
@@ -141,7 +143,7 @@ export abstract class InstallPackage {
         SFPStatsSender.logCount('package.installation.failure', {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
-            target_org: this.targetusername,
+            target_org: this.sfpOrg.getUsername(),
         });
     }
 
@@ -150,12 +152,12 @@ export abstract class InstallPackage {
         SFPStatsSender.logElapsedTime('package.installation.elapsed_time', elapsedTime, {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
-            target_org: this.targetusername,
+            target_org: this.sfpOrg.getUsername(),
         });
         SFPStatsSender.logCount('package.installation', {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
-            target_org: this.targetusername,
+            target_org: this.sfpOrg.getUsername(),
         });
     }
 
@@ -167,7 +169,7 @@ export abstract class InstallPackage {
     private async commitPackageInstallationStatus() {
         if (this._isArtifactToBeCommittedInOrg) {
             try {
-                await this.org.updateArtifactInOrg(this.logger, this.sfpPackage);
+                await this.sfpOrg.updateArtifactInOrg(this.logger, this.sfpPackage);
             } catch (error) {
                 SFPLogger.log(
                     'Unable to commit information about the package into org..Check whether prerequisities are installed',
@@ -180,7 +182,7 @@ export abstract class InstallPackage {
 
     protected async isPackageToBeInstalled(skipIfPackageInstalled: boolean): Promise<boolean> {
         if (skipIfPackageInstalled) {
-            let installationStatus = await this.org.isArtifactInstalledInOrg(this.logger, this.sfpPackage);
+            let installationStatus = await this.sfpOrg.isArtifactInstalledInOrg(this.logger, this.sfpPackage);
             return !installationStatus.isInstalled;
         } else return true; // Always install packages if skipIfPackageInstalled is false
     }
@@ -204,7 +206,7 @@ export abstract class InstallPackage {
             await PackageInstallationHelpers.executeScript(
                 preDeploymentScript,
                 this.sfpPackage.packageName,
-                this.targetusername,
+                this.sfpOrg.getUsername(),
                 this.logger
             );
         }
@@ -231,7 +233,7 @@ export abstract class InstallPackage {
             await PackageInstallationHelpers.executeScript(
                 postDeploymentScript,
                 this.sfpPackage.packageName,
-                this.targetusername,
+                this.sfpOrg.getUsername(),
                 this.logger
             );
         }

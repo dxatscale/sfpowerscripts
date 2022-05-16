@@ -24,7 +24,7 @@ export default class SfpPackageInstaller {
             case PackageType.Unlocked:
                 let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
                     sfpPackage,
-                    targetOrg.getUsername(),
+                    targetOrg,
                     installationOptions,
                     logger
                 );
@@ -36,7 +36,7 @@ export default class SfpPackageInstaller {
                 : null;
                 let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
                     sfpPackage,
-                    targetOrg.getUsername(),
+                    targetOrg,
                     installationOptions,
                     logger
                 );
@@ -45,7 +45,7 @@ export default class SfpPackageInstaller {
             case PackageType.Data:
                 let installDataPackageImpl: InstallDataPackageImpl = new InstallDataPackageImpl(
                     sfpPackage,
-                    targetOrg.getUsername(),
+                    targetOrg,
                     logger,
                     installationOptions
                 );

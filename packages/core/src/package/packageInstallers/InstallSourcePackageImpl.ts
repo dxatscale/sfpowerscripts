@@ -14,6 +14,8 @@ import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/Deploy
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
 import SfpPackage, { PackageType } from '../SfpPackage';
+import SFPOrg from '../../org/SFPOrg';
+
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;
@@ -23,11 +25,11 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
     public constructor(
         sfpPackage: SfpPackage,
-        targetusername: string,
+        targetOrg: SFPOrg,
         options: SfpPackageInstallationOptions,
         logger: Logger
     ) {
-        super(sfpPackage, targetusername, logger, options);
+        super(sfpPackage, targetOrg, logger, options);
         this.options = options;
         this.pathToReplacementForceIgnore = options.pathToReplacementForceIgnore;
         this.deploymentType = options.deploymentType;
@@ -61,13 +63,13 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 profileFolders,
                 isReconcileActivated,
                 isReconcileErrored,
-            } = await this.reconcileProfilesBeforeDeployment(this.sfpPackage.sourceDir, this.targetusername, tempDir));
+            } = await this.reconcileProfilesBeforeDeployment(this.sfpPackage.sourceDir,  this.sfpOrg.getUsername(), tempDir));
 
             let deploymentOptions: DeploymentOptions;
             let result: DeploySourceResult;
             if (this.deploymentType === DeploymentType.SOURCE_PUSH) {
                 let pushSourceToOrgImpl: DeploymentExecutor = new PushSourceToOrgImpl(
-                    this.targetusername,
+                    this.sfpOrg.getUsername(),
                     this.sfpPackage.sourceDir,
                     this.packageDirectory,
                     this.logger
@@ -85,7 +87,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.options.waitTime,
                     this.options.optimizeDeployment,
                     this.options.skipTesting,
-                    this.targetusername,
+                     this.sfpOrg.getUsername(),
                     this.options.apiVersion
                 );
 
@@ -126,7 +128,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     }
 
                     let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
-                        this.org,
+                        this.sfpOrg,
                         emptyCheck.resolvedSourceDirectory,
                         this.packageDirectory,
                         deploymentOptions,
@@ -144,7 +146,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                                 await this.reconcileAndRedeployProfiles(
                                     profileFolders,
                                     this.sfpPackage.sourceDir,
-                                    this.targetusername,
+                                     this.sfpOrg.getUsername(),
                                     this.packageDirectory,
                                     tempDir,
                                     deploymentOptions
@@ -219,7 +221,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 this.logger
             );
             let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
-                this.targetusername,
+                 this.sfpOrg.getUsername(),
                 path.join(this.sfpPackage.sourceDir, 'destructive', 'destructiveChanges.xml')
             );
 
@@ -371,7 +373,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             );
 
             let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
-                this.org,
+                this.sfpOrg,
                 profileDeploymentStagingDirectory,
                 sourceDirectory,
                 deploymentOptions,

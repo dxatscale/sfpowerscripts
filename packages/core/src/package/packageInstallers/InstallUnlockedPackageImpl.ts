@@ -3,6 +3,8 @@ import PackageMetadataPrinter from '../../display/PackageMetadataPrinter';
 import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
 import InstallUnlockedPackageWrapper from '../../sfdxwrappers/InstallUnlockedPackageImpl';
 import SfpPackage from '../SfpPackage';
+import SFPOrg from '../../org/SFPOrg';
+
 
 export default class InstallUnlockedPackageImpl extends InstallPackage {
     private packageVersionId;
@@ -10,11 +12,11 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
 
     public constructor(
         sfpPackage: SfpPackage,
-        targetusername: string,
+        targetOrg: SFPOrg,
         options: SfpPackageInstallationOptions,
         logger: Logger,
     ) {
-        super(sfpPackage, targetusername, logger,options);
+        super(sfpPackage, targetOrg, logger,options);
         this.packageVersionId = sfpPackage.package_version_id;
         this.options = options;
     }
@@ -27,7 +29,7 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
             this.logger,
             LoggerLevel.INFO,
             null,
-            this.targetusername,
+             this.sfpOrg.getUsername(),
             this.packageVersionId,
             this.options.waitTime,
             this.options.publishWaitTime.toString(),
@@ -52,11 +54,11 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
         try {
             if (skipIfPackageInstalled) {
                 SFPLogger.log(
-                    `Checking Whether Package with ID ${this.packageVersionId} is installed in  ${this.targetusername}`,
+                    `Checking Whether Package with ID ${this.packageVersionId} is installed in  ${ this.sfpOrg.getUsername()}`,
                     null,
                     this.logger
                 );
-                let installedPackages = await this.org.getAllInstalled2GPPackages();
+                let installedPackages = await this.sfpOrg.getAllInstalled2GPPackages();
 
                 let packageFound = installedPackages.find((installedPackage) => {
                     return installedPackage.subscriberPackageVersionId === this.packageVersionId;
@@ -64,14 +66,14 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
 
                 if (packageFound) {
                     SFPLogger.log(
-                        `Package to be installed was found in the target org  ${this.targetusername}`,
+                        `Package to be installed was found in the target org  ${ this.sfpOrg.getUsername()}`,
                         LoggerLevel.INFO,
                         this.logger
                     );
                     return false;
                 } else {
                     SFPLogger.log(
-                        `Package to be installed was not found in the target org  ${this.targetusername}, Proceeding to instal.. `,
+                        `Package to be installed was not found in the target org  ${ this.sfpOrg.getUsername()}, Proceeding to instal.. `,
                         LoggerLevel.INFO,
                         this.logger
                     );

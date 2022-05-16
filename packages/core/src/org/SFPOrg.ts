@@ -3,6 +3,7 @@ import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '../logger/SFP
 import PackageDetails from '../package/PackageDetails';
 import SfpPackage from '../package/SfpPackage';
 import QueryHelper from '../queryHelper/QueryHelper';
+import { convertUsernameToAlias } from '../utils/AliasList';
 import ObjectCRUDHelper from '../utils/ObjectCRUDHelper';
 import InstalledPackagesQueryExecutor from './packageQuery/InstalledPackagesQueryExecutor';
 
@@ -179,6 +180,10 @@ export default class SFPOrg extends Org {
 
             return records;
         } else throw new Error('Package Type Information can only be fetched from a DevHub');
+    }
+
+    public async getAlias():Promise<string>{
+        return await convertUsernameToAlias(this.getUsername());
     }
 }
 

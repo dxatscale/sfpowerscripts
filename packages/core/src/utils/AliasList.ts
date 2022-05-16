@@ -16,3 +16,19 @@ export async function convertAliasToUsername(alias: string) {
     if (matchedAlias !== undefined) return matchedAlias.value;
     else return alias;
 }
+
+export async function convertUsernameToAlias(username: string) {
+    const aliases = await Aliases.create(Aliases.getDefaultOptions());
+    const keyValues = (aliases.getGroup(AliasGroup.ORGS) as Dictionary<string>) || {};
+    const aliasList = Object.keys(keyValues).map((alias) => ({
+        alias,
+        value: keyValues[alias],
+    }));
+
+    let matchedUsername = aliasList.find((elem) => {
+        return elem.value === username;
+    });
+
+    if (matchedUsername !== undefined) return matchedUsername.alias;
+    else return username;
+}
