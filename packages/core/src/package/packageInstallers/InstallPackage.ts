@@ -9,7 +9,7 @@ import FileSystem from '../../utils/FileSystem';
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import path = require('path');
 import PermissionSetGroupUpdateAwaiter from '../../permsets/PermissionSetGroupUpdateAwaiter';
-import SfpOrg from '../../org/SfpOrg';
+import SfpOrg from '../../org/SFPOrg';
 import SfpPackage from '../SfpPackage';
 import { DeploymentType } from '../../deployers/DeploymentExecutor';
 
