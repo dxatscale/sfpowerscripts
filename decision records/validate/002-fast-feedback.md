@@ -34,24 +34,26 @@ On analysis of of current DX@Scale projects, the above process on an average tak
 
 - Reconciling large amount of profiles
 
-As more and more developers across Salesforce projects are preferring a pull request workflow as offererd in the DX@Scale model, costly validation becomes a bottleneck in the process, even if the change is only for a single component and worse when the changed component doesnt haven any impact on the apex classes making apex tests not necessary.
+As more and more developers across Salesforce projects are preferring a pull request workflow as offererd in the DX@Scale model, costly validation becomes a bottleneck in the process, even if the change is only for a single component and worse when the changed component doesn't haven any impact on the apex classes making apex tests not necessary.
 
-sfpowerscripts should offer mechanisms which would  provide feedback on a change to the developer as well as reviewer as fast as possible.
+sfpowerscripts should offer mechanisms which would provide feedback on a change to the developer as well as reviewer as fast as possible.
 
 ## Decision
 
-sfpowerscripts will introduce a new mode  'fast feedback' (by introducing a new flag in validate command) with the aim to cut the time spend on PR validation. In this particular mode, during validate,sfpowerscripts will primary focus only on the deployability of the changed component as opposed to any other checks as seen in the current validation. This means the following
+sfpowerscripts will introduce a new mode 'fast feedback' (by introducing a new flag in validate command) with the aim to reduce the time spent on PR validation. In this particular mode, during validate, sfpowerscripts will primary focus only on the deployability of the changed component as opposed to any other checks as seen in the current validation. 
+
+This means the following:
 
 - Validate deployability of a changed package by only installing the changed components in a package
 
-- Accuracy of apex classes by doing an impact analysis and selective tests -  Changed components are used to evaluate impacted apex classes, and utilizing these impacted apex classes to figure out required test classes and
+- Accuracy of apex classes by doing an impact analysis and selective tests -  Changed components are used to evaluate impacted apex classes, and utilizing these impacted apex classes to figure out required test classes
 
 - Skip coverage calculation, as calculating coverage is no longer feasible
 
-- Skip deployment of a package even if the descriptor is changed ( This was based on feedback received, why trigger checks when the only change was version increments or adding a new dependency )
+- Skip deployment of a package even if the descriptor is changed (This was based on feedback received, why trigger checks when the only change was version increments or adding a new dependency )
 
 - Skip deployment of top level packages that do not have direct dependency on the package containing changed components.
 
-The above changes will ensure the validate command is highly perfromant and  provides a faster feedback than the current mechanism. However this mechanism is not perfect, hence the users of sfpowerscripts will be asked to implement an optional chaining of normal feedback mode which can be manually triggered if the user intends to compute coerage computation or want to validate scripts being added in the descriptor.
+The above changes will ensure the validate command is highly performant and provides faster feedback than the current mechanism. However, this mechanism is not perfect, hence the users of sfpowerscripts will be asked to implement an optional chaining of normal feedback mode which can be manually triggered if the user intends to compute coverage computation or want to validate scripts being added in the descriptor.
 
 <img width="982" alt="image" src="https://user-images.githubusercontent.com/43767972/168079278-3324381f-555a-43ab-8172-ac0a5390a272.png">
