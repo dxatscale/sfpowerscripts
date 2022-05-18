@@ -107,7 +107,7 @@ export abstract class InstallPackage {
                     fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
             );
 
-            SFPLogger.log(`Using alias directory ${aliasDir}`,LoggerLevel.INFO,this.logger);
+            SFPLogger.log(`Using alias directory ${aliasDir?aliasDir:'default'}`,LoggerLevel.INFO,this.logger);
 
             if (!aliasDir) {
                 const orgDetails = await new OrgDetailsFetcher(this.sfpOrg.getUsername()).getOrgDetails();
