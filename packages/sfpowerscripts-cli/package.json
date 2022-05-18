@@ -40,15 +40,15 @@
     },
     "devDependencies": {
         "@types/adm-zip": "^0.4.33",
-        "@types/jest": "27.4.1",
         "@types/jsforce": "^1.9.29",
         "@types/marked": "4.0.2",
         "dependency-cruiser": "^10.0.1",
-        "jest": "^27.5.1",
         "snyk": "^1.826.0",
-        "ts-jest": "27.1.4",
+        "jest": "28.1.0",
+        "ts-jest": "28.0.2",
+        "@types/jest": "^27.5.1",
         "ts-node": "10.7.0",
-        "typescript": "^4.1.3"
+        "typescript": "4.6.3"
     },
     "engines": {
         "node": ">=14.0.0"
