@@ -212,7 +212,7 @@ export default class Promote extends SfpowerscriptsCommand {
                 }
             }
 
-            if (this.flags.gittag && failedArtifacts.length == 0) {
+            if (this.flags.gittag) {
                 await this.createGitTags(succesfullyPublishedPackageNamesForTagging);
                 await this.pushGitTags();
             }
