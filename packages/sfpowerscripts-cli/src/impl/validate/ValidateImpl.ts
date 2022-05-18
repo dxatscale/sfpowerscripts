@@ -295,14 +295,16 @@ export default class ValidateImpl implements PostDeployHook {
 
         let testOptions: TestOptions, testCoverageOptions: CoverageOptions;
 
-        this.displayTestHeader(sfpPackage);
-
         if (this.props.isFastFeedbackMode) {
             ({ testOptions, testCoverageOptions } = this.getTestOptionsForFastFeedBackPackage(sfpPackage));
-            if (testOptions == undefined) return { id: null, result: true, message: 'No Tests To Run' };
         } else {
             ({ testOptions, testCoverageOptions } = this.getTestOptionsForFullPackageTest(sfpPackage));
         }
+        if (testOptions == undefined) {
+            return { id: null, result: true, message: 'No Tests To Run' };
+        }
+
+        this.displayTestHeader(sfpPackage);
 
         let triggerApexTests: TriggerApexTests = new TriggerApexTests(
             targetUsername,
@@ -331,41 +333,54 @@ export default class ValidateImpl implements PostDeployHook {
         sfpPackage: SfpPackage
     ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
         //Change in security model trigger full
-        if (
-            sfpPackage.diffPackageMetadata?.isProfilesFound ||
-            sfpPackage.diffPackageMetadata?.isPermissionSetFound ||
-            sfpPackage.diffPackageMetadata?.isPermissionSetGroupFound
-        ) {
-            SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
-            return this.getTestOptionsForFullPackageTest(sfpPackage);
-        }
 
-        let impactedTestClasses = sfpPackage.diffPackageMetadata?.invalidatedTestClasses;
+        if (sfpPackage.diffPackageMetadata) {
+            if (
+                sfpPackage.diffPackageMetadata.isProfilesFound ||
+                sfpPackage.diffPackageMetadata.isPermissionSetFound ||
+                sfpPackage.diffPackageMetadata.isPermissionSetGroupFound
+            ) {
+                SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
+                return this.getTestOptionsForFullPackageTest(sfpPackage);
+            }
 
-        //No impacted test class available
-        if (!impactedTestClasses || impactedTestClasses.length == 0) {
+            let impactedTestClasses = sfpPackage.diffPackageMetadata.invalidatedTestClasses;
+
+            //No impacted test class available
+            if (!impactedTestClasses || impactedTestClasses.length == 0) {
+                SFPLogger.log(
+                    `${COLOR_HEADER(
+                        'Unable to find any impacted test classses,skipping tests, You might need to use thorough option'
+                    )}`
+                );
+                return { testOptions: undefined, testCoverageOptions: undefined };
+            }
+
+            SFPLogger.log(
+                `${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`
+            );
+
+            let testOptions = new RunSpecifiedTestsOption(
+                60,
+                '.testResults',
+                impactedTestClasses.join(),
+                sfpPackage.packageDescriptor.testSynchronous
+            );
+            let testCoverageOptions = {
+                isIndividualClassCoverageToBeValidated: false,
+                isPackageCoverageToBeValidated: false,
+                coverageThreshold: 0,
+            };
+            return { testOptions, testCoverageOptions };
+        } else {
             SFPLogger.log(
                 `${COLOR_HEADER(
-                    'Unable to find any impacted test classses,skipping tests, You might need to use thorough option'
+                    'Selective components were not found to compute invalidated test class, skipping tests'
                 )}`
             );
+            SFPLogger.log(`${COLOR_HEADER('Please use thorough mode on this package, if its new')}`);
             return { testOptions: undefined, testCoverageOptions: undefined };
         }
-
-        SFPLogger.log(`${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`);
-
-        let testOptions = new RunSpecifiedTestsOption(
-            60,
-            '.testResults',
-            impactedTestClasses.join(),
-            sfpPackage.packageDescriptor.testSynchronous
-        );
-        let testCoverageOptions = {
-            isIndividualClassCoverageToBeValidated: false,
-            isPackageCoverageToBeValidated: false,
-            coverageThreshold: 0,
-        };
-        return { testOptions, testCoverageOptions };
     }
 
     private displayTestHeader(sfpPackage: SfpPackage) {
