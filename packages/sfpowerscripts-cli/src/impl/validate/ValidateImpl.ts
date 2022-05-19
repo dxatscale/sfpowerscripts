@@ -123,11 +123,11 @@ export default class ValidateImpl implements PostDeployHook {
             }
             return null; //TODO: Fix with actual object
         } catch(error){
-            if(error instanceof ValidateError) 
+            if(error instanceof ValidateError)
               SFPLogger.log(`Error: ${JSON.stringify(error)}`,LoggerLevel.DEBUG);
             else
               SFPLogger.log(`Error: ${JSON.stringify(error)}`,LoggerLevel.ERROR);
-            throw error                                      
+            throw error
         }
 
         finally {
