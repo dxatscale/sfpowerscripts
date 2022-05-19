@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "A build system for package based development in Salesforce,delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/",
-    "version": "13.6.12",
+    "version": "13.6.13",
     "author": "dxatscale",
     "release": "May 22",
     "bin": {
