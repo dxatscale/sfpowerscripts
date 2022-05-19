@@ -43,6 +43,7 @@ import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/Trigge
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { PostDeployHook } from '../deploy/PostDeployHook';
 import * as rimraf from 'rimraf';
+import { err } from 'neverthrow';
 
 export enum ValidateMode {
     ORG,
@@ -120,9 +121,16 @@ export default class ValidateImpl implements PostDeployHook {
                 //Display impact analysis
                 await this.impactAnalysis(connToScratchOrg);
             }
+            return null; //TODO: Fix with actual object
+        } catch(error){
+            if(error instanceof ValidateError) 
+              SFPLogger.log(`Error: ${JSON.stringify(error)}`,LoggerLevel.DEBUG);
+            else
+              SFPLogger.log(`Error: ${JSON.stringify(error)}`,LoggerLevel.ERROR);
+            throw error                                      
+        }
 
-            return null;
-        } finally {
+        finally {
             await this.handleScratchOrgStatus(scratchOrgUsername, deploymentResult, this.props.isDeleteScratchOrg);
         }
     }
