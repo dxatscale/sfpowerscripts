@@ -43,7 +43,6 @@ import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/Trigge
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { PostDeployHook } from '../deploy/PostDeployHook';
 import * as rimraf from 'rimraf';
-import { err } from 'neverthrow';
 
 export enum ValidateMode {
     ORG,
