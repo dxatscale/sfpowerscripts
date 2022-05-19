@@ -11,7 +11,7 @@ import * as fs from 'fs-extra';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import BuildCollections from './BuildCollections';
 const Table = require('cli-table');
-import { ConsoleLogger, FileLogger, VoidLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { ConsoleLogger, FileLogger, VoidLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
@@ -401,46 +401,66 @@ export default class BuildImpl {
     }
 
     private printPackageDetails(sfpPackage: SfpPackage) {
-        console.log(
+        SFPLogger.log(
             COLOR_HEADER(
                 `${EOL}${sfpPackage.packageName} package created in ${getFormattedTime(
                     sfpPackage.creation_details.creation_time
                 )}`
             )
         );
-        console.log(COLOR_HEADER(`-- Package Details:--`));
-        console.log(
-            COLOR_HEADER(`-- Package Version Number:        `),
+        SFPLogger.log(COLOR_HEADER(`-- Package Details:--`));
+        SFPLogger.log(
+            COLOR_HEADER(`-- Package Version Number:        `)+
             COLOR_KEY_MESSAGE(sfpPackage.package_version_number)
         );
 
         if (sfpPackage.package_type !== PackageType.Data) {
             if (sfpPackage.package_type == PackageType.Unlocked) {
-                console.log(
-                    COLOR_HEADER(`-- Package Version Id:             `),
+                SFPLogger.log(
+                    COLOR_HEADER(`-- Package Version Id:             `)+
                     COLOR_KEY_MESSAGE(sfpPackage.package_version_id)
                 );
                 if (sfpPackage.test_coverage)
-                    console.log(
-                        COLOR_HEADER(`-- Package Test Coverage:          `),
+                SFPLogger.log(
+                        COLOR_HEADER(`-- Package Test Coverage:          `)+
                         COLOR_KEY_MESSAGE(sfpPackage.test_coverage)
                     );
                 if (sfpPackage.has_passed_coverage_check)
-                    console.log(
-                        COLOR_HEADER(`-- Package Coverage Check Passed:  `),
+                SFPLogger.log(
+                        COLOR_HEADER(`-- Package Coverage Check Passed:  `)+
                         COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check)
                     );
             }
 
-            console.log(
-                COLOR_HEADER(`-- Apex In Package:             `),
+            SFPLogger.log(
+                COLOR_HEADER(`-- Apex In Package:             `)+
                 COLOR_KEY_MESSAGE(sfpPackage.isApexFound ? 'Yes' : 'No')
             );
-            console.log(
-                COLOR_HEADER(`-- Profiles In Package:         `),
+            SFPLogger.log(
+                COLOR_HEADER(`-- Profiles In Package:         `)+
                 COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? 'Yes' : 'No')
             );
-            console.log(COLOR_HEADER(`-- Metadata Count:         `), COLOR_KEY_MESSAGE(sfpPackage.metadataCount));
+            SFPLogger.log(COLOR_HEADER(`-- Metadata Count:         `)+ COLOR_KEY_MESSAGE(sfpPackage.metadataCount));
+
+            if (sfpPackage.diffPackageMetadata) {
+                SFPLogger.log(
+                    COLOR_HEADER(`-- Source Version From:         `)+
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom)
+                );
+                SFPLogger.log(
+                    COLOR_HEADER(`-- Source Version To:         `)+
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo)
+                );
+                SFPLogger.log(
+                    COLOR_HEADER(`-- Metadata Count for Diff Package:         `)+
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.metadataCount)
+                );
+                SFPLogger.log(
+                    COLOR_HEADER(`-- Apex Test Class Invalidated:         `)+
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.invalidatedTestClasses?.length)
+                );
+            }
+
         }
     }
 

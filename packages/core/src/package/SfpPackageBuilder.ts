@@ -218,6 +218,8 @@ export default class SfpPackageBuilder {
             diffPackageInfo.isPermissionSetFound = packageManifest.isPermissionSetsInPackage();
             diffPackageInfo.isPermissionSetGroupFound = packageManifest.isPermissionSetGroupsFoundInPackage();
             diffPackageInfo.isPayLoadContainTypesSupportedByProfiles = packageManifest.isPayLoadContainTypesSupportedByProfiles();
+            diffPackageInfo.sourceVersionFrom = packageParams.revisionFrom;
+            diffPackageInfo.sourceVersionTo = packageParams.revisionTo;
 
             diffPackageInfo.metadataCount = MetadataCount.getMetadataCount(
                 workingDirectory,
