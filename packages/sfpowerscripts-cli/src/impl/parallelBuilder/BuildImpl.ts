@@ -18,7 +18,7 @@ import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime'
-import ExecuteCommand from '@dxatscale/sfpowerscripts.core/lib/command/commandExecutor/ExecuteCommand'
+
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -78,7 +78,7 @@ export default class BuildImpl {
         SFPLogger.log(`Invoking build...`,LoggerLevel.INFO);
         const git = simplegit();
         if (this.props.repourl == null) {
-            this.repository_url = await new ExecuteCommand().execCommand(`git config --get remote.origin.url`,process.cwd());
+            this.repository_url = (await git.getConfig('remote.origin.url')).value;
             SFPLogger.log(`Fetched Remote URL ${this.repository_url}`,LoggerLevel.INFO);
         } else this.repository_url = this.props.repourl;
 

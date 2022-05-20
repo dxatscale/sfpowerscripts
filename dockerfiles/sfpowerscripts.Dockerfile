@@ -1,4 +1,4 @@
-FROM heroku/heroku:20
+FROM  heroku/heroku:20.v77
 
 
 ENV DEBIAN_FRONTEND=noninteractive
