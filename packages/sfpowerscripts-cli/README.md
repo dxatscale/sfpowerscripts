@@ -217,51 +217,58 @@ _See code: [commands/sfpowerscripts/orchestrator/prepare.ts](https://github.com/
 Validate the incoming change against a prepared scratch org fetched from the provided pools (created using the prepare command). If the Sfpowerscripts Artifact package is installed in the scratch orgs, only the changed packages in the repo will be deployed by comparing against the package version installed in the fetched scratchorg.
 
 ```
-Validate the incoming change against a prepared scratch org fetched from the provided pools.
+Validate the incoming change against an earlier prepared scratchorg.
 
 USAGE
-  $ sfdx sfpowerscripts:orchestrator:validate -u <string> -p <array> -f <filepath> -i <string> [--shapefile <string>]
-  [--coveragepercent <integer>] [-g <array>] [-x]
+  $ sfdx sfpowerscripts:orchestrator:validate -p <array> [--shapefile <string>] [--coveragepercent <integer>] [-g <array>] [-x] [--keys <string>] [-c <string>] [--enableimpactanalysis --basebranch
+  <string>] [--enabledependencyvalidation ] [--tag <string>] [--disablediffcheck] [--disableartifactupdate] [--fastfeedback] [-v <string>] [--apiversion <string>] [--json] [--loglevel
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -f, --jwtkeyfile=jwtkeyfile                                                       (required) Path to a file containing
-                                                                                    the private key
+  -c, --visualizechangesagainst=visualizechangesagainst                             Branch to conduct change analysis against. Enables visualization of changes and the components affected
 
-  -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to
-                                                                                    group/collapse logs in the console.
-                                                                                    Provide an opening group, and an
-                                                                                    optional closing group symbol.
+  -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional
+                                                                                    closing group symbol.
 
-  -i, --clientid=clientid                                                           (required) OAuth client ID, also
-                                                                                    known as the consumer key
+  -p, --pools=pools                                                                 (required) Fetch scratch-org validation environment from one of listed pools, sequentially
 
-  -p, --pools=pools                                                                 (required) Fetch scratch-org
-                                                                                    validation environment from one of
-                                                                                    listed pools, sequentially
+  -v, --targetdevhubusername=targetdevhubusername                                   username or alias for the dev hub org; overrides default dev hub org
 
-  -u, --devhubusername=devhubusername                                               (required) Authentication username
-                                                                                    for Dev Hub
+  -x, --deletescratchorg                                                            Delete scratch-org validation environment, after the command has finished running
 
-  -x, --deletescratchorg                                                            Delete scratch-org validation
-                                                                                    environment, after the command has
-                                                                                    finished running
+  --apiversion=apiversion                                                           override the api version used for api requests made by this command
 
-  --coveragepercent=coveragepercent                                                 [default: 75] Minimum required
-                                                                                    percentage coverage for validating
-                                                                                    code coverage of packages with Apex
-                                                                                    classes
+  --basebranch=basebranch                                                           The pull request base branch
 
-  --keys=keys                                                                       Keys to be used while installing any
-                                                                                    managed package dependencies. Required
-                                                                                    format is a string of key-value pairs
-                                                                                    separated by spaces e.g. packageA:pw123
-                                                                                    packageB:pw123 packageC:pw123
+  --coveragepercent=coveragepercent                                                 [default: 75] Minimum required percentage coverage for validating code coverage of packages with Apex classes
 
-  --shapefile=shapefile                                                             Path to .zip file of scratch org
-                                                                                    shape / metadata to deploy
+  --disableartifactupdate                                                           Do not update information about deployed artifacts to the org
+
+  --disablediffcheck                                                                Disables diff check while validating, this will validate all the packages in the repository
+
+  --enabledependencyvalidation                                                      Validate dependencies between packages for changed components
+
+  --enableimpactanalysis                                                            Visualize components impacted by changes in pull request
+
+  --fastfeedback                                                                    Enable validation in fast feedback mode, In fast feedback mode, validation will only do selective deployment of and
+                                                                                    selective tests
+
+  --json                                                                            format output as json
+
+  --keys=keys                                                                       Keys to be used while installing any managed package dependencies. Required format is a string of key-value pairs
+                                                                                    separated by spaces e.g. packageA:pw123 packageB:pw123 packageC:pw123
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: info] logging level for this command invocation
+
+  --shapefile=shapefile                                                             Path to .zip file of scratch org shape / metadata to deploy
+
+  --tag=tag                                                                         Tag the build with a label, useful to identify in metrics
+
+ALIASES
+  $ sfdx sfpowerscripts:orchestrator:validateAgainstPool
 
 EXAMPLE
-  $ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -u <devHubUsername> -i <clientId> -f <jwt_file>
+  $ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>
 ```
 
 _See code: [commands/sfpowerscripts/orchestrator/validate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/validate.ts)_
