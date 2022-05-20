@@ -56,14 +56,13 @@ export default class TriggerApexTests {
             await this.cancellationTokenSource.asyncCancel();
             process.exit();
         };
-
         process.on('SIGINT', exitHandler);
         process.on('SIGTERM', exitHandler);
 
         let startTime = Date.now();
         let testExecutionResult: boolean = false;
-        let testsRan;
-        let commandTime;
+        let testsRan: number;
+        let commandTime: number;
 
         try {
             const testService = new TestService(this.conn);
@@ -85,64 +84,19 @@ export default class TriggerApexTests {
             //Fetch tests passed in the testOptions
             let tests: string = null;
             let suites: string = null;
-            if (this.testOptions instanceof RunAllTestsInPackageOptions) {
-                SFPLogger.log(
-                    `Test Mode Descriptor in Package 'testSynchronous': ${
-                        this.testOptions.sfppackage.packageDescriptor.testSynchronous
-                            ? this.testOptions.sfppackage.packageDescriptor.testSynchronous
-                            : false
-                    }`,
-                    LoggerLevel.INFO,
-                    this.fileLogger
-                );
-                SFPLogger.log(
-                    `Test Mode: ${COLOR_KEY_MESSAGE(
-                        this.testOptions.sfppackage.packageDescriptor.testSynchronous == true ? 'serial' : 'parallel'
-                    )}`,
-                    LoggerLevel.INFO,
-                    this.fileLogger
-                );
-                await this.toggleParallelApexTesting(
-                    this.conn,
-                    this.fileLogger,
-                    this.testOptions.sfppackage.packageDescriptor.testSynchronous == true ? true : false
-                );
-                translatedTestLevel = TestLevel.RunSpecifiedTests;
-                tests = (this.testOptions as RunAllTestsInPackageOptions).specifiedTests;
-                SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
-            } else if (this.testOptions instanceof RunSpecifiedTestsOption) {
-                translatedTestLevel = TestLevel.RunSpecifiedTests;
-                tests = (this.testOptions as RunSpecifiedTestsOption).specifiedTests;
-                SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
-            } else if (this.testOptions instanceof RunApexTestSuitesOption) {
-                translatedTestLevel = TestLevel.RunSpecifiedTests;
-                suites = (this.testOptions as RunApexTestSuitesOption).suiteNames;
-                SFPLogger.log(
-                    `Test Suites to be executed: ${COLOR_KEY_MESSAGE(suites)}`,
-                    LoggerLevel.INFO,
-                    this.fileLogger
-                );
-            } else if (this.testOptions instanceof RunLocalTests) {
-                translatedTestLevel = TestLevel.RunLocalTests;
-                SFPLogger.log(
-                    `Triggering all ${COLOR_KEY_MESSAGE(`local tests`)}in the org`,
-                    LoggerLevel.INFO,
-                    this.fileLogger
-                );
-            } else if (this.testOptions instanceof RunAllTestsInOrg) {
-                SFPLogger.log(
-                    `Triggering all ${COLOR_KEY_MESSAGE(`all tests`)}in the org`,
-                    LoggerLevel.INFO,
-                    this.fileLogger
-                );
-                translatedTestLevel = TestLevel.RunAllTestsInOrg;
-            }
+            let isCoverageToBeFetched: boolean =
+                this.coverageOptions.isIndividualClassCoverageToBeValidated ||
+                this.coverageOptions.isPackageCoverageToBeValidated;
+
+            //Translate Test Option
+            ({ translatedTestLevel, tests, suites } = await this.translateTestOptionToAPIVars(this.testOptions));
             //Trigger tests asynchronously
             let testRunResult: TestResult;
             try {
                 testRunResult = (await this.triggerTestAsynchronously(
                     testService,
                     translatedTestLevel,
+                    isCoverageToBeFetched,
                     tests,
                     suites
                 )) as TestResult;
@@ -159,32 +113,35 @@ export default class TriggerApexTests {
                 async (bail) => {
                     return await testService.reportAsyncResults(
                         testRunResult.summary.testRunId,
-                        true,
+                        isCoverageToBeFetched,
                         this.cancellationTokenSource.token
                     );
                 },
                 { retries: 2, minTimeout: 3000 }
             );
 
-            this.writeTestOutput(testResult);
             //Collect Failed Tests only if Parallel
             testResult = await this.triggerSecondRunInSerialForParallelFailedTests(
                 testResult,
                 testService,
-                translatedTestLevel
+                translatedTestLevel,
+                isCoverageToBeFetched
             );
 
-            //Write Junit Result no matter what
-            this.writeJUnit(testResult);
+            //Filter testResult for duplicate test listing
+            testResult = this.removeDuplicateTestListing(testResult);
 
+            //Write Test Results to file
             let jsonOutput = this.writeTestOutput(testResult);
+
+            //Print tests result to screen
             let testReportDisplayer = new TestReportDisplayer(jsonOutput, this.testOptions, this.fileLogger);
+            testReportDisplayer.printTestResults();
 
             commandTime = testResult.summary.commandTimeInMs;
 
             if (testResult.summary.outcome == 'Failed') {
                 testExecutionResult = false;
-                testReportDisplayer.printTestResults();
 
                 return {
                     result: false,
@@ -192,24 +149,22 @@ export default class TriggerApexTests {
                     message: 'Test Execution failed',
                 };
             } else {
-                let coverageResults = await this.validateForApexCoverage(jsonOutput.coverage.coverage);
-                testReportDisplayer.printTestResults();
-                testReportDisplayer.printCoverageReport(
-                    this.coverageOptions.coverageThreshold,
-                    coverageResults.classesCovered,
-                    coverageResults.classesWithInvalidCoverage
-                );
-                testReportDisplayer.printTestSummary(coverageResults.packageTestCoverage);
-                testsRan = testResult.summary.testsRan;
-                if (
-                    this.coverageOptions.isIndividualClassCoverageToBeValidated ||
-                    this.coverageOptions.isPackageCoverageToBeValidated
-                ) {
+                if (isCoverageToBeFetched) {
+                    let coverageResults = await this.validateForApexCoverage(jsonOutput.coverage.coverage);
+                    testReportDisplayer.printCoverageReport(
+                        this.coverageOptions.coverageThreshold,
+                        coverageResults.classesCovered,
+                        coverageResults.classesWithInvalidCoverage
+                    );
+
+                    testsRan = testResult.summary.testsRan;
+                    testReportDisplayer.printTestSummary(coverageResults.packageTestCoverage);
+
                     testExecutionResult = coverageResults.result;
                     SFPStatsSender.logGauge('apextest.testcoverage', coverageResults.packageTestCoverage, {
                         package:
                             this.testOptions instanceof RunAllTestsInPackageOptions
-                                ? this.testOptions.sfppackage.package_name
+                                ? this.testOptions.sfppackage.packageName
                                 : null,
                     });
                     return {
@@ -225,7 +180,7 @@ export default class TriggerApexTests {
                         {
                             package:
                                 this.testOptions instanceof RunAllTestsInPackageOptions
-                                    ? this.testOptions.sfppackage.package_name
+                                    ? this.testOptions.sfppackage.packageName
                                     : null,
                         }
                     );
@@ -237,76 +192,137 @@ export default class TriggerApexTests {
                 }
             }
         } finally {
-            let elapsedTime = Date.now() - startTime;
-
-            if (testExecutionResult)
-                SFPStatsSender.logGauge('apextest.tests.ran', testsRan, {
-                    test_result: String(testExecutionResult),
-                    package:
-                        this.testOptions instanceof RunAllTestsInPackageOptions
-                            ? this.testOptions.sfppackage.package_name
-                            : null,
-                    type: this.testOptions.testLevel,
-                    target_org: this.target_org,
-                });
-
-            SFPStatsSender.logGauge('apextest.testtotal.time', elapsedTime, {
-                test_result: String(testExecutionResult),
-                package:
-                    this.testOptions instanceof RunAllTestsInPackageOptions
-                        ? this.testOptions.sfppackage.package_name
-                        : null,
-                type: this.testOptions['testlevel'],
-                target_org: this.target_org,
-            });
-
-            if (commandTime)
-                SFPStatsSender.logGauge('apextest.command.time', commandTime, {
-                    test_result: String(testExecutionResult),
-                    package:
-                        this.testOptions instanceof RunAllTestsInPackageOptions
-                            ? this.testOptions.sfppackage.package_name
-                            : null,
-                    type: this.testOptions.testLevel,
-                    target_org: this.target_org,
-                });
-
-            SFPStatsSender.logCount('apextests.triggered', {
-                test_result: String(testExecutionResult),
-                package:
-                    this.testOptions instanceof RunAllTestsInPackageOptions
-                        ? this.testOptions.sfppackage.package_name
-                        : null,
-                type: this.testOptions.testLevel,
-                target_org: this.target_org,
+            this.reportMetrics(this.testOptions, {
+                targetOrg: this.target_org,
+                startTime,
+                testExecutionResult,
+                testsRan,
+                commandTime,
             });
         }
     }
 
-    private writeJUnit(testResult: TestResult) {
+    private async translateTestOptionToAPIVars(
+        testOptions: TestOptions
+    ): Promise<{ translatedTestLevel: TestLevel; tests: string; suites: string }> {
+        let translatedTestLevel: TestLevel;
+        let tests: string;
+        let suites: string;
+        if (testOptions instanceof RunAllTestsInPackageOptions) {
+            ({ translatedTestLevel, tests } = await this.getTranslatedOptionsForAllTestInPackageOptions(testOptions));
+        } else if (testOptions instanceof RunSpecifiedTestsOption) {
+            ({ translatedTestLevel, tests } = await this.getTranslatedOptionsForSpecifiedTests(testOptions));
+        } else if (testOptions instanceof RunApexTestSuitesOption) {
+            translatedTestLevel = TestLevel.RunSpecifiedTests;
+            suites = (testOptions as RunApexTestSuitesOption).suiteNames;
+            SFPLogger.log(
+                `Test Suites to be executed: ${COLOR_KEY_MESSAGE(suites)}`,
+                LoggerLevel.INFO,
+                this.fileLogger
+            );
+        } else if (testOptions instanceof RunLocalTests) {
+            translatedTestLevel = TestLevel.RunLocalTests;
+            SFPLogger.log(
+                `Triggering all ${COLOR_KEY_MESSAGE(`local tests`)}in the org`,
+                LoggerLevel.INFO,
+                this.fileLogger
+            );
+        } else if (testOptions instanceof RunAllTestsInOrg) {
+            SFPLogger.log(
+                `Triggering all ${COLOR_KEY_MESSAGE(`all tests`)}in the org`,
+                LoggerLevel.INFO,
+                this.fileLogger
+            );
+            translatedTestLevel = TestLevel.RunAllTestsInOrg;
+        }
+        return { translatedTestLevel, tests, suites };
+    }
+
+    private removeDuplicateTestListing(testResult: any): any {
+        let modifiedTestResult = _.cloneDeep(testResult);
+
+        let toEliminateIndices = [];
+        for (let index = 0; index < modifiedTestResult.tests.length; index++) {
+            let idx = index;
+            let duplicateIndices = [index];
+            while (idx != -1) {
+                idx = _.findIndex(
+                    modifiedTestResult.tests,
+                    (elem: any) => {
+                        return elem.methodName == modifiedTestResult.tests[index].methodName;
+                    },
+                    idx + 1
+                );
+                if (idx != -1) duplicateIndices.push(idx);
+            }
+            if (duplicateIndices.length > 1) {
+                for (const idx of duplicateIndices) {
+                    if (modifiedTestResult.tests[idx].outcome != 'Pass') toEliminateIndices.push(idx);
+                }
+            }
+        }
+
+        modifiedTestResult.tests = modifiedTestResult.tests.filter(function (value, index, arr) {
+            return !toEliminateIndices.includes(index);
+        });
+
+        if (toEliminateIndices.length > 0) modifiedTestResult = this.combineTestResult(modifiedTestResult);
+
+        return modifiedTestResult;
+    }
+
+    private async getTranslatedOptionsForSpecifiedTests(testOptions: RunSpecifiedTestsOption) {
+        let translatedTestLevel = TestLevel.RunSpecifiedTests;
+        let tests = testOptions.specifiedTests;
+        SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
         SFPLogger.log(
-            `Junit Report file available at ${path.join(
-                this.testOptions.outputdir,
-                `test-result-${testResult.summary.testRunId}-junit.xml`
-            )}`
+            `Test Mode: ${COLOR_KEY_MESSAGE(this.testOptions.synchronous == true ? 'serial' : 'parallel')}`,
+            LoggerLevel.INFO,
+            this.fileLogger
         );
-        let reportAsJUnitReport = new JUnitReporter().format(testResult);
-        fs.writeFileSync(
-            path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}-junit.xml`),
-            reportAsJUnitReport
+        //Toggle to serial
+        await this.toggleParallelApexTesting(
+            this.conn,
+            this.fileLogger,
+            this.testOptions.synchronous == true ? true : false
         );
+        return { translatedTestLevel, tests };
+    }
+
+    private async getTranslatedOptionsForAllTestInPackageOptions(testOptions: RunAllTestsInPackageOptions) {
+        SFPLogger.log(
+            `Test Mode Descriptor in Package 'testSynchronous': ${
+                testOptions.sfppackage.packageDescriptor.testSynchronous
+                    ? testOptions.sfppackage.packageDescriptor.testSynchronous
+                    : false
+            }`,
+            LoggerLevel.TRACE,
+            this.fileLogger
+        );
+        SFPLogger.log(
+            `Test Mode: ${COLOR_KEY_MESSAGE(testOptions.synchronous == true ? 'serial' : 'parallel')}`,
+            LoggerLevel.INFO,
+            this.fileLogger
+        );
+        await this.toggleParallelApexTesting(
+            this.conn,
+            this.fileLogger,
+            testOptions.synchronous == true ? true : false
+        );
+        let translatedTestLevel = TestLevel.RunSpecifiedTests;
+        let tests = testOptions.specifiedTests;
+        SFPLogger.log(`Tests to be executed: ${COLOR_KEY_MESSAGE(tests)}`, LoggerLevel.INFO, this.fileLogger);
+        return { translatedTestLevel, tests };
     }
 
     private async triggerSecondRunInSerialForParallelFailedTests(
         testResult: TestResult,
         testService: TestService,
-        translatedTestLevel: TestLevel
+        translatedTestLevel: TestLevel,
+        isCoverageToBeFetched: boolean
     ) {
         let modifiedTestResult = _.cloneDeep(testResult);
-        if (
-            this.testOptions instanceof RunAllTestsInPackageOptions &&
-            !this.testOptions.sfppackage.packageDescriptor.testSynchronous
-        ) {
+        if (!this.testOptions.synchronous) {
             let parallelFailedTestClasses: string[] = [];
             let testClassesThatDonotContributedCoverage: string[] = [];
 
@@ -377,6 +393,7 @@ export default class TriggerApexTests {
                         return (await this.triggerTestAsynchronously(
                             testService,
                             translatedTestLevel,
+                            isCoverageToBeFetched,
                             testToBeTriggered.toString(),
                             null
                         )) as TestResult;
@@ -399,79 +416,54 @@ export default class TriggerApexTests {
                 );
 
                 //Replace original code coverage
-                modifiedTestResult.codecoverage = modifiedTestResult.codecoverage.map(
-                    (obj) => secondTestResult.codecoverage.find((o) => o.name === obj.name) || obj
-                );
-
-                //Now redo the math
-                modifiedTestResult.summary.failing = 0;
-                modifiedTestResult.summary.passing = 0;
-                modifiedTestResult.summary.skipped = 0;
-
-                for (const test of modifiedTestResult.tests) {
-                    if (test.outcome === ApexTestResultOutcome.Pass) modifiedTestResult.summary.passing++;
-                    else if (test.outcome === ApexTestResultOutcome.Fail) modifiedTestResult.summary.failing++;
-                    else if (test.outcome === ApexTestResultOutcome.Skip) modifiedTestResult.summary.skipped++;
+                if (isCoverageToBeFetched) {
+                    modifiedTestResult.codecoverage = modifiedTestResult.codecoverage.map(
+                        (obj) => secondTestResult.codecoverage.find((o) => o.name === obj.name) || obj
+                    );
                 }
 
-                if (modifiedTestResult.summary.failing > 0) modifiedTestResult.summary.outcome = 'Failed';
-                else modifiedTestResult.summary.outcome = 'Passed';
-
-                modifiedTestResult.summary.passRate =
-                    (modifiedTestResult.summary.passing / modifiedTestResult.summary.testsRan) * 100 + '%';
-                modifiedTestResult.summary.failRate =
-                    (modifiedTestResult.summary.failing / modifiedTestResult.summary.testsRan) * 100 + '%';
-                modifiedTestResult.summary.commandTimeInMs =
-                    modifiedTestResult.summary.commandTimeInMs + secondRuntestRunResult.summary.commandTimeInMs;
-                modifiedTestResult.summary.testExecutionTimeInMs =
-                    modifiedTestResult.summary.testExecutionTimeInMs +
-                    secondRuntestRunResult.summary.testExecutionTimeInMs;
-                modifiedTestResult.summary.testTotalTimeInMs =
-                    modifiedTestResult.summary.testTotalTimeInMs + secondRuntestRunResult.summary.testTotalTimeInMs;
-
-                delete modifiedTestResult.summary.testRunCoverage;
-                delete modifiedTestResult.summary.orgWideCoverage;
-                delete modifiedTestResult.summary.totalLines;
-                delete modifiedTestResult.summary.coveredLines;
-
-                modifiedTestResult.summary.testRunId = modifiedTestResult.summary.testRunId.concat(
-                    '_',
-                    secondRuntestRunResult.summary.testRunId
-                );
+                //Now redo the math
+                modifiedTestResult = this.combineTestResult(modifiedTestResult, secondRuntestRunResult);
             }
         }
 
         return modifiedTestResult;
     }
 
-    private writeTestOutput(testResult: TestResult): CliJsonFormat {
-        const jsonOutput = this.formatResultInJson(testResult);
+    private combineTestResult(testResult: TestResult, testResultSecondRun?: TestResult) {
+        testResult.summary.failing = 0;
+        testResult.summary.passing = 0;
+        testResult.summary.skipped = 0;
 
-        //write output files
-        fs.ensureDirSync(this.testOptions.outputdir);
-
-        //Write files
-        fs.writeJSONSync(
-            path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}.json`),
-            testResult,
-            { spaces: 4 }
-        );
-        fs.writeJSONSync(
-            path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}-coverage.json`),
-            jsonOutput.coverage.coverage,
-            { spaces: 4 }
-        );
-
-        return jsonOutput;
-    }
-
-    private formatResultInJson(result: TestResult): CliJsonFormat {
-        try {
-            const reporter = new JsonReporter();
-            return reporter.format(result);
-        } catch (error) {
-            return null;
+        for (const test of testResult.tests) {
+            if (test.outcome === ApexTestResultOutcome.Pass) testResult.summary.passing++;
+            else if (test.outcome === ApexTestResultOutcome.Fail) testResult.summary.failing++;
+            else if (test.outcome === ApexTestResultOutcome.Skip) testResult.summary.skipped++;
         }
+
+        if (testResult.summary.failing > 0) testResult.summary.outcome = 'Failed';
+        else testResult.summary.outcome = 'Passed';
+
+        testResult.summary.passRate = (testResult.summary.passing / testResult.summary.testsRan) * 100 + '%';
+        testResult.summary.failRate = (testResult.summary.failing / testResult.summary.testsRan) * 100 + '%';
+        testResult.summary.commandTimeInMs =
+            testResult.summary.commandTimeInMs + testResultSecondRun?.summary.commandTimeInMs;
+        testResult.summary.testExecutionTimeInMs =
+            testResult.summary.testExecutionTimeInMs + testResultSecondRun?.summary.testExecutionTimeInMs;
+        testResult.summary.testTotalTimeInMs =
+            testResult.summary.testTotalTimeInMs + testResultSecondRun?.summary.testTotalTimeInMs;
+
+        delete testResult.summary.testRunCoverage;
+        delete testResult.summary.orgWideCoverage;
+        delete testResult.summary.totalLines;
+        delete testResult.summary.coveredLines;
+
+        if (testResultSecondRun)
+            testResult.summary.testRunId = testResult.summary.testRunId.concat(
+                '_',
+                testResultSecondRun.summary.testRunId
+            );
+        return testResult;
     }
 
     /**
@@ -484,6 +476,7 @@ export default class TriggerApexTests {
     private async triggerTestAsynchronously(
         testService: TestService,
         testLevel: TestLevel,
+        isCoverageToBeFetched: boolean,
         tests?: string,
         suites?: string
     ) {
@@ -491,7 +484,7 @@ export default class TriggerApexTests {
 
         let result = await testService.runTestAsynchronous(
             payload,
-            true,
+            isCoverageToBeFetched,
             false,
             new ProgressReporter(this.fileLogger),
             this.cancellationTokenSource.token
@@ -549,6 +542,56 @@ export default class TriggerApexTests {
             }
         }
     }
+
+    private writeJUnit(testResult: TestResult) {
+        SFPLogger.log(
+            `Junit Report file available at ${path.join(
+                this.testOptions.outputdir,
+                `test-result-${testResult.summary.testRunId}-junit.xml`
+            )}`
+        );
+        let reportAsJUnitReport = new JUnitReporter().format(testResult);
+        fs.writeFileSync(
+            path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}-junit.xml`),
+            reportAsJUnitReport
+        );
+    }
+
+    private writeTestOutput(testResult: TestResult): CliJsonFormat {
+        const jsonOutput = this.formatResultInJson(testResult);
+
+        //write output files
+        fs.ensureDirSync(this.testOptions.outputdir);
+
+        //Write files
+        fs.writeJSONSync(
+            path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}.json`),
+            testResult,
+            { spaces: 4 }
+        );
+
+        if (jsonOutput.coverage)
+            fs.writeJSONSync(
+                path.join(this.testOptions.outputdir, `test-result-${testResult.summary.testRunId}-coverage.json`),
+                jsonOutput.coverage?.coverage,
+                { spaces: 4 }
+            );
+
+        //Write Junit Result no matter what
+        this.writeJUnit(testResult);
+
+        return jsonOutput;
+    }
+
+    private formatResultInJson(result: TestResult): CliJsonFormat {
+        try {
+            const reporter = new JsonReporter();
+            return reporter.format(result);
+        } catch (error) {
+            return null;
+        }
+    }
+
     //Enable Synchronus Compile on Deploy
     private async toggleParallelApexTesting(conn: Connection, logger: Logger, toEnable: boolean) {
         try {
@@ -565,6 +608,49 @@ export default class TriggerApexTests {
                 logger
             );
         }
+    }
+
+    private reportMetrics(
+        testOptions: TestOptions,
+        testMetrics: {
+            targetOrg: string;
+            startTime: number;
+            testExecutionResult: boolean;
+            testsRan: number;
+            commandTime?: number;
+        }
+    ) {
+        let elapsedTime = Date.now() - testMetrics.startTime;
+
+        if (testMetrics.testExecutionResult)
+            SFPStatsSender.logGauge('apextest.tests.ran', testMetrics.testsRan, {
+                test_result: String(testMetrics.testExecutionResult),
+                package: testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.packageName : null,
+                type: testOptions.testLevel,
+                target_org: testMetrics.targetOrg,
+            });
+
+        SFPStatsSender.logGauge('apextest.testtotal.time', elapsedTime, {
+            test_result: String(testMetrics.testExecutionResult),
+            package: testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.packageName : null,
+            type: testOptions['testlevel'],
+            target_org: testMetrics.targetOrg,
+        });
+
+        if (testMetrics.commandTime)
+            SFPStatsSender.logGauge('apextest.command.time', testMetrics.commandTime, {
+                test_result: String(testMetrics.testExecutionResult),
+                package: testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.packageName : null,
+                type: testOptions.testLevel,
+                target_org: testMetrics.targetOrg,
+            });
+
+        SFPStatsSender.logCount('apextests.triggered', {
+            test_result: String(testMetrics.testExecutionResult),
+            package: testOptions instanceof RunAllTestsInPackageOptions ? testOptions.sfppackage.packageName : null,
+            type: testOptions.testLevel,
+            target_org: testMetrics.targetOrg,
+        });
     }
 }
 export class ProgressReporter implements Progress<ApexTestProgressValue> {

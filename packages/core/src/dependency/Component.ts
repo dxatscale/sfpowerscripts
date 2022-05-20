@@ -1,3 +1,5 @@
+import { PackageType } from "../package/SfpPackage";
+
 /**
  * Component details and package it belongs to
  */
@@ -7,7 +9,7 @@ export default interface Component {
     type: string;
     files?: string[];
     package?: string;
-    packageType?: 'Unlocked' | 'Data' | 'Source';
+    packageType?: PackageType;
     indexOfPackage?: number;
     namespace?: string;
     dependencies?: Component[];

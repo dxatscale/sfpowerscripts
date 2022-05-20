@@ -1,7 +1,6 @@
 import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../deployers/DeploymentExecutor';
 import ReconcileProfileAgainstOrgImpl from '../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl';
 import DeployDestructiveManifestToOrgImpl from '../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl';
-import PackageMetadata from '../../PackageMetadata';
 import OrgDetailsFetcher, { OrgDetails } from '../../org/OrgDetailsFetcher';
 import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '../../logger/SFPLogger';
 import * as fs from 'fs-extra';
@@ -9,39 +8,34 @@ const path = require('path');
 const glob = require('glob');
 const { EOL } = require('os');
 const tmp = require('tmp');
-import { InstallPackage } from './InstallPackage';
-import PackageManifest from '../PackageManifest';
+import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
 import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
-import defaultDeploymentOption, { DEPLOYMENT_OPTION } from './DefaultDeploymentOption';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
+import SfpPackage, { PackageType } from '../SfpPackage';
+import SFPOrg from '../../org/SFPOrg';
+
 
 export default class InstallSourcePackageImpl extends InstallPackage {
-    private options: any;
     private pathToReplacementForceIgnore: string;
     private deploymentType: DeploymentType;
 
-    private isDiffFolderAvailable =
-        defaultDeploymentOption().toLocaleLowerCase() === DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
-        fs.existsSync(path.join(this.sourceDirectory, 'diff'));
+    private isDiffFolderAvailable: boolean;
 
     public constructor(
-        sfdxPackage: string,
-        targetusername: string,
-        sourceDirectory: string,
-        options: any,
-        skipIfPackageInstalled: boolean,
-        packageMetadata: PackageMetadata,
-        logger: Logger,
-        pathToReplacementForceIgnore: string,
-        deploymentType: DeploymentType,
-        isDryRun: boolean
+        sfpPackage: SfpPackage,
+        targetOrg: SFPOrg,
+        options: SfpPackageInstallationOptions,
+        logger: Logger
     ) {
-        super(sfdxPackage, targetusername, sourceDirectory, packageMetadata, skipIfPackageInstalled, logger, isDryRun);
+        super(sfpPackage, targetOrg, logger, options);
         this.options = options;
-        this.pathToReplacementForceIgnore = pathToReplacementForceIgnore;
-        this.deploymentType = deploymentType;
+        this.pathToReplacementForceIgnore = options.pathToReplacementForceIgnore;
+        this.deploymentType = options.deploymentType;
+        this.isDiffFolderAvailable =
+            options.deploymentType === DeploymentType.SELECTIVE_MDAPI_DEPLOY &&
+            fs.existsSync(path.join(this.sfpPackage.sourceDir, 'diff'));
     }
 
     public async install() {
@@ -49,65 +43,56 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         let tempDir = tmpDirObj.name;
 
         try {
-            this.packageMetadata.isTriggerAllTests = this.isAllTestsToBeTriggered(this.packageMetadata);
+            //TODO: This has to move to create package
+            this.sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(this.sfpPackage);
 
+            //Handle the right force ignore file
             this.handleForceIgnores();
 
             // Apply Destructive Manifest
-            if (this.packageMetadata.destructiveChanges) {
+            if (this.sfpPackage.destructiveChanges) {
                 await this.applyDestructiveChanges();
             }
 
             //Apply Reconcile if Profiles are found
             //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata
-            let isReconcileActivated = false,
-                isReconcileErrored = false;
+            let isReconcileActivated = false;
+            let isReconcileErrored = false;
             let profileFolders;
-            if (this.packageMetadata.isProfilesFound && this.packageMetadata.reconcileProfiles !== false) {
-                ({
-                    profileFolders,
-                    isReconcileActivated,
-                    isReconcileErrored,
-                } = await this.reconcileProfilesBeforeDeployment(
-                    profileFolders,
-                    this.sourceDirectory,
-                    this.targetusername,
-                    tempDir
-                ));
-
-                //Reconcile Failed, Bring back the original profiles
-                if (isReconcileErrored && profileFolders.length > 0) {
-                    SFPLogger.log('Restoring original profiles as preprocessing failed', LoggerLevel.INFO, this.logger);
-                    profileFolders.forEach((folder) => {
-                        fs.copySync(path.join(tempDir, folder), path.join(this.sourceDirectory, folder));
-                    });
-                }
-            }
+            ({
+                profileFolders,
+                isReconcileActivated,
+                isReconcileErrored,
+            } = await this.reconcileProfilesBeforeDeployment(this.sfpPackage.sourceDir,  this.sfpOrg.getUsername(), tempDir));
 
             let deploymentOptions: DeploymentOptions;
-
             let result: DeploySourceResult;
             if (this.deploymentType === DeploymentType.SOURCE_PUSH) {
                 let pushSourceToOrgImpl: DeploymentExecutor = new PushSourceToOrgImpl(
-                    this.targetusername,
-                    this.sourceDirectory,
+                    this.sfpOrg.getUsername(),
+                    this.sfpPackage.sourceDir,
                     this.packageDirectory,
                     this.logger
                 );
 
                 result = await pushSourceToOrgImpl.exec();
+                if (result.result == false) {
+                    throw new Error(
+                        `Pushing package ${this.sfpPackage.packageName} failed with following error ${result.message}`
+                    );
+                }
             } else {
                 //Construct Deploy Command for actual payload
                 deploymentOptions = await this.generateDeploymentOptions(
                     this.options.waitTime,
                     this.options.optimizeDeployment,
                     this.options.skipTesting,
-                    this.targetusername,
+                     this.sfpOrg.getUsername(),
                     this.options.apiVersion
                 );
 
                 //Make a copy.. dont mutate sourceDirectory
-                let resolvedSourceDirectory = this.sourceDirectory;
+                let resolvedSourceDirectory = this.sfpPackage.sourceDir;
 
                 if (this.isDiffFolderAvailable) {
                     SFPLogger.log(
@@ -115,12 +100,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                         LoggerLevel.INFO,
                         this.logger
                     );
-                    SFPLogger.log(
-                        `${`Toggle this feature by setting SFPOWERSCRIPTS_DEPLOYMENT_OPTION to ${DEPLOYMENT_OPTION.FULL_DEPLOYMENT}|${DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT}`}`,
-                        LoggerLevel.INFO,
-                        this.logger
-                    );
-                    resolvedSourceDirectory = path.join(this.sourceDirectory, 'diff');
+                    resolvedSourceDirectory = path.join(this.sfpPackage.sourceDir, 'diff');
                 }
 
                 let emptyCheck = this.handleEmptyPackage(resolvedSourceDirectory, this.packageDirectory);
@@ -135,7 +115,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 } else if (emptyCheck.isToSkip == false) {
                     //Display a warning
                     if (
-                        defaultDeploymentOption().toLocaleLowerCase() === DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
+                        this.deploymentType == DeploymentType.SELECTIVE_MDAPI_DEPLOY &&
                         resolvedSourceDirectory != emptyCheck.resolvedSourceDirectory
                     ) {
                         SFPLogger.log(
@@ -148,7 +128,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     }
 
                     let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
-                        this.org,
+                        this.sfpOrg,
                         emptyCheck.resolvedSourceDirectory,
                         this.packageDirectory,
                         deploymentOptions,
@@ -165,8 +145,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                                 //Bring back the original profiles, reconcile and redeploy again
                                 await this.reconcileAndRedeployProfiles(
                                     profileFolders,
-                                    this.sourceDirectory,
-                                    this.targetusername,
+                                    this.sfpPackage.sourceDir,
+                                     this.sfpOrg.getUsername(),
                                     this.packageDirectory,
                                     tempDir,
                                     deploymentOptions
@@ -199,11 +179,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
         //On a diff deployment, we might need to deploy full as version changed or scratch org config has changed
         //In that case lets check again with the main directory and proceed ahead with deployment
-        if (
-            defaultDeploymentOption().toLocaleLowerCase() == DEPLOYMENT_OPTION.SELECTIVE_DEPLOYMENT &&
-            status.result == 'skip'
-        ) {
-            sourceDirectory = sourceDirectory.substring(0, this.sourceDirectory.indexOf('/diff'));
+        if (this.deploymentType == DeploymentType.SELECTIVE_MDAPI_DEPLOY && status.result == 'skip') {
+            sourceDirectory = sourceDirectory.substring(0, this.sfpPackage.sourceDir.indexOf('/diff'));
             //Check empty conditions
             status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(sourceDirectory, packageDirectory, false);
         }
@@ -225,12 +202,12 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
     private handleForceIgnores() {
         if (this.pathToReplacementForceIgnore) {
-            this.replaceForceIgnoreInSourceDirectory(this.sourceDirectory, this.pathToReplacementForceIgnore);
+            this.replaceForceIgnoreInSourceDirectory(this.sfpPackage.sourceDir, this.pathToReplacementForceIgnore);
 
             //Handle Diff condition
             if (this.isDiffFolderAvailable)
                 this.replaceForceIgnoreInSourceDirectory(
-                    path.join(this.sourceDirectory, 'diff'),
+                    path.join(this.sfpPackage.sourceDir, 'diff'),
                     this.pathToReplacementForceIgnore
                 );
         }
@@ -244,8 +221,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 this.logger
             );
             let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
-                this.targetusername,
-                path.join(this.sourceDirectory, 'destructive', 'destructiveChanges.xml')
+                 this.sfpOrg.getUsername(),
+                path.join(this.sfpPackage.sourceDir, 'destructive', 'destructiveChanges.xml')
             );
 
             await deployDestructiveManifestToOrg.exec();
@@ -258,22 +235,11 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         }
     }
 
-    private isAllTestsToBeTriggered(packageMetadata: PackageMetadata) {
-        if (packageMetadata.package_type == 'delta') {
-            SFPLogger.log(
-                ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT---------------------------------------------${EOL}` +
-                    `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
-                    `75% test coverage, However being a dynamically generated delta package, we will deploying via triggering all local tests${EOL}` +
-                    `This definitely is not optimal approach on large orgs, You might want to start splitting into smaller source/unlocked packages  ${EOL}` +
-                    `-------------------------------------------------------------------------------------------------------------`,
-                LoggerLevel.INFO,
-                this.logger
-            );
-            return true;
-        } else if (
-            this.packageMetadata.package_type == 'source' &&
-            this.packageMetadata.isApexFound == true &&
-            this.packageMetadata.apexTestClassses == null
+    private isAllTestsToBeTriggered(sfpPackage: SfpPackage) {
+        if (
+            this.sfpPackage.packageType == PackageType.Source &&
+            this.sfpPackage.isApexFound == true &&
+            this.sfpPackage.apexTestClassses == null
         ) {
             SFPLogger.log(
                 ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT--------------------------------------------${EOL}` +
@@ -289,16 +255,28 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         } else return false;
     }
 
-    private async reconcileProfilesBeforeDeployment(
-        profileFolders: any,
-        sourceDirectoryPath: string,
-        target_org: string,
-        tempDir: string
-    ) {
+    private async reconcileProfilesBeforeDeployment(sourceDirectoryPath: string, target_org: string, tempDir: string) {
+        let profileFolders: any;
         let isReconcileActivated: boolean = false;
         let isReconcileErrored: boolean = false;
         try {
-            SFPLogger.log('Attempting reconcile to profiles', LoggerLevel.INFO, this.logger);
+            //Hard exit.. no reconcile set in orchestrator
+            if (this.sfpPackage.reconcileProfiles == false) return { isReconcileActivated: false };
+
+            //Handle diff for fastfeedback
+            if (this.sfpPackage.isProfilesFound) {
+                if (this.isDiffFolderAvailable) {
+                    if (this.sfpPackage.diffPackageMetadata?.isProfilesFound == false)
+                        return { isReconcileActivated: false };
+                    else {
+                        sourceDirectoryPath = path.join(sourceDirectoryPath, 'diff');
+                    }
+                }
+            } else {
+                return { isReconcileActivated: false };
+            }
+
+            SFPLogger.log('Attempting reconcile to profiles as payload contain profiles', LoggerLevel.INFO, this.logger);
             //copy the original profiles to temporary location
             profileFolders = glob.sync('**/profiles', {
                 cwd: path.join(sourceDirectoryPath),
@@ -319,6 +297,12 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         } catch (err) {
             SFPLogger.log('Failed to reconcile profiles:' + err, LoggerLevel.INFO, this.logger);
             isReconcileErrored = true;
+            if (profileFolders.length > 0) {
+                SFPLogger.log('Restoring original profiles as preprocessing failed', LoggerLevel.INFO, this.logger);
+                profileFolders.forEach((folder) => {
+                    fs.copySync(path.join(tempDir, folder), path.join(this.sfpPackage.sourceDir, folder));
+                });
+            }
         }
         return { profileFolders, isReconcileActivated, isReconcileErrored };
     }
@@ -333,10 +317,22 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     ) {
         //if no profile supported metadata, no point in
         //doing a reconcile
-        let packageManifest = await PackageManifest.createWithJSONManifest(this.packageMetadata.payload);
-        if (!packageManifest.isPayLoadContainTypesSupportedByProfiles()) return;
+
+        //Handle diff for fastfeedback
+        if (this.isDiffFolderAvailable) {
+            if (this.sfpPackage.diffPackageMetadata?.isProfilesFound == false) return;
+            if (this.sfpPackage.diffPackageMetadata?.isPayLoadContainTypesSupportedByProfiles == false) return;
+
+            if (this.sfpPackage.diffPackageMetadata?.isProfilesFound) {
+                sourceDirectoryPath = path.join(sourceDirectoryPath, 'diff');
+            }
+        } else {
+            if (this.sfpPackage.isProfilesFound == false) return;
+            if (this.sfpPackage.isPayLoadContainTypesSupportedByProfiles == false) return;
+        }
 
         if (profileFolders.length > 0) {
+            SFPLogger.log(`Restoring original profiles for reconcile and deploy`, LoggerLevel.INFO, this.logger);
             profileFolders.forEach((folder) => {
                 fs.copySync(path.join(tmpdir, folder), path.join(sourceDirectoryPath, folder));
             });
@@ -344,7 +340,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             //Now Reconcile
             let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
                 target_org,
-                path.join(sourceDirectoryPath),
+                sourceDirectoryPath,
                 this.logger
             );
             await reconcileProfileAgainstOrg.exec();
@@ -377,7 +373,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             );
 
             let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
-                this.org,
+                this.sfpOrg,
                 profileDeploymentStagingDirectory,
                 sourceDirectory,
                 deploymentOptions,
@@ -426,35 +422,33 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 return deploymentOptions;
             }
 
-            /* TODO: This should only be displayed during normal installation and not validate, as tests are skipped always
-              For addressing this, install source needs context on which stage package is installed
-              which we do not have here, hence changing this loglevel to DEBUG For now, */
-            if (orgDetails && orgDetails.isSandbox) {
-                SFPLogger.log(
-                    ` --------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
-                        `Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
-                        `-------------------------------------------------------------------------------------------------------------`,
-                    LoggerLevel.DEBUG,
-                    this.logger
-                );
+            if (orgDetails?.isSandbox) {
+                if (!this.options.isInstallingForValidation)
+                    SFPLogger.log(
+                        ` ------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
+                            `  Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
+                            `-------------------------------------------------------------------------------------------------------------`,
+                        LoggerLevel.WARN,
+                        this.logger
+                    );
                 deploymentOptions.testLevel = TestLevel.RunNoTests;
             } else {
                 SFPLogger.log(
-                    ` -------------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
+                    `---------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
                         `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
                         `-------------------------------------------------------------------------------------------------------------`,
                     LoggerLevel.WARN,
                     this.logger
                 );
-                deploymentOptions.testLevel = TestLevel.RunNoTests;
+                deploymentOptions.testLevel = TestLevel.RunLocalTests;
             }
-        } else if (this.packageMetadata.isApexFound) {
-            if (this.packageMetadata.isTriggerAllTests) {
+        } else if (this.sfpPackage.isApexFound) {
+            if (this.sfpPackage.isTriggerAllTests) {
                 deploymentOptions.testLevel = TestLevel.RunAllTestsInPackage;
-            } else if (this.packageMetadata.apexTestClassses?.length > 0 && optimizeDeployment) {
+            } else if (this.sfpPackage.apexTestClassses?.length > 0 && optimizeDeployment) {
                 deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
                 deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
-                    this.packageMetadata.apexTestClassses
+                    this.sfpPackage.apexTestClassses
                 );
             } else {
                 deploymentOptions.testLevel = TestLevel.RunLocalTests;

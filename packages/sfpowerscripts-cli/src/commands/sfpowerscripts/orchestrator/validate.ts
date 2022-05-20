@@ -103,6 +103,9 @@ export default class Validate extends SfpowerscriptsCommand {
             description: messages.getMessage('disableArtifactUpdateFlagDescription'),
             default: false,
         }),
+        fastfeedback: flags.boolean({
+            description: messages.getMessage('fastfeedbackFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -138,7 +141,11 @@ export default class Validate extends SfpowerscriptsCommand {
 
         SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`validate`)}`));
         SFPLogger.log(COLOR_HEADER(`Pools being used: ${this.flags.pools}`));
-        SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
+        if (this.flags.fastfeedback) SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Fast Feedback`)}`));
+        else {
+            SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Thorough`)}`));
+            SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
+        }
         SFPLogger.log(
             COLOR_HEADER(`Dependency Validation: ${this.flags.enabledependencyvalidation ? 'true' : 'false'}`)
         );
@@ -168,6 +175,7 @@ export default class Validate extends SfpowerscriptsCommand {
                 isDependencyAnalysis: this.flags.enabledependencyvalidation,
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
+                isFastFeedbackMode: this.flags.fastfeedback,
             };
 
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);

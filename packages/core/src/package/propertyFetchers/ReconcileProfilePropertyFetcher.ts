@@ -1,8 +1,8 @@
-import SFPPackage from '../SFPPackage';
+import SfpPackage from '../SfpPackage';
 import PropertyFetcher from './PropertyFetcher';
 
 export default class ReconcilePropertyFetcher implements PropertyFetcher {
-    getSfpowerscriptsProperties(packageContents: SFPPackage, packageLogger?: any) {
+    getSfpowerscriptsProperties(packageContents: SfpPackage, packageLogger?: any) {
         if (packageContents.packageDescriptor.hasOwnProperty('reconcileProfiles')) {
             packageContents.reconcileProfiles = packageContents.packageDescriptor.reconcileProfiles;
         }

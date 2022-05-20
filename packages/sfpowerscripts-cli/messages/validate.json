@@ -15,5 +15,6 @@
     "enableDependencyValidation": "Validate dependencies between packages for changed components",
     "tagFlagDescription": "Tag the build with a label, useful to identify in metrics",
     "disableDiffCheckFlagDescription": "Disables diff check while validating, this will validate all the packages in the repository",
-    "disableArtifactUpdateFlagDescription": "Do not update information about deployed artifacts to the org"
+    "disableArtifactUpdateFlagDescription": "Do not update information about deployed artifacts to the org",
+    "fastfeedbackFlagDescription": "Enable validation in fast feedback mode, In fast feedback mode, validation will only do selective deployment of and selective tests"
 }

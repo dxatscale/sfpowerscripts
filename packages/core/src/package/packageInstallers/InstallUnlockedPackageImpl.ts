@@ -1,43 +1,41 @@
-import PackageMetadata from '../../PackageMetadata';
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 import PackageMetadataPrinter from '../../display/PackageMetadataPrinter';
-import { InstallPackage } from './InstallPackage';
+import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
 import InstallUnlockedPackageWrapper from '../../sfdxwrappers/InstallUnlockedPackageImpl';
+import SfpPackage from '../SfpPackage';
+import SFPOrg from '../../org/SFPOrg';
+
 
 export default class InstallUnlockedPackageImpl extends InstallPackage {
     private packageVersionId;
-    private options;
+
 
     public constructor(
-        sfdxPackage: string,
-        targetusername: string,
-        options: any,
-        skipIfPackageInstalled: boolean,
-        packageMetadata: PackageMetadata,
-        sourceDirectory: string,
+        sfpPackage: SfpPackage,
+        targetOrg: SFPOrg,
+        options: SfpPackageInstallationOptions,
         logger: Logger,
-        isDryRun: boolean
     ) {
-        super(sfdxPackage, targetusername, sourceDirectory, packageMetadata, skipIfPackageInstalled, logger, isDryRun);
-        this.packageVersionId = packageMetadata.package_version_id;
+        super(sfpPackage, targetOrg, logger,options);
+        this.packageVersionId = sfpPackage.package_version_id;
         this.options = options;
     }
 
     public async install() {
         //Print Metadata carried in the package
-        PackageMetadataPrinter.printMetadataToDeploy(this.packageMetadata?.payload, this.logger);
+        PackageMetadataPrinter.printMetadataToDeploy(this.sfpPackage?.payload, this.logger);
 
         let installUnlockedPackageWrapper: InstallUnlockedPackageWrapper = new InstallUnlockedPackageWrapper(
             this.logger,
             LoggerLevel.INFO,
             null,
-            this.targetusername,
+             this.sfpOrg.getUsername(),
             this.packageVersionId,
-            this.options['waitTime'],
-            this.options['publishWaitTime'],
-            this.options['installationkey'],
-            this.options['securitytype'],
-            this.options['upgradetype'],
+            this.options.waitTime,
+            this.options.publishWaitTime.toString(),
+            this.options.installationkey,
+            this.options.securitytype,
+            this.options.upgradetype,
             this.options.apiVersion
         );
         SFPLogger.log(
@@ -56,11 +54,11 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
         try {
             if (skipIfPackageInstalled) {
                 SFPLogger.log(
-                    `Checking Whether Package with ID ${this.packageVersionId} is installed in  ${this.targetusername}`,
+                    `Checking Whether Package with ID ${this.packageVersionId} is installed in  ${ this.sfpOrg.getUsername()}`,
                     null,
                     this.logger
                 );
-                let installedPackages = await this.org.getAllInstalled2GPPackages();
+                let installedPackages = await this.sfpOrg.getAllInstalled2GPPackages();
 
                 let packageFound = installedPackages.find((installedPackage) => {
                     return installedPackage.subscriberPackageVersionId === this.packageVersionId;
@@ -68,14 +66,14 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
 
                 if (packageFound) {
                     SFPLogger.log(
-                        `Package to be installed was found in the target org  ${this.targetusername}`,
+                        `Package to be installed was found in the target org  ${ this.sfpOrg.getUsername()}`,
                         LoggerLevel.INFO,
                         this.logger
                     );
                     return false;
                 } else {
                     SFPLogger.log(
-                        `Package to be installed was not found in the target org  ${this.targetusername}, Proceeding to instal.. `,
+                        `Package to be installed was not found in the target org  ${ this.sfpOrg.getUsername()}, Proceeding to instal.. `,
                         LoggerLevel.INFO,
                         this.logger
                     );

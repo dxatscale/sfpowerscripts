@@ -1,4 +1,5 @@
 import { Connection } from '@salesforce/core';
+import chunkCollection from '../queryHelper/ChunkCollection';
 import QueryHelper from '../queryHelper/QueryHelper';
 
 export default class ApexTriggerFetcher {
@@ -11,9 +12,17 @@ export default class ApexTriggerFetcher {
      * @returns
      */
     public async fetchApexTriggerByName(triggerNames: string[]): Promise<{ Id: string; Name: string }[]> {
-        let collection = triggerNames.map((name) => `'${name}'`).toString(); // transform into formatted string for query
-        let query = `SELECT ID, Name FROM ApexTrigger WHERE Name IN (${collection})`;
+        let result: {Id: string, Name: string}[] = [];
 
-        return QueryHelper.query<{ Id: string; Name: string }>(query, this.conn, false);
+        const chunks = chunkCollection(triggerNames);
+        for (const chunk of chunks) {
+            const formattedChunk = chunk.map(elem => `'${elem}'`).toString(); // transform into formatted string for query
+            const query = `SELECT ID, Name FROM ApexTrigger WHERE Name IN (${formattedChunk})`;
+
+            const records = await QueryHelper.query<{ Id: string; Name: string }>(query, this.conn, false);
+            result = result.concat(records);
+        }
+
+        return result;
     }
 }

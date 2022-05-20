@@ -3,6 +3,7 @@ import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { flags } from '@salesforce/command';
 import ValidateImpl, { ValidateMode, ValidateProps } from '../../../impl/validate/ValidateImpl';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validateAgainstOrg');
@@ -34,6 +35,12 @@ export default class Validate extends SfpowerscriptsCommand {
             char: 'g',
             description: messages.getMessage('logsGroupSymbolFlagDescription'),
         }),
+        basebranch: flags.string({
+            description: messages.getMessage('baseBranchFlagDescription'),
+        }),
+        fastfeedback: flags.boolean({
+            description: messages.getMessage('fastfeedbackFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -58,14 +65,22 @@ export default class Validate extends SfpowerscriptsCommand {
     async execute(): Promise<void> {
         let executionStartTime = Date.now();
 
-        console.log('-----------sfpowerscripts orchestrator ------------------');
-        console.log('command: validateAgainstOrg');
-        console.log(`target org: ${this.flags.targetorg}`);
-        console.log(`Coverage Percentage: ${this.flags.coveragepercent}`);
-        console.log(
-            `Using shapefile to override existing shape of the org: ${this.flags.shapefile ? 'true' : 'false'}`
+        SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`validateAgainstOrg`)}`));
+        SFPLogger.log(COLOR_HEADER(`Target Org: ${this.flags.targetorg}`));
+        if (this.flags.fastfeedback) SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Fast Feedback`)}`));
+        else {
+            SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Thorough`)}`));
+            SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
+        }
+        SFPLogger.log(
+            COLOR_HEADER(
+                `Using shapefile to override existing shape of the org: ${this.flags.shapefile ? 'true' : 'false'}`
+            )
         );
-        console.log('---------------------------------------------------------');
+
+        SFPLogger.log(
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+        );
 
         let validateResult: boolean = false;
         try {
@@ -75,7 +90,9 @@ export default class Validate extends SfpowerscriptsCommand {
                 logsGroupSymbol: this.flags.logsgroupsymbol,
                 targetOrg: this.flags.targetorg,
                 diffcheck: this.flags.diffcheck,
+                baseBranch: this.flags.basebranch,
                 disableArtifactCommit: this.flags.disableartifactupdate,
+                isFastFeedbackMode: this.flags.fastfeedback,
             };
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
             await validateImpl.exec();

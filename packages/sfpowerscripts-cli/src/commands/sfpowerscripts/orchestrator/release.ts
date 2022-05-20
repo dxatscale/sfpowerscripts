@@ -246,9 +246,7 @@ export default class Release extends SfpowerscriptsCommand {
                 SFPLogger.log(
                     COLOR_ERROR(
                         `\nPackages Failed to Deploy`,
-                        releaseResult.deploymentResult.failed.map(
-                            (packageInfo) => packageInfo.packageMetadata.package_name
-                        )
+                        releaseResult.deploymentResult.failed.map((packageInfo) => packageInfo.sfpPackage.packageName)
                     )
                 );
             }

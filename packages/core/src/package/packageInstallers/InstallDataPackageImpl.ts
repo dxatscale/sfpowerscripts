@@ -1,4 +1,3 @@
-import PackageMetadata from '../../PackageMetadata';
 import fs = require('fs-extra');
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 import SFDMURunImpl from '../../sfdmuwrapper/SFDMURunImpl';
@@ -6,27 +5,25 @@ import VlocityPackDeployImpl from '../../vlocitywrapper/VlocityPackDeployImpl';
 import { SFDXCommand } from '../../command/SFDXCommand';
 const path = require('path');
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
-import { InstallPackage } from './InstallPackage';
+import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
+import SfpPackage from '../SfpPackage';
+import SFPOrg from '../../org/SFPOrg';
 
 export default class InstallDataPackageImpl extends InstallPackage {
     public constructor(
-        sfdxPackage: string,
-        targetusername: string,
-        sourceDirectory: string,
-        packageMetadata: PackageMetadata,
-        skipIfPackageInstalled: boolean,
+        sfpPackage: SfpPackage,
+        targetOrg:SFPOrg,
         logger: Logger,
-        private logLevel: LoggerLevel,
-        isDryRun: boolean
+        options: SfpPackageInstallationOptions,
     ) {
-        super(sfdxPackage, targetusername, sourceDirectory, packageMetadata, skipIfPackageInstalled, logger, isDryRun);
+        super(sfpPackage, targetOrg, logger,options);
     }
 
     public async install() {
         try {
             //Fetch the sfdxcommand executor for the type
             let dataPackageDeployer: SFDXCommand = await this.getSFDXCommand(
-                this.sourceDirectory,
+                this.sfpPackage.sourceDir,
                 this.packageDirectory
             );
 
@@ -36,7 +33,7 @@ export default class InstallDataPackageImpl extends InstallPackage {
             SFPLogger.log(result, LoggerLevel.INFO, this.logger);
         } catch (error) {
             let csvIssuesReportFilepath: string = path.join(
-                this.sourceDirectory,
+                this.sfpPackage.sourceDir,
                 this.packageDirectory,
                 `CSVIssuesReport.csv`
             );
@@ -58,20 +55,20 @@ export default class InstallDataPackageImpl extends InstallPackage {
         //Pick the type of SFDX command to use
         let dataPackageDeployer: SFDXCommand;
         if (packageType === 'sfdmu') {
-            let orgDomainUrl = await new OrgDetailsFetcher(this.targetusername).getOrgDomainUrl();
+            let orgDomainUrl = await new OrgDetailsFetcher( this.sfpOrg.getUsername()).getOrgDomainUrl();
 
             dataPackageDeployer = new SFDMURunImpl(
                 sourceDirectory,
-                this.targetusername,
+                 this.sfpOrg.getUsername(),
                 orgDomainUrl,
                 packageDirectory,
                 this.logger,
-                this.logLevel
+                LoggerLevel.INFO
             );
         } else if (packageType === 'vlocity') {
             dataPackageDeployer = new VlocityPackDeployImpl(
-                this.sourceDirectory,
-                this.targetusername,
+                this.sfpPackage.sourceDir,
+                 this.sfpOrg.getUsername(),
                 packageDirectory,
                 null,
                 null

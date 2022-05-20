@@ -3,10 +3,7 @@ import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import * as fs from 'fs-extra';
 import path = require('path');
-import ArtifactFilePathFetcher, {
-    ArtifactFilePaths,
-} from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFilePathFetcher';
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
+import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
 import child_process = require('child_process');
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import SFPLogger, {
@@ -20,6 +17,9 @@ import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormat
 import simplegit from 'simple-git';
 import GitIdentity from '../../../impl/git/GitIdentity';
 import defaultShell from '@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell';
+import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
@@ -153,8 +153,8 @@ export default class Promote extends SfpowerscriptsCommand {
                 packageVersionList = JSON.parse(packageVersionListJson);
             }
 
-            let artifacts = ArtifactFilePathFetcher.findArtifacts(this.flags.artifactdir);
-            let artifactFilePaths = ArtifactFilePathFetcher.fetchArtifactFilePaths(this.flags.artifactdir);
+            let artifacts = ArtifactFetcher.findArtifacts(this.flags.artifactdir);
+            let artifactFilePaths = ArtifactFetcher.fetchArtifacts(this.flags.artifactdir);
 
             // Pattern captures two named groups, the "package" name and "version" number
             let pattern = new RegExp('(?<package>^.*)(?:_sfpowerscripts_artifact_)(?<version>.*)(?:\\.zip)');
@@ -172,16 +172,12 @@ export default class Promote extends SfpowerscriptsCommand {
                     continue;
                 }
 
-                let { sourceDirectory, packageMetadata } = this.getPackageInfo(
-                    artifactFilePaths,
-                    packageName,
-                    packageVersionNumber
-                );
+                let sfpPackage = await this.getPackageInfo(artifactFilePaths, packageName, packageVersionNumber);
 
-                let packageType = packageMetadata.package_type;
-                let packageVersionId = packageMetadata.package_version_id;
+                let packageType = sfpPackage.package_type;
+                let packageVersionId = sfpPackage.package_version_id;
 
-                if (this.flags.publishpromotedonly && packageType === 'unlocked') {
+                if (this.flags.publishpromotedonly && packageType === PackageType.Unlocked) {
                     let isReleased = this.isPackageVersionIdReleased(packageVersionList, packageVersionId);
 
                     if (!isReleased) {
@@ -196,13 +192,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
                 try {
                     if (this.flags.npm) {
-                        this.publishUsingNpm(
-                            sourceDirectory,
-                            packageName,
-                            packageVersionNumber,
-                            packageMetadata,
-                            npmrcFilesToCleanup
-                        );
+                        this.publishUsingNpm(sfpPackage, packageVersionNumber, npmrcFilesToCleanup);
                     } else {
                         this.publishUsingScript(packageName, packageVersionNumber, artifact);
                     }
@@ -222,7 +212,7 @@ export default class Promote extends SfpowerscriptsCommand {
                 }
             }
 
-            if (this.flags.gittag && failedArtifacts.length == 0) {
+            if (this.flags.gittag) {
                 await this.createGitTags(succesfullyPublishedPackageNamesForTagging);
                 await this.pushGitTags();
             }
@@ -280,24 +270,18 @@ export default class Promote extends SfpowerscriptsCommand {
         }
     }
 
-    private publishUsingNpm(
-        sourceDirectory: string,
-        packageName: string,
-        packageVersionNumber: string,
-        packageMetadata: PackageMetadata,
-        npmrcFilesToCleanup: string[]
-    ) {
-        let artifactRootDirectory = path.dirname(sourceDirectory);
+    private publishUsingNpm(sfpPackage: SfpPackage, packageVersionNumber: string, npmrcFilesToCleanup: string[]) {
+        let artifactRootDirectory = path.dirname(sfpPackage.sourceDir);
 
         // NPM does not accept packages with uppercase characters
-        let name: string = packageName.toLowerCase() + '_sfpowerscripts_artifact';
+        let name: string = sfpPackage.packageName.toLowerCase() + '_sfpowerscripts_artifact';
 
         if (this.flags.scope) name = `@${this.flags.scope.toLowerCase()}/` + name;
 
         let packageJson = {
             name: name,
             version: packageVersionNumber,
-            repository: packageMetadata.repository_url,
+            repository: sfpPackage.repository_url,
         };
 
         fs.writeFileSync(path.join(artifactRootDirectory, 'package.json'), JSON.stringify(packageJson, null, 4));
@@ -311,11 +295,11 @@ export default class Promote extends SfpowerscriptsCommand {
         let cmd = `npm publish`;
 
         //Do a tag based on the branch
-        if (packageMetadata.branch) {
-            cmd += ` --tag ${packageMetadata.branch}`;
+        if (sfpPackage.branch) {
+            cmd += ` --tag ${sfpPackage.branch}`;
             SFPLogger.log(
                 COLOR_KEY_MESSAGE(
-                    `Publishing ${packageName} Version ${packageVersionNumber} with tag ${packageMetadata.branch}...`
+                    `Publishing ${sfpPackage.packageName} Version ${packageVersionNumber} with tag ${sfpPackage.branch}...`
                 )
             );
         }
@@ -401,20 +385,14 @@ export default class Promote extends SfpowerscriptsCommand {
      * @param packageName
      * @param packageVersionNumber
      */
-    private getPackageInfo(
-        artifacts: ArtifactFilePaths[],
-        packageName,
-        packageVersionNumber
-    ): { sourceDirectory: string; packageMetadata: PackageMetadata } {
+    private async getPackageInfo(artifacts: Artifact[], packageName, packageVersionNumber): Promise<SfpPackage> {
         for (let artifact of artifacts) {
-            let packageMetadata: PackageMetadata = JSON.parse(
-                fs.readFileSync(artifact.packageMetadataFilePath, 'utf8')
-            );
+            let sfpPackage = await SfpPackageBuilder.buildPackageFromArtifact(artifact, new ConsoleLogger());
             if (
-                packageMetadata.package_name === packageName &&
-                packageMetadata.package_version_number === packageVersionNumber.replace('-', '.')
+                sfpPackage.packageName === packageName &&
+                sfpPackage.versionNumber === packageVersionNumber.replace('-', '.')
             ) {
-                return { sourceDirectory: artifact.sourceDirectoryPath, packageMetadata: packageMetadata };
+                return sfpPackage;
             }
         }
 

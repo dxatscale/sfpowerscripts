@@ -7,6 +7,11 @@ import ProjectConfig from '../project/ProjectConfig';
 import GitTags from '../git/GitTags';
 import lodash = require('lodash');
 import { EOL } from 'os';
+import { PackageType } from './SfpPackage';
+
+export class PackageDiffOptions {
+    skipPackageDescriptorChange: boolean = false;
+}
 
 export default class PackageDiffImpl {
     public constructor(
@@ -14,13 +19,14 @@ export default class PackageDiffImpl {
         private sfdx_package: string,
         private project_directory: string,
         private packagesToCommits?: { [p: string]: string },
-        private pathToReplacementForceIgnore?: string
+        private pathToReplacementForceIgnore?: string,
+        private diffOptions?: PackageDiffOptions
     ) {}
 
     public async exec(): Promise<{ isToBeBuilt: boolean; reason: string; tag?: string }> {
         let git: Git = new Git(this.project_directory);
 
-        let projectConfig = ProjectConfig.getSFDXPackageManifest(this.project_directory);
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(this.project_directory);
         let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(this.sfdx_package, projectConfig);
 
         SFPLogger.log(
@@ -44,7 +50,7 @@ export default class PackageDiffImpl {
 
             let packageType: string = ProjectConfig.getPackageType(projectConfig, this.sfdx_package);
 
-            if (packageType !== 'Data') modified_files = this.applyForceIgnoreToModifiedFiles(modified_files);
+            if (packageType !== PackageType.Data) modified_files = this.applyForceIgnoreToModifiedFiles(modified_files);
 
             SFPLogger.log(
                 `Checking for changes in source directory ${path.normalize(pkgDescriptor.path)}`,
@@ -122,7 +128,12 @@ export default class PackageDiffImpl {
 
         if (!lodash.isEqual(packageDescriptor, packageDescriptorFromLatestTag)) {
             SFPLogger.log(`Found change in ${this.sfdx_package} package descriptor`, LoggerLevel.INFO, this.logger);
-            return true;
+
+            //skip check and ignore
+            if (this.diffOptions?.skipPackageDescriptorChange) {
+                SFPLogger.log(`Ignoring changes in package desriptor as asked to..`, LoggerLevel.INFO, this.logger);
+                return false;
+            } else return true;
         } else return false;
     }
 

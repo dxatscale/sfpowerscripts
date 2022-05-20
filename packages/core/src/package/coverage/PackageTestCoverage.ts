@@ -1,6 +1,6 @@
 import SFPLogger, { COLOR_WARNING, Logger } from '../../logger/SFPLogger';
 import IndividualClassCoverage from '../../apex/coverage/IndividualClassCoverage';
-import SFPPackage from '../SFPPackage';
+import SfpPackage, { PackageType } from '../SfpPackage';
 import { Connection } from '@salesforce/core';
 import ApexClassFetcher from '../../apex/ApexClassFetcher';
 import ApexCodeCoverageAggregateFetcher from '../../apex/coverage/ApexCodeCoverageAggregateFetcher';
@@ -11,7 +11,7 @@ export default class PackageTestCoverage {
     private packageTestCoverage: number = -1; // Set inital value
 
     public constructor(
-        private pkg: SFPPackage,
+        private pkg: SfpPackage,
         private codeCoverage: any,
         private logger: Logger,
         private readonly conn: Connection
@@ -95,11 +95,13 @@ export default class PackageTestCoverage {
             coverageThreshold = 75;
         }
 
-        if (this.pkg.packageType === 'Unlocked') {
+        
+      
+        if (this.pkg.packageType === PackageType.Unlocked) {
             if (this.packageTestCoverage < coverageThreshold) {
                 // Coverage inadequate, set result to false
                 return {
-                    result: true, //Changed to warning, as of Winter 22, coverage is really unstable
+                    result: false, // Had earlier Changed to warning in Apr-22, due to unstable coverage, now reverting
                     packageTestCoverage: this.packageTestCoverage,
                     classesCovered: classesCovered,
                     message: `${COLOR_WARNING(
@@ -114,8 +116,8 @@ export default class PackageTestCoverage {
                     message: `Package overall coverage is greater than ${coverageThreshold}%`,
                 };
             }
-        } else if (this.pkg.packageType === 'Source') {
-            SFPLogger.log("Package type is 'source'. Validating individual class coverage");
+        } else if (this.pkg.packageType === PackageType.Source) {
+            SFPLogger.log("Package type is Source. Validating individual class coverage");
 
             let individualClassValidationResults = this.individualClassCoverage.validateIndividualClassCoverage(
                 this.getIndividualClassCoverageByPackage(this.codeCoverage),

@@ -42,7 +42,7 @@ describe('Provided an apex test suite from a source directory', () => {
         });
 
         let apexTestSuite = new ApexTestSuite(`dir`, `test`);
-    
+
         expect(apexTestSuite.getConstituentClasses()).rejects.toThrowError();
     });
 

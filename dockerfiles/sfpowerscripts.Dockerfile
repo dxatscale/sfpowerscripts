@@ -1,4 +1,4 @@
-FROM heroku/heroku:20
+FROM  heroku/heroku:20.v77
 
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -109,8 +109,10 @@ RUN cd $HOME/sfpowerkit \
 
 # Install sfdx plugins
 RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.8.0
+RUN echo 'y' | sfdx plugins:install apexlink@2.3.2
 RUN echo 'y' | sfdx plugins:install sfdmu@4.13.0
-RUN echo 'y' | sfdx plugins:install sfpowerkit@4.2.5
+RUN echo 'y' | sfdx plugins:install sfpowerkit@4.2.8
+
 
 
 # install sfpowerscripts
@@ -127,4 +129,4 @@ LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/Accenture/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - April 22"
+LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - May 22"

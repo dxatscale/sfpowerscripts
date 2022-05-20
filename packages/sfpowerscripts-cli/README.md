@@ -2,31 +2,36 @@
 
 A Salesforce build system for package based development as a sfdx plugin that can be implemented in any CI/CD system of choice. Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/
 
-- Features
-  - Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance on programs often dealing with multiple number of packages
-  - Builds packages in parallel by respecting dependencies
-  - Ability to selectively build changed packages in a mono repo
-  - Ability to deploy only packages that are changed in repo
-  - Pooling commands to prepare a pool of scratch org's with pacakges pre installed for optimized Pull/Merge Request validation
-  - Artifacts Driven,  all create commands produce an artifact or operate on an artifact
-  - Integrate with any CI/CD system of choice
-  - Support for external scripts, as hooks making integration easy
+-   Features
+    -   Orchestrator, which utilizes sfdx-project.json as the source of truth for driving the build system, ensuring very low maintenance on programs often dealing with multiple number of packages
+    -   Builds packages in parallel by respecting dependencies
+    -   Ability to selectively build changed packages in a mono repo
+    -   Ability to deploy only packages that are changed in repo
+    -   Pooling commands to prepare a pool of scratch org's with pacakges pre installed for optimized Pull/Merge Request validation
+    -   Artifacts Driven, all create commands produce an artifact or operate on an artifact
+    -   Integrate with any CI/CD system of choice
+    -   Support for external scripts, as hooks making integration easy
 
 ## Installation
 
-The [SFDX CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm), [sfpowerkit plugin](https://github.com/Accenture/sfpowerkit), and  [sfdmu]()  are required for this plugin to work. If you have not already done so, please install both of these before continuing.
+The [SFDX CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm), [sfpowerkit plugin](https://github.com/Accenture/sfpowerkit), and [sfdmu]() are required for this plugin to work. If you have not already done so, please install both of these before continuing.
 
 To install the sfpowerscripts plugin, run the following command:
+
 ```
 $ sfdx plugins:install sfpowerkit
 $ sfdx plugins:install sfdmu
 $ sfdx plugins:install @dxatscale/sfpowerscripts
 ```
+
 For automated installations as part of a CI process or Dockerfile:
+
 ```
 $ echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts
 ```
+
   <!-- usage -->
+
 ```sh-session
 $ npm install -g @dxatscale/sfpowerscripts
 $ sfdx COMMAND
@@ -38,8 +43,8 @@ USAGE
   $ sfdx COMMAND
 ...
 ```
-<!-- usagestop -->
 
+<!-- usagestop -->
 
 ## Using sfpowerscripts
 
@@ -72,7 +77,9 @@ USAGE
     "buildCollection": ["packageB", "packageC"] // packages in the same build collection are always built together, as long as one package in the collection has changed
   }
 ```
+
 ### Enabling StatsD Metrics
+
 Almost all the CLI commands have StatsD metrics capture enabled. This means you can setup deployment dashboards in a tool like
 Graphite or DataDog and capture your deployment statistics. Read more about this feature [here](https://app.gitbook.com/@dxatscale/s/sfpowerscripts/faq/metrics-and-dashboards)
 
@@ -92,6 +99,7 @@ To enable stasd, add the following environment variable, in the format below
 Many of the commands listed below will output variables which may be consumed as flag inputs in subsequent commands. Simply pass the **variable name** to the command, and it will be substituted with the corresponding value, at runtime.
 
 Eg.
+
 ```
   $ sfdx sfpowerscripts:package:version:increment -n <mypackage>
 
@@ -105,17 +113,16 @@ Eg.
 
 The following output variables are currently supported:
 
-* sfpowerscripts_incremented_project_version
-* sfpowerscripts_artifact_directory
-* sfpowerscripts_artifact_metadata_directory
-* sfpowerscripts_package_version_id
-* sfpowerscripts_package_version_number
-* sfpowerscripts_pmd_output_path
-* sfpowerscripts_scratchorg_username
-* sfpowerscripts_installsourcepackage_deployment_id
+-   sfpowerscripts_incremented_project_version
+-   sfpowerscripts_artifact_directory
+-   sfpowerscripts_artifact_metadata_directory
+-   sfpowerscripts_package_version_id
+-   sfpowerscripts_package_version_number
+-   sfpowerscripts_pmd_output_path
+-   sfpowerscripts_scratchorg_username
+-   sfpowerscripts_installsourcepackage_deployment_id
 
 If you require access to the variables at the shell layer, you may do so using the [readVars](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/scripts) helper script, which is included as part of this package.
-
 
 ### Reference name
 
@@ -133,48 +140,43 @@ Output variables:
 utility_sfpowerscripts_package_version_id=04t2v000007X2YWAA0
 ```
 
-
-
 <!-- usagestop -->
-  ## Commands
+
+## Commands
+
   <!-- commands -->
- - Orchestrator Commands
-   - [`sfdx sfpowerscripts:orchestrator:prepare`](#sfdx-sfpowerscriptsorchestratorprepare)
-   - [`sfdx sfpowerscripts:orchestrator:validate`](#sfdx-sfpowerscriptsorchestratorvalidate)
-   - [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`](#sfdx-sfpowerscriptsorchestratorvalidateagainstorg)
-   - [`sfdx sfpowerscripts:orchestrator:quickbuild`](#sfdx-sfpowerscriptsorchestratorquickbuild)
-   - [`sfdx sfpowerscripts:orchestrator:build`](#sfdx-sfpowerscriptsorchestratorbuild)
-   - [`sfdx sfpowerscripts:orchestrator:deploy`](#sfdx-sfpowerscriptsorchestratordeploy)
-   - [`sfdx sfpowerscripts:orchestrator:release`](#sfdx-sfpowerscriptsorchestratorrelease)
-   - [`sfdx sfpowerscripts:orchestrator:promote`](#sfdx-sfpowerscriptsorchestratorpromote)
-   - [`sfdx sfpowerscripts:orchestrator:publish`](#sfdx-sfpowerscriptsorchestratorpublish)
 
-- Changelog (Track Releases)
-   - [`sfdx sfpowerscripts:changelog:generate`](#sfdx-sfpowerscriptschangeloggenerate)
+-   Orchestrator Commands
 
- - Package Commands ( Build your own workflow)
-	 - [`sfdx sfpowerscripts:package:data:create`](#sfdx-sfpowerscriptspackagedatacreate)
-	 - [`sfdx sfpowerscripts:package:data:install`](#sfdx-sfpowerscriptspackagedatainstall)
-	 - [`sfdx sfpowerscripts:package:source:create`](#sfdx-sfpowerscriptspackagesourcecreate)
-	 - [`sfdx sfpowerscripts:package:source:install`](#sfdx-sfpowerscriptspackagesourceinstall)
-	 - [`sfdx sfpowerscripts:package:unlocked:create`](#sfdx-sfpowerscriptspackageunlockedcreate)
-	 - [`sfdx sfpowerscripts:package:unlocked:install`](#sfdx-sfpowerscriptspackageunlockedinstall)
-   - [`sfdx sfpowerscripts:package:version:increment`](#sfdx-sfpowerscriptspackageversionincrement)
+    -   [`sfdx sfpowerscripts:orchestrator:prepare`](#sfdx-sfpowerscriptsorchestratorprepare)
+    -   [`sfdx sfpowerscripts:orchestrator:validate`](#sfdx-sfpowerscriptsorchestratorvalidate)
+    -   [`sfdx sfpowerscripts:orchestrator:validateAgainstOrg`](#sfdx-sfpowerscriptsorchestratorvalidateagainstorg)
+    -   [`sfdx sfpowerscripts:orchestrator:quickbuild`](#sfdx-sfpowerscriptsorchestratorquickbuild)
+    -   [`sfdx sfpowerscripts:orchestrator:build`](#sfdx-sfpowerscriptsorchestratorbuild)
+    -   [`sfdx sfpowerscripts:orchestrator:deploy`](#sfdx-sfpowerscriptsorchestratordeploy)
+    -   [`sfdx sfpowerscripts:orchestrator:release`](#sfdx-sfpowerscriptsorchestratorrelease)
+    -   [`sfdx sfpowerscripts:orchestrator:promote`](#sfdx-sfpowerscriptsorchestratorpromote)
+    -   [`sfdx sfpowerscripts:orchestrator:publish`](#sfdx-sfpowerscriptsorchestratorpublish)
 
- - Pool Management
-	 - [`sfdx sfpowerscripts:pool:delete `](#sfdx-sfpowerscriptspooldelete)
-	 - [`sfdx sfpowerscripts:pool:fetch`](#sfdx-sfpowerscriptspoolfetch)
-	 - [`sfdx sfpowerscripts:pool:list`](#sfdx-sfpowerscriptspoollist)
+-   Changelog (Track Releases)
 
- - Static Analysis
-	 - [`sfdx sfpowerscripts:analyze:pmd`](#sfdx-sfpowerscriptsanalyzepmd)
+    -   [`sfdx sfpowerscripts:changelog:generate`](#sfdx-sfpowerscriptschangeloggenerate)
 
-- Apex tests
-  - [`sfdx sfpowerscripts:apextests:trigger`](#sfdx-sfpowerscriptsapexteststrigger)
-  - [`sfdx sfpowerscripts:apextests:validate`](#sfdx-sfpowerscriptsapextestsvalidate)
+-   Package Commands ( Build your own workflow) - [`sfdx sfpowerscripts:package:data:create`](#sfdx-sfpowerscriptspackagedatacreate) - [`sfdx sfpowerscripts:package:data:install`](#sfdx-sfpowerscriptspackagedatainstall) - [`sfdx sfpowerscripts:package:source:create`](#sfdx-sfpowerscriptspackagesourcecreate) - [`sfdx sfpowerscripts:package:source:install`](#sfdx-sfpowerscriptspackagesourceinstall) - [`sfdx sfpowerscripts:package:unlocked:create`](#sfdx-sfpowerscriptspackageunlockedcreate) - [`sfdx sfpowerscripts:package:unlocked:install`](#sfdx-sfpowerscriptspackageunlockedinstall)
 
-- Artifacts
-  - [`sfdx sfpowerscripts:artifacts:fetch`](#sfdx-sfpowerscriptsartifactsfetch)
+    -   [`sfdx sfpowerscripts:package:version:increment`](#sfdx-sfpowerscriptspackageversionincrement)
+
+-   Pool Management - [`sfdx sfpowerscripts:pool:delete`](#sfdx-sfpowerscriptspooldelete) - [`sfdx sfpowerscripts:pool:fetch`](#sfdx-sfpowerscriptspoolfetch) - [`sfdx sfpowerscripts:pool:list`](#sfdx-sfpowerscriptspoollist)
+
+-   Static Analysis - [`sfdx sfpowerscripts:analyze:pmd`](#sfdx-sfpowerscriptsanalyzepmd)
+
+-   Apex tests
+
+    -   [`sfdx sfpowerscripts:apextests:trigger`](#sfdx-sfpowerscriptsapexteststrigger)
+    -   [`sfdx sfpowerscripts:apextests:validate`](#sfdx-sfpowerscriptsapextestsvalidate)
+
+-   Artifacts
+    -   [`sfdx sfpowerscripts:artifacts:fetch`](#sfdx-sfpowerscriptsartifactsfetch)
 
 ## `sfdx sfpowerscripts:orchestrator:prepare`
 
@@ -353,7 +355,6 @@ OPTIONS
 ```
 
 _See code: [commands/sfpowerscripts/orchestrator/quickbuild.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/orchestrator/quickbuild.ts)_
-
 
 ## `sfdx sfpowerscripts:orchestrator:build`
 
@@ -627,8 +628,6 @@ EXAMPLE
 
 _See code: [commands/sfpowerscripts/changelog/generate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/changelog/generate.ts)_
 
-
-
 ## `sfdx sfpowerscripts:analyze:pmd`
 
 This task is used to run a static analysis of the apex classes and triggers using PMD, Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task
@@ -779,7 +778,6 @@ EXAMPLE
 
 _See code: [commands/sfpowerscripts/apextests/validate.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/apextests/validate.ts)_
 
-
 ## `sfdx sfpowerscripts:package:data:create`
 
 Creates a versioned artifact from a source directory containing SFDMU-based data (in csv format and export json). The artifact can be consumed by release pipelines, to deploy the data to orgs
@@ -829,7 +827,6 @@ EXAMPLES
 
 _See code: [commands/sfpowerscripts/package/data/create.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/data/create.ts)_
 
-
 ## `sfdx sfpowerscripts:package:data:install`
 
 Installs a SFDMU-based data package consisting of csvfiles and export.json to a target org
@@ -870,7 +867,6 @@ EXAMPLE
 ```
 
 _See code: [commands/sfpowerscripts/package/data/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/data/install.ts)_
-
 
 ## `sfdx sfpowerscripts:package:source:create`
 
@@ -1133,7 +1129,6 @@ EXAMPLE
 
 _See code: [commands/sfpowerscripts/package/unlocked/install.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/package/unlocked/install.ts)_
 
-
 ## `sfdx sfpowerscripts:package:version:increment`
 
 Increment the selected version counter by one and optionally commit changes to sfdx-project.json. This command does not push changes to the source repository
@@ -1323,6 +1318,5 @@ EXAMPLES
 ```
 
 _See code: [commands/sfpowerscripts/artifacts/fetch.ts](https://github.com/Accenture/sfpowerscripts/tree/develop/packages/sfpowerscripts-cli/src/commands/sfpowerscripts/artifacts/fetch.ts)_
-
 
 <!-- commandsstop -->

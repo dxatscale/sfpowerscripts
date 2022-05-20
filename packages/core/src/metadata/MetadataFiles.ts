@@ -187,9 +187,7 @@ export default class MetadataFiles {
     }
 
     public async isInModuleFolder(filePath: string) {
-        const packageDirectories = ProjectConfig.getSFDXPackageManifest(null).packageDirectories.map(
-            (elem) => elem.path
-        );
+        const packageDirectories = ProjectConfig.getSFDXProjectConfig(null).packageDirectories.map((elem) => elem.path);
         if (!packageDirectories || packageDirectories.length == 0) {
             return false;
         }

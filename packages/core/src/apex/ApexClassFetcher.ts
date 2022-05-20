@@ -1,4 +1,5 @@
 import { Connection } from '@salesforce/core';
+import chunkCollection from "../queryHelper/ChunkCollection";
 import QueryHelper from '../queryHelper/QueryHelper';
 
 export default class ApexClassFetcher {
@@ -11,9 +12,17 @@ export default class ApexClassFetcher {
      * @returns
      */
     public async fetchApexClassByName(classNames: string[]): Promise<{ Id: string; Name: string }[]> {
-        let collection = classNames.map((name) => `'${name}'`).toString(); // transform into formatted string for query
-        let query = `SELECT ID, Name FROM ApexClass WHERE Name IN (${collection})`;
+        let result: {Id: string; Name: string}[] = [];
 
-        return QueryHelper.query<{ Id: string; Name: string }>(query, this.conn, false);
+        const chunks = chunkCollection(classNames);
+        for (const chunk of chunks) {
+            const formattedChunk = chunk.map(elem => `'${elem}'`).toString(); // transform into formatted string for query
+            const query = `SELECT ID, Name FROM ApexClass WHERE Name IN (${formattedChunk})`;
+
+            const records = await QueryHelper.query<{ Id: string; Name: string }>(query, this.conn, false);
+            result = result.concat(records);
+        }
+
+        return result;
     }
 }

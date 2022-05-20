@@ -1,4 +1,5 @@
-import SFPPackage from '../package/SFPPackage';
+import * as _ from 'lodash';
+import SfpPackage from '../package/SfpPackage';
 
 export class TestOptions {
     synchronous?: boolean;
@@ -52,8 +53,9 @@ export class RunAllTestsInOrg extends TestOptions {
 }
 
 export class RunAllTestsInPackageOptions extends RunSpecifiedTestsOption {
-    public constructor(private _sfppackage: SFPPackage, wait_time: number, outputdir: string) {
+    public constructor(private _sfppackage: SfpPackage, wait_time: number, outputdir: string) {
         super(wait_time, outputdir, _sfppackage.apexTestClassses.toString(), false);
+        this.synchronous = _sfppackage.packageDescriptor.testSynchronous == true ? true : false;
     }
 
     public get sfppackage() {

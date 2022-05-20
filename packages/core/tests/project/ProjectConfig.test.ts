@@ -1,6 +1,7 @@
 import ProjectConfig from '../../src/project/ProjectConfig';
 import fs from 'fs-extra';
 import { jest, expect } from '@jest/globals';
+import { PackageType } from '../../src/package/SfpPackage';
 
 describe('Given a project directory or sfdx-project.json with multiple packages', () => {
     //given the below sfdx-project.json
@@ -70,7 +71,7 @@ describe('Given a project directory or sfdx-project.json with multiple packages'
     });
 
     it('Fetches all the package', () => {
-        const manifestHelperMock = jest.spyOn(ProjectConfig, 'getSFDXPackageManifest');
+        const manifestHelperMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
         manifestHelperMock.mockImplementation((projectDirectory: string) => {
             return sfdx_project;
         });
@@ -84,13 +85,13 @@ describe('Given a project directory or sfdx-project.json with multiple packages'
     });
 
     it('Get manifest, provided a directory', () => {
-        expect(ProjectConfig.getSFDXPackageManifest(null)).toStrictEqual(sfdx_project);
+        expect(ProjectConfig.getSFDXProjectConfig(null)).toStrictEqual(sfdx_project);
     });
 
     it('Gets the type of a package', () => {
-        expect(ProjectConfig.getPackageType(sfdx_project, 'bi')).toBe('Unlocked');
-        expect(ProjectConfig.getPackageType(sfdx_project, 'core')).toBe('Source');
-        expect(ProjectConfig.getPackageType(sfdx_project, 'mass-dataload')).toBe('Data');
+        expect(ProjectConfig.getPackageType(sfdx_project, 'bi')).toBe(PackageType.Unlocked);
+        expect(ProjectConfig.getPackageType(sfdx_project, 'core')).toBe(PackageType.Source);
+        expect(ProjectConfig.getPackageType(sfdx_project, 'mass-dataload')).toBe(PackageType.Data);
     });
 
     it('Gets the package descriptor of a provided package,provided directory', () => {

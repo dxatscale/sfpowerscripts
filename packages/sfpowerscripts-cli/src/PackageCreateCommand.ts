@@ -1,13 +1,14 @@
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
-import PackageMetadata from '@dxatscale/sfpowerscripts.core/lib/PackageMetadata';
 import { flags } from '@salesforce/command';
 import { fs, Messages } from '@salesforce/core';
 import { EOL } from 'os';
 import SfpowerscriptsCommand from './SfpowerscriptsCommand';
 import simplegit from 'simple-git';
 import GitIdentity from './impl/git/GitIdentity';
+import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create-package');
@@ -124,38 +125,37 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
 
     protected abstract getConfigFilePath(): string;
 
-    protected abstract create(): Promise<PackageMetadata>;
+    protected abstract create(): Promise<SfpPackage>;
 
-    private async postCreate(packageMetadata: PackageMetadata) {
-        this.printPackageDetails(packageMetadata);
+    private async postCreate(sfpPackage: SfpPackage) {
+        this.printPackageDetails(sfpPackage);
 
         if (this.flags.gittag) {
             let git = simplegit();
 
             await new GitIdentity(git).setUsernameAndEmail();
 
-            let tagname = `${this.sfdxPackage}_v${packageMetadata.package_version_number}`;
+            let tagname = `${this.sfdxPackage}_v${sfpPackage.package_version_number}`;
             console.log(`Creating tag ${tagname}`);
             await git.addAnnotatedTag(
                 tagname,
-                `${packageMetadata.package_name} sfpowerscripts package ${packageMetadata.package_version_number}`
+                `${sfpPackage.packageName} sfpowerscripts package ${sfpPackage.package_version_number}`
             );
 
-            packageMetadata.tag = tagname;
+            sfpPackage.tag = tagname;
         }
 
         //Generate Artifact
         let artifactFilepath: string = await ArtifactGenerator.generateArtifact(
-            this.sfdxPackage,
+            sfpPackage,
             process.cwd(),
-            this.artifactDirectory,
-            packageMetadata
+            this.artifactDirectory
         );
 
-        this.generateEnvironmentVariables(artifactFilepath, packageMetadata);
+        this.generateEnvironmentVariables(artifactFilepath, sfpPackage);
     }
 
-    private generateEnvironmentVariables(artifactFilepath: string, packageMetadata: PackageMetadata) {
+    private generateEnvironmentVariables(artifactFilepath: string, sfpPackage: SfpPackage) {
         let prefix = 'sfpowerscripts';
         if (this.refname != null) prefix = `${this.refname}_${prefix}`;
 
@@ -163,65 +163,79 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
 
         fs.writeFileSync('.env', `${prefix}_artifact_directory=${artifactFilepath}\n`, { flag: 'a' });
         console.log(`${prefix}_artifact_directory=${artifactFilepath}`);
-        fs.writeFileSync('.env', `${prefix}_package_version_number=${packageMetadata.package_version_number}\n`, {
+        fs.writeFileSync('.env', `${prefix}_package_version_number=${sfpPackage.package_version_number}\n`, {
             flag: 'a',
         });
-        console.log(`${prefix}_package_version_number=${packageMetadata.package_version_number}`);
+        console.log(`${prefix}_package_version_number=${sfpPackage.package_version_number}`);
 
-        if (packageMetadata.package_version_id) {
-            fs.writeFileSync('.env', `${prefix}_package_version_id=${packageMetadata.package_version_id}\n`, {
+        if (sfpPackage.package_version_id) {
+            fs.writeFileSync('.env', `${prefix}_package_version_id=${sfpPackage.package_version_id}\n`, {
                 flag: 'a',
             });
-            console.log(`${prefix}_package_version_id=${packageMetadata.package_version_id}`);
+            console.log(`${prefix}_package_version_id=${sfpPackage.package_version_id}`);
         }
     }
 
-    protected printPackageDetails(packageMetadata: PackageMetadata) {
+    protected printPackageDetails(sfpPackage: SfpPackage) {
         console.log(
             COLOR_HEADER(
-                `${EOL}${packageMetadata.package_name} package created in ${this.getFormattedTime(
-                    packageMetadata.creation_details.creation_time
+                `${EOL}${sfpPackage.packageName} package created in ${getFormattedTime(
+                    sfpPackage.creation_details.creation_time
                 )}`
             )
         );
         console.log(COLOR_HEADER(`-- Package Details:--`));
         console.log(
             COLOR_HEADER(`-- Package Version Number:        `),
-            COLOR_KEY_MESSAGE(packageMetadata.package_version_number)
+            COLOR_KEY_MESSAGE(sfpPackage.package_version_number)
         );
 
-        if (packageMetadata.package_type !== 'data') {
-            if (packageMetadata.package_type == 'unlocked') {
-                console.log(
-                    COLOR_HEADER(`-- Package Version Id:             `),
-                    COLOR_KEY_MESSAGE(packageMetadata.package_version_id)
-                );
-                console.log(
-                    COLOR_HEADER(`-- Package Test Coverage:          `),
-                    COLOR_KEY_MESSAGE(packageMetadata.test_coverage)
-                );
-                console.log(
-                    COLOR_HEADER(`-- Package Coverage Check Passed:  `),
-                    COLOR_KEY_MESSAGE(packageMetadata.has_passed_coverage_check)
-                );
+        if (sfpPackage.package_type !== PackageType.Data) {
+            if (sfpPackage.package_type == PackageType.Unlocked) {
+                if (sfpPackage.package_version_id)
+                    console.log(
+                        COLOR_HEADER(`-- Package Version Id:             `),
+                        COLOR_KEY_MESSAGE(sfpPackage.package_version_id)
+                    );
+                if (sfpPackage.test_coverage)
+                    console.log(
+                        COLOR_HEADER(`-- Package Test Coverage:          `),
+                        COLOR_KEY_MESSAGE(sfpPackage.test_coverage)
+                    );
+                if (sfpPackage.has_passed_coverage_check)
+                    console.log(
+                        COLOR_HEADER(`-- Package Coverage Check Passed:  `),
+                        COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check)
+                    );
             }
 
             console.log(
                 COLOR_HEADER(`-- Apex In Package:             `),
-                COLOR_KEY_MESSAGE(packageMetadata.isApexFound ? 'Yes' : 'No')
+                COLOR_KEY_MESSAGE(sfpPackage.isApexFound ? 'Yes' : 'No')
             );
             console.log(
                 COLOR_HEADER(`-- Profiles In Package:         `),
-                COLOR_KEY_MESSAGE(packageMetadata.isProfilesFound ? 'Yes' : 'No')
+                COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? 'Yes' : 'No')
             );
-            console.log(COLOR_HEADER(`-- Metadata Count:         `), COLOR_KEY_MESSAGE(packageMetadata.metadataCount));
+            console.log(COLOR_HEADER(`-- Metadata Count:         `), COLOR_KEY_MESSAGE(sfpPackage.metadataCount));
+            if (sfpPackage.diffPackageMetadata) {
+                console.log(
+                    COLOR_HEADER(`-- Source Version From:         `),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom)
+                );
+                console.log(
+                    COLOR_HEADER(`-- Source Version To:         `),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo)
+                );
+                console.log(
+                    COLOR_HEADER(`-- Metadata Count for Diff Package:         `),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.metadataCount)
+                );
+                console.log(
+                    COLOR_HEADER(`-- Apex Test Class Invalidated:         `),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.invalidatedTestClasses?.length)
+                );
+            }
         }
-    }
-
-    protected getFormattedTime(milliseconds: number): string {
-        let date = new Date(0);
-        date.setSeconds(milliseconds / 1000); // specify value for SECONDS here
-        let timeString = date.toISOString().substr(11, 8);
-        return timeString;
     }
 }

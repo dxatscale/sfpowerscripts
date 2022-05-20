@@ -15,7 +15,7 @@ export default class ChangedComponentsFetcher {
 
         let git: Git = new Git();
 
-        let projectConfig = ProjectConfig.getSFDXPackageManifest(null);
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
 
         if (!this.baseBranch.includes('origin')) {
             // for user convenience, use full ref name to avoid errors involving missing local refs
