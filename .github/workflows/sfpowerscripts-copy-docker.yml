@@ -19,9 +19,6 @@ on:
       type: string
       required: false
       default: sfpowerscripts
-    new-tag:
-      type: string
-      required: true
    secrets:
      username:
         required: true
