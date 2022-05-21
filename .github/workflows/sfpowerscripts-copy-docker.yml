@@ -1,0 +1,100 @@
+name: Publish a release candidate image to prod
+
+
+on:
+  workflow_call:
+   inputs:
+    job-environment:
+      type: string
+      required: true
+    repo:
+      type: string
+      required: false
+      default: 'dxatscale'
+    image:
+      type: string
+      required: false
+      default: sfpowerscripts-rc
+    image-as:
+      type: string
+      required: false
+      default: sfpowerscripts
+    new-tag:
+      type: string
+      required: true
+   secrets:
+     username:
+        required: true
+     token:
+        required: true
+    signing_secret:
+          required: true
+    cosign_password:
+          required: true
+jobs:
+
+  build:
+    name: 'copy rc docker image to production'
+    environment: ${{ inputs.job-environment }}
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    # Install the cosign tool except on PR
+    # https://github.com/sigstore/cosign-installer
+    - name: Install cosign
+      uses: sigstore/cosign-installer@main
+      with:
+        cosign-release: 'v1.7.1'
+
+    - name: Write signing key to disk (only needed for `cosign sign --key`)
+      run: echo "${{ secrets.signing_secret }}" > cosign.key
+
+
+    - name: 'Get package version'
+      run: |
+         echo "PKG_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)" >> $GITHUB_ENV
+
+    - name: 'Re expose secretes'
+      run: |
+         echo "DOCKER_TOKEN=${{ env.token }}" >> $GITHUB_ENV
+         echo "DOCKER_USERNAME=${{ env.username }}" >> $GITHUB_ENV
+      env:
+         token : ${{ secrets.token }}
+         username : ${{ secrets.username }}
+
+    - name: 'Copy Docker'
+      uses: ./.github/actions/copyDocker
+      with:
+         repo: ${{ inputs.repo }}
+         image: ${{ inputs.image }}
+         image-as: ${{ inputs.image-as }}
+         tag: ${{ env.PKG_VERSION }}-${{ github.run_id }}
+         with-tag: ${{ env.PKG_VERSION }}-${{ github.run_id }}
+         registry: ghcr.io
+         username:  ${{ env.DOCKER_USERNAME }}
+         token: ${{ env.DOCKER_TOKEN }}
+
+    - name: Sign the published Docker image
+      run: | 
+          cosign sign --key cosign.key \
+            -a "repo=${{ github.repository }}" \
+            -a "workflow=${{ github.workflow }}" \
+            -a "ref=${{ github.sha }}" \
+             ghcr.io/${{ inputs.repo }}/${{ inputs.image-as }}:${{ env.PKG_VERSION }}-${{ github.run_id }}
+      env:
+       COSIGN_PASSWORD: ${{ secrets.cosign_password }}
+
+    - name: 'Tag Docker'
+      uses: ./.github/actions/tagDocker
+      with:
+         repo: ${{ inputs.repo }}
+         image: ${{ inputs.image-as }}
+         existing-tag: ${{ env.PKG_VERSION }}-${{ github.run_id }}
+         new-tag: latest
+         registry: ghcr.io
+         username:  ${{ env.DOCKER_USERNAME }}
+         token: ${{ env.DOCKER_TOKEN }}

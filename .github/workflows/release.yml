@@ -49,11 +49,10 @@ jobs:
       job-environment: 'build-docker'
       suffix-tag: ${{ github.run_id }}
       repo: 'dxatscale'
+      image: 'sfpowerscripts-rc'
     secrets:
        username: ${{ secrets.DOCKER_USERNAME }}
        token: ${{ secrets.DOCKER_SECRET }}
-       signing_secret: ${{ secrets.SIGNING_SECRET }}
-       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
     needs: [ build ]
     concurrency:
       group: build
@@ -94,7 +93,8 @@ jobs:
     uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
       job-environment: 'sfpowerscripts-alpha'
-      new-tag: alpha   
+      new-tag: alpha 
+      image: 'sfpowerscripts-rc'  
       repo: 'dxatscale'
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
@@ -125,6 +125,7 @@ jobs:
       job-environment: 'sfpowerscripts-beta'
       repo: 'dxatscale'
       new-tag: beta   
+      image: 'sfpowerscripts-rc'  
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
@@ -154,6 +155,7 @@ jobs:
       job-environment: 'sfpowerscripts-hotfix'
       repo: 'dxatscale'     
       new-tag: hotfix   
+      image: 'sfpowerscripts-rc'  
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
@@ -177,15 +179,15 @@ jobs:
     needs: [sfpowerscripts-beta, sfpowerscripts-hotfix,hotfix-docker,beta-docker]
 
   prod-docker:
-    name: 'promote docker to prod'
-    uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
+    name: 'copy rc docker to prod'
+    uses: ./.github/workflows/sfpowerscripts-copy-docker.yml
     with:
       job-environment: 'sfpowerscripts-prod'
-      repo: 'dxatscale'
-      new-tag: latest   
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
+      signing_secret: ${{ secrets.SIGNING_SECRET }}
+      cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
     if: ${{ always() && (github.ref == 'refs/heads/main' && needs.sfpowerscripts-hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
     concurrency:
       group: sfpowerscripts-prod
