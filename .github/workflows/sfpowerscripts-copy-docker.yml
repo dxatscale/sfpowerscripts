@@ -27,9 +27,9 @@ on:
         required: true
      token:
         required: true
-    signing_secret:
+     signing_secret:
           required: true
-    cosign_password:
+     cosign_password:
           required: true
 jobs:
 
