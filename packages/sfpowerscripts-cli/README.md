@@ -281,21 +281,18 @@ Validate the incoming change against a target org. If the Sfpowerscripts Artifac
 Validate the incoming change against target org
 
 USAGE
-  $ sfdx sfpowerscripts:orchestrator:validateAgainstOrg -u <string> [--coveragepercent <integer>] [-g <array>] [--json] [--loglevel
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sfdx sfpowerscripts:orchestrator:validateAgainstOrg -u <string> [--coveragepercent <integer>] [--diffcheck] [--disableartifactupdate] [-g <array>] [--basebranch <string>] [--fastfeedback] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to group/collapse logs in the console. Provide
-                                                                                    an opening group, and an optional closing group symbol.
-
+  -g, --logsgroupsymbol=logsgroupsymbol                                             Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.
   -u, --targetorg=targetorg                                                         (required) Alias/User Name of the target environment
-
-  --coveragepercent=coveragepercent                                                 [default: 75] Minimum required percentage coverage for validating code
-                                                                                    coverage of packages with Apex classes
-
+  --basebranch=basebranch                                                           The pull request base branch
+  --coveragepercent=coveragepercent                                                 [default: 75] Minimum required percentage coverage for validating code coverage of packages with Apex classes
+  --diffcheck                                                                       Only build the packages which have changed by analyzing previous tags
+  --disableartifactupdate                                                           Do not update information about deployed artifacts to the org
+  --fastfeedback                                                                    Enable validation in fast feedback mode, In fast feedback mode, validation will only do selective deployment of changed components and selective tests
   --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for this command invocation
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: info] logging level for this command invocation
 
 EXAMPLE
   $ sfdx sfpowerscripts:orchestrator:validateAgainstOrg -u <targetorg>
