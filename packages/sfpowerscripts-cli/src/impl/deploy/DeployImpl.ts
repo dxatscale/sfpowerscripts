@@ -120,7 +120,11 @@ export default class DeployImpl {
                     packagesToPackageInfo,
                     this.props.baselineOrg
                 );
-                SFPLogger.log('filtered queue:' + JSON.stringify(filteredDeploymentQueue), LoggerLevel.TRACE, this.props.packageLogger);
+                SFPLogger.log(
+                    'filtered queue:' + JSON.stringify(filteredDeploymentQueue),
+                    LoggerLevel.TRACE,
+                    this.props.packageLogger
+                );
                 this.printArtifactVersionsWhenSkipped(queue, packagesToPackageInfo, isBaselinOrgModeActivated);
                 queue = filteredDeploymentQueue;
             } else {
@@ -158,7 +162,12 @@ export default class DeployImpl {
                 let packageInstallationResult: PackageInstallationResult = await retry(
                     async (bail, count) => {
                         try {
-                            await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory, sfpPackage);
+                            try {
+                                await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory, sfpPackage);
+                            } catch (error) {
+                                //skip packages already promoted
+                                SFPLogger.log(`Package already prmomoted .. skipping`);
+                            }
 
                             this.displayRetryHeader(this.props.isRetryOnFailure, count);
 
@@ -423,7 +432,6 @@ export default class DeployImpl {
         packagesToPackageInfo: { [p: string]: PackageInfo },
         targetUsername: string
     ): Promise<any[]> {
-       
         let targetOrg = await SFPOrg.create({ aliasOrUsername: targetUsername });
 
         const clonedQueue = _.clone(queue);
@@ -431,7 +439,10 @@ export default class DeployImpl {
         for (let i = queue.length - 1; i >= 0; i--) {
             let packageInfo = packagesToPackageInfo[clonedQueue[i].packageName];
             let sfpPackage: SfpPackage = packageInfo.sfpPackage;
-            let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(clonedQueue[i].packageName, packageManifest);
+            let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(
+                clonedQueue[i].packageName,
+                packageManifest
+            );
             let packageInstalledInTheOrg = await targetOrg.isArtifactInstalledInOrg(
                 this.props.packageLogger,
                 sfpPackage
@@ -582,7 +593,9 @@ export default class DeployImpl {
             {
                 currentStage: this.props.currentStage,
             },
-           sfpPackage.packageType == PackageType.Unlocked && installationOptions.isInstallingForValidation ? PackageType.Source:undefined //Override to source
+            sfpPackage.packageType == PackageType.Unlocked && installationOptions.isInstallingForValidation
+                ? PackageType.Source
+                : undefined //Override to source
         );
     }
 
