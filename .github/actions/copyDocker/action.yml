@@ -43,6 +43,6 @@ runs:
        shell: bash
        run: |
          echo "${{ inputs.token }}" | crane auth login ${{ inputs.registry }} --username ${{ inputs.username }} --password-stdin
-         crane  cp ${{ inputs.registry }}/${{ inputs.repo }}/${{ inputs.image }}:${{ inputs.tag }}  ${{ inputs.registry }}/${{ inputs.repo}}/${{ inputs.image-as }}::${{ inputs.with-tag }}
+         crane  cp ${{ inputs.registry }}/${{ inputs.repo }}/${{ inputs.image }}:${{ inputs.tag }}  ${{ inputs.registry }}/${{ inputs.repo}}/${{ inputs.image-as }}:${{ inputs.with-tag }}
 
  
