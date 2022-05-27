@@ -418,7 +418,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.logger
                 );
 
-                deploymentOptions.testLevel = TestLevel.RunNoTests;
+                deploymentOptions.testLevel = TestLevel.RunLocalTests;
                 return deploymentOptions;
             }
 
@@ -444,7 +444,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             }
         } else if (this.sfpPackage.isApexFound) {
             if (this.sfpPackage.isTriggerAllTests) {
-                deploymentOptions.testLevel = TestLevel.RunAllTestsInPackage;
+                deploymentOptions.testLevel = TestLevel.RunLocalTests;
             } else if (this.sfpPackage.apexTestClassses?.length > 0 && optimizeDeployment) {
                 deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
                 deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(

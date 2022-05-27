@@ -205,7 +205,10 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             metdataDeployOptions.apiOptions.testLevel = TestLevel.RunSpecifiedTests;
             let apexTestSuite = new ApexTestSuite(sourceDir, this.deploymentOptions.apexTestSuite);
             metdataDeployOptions.apiOptions.runTests = await apexTestSuite.getConstituentClasses();
-        } else if (this.deploymentOptions.testLevel == TestLevel.RunSpecifiedTests) {
+        } else if (this.deploymentOptions.testLevel == TestLevel.RunLocalTests) {
+            metdataDeployOptions.apiOptions.testLevel = TestLevel.RunLocalTests;
+        }
+        else if (this.deploymentOptions.testLevel == TestLevel.RunSpecifiedTests) {
             metdataDeployOptions.apiOptions.testLevel = TestLevel.RunSpecifiedTests;
             metdataDeployOptions.apiOptions.runTests = this.deploymentOptions.specifiedTests.split(`,`);
         } else {
