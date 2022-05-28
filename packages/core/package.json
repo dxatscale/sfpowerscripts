@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfpowerscripts.core",
-    "version": "21.3.6",
+    "version": "21.3.7",
     "description": "Core Module used by sfpowerscripts",
     "main": "lib/index",
     "types": "lib/index",
@@ -36,7 +36,7 @@
         "lodash": "^4.17.21",
         "neverthrow": "4.2.1",
         "rimraf": "^3.0.2",
-        "semver": "7.3.6",
+        "semver": "7.3.7",
         "sfdc-soup": "18.2.1",
         "simple-git": "3.7.1",
         "tar": "^6.1.9",
