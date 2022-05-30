@@ -33,7 +33,7 @@ export default class CreateAnOrgWorkflow {
         if (type === OrgType.POOL) {
             // Now Fetch All Pools in that devhub
             const hubOrg = await Org.create({ aliasOrUsername: devHubUserName });
-            let scratchOrgsInDevHub = await new PoolListImpl(hubOrg, null, true).execute();
+            let scratchOrgsInDevHub = await new PoolListImpl(hubOrg, null, true).execute() as ScratchOrg[];
 
             let tags = this.getPoolTags(scratchOrgsInDevHub);
 
@@ -102,7 +102,7 @@ export default class CreateAnOrgWorkflow {
     private async fetchOrg(hubOrg: Org, pool: string, alias: string): Promise<ScratchOrg> {
         let poolFetchImpl = new PoolFetchImpl(hubOrg, pool, false, false, null, alias, true);
         poolFetchImpl.setSourceTrackingOnFetch();
-        return poolFetchImpl.execute();
+        return poolFetchImpl.execute() as ScratchOrg;
     }
 
     private getPoolTags(result: ScratchOrg[]) {

@@ -58,7 +58,7 @@ export default class Init extends SfpCommand {
             this.sfpProjectConfig.defaultDevHub = devHubUserName;
 
             //Select Default Scratch Org Pool
-            let scratchOrgsInDevHub = await new PoolListImpl(hubOrg, null, true).execute();
+            let scratchOrgsInDevHub  = await new PoolListImpl(hubOrg, null, true).execute() as ScratchOrg[];
 
             let tags = this.getPoolTags(scratchOrgsInDevHub);
 

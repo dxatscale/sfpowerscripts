@@ -1,6 +1,7 @@
 import { Org } from '@salesforce/core';
 const retry = require('async-retry');
 import { Result, ok, err } from 'neverthrow';
+import { PoolConfig } from '../PoolConfig';
 import { PoolError, PoolErrorCodes } from '../PoolError';
 
 export default class PreRequisiteCheck {
@@ -14,7 +15,7 @@ export default class PreRequisiteCheck {
         this.hubOrg = hubOrg;
     }
 
-    public async checkForPrerequisites(): Promise<Result<boolean, PoolError>> {
+    public async checkForPrerequisites(): Promise<void> {
         let sfdxAuthUrlFieldExists = false;
         let conn = this.hubOrg.getConnection();
         let expectedValues = ['In Progress', 'Available', 'Allocate', 'Assigned'];
@@ -55,16 +56,8 @@ export default class PreRequisiteCheck {
         }
 
         if (!PreRequisiteCheck.isPrerequisiteMet) {
-            return err({
-                success: 0,
-                failed: 0,
-                message:
-                    `Required Prerequisite values in ScratchOrgInfo is missing in the DevHub` +
-                    `For more information Please refer https://sfpowerscripts.dxatscale.io/getting-started/prerequisites \n`,
-                errorCode: PoolErrorCodes.PrerequisiteMissing,
-            });
-        } else {
-            return ok(true);
-        }
+              throw new Error( `Required Prerequisite values in ScratchOrgInfo is missing in the DevHub` +
+                               `For more information Please refer https://sfpowerscripts.dxatscale.io/getting-started/prerequisites \n`);
+        } 
     }
 }
