@@ -169,7 +169,7 @@ jest.mock('../../src/package/packageCreators/CreateSourcePackageImpl', () => {
     return CreateSourcePackageImpl;
 });
 
-describe('Given a sfdx package, build a sfpowerscripts package', () => {
+describe.skip('Given a sfdx package, build a sfpowerscripts package', () => {
     it('should build a sfpowerscripts package', async () => {
         const fsextraMock = jest.spyOn(fs, 'readFileSync');
         fsextraMock.mockImplementation((path: any, options: string | { encoding?: string; flag?: string }) => {
