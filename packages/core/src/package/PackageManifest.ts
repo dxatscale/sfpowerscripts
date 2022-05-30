@@ -148,19 +148,19 @@ export default class PackageManifest {
         return isPermissionSetFound;
     }
 
-    public isPermissionSetGroupsFoundInPackage(): boolean {
-        let isPermissionSetGroupFound = false;
+    public isPermissionSetsFoundInPackage(): boolean {
+        let isPermissionSetFound = false;
         if (Array.isArray(this._manifestJson?.Package?.types)) {
             for (let type of this._manifestJson.Package.types) {
-                if (type.name === 'PermissionSetGroup') {
-                    isPermissionSetGroupFound = true;
+                if ((type.name === 'PermissionSetGroup') || (type.name === 'PermissionSet')) {
+                    isPermissionSetFound = true;
                     break;
                 }
             }
-        } else if (this._manifestJson?.Package?.types?.name === 'PermissionSetGroup') {
-            isPermissionSetGroupFound = true;
+        } else if ((this._manifestJson?.Package?.types?.name === 'PermissionSetGroup') || (this._manifestJson?.Package?.types?.name === 'PermissionSetGroup')) {
+            isPermissionSetFound = true;
         }
-        return isPermissionSetGroupFound;
+        return isPermissionSetFound;
     }
 
     /**

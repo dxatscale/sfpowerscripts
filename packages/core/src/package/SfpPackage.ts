@@ -21,7 +21,7 @@ class PackageInfo {
     apexTestClassses?: string[];
     isTriggerAllTests?: boolean;
     isProfilesFound?: boolean;
-    isPermissionSetGroupFound?: boolean;
+    isPermissionSetFound?: boolean;
     isPromoted?: boolean;
     tag?: string;
     isDependencyValidated?: boolean;

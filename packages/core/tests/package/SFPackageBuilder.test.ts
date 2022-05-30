@@ -183,7 +183,7 @@ describe('Given a sfdx package, build a sfpowerscripts package', () => {
         );
         expect(sfpPackage.isProfilesFound).toStrictEqual(false);
         expect(sfpPackage.isApexFound).toStrictEqual(true);
-        expect(sfpPackage.isPermissionSetGroupFound).toStrictEqual(true);
+        expect(sfpPackage.isPermissionSetFound).toStrictEqual(true);
         expect(sfpPackage.triggers).toBeUndefined();
         expect(sfpPackage.packageType).toStrictEqual(PackageType.Source);
         expect(sfpPackage.payload).toStrictEqual(packageManifestJSON);

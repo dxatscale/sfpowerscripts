@@ -91,7 +91,7 @@ export default class SfpPackageBuilder {
             sfpPackage.triggers = packageManifest.fetchTriggers();
             sfpPackage.isApexFound = packageManifest.isApexInPackage();
             sfpPackage.isProfilesFound = packageManifest.isProfilesInPackage();
-            sfpPackage.isPermissionSetGroupFound = packageManifest.isPermissionSetGroupsFoundInPackage();
+            sfpPackage.isPermissionSetFound = packageManifest.isPermissionSetsFoundInPackage();
             sfpPackage.isPayLoadContainTypesSupportedByProfiles = packageManifest.isPayLoadContainTypesSupportedByProfiles();
 
             let apexFetcher: ApexTypeFetcher = new ApexTypeFetcher(sfpPackage.mdapiDir);
@@ -216,7 +216,7 @@ export default class SfpPackageBuilder {
             diffPackageInfo.isApexFound = packageManifest.isApexInPackage();
             diffPackageInfo.isProfilesFound = packageManifest.isProfilesInPackage();
             diffPackageInfo.isPermissionSetFound = packageManifest.isPermissionSetsInPackage();
-            diffPackageInfo.isPermissionSetGroupFound = packageManifest.isPermissionSetGroupsFoundInPackage();
+            diffPackageInfo.isPermissionSetGroupFound = packageManifest.isPermissionSetsFoundInPackage();
             diffPackageInfo.isPayLoadContainTypesSupportedByProfiles = packageManifest.isPayLoadContainTypesSupportedByProfiles();
             diffPackageInfo.sourceVersionFrom = packageParams.revisionFrom;
             diffPackageInfo.sourceVersionTo = packageParams.revisionTo;

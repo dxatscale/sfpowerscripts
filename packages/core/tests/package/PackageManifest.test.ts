@@ -37,7 +37,7 @@ describe('Given a mdapi directory that contains manifest file', () => {
 
     it('should return false if there are no permission set groups', async () => {
         const packageManifest: PackageManifest = await PackageManifest.create('mdapi');
-        expect(packageManifest.isPermissionSetGroupsFoundInPackage()).toBe(false);
+        expect(packageManifest.isPermissionSetsFoundInPackage()).toBe(false);
     });
 });
 
@@ -59,7 +59,7 @@ describe('Given a list of components', () => {
     it('should return true if there are permission set groups ', () => {
         const packageManifest: PackageManifest = PackageManifest.createFromScratch(components, '50.0');
 
-        expect(packageManifest.isPermissionSetGroupsFoundInPackage()).toBe(true);
+        expect(packageManifest.isPermissionSetsFoundInPackage()).toBe(true);
     });
 
     it('should return true if there are profiles', () => {

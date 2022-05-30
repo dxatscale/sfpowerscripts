@@ -63,7 +63,7 @@ export abstract class InstallPackage {
             if (await this.isPackageToBeInstalled(this.options.skipIfPackageInstalled)) {
                 if (!this.options.isDryRun) {
                     //Package Has Permission Set Group
-                    if (this.sfpPackage.isPermissionSetGroupFound) await this.waitTillAllPermissionSetGroupIsUpdated();
+                    if (this.sfpPackage.isPermissionSetFound) await this.waitTillAllPermissionSetGroupIsUpdated();
                     await this.preInstall();
                     await this.getPackageDirectoryForAliasifiedPackages();
                     await this.install();
