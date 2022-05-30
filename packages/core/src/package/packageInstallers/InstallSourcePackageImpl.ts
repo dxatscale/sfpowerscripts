@@ -13,7 +13,7 @@ import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
-import SfpPackage, { PackageType } from '../SfpPackage';
+import SfpPackage from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
 
 
