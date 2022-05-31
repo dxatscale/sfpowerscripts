@@ -78,7 +78,7 @@ export default class PrepareImpl {
         return pool;
     }
 
-    private async displayPoolSummary(pool:PoolConfig) {
+    private async displayPoolSummary(pool: PoolConfig) {
         let table = new Table({
             head: [
                 'Scratch Org Alias Id',
@@ -89,25 +89,28 @@ export default class PrepareImpl {
         });
 
         for (const scratchOrg of pool.scratchOrgs) {
-            //auth
-            let scratchOrgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrg.username });
-            let installedArtifacts = await scratchOrgAsSFPOrg.getInstalledArtifacts();
-            if (installedArtifacts && installedArtifacts.length >= 1) {
-                let installationCount = installedArtifacts.length;
-                let lastInstalledArifact = installedArtifacts[installedArtifacts.length - 1];
-                table.push([
-                    scratchOrg.alias,
-                    scratchOrg.username,
-                    `${installationCount}/${this.artifactFetchedCount}`,
-                    lastInstalledArifact.Name,
-                ]);
-            } else {
-                table.push([scratchOrg.alias, scratchOrg.username, `NA`, `NA`]);
+            try {
+                let scratchOrgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrg.username });
+                let installedArtifacts = await scratchOrgAsSFPOrg.getInstalledArtifacts();
+                if (installedArtifacts && installedArtifacts.length >= 1) {
+                    let installationCount = installedArtifacts.length;
+                    let lastInstalledArifact = installedArtifacts[installedArtifacts.length - 1];
+                    table.push([
+                        scratchOrg.alias,
+                        scratchOrg.username,
+                        `${installationCount}/${this.artifactFetchedCount}`,
+                        lastInstalledArifact.Name,
+                    ]);
+                } else {
+                    table.push([scratchOrg.alias, scratchOrg.username, `NA`, `NA`]);
+                }
+            } catch (error) {
+                table.push([scratchOrg.alias, scratchOrg.username, `Unable to compute`, `Unable to fetch`]);
             }
         }
-      
+
         if (table.length >= 1) {
-            SFPLogger.log(EOL,LoggerLevel.INFO);
+            SFPLogger.log(EOL, LoggerLevel.INFO);
             SFPLogger.log(COLOR_KEY_MESSAGE('Pool Summary:'), LoggerLevel.INFO);
             SFPLogger.log(table.toString(), LoggerLevel.INFO);
         }
