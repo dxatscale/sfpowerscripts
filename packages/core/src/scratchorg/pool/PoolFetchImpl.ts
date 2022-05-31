@@ -54,11 +54,9 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         if (results.records.length > 0) {
             availableSo = results.records.filter((soInfo) => soInfo.Allocation_status__c === 'Available');
         }
-
         if (availableSo.length == 0) {
             throw new SfdxError(`No scratch org available at the moment for ${this.tag}, try again in sometime.`);
         }
-
 
         if (this.fetchAllScratchOrgs) {
             return this.fetchAllScratchOrg(availableSo);
@@ -71,7 +69,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         if (availableSo.length > 0) {
             SFPLogger.log(`${this.tag} pool has ${availableSo.length} Scratch orgs available`, LoggerLevel.TRACE);
 
-            let count=1
+            let count = 1;
             for (let element of availableSo) {
                 if (this.authURLEnabledScratchOrg) {
                     if (element.SfdxAuthUrl__c && !isValidSfdxAuthUrl(element.SfdxAuthUrl__c)) {
@@ -96,12 +94,20 @@ export default class PoolFetchImpl extends PoolBaseImpl {
                 soDetail.expiryDate = element.ExpirationDate;
                 soDetail.sfdxAuthUrl = element.SfdxAuthUrl__c;
                 soDetail.status = 'Available';
-                soDetail.alias=`SO`+count++;
+                soDetail.alias = `SO` + count++;
                 fetchedSOs.push(soDetail);
             }
         }
 
-       
+        for (const soDetail of fetchedSOs) {
+            try {
+                //Login to the org
+                let isLoginSuccessFull = this.loginToScratchOrgIfSfdxAuthURLExists(soDetail);
+            } catch (error) {
+                SFPLogger.log(`Unable to login to scratchorg ${soDetail.username}}`, LoggerLevel.ERROR);
+                fetchedSOs = fetchedSOs.filter((item) => item.username !== soDetail.username);
+            }
+        }
 
         return fetchedSOs;
     }
@@ -152,7 +158,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
             }
         }
 
-        if (!soDetail) {
+        if (availableSo.length == 0 || !soDetail) {
             throw new SfdxError(`No scratch org available at the moment for ${this.tag}, try again in sometime.`);
         }
 
@@ -211,6 +217,8 @@ export default class PoolFetchImpl extends PoolBaseImpl {
                 let authURLStoreCommand: string = `sfdx auth:sfdxurl:store -f soAuth.json`;
 
                 if (this.alias) authURLStoreCommand += ` -a ${this.alias}`;
+                else if (soDetail.alias) authURLStoreCommand += ` -a ${soDetail.alias}`;
+
                 if (this.setdefaultusername) authURLStoreCommand += ` --setdefaultusername`;
 
                 child_process.execSync(authURLStoreCommand, {
