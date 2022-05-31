@@ -16,6 +16,7 @@ import SFPStatsSender from '../../stats/SFPStatsSender';
 import { EOL } from 'os';
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import ScratchOrgOperator from '../ScratchOrgOperator';
+import PoolFetchImpl from './PoolFetchImpl';
 
 export default class PoolCreateImpl extends PoolBaseImpl {
     private limiter;
@@ -56,45 +57,47 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         //Create Operator
         this.scratchOrgOperator = new ScratchOrgOperator(this.hubOrg);
 
-        //Compute allocation
-
-        SFPLogger.log(COLOR_KEY_MESSAGE('Computing Allocation..'), LoggerLevel.INFO);
-        try {
-            this.totalToBeAllocated = await this.computeAllocation();
-        } catch (error) {
-            return err({
-                success: 0,
-                failed: 0,
-                message: `Unable to access fields on ScratchOrgInfo, Please check the profile being used`,
-                errorCode: PoolErrorCodes.PrerequisiteMissing,
-            });
-        }
-
-        if (this.totalToBeAllocated === 0) {
-            if (this.limits.ActiveScratchOrgs.Remaining > 0) {
-                return err({
-                    success: 0,
-                    failed: 0,
-                    message: `The tag provided ${this.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`,
-                    errorCode: PoolErrorCodes.Max_Capacity,
-                });
-            } else {
-                return err({
-                    success: 0,
-                    failed: 0,
-                    message: `There is no capacity to create a pool at this time, Please try again later`,
-                    errorCode: PoolErrorCodes.No_Capacity,
-                });
-            }
-        }
-
         // Setup Logging Directory
         rimraf.sync('script_exec_outputs');
         fs.mkdirpSync('script_exec_outputs');
 
-        //Generate Scratch Orgs
-        await this.generateScratchOrgs();
+        //Compute allocation
+        if (!this.pool.snapshotPool) {
+            SFPLogger.log(COLOR_KEY_MESSAGE('Computing Allocation..'), LoggerLevel.INFO);
+            try {
+                this.totalToBeAllocated = await this.computeAllocation();
+            } catch (error) {
+                return err({
+                    success: 0,
+                    failed: 0,
+                    message: `Unable to access fields on ScratchOrgInfo, Please check the profile being used`,
+                    errorCode: PoolErrorCodes.PrerequisiteMissing,
+                });
+            }
 
+            if (this.totalToBeAllocated === 0) {
+                if (this.limits.ActiveScratchOrgs.Remaining > 0) {
+                    return err({
+                        success: 0,
+                        failed: 0,
+                        message: `The tag provided ${this.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`,
+                        errorCode: PoolErrorCodes.Max_Capacity,
+                    });
+                } else {
+                    return err({
+                        success: 0,
+                        failed: 0,
+                        message: `There is no capacity to create a pool at this time, Please try again later`,
+                        errorCode: PoolErrorCodes.No_Capacity,
+                    });
+                }
+            }
+
+            //Generate Scratch Orgs
+            await this.generateScratchOrgs();
+        } else {
+            await this.fetchScratchOrgsFromSnapshotPool();
+        }
         // Assign workers to executed scripts
         for (let scratchOrg of this.pool.scratchOrgs) {
             let result = this.scriptExecutorWrappedForBottleneck(scratchOrg, this.hubOrg.getUsername());
@@ -177,6 +180,45 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             count++;
         }
 
+        this.pool.scratchOrgs = await this.scratchOrgInfoFetcher.getScratchOrgRecordId(this.pool.scratchOrgs);
+
+        let scratchOrgInprogress = [];
+
+        if (this.pool.scratchOrgs) {
+            this.pool.scratchOrgs.forEach((scratchOrg) => {
+                scratchOrgInprogress.push({
+                    Id: scratchOrg.recordId,
+                    Pooltag__c: this.pool.tag,
+                    Password__c: scratchOrg.password,
+                    SfdxAuthUrl__c: scratchOrg.sfdxAuthUrl,
+                    Allocation_status__c: 'In Progress',
+                });
+            });
+
+            if (scratchOrgInprogress.length > 0) {
+                //set pool tag
+                await this.scratchOrgInfoAssigner.setScratchOrgInfo(scratchOrgInprogress);
+            }
+        }
+    }
+
+    private async fetchScratchOrgsFromSnapshotPool() {
+        //Generate Scratch Orgs
+        SFPLogger.log(
+            COLOR_KEY_MESSAGE(`Fetching Scratch Orgs from snapshot pool ${this.pool.snapshotPool}`),
+            LoggerLevel.INFO
+        );
+       
+        this.pool.scratchOrgs = (await new PoolFetchImpl(
+            this.hubOrg,
+            this.pool.snapshotPool,
+            false,
+            false,
+            undefined,
+            undefined,
+            undefined,
+            true
+        ).execute()) as ScratchOrg[];
         this.pool.scratchOrgs = await this.scratchOrgInfoFetcher.getScratchOrgRecordId(this.pool.scratchOrgs);
 
         let scratchOrgInprogress = [];
