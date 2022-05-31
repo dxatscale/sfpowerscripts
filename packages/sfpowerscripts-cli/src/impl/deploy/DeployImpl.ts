@@ -387,7 +387,7 @@ export default class DeployImpl {
                 packagesToPackageInfo[pkg.packageName].isPackageInstalled ? 'No' : 'Yes',
             ]);
         });
-        console.log(maxTable.toString());
+        SFPLogger.log(maxTable.toString(),LoggerLevel.INFO,this.props.packageLogger);
         this.printClosingLoggingGroup();
 
         this.printOpenLoggingGroup(`Packages to be deployed`);
@@ -409,7 +409,7 @@ export default class DeployImpl {
                         : 'N/A',
                 ]);
         });
-        console.log(minTable.toString());
+        SFPLogger.log(minTable.toString(),LoggerLevel.INFO,this.props.packageLogger);
         this.printClosingLoggingGroup();
     }
 
