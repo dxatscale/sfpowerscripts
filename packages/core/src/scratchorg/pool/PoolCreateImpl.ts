@@ -213,7 +213,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             this.hubOrg,
             this.pool.snapshotPool,
             false,
-            false,
+            true,
             undefined,
             undefined,
             undefined,

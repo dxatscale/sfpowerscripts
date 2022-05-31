@@ -100,10 +100,9 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         }
 
         for (const soDetail of fetchedSOs) {
-            try {
-                //Login to the org
-                let isLoginSuccessFull = this.loginToScratchOrgIfSfdxAuthURLExists(soDetail);
-            } catch (error) {
+            //Login to the org
+            let isLoginSuccessFull = this.loginToScratchOrgIfSfdxAuthURLExists(soDetail);
+            if (!isLoginSuccessFull) {
                 SFPLogger.log(`Unable to login to scratchorg ${soDetail.username}}`, LoggerLevel.ERROR);
                 fetchedSOs = fetchedSOs.filter((item) => item.username !== soDetail.username);
             }
