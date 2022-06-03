@@ -167,7 +167,7 @@ export default class ClientSourceTracking {
 
     private cleanupSFDXProjectJsonTonOnePackage(projectDir: string, packageName: string) {
         try {
-            let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromManifest(projectDir, packageName);
+            let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromProjectDirectory(projectDir, packageName);
             fs.writeJSONSync(path.join(projectDir, 'sfdx-project.json'), cleanedUpProjectManifest, {
                 spaces: 4,
             });

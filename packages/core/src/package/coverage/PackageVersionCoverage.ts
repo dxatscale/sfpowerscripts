@@ -1,16 +1,13 @@
 import { Connection } from '@salesforce/core';
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
-import QueryHelper from '../../queryHelper/QueryHelper';
-
-const QUERY = `SELECT SubscriberPackageVersionId,Package2Id, Package2.Name,MajorVersion,MinorVersion,PatchVersion,BuildNumber, CodeCoverage, HasPassedCodeCoverageCheck, Name FROM Package2Version WHERE `;
+import Package2VersionFetcher from '../version/Package2VersionFetcher';
 
 export default class PackageVersionCoverage {
     public constructor(private connection: Connection, private logger: Logger) {}
 
-    public async getCoverage(versionId: string[]): Promise<PackageCoverage> {
-        let whereClause = `SubscriberPackageVersionId='${versionId}'`;
-
-        const records = await QueryHelper.query<any>(`${QUERY} ${whereClause}`, this.connection, true);
+    public async getCoverage(versionId: string): Promise<PackageCoverage> {
+        const package2VersionFetcher = new Package2VersionFetcher(this.connection);
+        const records = await package2VersionFetcher.fetchBySubscriberPackageVersionId(versionId);
         SFPLogger.log(`Fetched Records ${JSON.stringify(records)}`, LoggerLevel.TRACE, this.logger);
         if (records[0]) {
             var packageCoverage = <PackageCoverage>{};

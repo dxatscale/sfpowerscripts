@@ -19,6 +19,13 @@ import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/pack
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime'
 
+import PackageDependencyFetcher from "@dxatscale/sfpowerscripts.core/lib/package/dependency/fetcher";
+import Package2VersionFetcher, { Package2Version } from "@dxatscale/sfpowerscripts.core/lib/package/version/Package2VersionFetcher";
+import { AuthInfo, Connection } from '@salesforce/core';
+import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
+import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+let path = require('path');
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -48,12 +55,13 @@ export default class BuildImpl {
     private childs;
     private packagesToBeBuilt: string[];
     private packageCreationPromises: Array<Promise<SfpPackage>>;
-    private projectConfig: { any: any };
+    private projectConfig;
     private parents: any;
     private packagesInQueue: string[];
     private packagesBuilt: string[];
     private failedPackages: string[];
     private generatedPackages: SfpPackage[];
+    private sfpOrg: SFPOrg;
 
     private repository_url: string;
     private commit_id: string;
@@ -75,6 +83,8 @@ export default class BuildImpl {
         generatedPackages: SfpPackage[];
         failedPackages: string[];
     }> {
+        this.sfpOrg = await SFPOrg.create({aliasOrUsername: this.props.devhubAlias});
+
         SFPLogger.log(`Invoking build...`,LoggerLevel.INFO);
         const git = simplegit();
         if (this.props.repourl == null) {
@@ -134,6 +144,9 @@ export default class BuildImpl {
 
         let sortedBatch = new BatchingTopoSort().sort(this.childs);
 
+        // TODO: Resolve package versions
+        await this.resolvePackageDependencyVersions(this.sfpOrg.getConnection());
+
         //Do First Level Package First
         let pushedPackages = [];
         for (const pkg of sortedBatch[0]) {
@@ -173,10 +186,109 @@ export default class BuildImpl {
         //Other packages get added when each one in the first level finishes
         await this.recursiveAll(this.packageCreationPromises);
 
+        console.log("Final sfdx-project.json", JSON.stringify(this.projectConfig, null, 4));
         return {
             generatedPackages: this.generatedPackages,
             failedPackages: this.failedPackages,
         };
+    }
+
+    /**
+     * Resolves package dependency versions in project config
+     * Skips dependencies on packages that are queued for build, as they are resolved dynamically
+     *
+     * @param conn
+     */
+    private async resolvePackageDependencyVersions(conn: Connection) {
+        for (const packageDirectory of this.projectConfig.packageDirectories) {
+            if (this.packagesToBeBuilt.includes(packageDirectory.package)) {
+                if (packageDirectory.dependencies && Array.isArray(packageDirectory.dependencies)) {
+                    for (const dependency of packageDirectory.dependencies) {
+                        if (this.isSubscriberPackageVersionId(this.projectConfig.packageAliases[dependency.package])) {
+                            // Already resolved
+                            continue;
+                        }
+
+                        if (this.packagesToBeBuilt.includes(dependency.package)) {
+                            // Dependency is part of the same build, will be resolved when new version is created
+                            continue;
+                        }
+
+                        const package2VersionForDependency = await this.getPackage2VersionForDependency(conn, dependency);
+
+                        dependency.versionNumber = `${package2VersionForDependency.MajorVersion}.${package2VersionForDependency.MinorVersion}.${package2VersionForDependency.PatchVersion}.${package2VersionForDependency.BuildNumber}`;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Get last validated Package2 version for package dependency
+     * @param conn
+     * @param dependency
+     * @returns Package2Version
+     */
+    private async getPackage2VersionForDependency(conn: Connection, dependency: {package: string, versionNumber: string}): Promise<Package2Version> {
+        let package2Version: Package2Version;
+
+        let versionNumber: string = dependency.versionNumber;
+        let vers: string[] = versionNumber.split('.');
+        if (vers.length === 4 && vers[3] === "LATEST") {
+            versionNumber = `${vers[0]}.${vers[1]}.${vers[2]}`;
+        }
+
+        const package2VersionFetcher = new Package2VersionFetcher(conn);
+        const package2Versions = await package2VersionFetcher.fetch(this.projectConfig.packageAliases[dependency.package], versionNumber, true);
+
+        if (package2Versions.length === 0) {
+            throw new Error(`Failed to find any validated Package2 versions for the dependency ${dependency.package} with version ${dependency.versionNumber}`)
+        }
+
+        if (this.projectConfig.packageDirectories.find(dir => dir.package === dependency.package)) {
+            package2Version = await this.getPackage2VersionFromCurrentBranch(package2Versions, dependency);
+        } else {
+            // Take last validated package for external packages
+            package2Version = package2Versions[0];
+        }
+
+        return package2Version;
+    }
+
+    /**
+     * Get Package2 version created from the current branch
+     * @param package2Versions
+     * @param dependency
+     * @returns Package2Version
+     */
+    private async getPackage2VersionFromCurrentBranch(package2Versions: Package2Version[], dependency: {package: string, versionNumber: string}) {
+        let package2VersionOnCurrentBranch: Package2Version;
+
+        const git = new Git();
+        const gitTags = new GitTags(git, dependency.package);
+        const tags = await gitTags.listTagsOnBranch();
+
+        for (const package2Version of package2Versions) {
+            const version = `${package2Version.MajorVersion}.${package2Version.MinorVersion}.${package2Version.PatchVersion}.${package2Version.BuildNumber}`;
+            for (const tag of tags) {
+                if (tag.endsWith(version)) {
+                    package2VersionOnCurrentBranch = package2Version;
+                    break;
+                }
+            }
+            if (package2VersionOnCurrentBranch) break;
+        }
+
+        if (!package2VersionOnCurrentBranch) {
+            throw new Error(`Failed to find validated Package2 version for dependency ${dependency.package} with version ${dependency.versionNumber} created from the current branch`);
+        }
+
+        return package2VersionOnCurrentBranch;
+    }
+
+    private isSubscriberPackageVersionId(packageAlias: string): boolean {
+        const subscriberPackageVersionIdPrefix = '04t';
+        return packageAlias.startsWith(subscriberPackageVersionIdPrefix);
     }
 
     private createDiffPackageScheduledDisplayedAsATable(packagesToBeBuilt: Map<string, any>) {
@@ -331,12 +443,14 @@ export default class BuildImpl {
         this.packagesBuilt.push(sfpPackage.packageName);
         this.printPackageDetails(sfpPackage);
 
-        //let all my childs know, I am done building  and remove myself from
         this.packagesToBeBuilt.forEach((pkg) => {
-            const unFullfilledParents = this.parentsToBeFulfilled[pkg]?.filter(
-                (pkg_name) => pkg_name !== sfpPackage.packageName
-            );
-            this.parentsToBeFulfilled[pkg] = unFullfilledParents;
+            const indexOfFulfilledParent = this.parentsToBeFulfilled[pkg]?.find(parent => parent === sfpPackage.packageName);
+            if (indexOfFulfilledParent !== -1 && indexOfFulfilledParent != null) {
+                this.resolveDependenciesOnCompletedPackage(pkg, sfpPackage);
+
+                //let all my childs know, I am done building  and remove myself from
+                this.parentsToBeFulfilled[pkg].splice(indexOfFulfilledParent, 1);
+            }
         });
 
         // Do a second pass and push packages with fulfilled parents to queue
@@ -383,6 +497,12 @@ export default class BuildImpl {
         this.packagesInQueue = this.packagesInQueue.filter((pkg_name) => pkg_name !== sfpPackage.packageName);
 
         this.printQueueDetails();
+    }
+
+    private resolveDependenciesOnCompletedPackage(dependentPackage: string, completedPackage: SfpPackage) {
+        const pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(dependentPackage, this.projectConfig);
+        const dependency = pkgDescriptor.dependencies.find(dependency => dependency.package === completedPackage.packageName);
+        dependency.versionNumber = completedPackage.versionNumber;
     }
 
     private getPriorityandTypeOfAPackage(projectConfig: any, pkg: string) {
@@ -505,7 +625,8 @@ export default class BuildImpl {
                 isSkipValidation: this.props.isQuickBuild,
                 breakBuildIfEmpty: true,
                 baseBranch: this.props.baseBranch,
-            }
+            },
+            this.projectConfig
         );
     }
 
