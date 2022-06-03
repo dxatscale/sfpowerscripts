@@ -19,13 +19,11 @@ import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/pack
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime'
 
-import PackageDependencyFetcher from "@dxatscale/sfpowerscripts.core/lib/package/dependency/fetcher";
 import Package2VersionFetcher, { Package2Version } from "@dxatscale/sfpowerscripts.core/lib/package/version/Package2VersionFetcher";
-import { AuthInfo, Connection } from '@salesforce/core';
+import { Connection } from '@salesforce/core';
 import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
 import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-let path = require('path');
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -239,7 +237,7 @@ export default class BuildImpl {
         }
 
         const package2VersionFetcher = new Package2VersionFetcher(conn);
-        const package2Versions = await package2VersionFetcher.fetch(this.projectConfig.packageAliases[dependency.package], versionNumber, true);
+        const package2Versions = await package2VersionFetcher.fetchByPackage2Id(this.projectConfig.packageAliases[dependency.package], versionNumber, true);
 
         if (package2Versions.length === 0) {
             throw new Error(`Failed to find any validated Package2 versions for the dependency ${dependency.package} with version ${dependency.versionNumber}`)

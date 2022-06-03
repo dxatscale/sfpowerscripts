@@ -179,7 +179,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
             try {
                 SFPLogger.log('Fetching Version Number and Coverage details', LoggerLevel.INFO, this.logger);
 
-                let pkgInfoResult = await packageVersionCoverage.getCoverage([sfpPackage.package_version_id]);
+                let pkgInfoResult = await packageVersionCoverage.getCoverage(sfpPackage.package_version_id);
 
                 sfpPackage.isDependencyValidated = !this.packageCreationParams.isSkipValidation;
                 sfpPackage.package_version_number = pkgInfoResult.packageVersionNumber;

@@ -1,5 +1,6 @@
 import { Connection } from '@salesforce/core';
 import QueryHelper from '../../queryHelper/QueryHelper';
+import semver from 'semver';
 
 /**
  * TODO: caching
@@ -13,13 +14,18 @@ export default class Package2VersionFetcher {
 
     constructor(private conn: Connection) {}
 
-    fetch(package2Id?: string, versionNumber?: string, isValidatedPackages?: boolean): Promise<Package2Version[]> {
+    /**
+     * Fetch Package2 versions by Package2 Id
+     * Sorts by semantic version, in descending order
+     * @param package2Id
+     * @param versionNumber
+     * @param isValidatedPackages
+     * @returns
+     */
+    async fetchByPackage2Id(package2Id: string, versionNumber?: string, isValidatedPackages?: boolean): Promise<Package2Version[]> {
       let query = this.query;
 
-      let whereClause: string = `where `;
-      if (package2Id) {
-        whereClause += `Package2Id='${package2Id}' `;
-      }
+      let whereClause: string = `where Package2Id='${package2Id}'  `;
 
       if (versionNumber) {
         // TODO: validate version number
@@ -33,23 +39,24 @@ export default class Package2VersionFetcher {
 
       if (isValidatedPackages) whereClause += `and ValidationSkipped = false `;
 
-      const isWhereClauseEmpty = whereClause.endsWith("where ");
-      if (!isWhereClauseEmpty) {
-        query += whereClause
-      }
+      query += whereClause
 
-      query += 'ORDER BY BuildNumber DESC, createddate DESC';
-
-      return QueryHelper.query<Package2Version>(query, this.conn, true);
+      const records = await QueryHelper.query<Package2Version>(query, this.conn, true);
+      return records.sort((a,b) => {
+        const v1 = `${a.MajorVersion}.${a.MinorVersion}.${a.PatchVersion}-${a.BuildNumber}`;
+        const v2 = `${b.MajorVersion}.${b.MinorVersion}.${b.PatchVersion}-${b.BuildNumber}`;
+        return semver.rcompare(v1, v2);
+      });
     }
 
-    fetchBySubscriberPackageVersionId(subscriberPackageVersionId: string): Promise<Package2Version[]> {
+    async fetchBySubscriberPackageVersionId(subscriberPackageVersionId: string): Promise<Package2Version> {
       let query = this.query;
 
       let whereClause: string = `where SubscriberPackageVersionId='${subscriberPackageVersionId}'`;
       query += whereClause;
 
-      return QueryHelper.query<Package2Version>(query, this.conn, true);
+      const records = await QueryHelper.query<Package2Version>(query, this.conn, true);
+      return records[0];
     }
 }
 
