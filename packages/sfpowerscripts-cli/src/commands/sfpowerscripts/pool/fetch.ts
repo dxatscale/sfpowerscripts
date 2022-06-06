@@ -99,7 +99,7 @@ export default class Fetch extends SfdxCommand {
 
         if (this.flags.json) SFPLogger.logLevel = LoggerLevel.HIDE;
 
-        let result = await fetchImpl.execute();
+        let result = await fetchImpl.execute() as ScratchOrg;
 
         if (!this.flags.json && !this.flags.sendtouser) {
             await this.displayOrgContents(result);
@@ -114,7 +114,7 @@ export default class Fetch extends SfdxCommand {
             this.ux.table(list, ['key', 'value']);
         }
 
-        return result;
+        return result as AnyJson;
     }
 
     /**

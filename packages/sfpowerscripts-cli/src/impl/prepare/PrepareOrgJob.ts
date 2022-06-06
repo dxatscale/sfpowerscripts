@@ -147,7 +147,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             currentStage: Stage.PREPARE,
             packageLogger: packageLogger,
             isTestsToBeTriggered: false,
-            skipIfPackageInstalled: false,
+            skipIfPackageInstalled: true,
             deploymentMode: deploymentMode,
             isRetryOnFailure: this.pool.retryOnFailure,
         };

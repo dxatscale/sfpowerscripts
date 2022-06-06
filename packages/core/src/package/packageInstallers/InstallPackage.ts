@@ -63,7 +63,7 @@ export abstract class InstallPackage {
             if (await this.isPackageToBeInstalled(this.options.skipIfPackageInstalled)) {
                 if (!this.options.isDryRun) {
                     //Package Has Permission Set Group
-                    if (this.sfpPackage.isPermissionSetGroupFound) await this.waitTillAllPermissionSetGroupIsUpdated();
+                    await this.waitTillAllPermissionSetGroupIsUpdated();
                     await this.preInstall();
                     await this.getPackageDirectoryForAliasifiedPackages();
                     await this.install();
@@ -202,7 +202,7 @@ export abstract class InstallPackage {
         }
 
         if (fs.existsSync(preDeploymentScript)) {
-            SFPLogger.log('Executing preDeployment script');
+            SFPLogger.log('Executing preDeployment script',LoggerLevel.INFO,this.logger);
             await PackageInstallationHelpers.executeScript(
                 preDeploymentScript,
                 this.sfpPackage.packageName,
@@ -229,7 +229,7 @@ export abstract class InstallPackage {
         }
 
         if (fs.existsSync(postDeploymentScript)) {
-            SFPLogger.log('Executing postDeployment script');
+            SFPLogger.log('Executing postDeployment script',LoggerLevel.INFO,this.logger);
             await PackageInstallationHelpers.executeScript(
                 postDeploymentScript,
                 this.sfpPackage.packageName,

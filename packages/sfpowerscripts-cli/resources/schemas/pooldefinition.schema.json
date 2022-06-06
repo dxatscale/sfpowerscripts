@@ -87,6 +87,11 @@
             "type": "boolean",
             "default": "false"
         },
+        "snapshotPool": {
+            "title": "Snapshot Pool",
+            "description": "Use a pre-prepared pool to further add packages on top of it",
+            "type": "string"
+        },
         "fetchArtifacts": {
             "title": "Fetch Artifacts using below mechanism",
             "description": "Fetch artifacts from artifact registry using below mechanism",

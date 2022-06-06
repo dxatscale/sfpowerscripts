@@ -27,7 +27,7 @@ export default class InstallDataPackageImpl extends InstallPackage {
                 this.packageDirectory
             );
 
-            SFPLogger.log(`Executing installation command: ${dataPackageDeployer.getGeneratedSFDXCommandWithParams()}`);
+            SFPLogger.log(`Executing installation command: ${dataPackageDeployer.getGeneratedSFDXCommandWithParams()}`,LoggerLevel.INFO,this.logger);
             let result = await dataPackageDeployer.exec(false);
 
             SFPLogger.log(result, LoggerLevel.INFO, this.logger);

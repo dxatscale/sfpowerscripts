@@ -419,6 +419,7 @@ export default class BuildImpl {
 
         if (sfpPackage.package_type !== PackageType.Data) {
             if (sfpPackage.package_type == PackageType.Unlocked) {
+              if(sfpPackage.package_version_id)
                 SFPLogger.log(
                     COLOR_HEADER(`-- Package Version Id:             `)+
                     COLOR_KEY_MESSAGE(sfpPackage.package_version_id)
