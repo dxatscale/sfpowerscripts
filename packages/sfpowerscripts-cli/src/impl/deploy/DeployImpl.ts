@@ -322,6 +322,7 @@ export default class DeployImpl {
             LoggerLevel.INFO,
             this.props.packageLogger
         );
+        this.displayTestInfoHeader(sfpPackage);
         if (pkgDescriptor.aliasfy)
             SFPLogger.log(
                 `Aliasified Package: ${COLOR_KEY_MESSAGE(`True`)}`,
@@ -360,6 +361,26 @@ export default class DeployImpl {
             LoggerLevel.INFO,
             this.props.packageLogger
         );
+    }
+
+    private displayTestInfoHeader(sfpPackage: SfpPackage) {
+        if (sfpPackage.packageType == PackageType.Source) {
+            if (!sfpPackage.isTriggerAllTests)
+                SFPLogger.log(
+                    `Optimized Deployment: ${COLOR_KEY_MESSAGE(
+                        this.isOptimizedDeploymentForSourcePackage(sfpPackage.packageDescriptor)
+                    )}`,
+                    LoggerLevel.INFO,
+                    this.props.packageLogger
+                );
+
+            else
+                SFPLogger.log(
+                    `Trigger All Tests: ${COLOR_KEY_MESSAGE(`true`)}`,
+                    LoggerLevel.INFO,
+                    this.props.packageLogger
+                );
+        }
     }
 
     private printArtifactVersionsWhenSkipped(
