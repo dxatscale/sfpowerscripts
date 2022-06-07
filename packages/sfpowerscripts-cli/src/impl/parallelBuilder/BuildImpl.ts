@@ -143,7 +143,8 @@ export default class BuildImpl {
         let sortedBatch = new BatchingTopoSort().sort(this.childs);
 
         // TODO: Resolve package versions
-        await this.resolvePackageDependencyVersions(this.sfpOrg.getConnection());
+        if (!this.props.isQuickBuild)
+            await this.resolvePackageDependencyVersions(this.sfpOrg.getConnection());
 
         //Do First Level Package First
         let pushedPackages = [];
@@ -444,7 +445,8 @@ export default class BuildImpl {
         this.packagesToBeBuilt.forEach((pkg) => {
             const indexOfFulfilledParent = this.parentsToBeFulfilled[pkg]?.find(parent => parent === sfpPackage.packageName);
             if (indexOfFulfilledParent !== -1 && indexOfFulfilledParent != null) {
-                this.resolveDependenciesOnCompletedPackage(pkg, sfpPackage);
+                if (!this.props.isQuickBuild)
+                    this.resolveDependenciesOnCompletedPackage(pkg, sfpPackage);
 
                 //let all my childs know, I am done building  and remove myself from
                 this.parentsToBeFulfilled[pkg].splice(indexOfFulfilledParent, 1);
