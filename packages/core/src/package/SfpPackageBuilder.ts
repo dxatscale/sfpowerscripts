@@ -235,9 +235,9 @@ export default class SfpPackageBuilder {
 
     private static isAllTestsToBeTriggered(sfpPackage:SfpPackage,logger:Logger) {
         if (
-            sfpPackage.packageType == PackageType.Source &&
+            this.isOptimizedDeploymentForSourcePackage(sfpPackage) == false || (sfpPackage.packageType == PackageType.Source &&
             sfpPackage.isApexFound == true &&
-            sfpPackage.apexTestClassses == null
+            sfpPackage.apexTestClassses == null)
         ) {
             SFPLogger.log(
                 ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT--------------------------------------------${EOL}` +
@@ -252,6 +252,13 @@ export default class SfpPackageBuilder {
             return true;
         } else return false;
     }
+
+        // Allow individual packages to use non optimized path
+        private static isOptimizedDeploymentForSourcePackage(pkgDescriptor: any): boolean {
+            if (pkgDescriptor['isOptimizedDeployment'] == null) return true;
+            else return pkgDescriptor['isOptimizedDeployment'];
+        }
+    
 }
 
 // Options while creating package

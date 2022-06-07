@@ -373,7 +373,6 @@ export default class DeployImpl {
                     LoggerLevel.INFO,
                     this.props.packageLogger
                 );
-
             else
                 SFPLogger.log(
                     `Trigger All Tests: ${COLOR_KEY_MESSAGE(`true`)}`,
@@ -408,7 +407,7 @@ export default class DeployImpl {
                 packagesToPackageInfo[pkg.packageName].isPackageInstalled ? 'No' : 'Yes',
             ]);
         });
-        SFPLogger.log(maxTable.toString(),LoggerLevel.INFO,this.props.packageLogger);
+        SFPLogger.log(maxTable.toString(), LoggerLevel.INFO, this.props.packageLogger);
         this.printClosingLoggingGroup();
 
         this.printOpenLoggingGroup(`Packages to be deployed`);
@@ -430,7 +429,7 @@ export default class DeployImpl {
                         : 'N/A',
                 ]);
         });
-        SFPLogger.log(minTable.toString(),LoggerLevel.INFO,this.props.packageLogger);
+        SFPLogger.log(minTable.toString(), LoggerLevel.INFO, this.props.packageLogger);
         this.printClosingLoggingGroup();
     }
 
@@ -595,10 +594,18 @@ export default class DeployImpl {
             (installationOptions.skipTesting = skipTesting),
             (installationOptions.deploymentType = deploymentType);
 
-        if (
-            this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES ||
-            this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
-        ) {
+
+    //During validate, if optimizeDeploymentMode is false, use full local tests to validate
+    //During Prepare (push), dont trigger tests
+        if (this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES) {
+            if (!this.isOptimizedDeploymentForSourcePackage(pkgDescriptor)) {
+                installationOptions.optimizeDeployment = false;
+                installationOptions.skipTesting = false;
+            } else {
+                installationOptions.optimizeDeployment = false;
+                installationOptions.skipTesting = true;
+            }
+        } else if (this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH) {
             installationOptions.optimizeDeployment = false;
             installationOptions.skipTesting = true;
         }
