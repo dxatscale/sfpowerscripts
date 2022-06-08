@@ -451,7 +451,7 @@ export default class BuildImpl {
         this.printPackageDetails(sfpPackage);
 
         this.packagesToBeBuilt.forEach((pkg) => {
-            const indexOfFulfilledParent = this.parentsToBeFulfilled[pkg]?.find(parent => parent === sfpPackage.packageName);
+            const indexOfFulfilledParent = this.parentsToBeFulfilled[pkg]?.findIndex(parent => parent === sfpPackage.packageName);
             if (indexOfFulfilledParent !== -1 && indexOfFulfilledParent != null) {
                 if (!this.props.isQuickBuild)
                     this.resolveDependenciesOnCompletedPackage(pkg, sfpPackage);
