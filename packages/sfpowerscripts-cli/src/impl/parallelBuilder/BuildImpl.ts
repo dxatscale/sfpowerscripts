@@ -142,7 +142,6 @@ export default class BuildImpl {
 
         let sortedBatch = new BatchingTopoSort().sort(this.childs);
 
-        // TODO: Resolve package versions
         if (!this.props.isQuickBuild)
             await this.resolvePackageDependencyVersions(this.sfpOrg.getConnection());
 
@@ -185,7 +184,6 @@ export default class BuildImpl {
         //Other packages get added when each one in the first level finishes
         await this.recursiveAll(this.packageCreationPromises);
 
-        console.log("Final sfdx-project.json", JSON.stringify(this.projectConfig, null, 4));
         return {
             generatedPackages: this.generatedPackages,
             failedPackages: this.failedPackages,
@@ -199,6 +197,8 @@ export default class BuildImpl {
      * @param conn
      */
     private async resolvePackageDependencyVersions(conn: Connection) {
+        const package2VersionCache: {[p: string]: Package2Version[]} = {};
+
         for (const packageDirectory of this.projectConfig.packageDirectories) {
             if (this.packagesToBeBuilt.includes(packageDirectory.package)) {
                 if (packageDirectory.dependencies && Array.isArray(packageDirectory.dependencies)) {
@@ -213,7 +213,7 @@ export default class BuildImpl {
                             continue;
                         }
 
-                        const package2VersionForDependency = await this.getPackage2VersionForDependency(conn, dependency);
+                        const package2VersionForDependency = await this.getPackage2VersionForDependency(conn, dependency, package2VersionCache);
 
                         dependency.versionNumber = `${package2VersionForDependency.MajorVersion}.${package2VersionForDependency.MinorVersion}.${package2VersionForDependency.PatchVersion}.${package2VersionForDependency.BuildNumber}`;
                     }
@@ -228,7 +228,7 @@ export default class BuildImpl {
      * @param dependency
      * @returns Package2Version
      */
-    private async getPackage2VersionForDependency(conn: Connection, dependency: {package: string, versionNumber: string}): Promise<Package2Version> {
+    private async getPackage2VersionForDependency(conn: Connection, dependency: {package: string, versionNumber: string}, package2VersionCache: {[p: string]: Package2Version[]}): Promise<Package2Version> {
         let package2Version: Package2Version;
 
         let versionNumber: string = dependency.versionNumber;
@@ -237,8 +237,16 @@ export default class BuildImpl {
             versionNumber = `${vers[0]}.${vers[1]}.${vers[2]}`;
         }
 
-        const package2VersionFetcher = new Package2VersionFetcher(conn);
-        const package2Versions = await package2VersionFetcher.fetchByPackage2Id(this.projectConfig.packageAliases[dependency.package], versionNumber, true);
+        let package2Versions: Package2Version[];
+        if (package2VersionCache[this.projectConfig.packageAliases[dependency.package] + "-" + versionNumber]) {
+            package2Versions = package2VersionCache[this.projectConfig.packageAliases[dependency.package] + "-" + versionNumber];
+        } else {
+            const package2VersionFetcher = new Package2VersionFetcher(conn);
+            const records = await package2VersionFetcher.fetchByPackage2Id(this.projectConfig.packageAliases[dependency.package], versionNumber, true);
+            package2VersionCache[this.projectConfig.packageAliases[dependency.package] + "-" + versionNumber] = records;
+            package2Versions = package2VersionCache[this.projectConfig.packageAliases[dependency.package] + "-" + versionNumber];
+        }
+
 
         if (package2Versions.length === 0) {
             throw new Error(`Failed to find any validated Package2 versions for the dependency ${dependency.package} with version ${dependency.versionNumber}`)
