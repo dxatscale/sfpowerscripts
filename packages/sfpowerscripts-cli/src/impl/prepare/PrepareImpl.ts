@@ -21,8 +21,13 @@ import * as fs from 'fs-extra';
 import { LatestGitTagVersion } from '../artifacts/LatestGitTagVersion';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import OrgDetailsFetcher from '@dxatscale/sfpowerscripts.core/lib/org/OrgDetailsFetcher';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import { EOL } from 'os';
+const Table = require('cli-table');
 
 export default class PrepareImpl {
+    private artifactFetchedCount: number = 0;
+
     public constructor(private hubOrg: Org, private pool: PoolConfig, private logLevel: LoggerLevel) {
         // set defaults
         if (!this.pool.expiry) this.pool.expiry = 2;
@@ -64,9 +69,51 @@ export default class PrepareImpl {
             prepareASingleOrgImpl,
             this.logLevel
         );
-        let pool = await createPool.execute();
+        let pool = (await createPool.execute()) as Result<PoolConfig, PoolError>;
+
+        if (pool.isOk()) {
+            await this.displayPoolSummary(pool.value);
+        }
 
         return pool;
+    }
+
+    private async displayPoolSummary(pool: PoolConfig) {
+        let table = new Table({
+            head: [
+                'Scratch Org Alias Id',
+                'Scratch Org Username',
+                'Installed/Requested Count',
+                'Last Installed Package',
+            ],
+        });
+
+        for (const scratchOrg of pool.scratchOrgs) {
+            try {
+                let scratchOrgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrg.username });
+                let installedArtifacts = await scratchOrgAsSFPOrg.getInstalledArtifacts();
+                if (installedArtifacts && installedArtifacts.length >= 1) {
+                    let installationCount = installedArtifacts.length;
+                    let lastInstalledArifact = installedArtifacts[installedArtifacts.length - 1];
+                    table.push([
+                        scratchOrg.alias,
+                        scratchOrg.username,
+                        `${installationCount}/${this.artifactFetchedCount}`,
+                        lastInstalledArifact.Name,
+                    ]);
+                } else {
+                    table.push([scratchOrg.alias, scratchOrg.username, `NA`, `NA`]);
+                }
+            } catch (error) {
+                table.push([scratchOrg.alias, scratchOrg.username, `Unable to compute`, `Unable to fetch`]);
+            }
+        }
+
+        if (table.length >= 1) {
+            SFPLogger.log(EOL, LoggerLevel.INFO);
+            SFPLogger.log(COLOR_KEY_MESSAGE('Pool Summary:'), LoggerLevel.INFO);
+            SFPLogger.log(table.toString(), LoggerLevel.INFO);
+        }
     }
 
     private async getPackageArtifacts() {
@@ -99,6 +146,7 @@ export default class PrepareImpl {
                 try {
                     let version = await latestGitTagVersion.getVersionFromLatestTag(pkg.package);
                     artifactFetcher.fetchArtifact(pkg.package, 'artifacts', version, true);
+                    this.artifactFetchedCount++;
                 } catch (error) {
                     SFPLogger.log(
                         COLOR_WARNING(`Git Tag for ${pkg.package} missing, This might result in deployment failures`)
@@ -139,6 +187,7 @@ export default class PrepareImpl {
 
             for (let generatedPackage of generatedPackages) {
                 await ArtifactGenerator.generateArtifact(generatedPackage, process.cwd(), 'artifacts');
+                this.artifactFetchedCount++;
             }
         }
     }

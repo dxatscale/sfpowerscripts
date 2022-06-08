@@ -27,7 +27,8 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         authURLEnabledScratchOrg: boolean,
         sendToUser?: string,
         alias?: string,
-        setdefaultusername?: boolean
+        setdefaultusername?: boolean,
+        private fetchAllScratchOrgs?: boolean
     ) {
         super(hubOrg);
         this.tag = tag;
@@ -42,7 +43,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         this.isSourceTrackingToBeSet = true;
     }
 
-    protected async onExec(): Promise<ScratchOrg> {
+    protected async onExec(): Promise<ScratchOrg | ScratchOrg[]> {
         const results = (await new ScratchOrgInfoFetcher(this.hubOrg).getScratchOrgsByTag(
             this.tag,
             this.mypool,
@@ -53,19 +54,64 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         if (results.records.length > 0) {
             availableSo = results.records.filter((soInfo) => soInfo.Allocation_status__c === 'Available');
         }
-        let emaiId;
-        if (this.sendToUser) {
-            try {
-                emaiId = await getUserEmail(this.sendToUser, this.hubOrg);
-            } catch (error) {
+        if (availableSo.length == 0) {
+            throw new SfdxError(`No scratch org available at the moment for ${this.tag}, try again in sometime.`);
+        }
+
+        if (this.fetchAllScratchOrgs) {
+            return this.fetchAllScratchOrg(availableSo);
+        } else return this.fetchSingleScratchOrg(availableSo);
+    }
+
+    private async fetchAllScratchOrg(availableSo: any[]): Promise<ScratchOrg[]> {
+        let fetchedSOs: ScratchOrg[] = new Array();
+
+        if (availableSo.length > 0) {
+            SFPLogger.log(`${this.tag} pool has ${availableSo.length} Scratch orgs available`, LoggerLevel.TRACE);
+
+            let count = 1;
+            for (let element of availableSo) {
+                if (this.authURLEnabledScratchOrg) {
+                    if (element.SfdxAuthUrl__c && !isValidSfdxAuthUrl(element.SfdxAuthUrl__c)) {
+                        SFPLogger.log(
+                            `Iterating through pool to find a scratch org with valid authURL`,
+                            LoggerLevel.TRACE
+                        );
+                        continue;
+                    }
+                }
+
                 SFPLogger.log(
-                    'Unable to fetch details of the specified user, Check whether the user exists in the org ',
-                    LoggerLevel.ERROR
+                    `Scratch org ${element.SignupUsername} is allocated from the pool. Expiry date is ${element.ExpirationDate}`,
+                    LoggerLevel.TRACE
                 );
-                throw new SfdxError('Failed to fetch user details');
+                let soDetail: any = {};
+                soDetail['Id'] = element.Id;
+                soDetail.orgId = element.ScratchOrg;
+                soDetail.loginURL = element.LoginUrl;
+                soDetail.username = element.SignupUsername;
+                soDetail.password = element.Password__c;
+                soDetail.expiryDate = element.ExpirationDate;
+                soDetail.sfdxAuthUrl = element.SfdxAuthUrl__c;
+                soDetail.status = 'Available';
+                soDetail.alias = `SO` + count++;
+                fetchedSOs.push(soDetail);
             }
         }
 
+        for (const soDetail of fetchedSOs) {
+            //Login to the org
+            let isLoginSuccessFull = this.loginToScratchOrgIfSfdxAuthURLExists(soDetail);
+            if (!isLoginSuccessFull) {
+                SFPLogger.log(`Unable to login to scratchorg ${soDetail.username}}`, LoggerLevel.ERROR);
+                fetchedSOs = fetchedSOs.filter((item) => item.username !== soDetail.username);
+            }
+        }
+
+        return fetchedSOs;
+    }
+
+    private async fetchSingleScratchOrg(availableSo: any[]): Promise<ScratchOrg> {
         let soDetail: ScratchOrg;
 
         if (availableSo.length > 0) {
@@ -117,9 +163,20 @@ export default class PoolFetchImpl extends PoolBaseImpl {
 
         if (this.sendToUser) {
             //Fetch the email for user id
+            let emailId;
+            try {
+                emailId = await getUserEmail(this.sendToUser, this.hubOrg);
+            } catch (error) {
+                SFPLogger.log(
+                    'Unable to fetch details of the specified user, Check whether the user exists in the org ',
+                    LoggerLevel.ERROR
+                );
+                throw new SfdxError('Failed to fetch user details');
+            }
+
             try {
                 //Send an email for username
-                await new ScratchOrgOperator(this.hubOrg).shareScratchOrgThroughEmail(emaiId, soDetail);
+                await new ScratchOrgOperator(this.hubOrg).shareScratchOrgThroughEmail(emailId, soDetail);
             } catch (error) {
                 SFPLogger.log(
                     'Unable to send the scratchorg details to specified user. Check whether the user exists in the org',
@@ -159,6 +216,8 @@ export default class PoolFetchImpl extends PoolBaseImpl {
                 let authURLStoreCommand: string = `sfdx auth:sfdxurl:store -f soAuth.json`;
 
                 if (this.alias) authURLStoreCommand += ` -a ${this.alias}`;
+                else if (soDetail.alias) authURLStoreCommand += ` -a ${soDetail.alias}`;
+
                 if (this.setdefaultusername) authURLStoreCommand += ` --setdefaultusername`;
 
                 child_process.execSync(authURLStoreCommand, {

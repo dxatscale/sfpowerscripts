@@ -21,6 +21,7 @@ export interface PoolConfig {
             scope: string;
         };
     };
+    snapshotPool?:string;
     enableVlocity?: boolean;
     min_allocation?: number;
     current_allocation?: number;
