@@ -3,8 +3,6 @@ import QueryHelper from '../../queryHelper/QueryHelper';
 import semver from 'semver';
 
 /**
- * TODO: caching
- * TODO: optimised query
  * Fetcher for second-generation package version in Dev Hub
  */
 export default class Package2VersionFetcher {
@@ -73,12 +71,3 @@ export interface Package2Version {
   CodeCoverage: { apexCodeCoveragePercentage: number };
   HasPassedCodeCoverageCheck: boolean
 }
-
-//             // If Build Number isn't set to LATEST, look for the exact Package Version
-//             if (vers.length === 4 && vers[3] !== 'LATEST' && typeof vers[3] === 'number') {
-//               query += `and BuildNumber=${vers[3]} `;
-//           } else if (ignoreUnvalidatedPackageVersions) {
-//               query += `and ValidationSkipped = false `;
-//           }
-
-//           query += 'ORDER BY BuildNumber DESC, createddate DESC';
