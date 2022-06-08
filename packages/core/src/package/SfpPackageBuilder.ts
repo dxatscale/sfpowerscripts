@@ -19,6 +19,7 @@ import CreateDataPackageImpl from './packageCreators/CreateDataPackageImpl';
 import ImpactedApexTestClassFetcher from '../apextest/ImpactedApexTestClassFetcher';
 import * as rimraf from 'rimraf';
 import PackageToComponent from './PackageToComponent';
+import lodash = require('lodash');
 
 export default class SfpPackageBuilder {
 
@@ -32,6 +33,9 @@ export default class SfpPackageBuilder {
     ) {
         if (!projectConfig) {
             projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
+        } else {
+            // Clone the projectConfig to prevent mutation
+            projectConfig = lodash.cloneDeep(projectConfig);
         }
 
         let propertyFetchers: PropertyFetcher[] = [
