@@ -23,6 +23,7 @@ import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import OrgDetailsFetcher from '@dxatscale/sfpowerscripts.core/lib/org/OrgDetailsFetcher';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import { EOL } from 'os';
+import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 const Table = require('cli-table');
 
 export default class PrepareImpl {
@@ -101,12 +102,18 @@ export default class PrepareImpl {
                         `${installationCount}/${this.artifactFetchedCount}`,
                         lastInstalledArifact.Name,
                     ]);
+                    SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.requested`,this.artifactFetchedCount,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+                    SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.installed`,installationCount,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
                 } else {
                     table.push([scratchOrg.alias, scratchOrg.username, `NA`, `NA`]);
+                    SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.requested`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+                    SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.installed`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
                 }
-            } catch (error) {
+              } catch (error) {
+                SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.requested`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+                SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.installed`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
                 table.push([scratchOrg.alias, scratchOrg.username, `Unable to compute`, `Unable to fetch`]);
-            }
+              }
         }
 
         if (table.length >= 1) {
