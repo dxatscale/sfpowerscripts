@@ -28,7 +28,7 @@
                     "versionName": ["package", "versionNumber"],
                     "versionNumber": ["package"]
                 },
-                "required": ["path", "package", "versionNumber"],
+                "required": ["path"],
                 "additionalProperties": false,
                 "properties": {
                     "ancestorId": {
