@@ -35,11 +35,14 @@ export default class ProjectValidation {
     }
 
     public validatePackageBuildNumbers() {
-        this.projectConfig.packageDirectories.forEach((pkg) => {
+        ProjectConfig.getAllPackageDirectoriesFromConfig(this.projectConfig).forEach((pkg) => {
             let packageType = ProjectConfig.getPackageType(this.projectConfig, pkg.package);
 
             let pattern: RegExp = /NEXT$|LATEST$/i;
-            if (pkg.versionNumber.match(pattern) && (packageType === PackageType.Source || packageType === PackageType.Data)) {
+            if (
+                pkg.versionNumber.match(pattern) &&
+                (packageType === PackageType.Source || packageType === PackageType.Data)
+            ) {
                 throw new Error(
                     'sfdx-project.json validation failed for package "' +
                         pkg['package'] +

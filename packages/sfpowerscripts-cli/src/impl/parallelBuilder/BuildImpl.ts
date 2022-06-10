@@ -273,7 +273,8 @@ export default class BuildImpl {
         });
 
         for (const pkg of packageDescriptors) {
-            sfdxpackages.push(pkg['package']);
+            if(pkg.package && pkg.versionNumber)
+               sfdxpackages.push(pkg['package']);
         }
         return sfdxpackages;
     }
