@@ -125,7 +125,7 @@ export default class PrepareImpl {
 
     private async getPackageArtifacts() {
         //Filter Packages to be ignore from prepare to be fetched
-        let packages = ProjectConfig.getSFDXProjectConfig(null)['packageDirectories'].filter((pkg) => {
+        let packages = ProjectConfig.getAllPackageDirectoriesFromDirectory(null).filter((pkg) => {
             if (
                 pkg.ignoreOnStage?.find((stage) => {
                     stage = stage.toLowerCase();

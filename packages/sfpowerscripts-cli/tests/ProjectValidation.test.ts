@@ -57,7 +57,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
         }).not.toThrow();
     });
 
-    it('should throw an error for a sfdx-project.json where a package directory is missing package name', () => {
+    it('should not throw an error for a sfdx-project.json where a package directory is missing package name', () => {
         let sfdx_project = {
             packageDirectories: [
                 {
@@ -105,7 +105,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
         });
         expect(() => {
             new ProjectValidation().validateSFDXProjectJSON();
-        }).toThrow();
+        }).not.toThrow();
     });
 
     it('should not throw an error for a sfdx-project.json where various sfpowerscripts orchestrator properties are used', () => {
