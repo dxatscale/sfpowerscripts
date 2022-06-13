@@ -224,7 +224,7 @@ export default class ValidateImpl implements PostDeployHook {
             if (!deploymentResult || deploymentResult.deployed.length == 0) {
                 SFPLogger.log(`Attempting to return scratch org ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
                 let scratchOrgInfoAssigner = new ScratchOrgInfoAssigner(this.props.hubOrg);
-                let result = await scratchOrgInfoAssigner.setScratchOrgStatus(scratchOrgUsername, 'Available');
+                let result = await scratchOrgInfoAssigner.setScratchOrgStatus(scratchOrgUsername,'Return');
                 if (result) SFPLogger.log(`Succesfully returned ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
                 else console.log(COLOR_WARNING(`Unable to update status of scratch org,Please check permissions`));
             } else {
