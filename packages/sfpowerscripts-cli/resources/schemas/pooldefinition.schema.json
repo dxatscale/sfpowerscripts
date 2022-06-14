@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://raw.githubusercontent.com/Accenture/sfpowerscripts/develop/packages/sfpowerscripts-cli/resources/schemas/pooldefinition.schema.json",
+    "$id": "https://raw.githubusercontent.com/dxatscale/sfpowerscripts/develop/packages/sfpowerscripts-cli/resources/schemas/pooldefinition.schema.json",
     "title": "pool definition",
     "description": "The definition for creating a pool of scratch orgs in sfpowerscripts",
     "type": "object",
@@ -10,7 +10,7 @@
         "$schema": {
             "description": "Support editors like vscode to help with IntelliSense",
             "type": "string",
-            "default": "https://raw.githubusercontent.com/Accenture/sfpowerscripts/develop/packages/sfpowerscripts-cli/resources/schemas/pooldefinition.schema.json"
+            "default": "https://raw.githubusercontent.com/dxatscale/sfpowerscripts/develop/packages/sfpowerscripts-cli/resources/schemas/pooldefinition.schema.json"
         },
         "tag": {
             "title": "Tag of the pool",

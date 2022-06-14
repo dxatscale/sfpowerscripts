@@ -64,7 +64,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/Accenture/sfpowerscripts.git",
+        "url": "https://github.com/dxatscale/sfpowerscripts.git",
         "directory": "packages/core"
     },
     "keywords": [
@@ -75,7 +75,7 @@
     "author": "dxatscale",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/Accenture/sfpowerscripts/issues"
+        "url": "https://github.com/dxatscale/sfpowerscripts/issues"
     },
-    "homepage": "https://github.com/Accenture/sfpowerscripts#readme"
+    "homepage": "https://github.com/dxatscale/sfpowerscripts#readme"
 }

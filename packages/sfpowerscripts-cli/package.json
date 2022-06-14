@@ -7,7 +7,7 @@
     "bin": {
         "readVars": "./scripts/readVars.sh"
     },
-    "bugs": "https://github.com/Accenture/sfpowerscripts/issues",
+    "bugs": "https://github.com/dxatscale/sfpowerscripts/issues",
     "dependencies": {
         "@dxatscale/sfpowerscripts.core": "23.1.0",
         "@oclif/command": "1.8.16",
@@ -63,7 +63,7 @@
         "/scripts",
         "/resources"
     ],
-    "homepage": "https://github.com/Accenture/sfpowerscripts",
+    "homepage": "https://github.com/dxatscale/sfpowerscripts",
     "keywords": [
         "sfdx-plugin"
     ],
@@ -112,7 +112,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/Accenture/sfpowerscripts.git",
+        "url": "https://github.com/dxatscale/sfpowerscripts.git",
         "directory": "packages/sfpowerscripts-cli"
     },
     "scripts": {

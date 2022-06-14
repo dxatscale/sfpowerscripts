@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://github.com/Accenture/sfpowerscripts/blob/develop/packages/sfpowerscripts-cli/resources/sfdx-project.schema.json",
+    "$id": "https://github.com/dxatscale/sfpowerscripts/blob/develop/packages/sfpowerscripts-cli/resources/sfdx-project.schema.json",
     "title": "sfpowerscripts DX Project File",
     "description": "The properties and shape of the SFDX project enhanced for sfpowerscripts",
     "type": "object",
