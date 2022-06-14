@@ -30,7 +30,7 @@
         "markdown-table": "^2.0.0",
         "marked": "4.0.16",
         "marked-terminal": "5.1.1",
-        "neverthrow": "4.2.1",
+        "neverthrow": "4.3.1",
         "object-hash": "^2.1.1",
         "puppeteer": "13.4.1",
         "rimraf": "^3.0.2",
