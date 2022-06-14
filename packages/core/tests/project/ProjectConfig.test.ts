@@ -84,6 +84,17 @@ describe('Given a project directory or sfdx-project.json with multiple packages'
         ]);
     });
 
+    it('Fetches all the package from a project config', () => {
+        
+        expect(ProjectConfig.getAllPackagesFromProjectConfig(sfdx_project)).toStrictEqual([
+            'temp',
+            'core',
+            'mass-dataload',
+            'access-mgmt',
+            'bi',
+        ]);
+    });
+
     it('Get manifest, provided a directory', () => {
         expect(ProjectConfig.getSFDXProjectConfig(null)).toStrictEqual(sfdx_project);
     });
@@ -93,6 +104,9 @@ describe('Given a project directory or sfdx-project.json with multiple packages'
         expect(ProjectConfig.getPackageType(sfdx_project, 'core')).toBe(PackageType.Source);
         expect(ProjectConfig.getPackageType(sfdx_project, 'mass-dataload')).toBe(PackageType.Data);
     });
+
+
+
 
     it('Gets the package descriptor of a provided package,provided directory', () => {
         let corePackage = {

@@ -27,7 +27,7 @@ to be manually synced up
 -  Build an Org Depedendent Unlocked Package in your DevHub and deploy it
 
 
-        1. git clone https://github.com/Accenture/sfpowerscripts
+        1. git clone https://github.com/dxatscale/sfpowerscripts
 
         1. cd sfpowerscripts/prerequisites/scratchorgpool
 

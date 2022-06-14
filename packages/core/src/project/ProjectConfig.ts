@@ -27,7 +27,48 @@ export default class ProjectConfig {
         let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let sfdxpackages = [];
         projectConfig['packageDirectories'].forEach((pkg) => {
-            sfdxpackages.push(pkg['package']);
+            //Only push packages that have package and versionNumber, ignore everything else
+            if(pkg.package && pkg.versionNumber) 
+              sfdxpackages.push(pkg.package);
+        });
+        return sfdxpackages;
+    }
+
+    /**
+     * Returns package names from projectConfig, as an array of strings
+     * @param projectDirectory
+     */
+     public static getAllPackagesFromProjectConfig(projectConfig: any): string[] {
+    
+        let sfdxpackages = [];
+        projectConfig.packageDirectories.forEach((pkg) => {
+            //Only push packages that have package and versionNumber, ignore everything else
+            if(pkg.package && pkg.versionNumber) 
+              sfdxpackages.push(pkg.package);
+        });
+        return sfdxpackages;
+    }
+
+    public static getAllPackageDirectoriesFromDirectory(projectDirectory?:string):any[]
+    {
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
+        let sfdxpackages = [];
+        projectConfig.packageDirectories?.forEach((pkg) => {
+            //Only push packages that have package and versionNumber, ignore everything else
+            if(pkg.package && pkg.versionNumber) 
+              sfdxpackages.push(pkg);
+        });
+        return sfdxpackages;
+    }
+
+
+    public static getAllPackageDirectoriesFromConfig(projectConfig:any):any[]
+    {
+        let sfdxpackages = [];
+        projectConfig.packageDirectories?.forEach((pkg) => {
+            //Only push packages that have package and versionNumber, ignore everything else
+            if(pkg.package && pkg.versionNumber) 
+              sfdxpackages.push(pkg);
         });
         return sfdxpackages;
     }
@@ -98,7 +139,7 @@ export default class ProjectConfig {
         }
 
         if (sfdxPackageDescriptor == null)
-            throw new Error(`Package ${sfdxPackage} does not exist,Pleasae check inputs`);
+            throw new Error(`Package ${sfdxPackage} does not exist,Please check inputs`);
 
         return sfdxPackageDescriptor;
     }

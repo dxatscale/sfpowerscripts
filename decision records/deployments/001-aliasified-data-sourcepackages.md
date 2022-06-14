@@ -4,8 +4,8 @@
 * Deciders: Azlam, Alan <!-- optional -->
 * Date:  <!-- optional -->
 
-Issue [Issue #632](https://github.com/Accenture/sfpowerscripts/issues/632)
-Issue [Issue #715](https://github.com/Accenture/sfpowerscripts/issues/715)
+Issue [Issue #632](https://github.com/dxatscale/sfpowerscripts/issues/632)
+Issue [Issue #715](https://github.com/dxatscale/sfpowerscripts/issues/715)
 
 
 ## Context and Problem Statement
