@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://github.com/Accenture/sfpowerscripts/blob/develop/packages/sfpowerscripts-cli/resources/releasedefinition.schema.json",
+    "$id": "https://github.com/dxatscale/sfpowerscripts/blob/develop/packages/sfpowerscripts-cli/resources/releasedefinition.schema.json",
     "title": "release definition",
     "description": "The definition for a release using sfpowerscripts orchestrator",
     "type": "object",
