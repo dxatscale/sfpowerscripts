@@ -58,6 +58,6 @@ export default class PreRequisiteCheck {
         if (!PreRequisiteCheck.isPrerequisiteMet) {
               throw new Error( `Required Prerequisite values in ScratchOrgInfo is missing in the DevHub` +
                                `For more information Please refer https://sfpowerscripts.dxatscale.io/getting-started/prerequisites \n`);
-        } 
+        }
     }
 }
