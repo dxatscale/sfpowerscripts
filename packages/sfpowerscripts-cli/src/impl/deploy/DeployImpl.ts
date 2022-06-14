@@ -322,6 +322,7 @@ export default class DeployImpl {
             LoggerLevel.INFO,
             this.props.packageLogger
         );
+        this.displayTestInfoHeader(sfpPackage);
         if (pkgDescriptor.aliasfy)
             SFPLogger.log(
                 `Aliasified Package: ${COLOR_KEY_MESSAGE(`True`)}`,
@@ -362,6 +363,25 @@ export default class DeployImpl {
         );
     }
 
+    private displayTestInfoHeader(sfpPackage: SfpPackage) {
+        if (sfpPackage.packageType == PackageType.Source) {
+            if (!sfpPackage.isTriggerAllTests)
+                SFPLogger.log(
+                    `Optimized Deployment: ${COLOR_KEY_MESSAGE(
+                        this.isOptimizedDeploymentForSourcePackage(sfpPackage.packageDescriptor)
+                    )}`,
+                    LoggerLevel.INFO,
+                    this.props.packageLogger
+                );
+            else
+                SFPLogger.log(
+                    `Trigger All Tests: ${COLOR_KEY_MESSAGE(`true`)}`,
+                    LoggerLevel.INFO,
+                    this.props.packageLogger
+                );
+        }
+    }
+
     private printArtifactVersionsWhenSkipped(
         queue: SfpPackage[],
         packagesToPackageInfo: { [p: string]: PackageInfo },
@@ -387,7 +407,7 @@ export default class DeployImpl {
                 packagesToPackageInfo[pkg.packageName].isPackageInstalled ? 'No' : 'Yes',
             ]);
         });
-        console.log(maxTable.toString());
+        SFPLogger.log(maxTable.toString(), LoggerLevel.INFO, this.props.packageLogger);
         this.printClosingLoggingGroup();
 
         this.printOpenLoggingGroup(`Packages to be deployed`);
@@ -409,7 +429,7 @@ export default class DeployImpl {
                         : 'N/A',
                 ]);
         });
-        console.log(minTable.toString());
+        SFPLogger.log(minTable.toString(), LoggerLevel.INFO, this.props.packageLogger);
         this.printClosingLoggingGroup();
     }
 
@@ -574,10 +594,18 @@ export default class DeployImpl {
             (installationOptions.skipTesting = skipTesting),
             (installationOptions.deploymentType = deploymentType);
 
-        if (
-            this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES ||
-            this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
-        ) {
+
+    //During validate, if optimizeDeploymentMode is false, use full local tests to validate
+    //During Prepare (push), dont trigger tests
+        if (this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES) {
+            if (!this.isOptimizedDeploymentForSourcePackage(pkgDescriptor)) {
+                installationOptions.optimizeDeployment = false;
+                installationOptions.skipTesting = false;
+            } else {
+                installationOptions.optimizeDeployment = false;
+                installationOptions.skipTesting = true;
+            }
+        } else if (this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH) {
             installationOptions.optimizeDeployment = false;
             installationOptions.skipTesting = true;
         }

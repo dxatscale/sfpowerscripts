@@ -121,15 +121,11 @@ export default class ValidateImpl implements PostDeployHook {
                 await this.impactAnalysis(connToScratchOrg);
             }
             return null; //TODO: Fix with actual object
-        } catch(error){
-            if(error instanceof ValidateError) 
-              SFPLogger.log(`Error: ${error}}`,LoggerLevel.DEBUG);
-            else
-              SFPLogger.log(`Error: ${error}}`,LoggerLevel.ERROR);
-            throw error                                      
-        }
-
-        finally {
+        } catch (error) {
+            if (error instanceof ValidateError) SFPLogger.log(`Error: ${error}}`, LoggerLevel.DEBUG);
+            else SFPLogger.log(`Error: ${error}}`, LoggerLevel.ERROR);
+            throw error;
+        } finally {
             await this.handleScratchOrgStatus(scratchOrgUsername, deploymentResult, this.props.isDeleteScratchOrg);
         }
     }
@@ -299,6 +295,9 @@ export default class ValidateImpl implements PostDeployHook {
         if (sfpPackage.packageDescriptor.skipTesting) return { id: null, result: true, message: 'No Tests To Run' };
 
         if (!sfpPackage.isApexFound) return { id: null, result: true, message: 'No Tests To Run' };
+
+        if (sfpPackage.packageDescriptor.isOptimizedDeployment == false)
+            return { id: null, result: true, message: 'Tests would have already run' };
 
         let testOptions: TestOptions, testCoverageOptions: CoverageOptions;
 

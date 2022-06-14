@@ -5,7 +5,7 @@
 ## Context and Problem Statement 
 As the number of packages increases in large scale projects, with multiple dependencies, updating package versions and dependencies manually is time consuming and takes great care to update dependencies one by one. 
 
-Other solutions encountered were local bash scripts as documented in both the issue https://github.com/Accenture/sfpowerscripts/issues/638 raised and in the discussions has here: https://github.com/Accenture/sfpowerscripts/discussions/468 
+Other solutions encountered were local bash scripts as documented in both the issue https://github.com/dxatscale/sfpowerscripts/issues/638 raised and in the discussions has here: https://github.com/dxatscale/sfpowerscripts/discussions/468 
 
 ## Solution
 The dependency manager should utilise the SemVer incrementation style https://semver.org/ and be of a similar method to the ‘lerna version’ command. It should prompt the user for the version either for individual packages or for all packages in the sfdx-project.json: (major, minor, patch, custom). 

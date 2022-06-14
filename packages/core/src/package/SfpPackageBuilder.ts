@@ -19,6 +19,7 @@ import CreateDataPackageImpl from './packageCreators/CreateDataPackageImpl';
 import ImpactedApexTestClassFetcher from '../apextest/ImpactedApexTestClassFetcher';
 import * as rimraf from 'rimraf';
 import PackageToComponent from './PackageToComponent';
+import { EOL } from 'os';
 
 export default class SfpPackageBuilder {
     public static async buildPackageFromProjectDirectory(
@@ -103,6 +104,8 @@ export default class SfpPackageBuilder {
             );
             sfpPackage.apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
 
+            sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(sfpPackage,logger);
+            
             //Introspect Diff Package Created
             //On Failure.. remove diff and move on
             try {
@@ -173,6 +176,7 @@ export default class SfpPackageBuilder {
         );
         sfpPackage.projectDirectory = artifact.sourceDirectoryPath;
         sfpPackage.packageDirectory = sfpPackage.packageDescriptor.path;
+        sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(sfpPackage,logger);
 
         return sfpPackage;
     }
@@ -228,6 +232,33 @@ export default class SfpPackageBuilder {
             sfpPackage.diffPackageMetadata = diffPackageInfo;
         }
     }
+
+    private static isAllTestsToBeTriggered(sfpPackage:SfpPackage,logger:Logger) {
+        if (
+            this.isOptimizedDeploymentForSourcePackage(sfpPackage) == false || (sfpPackage.packageType == PackageType.Source &&
+            sfpPackage.isApexFound == true &&
+            sfpPackage.apexTestClassses == null)
+        ) {
+            SFPLogger.log(
+                ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT--------------------------------------------${EOL}` +
+                    `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
+                    `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying ${EOL}` +
+                    `via triggering all local tests,This definitely is not optimal approach on large orgs` +
+                    `Please consider adding test classes for the classes in the package ${EOL}` +
+                    `-------------------------------------------------------------------------------------------------------------`,
+                LoggerLevel.INFO,
+                logger
+            );
+            return true;
+        } else return false;
+    }
+
+        // Allow individual packages to use non optimized path
+        private static isOptimizedDeploymentForSourcePackage(pkgDescriptor: any): boolean {
+            if (pkgDescriptor['isOptimizedDeployment'] == null) return true;
+            else return pkgDescriptor['isOptimizedDeployment'];
+        }
+    
 }
 
 // Options while creating package

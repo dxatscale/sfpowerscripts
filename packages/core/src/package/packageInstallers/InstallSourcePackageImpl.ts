@@ -13,7 +13,7 @@ import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
-import SfpPackage, { PackageType } from '../SfpPackage';
+import SfpPackage from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
 
 
@@ -43,9 +43,6 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         let tempDir = tmpDirObj.name;
 
         try {
-            //TODO: This has to move to create package
-            this.sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(this.sfpPackage);
-
             //Handle the right force ignore file
             this.handleForceIgnores();
 
@@ -235,25 +232,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         }
     }
 
-    private isAllTestsToBeTriggered(sfpPackage: SfpPackage) {
-        if (
-            this.sfpPackage.packageType == PackageType.Source &&
-            this.sfpPackage.isApexFound == true &&
-            this.sfpPackage.apexTestClassses == null
-        ) {
-            SFPLogger.log(
-                ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT--------------------------------------------${EOL}` +
-                    `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
-                    `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying ${EOL}` +
-                    `via triggering all local tests,This definitely is not optimal approach on large orgs` +
-                    `Please consider adding test classes for the classes in the package ${EOL}` +
-                    `-------------------------------------------------------------------------------------------------------------`,
-                LoggerLevel.INFO,
-                this.logger
-            );
-            return true;
-        } else return false;
-    }
+
 
     private async reconcileProfilesBeforeDeployment(sourceDirectoryPath: string, target_org: string, tempDir: string) {
         let profileFolders: any;
