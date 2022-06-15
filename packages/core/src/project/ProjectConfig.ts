@@ -171,25 +171,34 @@ export default class ProjectConfig {
      * @param projectDirectory
      * @param sfdxPackage
      */
-    public static cleanupMPDFromManifest(projectDirectory: string, sfdxPackage: string): any {
-        let sfdxManifest = this.getSFDXProjectConfig(projectDirectory);
+    public static cleanupMPDFromProjectDirectory(projectDirectory: string, sfdxPackage: string): any {
+        const projectConfig = this.getSFDXProjectConfig(projectDirectory);
 
+        return ProjectConfig.cleanupMPDFromProjectConfig(projectConfig, sfdxPackage);
+    }
+
+    /**
+     * Returns pruned package manifest, containing sfdxPackage only
+     * @param projectConfig
+     * @param sfdxPackage
+     */
+     public static cleanupMPDFromProjectConfig(projectConfig: any, sfdxPackage: string): any {
         if (sfdxPackage) {
-            let i = sfdxManifest['packageDirectories'].length;
+            let i = projectConfig['packageDirectories'].length;
             while (i--) {
-                if (sfdxPackage != sfdxManifest['packageDirectories'][i]['package']) {
-                    sfdxManifest['packageDirectories'].splice(i, 1);
+                if (sfdxPackage != projectConfig['packageDirectories'][i]['package']) {
+                    projectConfig['packageDirectories'].splice(i, 1);
                 }
             }
         } else {
-            let i = sfdxManifest['packageDirectories'].length;
+            let i = projectConfig['packageDirectories'].length;
             while (i--) {
-                if (!fs.existsSync(sfdxManifest['packageDirectories'][i]['path'])) {
-                    sfdxManifest['packageDirectories'].splice(i, 1);
+                if (!fs.existsSync(projectConfig['packageDirectories'][i]['path'])) {
+                    projectConfig['packageDirectories'].splice(i, 1);
                 }
             }
         }
-        sfdxManifest['packageDirectories'][0]['default'] = true; //add default = true
-        return sfdxManifest;
+        projectConfig['packageDirectories'][0]['default'] = true; //add default = true
+        return projectConfig;
     }
 }

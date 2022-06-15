@@ -77,9 +77,6 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
             // Store original dependencies to artifact
             sfpPackage.dependencies = sfpPackage.packageDescriptor['dependencies'];
         } else if (!this.isOrgDependentPackage && !this.packageCreationParams.isSkipValidation) {
-            // With dependencies, so fetch it again
-            this.resolvePackageDependencies(sfpPackage.packageDescriptor, this.workingDirectory);
-            //Redo the fetch of the descriptor as the above command would have redone the dependencies
             sfpPackage.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
                 this.workingDirectory,
                 this.sfpPackage.packageName
@@ -182,7 +179,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
             try {
                 SFPLogger.log('Fetching Version Number and Coverage details', LoggerLevel.INFO, this.logger);
 
-                let pkgInfoResult = await packageVersionCoverage.getCoverage([sfpPackage.package_version_id]);
+                let pkgInfoResult = await packageVersionCoverage.getCoverage(sfpPackage.package_version_id);
 
                 sfpPackage.isDependencyValidated = !this.packageCreationParams.isSkipValidation;
                 sfpPackage.package_version_number = pkgInfoResult.packageVersionNumber;
@@ -207,16 +204,5 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
             CreateUnlockedPackageImpl.packageTypeInfos = await this.devhubOrg.listAllPackages();
         }
         return CreateUnlockedPackageImpl.packageTypeInfos;
-    }
-
-    private resolvePackageDependencies(packageDescriptor: any, workingDirectory: string) {
-        SFPLogger.log('Resolving project dependencies', LoggerLevel.INFO, this.logger);
-
-        let resolveResult = child_process.execSync(
-            `sfdx sfpowerkit:package:dependencies:list -p ${packageDescriptor['path']} -v ${this.packageCreationParams.devHub} -w --usedependencyvalidatedpackages`,
-            { cwd: workingDirectory, encoding: 'utf8' }
-        );
-
-        SFPLogger.log(`Resolved Depenendecies: ${resolveResult}`, LoggerLevel.INFO, this.logger);
     }
 }

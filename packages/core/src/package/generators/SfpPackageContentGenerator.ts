@@ -13,6 +13,7 @@ export default class SfpPackageContentGenerator {
     public static async generateSfpPackageDirectory(
         logger: Logger,
         projectDirectory: string,
+        projectConfig: any,
         sfdx_package: string,
         packageDirectory: string,
         destructiveManifestFilePath?: string,
@@ -50,7 +51,7 @@ export default class SfpPackageContentGenerator {
         if (
             revisionFrom &&
             revisionTo &&
-            !ProjectConfig.getSFDXPackageDescriptor(projectDirectory, sfdx_package).aliasfy
+            !ProjectConfig.getPackageDescriptorFromConfig(sfdx_package, projectConfig).aliasfy
         ) {
             try {
                 let packageComponentDiffer: PackageComponentDiff = new PackageComponentDiff(
@@ -82,16 +83,16 @@ export default class SfpPackageContentGenerator {
             SfpPackageContentGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory, logger);
         }
 
-        SfpPackageContentGenerator.createPackageManifests(artifactDirectory, rootDirectory, sfdx_package);
+        SfpPackageContentGenerator.createPackageManifests(artifactDirectory, rootDirectory, projectConfig, sfdx_package);
 
         fs.copySync(path.join(rootDirectory, packageDirectory), path.join(artifactDirectory, packageDirectory));
 
         return artifactDirectory;
     }
 
-    private static createPackageManifests(artifactDirectory: string, projectDirectory: string, sfdx_package: string) {
+    private static createPackageManifests(artifactDirectory: string, projectDirectory: string, projectConfig: any, sfdx_package: string) {
         // Create pruned package manifest in source directory
-        let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromManifest(projectDirectory, sfdx_package);
+        let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromProjectConfig(projectConfig, sfdx_package);
 
         //Setup preDeployment Script Path
         if (fs.existsSync(path.join(artifactDirectory, 'scripts', `preDeployment`)))
