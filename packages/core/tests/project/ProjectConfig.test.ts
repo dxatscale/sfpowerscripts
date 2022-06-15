@@ -161,6 +161,6 @@ describe('Given a project directory or sfdx-project.json with multiple packages'
             packageAliases: { bi: '0x002232323232' },
         };
 
-        expect(ProjectConfig.cleanupMPDFromManifest(null, 'temp')).toStrictEqual(cleaned_sfdx_project);
+        expect(ProjectConfig.cleanupMPDFromProjectDirectory(null, 'temp')).toStrictEqual(cleaned_sfdx_project);
     });
 });

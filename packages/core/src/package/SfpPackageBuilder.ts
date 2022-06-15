@@ -19,16 +19,26 @@ import CreateDataPackageImpl from './packageCreators/CreateDataPackageImpl';
 import ImpactedApexTestClassFetcher from '../apextest/ImpactedApexTestClassFetcher';
 import * as rimraf from 'rimraf';
 import PackageToComponent from './PackageToComponent';
+import lodash = require('lodash');
 import { EOL } from 'os';
 
 export default class SfpPackageBuilder {
+
     public static async buildPackageFromProjectDirectory(
         logger: Logger,
         projectDirectory: string,
         sfdx_package: string,
         params?: SfpPackageParams,
-        packageCreationParams?: PackageCreationParams
+        packageCreationParams?: PackageCreationParams,
+        projectConfig?: any
     ) {
+        if (!projectConfig) {
+            projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
+        } else {
+            // Clone the projectConfig to prevent mutation
+            projectConfig = lodash.cloneDeep(projectConfig);
+        }
+
         let propertyFetchers: PropertyFetcher[] = [
             new AssignPermissionSetFetcher(),
             new DestructiveManifestPathFetcher(),
@@ -38,9 +48,9 @@ export default class SfpPackageBuilder {
         let startTime = Date.now;
         let sfpPackage: SfpPackage = new SfpPackage();
         sfpPackage.package_name = sfdx_package;
-        sfpPackage.projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
+        sfpPackage.projectConfig = projectConfig;
         sfpPackage.apiVersion = sfpPackage.projectConfig.sourceApiVersion;
-        sfpPackage.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(projectDirectory, sfdx_package);
+        sfpPackage.packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(sfdx_package, sfpPackage.projectConfig);
         sfpPackage.projectDirectory = projectDirectory;
         sfpPackage.packageDirectory = sfpPackage.packageDescriptor.path;
 
@@ -61,6 +71,7 @@ export default class SfpPackageBuilder {
         sfpPackage.workingDirectory = await SfpPackageContentGenerator.generateSfpPackageDirectory(
             logger,
             sfpPackage.projectDirectory,
+            sfpPackage.projectConfig,
             sfpPackage.packageName,
             sfpPackage.packageDescriptor.path,
             sfpPackage.destructiveChangesPath,
@@ -105,7 +116,7 @@ export default class SfpPackageBuilder {
             sfpPackage.apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
 
             sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(sfpPackage,logger);
-            
+
             //Introspect Diff Package Created
             //On Failure.. remove diff and move on
             try {
@@ -191,7 +202,7 @@ export default class SfpPackageBuilder {
 
         let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
         if (fs.existsSync(workingDirectory)) {
-            
+
             let changedComponents = new PackageToComponent(
                 sfpPackage.packageName,
                 path.join(workingDirectory, sfpPackage.packageDirectory)
@@ -258,7 +269,7 @@ export default class SfpPackageBuilder {
             if (pkgDescriptor['isOptimizedDeployment'] == null) return true;
             else return pkgDescriptor['isOptimizedDeployment'];
         }
-    
+
 }
 
 // Options while creating package

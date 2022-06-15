@@ -1,25 +1,22 @@
 import { Connection } from '@salesforce/core';
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
-import QueryHelper from '../../queryHelper/QueryHelper';
-
-const QUERY = `SELECT SubscriberPackageVersionId,Package2Id, Package2.Name,MajorVersion,MinorVersion,PatchVersion,BuildNumber, CodeCoverage, HasPassedCodeCoverageCheck, Name FROM Package2Version WHERE `;
+import Package2VersionFetcher from '../version/Package2VersionFetcher';
 
 export default class PackageVersionCoverage {
     public constructor(private connection: Connection, private logger: Logger) {}
 
-    public async getCoverage(versionId: string[]): Promise<PackageCoverage> {
-        let whereClause = `SubscriberPackageVersionId='${versionId}'`;
-
-        const records = await QueryHelper.query<any>(`${QUERY} ${whereClause}`, this.connection, true);
-        SFPLogger.log(`Fetched Records ${JSON.stringify(records)}`, LoggerLevel.TRACE, this.logger);
-        if (records[0]) {
+    public async getCoverage(versionId: string): Promise<PackageCoverage> {
+        const package2VersionFetcher = new Package2VersionFetcher(this.connection);
+        const package2Version = await package2VersionFetcher.fetchBySubscriberPackageVersionId(versionId);
+        SFPLogger.log(`Fetched Record ${JSON.stringify(package2Version)}`, LoggerLevel.TRACE, this.logger);
+        if (package2Version) {
             var packageCoverage = <PackageCoverage>{};
-            packageCoverage.HasPassedCodeCoverageCheck = records[0].HasPassedCodeCoverageCheck;
-            packageCoverage.coverage = records[0].CodeCoverage ? records[0].CodeCoverage.apexCodeCoveragePercentage : 0;
-            packageCoverage.packageId = records[0].Package2Id;
-            packageCoverage.packageName = records[0].Package2.Name;
-            packageCoverage.packageVersionId = records[0].SubscriberPackageVersionId;
-            packageCoverage.packageVersionNumber = `${records[0].MajorVersion}.${records[0].MinorVersion}.${records[0].PatchVersion}.${records[0].BuildNumber}`;
+            packageCoverage.HasPassedCodeCoverageCheck = package2Version.HasPassedCodeCoverageCheck;
+            packageCoverage.coverage = package2Version.CodeCoverage ? package2Version.CodeCoverage.apexCodeCoveragePercentage : 0;
+            packageCoverage.packageId = package2Version.Package2Id;
+            packageCoverage.packageName = package2Version.Package2.Name;
+            packageCoverage.packageVersionId = package2Version.SubscriberPackageVersionId;
+            packageCoverage.packageVersionNumber = `${package2Version.MajorVersion}.${package2Version.MinorVersion}.${package2Version.PatchVersion}.${package2Version.BuildNumber}`;
 
             SFPLogger.log(
                 `Successfully Retrieved the Apex Test Coverage of the package version`,
