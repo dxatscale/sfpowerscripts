@@ -78,7 +78,8 @@ export default class BuildImpl {
         generatedPackages: SfpPackage[];
         failedPackages: string[];
     }> {
-        this.sfpOrg = await SFPOrg.create({aliasOrUsername: this.props.devhubAlias});
+        if (this.props.devhubAlias)
+            this.sfpOrg = await SFPOrg.create({aliasOrUsername: this.props.devhubAlias});
 
         SFPLogger.log(`Invoking build...`,LoggerLevel.INFO);
         const git = simplegit();
@@ -139,7 +140,7 @@ export default class BuildImpl {
 
         let sortedBatch = new BatchingTopoSort().sort(this.childs);
 
-        if (!this.props.isQuickBuild) {
+        if (!this.props.isQuickBuild && this.sfpOrg) {
             const packageDependencyResolver = new PackageDependencyResolver(this.sfpOrg.getConnection(), this.projectConfig, this.packagesToBeBuilt);
             this.projectConfig = await packageDependencyResolver.resolvePackageDependencyVersions();
         }
