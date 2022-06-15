@@ -37,6 +37,7 @@ export default class Package2VersionFetcher {
 
       if (isValidatedPackages) whereClause += `and ValidationSkipped = false `;
 
+      whereClause += `and IsDeprecated = false `;
       query += whereClause
 
       const records = await QueryHelper.query<Package2Version>(query, this.conn, true);
