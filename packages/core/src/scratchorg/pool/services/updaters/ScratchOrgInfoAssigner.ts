@@ -11,19 +11,17 @@ export default class ScratchOrgInfoAssigner {
 
         return retry(
             async (bail) => {
-
-                    let result = await hubConn.sobject('ScratchOrgInfo').update(soInfo);
-                    SFPLogger.log('Setting Scratch Org Info:' + JSON.stringify(result), LoggerLevel.TRACE);
-                    return result.constructor !== Array ? result.success : true;
+                let result = await hubConn.sobject('ScratchOrgInfo').update(soInfo);
+                SFPLogger.log('Setting Scratch Org Info:' + JSON.stringify(result), LoggerLevel.TRACE);
+                return result.constructor !== Array ? result.success : true;
             },
             { retries: 3, minTimeout: 3000 }
         );
     }
 
-    public async setScratchOrgStatus(username: string, status: 'Allocate'|'Available'|'InProgress'): Promise<boolean> {
+    public async setScratchOrgStatus(username: string, status: 'Allocate' | 'InProgress' | 'Return'): Promise<boolean> {
+        let scratchOrgId = await new ScratchOrgInfoFetcher(this.hubOrg).getScratchOrgInfoIdGivenUserName(username);
 
-        let scratchOrgId = await (new ScratchOrgInfoFetcher(this.hubOrg)).getScratchOrgInfoIdGivenUserName(username);
-        
         return this.setScratchOrgInfo({
             Id: scratchOrgId,
             Allocation_status__c: status,
