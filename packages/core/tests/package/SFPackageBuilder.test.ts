@@ -46,6 +46,7 @@ jest.mock('../../src/package/generators/SfpPackageContentGenerator', () => {
     class SfpPackageContentGenerator {
         static async generateSfpPackageDirectory(
             projectDirectory: string,
+            projectConfig: any,
             sfdx_package: string,
             packageDirectory: string,
             destructiveManifestFilePath?: string,
@@ -152,7 +153,7 @@ jest.mock('../../src/package/packageCreators/CreateSourcePackageImpl', () => {
             protected logger?: Logger,
             protected params?: SfpPackageParams
         ) {
-            
+
         }
 
         public async exec(): Promise<SfpPackage> {

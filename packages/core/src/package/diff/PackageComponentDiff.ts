@@ -139,7 +139,7 @@ export default class PackageComponentDiff {
             SFPLogger.log(`.forceignore not found, skipping..`, LoggerLevel.DEBUG, this.logger);
         }
         try {
-            let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromManifest(null, this.sfdxPackage);
+            let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromProjectDirectory(null, this.sfdxPackage);
             fs.writeJSONSync(path.join(outputFolder, 'sfdx-project.json'), cleanedUpProjectManifest, { spaces: 4 });
         } catch (error) {
             SFPLogger.log(`sfdx-project.json not found, skipping..`, LoggerLevel.DEBUG, this.logger);

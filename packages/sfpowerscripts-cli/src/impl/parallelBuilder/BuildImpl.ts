@@ -19,6 +19,8 @@ import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/pack
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime'
 
+import PackageDependencyResolver from './PackageDependencyResolver';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -48,12 +50,13 @@ export default class BuildImpl {
     private childs;
     private packagesToBeBuilt: string[];
     private packageCreationPromises: Array<Promise<SfpPackage>>;
-    private projectConfig: { any: any };
+    private projectConfig;
     private parents: any;
     private packagesInQueue: string[];
     private packagesBuilt: string[];
     private failedPackages: string[];
     private generatedPackages: SfpPackage[];
+    private sfpOrg: SFPOrg;
 
     private repository_url: string;
     private commit_id: string;
@@ -75,6 +78,9 @@ export default class BuildImpl {
         generatedPackages: SfpPackage[];
         failedPackages: string[];
     }> {
+        if (this.props.devhubAlias)
+            this.sfpOrg = await SFPOrg.create({aliasOrUsername: this.props.devhubAlias});
+
         SFPLogger.log(`Invoking build...`,LoggerLevel.INFO);
         const git = simplegit();
         if (this.props.repourl == null) {
@@ -133,6 +139,11 @@ export default class BuildImpl {
         this.parentsToBeFulfilled = DependencyHelper.getParentsToBeFullFilled(this.parents, this.packagesToBeBuilt);
 
         let sortedBatch = new BatchingTopoSort().sort(this.childs);
+
+        if (!this.props.isQuickBuild && this.sfpOrg) {
+            const packageDependencyResolver = new PackageDependencyResolver(this.sfpOrg.getConnection(), this.projectConfig, this.packagesToBeBuilt);
+            this.projectConfig = await packageDependencyResolver.resolvePackageDependencyVersions();
+        }
 
         //Do First Level Package First
         let pushedPackages = [];
@@ -332,12 +343,15 @@ export default class BuildImpl {
         this.packagesBuilt.push(sfpPackage.packageName);
         this.printPackageDetails(sfpPackage);
 
-        //let all my childs know, I am done building  and remove myself from
         this.packagesToBeBuilt.forEach((pkg) => {
-            const unFullfilledParents = this.parentsToBeFulfilled[pkg]?.filter(
-                (pkg_name) => pkg_name !== sfpPackage.packageName
-            );
-            this.parentsToBeFulfilled[pkg] = unFullfilledParents;
+            const indexOfFulfilledParent = this.parentsToBeFulfilled[pkg]?.findIndex(parent => parent === sfpPackage.packageName);
+            if (indexOfFulfilledParent !== -1 && indexOfFulfilledParent != null) {
+                if (!this.props.isQuickBuild)
+                    this.resolveDependenciesOnCompletedPackage(pkg, sfpPackage);
+
+                //let all my childs know, I am done building  and remove myself from
+                this.parentsToBeFulfilled[pkg].splice(indexOfFulfilledParent, 1);
+            }
         });
 
         // Do a second pass and push packages with fulfilled parents to queue
@@ -384,6 +398,12 @@ export default class BuildImpl {
         this.packagesInQueue = this.packagesInQueue.filter((pkg_name) => pkg_name !== sfpPackage.packageName);
 
         this.printQueueDetails();
+    }
+
+    private resolveDependenciesOnCompletedPackage(dependentPackage: string, completedPackage: SfpPackage) {
+        const pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(dependentPackage, this.projectConfig);
+        const dependency = pkgDescriptor.dependencies.find(dependency => dependency.package === completedPackage.packageName);
+        dependency.versionNumber = completedPackage.versionNumber;
     }
 
     private getPriorityandTypeOfAPackage(projectConfig: any, pkg: string) {
@@ -507,7 +527,8 @@ export default class BuildImpl {
                 isSkipValidation: this.props.isQuickBuild,
                 breakBuildIfEmpty: true,
                 baseBranch: this.props.baseBranch,
-            }
+            },
+            this.projectConfig
         );
     }
 

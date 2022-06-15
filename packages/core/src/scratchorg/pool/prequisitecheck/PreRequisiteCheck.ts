@@ -18,7 +18,7 @@ export default class PreRequisiteCheck {
     public async checkForPrerequisites(): Promise<void> {
         let sfdxAuthUrlFieldExists = false;
         let conn = this.hubOrg.getConnection();
-        let expectedValues = ['In Progress', 'Available', 'Allocate', 'Assigned'];
+        let expectedValues = ['In Progress', 'Available', 'Allocate', 'Assigned','Return'];
         let availableValues: string[] = [];
         if (!PreRequisiteCheck.isPrerequisiteChecked) {
             await retry(
@@ -30,7 +30,7 @@ export default class PreRequisiteCheck {
                                 sfdxAuthUrlFieldExists = true;
                             }
 
-                            if (field.name === 'Allocation_status__c' && field.picklistValues.length === 4) {
+                            if (field.name === 'Allocation_status__c' && field.picklistValues.length >= 4) {
                                 for (let picklistValue of field.picklistValues) {
                                     if (picklistValue.active) {
                                         availableValues.push(picklistValue.value);
@@ -48,7 +48,7 @@ export default class PreRequisiteCheck {
             let statusValuesAvailable =
                 expectedValues.filter((item) => {
                     return !availableValues.includes(item);
-                }).length == 0
+                }).length <= 1
                     ? true
                     : false;
 
