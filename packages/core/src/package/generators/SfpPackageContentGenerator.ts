@@ -113,12 +113,6 @@ export default class SfpPackageContentGenerator {
             if (fs.pathExistsSync(packageDescriptor.unpackagedMetadata.path)) {
                 let unpackagedMetadataDir: string = path.join(artifactDirectory, `unpackagedMetadata`);
                 mkdirpSync(unpackagedMetadataDir);
-                console.log(
-                    'rootDir',
-                    rootDirectory,
-                    path.join(rootDirectory, packageDescriptor.unpackagedMetadata.path),
-                    process.cwd()
-                );
                 fs.copySync(path.join(rootDirectory, packageDescriptor.unpackagedMetadata.path), unpackagedMetadataDir);
             } else {
                 throw new Error(`unpackagedMetadata ${packageDescriptor.unpackagedMetadata.path} does not exist`);
