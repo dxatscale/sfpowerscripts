@@ -38,7 +38,7 @@ describe('Provided an apex test suite from a source directory', () => {
     it('should throw an error if apex test suite is not avaiable in the directory', async () => {
         const globMock = jest.spyOn(glob, 'sync');
         globMock.mockImplementation(() => {
-            return new Array();
+            return [];
         });
 
         let apexTestSuite = new ApexTestSuite(`dir`, `test`);

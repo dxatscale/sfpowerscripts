@@ -64,7 +64,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
     }
 
     private async fetchAllScratchOrg(availableSo: any[]): Promise<ScratchOrg[]> {
-        let fetchedSOs: ScratchOrg[] = new Array();
+        let fetchedSOs: ScratchOrg[] = [];
 
         if (availableSo.length > 0) {
             SFPLogger.log(`${this.tag} pool has ${availableSo.length} Scratch orgs available`, LoggerLevel.TRACE);

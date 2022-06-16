@@ -124,7 +124,7 @@ export default class Promote extends SfpowerscriptsCommand {
             version: string;
             type: string;
             tag: string;
-        }[] = new Array();
+        }[] = [];
 
         let npmrcFilesToCleanup: string[] = [];
 
