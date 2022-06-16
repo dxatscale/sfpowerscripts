@@ -23,6 +23,7 @@
                     "dependencies": ["package", "versionNumber"],
                     "package": ["versionNumber"],
                     "postInstallUrl": ["package", "versionNumber"],
+                    "unpackagedMetadata": ["package", "versionNumber"],
                     "releaseNotesUrl": ["package", "versionNumber"],
                     "versionDescription": ["package", "versionNumber"],
                     "versionName": ["package", "versionNumber"],
@@ -61,6 +62,9 @@
                     "postInstallUrl": {
                         "$ref": "#/definitions/packageDirectory.postInstallUrl"
                     },
+                    "unpackagedMetadata": {
+                        "$ref": "#/definitions/packageDirectory.unpackagedMetadata"
+                    } ,
                     "releaseNotesUrl": {
                         "$ref": "#/definitions/packageDirectory.releaseNotesUrl"
                     },
@@ -256,6 +260,19 @@
             "title": "Post Install Url",
             "description": "The post install url."
         },
+        "packageDirectory.unpackagedMetadata": {
+            "type": "object",
+            "title": "Unpackaged Metadata",
+            "description": "Metadata not meant to be packaged, but deployed when testing packaged metadata",
+            "required": ["path"],
+            "properties": {
+              "path": {
+                "type": "string",
+                "title": "Path",
+                "description": "The path name of the package directory containing the unpackaged metadata"
+              }
+            }
+          },
         "packageDirectory.includeProfileUserLicenses": {
             "type": "boolean",
             "title": "Include Profile User Licenses",
