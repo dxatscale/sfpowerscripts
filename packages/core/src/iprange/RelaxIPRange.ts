@@ -92,7 +92,7 @@ export default class RelaxIPRange {
         conn.metadata.pollTimeout = 300;
         let deployId: AsyncResult;
 
-        var zipStream = fs.createReadStream(zipFile);
+        let zipStream = fs.createReadStream(zipFile);
         await conn.metadata.deploy(zipStream, { rollbackOnError: true, singlePackage: true }, function (
             error,
             result: AsyncResult
@@ -211,7 +211,7 @@ export default class RelaxIPRange {
         }
 
         let builder = new xml2js.Builder();
-        var xml = builder.buildObject(retrieve_securitySetting);
+        let xml = builder.buildObject(retrieve_securitySetting);
         fs.writeFileSync(pathToMetadatFile, xml);
     }
 }

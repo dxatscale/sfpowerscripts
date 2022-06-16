@@ -25,7 +25,7 @@ export class SfpProjectConfig {
         if (typeof jsonObj !== 'object') throw new Error('toInstance takes an object as an input');
 
         const sfpProjectConfig = new SfpProjectConfig();
-        for (var propName in jsonObj) {
+        for (let propName in jsonObj) {
             sfpProjectConfig[propName] = jsonObj[propName];
         }
         return sfpProjectConfig;
