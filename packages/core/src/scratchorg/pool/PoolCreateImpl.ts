@@ -45,7 +45,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
     protected async onExec(): Promise<Result<PoolConfig, PoolError>> {
         await this.hubOrg.refreshAuth();
 
-        let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = new Array();
+        let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = [];
 
         //fetch current status limits
         this.limits = await new ScratchOrgLimitsFetcher(this.hubOrg).getScratchOrgLimits();

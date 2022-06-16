@@ -28,11 +28,11 @@ export default class AssignPermissionSets {
         let failedAssignments: {
             username: string;
             permset: string;
-        }[] = new Array();
+        }[] = [];
         let successfullAssignments: {
             username: string;
             permset: string;
-        }[] = new Array();
+        }[] = [];
 
         for (let permSet of this.permSets) {
             let permSetAssignmentMatch = assignedPermSets.find((record) => {

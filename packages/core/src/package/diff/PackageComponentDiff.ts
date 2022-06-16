@@ -40,8 +40,8 @@ export default class PackageComponentDiff {
         if (this.revisionFrom == null) {
             this.revisionFrom = '';
         }
-        this.destructivePackageObjPost = new Array();
-        this.destructivePackageObjPre = new Array();
+        this.destructivePackageObjPost = [];
+        this.destructivePackageObjPre = [];
         this.resultOutput = [];
 
         sfdxManifest = ProjectConfig.getSFDXProjectConfig(null);
@@ -169,13 +169,13 @@ export default class PackageComponentDiff {
 
     private async createDestructiveChanges(filePaths: DiffFileStatus[], outputFolder: string) {
         if (_.isNil(this.destructivePackageObjPost)) {
-            this.destructivePackageObjPost = new Array();
+            this.destructivePackageObjPost = [];
         } else {
             this.destructivePackageObjPost = this.destructivePackageObjPost.filter((metaType) => {
                 return !_.isNil(metaType.members) && metaType.members.length > 0;
             });
         }
-        this.destructivePackageObjPre = new Array();
+        this.destructivePackageObjPre = [];
         //returns root, dir, base and name
         for (let i = 0; i < filePaths.length; i++) {
             let filePath = filePaths[i].path;
