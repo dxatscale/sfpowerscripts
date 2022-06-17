@@ -508,7 +508,7 @@ export default class BuildImpl {
             table.push(row);
         }
 
-        console.log(table.toString());
+        SFPLogger.log(table.toString());
     }
 
     private async createPackage(
