@@ -486,7 +486,29 @@ export default class BuildImpl {
                 );
             }
 
+            SFPLogger.log(COLOR_HEADER(`-- Package Dependencies:`));
+            const packageDependencies = this.projectConfig.packageDirectories.find(dir => dir.package === sfpPackage.package_name).dependencies;
+            if (packageDependencies && Array.isArray(packageDependencies) && packageDependencies.length > 0) {
+                this.printPackageDependencies(packageDependencies);
+            }
+
         }
+    }
+
+    private printPackageDependencies(dependencies: {package: string, versionNumber?: string}[]) {
+        const table = new Table({
+            head: ['Package', 'Version'],
+        });
+
+        for (const dependency of dependencies) {
+            const row = [
+                dependency.package,
+                dependency.versionNumber ? dependency.versionNumber : "N/A"
+            ];
+            table.push(row);
+        }
+
+        console.log(table.toString());
     }
 
     private async createPackage(
