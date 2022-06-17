@@ -1,4 +1,4 @@
-const sfdcSoup = require('sfdc-soup');
+const sfdcSoup = require('@dxatscale/sfdc-soup');
 const Handlebars = require('handlebars');
 const puppeteer = require('puppeteer');
 import Component from '@dxatscale/sfpowerscripts.core/lib/dependency/Component';

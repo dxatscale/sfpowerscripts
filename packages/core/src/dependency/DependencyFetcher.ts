@@ -1,5 +1,5 @@
 import { Connection } from '@salesforce/core';
-const sfdcSoup = require('sfdc-soup');
+const sfdcSoup = require('@dxatscale/sfdc-soup');
 import Component from './Component';
 import Entrypoint from './Entrypoint';
 import SFPLogger, { LoggerLevel } from '../logger/SFPLogger';
