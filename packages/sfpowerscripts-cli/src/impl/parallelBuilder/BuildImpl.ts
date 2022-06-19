@@ -259,17 +259,11 @@ export default class BuildImpl {
      * @param packageNames
      */
     private validatePackageNames(packageNames: string[]) {
-        console.log('VALIDATING NAME');
         packageNames.forEach((name) => {
-            if (name.match(/^[a-zA-Z0-9-._~]+$/) === null){
+            if (name.match(/^[a-zA-Z0-9-._~]+$/) === null)
                 throw new Error(
                     `Invalid package name "${name}". Package names can only contain alphanumeric characters and the symbols - . _ ~`
-                )
-            }else if( name.length > 38){
-                throw new Error(
-                    `Invalid package name "${name}".  Package name exceed maximum length of 38 characters`
-                )
-            }
+                );
         });
     }
 
