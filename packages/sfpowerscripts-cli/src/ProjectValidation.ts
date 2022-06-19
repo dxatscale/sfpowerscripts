@@ -34,7 +34,7 @@ export default class ProjectValidation {
         }
     }
 
-    public validatePackageName() {
+    public validatePackageNames() {
         ProjectConfig.getAllPackageDirectoriesFromConfig(this.projectConfig).forEach((pkg) => {
             let name = pkg.package;
             if ( name.length > 38) {
