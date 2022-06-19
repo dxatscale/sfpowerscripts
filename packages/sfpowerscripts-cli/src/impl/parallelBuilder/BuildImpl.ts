@@ -1,7 +1,7 @@
 import BatchingTopoSort from './BatchingTopoSort';
 import DependencyHelper from './DependencyHelper';
 import Bottleneck from 'bottleneck';
-import PackageDiffImpl, {PackageDiffOptions} from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
+import PackageDiffImpl, { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
 import simplegit from 'simple-git';
 import IncrementProjectBuildNumberImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl';
 import { EOL } from 'os';
@@ -11,14 +11,19 @@ import * as fs from 'fs-extra';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import BuildCollections from './BuildCollections';
 const Table = require('cli-table');
-import SFPLogger, { ConsoleLogger, FileLogger, LoggerLevel, VoidLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, {
+    ConsoleLogger,
+    FileLogger,
+    LoggerLevel,
+    VoidLogger,
+} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime'
-
+import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
+import { DEFAULT_LEFT_PADDING, ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import PackageDependencyResolver from './PackageDependencyResolver';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 
@@ -42,7 +47,7 @@ export interface BuildProps {
     packagesToCommits?: { [p: string]: string };
     currentStage: Stage;
     baseBranch?: string;
-    diffOptions?:PackageDiffOptions
+    diffOptions?: PackageDiffOptions;
 }
 export default class BuildImpl {
     private limiter: Bottleneck;
@@ -78,14 +83,13 @@ export default class BuildImpl {
         generatedPackages: SfpPackage[];
         failedPackages: string[];
     }> {
-        if (this.props.devhubAlias)
-            this.sfpOrg = await SFPOrg.create({aliasOrUsername: this.props.devhubAlias});
+        if (this.props.devhubAlias) this.sfpOrg = await SFPOrg.create({ aliasOrUsername: this.props.devhubAlias });
 
-        SFPLogger.log(`Invoking build...`,LoggerLevel.INFO);
+        SFPLogger.log(`Invoking build...`, LoggerLevel.INFO);
         const git = simplegit();
         if (this.props.repourl == null) {
             this.repository_url = (await git.getConfig('remote.origin.url')).value;
-            SFPLogger.log(`Fetched Remote URL ${this.repository_url}`,LoggerLevel.INFO);
+            SFPLogger.log(`Fetched Remote URL ${this.repository_url}`, LoggerLevel.INFO);
         } else this.repository_url = this.props.repourl;
 
         if (!this.repository_url) throw new Error('Remote origin must be set in repository');
@@ -141,7 +145,11 @@ export default class BuildImpl {
         let sortedBatch = new BatchingTopoSort().sort(this.childs);
 
         if (!this.props.isQuickBuild && this.sfpOrg) {
-            const packageDependencyResolver = new PackageDependencyResolver(this.sfpOrg.getConnection(), this.projectConfig, this.packagesToBeBuilt);
+            const packageDependencyResolver = new PackageDependencyResolver(
+                this.sfpOrg.getConnection(),
+                this.projectConfig,
+                this.packagesToBeBuilt
+            );
             this.projectConfig = await packageDependencyResolver.resolvePackageDependencyVersions();
         }
 
@@ -284,8 +292,7 @@ export default class BuildImpl {
         });
 
         for (const pkg of packageDescriptors) {
-            if(pkg.package && pkg.versionNumber)
-               sfdxpackages.push(pkg['package']);
+            if (pkg.package && pkg.versionNumber) sfdxpackages.push(pkg['package']);
         }
         return sfdxpackages;
     }
@@ -344,10 +351,11 @@ export default class BuildImpl {
         this.printPackageDetails(sfpPackage);
 
         this.packagesToBeBuilt.forEach((pkg) => {
-            const indexOfFulfilledParent = this.parentsToBeFulfilled[pkg]?.findIndex(parent => parent === sfpPackage.packageName);
+            const indexOfFulfilledParent = this.parentsToBeFulfilled[pkg]?.findIndex(
+                (parent) => parent === sfpPackage.packageName
+            );
             if (indexOfFulfilledParent !== -1 && indexOfFulfilledParent != null) {
-                if (!this.props.isQuickBuild)
-                    this.resolveDependenciesOnCompletedPackage(pkg, sfpPackage);
+                if (!this.props.isQuickBuild) this.resolveDependenciesOnCompletedPackage(pkg, sfpPackage);
 
                 //let all my childs know, I am done building  and remove myself from
                 this.parentsToBeFulfilled[pkg].splice(indexOfFulfilledParent, 1);
@@ -402,7 +410,9 @@ export default class BuildImpl {
 
     private resolveDependenciesOnCompletedPackage(dependentPackage: string, completedPackage: SfpPackage) {
         const pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(dependentPackage, this.projectConfig);
-        const dependency = pkgDescriptor.dependencies.find(dependency => dependency.package === completedPackage.packageName);
+        const dependency = pkgDescriptor.dependencies.find(
+            (dependency) => dependency.package === completedPackage.packageName
+        );
         dependency.versionNumber = completedPackage.versionNumber;
     }
 
@@ -432,82 +442,78 @@ export default class BuildImpl {
                 )}`
             )
         );
+
         SFPLogger.log(COLOR_HEADER(`-- Package Details:--`));
-        SFPLogger.log(
-            COLOR_HEADER(`-- Package Version Number:        `)+
-            COLOR_KEY_MESSAGE(sfpPackage.package_version_number)
-        );
+        const table = new Table({
+            chars: ZERO_BORDER_TABLE,
+            style: DEFAULT_LEFT_PADDING,
+        });
+        table.push([COLOR_HEADER(`Package Type`), COLOR_KEY_MESSAGE(sfpPackage.package_type)]);
+        table.push([COLOR_HEADER(`Package Version Number`), COLOR_KEY_MESSAGE(sfpPackage.package_version_number)]);
 
         if (sfpPackage.package_type !== PackageType.Data) {
             if (sfpPackage.package_type == PackageType.Unlocked) {
-              if(sfpPackage.package_version_id)
-                SFPLogger.log(
-                    COLOR_HEADER(`-- Package Version Id:             `)+
-                    COLOR_KEY_MESSAGE(sfpPackage.package_version_id)
-                );
+                if (sfpPackage.package_version_id)
+                    table.push([COLOR_HEADER(`Package Version Id`), COLOR_KEY_MESSAGE(sfpPackage.package_version_id)]);
                 if (sfpPackage.test_coverage)
-                SFPLogger.log(
-                        COLOR_HEADER(`-- Package Test Coverage:          `)+
-                        COLOR_KEY_MESSAGE(sfpPackage.test_coverage)
-                    );
+                    table.push([COLOR_HEADER(`Package Test Coverage`), COLOR_KEY_MESSAGE(sfpPackage.test_coverage)]);
                 if (sfpPackage.has_passed_coverage_check)
-                SFPLogger.log(
-                        COLOR_HEADER(`-- Package Coverage Check Passed:  `)+
-                        COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check)
-                    );
+                    table.push([
+                        COLOR_HEADER(`Package Coverage Check Passed`),
+                        COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check),
+                    ]);
             }
 
-            SFPLogger.log(
-                COLOR_HEADER(`-- Apex In Package:             `)+
-                COLOR_KEY_MESSAGE(sfpPackage.isApexFound ? 'Yes' : 'No')
-            );
-            SFPLogger.log(
-                COLOR_HEADER(`-- Profiles In Package:         `)+
-                COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? 'Yes' : 'No')
-            );
-            SFPLogger.log(COLOR_HEADER(`-- Metadata Count:         `)+ COLOR_KEY_MESSAGE(sfpPackage.metadataCount));
+            table.push([COLOR_HEADER(`Metadata Count`), COLOR_KEY_MESSAGE(sfpPackage.metadataCount)]);
+            table.push([COLOR_HEADER(`Apex In Package`), COLOR_KEY_MESSAGE(sfpPackage.isApexFound ? 'Yes' : 'No')]);
+            table.push([
+                COLOR_HEADER(`Profiles In Package`),
+                COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? 'Yes' : 'No'),
+            ]);
 
             if (sfpPackage.diffPackageMetadata) {
-                SFPLogger.log(
-                    COLOR_HEADER(`-- Source Version From:         `)+
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom)
-                );
-                SFPLogger.log(
-                    COLOR_HEADER(`-- Source Version To:         `)+
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo)
-                );
-                SFPLogger.log(
-                    COLOR_HEADER(`-- Metadata Count for Diff Package:         `)+
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.metadataCount)
-                );
-                SFPLogger.log(
-                    COLOR_HEADER(`-- Apex Test Class Invalidated:         `)+
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.invalidatedTestClasses?.length)
-                );
+                table.push([COLOR_HEADER(`Source Version From`), COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom)]);
+                table.push([COLOR_HEADER(`Source Version From`), COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo)]);
+                table.push([
+                    COLOR_HEADER(`Metadata Count for Diff Package`),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.metadataCount),
+                ]);
+                table.push([
+                    COLOR_HEADER(`Metadata Count for Diff Package`),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.invalidatedTestClasses?.length),
+                ]);
             }
+            SFPLogger.log(table.toString());
 
-            SFPLogger.log(COLOR_HEADER(`-- Package Dependencies:`));
-            const packageDependencies = this.projectConfig.packageDirectories.find(dir => dir.package === sfpPackage.package_name).dependencies;
+            const packageDependencies = this.projectConfig.packageDirectories.find(
+                (dir) => dir.package === sfpPackage.package_name
+            ).dependencies;
             if (packageDependencies && Array.isArray(packageDependencies) && packageDependencies.length > 0) {
+                SFPLogger.log(COLOR_HEADER(`   Resolved package dependencies:`));
                 this.printPackageDependencies(packageDependencies);
             }
-
         }
     }
 
-    private printPackageDependencies(dependencies: {package: string, versionNumber?: string}[]) {
+    private printPackageDependencies(dependencies: { package: string; versionNumber?: string }[]) {
         const table = new Table({
             head: ['Package', 'Version'],
+            chars: ZERO_BORDER_TABLE,
+            style: DEFAULT_LEFT_PADDING,
         });
 
         for (const dependency of dependencies) {
-            const row = [
-                dependency.package,
-                dependency.versionNumber ? dependency.versionNumber : "N/A"
-            ];
+            let versionNumber: 'N/A';
+
+            if (!dependency.versionNumber)
+                versionNumber = this.projectConfig.packageAliases[dependency.package]
+                    ? this.projectConfig.packageAliases[dependency.package]
+                    : 'N/A';
+            else versionNumber = versionNumber;
+
+            const row = [dependency.package, versionNumber];
             table.push(row);
         }
-
         SFPLogger.log(table.toString());
     }
 
@@ -579,8 +585,6 @@ export default class BuildImpl {
             } else throw new Error(`${stageForceIgnorePath} forceignore file does not exist`);
         } else return null;
     }
-
-
 
     private getVersionNumber(sfdx_package: string, packageType: string, isValidateMode: boolean): string {
         let incrementedVersionNumber;
