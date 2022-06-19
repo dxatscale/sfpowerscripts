@@ -5,6 +5,5 @@
         "rootDir": "./src",
         "skipLibCheck": true
     },
-    "include": ["src/**/*", "src/**/*.json"],
-    "exclude": ["node_modules", "tests"]
+    "exclude": ["node_modules", "dist", "tests"]
 }
