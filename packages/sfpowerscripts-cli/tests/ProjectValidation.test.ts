@@ -384,7 +384,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
                 },
                 {
                     path: 'packages/frameworks/ordering-systems',
-                    package: 'feature-mgmt-&-ordering-systems-org-dep',
+                    package: 'feature-mgmt-&-ordering-systems-org',
                     default: false,
                     versionName: 'ordering-systems',
                     versionNumber: '1.0.0.0',
