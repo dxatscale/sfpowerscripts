@@ -328,4 +328,86 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
         expect(excep);
         expect(excep.message).toContain('invalid_core_pkg');
     });
+
+    it('should throw a package-specific error for sfdx-project.json when package name is more than 38 characters', () => {
+        // sfdx-project.json includes two source packages. One with normal package name, one name is more than 38 characters (invalid)
+        let sfdx_project = {
+            packageDirectories: [
+                {
+                    path: 'packages/temp',
+                    default: true,
+                    package: 'temp',
+                    type: 'source',
+                    versionName: 'temp',
+                    versionNumber: '1.0.0.0',
+                },
+                {
+                    path: 'packages/frameworks/ordering-systems',
+                    package: 'feature-mgmt-and-ordering-systems-org-dep',
+                    default: false,
+                    versionName: 'ordering-systems',
+                    versionNumber: '1.0.0.0',
+                }
+            ],
+            namespace: '',
+            sfdcLoginUrl: 'https://login.salesforce.com',
+            sourceApiVersion: '50.0',
+        };
+
+        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
+        projectConfigMock.mockImplementation(() => {
+            return sfdx_project;
+        });
+
+        let excep;
+        try {
+            new ProjectValidation().validatePackageNames();
+        } catch (error) {
+            excep = error;
+        }
+
+        expect(excep);
+        expect(excep.message).toContain('Package name exceed maximum length of 38 characters');
+    });
+
+    it('should throw a package-specific error for sfdx-project.json when package name contains invalid characters', () => {
+        // sfdx-project.json includes two source packages. One with normal package name, one name contains & (invalid)
+        let sfdx_project = {
+            packageDirectories: [
+                {
+                    path: 'packages/temp',
+                    default: true,
+                    package: 'temp',
+                    type: 'source',
+                    versionName: 'temp',
+                    versionNumber: '1.0.0.0',
+                },
+                {
+                    path: 'packages/frameworks/ordering-systems',
+                    package: 'feature-mgmt-&-ordering-systems-org',
+                    default: false,
+                    versionName: 'ordering-systems',
+                    versionNumber: '1.0.0.0',
+                }
+            ],
+            namespace: '',
+            sfdcLoginUrl: 'https://login.salesforce.com',
+            sourceApiVersion: '50.0',
+        };
+
+        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
+        projectConfigMock.mockImplementation(() => {
+            return sfdx_project;
+        });
+
+        let excep;
+        try {
+            new ProjectValidation().validatePackageNames();
+        } catch (error) {
+            excep = error;
+        }
+
+        expect(excep);
+        expect(excep.message).toContain('Package names can only contain alphanumeric characters and the symbols - . _ ~.');
+    });
 });

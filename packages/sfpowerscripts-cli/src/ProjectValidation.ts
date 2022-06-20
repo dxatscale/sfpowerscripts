@@ -34,6 +34,28 @@ export default class ProjectValidation {
         }
     }
 
+    public validatePackageNames() {
+        ProjectConfig.getAllPackageDirectoriesFromConfig(this.projectConfig).forEach((pkg) => {
+            let name = pkg.package;
+            if ( name.length > 38) {
+                throw new Error(
+                    'sfdx-project.json validation failed for package "' +
+                    pkg['package'] +
+                        '".' +
+                    `Package name exceed maximum length of 38 characters.`
+                )
+            }else if( name.match(/^[a-zA-Z0-9-._~]+$/) === null ){
+                throw new Error(
+                    'sfdx-project.json validation failed for package "' +
+                    pkg['package'] +
+                        '".' +
+                    `Package names can only contain alphanumeric characters and the symbols - . _ ~.`
+                )
+            }
+        });
+    }
+
+
     public validatePackageBuildNumbers() {
         ProjectConfig.getAllPackageDirectoriesFromConfig(this.projectConfig).forEach((pkg) => {
             let packageType = ProjectConfig.getPackageType(this.projectConfig, pkg.package);
