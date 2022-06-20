@@ -98,8 +98,6 @@ export default class BuildImpl {
 
         this.packagesToBeBuilt = this.getAllPackages(this.props.projectDirectory);
 
-        this.validatePackageNames(this.packagesToBeBuilt);
-
         // Read Manifest
         this.projectConfig = ProjectConfig.getSFDXProjectConfig(this.props.projectDirectory);
 
