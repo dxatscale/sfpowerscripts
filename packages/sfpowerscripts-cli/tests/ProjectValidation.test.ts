@@ -367,7 +367,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
         }
 
         expect(excep);
-        expect(excep.message).toContain('feature-mgmt-and-ordering-systems-org-dep');
+        expect(excep.message).toContain('Package name exceed maximum length of 38 characters');
     });
 
     it('should throw a package-specific error for sfdx-project.json when package name contains invalid characters', () => {
@@ -408,6 +408,6 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
         }
 
         expect(excep);
-        expect(excep.message).toContain('feature-mgmt-&-ordering-systems-org-dep');
+        expect(excep.message).toContain('Package names can only contain alphanumeric characters and the symbols - . _ ~.');
     });
 });
