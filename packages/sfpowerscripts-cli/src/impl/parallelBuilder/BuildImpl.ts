@@ -503,13 +503,13 @@ export default class BuildImpl {
         });
 
         for (const dependency of dependencies) {
-            let versionNumber: 'N/A';
+            let versionNumber = 'N/A';
 
             if (!dependency.versionNumber)
                 versionNumber = this.projectConfig.packageAliases[dependency.package]
                     ? this.projectConfig.packageAliases[dependency.package]
                     : 'N/A';
-            else versionNumber = versionNumber;
+            else versionNumber = dependency.versionNumber;
 
             const row = [dependency.package, versionNumber];
             table.push(row);
