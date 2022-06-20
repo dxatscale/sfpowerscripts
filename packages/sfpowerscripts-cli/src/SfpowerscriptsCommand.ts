@@ -71,7 +71,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
             let projectValidation = new ProjectValidation();
             projectValidation.validateSFDXProjectJSON();
             projectValidation.validatePackageBuildNumbers();
-            projectValidation.validatePackageName();
+            projectValidation.validatePackageNames();
         }
 
         //Clear temp directory before every run

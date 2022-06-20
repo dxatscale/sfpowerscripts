@@ -44,9 +44,17 @@ export default class ProjectValidation {
                         '".' +
                     `Package name exceed maximum length of 38 characters.`
                 )
+            }else if( name.match(/^[a-zA-Z0-9-._~]+$/) === null ){
+                throw new Error(
+                    'sfdx-project.json validation failed for package "' +
+                    pkg['package'] +
+                        '".' +
+                    `Package names can only contain alphanumeric characters and the symbols - . _ ~.`
+                )
             }
         });
     }
+
 
     public validatePackageBuildNumbers() {
         ProjectConfig.getAllPackageDirectoriesFromConfig(this.projectConfig).forEach((pkg) => {
