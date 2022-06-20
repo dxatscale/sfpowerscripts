@@ -4,6 +4,7 @@ import SFPlogger, { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logg
 import path = require('path');
 import { SfpProjectConfig } from './types/SfpProjectConfig';
 import * as fs from 'fs-extra';
+const pjson = require('../package.json');
 
 export default abstract class SfpCommand extends Command {
     // The parsed flags for easy reference by this command; assigned in init
@@ -24,7 +25,11 @@ export default abstract class SfpCommand extends Command {
     public async run<T>(): Promise<T> {
         await this.init();
         if (this.args.caller !== 'inner') {
-            SFPlogger.log(COLOR_HEADER(`sfp cli -- The DX@Scale Dev CLI -- ${this.config.version}`));
+            SFPlogger.log(
+                COLOR_HEADER(
+                    `sfp cli -- The DX@Scale Dev CLI -Version:${this.config.version} -Release:${pjson.release}`
+                )
+            );
         }
 
         this.projectName = `${path.basename(process.cwd())}`;
