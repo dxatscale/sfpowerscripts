@@ -33,7 +33,11 @@ A build system for package based development in Salesforce, delivered as a sfdx 
 There are lot more features to explore. Read more at  https://docs.dxatscale.io
 
 The project is delivered as a <b>SFDX CLI Plugin</b> that can be deployed in any CI/CD system, The plugin is available in  [NPM](https://www.npmjs.com/package/@dxatscale/sfpowerscripts) or can be 
-used by using the [docker image](https://hub.docker.com/r/dxatscale/sfpowerscripts)
+used by using the [docker image](https://github.com/dxatscale/sfpowerscripts/pkgs/container/sfpowerscripts)
+
+
+
+
 
 #### Motivation
 
@@ -45,14 +49,14 @@ used by using the [docker image](https://hub.docker.com/r/dxatscale/sfpowerscrip
 
 #### CI/CD Reference Implementation
 
-Getting started guides for popular CI/CD platforms along with reference pipelines are available [here](https://docs.dxatscale.io/ci-cd/reference-implementation)
+Getting started guides for popular CI/CD platforms along with reference pipelines are available [here](https://docs.dxatscale.io/reference-implementation/github)
 
 
 #### Docker
 
-Docker images for sfpowerscripts are available at [Docker Hub](https://hub.docker.com/r/dxatscale/sfpowerscripts).
+Docker images for sfpowerscripts are available at [GitHub Container Registry](https://github.com/dxatscale/sfpowerscripts/pkgs/container/sfpowerscripts).
 
-We reccommend using the sfpowerscripts docker image to avoid breakages in your CICD pipelines due to updates in sfpowerscripts or any of its dependencies such as the SFDX CLI.
+We recommend using the sfpowerscripts docker image to avoid breakages in your CI/CD pipelines due to updates in sfpowerscripts or any of its dependencies such as the SFDX CLI.
 
 #### Build Instructions 
 To build sfpowerscripts execute the following on the terminal: 
@@ -83,7 +87,7 @@ List of Maintainers are available in the [link](https://docs.dxatscale.io/about-
 
 #### Where do I reach for queries?
 
-Please create an issue in the repo for bugs or utilize GitHub Discussions for other queries
+Please create an issue in the repo for bugs or utilize GitHub Discussions for other queries.  Join our [Slack Community](https://launchpass.com/dxatscale) as well.
 
 
 ## License
