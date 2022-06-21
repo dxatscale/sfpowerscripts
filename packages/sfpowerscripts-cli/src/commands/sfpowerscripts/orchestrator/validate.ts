@@ -136,6 +136,7 @@ export default class Validate extends SfpowerscriptsCommand {
         if (this.flags.tag != null) {
             tags = {
                 tag: this.flags.tag,
+                validation_mode: this.flags.fastfeedback?'fast-feedback':'thorough'
             };
         }
 
