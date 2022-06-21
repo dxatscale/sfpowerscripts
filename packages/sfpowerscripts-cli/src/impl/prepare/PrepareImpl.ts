@@ -102,16 +102,16 @@ export default class PrepareImpl {
                         `${installationCount}/${this.artifactFetchedCount}`,
                         lastInstalledArifact.Name,
                     ]);
-                    SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.requested`,this.artifactFetchedCount,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
-                    SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.installed`,installationCount,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+                    SFPStatsSender.logGauge(`so.packages.requested`,this.artifactFetchedCount,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+                    SFPStatsSender.logGauge(`so.packages.installed`,installationCount,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
                 } else {
                     table.push([scratchOrg.alias, scratchOrg.username, `NA`, `NA`]);
-                    SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.requested`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
-                    SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.installed`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+                    SFPStatsSender.logGauge(`so.packages.requested`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+                    SFPStatsSender.logGauge(`so.packages.installed`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
                 }
               } catch (error) {
-                SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.requested`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
-                SFPStatsSender.logGauge(`sfpowerscripts.pool.packages.installed`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+                SFPStatsSender.logGauge(`so.packages.requested`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+                SFPStatsSender.logGauge(`so.packages.installed`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
                 table.push([scratchOrg.alias, scratchOrg.username, `Unable to compute`, `Unable to fetch`]);
               }
         }
