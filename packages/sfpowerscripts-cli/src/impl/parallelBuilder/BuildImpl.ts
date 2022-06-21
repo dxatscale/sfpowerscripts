@@ -23,7 +23,7 @@ import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
-import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
+import { COLON_MIDDLE_BORDER_TABLE, ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import PackageDependencyResolver from './PackageDependencyResolver';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 
@@ -431,8 +431,8 @@ export default class BuildImpl {
 
         SFPLogger.log(COLOR_HEADER(`-- Package Details:--`));
         const table = new Table({
-            head: ['', ''],
-            chars: ZERO_BORDER_TABLE,
+            head: ['Property', 'Value'],
+            chars: COLON_MIDDLE_BORDER_TABLE,
             style: { 'padding-left': 2 }
         });
         table.push([COLOR_HEADER(`Package Type`), COLOR_KEY_MESSAGE(sfpPackage.package_type)]);
