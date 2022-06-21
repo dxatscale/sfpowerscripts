@@ -77,7 +77,7 @@ RUN export XDG_DATA_HOME && \
 RUN npm install --global yarn
 
 # Install sfdx-cli
-RUN yarn global add sfdx-cli@7.145.0 
+RUN yarn global add sfdx-cli@7.155.1 
 
 # Install vlocity
 RUN yarn global add vlocity@1.15.2
