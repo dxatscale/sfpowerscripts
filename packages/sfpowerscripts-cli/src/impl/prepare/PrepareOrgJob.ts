@@ -147,7 +147,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             currentStage: Stage.PREPARE,
             packageLogger: packageLogger,
             isTestsToBeTriggered: false,
-            skipIfPackageInstalled: false,
+            skipIfPackageInstalled: true,
             deploymentMode: deploymentMode,
             isRetryOnFailure: this.pool.retryOnFailure,
         };
@@ -214,9 +214,9 @@ export default class PrepareOrgJob extends PoolJobExecutor {
     //Fetch all checkpoints
     private getcheckPointPackages(logger: FileLogger) {
         SFPLogger.log('Fetching checkpoints for prepare if any.....', LoggerLevel.INFO, logger);
-        let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
+ 
         let checkPointPackages = [];
-        projectConfig['packageDirectories'].forEach((pkg) => {
+       ProjectConfig.getAllPackageDirectoriesFromDirectory(null).forEach((pkg) => {
             if (pkg.checkpointForPrepare) checkPointPackages.push(pkg['package']);
         });
         return checkPointPackages;

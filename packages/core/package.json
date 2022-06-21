@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfpowerscripts.core",
-    "version": "21.3.8",
+    "version": "23.4.5",
     "description": "Core Module used by sfpowerscripts",
     "main": "lib/index",
     "types": "lib/index",
@@ -12,43 +12,51 @@
         "build": "npm run clean && npm run compile",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
         "compile": "tsc -b tsconfig.json",
+        "clearCache": "jest --clearCache",
         "test": "FORCE_COLOR=true jest  --verbose --coverage --detectOpenHandles"
     },
+    "engines": {
+        "node": ">=14.0.0"
+    },
     "dependencies": {
+        "@dxatscale/sfdc-soup": "18.2.3",
         "@newrelic/telemetry-sdk": "^0.6.0",
-        "@salesforce/apex-node": "0.11.0",
+        "@salesforce/apex-node": "0.12.0",
         "@salesforce/command": "4.2.2",
         "@salesforce/core": "2.37.1",
-        "@salesforce/source-deploy-retrieve": "5.12.13",
+        "@salesforce/source-deploy-retrieve": "5.15.0",
         "@salesforce/source-tracking": "^1.3.1",
-        "@salesforce/ts-sinon": "^1.3.21",
         "adm-zip": "^0.5.6",
-        "apex-parser": "^2.11.0",
+        "apex-parser": "2.13.0",
         "async-retry": "^1.3.3",
         "bottleneck": "^2.19.5",
         "chalk": "^4.1.2",
-        "cli-table": "0.3.6",
+        "cli-table": "0.3.11",
         "datadog-metrics": "^0.9.3",
         "fs-extra": "^9.1.0",
-        "glob": "^7.2.0",
+        "glob": "^7.2.3",
         "hot-shots": "^8.5.0",
         "ignore": "^5.1.6",
         "lodash": "^4.17.21",
         "neverthrow": "4.2.1",
         "rimraf": "^3.0.2",
         "semver": "7.3.7",
-        "sfdc-soup": "18.2.1",
         "simple-git": "3.7.1",
         "tar": "^6.1.9",
         "tmp": "^0.2.1",
         "xml2js": "^0.4.23"
     },
     "devDependencies": {
+        "@babel/core": "7.18.2",
+        "@babel/plugin-proposal-nullish-coalescing-operator": "^7.17.12",
+        "@babel/plugin-proposal-optional-chaining": "7.17.12",
+        "@salesforce/ts-sinon": "^1.3.21",
         "@types/async-retry": "^1.4.2",
         "@types/datadog-metrics": "^0.6.1",
         "@types/jest": "^27.5.0",
         "@types/jsforce": "^1.9.29",
         "@types/mocha": "9.1.0",
+        "babel-jest": "27.5.1",
         "jest": "27.5.1",
         "ts-jest": "^27.1.4",
         "ts-node": "10.7.0",
@@ -56,7 +64,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/Accenture/sfpowerscripts.git",
+        "url": "https://github.com/dxatscale/sfpowerscripts.git",
         "directory": "packages/core"
     },
     "keywords": [
@@ -67,7 +75,7 @@
     "author": "dxatscale",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/Accenture/sfpowerscripts/issues"
+        "url": "https://github.com/dxatscale/sfpowerscripts/issues"
     },
-    "homepage": "https://github.com/Accenture/sfpowerscripts#readme"
+    "homepage": "https://github.com/dxatscale/sfpowerscripts#readme"
 }

@@ -3,7 +3,7 @@
 * Status: Proposed  <!-- optional -->
 
 
-Issue: [Issue #478](https://github.com/Accenture/sfpowerscripts/issues/478) <!-- optional -->
+Issue: [Issue #478](https://github.com/dxatscale/sfpowerscripts/issues/478) <!-- optional -->
 
 ## Context and Problem Statement
 

@@ -77,7 +77,7 @@ RUN export XDG_DATA_HOME && \
 RUN npm install --global yarn
 
 # Install sfdx-cli
-RUN yarn global add sfdx-cli@7.145.0 
+RUN yarn global add sfdx-cli@7.155.1 
 
 # Install vlocity
 RUN yarn global add vlocity@1.15.2
@@ -124,9 +124,9 @@ RUN echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts@$SFPOWERSCRIPTS_VE
 #Add Labels
 LABEL org.opencontainers.image.description "sfpowerscripts is a build system for modular development in Salesforce, its delivered as a sfdx plugin that can be implemented in any CI/CD system of choice"
 LABEL org.opencontainers.image.licenses "MIT"
-LABEL org.opencontainers.image.url "https://github.com/Accenture/sfpowerscripts"
+LABEL org.opencontainers.image.url "https://github.com/dxatscale/sfpowerscripts"
 LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects/sfpowerscripts"
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
-LABEL org.opencontainers.image.source "https://github.com/Accenture/sfpowerscripts"
+LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
 LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - May 22"

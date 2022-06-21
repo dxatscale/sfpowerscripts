@@ -11,7 +11,7 @@ export abstract class NativeMetricSender {
 
     protected transformTagsToStringArray(tags: { [key: string]: string } | string[]): string[] {
         if (tags != null && !Array.isArray(tags)) {
-            let transformedTagArray: string[] = new Array();
+            let transformedTagArray: string[] = [];
             for (const [key, value] of Object.entries(tags)) {
                 transformedTagArray.push(`${key}:${value}`);
             }

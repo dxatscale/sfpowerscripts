@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 import Git from '../git/Git';
 import IgnoreFiles from '../ignore/IgnoreFiles';
-import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { COLOR_ERROR, COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '../logger/SFPLogger';
 import ProjectConfig from '../project/ProjectConfig';
 import GitTags from '../git/GitTags';
 import lodash = require('lodash');
@@ -46,7 +46,16 @@ export default class PackageDiffImpl {
             SFPLogger.log(COLOR_KEY_MESSAGE(`\nUtilizing tag ${tag} for ${this.sfdx_package}`));
 
             // Get the list of modified files between the tag and HEAD refs
-            let modified_files: string[] = await git.diff([`${tag}`, `HEAD`, `--no-renames`, `--name-only`]);
+            let modified_files: string[];
+            try {
+                modified_files = await git.diff([`${tag}`, `HEAD`, `--no-renames`, `--name-only`]);
+            } catch (error) {
+                SFPLogger.log(COLOR_ERROR(`Unable to compute diff, The head of the branch is not reachable from the commit id ${tag}`));
+                SFPLogger.log(COLOR_ERROR(`Check your current branch (in case of build) or the scratch org in case of validate command`));
+                SFPLogger.log(COLOR_ERROR(`Actual error received:`));
+                SFPLogger.log(COLOR_ERROR(error));
+                throw new Error(`Failed to compute git diff for package ${this.sfdx_package} against commit id ${tag}`)
+            }
 
             let packageType: string = ProjectConfig.getPackageType(projectConfig, this.sfdx_package);
 

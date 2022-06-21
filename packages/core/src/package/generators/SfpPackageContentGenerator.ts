@@ -13,6 +13,7 @@ export default class SfpPackageContentGenerator {
     public static async generateSfpPackageDirectory(
         logger: Logger,
         projectDirectory: string,
+        projectConfig: any,
         sfdx_package: string,
         packageDirectory: string,
         destructiveManifestFilePath?: string,
@@ -50,7 +51,7 @@ export default class SfpPackageContentGenerator {
         if (
             revisionFrom &&
             revisionTo &&
-            !ProjectConfig.getSFDXPackageDescriptor(projectDirectory, sfdx_package).aliasfy
+            !ProjectConfig.getPackageDescriptorFromConfig(sfdx_package, projectConfig).aliasfy
         ) {
             try {
                 let packageComponentDiffer: PackageComponentDiff = new PackageComponentDiff(
@@ -82,23 +83,64 @@ export default class SfpPackageContentGenerator {
             SfpPackageContentGenerator.copyConfigFilePath(configFilePath, artifactDirectory, rootDirectory, logger);
         }
 
-        SfpPackageContentGenerator.createPackageManifests(artifactDirectory, rootDirectory, sfdx_package);
+        SfpPackageContentGenerator.handleUnpackagedMetadata(
+            sfdx_package,
+            projectConfig,
+            rootDirectory,
+            artifactDirectory
+        );
+
+        SfpPackageContentGenerator.createPackageManifests(
+            artifactDirectory,
+            rootDirectory,
+            projectConfig,
+            sfdx_package
+        );
 
         fs.copySync(path.join(rootDirectory, packageDirectory), path.join(artifactDirectory, packageDirectory));
 
         return artifactDirectory;
     }
 
-    private static createPackageManifests(artifactDirectory: string, projectDirectory: string, sfdx_package: string) {
+    private static handleUnpackagedMetadata(
+        sfdx_package: string,
+        projectConfig: any,
+        rootDirectory: string,
+        artifactDirectory: string
+    ) {
+        const packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(sfdx_package, projectConfig);
+        if (packageDescriptor.unpackagedMetadata?.path) {
+            if (fs.pathExistsSync(packageDescriptor.unpackagedMetadata.path)) {
+                let unpackagedMetadataDir: string = path.join(artifactDirectory, `unpackagedMetadata`);
+                mkdirpSync(unpackagedMetadataDir);
+                fs.copySync(path.join(rootDirectory, packageDescriptor.unpackagedMetadata.path), unpackagedMetadataDir);
+            } else {
+                throw new Error(`unpackagedMetadata ${packageDescriptor.unpackagedMetadata.path} does not exist`);
+            }
+        }
+    }
+
+    private static createPackageManifests(
+        artifactDirectory: string,
+        projectDirectory: string,
+        projectConfig: any,
+        sfdx_package: string
+    ) {
         // Create pruned package manifest in source directory
-        let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromManifest(projectDirectory, sfdx_package);
+        let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromProjectConfig(projectConfig, sfdx_package);
+
+        //Handle unpackaged metadata
+        if (fs.existsSync(path.join(artifactDirectory, 'unpackagedMetadata'))) {
+            cleanedUpProjectManifest.packageDirectories[0].unpackagedMetadata.path = path.join('unpackagedMetadata');
+            cleanedUpProjectManifest.packageDirectories.push({ path: path.join('unpackagedMetadata'), default: false });
+        }
 
         //Setup preDeployment Script Path
         if (fs.existsSync(path.join(artifactDirectory, 'scripts', `preDeployment`)))
             cleanedUpProjectManifest.packageDirectories[0].preDeploymentScript = path.join('scripts', `preDeployment`);
 
         //Setup postDeployment Script Path
-         if (fs.existsSync(path.join(artifactDirectory, 'scripts', `postDeployment`)))
+        if (fs.existsSync(path.join(artifactDirectory, 'scripts', `postDeployment`)))
             cleanedUpProjectManifest.packageDirectories[0].postDeploymentScript = path.join(
                 'scripts',
                 `postDeployment`

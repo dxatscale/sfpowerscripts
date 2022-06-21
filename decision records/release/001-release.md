@@ -4,7 +4,7 @@
 * Deciders: Azlam, Alan <!-- optional -->
 * Date: 23/03/21 <!-- optional -->
 
-Issue: [Issue #452](https://github.com/Accenture/sfpowerscripts/issues/452) <!-- optional -->
+Issue: [Issue #452](https://github.com/dxatscale/sfpowerscripts/issues/452) <!-- optional -->
 
 ## Context and Problem Statement
 
@@ -49,6 +49,6 @@ An orchestrator command is more intuitive to use than a shell script, and it's i
 
 ## Links <!-- optional -->
 
-* [Installing Package Dependencies](https://github.com/Accenture/sfpowerscripts/blob/develop/ADR/release/release-1-1.md) <!-- example: Refined by [ADR-0005](0005-example.md) -->
+* [Installing Package Dependencies](https://github.com/dxatscale/sfpowerscripts/blob/develop/ADR/release/release-1-1.md) <!-- example: Refined by [ADR-0005](0005-example.md) -->
 
 <!-- markdownlint-disable-file MD013 -->

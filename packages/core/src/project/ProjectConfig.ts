@@ -27,7 +27,48 @@ export default class ProjectConfig {
         let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let sfdxpackages = [];
         projectConfig['packageDirectories'].forEach((pkg) => {
-            sfdxpackages.push(pkg['package']);
+            //Only push packages that have package and versionNumber, ignore everything else
+            if(pkg.package && pkg.versionNumber) 
+              sfdxpackages.push(pkg.package);
+        });
+        return sfdxpackages;
+    }
+
+    /**
+     * Returns package names from projectConfig, as an array of strings
+     * @param projectDirectory
+     */
+     public static getAllPackagesFromProjectConfig(projectConfig: any): string[] {
+    
+        let sfdxpackages = [];
+        projectConfig.packageDirectories.forEach((pkg) => {
+            //Only push packages that have package and versionNumber, ignore everything else
+            if(pkg.package && pkg.versionNumber) 
+              sfdxpackages.push(pkg.package);
+        });
+        return sfdxpackages;
+    }
+
+    public static getAllPackageDirectoriesFromDirectory(projectDirectory?:string):any[]
+    {
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
+        let sfdxpackages = [];
+        projectConfig.packageDirectories?.forEach((pkg) => {
+            //Only push packages that have package and versionNumber, ignore everything else
+            if(pkg.package && pkg.versionNumber) 
+              sfdxpackages.push(pkg);
+        });
+        return sfdxpackages;
+    }
+
+
+    public static getAllPackageDirectoriesFromConfig(projectConfig:any):any[]
+    {
+        let sfdxpackages = [];
+        projectConfig.packageDirectories?.forEach((pkg) => {
+            //Only push packages that have package and versionNumber, ignore everything else
+            if(pkg.package && pkg.versionNumber) 
+              sfdxpackages.push(pkg);
         });
         return sfdxpackages;
     }
@@ -98,7 +139,7 @@ export default class ProjectConfig {
         }
 
         if (sfdxPackageDescriptor == null)
-            throw new Error(`Package ${sfdxPackage} does not exist,Pleasae check inputs`);
+            throw new Error(`Package ${sfdxPackage} does not exist,Please check inputs`);
 
         return sfdxPackageDescriptor;
     }
@@ -130,25 +171,34 @@ export default class ProjectConfig {
      * @param projectDirectory
      * @param sfdxPackage
      */
-    public static cleanupMPDFromManifest(projectDirectory: string, sfdxPackage: string): any {
-        let sfdxManifest = this.getSFDXProjectConfig(projectDirectory);
+    public static cleanupMPDFromProjectDirectory(projectDirectory: string, sfdxPackage: string): any {
+        const projectConfig = this.getSFDXProjectConfig(projectDirectory);
 
+        return ProjectConfig.cleanupMPDFromProjectConfig(projectConfig, sfdxPackage);
+    }
+
+    /**
+     * Returns pruned package manifest, containing sfdxPackage only
+     * @param projectConfig
+     * @param sfdxPackage
+     */
+     public static cleanupMPDFromProjectConfig(projectConfig: any, sfdxPackage: string): any {
         if (sfdxPackage) {
-            let i = sfdxManifest['packageDirectories'].length;
+            let i = projectConfig['packageDirectories'].length;
             while (i--) {
-                if (sfdxPackage != sfdxManifest['packageDirectories'][i]['package']) {
-                    sfdxManifest['packageDirectories'].splice(i, 1);
+                if (sfdxPackage != projectConfig['packageDirectories'][i]['package']) {
+                    projectConfig['packageDirectories'].splice(i, 1);
                 }
             }
         } else {
-            let i = sfdxManifest['packageDirectories'].length;
+            let i = projectConfig['packageDirectories'].length;
             while (i--) {
-                if (!fs.existsSync(sfdxManifest['packageDirectories'][i]['path'])) {
-                    sfdxManifest['packageDirectories'].splice(i, 1);
+                if (!fs.existsSync(projectConfig['packageDirectories'][i]['path'])) {
+                    projectConfig['packageDirectories'].splice(i, 1);
                 }
             }
         }
-        sfdxManifest['packageDirectories'][0]['default'] = true; //add default = true
-        return sfdxManifest;
+        projectConfig['packageDirectories'][0]['default'] = true; //add default = true
+        return projectConfig;
     }
 }

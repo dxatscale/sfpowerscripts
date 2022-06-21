@@ -4,7 +4,7 @@
 * Deciders: Azlam, Alan <!-- optional -->
 * Date: 23/03/21 <!-- optional -->
 
-Issue: [Issue #452](https://github.com/Accenture/sfpowerscripts/issues/452) <!-- optional -->
+Issue: [Issue #452](https://github.com/dxatscale/sfpowerscripts/issues/452) <!-- optional -->
 
 ## Context and Problem Statement
 

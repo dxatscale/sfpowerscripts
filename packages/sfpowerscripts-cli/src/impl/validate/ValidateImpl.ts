@@ -91,7 +91,7 @@ export default class ValidateImpl implements PostDeployHook {
 
             //Create Org
             this.orgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrgUsername });
-            let connToScratchOrg = this.orgAsSFPOrg.getConnection();
+            const connToScratchOrg = this.orgAsSFPOrg.getConnection();
             let installedArtifacts;
             try {
                 installedArtifacts = await this.orgAsSFPOrg.getInstalledArtifacts();
@@ -121,15 +121,11 @@ export default class ValidateImpl implements PostDeployHook {
                 await this.impactAnalysis(connToScratchOrg);
             }
             return null; //TODO: Fix with actual object
-        } catch(error){
-            if(error instanceof ValidateError) 
-              SFPLogger.log(`Error: ${error}}`,LoggerLevel.DEBUG);
-            else
-              SFPLogger.log(`Error: ${error}}`,LoggerLevel.ERROR);
-            throw error                                      
-        }
-
-        finally {
+        } catch (error) {
+            if (error instanceof ValidateError) SFPLogger.log(`Error: ${error}}`, LoggerLevel.DEBUG);
+            else SFPLogger.log(`Error: ${error}}`, LoggerLevel.ERROR);
+            throw error;
+        } finally {
             await this.handleScratchOrgStatus(scratchOrgUsername, deploymentResult, this.props.isDeleteScratchOrg);
         }
     }
@@ -146,7 +142,7 @@ export default class ValidateImpl implements PostDeployHook {
             const changedComponents = await this.getChangedComponents();
             const dependencyAnalysis = new DependencyAnalysis(orgAsSFPOrg, changedComponents);
 
-            let dependencyViolations = await dependencyAnalysis.exec();
+            const dependencyViolations = await dependencyAnalysis.exec();
 
             if (dependencyViolations.length > 0) {
                 DependencyViolationDisplayer.printDependencyViolations(dependencyViolations);
@@ -194,7 +190,7 @@ export default class ValidateImpl implements PostDeployHook {
         this.printOpenLoggingGroup(`Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
 
         // Install Dependencies
-        let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
+        const installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
             scratchOrgUsername,
             this.props.hubOrg.getUsername(),
             120,
@@ -203,7 +199,7 @@ export default class ValidateImpl implements PostDeployHook {
             true,
             null
         );
-        let installationResult = await installDependencies.exec();
+        const installationResult = await installDependencies.exec();
         if (installationResult.result == PackageInstallationStatus.Failed) {
             throw new Error(installationResult.message);
         }
@@ -227,10 +223,24 @@ export default class ValidateImpl implements PostDeployHook {
             //If deploymentResult is not available, or there is 0 packages deployed, we can reuse the org
             if (!deploymentResult || deploymentResult.deployed.length == 0) {
                 SFPLogger.log(`Attempting to return scratch org ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
-                let scratchOrgInfoAssigner = new ScratchOrgInfoAssigner(this.props.hubOrg);
-                let result = await scratchOrgInfoAssigner.setScratchOrgStatus(scratchOrgUsername, 'Available');
-                if (result) SFPLogger.log(`Succesfully returned ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
-                else console.log(COLOR_WARNING(`Unable to update status of scratch org,Please check permissions`));
+                const scratchOrgInfoAssigner = new ScratchOrgInfoAssigner(this.props.hubOrg);
+                try {
+                    const result = await scratchOrgInfoAssigner.setScratchOrgStatus(scratchOrgUsername, 'Return');
+                    if (result)
+                        SFPLogger.log(`Succesfully returned ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
+                    else
+                        SFPLogger.log(
+                            COLOR_WARNING(
+                                `Unable to return scratch org to pool,Please check permissions or update sfpower-pool-package to latest`
+                            )
+                        );
+                } catch (error) {
+                    SFPLogger.log(
+                        COLOR_WARNING(
+                            `Unable to return scratch org to pool,Please check permissions or update sfpower-pool-package to latest`
+                        )
+                    );
+                }
             } else {
                 try {
                     if (scratchOrgUsername && this.props.hubOrg.getUsername()) {
@@ -245,7 +255,7 @@ export default class ValidateImpl implements PostDeployHook {
 
     private async deleteScratchOrg(hubOrg: Org, scratchOrgUsername: string) {
         console.log(`Deleting scratch org`, scratchOrgUsername);
-        let poolOrgDeleteImpl = new PoolOrgDeleteImpl(hubOrg, scratchOrgUsername);
+        const poolOrgDeleteImpl = new PoolOrgDeleteImpl(hubOrg, scratchOrgUsername);
         await poolOrgDeleteImpl.execute();
     }
 
@@ -261,9 +271,9 @@ export default class ValidateImpl implements PostDeployHook {
     }
 
     private async deploySourcePackages(scratchOrgUsername: string): Promise<DeploymentResult> {
-        let deployStartTime: number = Date.now();
+        const deployStartTime: number = Date.now();
 
-        let deployProps: DeployProps = {
+        const deployProps: DeployProps = {
             targetUsername: scratchOrgUsername,
             artifactDir: 'artifacts',
             waitTime: 120,
@@ -276,12 +286,12 @@ export default class ValidateImpl implements PostDeployHook {
             isFastFeedbackMode: this.props.isFastFeedbackMode,
         };
 
-        let deployImpl: DeployImpl = new DeployImpl(deployProps);
+        const deployImpl: DeployImpl = new DeployImpl(deployProps);
         deployImpl.postDeployHook = this;
 
-        let deploymentResult = await deployImpl.exec();
+        const deploymentResult = await deployImpl.exec();
 
-        let deploymentElapsedTime: number = Date.now() - deployStartTime;
+        const deploymentElapsedTime: number = Date.now() - deployStartTime;
         this.printDeploySummary(deploymentResult, deploymentElapsedTime);
 
         return deploymentResult;
@@ -300,6 +310,9 @@ export default class ValidateImpl implements PostDeployHook {
 
         if (!sfpPackage.isApexFound) return { id: null, result: true, message: 'No Tests To Run' };
 
+        if (sfpPackage.packageDescriptor.isOptimizedDeployment == false)
+            return { id: null, result: true, message: 'Tests would have already run' };
+
         let testOptions: TestOptions, testCoverageOptions: CoverageOptions;
 
         if (this.props.isFastFeedbackMode) {
@@ -313,7 +326,7 @@ export default class ValidateImpl implements PostDeployHook {
 
         this.displayTestHeader(sfpPackage);
 
-        let triggerApexTests: TriggerApexTests = new TriggerApexTests(
+        const triggerApexTests: TriggerApexTests = new TriggerApexTests(
             targetUsername,
             testOptions,
             testCoverageOptions,
@@ -327,8 +340,8 @@ export default class ValidateImpl implements PostDeployHook {
     private getTestOptionsForFullPackageTest(
         sfpPackage: SfpPackage
     ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
-        let testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
-        let testCoverageOptions = {
+        const testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
+        const testCoverageOptions = {
             isIndividualClassCoverageToBeValidated: false,
             isPackageCoverageToBeValidated: !sfpPackage.packageDescriptor.skipCoverageValidation,
             coverageThreshold: this.props.coverageThreshold || 75,
@@ -351,7 +364,7 @@ export default class ValidateImpl implements PostDeployHook {
                 return this.getTestOptionsForFullPackageTest(sfpPackage);
             }
 
-            let impactedTestClasses = sfpPackage.diffPackageMetadata.invalidatedTestClasses;
+            const impactedTestClasses = sfpPackage.diffPackageMetadata.invalidatedTestClasses;
 
             //No impacted test class available
             if (!impactedTestClasses || impactedTestClasses.length == 0) {
@@ -367,13 +380,13 @@ export default class ValidateImpl implements PostDeployHook {
                 `${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`
             );
 
-            let testOptions = new RunSpecifiedTestsOption(
+            const testOptions = new RunSpecifiedTestsOption(
                 60,
                 '.testResults',
                 impactedTestClasses.join(),
                 sfpPackage.packageDescriptor.testSynchronous
             );
-            let testCoverageOptions = {
+            const testCoverageOptions = {
                 isIndividualClassCoverageToBeValidated: false,
                 isPackageCoverageToBeValidated: false,
                 coverageThreshold: 0,
@@ -403,9 +416,9 @@ export default class ValidateImpl implements PostDeployHook {
     private async buildChangedSourcePackages(packagesToCommits: { [p: string]: string }): Promise<any> {
         this.printOpenLoggingGroup('Building Packages');
 
-        let buildStartTime: number = Date.now();
+        const buildStartTime: number = Date.now();
 
-        let buildProps: BuildProps = {
+        const buildProps: BuildProps = {
             buildNumber: 1,
             executorcount: 10,
             waitTime: 120,
@@ -419,14 +432,14 @@ export default class ValidateImpl implements PostDeployHook {
 
         //In fast feedback ignore package descriptor changes
         if (this.props.isFastFeedbackMode) {
-            let diffOptions: PackageDiffOptions = new PackageDiffOptions();
+            const diffOptions: PackageDiffOptions = new PackageDiffOptions();
             diffOptions.skipPackageDescriptorChange = true;
             buildProps.diffOptions = diffOptions;
         }
 
-        let buildImpl: BuildImpl = new BuildImpl(buildProps);
+        const buildImpl: BuildImpl = new BuildImpl(buildProps);
 
-        let { generatedPackages, failedPackages } = await buildImpl.exec();
+        const { generatedPackages, failedPackages } = await buildImpl.exec();
 
         if (failedPackages.length > 0) throw new Error(`Failed to create source packages ${failedPackages}`);
 
@@ -436,7 +449,7 @@ export default class ValidateImpl implements PostDeployHook {
             );
         }
 
-        for (let generatedPackage of generatedPackages) {
+        for (const generatedPackage of generatedPackages) {
             try {
                 await ArtifactGenerator.generateArtifact(generatedPackage, process.cwd(), 'artifacts');
             } catch (error) {
@@ -444,7 +457,7 @@ export default class ValidateImpl implements PostDeployHook {
                 throw error;
             }
         }
-        let buildElapsedTime: number = Date.now() - buildStartTime;
+        const buildElapsedTime: number = Date.now() - buildStartTime;
 
         this.printBuildSummary(generatedPackages, failedPackages, buildElapsedTime);
 
@@ -454,7 +467,7 @@ export default class ValidateImpl implements PostDeployHook {
     }
 
     private getPackagesToCommits(installedArtifacts: any): { [p: string]: string } {
-        let packagesToCommits: { [p: string]: string } = {};
+        const packagesToCommits: { [p: string]: string } = {};
 
         // Construct map of artifact and associated commit Id
         installedArtifacts.forEach((artifact) => {
@@ -480,10 +493,10 @@ export default class ValidateImpl implements PostDeployHook {
     private async fetchScratchOrgFromPool(pools: string[]): Promise<string> {
         let scratchOrgUsername: string;
 
-        for (let pool of pools) {
+        for (const pool of pools) {
             let scratchOrg: ScratchOrg;
             try {
-                let poolFetchImpl = new PoolFetchImpl(this.props.hubOrg, pool.trim(), false, true);
+                const poolFetchImpl = new PoolFetchImpl(this.props.hubOrg, pool.trim(), false, true);
                 scratchOrg = (await poolFetchImpl.execute()) as ScratchOrg;
             } catch (error) {
                 SFPLogger.log(error.message, LoggerLevel.TRACE);
@@ -507,7 +520,7 @@ export default class ValidateImpl implements PostDeployHook {
         try {
             const results = await new ScratchOrgInfoFetcher(this.props.hubOrg).getScratchOrgsByTag(tag, false, true);
 
-            let availableSo = results.records.filter((soInfo) => soInfo.Allocation_status__c === 'Available');
+            const availableSo = results.records.filter((soInfo) => soInfo.Allocation_status__c === 'Available');
 
             SFPStatsSender.logGauge('pool.available', availableSo.length, {
                 poolName: tag,
@@ -601,7 +614,7 @@ export default class ValidateImpl implements PostDeployHook {
         if (sfpPackage.packageType && sfpPackage.packageType != PackageType.Data) {
             if (packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
                 //Get Changed Components
-                let testResult = await this.triggerApexTests(sfpPackage, targetUsername, this.logger);
+                const testResult = await this.triggerApexTests(sfpPackage, targetUsername, this.logger);
                 return { isToFailDeployment: !testResult.result, message: testResult.message };
             }
         }

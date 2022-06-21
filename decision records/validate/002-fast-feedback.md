@@ -28,7 +28,7 @@ On analysis of of current DX@Scale projects, the above process on an average tak
 
 - Temporary org prepared for validation doesnt have all the packages in the repo installed
 
-- Tests for some of the changed packages take a considerable time to complete, This is especially cumbersome for packages that are depenedent on managed packages like CPQ which utilizes a lot of queries and need to be triggered in [serial mode](https://github.dev/Accenture/sfpowerscripts/blob/58351783f629840b4d78e35aa17eb084ef66e769/decision%20records/validate/001-automated-apex-testing-retry.md#L6)
+- Tests for some of the changed packages take a considerable time to complete, This is especially cumbersome for packages that are depenedent on managed packages like CPQ which utilizes a lot of queries and need to be triggered in [serial mode](https://github.dev/dxatscale/sfpowerscripts/blob/58351783f629840b4d78e35aa17eb084ef66e769/decision%20records/validate/001-automated-apex-testing-retry.md#L6)
 
 - Fetching coverage of a test run is costly for packages with lot of test classes and there are multiple packages with test classes
 

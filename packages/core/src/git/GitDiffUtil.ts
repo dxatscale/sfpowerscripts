@@ -63,7 +63,7 @@ export default class GitDiffUtils {
         let gitFiles: {
             revision: string;
             path: string;
-        }[] = new Array();
+        }[] = [];
         this.gitTreeRevisionTo.forEach((file) => {
             if (file.path === filePath) {
                 gitFiles.push(file);

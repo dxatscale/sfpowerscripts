@@ -10,8 +10,7 @@ export default class PermissionSetGroupUpdateAwaiter {
 
     async waitTillAllPermissionSetGroupIsUpdated() {
         SFPLogger.log(
-            `Validating PermissionSetGroup Status, PermissionSetGroup Deployment might fail..` +
-                `\n..if permission sets in the package are updating due to a previous deployment`,
+            `Checking status of permission sets group..`,
             LoggerLevel.INFO,
             this.logger
         );

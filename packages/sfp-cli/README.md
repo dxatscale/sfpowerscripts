@@ -15,7 +15,7 @@ Not comfortable with git, SFDX or the command-line? Take advantage of guided wor
 
 The sfp-cli is dependent on other modules that must be installed in order for it to work:
 * [Salesforce CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm)
-* [sfpowerkit](https://github.com/Accenture/sfpowerkit)
+* [sfpowerkit](https://github.com/dxatscale/sfpowerkit)
 
 
 **Install sfp-cli**
