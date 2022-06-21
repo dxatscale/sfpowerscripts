@@ -431,7 +431,6 @@ export default class BuildImpl {
 
         SFPLogger.log(COLOR_HEADER(`-- Package Details:--`));
         const table = new Table({
-            head: ['Property', 'Value'],
             chars: COLON_MIDDLE_BORDER_TABLE,
             style: { 'padding-left': 2 }
         });
