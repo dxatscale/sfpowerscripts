@@ -133,16 +133,15 @@ export default class Validate extends SfpowerscriptsCommand {
         await this.hubOrg.refreshAuth();
 
         let tags: { [p: string]: string };
-        if (this.flags.tag != null) {
-            tags = {
-                tag: this.flags.tag,
-                validation_mode: this.flags.fastfeedback?'fast-feedback':'thorough'
-            };
-        }
+        tags = {
+            tag: this.flags.tag != null ? this.flags.tag : undefined,
+            validation_mode: this.flags.fastfeedback ? 'fast-feedback' : 'thorough',
+        };
 
         SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`validate`)}`));
         SFPLogger.log(COLOR_HEADER(`Pools being used: ${this.flags.pools}`));
-        if (this.flags.fastfeedback) SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Fast Feedback`)}`));
+        if (this.flags.fastfeedback)
+            SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Fast Feedback`)}`));
         else {
             SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Thorough`)}`));
             SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
