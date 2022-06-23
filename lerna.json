@@ -1,5 +1,5 @@
 {
-    "packages": ["packages/core", "packages/sfpowerscripts-cli", "packages/sfp-cli"],
+    "packages": ["packages/core", "packages/sfpowerscripts-cli"],
     "version": "independent",
     "command": {
         "publish": {
