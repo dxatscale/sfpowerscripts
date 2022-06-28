@@ -15,7 +15,11 @@ import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
 import SfpPackage from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
-
+import { ComponentSet } from '@salesforce/source-deploy-retrieve';
+import EntitlementVersionFilter from '../componentFilter/EntitlementVersionFilter';
+import ProjectConfig from '../../project/ProjectConfig';
+import { DeploymentFilter } from '../componentFilter/DeploymentFilter';
+import { DeploymentFilterRegistry } from '../componentFilter/DeploymentFilterRegistry';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;
@@ -60,7 +64,11 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 profileFolders,
                 isReconcileActivated,
                 isReconcileErrored,
-            } = await this.reconcileProfilesBeforeDeployment(this.sfpPackage.sourceDir,  this.sfpOrg.getUsername(), tempDir));
+            } = await this.reconcileProfilesBeforeDeployment(
+                this.sfpPackage.sourceDir,
+                this.sfpOrg.getUsername(),
+                tempDir
+            ));
 
             let deploymentOptions: DeploymentOptions;
             let result: DeploySourceResult;
@@ -84,7 +92,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.options.waitTime,
                     this.options.optimizeDeployment,
                     this.options.skipTesting,
-                     this.sfpOrg.getUsername(),
+                    this.sfpOrg.getUsername(),
                     this.options.apiVersion
                 );
 
@@ -124,12 +132,23 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                         );
                     }
 
+                    //Create componentSet To Be Deployed
+                    let componentSet = ComponentSet.fromSource(
+                        path.resolve(emptyCheck.resolvedSourceDirectory, this.packageDirectory)
+                    );
+
+                    //Apply Filters
+                    let deploymentFilters = DeploymentFilterRegistry.getImplementations();
+                    for (const deploymentFilter of deploymentFilters) {
+                        if (deploymentFilter.isToApply(ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory)))
+                        componentSet = await deploymentFilter.apply(this.sfpOrg, componentSet,this.logger);
+                    }
+                    
+
                     let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
                         this.sfpOrg,
-                        emptyCheck.resolvedSourceDirectory,
-                        this.packageDirectory,
+                        componentSet,
                         deploymentOptions,
-                        false,
                         this.logger
                     );
 
@@ -143,7 +162,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                                 await this.reconcileAndRedeployProfiles(
                                     profileFolders,
                                     this.sfpPackage.sourceDir,
-                                     this.sfpOrg.getUsername(),
+                                    this.sfpOrg.getUsername(),
                                     this.packageDirectory,
                                     tempDir,
                                     deploymentOptions
@@ -218,7 +237,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 this.logger
             );
             let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
-                 this.sfpOrg.getUsername(),
+                this.sfpOrg.getUsername(),
                 path.join(this.sfpPackage.sourceDir, 'destructive', 'destructiveChanges.xml')
             );
 
@@ -231,8 +250,6 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             );
         }
     }
-
-
 
     private async reconcileProfilesBeforeDeployment(sourceDirectoryPath: string, target_org: string, tempDir: string) {
         let profileFolders: any;
@@ -255,7 +272,11 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 return { isReconcileActivated: false };
             }
 
-            SFPLogger.log('Attempting reconcile to profiles as payload contain profiles', LoggerLevel.INFO, this.logger);
+            SFPLogger.log(
+                'Attempting reconcile to profiles as payload contain profiles',
+                LoggerLevel.INFO,
+                this.logger
+            );
             //copy the original profiles to temporary location
             profileFolders = glob.sync('**/profiles', {
                 cwd: path.join(sourceDirectoryPath),
@@ -351,12 +372,15 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 path.join(profileDeploymentStagingDirectory, '.forceignore')
             );
 
+            //Create componentSet To Be Deployed
+            let componentSet = ComponentSet.fromSource(
+                path.resolve(profileDeploymentStagingDirectory, sourceDirectory)
+            );
+
             let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
                 this.sfpOrg,
-                profileDeploymentStagingDirectory,
-                sourceDirectory,
+                componentSet,
                 deploymentOptions,
-                false,
                 this.logger
             );
             let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
