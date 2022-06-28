@@ -4,8 +4,7 @@ import QueryHelper from '../../queryHelper/QueryHelper';
 import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 import { DeploymentFilter } from './DeploymentFilter';
 import * as fs from 'fs-extra';
-import ignore from 'ignore';
-const { XMLParser, XMLBuilder, XMLValidator } = require('fast-xml-parser');
+const { XMLBuilder } = require('fast-xml-parser');
 
 const EXISTING_SLAPPROCESS_QUERY = `SELECT Name, NameNorm,VersionNumber, VersionMaster FROM SlaProcess ORDER BY VersionNumber DESC`;
 

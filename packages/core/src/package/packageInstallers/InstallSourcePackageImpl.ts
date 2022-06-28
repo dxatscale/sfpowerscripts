@@ -16,9 +16,7 @@ import { TestLevel } from '../../apextest/TestOptions';
 import SfpPackage from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
-import EntitlementVersionFilter from '../componentFilter/EntitlementVersionFilter';
 import ProjectConfig from '../../project/ProjectConfig';
-import { DeploymentFilter } from '../componentFilter/DeploymentFilter';
 import { DeploymentFilterRegistry } from '../componentFilter/DeploymentFilterRegistry';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
