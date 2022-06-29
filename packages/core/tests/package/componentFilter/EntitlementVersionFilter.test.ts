@@ -5,6 +5,7 @@ import { AnyJson } from '@salesforce/ts-types';
 import SFPOrg from '../../../src/org/SFPOrg';
 import { ComponentSet, VirtualDirectory, VirtualTreeContainer } from '@salesforce/source-deploy-retrieve';
 import EntitlementVersionFilter from '../../../src/package/componentFilter/EntitlementVersionFilter';
+
 const fs = require('fs-extra');
 
 
@@ -19,6 +20,16 @@ const createOrg = async () => {
     return await SFPOrg.create({ aliasOrUsername: testData.username });
 };
 
+let entitlementSetting:any={};
+jest.mock('../../../src/metadata/MetadataFetcher', () => {
+    class MetadataFetcher {
+        getSetttingMetadata= jest.fn().mockReturnValue(entitlementSetting)
+    }
+
+    return MetadataFetcher;
+});
+
+
 describe('Filter entitlements during deployment', () => {
 
     beforeEach(() => {
@@ -29,6 +40,7 @@ describe('Filter entitlements during deployment', () => {
     });
 
     it('Should return a component set by filtering entitlement versions which are existing in the org', async () => {
+      
         let org = await createOrg();
         let records: AnyJson = {
             records: [
@@ -70,6 +82,9 @@ describe('Filter entitlements during deployment', () => {
             tree: virtualTree,
         });
         let entitlementVersionFilter:EntitlementVersionFilter=new EntitlementVersionFilter();
+        entitlementSetting={
+            "enableEntitlementVersioning":true
+        };
         let modifiedComponentSet = await entitlementVersionFilter.apply(org,componentSet,new ConsoleLogger());
         
         let sourceComponents = modifiedComponentSet.getSourceComponents().toArray();
@@ -81,6 +96,7 @@ describe('Filter entitlements during deployment', () => {
     });
 
     it('Should only return component sets when the version number is higher than whats existing in the org', async () => {
+        entitlementSetting={enableEntitlementVersioning:true};
         let org = await createOrg();
         let records: AnyJson = {
             records: [
@@ -145,6 +161,7 @@ describe('Filter entitlements during deployment', () => {
 
 
     it('should return all components when there are no existing versions in the org', async () => {
+        entitlementSetting={enableEntitlementVersioning:true};
         let org = await createOrg();
         let records: AnyJson = {
             records: [
@@ -191,6 +208,50 @@ describe('Filter entitlements during deployment', () => {
     });
 
     it('should return all components when entitlement versioning is not enabled in the org', async () => {
+        entitlementSetting={enableEntitlementVersioning:undefined};
+        let org = await createOrg();
+        let records: AnyJson = {
+            records: [
+            ],
+        };
+        $$.fakeConnectionRequest = (request: AnyJson): Promise<AnyJson> => {
+            return Promise.resolve(records);
+        };
+
+
+        const virtualFs: VirtualDirectory[] = [
+          {
+            dirPath: '/metadata/entitlementProcesses',
+            children: [
+              {
+                name: 'TestEntitlement.entitlementProcess-meta.xml',
+                data: Buffer.from(TESTENTITLEMENT_NO_VERSION_NUMBER)
+              }
+            ]
+          }
+        ]
+
+       
+        
+        // resolve components of a virtual tree
+        const virtualTree = new VirtualTreeContainer(virtualFs);
+        const componentSet = ComponentSet.fromSource({
+            fsPaths: ['/metadata/entitlementProcesses'],
+            tree: virtualTree,
+        });
+        let entitlementVersionFilter:EntitlementVersionFilter=new EntitlementVersionFilter();
+        let modifiedComponentSet = await entitlementVersionFilter.apply(org,componentSet,new ConsoleLogger());
+        
+        let sourceComponents = modifiedComponentSet.getSourceComponents().toArray();
+        expect(sourceComponents.find((element)=>element.name==`TestEntitlement`)).toBeDefined();
+
+
+
+
+    });
+
+    it('should return the same components when unable to fetch entitlement settings', async () => {
+        entitlementSetting=undefined;
         let org = await createOrg();
         let records: AnyJson = {
             records: [
