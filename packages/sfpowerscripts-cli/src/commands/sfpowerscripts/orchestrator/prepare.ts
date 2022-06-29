@@ -137,6 +137,8 @@ export default class Prepare extends SfpowerscriptsCommand {
                 await this.getCurrentRemainingNumberOfOrgsInPoolAndReport();
 
                 SFPStatsSender.logGauge('prepare.succeededorgs', results.value.scratchOrgs.length, tags);
+                if(results.value.scratchOrgs.length>0)
+                SFPStatsSender.logGauge('prepare.duration', Date.now() - executionStartTime, tags);
             } else if (results.isErr()) {
                 SFPLogger.log(
                     COLOR_HEADER(
@@ -166,7 +168,7 @@ export default class Prepare extends SfpowerscriptsCommand {
                         break;
                 }
             }
-            SFPStatsSender.logGauge('prepare.duration', Date.now() - executionStartTime, tags);
+           
         } catch (err) {
             throw new SfdxError('Unable to execute command .. ' + err);
         }
