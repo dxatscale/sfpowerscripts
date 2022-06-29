@@ -48,15 +48,13 @@ export default class EntitlementVersionFilter implements DeploymentFilter {
                 if (sourceComponent.type.name === registry.types.entitlementprocess.name) {
                     let slaProcessLocal = sourceComponent.parseXmlSync();
 
-                    let slaProcessMatchedByName: SlaProcess = slaProcessesInOrg.find((element: SlaProcess) => {
-                        if (entitlementSettings.enableEntitlementVersioning)
-                            return element.NameNorm == sourceComponent.name;
-                        else return element.Name == sourceComponent.name;
-                    });
-                    if (!slaProcessMatchedByName) {
-                        //Doesnt exist, deploy
-                        modifiedComponentSet.add(sourceComponent);
-                    } else if (
+                    let slaProcessMatchedByName: SlaProcess = slaProcessesInOrg.find(
+                        (element: SlaProcess) => element.Name == slaProcessLocal['EntitlementProcess']['name']
+                    );
+
+                    if (
+                        slaProcessMatchedByName &&
+                        entitlementSettings.enableEntitlementVersioning &&
                         slaProcessLocal['EntitlementProcess']['versionNumber'] > slaProcessMatchedByName.VersionNumber
                     ) {
                         //This is a deployment candidate
@@ -70,12 +68,17 @@ export default class EntitlementVersionFilter implements DeploymentFilter {
                         let xmlContent = builder.build(slaProcessLocal);
                         fs.writeFileSync(sourceComponent.xml, xmlContent);
                         modifiedComponentSet.add(sourceComponent);
-                    } else {
+                    } else if (
+                        slaProcessMatchedByName
+                    ) {
                         SFPLogger.log(
                             `Skipping EntitlementProcess ${sourceComponent.name} as this version is already deployed`,
                             LoggerLevel.INFO,
                             logger
                         );
+                    } else {
+                        //Doesnt exist, deploy
+                        modifiedComponentSet.add(sourceComponent);
                     }
                 } else {
                     modifiedComponentSet.add(sourceComponent);
@@ -85,11 +88,7 @@ export default class EntitlementVersionFilter implements DeploymentFilter {
             SFPLogger.log(`Completed Filtering of EntitlementProcess\n`, LoggerLevel.INFO, logger);
             return modifiedComponentSet;
         } catch (error) {
-            SFPLogger.log(
-                `Unable to filter entitlements, returning the unmodified package`,
-                LoggerLevel.ERROR,
-                logger
-            );
+            SFPLogger.log(`Unable to filter entitlements, returning the unmodified package`, LoggerLevel.ERROR, logger);
             return componentSet;
         }
     }
