@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfpowerscripts.core",
-    "version": "23.4.6",
+    "version": "23.5.0",
     "description": "Core Module used by sfpowerscripts",
     "main": "lib/index",
     "types": "lib/index",
@@ -33,6 +33,7 @@
         "chalk": "^4.1.2",
         "cli-table": "0.3.11",
         "datadog-metrics": "^0.9.3",
+        "fast-xml-parser": "4.0.8",
         "fs-extra": "^9.1.0",
         "glob": "^7.2.3",
         "hot-shots": "^8.5.0",
@@ -43,8 +44,7 @@
         "semver": "7.3.7",
         "simple-git": "3.7.1",
         "tar": "^6.1.9",
-        "tmp": "^0.2.1",
-        "fast-xml-parser":"4.0.8"
+        "tmp": "^0.2.1"
     },
     "devDependencies": {
         "@babel/core": "7.18.2",
