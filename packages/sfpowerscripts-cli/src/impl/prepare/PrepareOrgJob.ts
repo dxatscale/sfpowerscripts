@@ -22,6 +22,10 @@ import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/P
 import RelaxIPRange from '@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange';
 import VlocityPackUpdateSettings from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings';
 import VlocityInitialInstall from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall';
+import scriptExecutor from '@dxatscale/sfpowerscripts.core/lib/package/scriptExecutors/scriptExecutorHelpers';
+import path = require('path');
+import * as fs from 'fs-extra';
+
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor {
@@ -69,8 +73,10 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
             await installUnlockedPackageWrapper.exec(true);
 
+            await this.preInstallScirpt(scratchOrg.username, hubOrg);
+
             SFPLogger.log(`Installing package depedencies to the ${scratchOrg.alias}`, LoggerLevel.INFO, packageLogger);
-            SFPLogger.log(`Installing Package Dependencies of this repo in ${scratchOrg.alias}`);
+            SFPLogger.log(`--Installing Package Dependencies of this repo in ${scratchOrg.alias}`);
 
             // Install Dependencies
             let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
@@ -122,6 +128,8 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                         : this.handleDeploymentErrorsForFullDeployment(scratchOrg, deploymentResult, packageLogger);
                 }
             }
+
+            await this.postInstallScirpt(scratchOrg.username, hubOrg);
 
             return ok({ scratchOrgUsername: scratchOrg.username });
         } catch (error) {
@@ -260,5 +268,33 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             LoggerLevel.INFO,
             logger
         );
+    }
+
+    public async preInstallScirpt(username: string, hubOrg: Org) {
+
+        if (fs.existsSync(this.pool.preScriptPath)) {
+            SFPLogger.log('Executing preDeployment script',LoggerLevel.INFO,null);
+            await scriptExecutor.executeScript(
+                this.pool.preScriptPath,
+                null,
+                username,
+                hubOrg.getUsername(),
+                null
+            );
+        }
+    }
+
+    public async postInstallScirpt(username: string, hubOrg: Org) {
+
+        if (fs.existsSync(this.pool.postScriptPath)) {
+            SFPLogger.log('Executing postDeployment script',LoggerLevel.INFO,null);
+            await scriptExecutor.executeScript(
+                this.pool.postScriptPath,
+                null,
+                username,
+                hubOrg.getUsername(),
+                null
+            );
+        }
     }
 }

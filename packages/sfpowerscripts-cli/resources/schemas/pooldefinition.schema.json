@@ -92,6 +92,16 @@
             "description": "Use a pre-prepared pool to further add packages on top of it",
             "type": "string"
         },
+        "postScriptPath": {
+            "title": "Post Script",
+            "description": "Execute script after packages install",
+            "type": "string"
+        },
+        "preScriptPath": {
+            "title": "Pre Script",
+            "description": "Execute script before denpendencies install",
+            "type": "string"
+        },
         "fetchArtifacts": {
             "title": "Fetch Artifacts using below mechanism",
             "description": "Fetch artifacts from artifact registry using below mechanism",
