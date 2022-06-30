@@ -73,7 +73,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
             await installUnlockedPackageWrapper.exec(true);
 
-            await this.preInstallScirpt(scratchOrg.username, hubOrg);
+            await this.preInstallScirpt(scratchOrg, hubOrg);
 
             SFPLogger.log(`Installing package depedencies to the ${scratchOrg.alias}`, LoggerLevel.INFO, packageLogger);
             SFPLogger.log(`--Installing Package Dependencies of this repo in ${scratchOrg.alias}`);
@@ -129,7 +129,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                 }
             }
 
-            await this.postInstallScirpt(scratchOrg.username, hubOrg);
+            await this.postInstallScirpt(scratchOrg, hubOrg);
 
             return ok({ scratchOrgUsername: scratchOrg.username });
         } catch (error) {
@@ -270,28 +270,28 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         );
     }
 
-    public async preInstallScirpt(username: string, hubOrg: Org) {
+    public async preInstallScirpt(scratchOrg: ScratchOrg, hubOrg: Org) {
 
         if (fs.existsSync(this.pool.preScriptPath)) {
-            SFPLogger.log('Executing preDeployment script',LoggerLevel.INFO,null);
+            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.preScriptPath);
             await scriptExecutor.executeScript(
                 this.pool.preScriptPath,
                 null,
-                username,
+                scratchOrg.username,
                 hubOrg.getUsername(),
                 null
             );
         }
     }
 
-    public async postInstallScirpt(username: string, hubOrg: Org) {
+    public async postInstallScirpt(scratchOrg: ScratchOrg, hubOrg: Org) {
 
         if (fs.existsSync(this.pool.postScriptPath)) {
-            SFPLogger.log('Executing postDeployment script',LoggerLevel.INFO,null);
+            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postScriptPath);
             await scriptExecutor.executeScript(
                 this.pool.postScriptPath,
                 null,
-                username,
+                scratchOrg.username,
                 hubOrg.getUsername(),
                 null
             );
