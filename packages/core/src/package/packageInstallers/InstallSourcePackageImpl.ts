@@ -138,10 +138,23 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     //Apply Filters
                     let deploymentFilters = DeploymentFilterRegistry.getImplementations();
                     for (const deploymentFilter of deploymentFilters) {
-                        if (deploymentFilter.isToApply(ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory)))
-                        componentSet = await deploymentFilter.apply(this.sfpOrg, componentSet,this.logger);
+                        if (
+                            deploymentFilter.isToApply(
+                                ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory)
+                            )
+                        )
+                            componentSet = await deploymentFilter.apply(this.sfpOrg, componentSet, this.logger);
                     }
-                    
+
+                    //Check if there are components to be deployed after filtering
+                    //Asssume its sucessfully deployed
+                    if (componentSet.size == 0) {
+                        return {
+                            deploy_id: `000000`,
+                            result: true,
+                            message: `Package contents were filtered out, nothing to install`,
+                        };
+                    }
 
                     let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
                         this.sfpOrg,
