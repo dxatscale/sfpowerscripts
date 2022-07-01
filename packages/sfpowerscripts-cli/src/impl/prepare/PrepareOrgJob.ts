@@ -22,8 +22,7 @@ import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/P
 import RelaxIPRange from '@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange';
 import VlocityPackUpdateSettings from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings';
 import VlocityInitialInstall from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall';
-import scriptExecutor from '@dxatscale/sfpowerscripts.core/lib/scriptExecutor/ScriptExecutorHelpers';
-import path = require('path');
+import ScriptExecutor from '@dxatscale/sfpowerscripts.core/lib/scriptExecutor/ScriptExecutorHelpers';
 import * as fs from 'fs-extra';
 
 
@@ -274,7 +273,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
         if (fs.existsSync(this.pool.preScriptPath)) {
             SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.preScriptPath);
-            await scriptExecutor.executeScript(
+            await ScriptExecutor.executeScript(
                 this.pool.preScriptPath,
                 null,
                 scratchOrg.username,
@@ -288,7 +287,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
         if (fs.existsSync(this.pool.postScriptPath)) {
             SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postScriptPath);
-            await scriptExecutor.executeScript(
+            await ScriptExecutor.executeScript(
                 this.pool.postScriptPath,
                 null,
                 scratchOrg.username,

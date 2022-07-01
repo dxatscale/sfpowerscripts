@@ -3,7 +3,7 @@ import { PackageInstallationResult, PackageInstallationStatus } from './PackageI
 import ProjectConfig from '../../project/ProjectConfig';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import PackageInstallationHelpers from './PackageInstallationHelpers';
-import scriptExecutor from '../../scriptExecutor/ScriptExecutorHelpers';
+import ScriptExecutor from '../../scriptExecutor/ScriptExecutorHelpers';
 import { Connection } from '@salesforce/core';
 import * as fs from 'fs-extra';
 import FileSystem from '../../utils/FileSystem';
@@ -204,7 +204,7 @@ export abstract class InstallPackage {
 
         if (fs.existsSync(preDeploymentScript)) {
             SFPLogger.log('Executing preDeployment script',LoggerLevel.INFO,this.logger);
-            await scriptExecutor.executeScript(
+            await ScriptExecutor.executeScript(
                 preDeploymentScript,
                 this.sfpPackage.packageName,
                 this.sfpOrg.getUsername(),
@@ -232,7 +232,7 @@ export abstract class InstallPackage {
 
         if (fs.existsSync(postDeploymentScript)) {
             SFPLogger.log('Executing postDeployment script',LoggerLevel.INFO,this.logger);
-            await scriptExecutor.executeScript(
+            await ScriptExecutor.executeScript(
                 postDeploymentScript,
                 this.sfpPackage.packageName,
                 this.sfpOrg.getUsername(),
