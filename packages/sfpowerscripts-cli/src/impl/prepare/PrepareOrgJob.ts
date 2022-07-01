@@ -271,10 +271,10 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
     public async preInstallScript(scratchOrg: ScratchOrg, hubOrg: Org) {
 
-        if (fs.existsSync(this.pool.preScriptPath)) {
-            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.preScriptPath);
+        if (fs.existsSync(this.pool.preDependencyInstallationScriptPath)) {
+            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.preDependencyInstallationScriptPath);
             await ScriptExecutor.executeScript(
-                this.pool.preScriptPath,
+                this.pool.preDependencyInstallationScriptPath,
                 null,
                 scratchOrg.username,
                 hubOrg.getUsername(),
@@ -285,10 +285,10 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
     public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org) {
 
-        if (fs.existsSync(this.pool.postScriptPath)) {
-            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postScriptPath);
+        if (fs.existsSync(this.pool.postPackageDeploymentScriptPath)) {
+            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postPackageDeploymentScriptPath);
             await ScriptExecutor.executeScript(
-                this.pool.postScriptPath,
+                this.pool.postPackageDeploymentScriptPath,
                 null,
                 scratchOrg.username,
                 hubOrg.getUsername(),
