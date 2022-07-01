@@ -22,8 +22,8 @@ export interface PoolConfig {
         };
     };
     snapshotPool?:string;
-    postScriptPath: string;
-    preScriptPath: string;
+    postPackageDeploymentScriptPath: string;
+    preDependencyInstallationScriptPath: string;
     enableVlocity?: boolean;
     min_allocation?: number;
     current_allocation?: number;

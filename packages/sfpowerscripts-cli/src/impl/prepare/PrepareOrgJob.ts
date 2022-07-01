@@ -22,7 +22,7 @@ import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/P
 import RelaxIPRange from '@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange';
 import VlocityPackUpdateSettings from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings';
 import VlocityInitialInstall from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall';
-import scriptExecutor from '@dxatscale/sfpowerscripts.core/lib/package/scriptExecutors/scriptExecutorHelpers';
+import scriptExecutor from '@dxatscale/sfpowerscripts.core/lib/scriptExecutor/ScriptExecutorHelpers';
 import path = require('path');
 import * as fs from 'fs-extra';
 
@@ -73,10 +73,10 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
             await installUnlockedPackageWrapper.exec(true);
 
-            await this.preInstallScirpt(scratchOrg, hubOrg);
+            await this.preInstallScript(scratchOrg, hubOrg);
 
             SFPLogger.log(`Installing package depedencies to the ${scratchOrg.alias}`, LoggerLevel.INFO, packageLogger);
-            SFPLogger.log(`--Installing Package Dependencies of this repo in ${scratchOrg.alias}`);
+            SFPLogger.log(`Installing Package Dependencies of this repo in ${scratchOrg.alias}`);
 
             // Install Dependencies
             let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
@@ -129,7 +129,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                 }
             }
 
-            await this.postInstallScirpt(scratchOrg, hubOrg);
+            await this.postInstallScript(scratchOrg, hubOrg);
 
             return ok({ scratchOrgUsername: scratchOrg.username });
         } catch (error) {
@@ -270,7 +270,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         );
     }
 
-    public async preInstallScirpt(scratchOrg: ScratchOrg, hubOrg: Org) {
+    public async preInstallScript(scratchOrg: ScratchOrg, hubOrg: Org) {
 
         if (fs.existsSync(this.pool.preScriptPath)) {
             SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.preScriptPath);
@@ -284,7 +284,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         }
     }
 
-    public async postInstallScirpt(scratchOrg: ScratchOrg, hubOrg: Org) {
+    public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org) {
 
         if (fs.existsSync(this.pool.postScriptPath)) {
             SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postScriptPath);

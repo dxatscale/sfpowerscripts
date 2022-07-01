@@ -92,12 +92,12 @@
             "description": "Use a pre-prepared pool to further add packages on top of it",
             "type": "string"
         },
-        "postScriptPath": {
+        "postPackageDeploymentScriptPath": {
             "title": "Post Script",
             "description": "Execute script after packages install",
             "type": "string"
         },
-        "preScriptPath": {
+        "preDependencyInstallationScriptPath": {
             "title": "Pre Script",
             "description": "Execute script before denpendencies install",
             "type": "string"

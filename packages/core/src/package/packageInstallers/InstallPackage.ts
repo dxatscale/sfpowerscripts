@@ -3,7 +3,7 @@ import { PackageInstallationResult, PackageInstallationStatus } from './PackageI
 import ProjectConfig from '../../project/ProjectConfig';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import PackageInstallationHelpers from './PackageInstallationHelpers';
-import scriptExecutor from '../scriptExecutors/scriptExecutorHelpers';
+import scriptExecutor from '../../scriptExecutor/ScriptExecutorHelpers';
 import { Connection } from '@salesforce/core';
 import * as fs from 'fs-extra';
 import FileSystem from '../../utils/FileSystem';

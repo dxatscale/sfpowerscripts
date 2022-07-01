@@ -1,6 +1,6 @@
-import ExecuteCommand from '../../command/commandExecutor/ExecuteCommand';
-import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
-import defaultShell from '../../utils/DefaultShell';
+import ExecuteCommand from '../command/commandExecutor/ExecuteCommand';
+import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import defaultShell from '../utils/DefaultShell';
 
 export default class scriptExecutorHelpers {
     static async executeScript(script: string, sfdx_package: string, targetOrg: string, devHub: string, logger: Logger) {
