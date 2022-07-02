@@ -17,7 +17,7 @@ import SfpPackage from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 import ProjectConfig from '../../project/ProjectConfig';
-import { DeploymentFilterRegistry } from '../componentFilter/DeploymentFilterRegistry';
+import { DeploymentFilterRegistry } from '../deploymentFilters/DeploymentFilterRegistry';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;

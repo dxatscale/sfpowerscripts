@@ -4,7 +4,7 @@ import { ConsoleLogger } from '../../../src/logger/SFPLogger';
 import { AnyJson } from '@salesforce/ts-types';
 import SFPOrg from '../../../src/org/SFPOrg';
 import { ComponentSet, VirtualDirectory, VirtualTreeContainer } from '@salesforce/source-deploy-retrieve';
-import EntitlementVersionFilter from '../../../src/package/componentFilter/EntitlementVersionFilter';
+import EntitlementVersionFilter from '../../../src/package/deploymentFilters/EntitlementVersionFilter';
 
 const fs = require('fs-extra');
 
