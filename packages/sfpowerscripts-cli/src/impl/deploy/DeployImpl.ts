@@ -352,6 +352,15 @@ export default class DeployImpl {
                     );
             }
         }
+        
+        if(pkgDescriptor.skipTesting){
+            SFPLogger.log(
+                `Skip Testing: ${COLOR_KEY_MESSAGE(sfpPackage.skipTesting?"true":"false")}`,
+                LoggerLevel.INFO,
+                this.props.packageLogger
+            );
+        }
+
         if (alwaysDeployMessage) SFPLogger.log(alwaysDeployMessage, LoggerLevel.INFO, this.props.packageLogger);
 
         SFPLogger.log(
@@ -589,23 +598,24 @@ export default class DeployImpl {
         installationOptions.apiVersion = apiVersion;
         installationOptions.publishWaitTime = 60;
         installationOptions.isInstallingForValidation =
-            this.props.currentStage === 'prepare' || this.props.currentStage === 'validate';
-        (installationOptions.optimizeDeployment = this.isOptimizedDeploymentForSourcePackage(pkgDescriptor)),
-            (installationOptions.skipTesting = skipTesting),
-            (installationOptions.deploymentType = deploymentType);
+            this.props.currentStage === Stage.PREPARE || this.props.currentStage === Stage.VALIDATE;
+        installationOptions.optimizeDeployment = this.isOptimizedDeploymentForSourcePackage(pkgDescriptor);
+        installationOptions.skipTesting = skipTesting;
+        installationOptions.deploymentType = deploymentType;
 
-
-    //During validate, if optimizeDeploymentMode is false, use full local tests to validate
-    //During Prepare (push), dont trigger tests
-        if (this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES) {
+        //During validate, if optimizeDeploymentMode is false, use full local tests to validate
+        //but respect skipTesting #issue 1075
+        //During Prepare (push), dont trigger tests
+        if (this.props.currentStage == Stage.VALIDATE) {
+            //Always enable skipTest as the default installation option during validate
+            //as test are run subsequently
+            installationOptions.skipTesting = true;
             if (!this.isOptimizedDeploymentForSourcePackage(pkgDescriptor)) {
-                installationOptions.optimizeDeployment = false;
-                installationOptions.skipTesting = false;
-            } else {
-                installationOptions.optimizeDeployment = false;
-                installationOptions.skipTesting = true;
+                if (sfpPackage.packageDescriptor.skipTesting)
+                    installationOptions.skipTesting = sfpPackage.packageDescriptor.skipTesting;
+                else installationOptions.skipTesting = false;
             }
-        } else if (this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH) {
+        } else if (this.props.currentStage === Stage.PREPARE) {
             installationOptions.optimizeDeployment = false;
             installationOptions.skipTesting = true;
         }
@@ -642,8 +652,8 @@ export default class DeployImpl {
 
     // Allow individual packages to use non optimized path
     private isOptimizedDeploymentForSourcePackage(pkgDescriptor: any): boolean {
-        if (pkgDescriptor['isOptimizedDeployment'] == null) return true;
-        else return pkgDescriptor['isOptimizedDeployment'];
+        if (pkgDescriptor.isOptimizedDeployment == null) return true;
+        else return pkgDescriptor.isOptimizedDeployment;
     }
 
     /**
