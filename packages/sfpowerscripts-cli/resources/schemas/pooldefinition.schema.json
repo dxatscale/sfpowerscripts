@@ -92,14 +92,14 @@
             "description": "Use a pre-prepared pool to further add packages on top of it",
             "type": "string"
         },
-        "postPackageDeploymentScriptPath": {
+        "postDeploymentScriptPath": {
             "title": "Post Script",
-            "description": "Execute script after packages install",
+            "description": "Execute a custom script after all the artifacts are deployed into a particular org",
             "type": "string"
         },
         "preDependencyInstallationScriptPath": {
             "title": "Pre Script",
-            "description": "Execute script before denpendencies install",
+            "description": "Execute a custom script before denpendencies install into a particular org",
             "type": "string"
         },
         "fetchArtifacts": {

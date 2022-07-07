@@ -285,10 +285,10 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
     public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org) {
 
-        if (fs.existsSync(this.pool.postPackageDeploymentScriptPath)) {
-            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postPackageDeploymentScriptPath);
+        if (fs.existsSync(this.pool.postDeploymentScriptPath)) {
+            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postDeploymentScriptPath);
             await ScriptExecutor.executeScript(
-                this.pool.postPackageDeploymentScriptPath,
+                this.pool.postDeploymentScriptPath,
                 null,
                 scratchOrg.username,
                 hubOrg.getUsername(),
