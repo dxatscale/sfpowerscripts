@@ -18,13 +18,19 @@ Scratch org pool prepare command is designed to prepare a set of scratch orgs wi
 
 ## Decision
 
-Provide capability user can execute custom scripts before package dependency installation and after package deployment. In order to give user more control of the process, below argurements will be passed into script for use in the custom logic.
+Provide capability user can execute custom scripts before package dependency installation and after package deployment. In order to give user more control of the process, below argurements will be passed into script for use in the custom logic(same order as listed).
+
     1. package name (not applicable in prepare commnad)
     2. target org username
     3. devhub username
     4. installation/deployment status
 
-User should control the behavior of custom script in following scenarios and handle all possible exit codes:
-    1. whats the behaviour on succeedOnErrors
-    2. whats the behaviour on pool definitions without request for deploment
-    3. what happens when the script fails
+### User should consider the behavior of custom script in following scenarios:
+#### The behaviour on succeedOnErrors
+Based on the 4th script arguement listed above, user should decide the behaviour on whether the script needs to be executed or have different set of code to be executed depends on the deployment status.
+
+#### The behaviour on pool definitions without request for deployment
+The scirpt should be able to read the "installAll" attribute from the config file, and build the logic about whether the script always neeed to be executed or it depends on the deployment configuration.
+
+#### what happens when the script fails
+The script should include error handling for all possible exit codes, unhandled error will lead to pipeline failure hence the pool will be deleted.
