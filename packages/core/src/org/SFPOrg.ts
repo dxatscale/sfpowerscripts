@@ -182,8 +182,55 @@ export default class SFPOrg extends Org {
         } else throw new Error('Package Type Information can only be fetched from a DevHub');
     }
 
-    public async getAlias():Promise<string>{
+    public async getAlias(): Promise<string> {
         return await convertUsernameToAlias(this.getUsername());
+    }
+
+    /**
+     *  Return all artifacts including sfpowerscripts as well as external unlocked/managed
+     */
+    public async getAllInstalledArtifacts():Promise<InstalledArtifact[]> {
+        let artifacts = await this.getInstalledArtifacts(`Name`);
+        let installedArtifacts: InstalledArtifact[]=[];
+        let installed2GPPackages = await this.getAllInstalled2GPPackages();
+
+        artifacts.forEach((artifact) => {
+            let installedArtifact: InstalledArtifact = {
+                name: artifact.Name,
+                version: artifact.Version__c,
+                commitId:artifact.CommitId__c,
+                isInstalledBySfpowerscripts: true,
+            };
+            let packageFound = installed2GPPackages.find((elem) => elem.name == artifact.Name);
+            if (packageFound) {
+                installedArtifact.subscriberVersion = packageFound.subscriberPackageVersionId;
+                if (packageFound.isOrgDependent) installedArtifact.type = `OrgDependendent`;
+                else installedArtifact.type = `Unlocked`;
+            } else {
+                installedArtifact.subscriberVersion = `N/A`;
+                installedArtifact.type = `Source/Data`;
+            }
+            installedArtifacts.push(installedArtifact);
+        });
+
+        installed2GPPackages.forEach((installed2GPPackage) => {
+            let packageFound = installedArtifacts.find((elem) => elem.name == installed2GPPackage.name);
+            if (!packageFound) {
+                let installedArtifact: InstalledArtifact = {
+                    name: installed2GPPackage.name,
+                    version: installed2GPPackage.versionNumber,
+                    commitId: `N/A`,
+                };
+                if (installed2GPPackage.isOrgDependent) installedArtifact.type = `OrgDependendent`;
+                else if (installed2GPPackage.type == `Managed`) installedArtifact.type = `Managed`;
+                else installedArtifact.type = `Unlocked`;
+
+                installedArtifact.subscriberVersion = installed2GPPackage.subscriberPackageVersionId;
+                installedArtifact.isInstalledBySfpowerscripts = false;
+                installedArtifacts.push(installedArtifact);
+            }
+        });
+        return installedArtifacts;
     }
 }
 
@@ -192,6 +239,16 @@ const packageQuery =
     'FROM Package2 ' +
     'WHERE IsDeprecated != true ' +
     'ORDER BY NamespacePrefix, Name';
+
+
+export interface InstalledArtifact {
+    name: string;
+    version: string;
+    commitId?: string;
+    subscriberVersion?: string;
+    type?: string;
+    isInstalledBySfpowerscripts?: boolean;
+}
 
 export interface SfpowerscriptsArtifact2__c {
     Id?: string;

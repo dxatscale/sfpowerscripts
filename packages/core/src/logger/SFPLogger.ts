@@ -53,6 +53,7 @@ export const COLOR_KEY_VALUE = chalk.black.bold.bgGreenBright;
 
 export default class SFPLogger {
     public static logLevel: LoggerLevel = LoggerLevel.INFO;
+    public static isLogsDisabled:boolean = false;
 
     static enableColor() {
         chalk.level = 2;
@@ -63,6 +64,8 @@ export default class SFPLogger {
     }
 
     static log(message: string, logLevel = LoggerLevel.INFO, logger?: Logger) {
+        if(SFPLogger.isLogsDisabled)
+          return;
         if (typeof jest == 'undefined') {
             if (logLevel == null) logLevel = LoggerLevel.INFO;
 
@@ -107,5 +110,9 @@ export default class SFPLogger {
                 }
             }
         }
+    }
+
+    static disableLogs() {
+        SFPLogger.isLogsDisabled=true;
     }
 }
