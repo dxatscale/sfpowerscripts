@@ -72,7 +72,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
             await installUnlockedPackageWrapper.exec(true);
 
-            await this.preInstallScript(scratchOrg, hubOrg);
+            await this.preInstallScript(scratchOrg, hubOrg, packageLogger);
 
             SFPLogger.log(`Installing package depedencies to the ${scratchOrg.alias}`, LoggerLevel.INFO, packageLogger);
             SFPLogger.log(`Installing Package Dependencies of this repo in ${scratchOrg.alias}`);
@@ -128,7 +128,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                 }
             }
 
-            await this.postInstallScript(scratchOrg, hubOrg);
+            await this.postInstallScript(scratchOrg, hubOrg, packageLogger);
 
             return ok({ scratchOrgUsername: scratchOrg.username });
         } catch (error) {
@@ -269,7 +269,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         );
     }
 
-    public async preInstallScript(scratchOrg: ScratchOrg, hubOrg: Org) {
+    public async preInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, packageLogger: any) {
 
         if (fs.existsSync(this.pool.preDependencyInstallationScriptPath)) {
             SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.preDependencyInstallationScriptPath);
@@ -278,12 +278,12 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                 null,
                 scratchOrg.username,
                 hubOrg.getUsername(),
-                null
+                packageLogger
             );
         }
     }
 
-    public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org) {
+    public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, packageLogger: any) {
 
         if (fs.existsSync(this.pool.postDeploymentScriptPath)) {
             SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postDeploymentScriptPath);
@@ -292,7 +292,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                 null,
                 scratchOrg.username,
                 hubOrg.getUsername(),
-                null
+                packageLogger
             );
         }
     }
