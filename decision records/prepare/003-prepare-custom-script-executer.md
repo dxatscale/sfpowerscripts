@@ -30,7 +30,7 @@ Provide capability user can execute custom scripts before package dependency ins
 Based on the 4th script arguement listed above, user should decide the behaviour on whether the script needs to be executed or have different set of code to be executed depends on the deployment status.
 
 #### The behaviour on pool definitions without request for deployment
-The scirpt should be able to read the "installAll" attribute from the config file, and build the logic about whether the script always neeed to be executed or it depends on the deployment configuration.
+The script should be able to read the "installAll" attribute from the config file, and build the logic about whether the script always neeed to be executed or it depends on the deployment configuration.
 
 #### what happens when the script fails
 The script should include error handling for all possible exit codes, unhandled error will lead to pipeline failure hence the pool will be deleted.
