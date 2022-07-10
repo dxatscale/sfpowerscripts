@@ -1,6 +1,6 @@
 # Add custom script support in pool prepare command before dependency installation and after package installation
 
-• Status: Proposed
+• Status: Accepted
 
 • Issue: #991
 
