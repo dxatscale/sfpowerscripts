@@ -22,6 +22,9 @@ import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/P
 import RelaxIPRange from '@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange';
 import VlocityPackUpdateSettings from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings';
 import VlocityInitialInstall from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall';
+import ScriptExecutor from '@dxatscale/sfpowerscripts.core/lib/scriptExecutor/ScriptExecutorHelpers';
+import * as fs from 'fs-extra';
+
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor {
@@ -69,6 +72,8 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
             await installUnlockedPackageWrapper.exec(true);
 
+            await this.preInstallScript(scratchOrg, hubOrg, packageLogger);
+
             SFPLogger.log(`Installing package depedencies to the ${scratchOrg.alias}`, LoggerLevel.INFO, packageLogger);
             SFPLogger.log(`Installing Package Dependencies of this repo in ${scratchOrg.alias}`);
 
@@ -91,7 +96,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
             //Hook Velocity Deployment
             if (this.pool.enableVlocity) await this.prepareVlocityDataPacks(scratchOrg, packageLogger, logLevel);
-
+            let deploymentSucceed;
             if (this.pool.installAll) {
                 let deploymentResult: DeploymentResult;
 
@@ -120,8 +125,12 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                     this.pool.succeedOnDeploymentErrors
                         ? this.handleDeploymentErrorsForPartialDeployment(scratchOrg, deploymentResult, packageLogger)
                         : this.handleDeploymentErrorsForFullDeployment(scratchOrg, deploymentResult, packageLogger);
+                    deploymentSucceed ='failed';
                 }
+                deploymentSucceed = 'succeed'
             }
+
+            await this.postInstallScript(scratchOrg, hubOrg, packageLogger, deploymentSucceed);
 
             return ok({ scratchOrgUsername: scratchOrg.username });
         } catch (error) {
@@ -260,5 +269,32 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             LoggerLevel.INFO,
             logger
         );
+    }
+
+    public async preInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, packageLogger: any) {
+
+        if (fs.existsSync(this.pool.preDependencyInstallationScriptPath)) {
+            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.preDependencyInstallationScriptPath, LoggerLevel.INFO, packageLogger);
+            await ScriptExecutor.executeScript(
+                packageLogger,
+                this.pool.preDependencyInstallationScriptPath,
+                scratchOrg.username,
+                hubOrg.getUsername()
+            );
+        }
+    }
+
+    public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, packageLogger: any, deploymentStatus: string) {
+
+        if (fs.existsSync(this.pool.postDeploymentScriptPath)) {
+            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postDeploymentScriptPath, LoggerLevel.INFO, packageLogger);
+            await ScriptExecutor.executeScript(
+                packageLogger,
+                this.pool.postDeploymentScriptPath,
+                scratchOrg.username,
+                hubOrg.getUsername(),
+                deploymentStatus
+            );
+        }
     }
 }

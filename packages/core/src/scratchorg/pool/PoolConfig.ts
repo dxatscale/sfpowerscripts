@@ -22,6 +22,8 @@ export interface PoolConfig {
         };
     };
     snapshotPool?:string;
+    postDeploymentScriptPath: string;
+    preDependencyInstallationScriptPath: string;
     enableVlocity?: boolean;
     min_allocation?: number;
     current_allocation?: number;
@@ -30,4 +32,6 @@ export interface PoolConfig {
     to_satisfy_max?: number;
     scratchOrgs?: ScratchOrg[];
     failedToCreate?: number;
+
+
 }
