@@ -4,7 +4,6 @@ import { LoggerLevel, Messages } from '@salesforce/core';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import SFPLogger, { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
 import _ from 'lodash';
-import { release } from 'os';
 const Table = require('cli-table');
 
 Messages.importMessagesDirectory(__dirname);
