@@ -278,7 +278,6 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             await ScriptExecutor.executeScript(
                 packageLogger,
                 this.pool.preDependencyInstallationScriptPath,
-                null,
                 scratchOrg.username,
                 hubOrg.getUsername(),
             );
@@ -292,7 +291,6 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             await ScriptExecutor.executeScript(
                 packageLogger,
                 this.pool.postDeploymentScriptPath,
-                null,
                 scratchOrg.username,
                 hubOrg.getUsername(),
                 deploymentStatus
