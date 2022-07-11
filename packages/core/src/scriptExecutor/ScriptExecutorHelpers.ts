@@ -3,12 +3,17 @@ import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
 import defaultShell from '../utils/DefaultShell';
 
 export default class scriptExecutorHelpers {
-    static async executeScript(script: string, sfdx_package: string, targetOrg: string, devHub: string, logger: Logger) {
+    static async executeScript(script: string, 
+                               sfdx_package: string, 
+                               targetOrg: string, 
+                               devHub: string, 
+                               deploymentStatus: boolean, 
+                               logger: Logger) {
         let cmd: string;
         if (process.platform !== 'win32') {
-            cmd = `${defaultShell()} -e ${script} ${sfdx_package} ${targetOrg} ${devHub}`;
+            cmd = `${defaultShell()} -e ${script} ${sfdx_package} ${targetOrg} ${devHub} ${deploymentStatus}`;
         } else {
-            cmd = `cmd.exe /c ${script} ${sfdx_package} ${targetOrg} ${devHub}`;
+            cmd = `cmd.exe /c ${script} ${sfdx_package} ${targetOrg} ${devHub} ${deploymentStatus}`;
         }
 
         SFPLogger.log(`Executing command.. ${cmd}`,LoggerLevel.INFO,logger);

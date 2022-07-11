@@ -10,12 +10,8 @@ Scratch org pool prepare command is designed to prepare a set of scratch orgs wi
 
 - Features are not enabled during the scracth org provision process
 
-    Everytime when we need to prepare a scratch org pool, it's very likely there are some features will not be enabled in the scratch org, hence the future dependency installations or package deployments might fail due to the missing features. In some instances, the error occurs in the middle of the deployment and the process has already been running for few hours which makes the pool prepare as the pool will either failed to be created or partial succesful. Some known issues with scratch org provisoning are listed below.
-
-      1. Account Contact Relation
-      2. Activity setting
+    Everytime when we need to prepare a scratch org pool, it's very likely there are some features will not be enabled in the scratch org, hence the future dependency installations or package deployments might fail due to the missing features. In some instances, the error occurs in the middle of the deployment and the process has already been running for few hours which makes the pool prepare as the pool will either failed to be created or partial succesful
   
-
 ## Decision
 
 Provide capability user can execute custom scripts before package dependency installation and after package deployment. In order to give user more control of the process, below argurements will be passed into script for use in the custom logic(same order as listed).

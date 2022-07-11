@@ -96,7 +96,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
             //Hook Velocity Deployment
             if (this.pool.enableVlocity) await this.prepareVlocityDataPacks(scratchOrg, packageLogger, logLevel);
-
+            let deploymentSucceed = true;
             if (this.pool.installAll) {
                 let deploymentResult: DeploymentResult;
 
@@ -125,10 +125,11 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                     this.pool.succeedOnDeploymentErrors
                         ? this.handleDeploymentErrorsForPartialDeployment(scratchOrg, deploymentResult, packageLogger)
                         : this.handleDeploymentErrorsForFullDeployment(scratchOrg, deploymentResult, packageLogger);
+                    deploymentSucceed = false;
                 }
             }
 
-            await this.postInstallScript(scratchOrg, hubOrg, packageLogger);
+            await this.postInstallScript(scratchOrg, hubOrg, packageLogger, deploymentSucceed);
 
             return ok({ scratchOrgUsername: scratchOrg.username });
         } catch (error) {
@@ -278,12 +279,13 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                 null,
                 scratchOrg.username,
                 hubOrg.getUsername(),
+                null,
                 packageLogger
             );
         }
     }
 
-    public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, packageLogger: any) {
+    public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, packageLogger: any, deploymentStatus: boolean) {
 
         if (fs.existsSync(this.pool.postDeploymentScriptPath)) {
             SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postDeploymentScriptPath);
@@ -292,6 +294,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                 null,
                 scratchOrg.username,
                 hubOrg.getUsername(),
+                deploymentStatus,
                 packageLogger
             );
         }
