@@ -14,12 +14,7 @@ Scratch org pool prepare command is designed to prepare a set of scratch orgs wi
   
 ## Decision
 
-Provide capability user can execute custom scripts before package dependency installation and after package deployment. In order to give user more control of the process, below argurements will be passed into script for use in the custom logic(same order as listed).
-
-    1. package name (not applicable in prepare commnad)
-    2. target org username
-    3. devhub username
-    4. installation/deployment status
+Provide capability user can execute custom scripts before package dependency installation and after package deployment. In order to give user more control of the process, below argurements will be passed into script for use in the custom logic
 
 ### User should consider the behavior of custom script in following scenarios:
 #### The behaviour on succeedOnErrors
