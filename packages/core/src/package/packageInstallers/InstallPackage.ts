@@ -204,7 +204,6 @@ export abstract class InstallPackage {
 
         if (fs.existsSync(preDeploymentScript)) {
             SFPLogger.log('Executing preDeployment script',LoggerLevel.INFO,this.logger);
-            let args = [preDeploymentScript,this.sfpPackage.packageName,this.sfpOrg.getUsername(),null,null];
             await ScriptExecutor.executeScript(
                 this.logger,
                 preDeploymentScript,
