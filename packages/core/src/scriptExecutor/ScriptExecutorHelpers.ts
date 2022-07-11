@@ -3,12 +3,13 @@ import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
 import defaultShell from '../utils/DefaultShell';
 
 export default class scriptExecutorHelpers {
-    static async executeScript(args: any[], logger: Logger) {
+    static async executeScript(logger: Logger, ...args: string[]) {
         let cmd: string;
+        let argStr =args.join(' ');
         if (process.platform !== 'win32') {
-            cmd = `${defaultShell()} -e args[0] args[1] args[2] args[3] args[4]`;
+            cmd = `${defaultShell()} -e ${argStr}`;
         } else {
-            cmd = `cmd.exe /c args[0] args[1] args[2] args[3] args[4]`;
+            cmd = `cmd.exe /c ${argStr}`;
         }
 
         SFPLogger.log(`Executing command.. ${cmd}`,LoggerLevel.INFO,logger);

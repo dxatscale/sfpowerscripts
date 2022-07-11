@@ -96,7 +96,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
             //Hook Velocity Deployment
             if (this.pool.enableVlocity) await this.prepareVlocityDataPacks(scratchOrg, packageLogger, logLevel);
-            let deploymentSucceed = true;
+            let deploymentSucceed;
             if (this.pool.installAll) {
                 let deploymentResult: DeploymentResult;
 
@@ -125,8 +125,9 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                     this.pool.succeedOnDeploymentErrors
                         ? this.handleDeploymentErrorsForPartialDeployment(scratchOrg, deploymentResult, packageLogger)
                         : this.handleDeploymentErrorsForFullDeployment(scratchOrg, deploymentResult, packageLogger);
-                    deploymentSucceed = false;
+                    deploymentSucceed ='failed';
                 }
+                deploymentSucceed = 'succeed'
             }
 
             await this.postInstallScript(scratchOrg, hubOrg, packageLogger, deploymentSucceed);
@@ -273,18 +274,29 @@ export default class PrepareOrgJob extends PoolJobExecutor {
     public async preInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, packageLogger: any) {
 
         if (fs.existsSync(this.pool.preDependencyInstallationScriptPath)) {
-            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.preDependencyInstallationScriptPath,LoggerLevel.INFO,packageLogger);
-            let args = [this.pool.postDeploymentScriptPath,null,scratchOrg.username,hubOrg.getUsername(),null];
-            await ScriptExecutor.executeScript(args, packageLogger);
+            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.preDependencyInstallationScriptPath, LoggerLevel.INFO, packageLogger);
+            await ScriptExecutor.executeScript(
+                packageLogger,
+                this.pool.preDependencyInstallationScriptPath,
+                null,
+                scratchOrg.username,
+                hubOrg.getUsername(),
+            );
         }
     }
 
-    public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, packageLogger: any, deploymentStatus: boolean) {
+    public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, packageLogger: any, deploymentStatus: string) {
 
         if (fs.existsSync(this.pool.postDeploymentScriptPath)) {
-            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postDeploymentScriptPath,LoggerLevel.INFO,packageLogger);
-            let args = [this.pool.postDeploymentScriptPath,null,scratchOrg.username,hubOrg.getUsername(),deploymentStatus];
-            await ScriptExecutor.executeScript(args, packageLogger);
+            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postDeploymentScriptPath, LoggerLevel.INFO, packageLogger);
+            await ScriptExecutor.executeScript(
+                packageLogger,
+                this.pool.postDeploymentScriptPath,
+                null,
+                scratchOrg.username,
+                hubOrg.getUsername(),
+                deploymentStatus
+            );
         }
     }
 }

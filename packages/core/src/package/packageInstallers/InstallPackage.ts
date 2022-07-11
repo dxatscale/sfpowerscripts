@@ -205,7 +205,12 @@ export abstract class InstallPackage {
         if (fs.existsSync(preDeploymentScript)) {
             SFPLogger.log('Executing preDeployment script',LoggerLevel.INFO,this.logger);
             let args = [preDeploymentScript,this.sfpPackage.packageName,this.sfpOrg.getUsername(),null,null];
-            await ScriptExecutor.executeScript(args,this.logger);
+            await ScriptExecutor.executeScript(
+                this.logger,
+                preDeploymentScript,
+                this.sfpPackage.packageName,
+                this.sfpOrg.getUsername(),     
+            );
         }
     }
 
@@ -227,8 +232,12 @@ export abstract class InstallPackage {
 
         if (fs.existsSync(postDeploymentScript)) {
             SFPLogger.log('Executing postDeployment script',LoggerLevel.INFO,this.logger);
-            let args = [postDeploymentScript,this.sfpPackage.packageName,this.sfpOrg.getUsername(),null,null];
-            await ScriptExecutor.executeScript(args,this.logger);
+            await ScriptExecutor.executeScript(
+                this.logger,
+                postDeploymentScript,
+                this.sfpPackage.packageName,
+                this.sfpOrg.getUsername()
+            );
         }
     }
 }
