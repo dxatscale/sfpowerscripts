@@ -50,6 +50,10 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
         this.setLogLevel();
 
+        if (this.flags.json) {
+            SFPLogger.disableLogs();
+        }
+
         // Setting the environment variable for disabling sfpowerkit header
 
         if (SFPLogger.logLevel > LoggerLevel.DEBUG) process.env.SFPOWERKIT_NOHEADER = 'true';
@@ -91,18 +95,24 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
             }
         }
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
-        SFPLogger.log(
-            COLOR_HEADER(
-                `sfpowerscripts  -- The DX@Scale CI/CD Orchestrator -Version:${this.sfpowerscriptsConfig.version} -Release:${this.sfpowerscriptsConfig.pjson.release}`
-            )
-        );
+        if (!this.flags.json) {
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `-------------------------------------------------------------------------------------------`
+                )
+            );
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `sfpowerscripts  -- The DX@Scale CI/CD Orchestrator -Version:${this.sfpowerscriptsConfig.version} -Release:${this.sfpowerscriptsConfig.pjson.release}`
+                )
+            );
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `-------------------------------------------------------------------------------------------`
+                )
+            );
+        }
 
         if (!this.isSfpowerkitFound) {
             throw new Error('sfpowerscripts require sfpowerkit to function, please install sfpowerkit and try again!');
@@ -115,7 +125,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         }
 
         // Execute command run code
-        await this.execute();
+        return await this.execute();
     }
 
     /**

@@ -5,12 +5,14 @@ import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
 import { DeploymentFilter } from './DeploymentFilter';
 import * as fs from 'fs-extra';
 import MetadataFetcher from '../../metadata/MetadataFetcher';
+import { PackageType } from '../SfpPackage';
 const { XMLBuilder } = require('fast-xml-parser');
 
 const EXISTING_SLAPPROCESS_QUERY = `SELECT Name, NameNorm,VersionNumber, VersionMaster FROM SlaProcess ORDER BY VersionNumber DESC`;
 const EXISTING_SLAPPROCESS_QUERY_NO_VERSIONING = `SELECT Name, NameNorm FROM SlaProcess`;
 
 export default class EntitlementVersionFilter implements DeploymentFilter {
+  
     public async apply(org: SFPOrg, componentSet: ComponentSet, logger: Logger): Promise<ComponentSet> {
         //Only do if entitlment exits in the package
         let sourceComponents = componentSet.getSourceComponents().toArray();
@@ -88,10 +90,16 @@ export default class EntitlementVersionFilter implements DeploymentFilter {
         }
     }
 
-    public isToApply(projectConfig: any): boolean {
+    public isToApply(projectConfig: any, packageType: PackageType): boolean {
+        if (packageType != PackageType.Source) return false;
+
         if (projectConfig?.plugins?.sfpowerscripts?.disableEntitlementFilter) return false;
         else return true;
     }
+
+    
+
+   
 }
 
 interface SlaProcess {

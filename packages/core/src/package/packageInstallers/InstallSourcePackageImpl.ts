@@ -13,11 +13,12 @@ import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
-import SfpPackage from '../SfpPackage';
+import SfpPackage, { PackageType } from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 import ProjectConfig from '../../project/ProjectConfig';
-import { DeploymentFilterRegistry } from '../componentFilter/DeploymentFilterRegistry';
+import { DeploymentFilterRegistry } from '../deploymentFilters/DeploymentFilterRegistry';
+
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;
@@ -140,9 +141,10 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     for (const deploymentFilter of deploymentFilters) {
                         if (
                             deploymentFilter.isToApply(
-                                ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory)
+                                ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory),
+                                PackageType[this.sfpPackage.packageType])
                             )
-                        )
+                        
                             componentSet = await deploymentFilter.apply(this.sfpOrg, componentSet, this.logger);
                     }
 
