@@ -279,7 +279,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                 packageLogger,
                 this.pool.preDependencyInstallationScriptPath,
                 scratchOrg.username,
-                hubOrg.getUsername(),
+                hubOrg.getUsername()
             );
         }
     }
