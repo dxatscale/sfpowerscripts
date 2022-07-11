@@ -74,7 +74,6 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         if (this.statics.requiresProject) {
             let projectValidation = new ProjectValidation();
             projectValidation.validateSFDXProjectJSON();
-            projectValidation.validatePackageBuildNumbers();
             projectValidation.validatePackageNames();
         }
 
