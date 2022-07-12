@@ -3,7 +3,7 @@ import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import ReleaseDefinitionGenerator from '../../../impl/release/ReleaseDefinitionGenerator';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import simplegit, {SimpleGit } from 'simple-git';
+import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import { ReleaseChangelog } from '../../../impl/changelog/ReleaseChangelogInterfaces';
 
 Messages.importMessagesDirectory(__dirname);
@@ -77,10 +77,15 @@ export default class Generate extends SfpowerscriptsCommand {
             //grab release name from changelog.json
             let releaseName;
             if (this.flags.changelogbranchref) {
-                let git: SimpleGit = simplegit(null);
-                // Update local refs from remote
-                await git.fetch('origin');
-                let changelogFileContents = await git.show([`${this.flags.changelogbranchref}:releasechangelog.json`]);
+                const git: Git = new Git(null);
+                await git.fetch();
+
+                if (!this.flags.changelogbranchref.includes('origin')) {
+                    // for user convenience, use full ref name to avoid errors involving missing local refs
+                    this.flags.changelogbranchref= `remotes/origin/${this.flags.changelogbranchref}`;
+                }
+
+                let changelogFileContents = await git.show([`${this.flags.changelogbranchref}:releasechangelog.json`])
                 let changelog: ReleaseChangelog = JSON.parse(changelogFileContents);
                 //Get last release name and sanitize it
                 let name = changelog.releases.pop().names.pop();

@@ -101,7 +101,7 @@ export default class ReleaseDefinitionGenerator {
             SFPLogger.log(``);
             SFPLogger.log(COLOR_KEY_MESSAGE(releaseDefinitonYAML));
 
-            fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yaml`), releaseDefinitonYAML);
+          
 
             if (this.push) {
                 console.log(`Checking out branch ${this.branch}`);
@@ -113,9 +113,11 @@ export default class ReleaseDefinitionGenerator {
                 } else {
                     await git.checkout(['-b', this.branch]);
                 }
-
+                fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yaml`), releaseDefinitonYAML);
                 await this.pushReleaseDefinitionToBranch(this.branch, git, this.forcePush);
             }
+            else 
+            fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yaml`), releaseDefinitonYAML);
             return releaseDefinitonYAML.toString();
         } catch (error) {
             console.log(error);
@@ -125,7 +127,7 @@ export default class ReleaseDefinitionGenerator {
     }
 
     private async pushReleaseDefinitionToBranch(branch: string, git: SimpleGit, isForce: boolean) {
-        console.log('Pushing changelog files to', branch);
+        console.log('Pushing release definiton file to', branch);
 
         await new GitIdentity(git).setUsernameAndEmail();
         await git.add([`${this.releaseName}.yaml`]);
