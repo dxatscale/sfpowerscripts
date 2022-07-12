@@ -3,7 +3,7 @@ import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import ReleaseDefinitionGenerator from '../../../impl/release/ReleaseDefinitionGenerator';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import simplegit, {SimpleGit } from 'simple-git';
 import { ReleaseChangelog } from '../../../impl/changelog/ReleaseChangelogInterfaces';
 
 Messages.importMessagesDirectory(__dirname);
@@ -77,7 +77,9 @@ export default class Generate extends SfpowerscriptsCommand {
             //grab release name from changelog.json
             let releaseName;
             if (this.flags.changelogbranchref) {
-                const git: Git = new Git(null);
+                let git: SimpleGit = simplegit(null);
+                // Update local refs from remote
+                await git.fetch('origin');
                 let changelogFileContents = await git.show([`${this.flags.changelogbranchref}:releasechangelog.json`]);
                 let changelog: ReleaseChangelog = JSON.parse(changelogFileContents);
                 //Get last release name and sanitize it
