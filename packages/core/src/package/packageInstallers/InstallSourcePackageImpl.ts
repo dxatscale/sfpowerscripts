@@ -138,12 +138,14 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
                     //Apply Filters
                     let deploymentFilters = DeploymentFilterRegistry.getImplementations();
+
+                  
                     for (const deploymentFilter of deploymentFilters) {
                         if (
                             deploymentFilter.isToApply(
                                 ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory),
-                                PackageType[this.sfpPackage.packageType])
-                            )
+                                this.sfpPackage.packageType
+                            ))
                         
                             componentSet = await deploymentFilter.apply(this.sfpOrg, componentSet, this.logger);
                     }

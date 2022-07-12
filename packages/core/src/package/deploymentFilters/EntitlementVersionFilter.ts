@@ -90,7 +90,7 @@ export default class EntitlementVersionFilter implements DeploymentFilter {
         }
     }
 
-    public isToApply(projectConfig: any, packageType: PackageType): boolean {
+    public isToApply(projectConfig: any, packageType: string): boolean {
         if (packageType != PackageType.Source) return false;
 
         if (projectConfig?.plugins?.sfpowerscripts?.disableEntitlementFilter) return false;

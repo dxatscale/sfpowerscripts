@@ -6,7 +6,7 @@ import { PackageType } from "../SfpPackage";
 export interface DeploymentFilter
 {
    apply(org: SFPOrg, componentSet: ComponentSet,logger:Logger):Promise<ComponentSet>;
-   isToApply(projectConfig: any,packageType:PackageType): boolean;
+   isToApply(projectConfig: any,packageType:string): boolean;
 
 }
 
