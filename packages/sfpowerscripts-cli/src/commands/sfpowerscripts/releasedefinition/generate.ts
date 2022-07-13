@@ -88,8 +88,9 @@ export default class Generate extends SfpowerscriptsCommand {
                 let changelogFileContents = await git.show([`${this.flags.changelogbranchref}:releasechangelog.json`])
                 let changelog: ReleaseChangelog = JSON.parse(changelogFileContents);
                 //Get last release name and sanitize it
-                let name = changelog.releases.pop().names.pop();
-                let buildNumber = changelog.releases.pop().buildNumber;
+                let release = changelog.releases.pop()
+                let name = release.names.pop();
+                let buildNumber = release.buildNumber;
                 releaseName = name.replace(/[/\\?%*:|"<>]/g, '-').concat(`-`, buildNumber.toString());
             } else {
                 releaseName = this.flags.releaseName;
