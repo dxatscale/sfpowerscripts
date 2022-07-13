@@ -1,6 +1,6 @@
 import { jest, expect } from '@jest/globals';
-import fs = require('fs');
-import { ConsoleLogger } from '../../s@dxatscale/sfp-logger';
+const fs = require('fs');
+import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import PackageDiffImpl from '../../src/package/PackageDiffImpl';
 import ProjectConfig from '../../src/project/ProjectConfig';
 
@@ -44,7 +44,7 @@ describe('Determines whether a given package has changed', () => {
         });
 
         const fsMock = jest.spyOn(fs, 'readFileSync');
-        fsMock.mockImplementationOnce(() => {
+        fsMock.mockImplementation(() => {
             return '**README.md';
         });
     });
