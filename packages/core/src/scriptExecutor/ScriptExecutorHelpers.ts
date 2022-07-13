@@ -15,6 +15,5 @@ export default class scriptExecutorHelpers {
         SFPLogger.log(`Executing command.. ${cmd}`,LoggerLevel.INFO,logger);
         let scriptExecutor: ExecuteCommand = new ExecuteCommand(logger, LoggerLevel.INFO, true);
         let result = await scriptExecutor.execCommand(cmd, null);
-        SFPLogger.log(result, LoggerLevel.INFO, logger);
     }
   }
