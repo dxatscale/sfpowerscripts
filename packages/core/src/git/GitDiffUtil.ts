@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 
 import { LoggerLevel } from '@salesforce/core';
 import simplegit, { SimpleGit } from 'simple-git';
-import SFPLogger, { Logger } from '../logger/SFPLogger';
+import SFPLogger, { Logger } from '@dxatscale/sfp-logger';
 const SEP = /\/|\\/;
 
 export interface DiffFileStatus {

@@ -1,5 +1,5 @@
 import child_process = require('child_process');
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { onExit } from '../utils/OnExit';
 
 export default class ReconcileProfileAgainstOrgImpl {

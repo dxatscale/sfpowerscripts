@@ -1,6 +1,6 @@
 import ProjectConfig from '../../project/ProjectConfig';
 import * as rimraf from 'rimraf';
-import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { mkdirpSync } from 'fs-extra';
 import * as fs from 'fs-extra';
 import PackageComponentDiff from '../diff/PackageComponentDiff';

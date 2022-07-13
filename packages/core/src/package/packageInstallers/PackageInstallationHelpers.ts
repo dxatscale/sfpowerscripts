@@ -1,5 +1,5 @@
 import { Connection } from '@salesforce/core';
-import { Logger } from '../../logger/SFPLogger';
+import { Logger } from '@dxatscale/sfp-logger';
 import AssignPermissionSets from '../../permsets/AssignPermissionSets';
 
 export default class PackageInstallationHelpers {

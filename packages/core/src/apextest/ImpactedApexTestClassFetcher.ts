@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import ApexLinkCheckImpl from '../apexLinkWrapper/ApexLinkCheckImpl';
 import Component from '../dependency/Component';
-import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import SfpPackage from '../package/SfpPackage';
 
 export default class ImpactedApexTestClassFetcher {

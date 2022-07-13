@@ -1,5 +1,5 @@
 import { AsyncResult, Connection } from 'jsforce';
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import SFPOrg from '../org/SFPOrg';
 import { delay } from '../utils/Delay';
 const fs = require('fs-extra');

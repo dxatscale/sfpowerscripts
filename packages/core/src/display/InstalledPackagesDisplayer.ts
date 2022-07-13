@@ -1,5 +1,5 @@
 const Table = require('cli-table');
-import SFPLogger, { Logger, LoggerLevel, COLOR_KEY_MESSAGE } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import PackageDetails from '../package/PackageDetails';
 
 export default class InstalledPackagesDisplayer {

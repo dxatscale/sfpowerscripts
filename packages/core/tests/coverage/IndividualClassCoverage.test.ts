@@ -1,6 +1,6 @@
 import IndividualClassCoverage from '../../src/apex/coverage/IndividualClassCoverage';
 import { expect } from '@jest/globals';
-import { ConsoleLogger } from '../../src/logger/SFPLogger';
+import { ConsoleLogger } from '../../s@dxatscale/sfp-logger';
 
 describe('Given a test coverage report', () => {
     it('should be able to get a list of all classes and its test coverage', () => {

@@ -7,7 +7,7 @@ const fs = require('fs-extra');
 const path = require('path');
 import * as rimraf from 'rimraf';
 const Table = require('cli-table');
-import SFPLogger, { LoggerLevel, COLOR_SUCCESS } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { LoggerLevel, COLOR_SUCCESS } from '@dxatscale/sfp-logger';
 import lodash = require('lodash');
 
 // Initialize Messages with the current plugin directory

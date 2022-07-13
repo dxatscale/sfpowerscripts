@@ -9,7 +9,7 @@ import SFPLogger, {
     COLOR_HEADER,
     ConsoleLogger,
     LoggerLevel,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands

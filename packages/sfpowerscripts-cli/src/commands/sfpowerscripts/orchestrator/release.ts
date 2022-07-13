@@ -13,7 +13,7 @@ import SFPLogger, {
     COLOR_SUCCESS,
     COLOR_WARNING,
     COLOR_KEY_MESSAGE,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'release');

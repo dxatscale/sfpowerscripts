@@ -1,5 +1,5 @@
 import fs = require('fs-extra');
-import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import SFDMURunImpl from '../../sfdmuwrapper/SFDMURunImpl';
 import VlocityPackDeployImpl from '../../vlocitywrapper/VlocityPackDeployImpl';
 import { SFDXCommand } from '../../command/SFDXCommand';

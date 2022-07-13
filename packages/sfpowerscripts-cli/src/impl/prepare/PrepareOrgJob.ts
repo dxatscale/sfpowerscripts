@@ -6,7 +6,7 @@ import SFPLogger, {
     LoggerLevel,
     Logger,
     COLOR_KEY_MESSAGE,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
 import { Stage } from '../Stage';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import InstallUnlockedPackageWrapper from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl';

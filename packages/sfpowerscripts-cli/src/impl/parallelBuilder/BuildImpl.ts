@@ -16,10 +16,10 @@ import SFPLogger, {
     FileLogger,
     LoggerLevel,
     VoidLogger,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import { COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import { COLOR_HEADER } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import { COLOR_ERROR } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
+import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
+import { COLOR_HEADER } from '@dxatscale/sfp-logger';
+import { COLOR_ERROR } from '@dxatscale/sfp-logger';
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';

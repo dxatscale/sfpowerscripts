@@ -1,4 +1,4 @@
-import SFPLogger, { COLOR_WARNING } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { COLOR_WARNING } from '@dxatscale/sfp-logger';
 import { fs, LoggerLevel } from '@salesforce/core';
 import child_process = require('child_process');
 import FetchAnArtifact from './FetchAnArtifact';

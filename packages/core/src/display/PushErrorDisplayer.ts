@@ -1,5 +1,5 @@
 const Table = require('cli-table');
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 
 export default class PushErrorDisplayer {
     public static printMetadataFailedToPush(error: any, packageLogger: Logger) {

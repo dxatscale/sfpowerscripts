@@ -1,5 +1,5 @@
 import ExecuteCommand from '../command/commandExecutor/ExecuteCommand';
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import defaultShell from '../utils/DefaultShell';
 
 export default class scriptExecutorHelpers {

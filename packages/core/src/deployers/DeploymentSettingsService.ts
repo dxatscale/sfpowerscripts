@@ -1,4 +1,4 @@
-import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { Connection } from '@salesforce/core';
 import { UpsertResult } from 'jsforce';
 

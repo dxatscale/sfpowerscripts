@@ -1,4 +1,4 @@
-import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { PackageInstallationResult, PackageInstallationStatus } from './PackageInstallationResult';
 import ProjectConfig from '../../project/ProjectConfig';
 import SFPStatsSender from '../../stats/SFPStatsSender';

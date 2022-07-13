@@ -3,7 +3,7 @@ import SfpPackage, { PackageType, SfpPackageParams } from '../../src/package/Sfp
 import SfpPackageBuilder, { PackageCreationParams } from '../../src/package/SfpPackageBuilder';
 
 import fs from 'fs-extra';
-import { Logger } from '../../src/logger/SFPLogger';
+import { Logger } from '../../s@dxatscale/sfp-logger';
 
 
 let packageType = PackageType.Source;

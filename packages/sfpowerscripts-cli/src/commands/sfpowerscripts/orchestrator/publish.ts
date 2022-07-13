@@ -12,13 +12,13 @@ import SFPLogger, {
     COLOR_KEY_MESSAGE,
     COLOR_SUCCESS,
     COLOR_TIME,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import simplegit from 'simple-git';
 import GitIdentity from '../../../impl/git/GitIdentity';
 import defaultShell from '@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell';
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 Messages.importMessagesDirectory(__dirname);

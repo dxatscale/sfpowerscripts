@@ -11,7 +11,7 @@ import {
 import IndividualClassCoverage, { CoverageOptions } from '../apex/coverage/IndividualClassCoverage';
 import { TestReportDisplayer } from './TestReportDisplayer';
 import PackageTestCoverage from '../package/coverage/PackageTestCoverage';
-import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel, COLOR_ERROR } from '../logger/SFPLogger';
+import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel, COLOR_ERROR } from '@dxatscale/sfp-logger';
 import SFPStatsSender from '../stats/SFPStatsSender';
 import { Connection, Org } from '@salesforce/core';
 import {

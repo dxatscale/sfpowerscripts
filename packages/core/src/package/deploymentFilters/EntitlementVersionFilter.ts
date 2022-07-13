@@ -1,7 +1,7 @@
 import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
 import SFPOrg from '../../org/SFPOrg';
 import QueryHelper from '../../queryHelper/QueryHelper';
-import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { DeploymentFilter } from './DeploymentFilter';
 import * as fs from 'fs-extra';
 import MetadataFetcher from '../../metadata/MetadataFetcher';

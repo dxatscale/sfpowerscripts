@@ -6,7 +6,7 @@ import GitIdentity from '../git/GitIdentity';
 import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { _ } from 'ajv';
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 const retry = require('async-retry');
 const yaml = require('js-yaml');
 const path = require('path');

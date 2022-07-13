@@ -10,7 +10,7 @@ import * as rimraf from 'rimraf';
 import * as fs from 'fs-extra';
 import PoolJobExecutor, { ScriptExecutionResult } from './PoolJobExecutor';
 import { PoolError, PoolErrorCodes } from './PoolError';
-import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from '@dxatscale/sfp-logger';
 import { Result, ok, err } from 'neverthrow';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import { EOL } from 'os';
