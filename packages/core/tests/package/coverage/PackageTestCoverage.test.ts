@@ -1,6 +1,6 @@
 import PackageTestCoverage from '../../../src/package/coverage/PackageTestCoverage';
 import { jest, expect } from '@jest/globals';
-import { ConsoleLogger, Logger } from '../../../s@dxatscale/sfp-logger';
+import { ConsoleLogger, Logger } from '@dxatscale/sfp-logger';
 import ApexClassFetcher from '../../../src/apex/ApexClassFetcher';
 import ApexTriggerFetcher from '../../../src/apex/ApexTriggerFetcher';
 import ApexCodeCoverageAggregateFetcher from '../../../src/apex/coverage/ApexCodeCoverageAggregateFetcher';

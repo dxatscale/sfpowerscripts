@@ -1,5 +1,5 @@
 import { jest, expect } from '@jest/globals';
-import { Logger } from '../../../s@dxatscale/sfp-logger';
+import { Logger } from '@dxatscale/sfp-logger';
 import PropertyFetcher from '../../../src/package/propertyFetchers/PropertyFetcher';
 import ReconcileProfilePropertyFetcher from '../../../src/package/propertyFetchers/ReconcileProfilePropertyFetcher';
 import SfpPackage from '../../../src/package/SfpPackage';
