@@ -72,7 +72,7 @@ export default class ReleaseDefinitionGenerator {
             let artifacts = {};
             for (const installedArtifact of installedArtifacts) {
                 if (installedArtifact.isInstalledBySfpowerscripts == false && installedArtifact.subscriberVersion) {
-                    let projectConfig = ProjectConfig.getSFDXProjectConfig();
+                    let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
                     let packageAliases = Object.keys(projectConfig.packageAliases);
                     for (const packageAlias of packageAliases) {
                         if (installedArtifact.subscriberVersion == projectConfig.packageAliases[packageAlias])
