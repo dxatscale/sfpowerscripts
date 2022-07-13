@@ -82,7 +82,9 @@ export default class ReleaseDefinitionGenerator {
                     let packagesInRepo = ProjectConfig.getAllPackages(null);
                     let packageFound = packagesInRepo.find((elem) => elem == installedArtifact.name);
                     if (packageFound) {
-                        artifacts[installedArtifact.name] = installedArtifact.version;
+                        let pos = installedArtifact.version.lastIndexOf('.');
+                        let version = installedArtifact.version.substring(0,pos) + '-' + installedArtifact.version.substring(pos+1)
+                        artifacts[installedArtifact.name] = version;
                     }
                 }
             }
