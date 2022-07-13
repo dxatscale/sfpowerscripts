@@ -16,6 +16,10 @@ export default class ReleaseDefinitionGenerator {
         private sfpOrg: SFPOrg,
         private releaseName: string,
         private branch: string,
+        private workItemFilter: string,
+        private workItemURL: string,
+        private showallartifacts: boolean=false,
+        private limit: number=30,
         private push: boolean = false,
         private forcePush: boolean = false
     ) {}
@@ -62,8 +66,6 @@ export default class ReleaseDefinitionGenerator {
             // Update local refs from remote
             await git.fetch('origin');
 
-           
-
             let installedArtifacts = await this.sfpOrg.getAllInstalledArtifacts();
             //figure out all package dependencies
             let packageDependencies = {};
@@ -88,6 +90,16 @@ export default class ReleaseDefinitionGenerator {
                 artifacts: artifacts,
             };
 
+            //Add changelog info
+            let changelog = {};
+            changelog['workItemFilter'] = this.workItemFilter;
+            changelog['workItemUrl'] = this.workItemURL;
+            changelog['limit'] = this.limit;
+            changelog['showAllArtifacts'] = this.showallartifacts;
+            if (changelog['workItemFilter'] &&  changelog['workItemUrl']) {
+                releaseDefinition.changelog = changelog;
+            }
+
             let releaseDefinitonYAML = yaml.dump(releaseDefinition, {
                 styles: {
                     '!!null': 'canonical', // dump null as ~
@@ -101,8 +113,6 @@ export default class ReleaseDefinitionGenerator {
             SFPLogger.log(``);
             SFPLogger.log(COLOR_KEY_MESSAGE(releaseDefinitonYAML));
 
-          
-
             if (this.push) {
                 console.log(`Checking out branch ${this.branch}`);
                 if (await this.isBranchExists(this.branch, git)) {
@@ -115,9 +125,7 @@ export default class ReleaseDefinitionGenerator {
                 }
                 fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yaml`), releaseDefinitonYAML);
                 await this.pushReleaseDefinitionToBranch(this.branch, git, this.forcePush);
-            }
-            else 
-            fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yaml`), releaseDefinitonYAML);
+            } else fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yaml`), releaseDefinitonYAML);
             return releaseDefinitonYAML.toString();
         } catch (error) {
             console.log(error);

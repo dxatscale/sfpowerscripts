@@ -10,10 +10,10 @@ export default interface ReleaseDefinitionSchema {
     };
     promotePackagesBeforeDeploymentToOrg?: string;
     changelog?: {
-        repoUrl: string;
-        workItemFilter: string;
-        workItemUrl: string;
-        limit: number;
-        showAllArtifacts: boolean;
+        repoUrl?: string;
+        workItemFilter?: string;
+        workItemUrl?: string;
+        limit?: number;
+        showAllArtifacts?: boolean;
     };
 }
