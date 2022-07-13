@@ -132,7 +132,7 @@ export default class ReleaseDefinitionGenerator {
                 } else {
                     await git.checkout(['-b', this.branch]);
                 }
-                fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yaml`), releaseDefinitonYAML);
+                fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
                 await this.pushReleaseDefinitionToBranch(this.branch, git, this.forcePush);
             } else fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yaml`), releaseDefinitonYAML);
             return releaseDefinitonYAML.toString();
