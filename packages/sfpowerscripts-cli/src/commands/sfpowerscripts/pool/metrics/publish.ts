@@ -5,7 +5,7 @@ import PoolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/Poo
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
 import LimitsFetcher from '@dxatscale/sfpowerscripts.core/lib/limits/LimitsFetcher';
 const Table = require('cli-table');
-import SFPLogger, { LoggerLevel, COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { LoggerLevel, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import { Messages } from '@salesforce/core';
 
 // Initialize Messages with the current plugin directory

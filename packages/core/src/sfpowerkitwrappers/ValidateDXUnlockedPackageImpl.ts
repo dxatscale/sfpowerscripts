@@ -1,7 +1,7 @@
 import child_process = require('child_process');
 import { onExit } from '../utils/OnExit';
 import { isNullOrUndefined } from 'util';
-import SFPLogger from '../logger/SFPLogger';
+import SFPLogger from '@dxatscale/sfp-logger';
 
 export default class ValidateDXUnlockedPackageImpl {
     public constructor(private validate_package: string, private bypass: string, private project_directory: string) {}

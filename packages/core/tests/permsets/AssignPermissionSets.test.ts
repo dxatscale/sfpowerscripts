@@ -1,7 +1,7 @@
 import child_process = require('child_process');
 import AssignPermissionSets from '../../src/permsets/AssignPermissionSets';
 import { jest, expect } from '@jest/globals';
-import { VoidLogger } from '../../src/logger/SFPLogger';
+import { VoidLogger } from '../../s@dxatscale/sfp-logger';
 import { AuthInfo, Connection } from '@salesforce/core';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
 

@@ -1,6 +1,6 @@
 import { jest, expect } from '@jest/globals';
 import fs = require('fs');
-import { ConsoleLogger } from '../../src/logger/SFPLogger';
+import { ConsoleLogger } from '../../s@dxatscale/sfp-logger';
 import PackageDiffImpl from '../../src/package/PackageDiffImpl';
 import ProjectConfig from '../../src/project/ProjectConfig';
 

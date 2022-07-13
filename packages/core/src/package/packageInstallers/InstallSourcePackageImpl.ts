@@ -2,7 +2,7 @@ import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../de
 import ReconcileProfileAgainstOrgImpl from '../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl';
 import DeployDestructiveManifestToOrgImpl from '../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl';
 import OrgDetailsFetcher, { OrgDetails } from '../../org/OrgDetailsFetcher';
-import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 const path = require('path');
 const glob = require('glob');

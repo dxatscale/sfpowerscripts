@@ -2,7 +2,7 @@ import { flags } from '@salesforce/command';
 import { AnyJson } from '@salesforce/ts-types';
 import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
 import PoolOrgDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl';
-import SFPLogger from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger from '@dxatscale/sfp-logger';
 import { Messages } from '@salesforce/core';
 
 // Initialize Messages with the current plugin directory

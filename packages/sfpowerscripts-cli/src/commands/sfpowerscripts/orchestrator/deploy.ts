@@ -9,8 +9,8 @@ import SFPLogger, {
     COLOR_HEADER,
     COLOR_KEY_MESSAGE,
     COLOR_SUCCESS,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
-import { COLOR_TIME } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
+import { COLOR_TIME } from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 
 // Initialize Messages with the current plugin directory

@@ -13,7 +13,7 @@ import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 
-import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 const path = require('path');

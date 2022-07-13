@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import SfpPackage from '../SfpPackage';
 import PropertyFetcher from './PropertyFetcher';
 import xml2json from '../../utils/xml2json';
-import { Logger } from '../../logger/SFPLogger';
+import { Logger } from '@dxatscale/sfp-logger';
 
 export default class DestructiveManifestPathFetcher implements PropertyFetcher {
     public async getSfpowerscriptsProperties(packageContents: SfpPackage, packageLogger?: Logger) {

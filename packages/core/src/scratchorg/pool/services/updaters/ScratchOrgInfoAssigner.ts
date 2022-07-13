@@ -1,6 +1,6 @@
 import { LoggerLevel, Org } from '@salesforce/core';
 let retry = require('async-retry');
-import SFPLogger from '../../../../logger/SFPLogger';
+import SFPLogger from '@dxatscale/sfp-logger';
 import ScratchOrgInfoFetcher from '../fetchers/ScratchOrgInfoFetcher';
 
 export default class ScratchOrgInfoAssigner {

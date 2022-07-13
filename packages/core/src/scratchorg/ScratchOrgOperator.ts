@@ -1,7 +1,7 @@
 import { Aliases, AuthInfo, Org } from '@salesforce/core';
 import ScratchOrg from './ScratchOrg';
 import PasswordGenerator from './PasswordGenerator';
-import SFPLogger, { LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { Duration } from '@salesforce/kit';
 import { ScratchOrgRequest } from '@salesforce/core';
 const retry = require('async-retry');

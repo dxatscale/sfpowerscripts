@@ -1,6 +1,6 @@
 import { jest, expect } from '@jest/globals';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
-import { ConsoleLogger } from '../../../src/logger/SFPLogger';
+import { ConsoleLogger } from '../../../s@dxatscale/sfp-logger';
 import { AnyJson } from '@salesforce/ts-types';
 import SFPOrg from '../../../src/org/SFPOrg';
 import { ComponentSet, VirtualDirectory, VirtualTreeContainer } from '@salesforce/source-deploy-retrieve';

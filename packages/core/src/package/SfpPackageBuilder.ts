@@ -4,7 +4,7 @@ import SfpPackageContentGenerator from './generators/SfpPackageContentGenerator'
 import SourceToMDAPIConvertor from './packageFormatConvertors/SourceToMDAPIConvertor';
 import PackageManifest from './PackageManifest';
 import MetadataCount from './MetadataCount';
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 import path from 'path';
 import { Artifact } from '../artifacts/ArtifactFetcher';

@@ -1,4 +1,4 @@
-import { Logger } from '../logger/SFPLogger';
+import { Logger } from '@dxatscale/sfp-logger';
 
 export abstract class NativeMetricSender {
     constructor(protected logger: Logger) {}

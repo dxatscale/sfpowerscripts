@@ -1,4 +1,4 @@
-import SFPLogger, { LoggerLevel, Logger } from '../../logger/SFPLogger';
+import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import path from 'path';
 import FileSystem from '../../utils/FileSystem';
 import { CreatePackage } from './CreatePackage';

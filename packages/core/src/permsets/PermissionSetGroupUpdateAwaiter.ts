@@ -1,5 +1,5 @@
 import { Connection } from '@salesforce/core';
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import QueryHelper from '../queryHelper/QueryHelper';
 import { delay } from '../utils/Delay';
 

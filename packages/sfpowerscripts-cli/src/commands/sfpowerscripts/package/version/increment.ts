@@ -3,7 +3,7 @@ import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 const fs = require('fs');
-import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import simplegit from 'simple-git';
 import GitIdentity from '../../../../impl/git/GitIdentity';
 

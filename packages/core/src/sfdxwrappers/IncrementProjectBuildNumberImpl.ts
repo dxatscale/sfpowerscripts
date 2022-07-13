@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from 'util';
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 const fs = require('fs');
 const path = require('path');
 

@@ -1,4 +1,4 @@
-import SFPLogger from '../../logger/SFPLogger';
+import SFPLogger from '@dxatscale/sfp-logger';
 import { LoggerLevel, Org, SfdxError } from '@salesforce/core';
 import child_process = require('child_process');
 import { PoolBaseImpl } from './PoolBaseImpl';
