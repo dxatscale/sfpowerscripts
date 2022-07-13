@@ -5,7 +5,7 @@ export default interface ReleaseDefinitionSchema {
     artifacts: {
         [p: string]: string;
     };
-    packageDependencies: {
+    packageDependencies?: {
         [p: string]: string;
     };
     promotePackagesBeforeDeploymentToOrg?: string;

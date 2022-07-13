@@ -18,8 +18,8 @@ export default class ReleaseDefinitionGenerator {
         private branch: string,
         private workItemFilter: string,
         private workItemURL: string,
-        private showallartifacts: boolean=false,
-        private limit: number=30,
+        private showallartifacts: boolean = false,
+        private limit: number = 30,
         private push: boolean = false,
         private forcePush: boolean = false
     ) {}
@@ -72,8 +72,12 @@ export default class ReleaseDefinitionGenerator {
             let artifacts = {};
             for (const installedArtifact of installedArtifacts) {
                 if (installedArtifact.isInstalledBySfpowerscripts == false && installedArtifact.subscriberVersion) {
-                    //TODO:filter aliases by sfdx project json
-                    packageDependencies[installedArtifact.name] = installedArtifact.subscriberVersion;
+                    let projectConfig = ProjectConfig.getSFDXProjectConfig();
+                    let packageAliases = Object.keys(projectConfig.packageAliases);
+                    for (const packageAlias of packageAliases) {
+                        if (installedArtifact.subscriberVersion == projectConfig.packageAliases[packageAlias])
+                            packageDependencies[installedArtifact.name] = installedArtifact.subscriberVersion;
+                    }
                 } else if (installedArtifact.isInstalledBySfpowerscripts == true) {
                     let packagesInRepo = ProjectConfig.getAllPackages(null);
                     let packageFound = packagesInRepo.find((elem) => elem == installedArtifact.name);
@@ -86,9 +90,12 @@ export default class ReleaseDefinitionGenerator {
             let releaseDefinition: ReleaseDefinitionSchema = {
                 release: this.releaseName,
                 skipIfAlreadyInstalled: true,
-                packageDependencies: packageDependencies,
                 artifacts: artifacts,
             };
+
+            //Add package dependencies
+            if (Object.keys(packageDependencies).length > 0)
+                releaseDefinition.packageDependencies = packageDependencies;
 
             //Add changelog info
             let changelog = {};
@@ -96,7 +103,7 @@ export default class ReleaseDefinitionGenerator {
             changelog['workItemUrl'] = this.workItemURL;
             changelog['limit'] = this.limit;
             changelog['showAllArtifacts'] = this.showallartifacts;
-            if (changelog['workItemFilter'] &&  changelog['workItemUrl']) {
+            if (changelog['workItemFilter'] && changelog['workItemUrl']) {
                 releaseDefinition.changelog = changelog;
             }
 
