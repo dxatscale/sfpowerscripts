@@ -21,9 +21,9 @@ import * as rimraf from 'rimraf';
 import PackageToComponent from './PackageToComponent';
 import lodash = require('lodash');
 import { EOL } from 'os';
+import PackageVersionUpdater from './version/PackageVersionUpdater';
 
 export default class SfpPackageBuilder {
-
     public static async buildPackageFromProjectDirectory(
         logger: Logger,
         projectDirectory: string,
@@ -50,15 +50,19 @@ export default class SfpPackageBuilder {
         sfpPackage.package_name = sfdx_package;
         sfpPackage.projectConfig = projectConfig;
         sfpPackage.apiVersion = sfpPackage.projectConfig.sourceApiVersion;
-        sfpPackage.packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(sfdx_package, sfpPackage.projectConfig);
+        sfpPackage.packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(
+            sfdx_package,
+            sfpPackage.projectConfig
+        );
         sfpPackage.projectDirectory = projectDirectory;
         sfpPackage.packageDirectory = sfpPackage.packageDescriptor.path;
+        //Set Default Version Number
+        sfpPackage.versionNumber = sfpPackage.packageDescriptor.versionNumber;
 
         //set additional options
         sfpPackage.sourceVersion = params?.sourceVersion;
         sfpPackage.branch = params?.branch;
         sfpPackage.repository_url = params?.repositoryUrl;
-        sfpPackage.package_version_number = params?.packageVersionNumber;
 
         if (params?.configFilePath == null) sfpPackage.configFilePath = 'config/project-scratch-def.json';
         else sfpPackage.configFilePath = params?.configFilePath;
@@ -67,6 +71,15 @@ export default class SfpPackageBuilder {
             await propertyFetcher.getSfpowerscriptsProperties(sfpPackage, logger);
         }
 
+        //Get Package Type
+        sfpPackage.package_type = ProjectConfig.getPackageType(
+            ProjectConfig.getSFDXProjectConfig(sfpPackage.workingDirectory),
+            sfdx_package
+        );
+
+   
+        sfpPackage = SfpPackageBuilder.handleVersionNumber(params, sfpPackage, packageCreationParams);
+
         // Requires destructiveChangesPath which is set by the property fetcher
         sfpPackage.workingDirectory = await SfpPackageContentGenerator.generateSfpPackageDirectory(
             logger,
@@ -74,6 +87,7 @@ export default class SfpPackageBuilder {
             sfpPackage.projectConfig,
             sfpPackage.packageName,
             sfpPackage.packageDescriptor.path,
+            sfpPackage.versionNumber,
             sfpPackage.destructiveChangesPath,
             sfpPackage.configFilePath,
             params?.pathToReplacementForceIgnore,
@@ -82,11 +96,6 @@ export default class SfpPackageBuilder {
         );
 
         sfpPackage.resolvedPackageDirectory = path.join(sfpPackage.workingDirectory, sfpPackage.packageDescriptor.path);
-
-        sfpPackage.package_type = ProjectConfig.getPackageType(
-            ProjectConfig.getSFDXProjectConfig(sfpPackage.workingDirectory),
-            sfdx_package
-        );
 
         //Don't proceed further if packageType is Data
         if (sfpPackage.package_type != PackageType.Data) {
@@ -115,7 +124,7 @@ export default class SfpPackageBuilder {
             );
             sfpPackage.apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
 
-            sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(sfpPackage,logger);
+            sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(sfpPackage, logger);
 
             //Introspect Diff Package Created
             //On Failure.. remove diff and move on
@@ -173,6 +182,29 @@ export default class SfpPackageBuilder {
         return createPackage.exec();
     }
 
+    /*
+    *  Handle version Numbers of package
+    *  If VersionNumber is explcitly passed, use that 
+    * else allow autosubstitute using buildNumber for Source and Data if available
+    */
+    private static handleVersionNumber(params: SfpPackageParams, sfpPackage: SfpPackage, packageCreationParams: PackageCreationParams) {
+        if (params.packageVersionNumber) {
+            sfpPackage.versionNumber = params.packageVersionNumber;
+        } else if (packageCreationParams.buildNumber) {
+            if (sfpPackage.packageType == PackageType.Source || sfpPackage.packageType == PackageType.Data) {
+                let versionUpdater: PackageVersionUpdater = new PackageVersionUpdater();
+                sfpPackage.versionNumber = versionUpdater.substituteBuildNumber(
+                    sfpPackage,
+                    packageCreationParams.buildNumber
+                );
+            }
+        }
+        else {
+            sfpPackage.versionNumber = sfpPackage.packageDescriptor.versionNumber;
+        }
+        return sfpPackage;
+    }
+
     public static async buildPackageFromArtifact(artifact: Artifact, logger: Logger): Promise<SfpPackage> {
         //Read artifact metadata
         let sfpPackage = new SfpPackage();
@@ -187,7 +219,7 @@ export default class SfpPackageBuilder {
         );
         sfpPackage.projectDirectory = artifact.sourceDirectoryPath;
         sfpPackage.packageDirectory = sfpPackage.packageDescriptor.path;
-        sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(sfpPackage,logger);
+        sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(sfpPackage, logger);
 
         return sfpPackage;
     }
@@ -202,7 +234,6 @@ export default class SfpPackageBuilder {
 
         let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
         if (fs.existsSync(workingDirectory)) {
-
             let changedComponents = new PackageToComponent(
                 sfpPackage.packageName,
                 path.join(workingDirectory, sfpPackage.packageDirectory)
@@ -244,11 +275,12 @@ export default class SfpPackageBuilder {
         }
     }
 
-    private static isAllTestsToBeTriggered(sfpPackage:SfpPackage,logger:Logger) {
+    private static isAllTestsToBeTriggered(sfpPackage: SfpPackage, logger: Logger) {
         if (
-            this.isOptimizedDeploymentForSourcePackage(sfpPackage) == false || (sfpPackage.packageType == PackageType.Source &&
-            sfpPackage.isApexFound == true &&
-            sfpPackage.apexTestClassses == null)
+            this.isOptimizedDeploymentForSourcePackage(sfpPackage) == false ||
+            (sfpPackage.packageType == PackageType.Source &&
+                sfpPackage.isApexFound == true &&
+                sfpPackage.apexTestClassses == null)
         ) {
             SFPLogger.log(
                 ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT--------------------------------------------${EOL}` +
@@ -264,12 +296,11 @@ export default class SfpPackageBuilder {
         } else return false;
     }
 
-        // Allow individual packages to use non optimized path
-        private static isOptimizedDeploymentForSourcePackage(pkgDescriptor: any): boolean {
-            if (pkgDescriptor['isOptimizedDeployment'] == null) return true;
-            else return pkgDescriptor['isOptimizedDeployment'];
-        }
-
+    // Allow individual packages to use non optimized path
+    private static isOptimizedDeploymentForSourcePackage(pkgDescriptor: any): boolean {
+        if (pkgDescriptor['isOptimizedDeployment'] == null) return true;
+        else return pkgDescriptor['isOptimizedDeployment'];
+    }
 }
 
 // Options while creating package
@@ -283,4 +314,5 @@ export class PackageCreationParams {
     isSkipValidation?: boolean;
     isComputeDiffPackage?: boolean;
     baseBranch?: string;
+    buildNumber?: string;
 }

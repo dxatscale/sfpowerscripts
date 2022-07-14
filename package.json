@@ -16,7 +16,7 @@
         "@types/node": "^10",
         "@types/q": "^1.5.2",
         "@types/xml2js": "^0.4.5",
-        "lerna": "^4.0.0",
+        "lerna": "^5.1.8",
         "lerna-update-wizard": "^1.1.0",
         "node": "^11.0.0",
         "prettier": "^2.0.5",

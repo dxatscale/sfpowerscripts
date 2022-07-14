@@ -3,7 +3,6 @@ import DependencyHelper from './DependencyHelper';
 import Bottleneck from 'bottleneck';
 import PackageDiffImpl, { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
 import simplegit from 'simple-git';
-import IncrementProjectBuildNumberImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/IncrementProjectBuildNumberImpl';
 import { EOL } from 'os';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import { Stage } from '../Stage';
@@ -517,7 +516,6 @@ export default class BuildImpl {
             {
                 overridePackageTypeWith:
                     isValidateMode && packageType != PackageType.Data ? PackageType.Source : undefined,
-                packageVersionNumber: this.getVersionNumber(sfdx_package, packageType, isValidateMode),
                 branch: this.props.branch,
                 sourceVersion: this.commit_id,
                 repositoryUrl: this.repository_url,
@@ -541,6 +539,7 @@ export default class BuildImpl {
                 isSkipValidation: this.props.isQuickBuild,
                 breakBuildIfEmpty: true,
                 baseBranch: this.props.baseBranch,
+                buildNumber:this.props.buildNumber.toString()
             },
             this.projectConfig
         );
@@ -572,23 +571,5 @@ export default class BuildImpl {
         } else return null;
     }
 
-    private getVersionNumber(sfdx_package: string, packageType: string, isValidateMode: boolean): string {
-        let incrementedVersionNumber;
-        if (isValidateMode || packageType != PackageType.Unlocked) {
-            if (this.props.buildNumber) {
-                let incrementBuildNumber = new IncrementProjectBuildNumberImpl(
-                    new VoidLogger(),
-                    this.props.projectDirectory,
-                    sfdx_package,
-                    'BuildNumber',
-                    true,
-                    this.props.buildNumber.toString()
-                );
-                incrementedVersionNumber = incrementBuildNumber.exec();
-            }
-        }
-
-        if (isValidateMode) return incrementedVersionNumber?.versionNumber;
-        else return packageType !== PackageType.Unlocked ? incrementedVersionNumber?.versionNumber : undefined;
-    }
+  
 }

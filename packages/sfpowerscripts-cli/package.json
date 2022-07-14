@@ -101,9 +101,6 @@
             "sfpowerscripts:package:source": {
                 "description": "Commands to create and install sfpowerscripts source packages"
             },
-            "sfpowerscripts:package:version": {
-                "description": "Commands to increment version numbers of a package"
-            },
             "sfpowerscripts:analyze": {
                 "description": "Analyze your projects using static analysis tools such as PMD"
             },
