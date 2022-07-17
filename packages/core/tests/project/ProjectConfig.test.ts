@@ -1,7 +1,7 @@
-import ProjectConfig from '../../src/project/ProjectConfig';
-import fs from 'fs-extra';
+const fs = require("fs-extra");
 import { jest, expect } from '@jest/globals';
 import { PackageType } from '../../src/package/SfpPackage';
+import ProjectConfig from '../../src/project/ProjectConfig';
 
 describe('Given a project directory or sfdx-project.json with multiple packages', () => {
     //given the below sfdx-project.json

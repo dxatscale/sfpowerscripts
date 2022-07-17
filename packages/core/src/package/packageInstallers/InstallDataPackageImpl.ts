@@ -1,4 +1,4 @@
-import fs = require('fs-extra');
+const fs = require('fs-extra');
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import SFDMURunImpl from '../../sfdmuwrapper/SFDMURunImpl';
 import VlocityPackDeployImpl from '../../vlocitywrapper/VlocityPackDeployImpl';

@@ -1,5 +1,5 @@
 import { jest, expect } from '@jest/globals';
-import fs = require('fs');
+const fs = require('fs-extra');
 import ApexTestSuite from '../../src/apextest/ApexTestSuite';
 const glob = require('glob');
 

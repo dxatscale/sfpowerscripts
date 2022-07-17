@@ -4,7 +4,7 @@ import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import * as rimraf from 'rimraf';
 import ProjectValidation from './ProjectValidation';
 import DemoReelPlayer from './impl/demoreelplayer/DemoReelPlayer';
-import { fs } from '@salesforce/core';
+import * as fs from "fs-extra";
 import SFPLogger, {
     COLOR_HEADER,
     ConsoleLogger,

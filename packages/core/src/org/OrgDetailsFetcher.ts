@@ -1,9 +1,9 @@
-import { AuthInfo, AuthFields, Org, Connection, sfdc } from '@salesforce/core';
 import extractDomainFromUrl from '../utils/extractDomainFromUrl';
 import { convertAliasToUsername } from '../utils/AliasList';
 import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import ScratchOrgInfoFetcher from './ScratchOrgInfoFetcher';
 import OrganizationFetcher from './OrganizationFetcher';
+import { AuthInfo, Connection, Org, sfdc } from '@salesforce/core';
 
 export default class OrgDetailsFetcher {
     private static usernamesToOrgDetails: { [P: string]: OrgDetails } = {};
@@ -20,6 +20,7 @@ export default class OrgDetailsFetcher {
         const authInfo = await AuthInfo.create({ username: this.username });
 
         let authInfoFields = authInfo.getFields();
+      
 
         let sfdxAuthUrl: string;
         try {
@@ -37,6 +38,7 @@ export default class OrgDetailsFetcher {
 
         OrgDetailsFetcher.usernamesToOrgDetails[this.username] = {
             sfdxAuthUrl: sfdxAuthUrl,
+            instanceUrl: authInfoFields.instanceUrl,
             ...authInfoFields,
             ...scratchOrgInfo,
             ...organization,
@@ -48,7 +50,7 @@ export default class OrgDetailsFetcher {
     public async getOrgDomainUrl(): Promise<string> {
         await this.getOrgDetails();
 
-        if (OrgDetailsFetcher.usernamesToOrgDetails[this.username].instanceUrl) {
+        if (OrgDetailsFetcher.usernamesToOrgDetails[this.username]) {
             let domain = extractDomainFromUrl(OrgDetailsFetcher.usernamesToOrgDetails[this.username].instanceUrl);
             if (domain) return domain;
             else return '';
@@ -101,8 +103,9 @@ export default class OrgDetailsFetcher {
     }
 }
 
-export interface OrgDetails extends ScratchOrgDetails, AuthFields, Organization {
+export interface OrgDetails extends ScratchOrgDetails, Organization {
     sfdxAuthUrl: string;
+    instanceUrl:string;
 }
 
 export interface ScratchOrgDetails {

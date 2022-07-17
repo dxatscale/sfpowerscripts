@@ -1,5 +1,5 @@
 const glob = require('glob');
-import fs = require('fs');
+const fs = require('fs-extra');
 import path from 'path';
 import xml2json from '../utils/xml2json';
 

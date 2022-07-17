@@ -1,11 +1,12 @@
 import * as fs from 'fs-extra';
-import { AsyncResult, DeployResult } from 'jsforce';
 import { Connection } from '@salesforce/core';
 import AdmZip = require('adm-zip');
 import path = require('path');
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { delay } from '../utils/Delay';
 import xml2json from '../utils/xml2json';
+import { DeployResult } from 'jsforce/lib/api/metadata';
+
 const xml2js = require('xml2js');
 
 //TODO: Use jsForce upsert rather than full mdapi deploy
@@ -29,7 +30,7 @@ export default class RelaxIPRange {
 
             //Deploy Component
             SFPLogger.log(` Relaxing Ip range  in  ${conn.getUsername()}`, LoggerLevel.DEBUG, this.logger);
-            let metadata_deploy_result: DeployResult = await this.deployPackage(conn, retriveLocation);
+            let metadata_deploy_result = await this.deployPackage(conn, retriveLocation);
 
             //Report Success
             if (!metadata_deploy_result.success) {
@@ -50,10 +51,10 @@ export default class RelaxIPRange {
     }
 
     private async fetchPackageFromOrg(conn: Connection, members: any) {
-        const apiversion = await conn.retrieveMaxApiVersion();
+        const apiversion = await conn.getApiVersion();
 
         let retrieveRequest = {
-            apiVersion: apiversion,
+            apiVersion: Number(apiversion),
         };
 
         //Retrieve Security Settings
@@ -61,12 +62,7 @@ export default class RelaxIPRange {
         retrieveRequest['unpackaged'] = members;
         conn.metadata.pollTimeout = 60;
         let retrievedId;
-        await conn.metadata.retrieve(retrieveRequest, function (error, result: AsyncResult) {
-            if (error) {
-                return console.error(error);
-            }
-            retrievedId = result.id;
-        });
+        await conn.metadata.retrieve(retrieveRequest);
         SFPLogger.log(`Fetching  metadata from ${conn.getUsername()}`, LoggerLevel.DEBUG, this.logger);
 
         let metadata_retrieve_result = await this.checkRetrievalStatus(conn, retrievedId);
@@ -88,23 +84,10 @@ export default class RelaxIPRange {
     private async deployPackage(conn: Connection, metadataLocation: string) {
         let zipFile = `${metadataLocation}/package.zip`;
         this.zipDirectory(metadataLocation, zipFile);
-
         conn.metadata.pollTimeout = 300;
-        let deployId: AsyncResult;
-
-        var zipStream = fs.createReadStream(zipFile);
-        await conn.metadata.deploy(zipStream, { rollbackOnError: true, singlePackage: true }, function (
-            error,
-            result: AsyncResult
-        ) {
-            if (error) {
-                return console.error(error);
-            }
-            deployId = result;
-        });
-
-        let metadata_deploy_result: DeployResult = await this.checkDeploymentStatus(conn, deployId.id);
-
+        let zipStream = fs.createReadStream(zipFile);
+        let deployId = await conn.metadata.deploy(zipStream, { rollbackOnError: true, singlePackage: true });
+        let metadata_deploy_result = await this.checkDeploymentStatus(conn, deployId.id);
         fs.unlinkSync(zipFile);
         return metadata_deploy_result;
     }
@@ -121,12 +104,7 @@ export default class RelaxIPRange {
         let metadata_result;
 
         while (true) {
-            await conn.metadata.checkRetrieveStatus(retrievedId, function (error, result) {
-                if (error) {
-                    return new Error(error.message);
-                }
-                metadata_result = result;
-            });
+            metadata_result=await conn.metadata.checkRetrieveStatus(retrievedId);
 
             if (metadata_result.done === 'false') {
                 if (isToBeLoggedToConsole) SFPLogger.log(`Polling for Retrieval Status`, LoggerLevel.INFO, this.logger);
@@ -155,12 +133,7 @@ export default class RelaxIPRange {
         let metadata_result;
 
         while (true) {
-            await conn.metadata.checkDeployStatus(retrievedId, true, function (error, result) {
-                if (error) {
-                    throw new Error(error.message);
-                }
-                metadata_result = result;
-            });
+            metadata_result=await conn.metadata.checkDeployStatus(retrievedId, true,);
 
             if (!metadata_result.done) {
                 SFPLogger.log('Polling for Deployment Status', LoggerLevel.INFO, this.logger);
