@@ -1,6 +1,6 @@
 import ProjectConfig from '../../project/ProjectConfig';
 import * as rimraf from 'rimraf';
-import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { mkdirpSync } from 'fs-extra';
 import * as fs from 'fs-extra';
 import PackageComponentDiff from '../diff/PackageComponentDiff';
@@ -16,6 +16,7 @@ export default class SfpPackageContentGenerator {
         projectConfig: any,
         sfdx_package: string,
         packageDirectory: string,
+        versionNumber:string,
         destructiveManifestFilePath?: string,
         configFilePath?: string,
         pathToReplacementForceIgnore?: string,
@@ -94,7 +95,8 @@ export default class SfpPackageContentGenerator {
             artifactDirectory,
             rootDirectory,
             projectConfig,
-            sfdx_package
+            sfdx_package,
+            versionNumber
         );
 
         fs.copySync(path.join(rootDirectory, packageDirectory), path.join(artifactDirectory, packageDirectory));
@@ -124,10 +126,14 @@ export default class SfpPackageContentGenerator {
         artifactDirectory: string,
         projectDirectory: string,
         projectConfig: any,
-        sfdx_package: string
+        sfdx_package: string,
+        versionNumber:string
     ) {
         // Create pruned package manifest in source directory
         let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromProjectConfig(projectConfig, sfdx_package);
+
+        //Ensure version numbers are used from 
+        cleanedUpProjectManifest.packageDirectories[0].versionNumber=versionNumber
 
         //Handle unpackaged metadata
         if (fs.existsSync(path.join(artifactDirectory, 'unpackagedMetadata'))) {

@@ -3,7 +3,7 @@ import { AsyncResult, DeployResult } from 'jsforce';
 import { Connection } from '@salesforce/core';
 import AdmZip = require('adm-zip');
 import path = require('path');
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { delay } from '../utils/Delay';
 import xml2json from '../utils/xml2json';
 const xml2js = require('xml2js');

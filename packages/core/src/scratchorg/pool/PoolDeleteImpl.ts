@@ -1,4 +1,4 @@
-import SFPLogger from '../../logger/SFPLogger';
+import SFPLogger from '@dxatscale/sfp-logger';
 import { Org } from '@salesforce/core';
 import { PoolBaseImpl } from './PoolBaseImpl';
 import ScratchOrg from '../ScratchOrg';

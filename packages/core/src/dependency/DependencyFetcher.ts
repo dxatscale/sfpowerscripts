@@ -2,7 +2,7 @@ import { Connection } from '@salesforce/core';
 const sfdcSoup = require('@dxatscale/sfdc-soup');
 import Component from './Component';
 import Entrypoint from './Entrypoint';
-import SFPLogger, { LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 
 export default class DependencyFetcher {
     constructor(private conn: Connection, private components: Component[]) {}

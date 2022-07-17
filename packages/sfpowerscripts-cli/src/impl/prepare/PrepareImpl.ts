@@ -5,7 +5,7 @@ import SFPLogger, {
     COLOR_KEY_MESSAGE,
     COLOR_WARNING,
     LoggerLevel,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { Result } from 'neverthrow';

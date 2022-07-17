@@ -5,7 +5,7 @@ import MetadataFiles from '../metadata/MetadataFiles';
 import Component from './Component';
 import * as fs from 'fs-extra';
 import path = require('path');
-import SFPLogger, { LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 
 export default class ChangedComponentsFetcher {
     constructor(private baseBranch: string) {}

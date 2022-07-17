@@ -15,7 +15,7 @@ import SFPLogger, {
     COLOR_TIME,
     COLOR_SUCCESS,
     COLOR_KEY_MESSAGE,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 

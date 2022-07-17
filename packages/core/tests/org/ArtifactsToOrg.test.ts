@@ -1,6 +1,6 @@
 import { expect } from '@jest/globals';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
-import { VoidLogger } from '../../src/logger/SFPLogger';
+import { VoidLogger } from '@dxatscale/sfp-logger';
 import { AnyJson, ensureJsonMap, JsonMap, ensureString } from '@salesforce/ts-types';
 import SFPOrg from '../../src/org/SFPOrg';
 import { assert } from 'console';

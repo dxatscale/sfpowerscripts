@@ -12,7 +12,7 @@ const retry = require('async-retry');
 import { GitError } from 'simple-git';
 import GitIdentity from '../git/GitIdentity';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 marked.setOptions({

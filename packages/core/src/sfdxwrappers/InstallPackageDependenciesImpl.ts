@@ -5,7 +5,7 @@ import {
     PackageInstallationStatus,
 } from '../package/packageInstallers/PackageInstallationResult';
 import { onExit } from '../utils/OnExit';
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 
 export default class InstallPackageDependenciesImpl {
     public constructor(

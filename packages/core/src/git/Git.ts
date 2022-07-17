@@ -8,6 +8,11 @@ export default class Git {
         else this._git = simplegit();
     }
 
+    async fetch()
+    {
+        return this._git.fetch('origin');
+    }
+    
     async show(options: string[]): Promise<string> {
         return this._git.show(options);
     }

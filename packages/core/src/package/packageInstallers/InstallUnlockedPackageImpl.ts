@@ -1,4 +1,4 @@
-import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import PackageMetadataPrinter from '../../display/PackageMetadataPrinter';
 import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
 import InstallUnlockedPackageWrapper from '../../sfdxwrappers/InstallUnlockedPackageImpl';

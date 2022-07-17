@@ -1,6 +1,6 @@
 const Table = require('cli-table');
 import DependencyViolation from '../dependency/DependencyViolation';
-import SFPLogger from '../logger/SFPLogger';
+import SFPLogger from '@dxatscale/sfp-logger';
 
 export default class DependencyViolationDisplayer {
     public static printDependencyViolations(dependencyViolations: DependencyViolation[]) {

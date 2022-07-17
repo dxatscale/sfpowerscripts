@@ -2,7 +2,7 @@ import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../de
 import ReconcileProfileAgainstOrgImpl from '../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl';
 import DeployDestructiveManifestToOrgImpl from '../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl';
 import OrgDetailsFetcher, { OrgDetails } from '../../org/OrgDetailsFetcher';
-import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 const path = require('path');
 const glob = require('glob');
@@ -13,11 +13,12 @@ import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
-import SfpPackage from '../SfpPackage';
+import SfpPackage, { PackageType } from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 import ProjectConfig from '../../project/ProjectConfig';
-import { DeploymentFilterRegistry } from '../componentFilter/DeploymentFilterRegistry';
+import { DeploymentFilterRegistry } from '../deploymentFilters/DeploymentFilterRegistry';
+
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;
@@ -137,12 +138,15 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
                     //Apply Filters
                     let deploymentFilters = DeploymentFilterRegistry.getImplementations();
+
+                  
                     for (const deploymentFilter of deploymentFilters) {
                         if (
                             deploymentFilter.isToApply(
-                                ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory)
-                            )
-                        )
+                                ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory),
+                                this.sfpPackage.packageType
+                            ))
+                        
                             componentSet = await deploymentFilter.apply(this.sfpOrg, componentSet, this.logger);
                     }
 

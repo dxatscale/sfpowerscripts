@@ -1,4 +1,4 @@
-import { Logger } from '../../logger/SFPLogger';
+import { Logger } from '@dxatscale/sfp-logger';
 import SfpPackage from '../SfpPackage';
 
 export default interface PropertyFetcher {

@@ -1,7 +1,7 @@
 import { AuthInfo, AuthFields, Org, Connection, sfdc } from '@salesforce/core';
 import extractDomainFromUrl from '../utils/extractDomainFromUrl';
 import { convertAliasToUsername } from '../utils/AliasList';
-import SFPLogger, { LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import ScratchOrgInfoFetcher from './ScratchOrgInfoFetcher';
 import OrganizationFetcher from './OrganizationFetcher';
 

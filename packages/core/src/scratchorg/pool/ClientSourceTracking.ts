@@ -1,6 +1,6 @@
 const path = require('path');
 import * as fs from 'fs-extra';
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { Connection, SfdxProject } from '@salesforce/core';
 import SFPOrg from '../../org/SFPOrg';
 import { SourceTracking } from '@salesforce/source-tracking';

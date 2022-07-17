@@ -1,5 +1,5 @@
 import ExecuteCommand from './commandExecutor/ExecuteCommand';
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 
 export abstract class SFDXCommand {
     public constructor(

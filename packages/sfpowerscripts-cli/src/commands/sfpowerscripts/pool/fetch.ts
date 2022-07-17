@@ -4,10 +4,10 @@ import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg
 import { AnyJson } from '@salesforce/ts-types';
 import PoolFetchImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl';
 import * as fs from 'fs-extra';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
 import InstalledPackageDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer';
-import { COLOR_KEY_MESSAGE } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);

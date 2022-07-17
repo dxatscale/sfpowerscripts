@@ -5,7 +5,7 @@ import SFPLogger, {
     COLOR_SUCCESS,
     Logger,
     LoggerLevel,
-} from '../logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
 import DeployErrorDisplayer from '../display/DeployErrorDisplayer';
 import { Duration } from '@salesforce/kit';
 import DeploymentExecutor, { DeploySourceResult } from './DeploymentExecutor';

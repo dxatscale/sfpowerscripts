@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import child_process = require('child_process');
 import path = require('path');
 import FetchAnArtifact from './FetchAnArtifact';
-import SFPLogger, { COLOR_WARNING } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { COLOR_WARNING } from '@dxatscale/sfp-logger';
 
 export class FetchAnArtifactFromNPM implements FetchAnArtifact {
     constructor(private scope: string, private npmrcPath: string) {

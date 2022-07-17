@@ -1,5 +1,5 @@
 import { SFDXCommand } from '../command/SFDXCommand';
-import { Logger, LoggerLevel } from '../logger/SFPLogger';
+import { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 
 export default class VlocityInitialInstall extends SFDXCommand {
     public constructor(project_directory: string, target_org: string, logger: Logger, logLevel: LoggerLevel) {
