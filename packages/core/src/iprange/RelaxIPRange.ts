@@ -61,15 +61,14 @@ export default class RelaxIPRange {
         retrieveRequest['singlePackage'] = true;
         retrieveRequest['unpackaged'] = members;
         conn.metadata.pollTimeout = 60;
-        let retrievedId;
-        await conn.metadata.retrieve(retrieveRequest);
+        let retrieveResult = await conn.metadata.retrieve(retrieveRequest);
         SFPLogger.log(`Fetching  metadata from ${conn.getUsername()}`, LoggerLevel.DEBUG, this.logger);
 
-        let metadata_retrieve_result = await this.checkRetrievalStatus(conn, retrievedId);
+        let metadata_retrieve_result = await this.checkRetrievalStatus(conn, retrieveResult.id);
         if (!metadata_retrieve_result.zipFile)
             SFPLogger.log('Unable to find the requested metadata', LoggerLevel.ERROR, this.logger);
 
-        let retriveLocation = `.sfpowerscripts/retrieved/${retrievedId}`;
+        let retriveLocation = `.sfpowerscripts/retrieved/${retrieveResult.id}`;
         //Extract Security
         let zipFileName = `${retriveLocation}/unpackaged.zip`;
         fs.mkdirpSync(retriveLocation);
@@ -104,7 +103,7 @@ export default class RelaxIPRange {
         let metadata_result;
 
         while (true) {
-            metadata_result=await conn.metadata.checkRetrieveStatus(retrievedId);
+            metadata_result = await conn.metadata.checkRetrieveStatus(retrievedId);
 
             if (metadata_result.done === 'false') {
                 if (isToBeLoggedToConsole) SFPLogger.log(`Polling for Retrieval Status`, LoggerLevel.INFO, this.logger);
@@ -133,7 +132,7 @@ export default class RelaxIPRange {
         let metadata_result;
 
         while (true) {
-            metadata_result=await conn.metadata.checkDeployStatus(retrievedId, true,);
+            metadata_result = await conn.metadata.checkDeployStatus(retrievedId, true);
 
             if (!metadata_result.done) {
                 SFPLogger.log('Polling for Deployment Status', LoggerLevel.INFO, this.logger);
