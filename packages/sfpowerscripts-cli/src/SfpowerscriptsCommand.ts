@@ -1,5 +1,4 @@
 import { SfdxCommand } from '@salesforce/command';
-import { OutputFlags } from '@oclif/parser';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import * as rimraf from 'rimraf';
 import ProjectValidation from './ProjectValidation';
@@ -10,6 +9,7 @@ import SFPLogger, {
     ConsoleLogger,
     LoggerLevel,
 } from '@dxatscale/sfp-logger';
+import { OutputFlags } from '@oclif/core/lib/interfaces';
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
