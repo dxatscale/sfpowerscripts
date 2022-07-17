@@ -5,7 +5,7 @@ import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { Duration } from '@salesforce/kit';
 import { ScratchOrgRequest } from '@salesforce/core';
 const retry = require('async-retry');
-import  HttpMethods  from 'jsforce';
+
 
 export default class ScratchOrgOperator {
     constructor(private hubOrg: Org) {}
@@ -105,7 +105,7 @@ export default class ScratchOrgOperator {
    Thank you for using SFPLogger!`;
 
         const options = {
-            method: HttpMethods.POST,
+            method: 'POST',
             body: JSON.stringify({
                 inputs: [
                     {
@@ -121,7 +121,7 @@ export default class ScratchOrgOperator {
 
         await retry(
             async (bail) => {
-                await this.hubOrg.getConnection().request(options);
+                await this.hubOrg.getConnection().requestPost(options.url,options.body)
             },
             { retries: 3, minTimeout: 30000 }
         );
