@@ -5,7 +5,7 @@ import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { Duration } from '@salesforce/kit';
 import { ScratchOrgRequest } from '@salesforce/core';
 const retry = require('async-retry');
-import { HttpMethods } from 'jsforce/lib/api';
+import  HttpMethods  from 'jsforce';
 
 export default class ScratchOrgOperator {
     constructor(private hubOrg: Org) {}
