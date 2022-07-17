@@ -4,7 +4,7 @@ import { ConsoleLogger, VoidLogger } from '@dxatscale/sfp-logger';
 import { AnyJson, ensureJsonMap, JsonMap, ensureString } from '@salesforce/ts-types';
 import SFPOrg from '../../src/org/SFPOrg';
 import SfpPackage from '../../src/package/SfpPackage';
-import { timeout } from 'q';
+
 
 const $$ = testSetup();
 const createOrg = async () => {
