@@ -1,4 +1,4 @@
-import * as fs from 'fs-extra';
+const fs = require("fs-extra");
 import { PackageType } from '../package/SfpPackage';
 let path = require('path');
 

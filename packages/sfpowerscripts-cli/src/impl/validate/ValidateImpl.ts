@@ -92,10 +92,9 @@ export default class ValidateImpl implements PostDeployHook {
             //Create Org
             this.orgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrgUsername });
             const connToScratchOrg = this.orgAsSFPOrg.getConnection();
-            let installedArtifacts;
-            try {
-                installedArtifacts = await this.orgAsSFPOrg.getInstalledArtifacts();
-            } catch {
+            let installedArtifacts = await this.orgAsSFPOrg.getInstalledArtifacts();
+            if(installedArtifacts.length==0)
+            {
                 console.log(COLOR_ERROR('Failed to query org for Sfpowerscripts Artifacts'));
                 console.log(COLOR_KEY_MESSAGE('Building all packages'));
             }

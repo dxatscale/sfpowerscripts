@@ -1,15 +1,15 @@
 import { SfdxCommand } from '@salesforce/command';
-import { OutputFlags } from '@oclif/parser';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import * as rimraf from 'rimraf';
 import ProjectValidation from './ProjectValidation';
 import DemoReelPlayer from './impl/demoreelplayer/DemoReelPlayer';
-import { fs } from '@salesforce/core';
+import * as fs from "fs-extra";
 import SFPLogger, {
     COLOR_HEADER,
     ConsoleLogger,
     LoggerLevel,
 } from '@dxatscale/sfp-logger';
+import { OutputFlags } from '@oclif/core/lib/interfaces';
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -74,7 +74,6 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         if (this.statics.requiresProject) {
             let projectValidation = new ProjectValidation();
             projectValidation.validateSFDXProjectJSON();
-            projectValidation.validatePackageBuildNumbers();
             projectValidation.validatePackageNames();
         }
 

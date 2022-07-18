@@ -1,19 +1,21 @@
 import { expect } from '@jest/globals';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
-import { VoidLogger } from '@dxatscale/sfp-logger';
+import { ConsoleLogger, VoidLogger } from '@dxatscale/sfp-logger';
 import { AnyJson, ensureJsonMap, JsonMap, ensureString } from '@salesforce/ts-types';
 import SFPOrg from '../../src/org/SFPOrg';
-import { assert } from 'console';
-import SfpPackage from '../../lib/package/SfpPackage';
+import SfpPackage from '../../src/package/SfpPackage';
+
 
 const $$ = testSetup();
 const createOrg = async () => {
-    const testData = new MockTestOrgData();
 
+    const testData = new MockTestOrgData();
+    await $$.stubAuths(testData);
     $$.setConfigStubContents('AuthInfoConfig', {
         contents: await testData.getConfig(),
     });
 
+ 
     return await SFPOrg.create({ aliasOrUsername: testData.username });
 };
 
@@ -21,8 +23,8 @@ describe('Fetch a list of sfpowerscripts artifacts from an org', () => {
     it('Return a  blank list of sfpowerscripts artifact, if there are no previously installed artifacts ', async () => {
         let org = await createOrg();
 
-        let records: AnyJson = { records: [] };
-        $$.fakeConnectionRequest = (request: AnyJson): Promise<AnyJson> => {
+        let records = { records: [] };
+        $$.fakeConnectionRequest = (request) => {
             return Promise.resolve(records);
         };
 
@@ -33,19 +35,17 @@ describe('Fetch a list of sfpowerscripts artifacts from an org', () => {
     it('Return a list of sfpowerscripts artifact, if there are previously installed artifacts ', async () => {
         let org = await createOrg();
 
-        let records: AnyJson = {
-            records: [
-                {
-                    Id: 'a0zR0000003F1FuIAK',
-                    Name: 'sfpowerscripts-package',
-                    CommitId__c: '0a516404aa92f02866f9d2725bda5b1b3f23547e',
-                    Version__c: '1.0.0.NEXT',
-                    Tag__c: 'undefined',
-                },
-            ],
-        };
+        let records = { records:[
+            {
+                Id: 'a0zR0000003F1FuIAK',
+                Name: 'sfpowerscripts-package',
+                CommitId__c: '0a516404aa92f02866f9d2725bda5b1b3f23547e',
+                Version__c: '1.0.0.NEXT',
+                Tag__c: 'undefined',
+            },
+        ]};
 
-        $$.fakeConnectionRequest = (request: AnyJson): Promise<AnyJson> => {
+        $$.fakeConnectionRequest = (request) => {
             return Promise.resolve(records);
         };
 
@@ -60,34 +60,33 @@ describe('Fetch a list of sfpowerscripts artifacts from an org', () => {
         expect(artifacts).toEqual([expectedpackage]);
     });
 
-    it('When unable to fetch, it should throw an error', async () => {
+    it('When unable to fetch, it should return a blank list', async () => {
         let org = await createOrg();
 
-        $$.fakeConnectionRequest = (request: AnyJson): Promise<AnyJson> => {
+        $$.fakeConnectionRequest = (request) => {
             return Promise.reject('Failed');
         };
 
-        expect(org.getInstalledArtifacts()).resolves.toStrictEqual([]);
-    });
+       let artifacts = await org.getInstalledArtifacts();
+       expect(artifacts).toEqual([]);
+    },45000);
 });
 
 describe('Update a sfpowerscripts artifact to an org', () => {
     it('Update a sfpowerscripts artifact, installing it the first time', async () => {
         let org = await createOrg();
 
-        let records: AnyJson = {
-            records: [],
-        };
+        let records = { records: [] };
 
-        let pushResult: AnyJson = {
+        let pushResult = {
             id: 'a0zR0000003F1FuIAK',
             success: true,
             errors: [],
         };
 
-        $$.fakeConnectionRequest = (request: AnyJson): Promise<AnyJson> => {
-            const _request: JsonMap = ensureJsonMap(request);
-            if (request && ensureString(_request.method) == `GET`) return Promise.resolve(records);
+        $$.fakeConnectionRequest = (request) => {
+            const _request = ensureJsonMap(request);
+            if (_request.method == `GET`) return Promise.resolve(records);
             else return Promise.resolve(pushResult);
         };
 
@@ -107,32 +106,25 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             packageType: '',
             toJSON: function () {
                 throw new Error('Function not implemented.');
-            }
+            },
         };
 
         let result = await org.updateArtifactInOrg(new VoidLogger(), sfpPackage);
-
         expect(result).toEqual(pushResult.id);
     });
 
     it('Update a sfpowerscripts artifact, installing a newer version of it', async () => {
         let org = await createOrg();
 
-        let records: AnyJson = {
-            records: [
-                {
-                    attributes: {
-                        type: 'SfpowerscriptsArtifact2__c',
-                        url: '/services/data/v50.0/sobjects/Sfpowerscriptspackage__c/a0zR0000003F1FuIAK',
-                    },
-                    Id: 'a0zR0000003F1FuIAK',
-                    Name: 'core',
-                    CommitId__c: '0a516404aa92f02866f9d2725bda5b1b3f23547e',
-                    Version__c: '1.0.0.NEXT',
-                    Tag__c: 'undefined',
-                },
-            ],
-        };
+        let records = { records : [
+            {
+                Id: 'a0zR0000003F1FuIAK',
+                Name: 'core',
+                CommitId__c: '0a516404aa92f02866f9d2725bda5b1b3f23547e',
+                Version__c: '1.0.0.NEXT',
+                Tag__c: 'undefined',
+            }
+        ]};
 
         let pushResult: AnyJson = {
             id: 'a0zR0000003F1FuIAK',
@@ -140,7 +132,7 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             errors: [],
         };
 
-        $$.fakeConnectionRequest = (request: AnyJson): Promise<AnyJson> => {
+        $$.fakeConnectionRequest = (request) => {
             const _request: JsonMap = ensureJsonMap(request);
             if (request && ensureString(_request.method) == `GET`) return Promise.resolve(records);
             else return Promise.resolve(pushResult);
@@ -162,10 +154,10 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             packageType: '',
             toJSON: function (): any {
                 throw new Error('Function not implemented.');
-            }
+            },
         };
 
-        let result = await org.updateArtifactInOrg(new VoidLogger(), sfpPackage);
+        let result = await org.updateArtifactInOrg(new ConsoleLogger(), sfpPackage);
 
         expect(result).toEqual(pushResult.id);
     });
@@ -173,28 +165,22 @@ describe('Update a sfpowerscripts artifact to an org', () => {
     it('Update a sfpowerscripts artifact and resulting an error,should throw an exception', async () => {
         let org = await createOrg();
 
-        let records: AnyJson = {
-            records: [
-                {
-                    attributes: {
-                        type: 'SfpowerscriptsArtifact2__c',
-                        url: '/services/data/v50.0/sobjects/Sfpowerscriptspackage__c/a0zR0000003F1FuIAK',
-                    },
-                    Id: 'a0zR0000003F1FuIAK',
-                    Name: 'core',
-                    CommitId__c: '0a516404aa92f02866f9d2725bda5b1b3f23547e',
-                    Version__c: '1.0.0.NEXT',
-                    Tag__c: 'undefined',
-                },
-            ],
-        };
+        let records={ records : [
+            {
+                Id: 'a0zR0000003F1FuIAK',
+                Name: 'core',
+                CommitId__c: '0a516404aa92f02866f9d2725bda5b1b3f23547e',
+                Version__c: '1.0.0.NEXT',
+                Tag__c: 'undefined',
+            },
+        ]};
 
         let pushResult: AnyJson = {
             success: false,
             errors: [],
         };
 
-        $$.fakeConnectionRequest = (request: AnyJson): Promise<AnyJson> => {
+        $$.fakeConnectionRequest = (request) => {
             const _request: JsonMap = ensureJsonMap(request);
             if (request && ensureString(_request.method) == `GET`) return Promise.resolve(records);
             else return Promise.resolve(pushResult);
@@ -216,7 +202,7 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             packageType: '',
             toJSON: function () {
                 throw new Error('Function not implemented.');
-            }
+            },
         };
 
         try {

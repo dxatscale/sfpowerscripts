@@ -16,6 +16,10 @@ export default class ReleaseDefinitionGenerator {
         private sfpOrg: SFPOrg,
         private releaseName: string,
         private branch: string,
+        private workItemFilter: string,
+        private workItemURL: string,
+        private showallartifacts: boolean = false,
+        private limit: number = 30,
         private push: boolean = false,
         private forcePush: boolean = false
     ) {}
@@ -62,21 +66,25 @@ export default class ReleaseDefinitionGenerator {
             // Update local refs from remote
             await git.fetch('origin');
 
-           
-
             let installedArtifacts = await this.sfpOrg.getAllInstalledArtifacts();
             //figure out all package dependencies
             let packageDependencies = {};
             let artifacts = {};
             for (const installedArtifact of installedArtifacts) {
                 if (installedArtifact.isInstalledBySfpowerscripts == false && installedArtifact.subscriberVersion) {
-                    //TODO:filter aliases by sfdx project json
-                    packageDependencies[installedArtifact.name] = installedArtifact.subscriberVersion;
+                    let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
+                    let packageAliases = Object.keys(projectConfig.packageAliases);
+                    for (const packageAlias of packageAliases) {
+                        if (installedArtifact.subscriberVersion == projectConfig.packageAliases[packageAlias])
+                            packageDependencies[installedArtifact.name] = installedArtifact.subscriberVersion;
+                    }
                 } else if (installedArtifact.isInstalledBySfpowerscripts == true) {
                     let packagesInRepo = ProjectConfig.getAllPackages(null);
                     let packageFound = packagesInRepo.find((elem) => elem == installedArtifact.name);
                     if (packageFound) {
-                        artifacts[installedArtifact.name] = installedArtifact.version;
+                        let pos = installedArtifact.version.lastIndexOf('.');
+                        let version = installedArtifact.version.substring(0,pos) + '-' + installedArtifact.version.substring(pos+1)
+                        artifacts[installedArtifact.name] = version;
                     }
                 }
             }
@@ -84,9 +92,22 @@ export default class ReleaseDefinitionGenerator {
             let releaseDefinition: ReleaseDefinitionSchema = {
                 release: this.releaseName,
                 skipIfAlreadyInstalled: true,
-                packageDependencies: packageDependencies,
                 artifacts: artifacts,
             };
+
+            //Add package dependencies
+            if (Object.keys(packageDependencies).length > 0)
+                releaseDefinition.packageDependencies = packageDependencies;
+
+            //Add changelog info
+            let changelog = {};
+            changelog['workItemFilter'] = this.workItemFilter;
+            changelog['workItemUrl'] = this.workItemURL;
+            changelog['limit'] = this.limit;
+            changelog['showAllArtifacts'] = this.showallartifacts;
+            if (changelog['workItemFilter'] && changelog['workItemUrl']) {
+                releaseDefinition.changelog = changelog;
+            }
 
             let releaseDefinitonYAML = yaml.dump(releaseDefinition, {
                 styles: {
@@ -101,8 +122,6 @@ export default class ReleaseDefinitionGenerator {
             SFPLogger.log(``);
             SFPLogger.log(COLOR_KEY_MESSAGE(releaseDefinitonYAML));
 
-          
-
             if (this.push) {
                 console.log(`Checking out branch ${this.branch}`);
                 if (await this.isBranchExists(this.branch, git)) {
@@ -113,11 +132,9 @@ export default class ReleaseDefinitionGenerator {
                 } else {
                     await git.checkout(['-b', this.branch]);
                 }
-                fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yaml`), releaseDefinitonYAML);
+                fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
                 await this.pushReleaseDefinitionToBranch(this.branch, git, this.forcePush);
-            }
-            else 
-            fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yaml`), releaseDefinitonYAML);
+            } else fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
             return releaseDefinitonYAML.toString();
         } catch (error) {
             console.log(error);
@@ -130,7 +147,7 @@ export default class ReleaseDefinitionGenerator {
         console.log('Pushing release definiton file to', branch);
 
         await new GitIdentity(git).setUsernameAndEmail();
-        await git.add([`${this.releaseName}.yaml`]);
+        await git.add([`${this.releaseName}.yml`]);
         await git.commit(`[skip ci] Updated Release Defintiion ${this.releaseName}`);
 
         if (isForce) {

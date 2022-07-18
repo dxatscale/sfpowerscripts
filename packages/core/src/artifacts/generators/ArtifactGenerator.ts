@@ -70,7 +70,7 @@ export default class ArtifactGenerator {
             SFPLogger.log(`Zipping ${artifactFolder}`, LoggerLevel.DEBUG);
 
             let packageVersionNumber: string = ArtifactGenerator.substituteBuildNumberWithPreRelease(
-                sfpPackage.package_version_number
+                sfpPackage.versionNumber
             );
 
             let zipArtifactFilepath: string = artifactFilepath + `_` + packageVersionNumber + `.zip`;

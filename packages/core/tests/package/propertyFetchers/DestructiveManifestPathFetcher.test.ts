@@ -1,7 +1,7 @@
 import { jest, expect } from '@jest/globals';
 import DestructiveManifestPathFetcher from '../../../src/package/propertyFetchers/DestructiveManifestPathFetcher';
 import SfpPackage from '../../../src/package/SfpPackage';
-import fs from 'fs-extra';
+const fs = require('fs-extra');
 import { Logger } from '@dxatscale/sfp-logger';
 import PropertyFetcher from '../../../src/package/propertyFetchers/PropertyFetcher';
 import SfpPackageBuilder from '../../../src/package/SfpPackageBuilder';

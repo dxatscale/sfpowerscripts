@@ -43,6 +43,21 @@ export default class Generate extends SfpowerscriptsCommand {
             description: messages.getMessage('forcePushFlagDescription'),
             dependsOn: ['push'],
         }),
+        workitemurl: flags.string({
+            required: false,
+            description: messages.getMessage('workItemUrlFlagDescription'),
+        }),
+        workitemfilter: flags.string({
+            required: false,
+            description: messages.getMessage('workItemFilterFlagDescription'),
+        }),
+        showallartifacts: flags.boolean({
+            required: false,
+            description: messages.getMessage('showAllArtifactsFlagDescription'),
+        }),
+        limit: flags.integer({
+            description: messages.getMessage('limitFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -100,8 +115,12 @@ export default class Generate extends SfpowerscriptsCommand {
                 sfpOrg,
                 releaseName,
                 this.flags.branchname,
+                this.flags.workitemfilter,
+                this.flags.workitemurl,
+                this.flags.showallartifacts,
+                this.flags.limit,
                 this.flags.push,
-                this.flags.forcepush
+                this.flags.forcepush,
             );
             return await releaseDefinitionGenerator.exec();
         } catch (err) {

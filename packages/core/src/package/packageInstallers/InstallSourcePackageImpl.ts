@@ -19,7 +19,6 @@ import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 import ProjectConfig from '../../project/ProjectConfig';
 import { DeploymentFilterRegistry } from '../deploymentFilters/DeploymentFilterRegistry';
 
-
 export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;
     private deploymentType: DeploymentType;
@@ -139,14 +138,13 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     //Apply Filters
                     let deploymentFilters = DeploymentFilterRegistry.getImplementations();
 
-                  
                     for (const deploymentFilter of deploymentFilters) {
                         if (
                             deploymentFilter.isToApply(
                                 ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory),
                                 this.sfpPackage.packageType
-                            ))
-                        
+                            )
+                        )
                             componentSet = await deploymentFilter.apply(this.sfpOrg, componentSet, this.logger);
                     }
 
@@ -419,62 +417,54 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         };
         deploymentOptions.ignoreWarnings = true;
         deploymentOptions.waitTime = waitTime;
-
         deploymentOptions.apiVersion = apiVersion;
 
-        if (skipTest) {
-            let orgDetails: OrgDetails;
-            try {
-                orgDetails = await new OrgDetailsFetcher(target_org).getOrgDetails();
-            } catch (err) {
-                SFPLogger.log(
-                    ` -------------------------WARNING! SKIPPING TESTS AS ORG TYPE CANNOT BE DETERMINED! ------------------------------------${EOL}` +
-                        `Tests are mandatory for deployments to production and cannot be skipped. This deployment might fail as org${EOL}` +
-                        `type cannot be determined` +
-                        `-------------------------------------------------------------------------------------------------------------${EOL}`,
-                    LoggerLevel.WARN,
-                    this.logger
-                );
+        //Find Org Type
+        let orgDetails: OrgDetails;
+        try {
+            orgDetails = await new OrgDetailsFetcher(target_org).getOrgDetails();
+        } catch (err) {
+            SFPLogger.log(`Unable to fetch org details,assuming it is production`, LoggerLevel.WARN, this.logger);
+            orgDetails = {
+                instanceUrl: undefined,
+                isSandbox: false,
+                organizationType: undefined,
+                sfdxAuthUrl: undefined,
+                status: undefined,
+            };
+        }
 
-                deploymentOptions.testLevel = TestLevel.RunLocalTests;
-                return deploymentOptions;
-            }
-
-            if (orgDetails?.isSandbox) {
-                if (!this.options.isInstallingForValidation)
-                    SFPLogger.log(
-                        ` ------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
-                            `  Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
-                            `-------------------------------------------------------------------------------------------------------------`,
-                        LoggerLevel.WARN,
-                        this.logger
+        if (this.sfpPackage.isApexFound) {
+            if (orgDetails.isSandbox) {
+                if (skipTest) {
+                    deploymentOptions.testLevel = TestLevel.RunNoTests;
+                } else if (this.sfpPackage.apexTestClassses.length > 0 && optimizeDeployment) {
+                    deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                    deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
+                        this.sfpPackage.apexTestClassses
                     );
-                deploymentOptions.testLevel = TestLevel.RunNoTests;
+                } else {
+                    deploymentOptions.testLevel = TestLevel.RunLocalTests;
+                }
             } else {
-                SFPLogger.log(
-                    `---------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
-                        `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
-                        `-------------------------------------------------------------------------------------------------------------`,
-                    LoggerLevel.WARN,
-                    this.logger
-                );
-                deploymentOptions.testLevel = TestLevel.RunLocalTests;
-            }
-        } else if (this.sfpPackage.isApexFound) {
-            if (this.sfpPackage.isTriggerAllTests) {
-                deploymentOptions.testLevel = TestLevel.RunLocalTests;
-            } else if (this.sfpPackage.apexTestClassses?.length > 0 && optimizeDeployment) {
-                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
-                deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
-                    this.sfpPackage.apexTestClassses
-                );
-            } else {
-                deploymentOptions.testLevel = TestLevel.RunLocalTests;
+                if (this.sfpPackage.apexTestClassses.length > 0 && optimizeDeployment) {
+                    deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                    deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
+                        this.sfpPackage.apexTestClassses
+                    );
+                } else {
+                    deploymentOptions.testLevel = TestLevel.RunLocalTests;
+                }
             }
         } else {
-            deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
-            deploymentOptions.specifiedTests = 'skip';
+            if (orgDetails.isSandbox) {
+                deploymentOptions.testLevel = TestLevel.RunNoTests;
+            } else {
+                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                deploymentOptions.specifiedTests = 'skip';
+            }
         }
+
         return deploymentOptions;
     }
 

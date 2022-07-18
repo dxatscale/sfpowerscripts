@@ -67,6 +67,11 @@ export default class SfpPackage extends PackageInfo {
         return this.package_version_number;
     }
 
+    public set versionNumber(versionNumber:string)
+    {
+        this.package_version_number = versionNumber;
+    }
+
     public get packageType(): string {
         return this.package_type.toLocaleLowerCase();
     }

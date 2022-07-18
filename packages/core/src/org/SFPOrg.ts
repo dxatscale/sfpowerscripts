@@ -11,21 +11,25 @@ export default class SFPOrg extends Org {
     /**
      * Get list of all artifacts in an org
      */
-    public async getInstalledArtifacts(orderBy: string = `CreatedDate`) {
+    public async getInstalledArtifacts(orderBy: string = `CreatedDate`,logger?:Logger) {
+        let records=[]
         try {
-            let records = await QueryHelper.query<SfpowerscriptsArtifact2__c>(
+             records = await QueryHelper.query<SfpowerscriptsArtifact2__c>(
                 `SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c ORDER BY ${orderBy} ASC`,
                 this.getConnection(),
                 false
             );
             return records;
         } catch (error) {
-            throw new Error(
+            SFPLogger.log(
                 'Unable to fetch any sfpowerscripts artifacts in the org\n' +
-                    '1. sfpowerscripts package is notinstalled in the org\n' +
-                    '2. The required prerequisite object is not deployed to this org\n'
+                    '1. sfpowerscripts package is not installed in the org\n' +
+                    '2. The required prerequisite object is not deployed to this org\n',
+                LoggerLevel.WARN,
+                logger
             );
         }
+        return records;
     }
     /**
      * Check whether an artifact is installed in a Org
@@ -54,7 +58,6 @@ export default class SFPOrg extends Org {
                 }
             }
         } catch (error) {
-            console.log(error);
             SFPLogger.log(
                 'Unable to fetch any sfpowerscripts artifacts in the org\n' +
                     '1. sfpowerscripts package is not installed in the org\n' +
@@ -83,10 +86,10 @@ export default class SFPOrg extends Org {
             logger
         );
 
-        let packageName = sfpPackage.packageName;
+        let packageName = sfpPackage.package_name;
 
         if (artifactId == null) {
-            artifactId = await ObjectCRUDHelper.createRecord<SfpowerscriptsArtifact2__c>(
+            artifactId = await ObjectCRUDHelper.createRecord(
                 this.getConnection(),
                 'SfpowerscriptsArtifact2__c',
                 {
@@ -97,7 +100,7 @@ export default class SFPOrg extends Org {
                 }
             );
         } else {
-            artifactId = await ObjectCRUDHelper.updateRecord<SfpowerscriptsArtifact2__c>(
+            artifactId = await ObjectCRUDHelper.updateRecord(
                 this.getConnection(),
                 'SfpowerscriptsArtifact2__c',
                 {

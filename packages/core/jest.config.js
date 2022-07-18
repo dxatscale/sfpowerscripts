@@ -1,6 +1,6 @@
 module.exports = {
     preset: 'ts-jest/presets/js-with-babel',
-    testEnvironment: 'jsdom',
+    testEnvironment: 'node',
     restoreMocks: true,
     clearMocks: true,
     resetMocks: true,

@@ -97,7 +97,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
             this.params.configFilePath,
             this.logger,
             LoggerLevel.INFO,
-            this.params.packageVersionNumber,
+            sfpPackage.versionNumber,
             this.packageCreationParams.installationkeybypass,
             this.packageCreationParams.installationkey,
             sfpPackage.tag,

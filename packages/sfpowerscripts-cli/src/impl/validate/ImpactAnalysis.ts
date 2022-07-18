@@ -12,8 +12,8 @@ export default class ImpactAnalysis {
 
     public async exec() {
         const soupApiConnection = {
-            token: this.conn.accessToken,
-            url: this.conn.instanceUrl,
+            token: this.conn.getAuthInfoFields().accessToken,
+            url: this.conn.getAuthInfoFields().instanceUrl,
             apiVersion: '50.0',
         };
 
