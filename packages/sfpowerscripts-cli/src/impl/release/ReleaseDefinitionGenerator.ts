@@ -134,7 +134,7 @@ export default class ReleaseDefinitionGenerator {
                 }
                 fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
                 await this.pushReleaseDefinitionToBranch(this.branch, git, this.forcePush);
-            } else fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yaml`), releaseDefinitonYAML);
+            } else fs.writeFileSync(path.join(repoTempDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
             return releaseDefinitonYAML.toString();
         } catch (error) {
             console.log(error);
@@ -147,7 +147,7 @@ export default class ReleaseDefinitionGenerator {
         console.log('Pushing release definiton file to', branch);
 
         await new GitIdentity(git).setUsernameAndEmail();
-        await git.add([`${this.releaseName}.yaml`]);
+        await git.add([`${this.releaseName}.yml`]);
         await git.commit(`[skip ci] Updated Release Defintiion ${this.releaseName}`);
 
         if (isForce) {
