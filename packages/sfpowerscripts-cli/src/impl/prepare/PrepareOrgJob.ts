@@ -19,12 +19,11 @@ import PoolJobExecutor, {
 import { Connection, Org } from '@salesforce/core';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
-import RelaxIPRange from '@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange';
 import VlocityPackUpdateSettings from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings';
 import VlocityInitialInstall from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall';
 import ScriptExecutor from '@dxatscale/sfpowerscripts.core/lib/scriptExecutor/ScriptExecutorHelpers';
-import * as fs from 'fs-extra';
-
+import DeploymentSettingsService from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentSettingsService';
+const fs = require('fs-extra');
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor {
@@ -236,13 +235,13 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         isRelaxAllIPRanges: boolean,
         relaxIPRanges: string[],
         logger: Logger
-    ): Promise<{ username: string; success: boolean }> {
+    ): Promise<void> {
         SFPLogger.log(`Relaxing ip ranges for scratchOrg with user ${conn.getUsername()}`, LoggerLevel.INFO);
         if (isRelaxAllIPRanges) {
             relaxIPRanges = [];
-            return new RelaxIPRange(logger).setIp(conn, relaxIPRanges, true);
+            return new DeploymentSettingsService(conn).relaxAllIPRanges(logger);
         } else {
-            return new RelaxIPRange(logger).setIp(conn, relaxIPRanges);
+            return new DeploymentSettingsService(conn).relaxAllIPRanges(logger,relaxIPRanges);
         }
     }
 
