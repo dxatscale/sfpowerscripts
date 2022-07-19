@@ -105,13 +105,17 @@ export default class ChangelogImpl {
             if (!artifactSourceBranch) throw new Error('Atleast one artifact must carry branch information');
 
             const repoTempDir = tempDir.name;
-
-            // Copy source directory to temp dir
-            fs.copySync(process.cwd(), repoTempDir);
-
             let git: SimpleGit = simplegit(repoTempDir);
-            // Update local refs from remote
-            await git.fetch('origin');
+
+            if (process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL) {
+                //Change in ORIGIN_URL, so do a clone
+                await git.clone(process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL, repoTempDir);
+            } else {
+                // Copy source directory to temp dir
+                fs.copySync(process.cwd(), repoTempDir);
+                // Update local refs from remote
+                await git.fetch('origin');
+            }
 
             console.log(`Checking out branch ${this.branch}`);
             if (await this.isBranchExists(this.branch, git)) {

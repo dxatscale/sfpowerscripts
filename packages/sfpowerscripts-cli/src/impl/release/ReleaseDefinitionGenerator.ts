@@ -63,9 +63,15 @@ export default class ReleaseDefinitionGenerator {
             fs.copySync(process.cwd(), repoTempDir);
 
             let git: SimpleGit = simplegit(repoTempDir);
-            // Update local refs from remote
-            await git.fetch('origin');
-
+            if (process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL) {
+                //Change in ORIGIN_URL, so do a clone
+                await git.clone(process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL, repoTempDir);
+            } else {
+                // Copy source directory to temp dir
+                fs.copySync(process.cwd(), repoTempDir);
+                // Update local refs from remote
+                await git.fetch('origin');
+            }
             let installedArtifacts = await this.sfpOrg.getAllInstalledArtifacts();
             //figure out all package dependencies
             let packageDependencies = {};
@@ -83,7 +89,10 @@ export default class ReleaseDefinitionGenerator {
                     let packageFound = packagesInRepo.find((elem) => elem == installedArtifact.name);
                     if (packageFound) {
                         let pos = installedArtifact.version.lastIndexOf('.');
-                        let version = installedArtifact.version.substring(0,pos) + '-' + installedArtifact.version.substring(pos+1)
+                        let version =
+                            installedArtifact.version.substring(0, pos) +
+                            '-' +
+                            installedArtifact.version.substring(pos + 1);
                         artifacts[installedArtifact.name] = version;
                     }
                 }
