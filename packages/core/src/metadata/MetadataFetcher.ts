@@ -56,12 +56,12 @@ export default class MetadataFetcher {
         retrievedId: string,
         isToBeLoggedToConsole: boolean = true
     ): Promise<RetrieveResult> {
-        let metadata_result;
+        let metadata_result:RetrieveResult;
 
         while (true) {
             metadata_result = await conn.metadata.checkRetrieveStatus(retrievedId);
 
-            if (metadata_result.done === 'false') {
+            if (metadata_result.done === false) {
                 if (isToBeLoggedToConsole) SFPLogger.log(`Polling for Retrieval Status`, LoggerLevel.INFO, this.logger);
                 await delay(5000);
             } else {
