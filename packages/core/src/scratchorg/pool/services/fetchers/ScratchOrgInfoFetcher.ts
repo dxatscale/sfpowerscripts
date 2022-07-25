@@ -1,4 +1,4 @@
-import SFPLogger, { LoggerLevel } from '../../../../logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { Org } from '@salesforce/core';
 import ScratchOrg from '../../../ScratchOrg';
 const retry = require('async-retry');

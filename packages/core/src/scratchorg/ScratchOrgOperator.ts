@@ -1,10 +1,11 @@
-import { Aliases, AuthInfo, Org } from '@salesforce/core';
+import { AuthInfo, Org, StateAggregator } from '@salesforce/core';
 import ScratchOrg from './ScratchOrg';
 import PasswordGenerator from './PasswordGenerator';
-import SFPLogger, { LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { Duration } from '@salesforce/kit';
 import { ScratchOrgRequest } from '@salesforce/core';
 const retry = require('async-retry');
+
 
 export default class ScratchOrgOperator {
     constructor(private hubOrg: Org) {}
@@ -62,7 +63,7 @@ export default class ScratchOrgOperator {
 
         await retry(
             async (bail) => {
-                await hubConn.sobject('ActiveScratchOrg').del(scratchOrgIds);
+                let result = await hubConn.del('ActiveScratchOrg', scratchOrgIds);
             },
             { retries: 3, minTimeout: 3000 }
         );
@@ -104,7 +105,7 @@ export default class ScratchOrgOperator {
    Thank you for using SFPLogger!`;
 
         const options = {
-            method: 'post',
+            method: 'POST',
             body: JSON.stringify({
                 inputs: [
                     {
@@ -120,7 +121,7 @@ export default class ScratchOrgOperator {
 
         await retry(
             async (bail) => {
-                await this.hubOrg.getConnection().request(options);
+                await this.hubOrg.getConnection().requestPost(options.url,options.body)
             },
             { retries: 3, minTimeout: 30000 }
         );
@@ -129,8 +130,8 @@ export default class ScratchOrgOperator {
     }
 
     private async setAliasForUsername(username: string, aliasToSet: string): Promise<void> {
-        const alias = await Aliases.create(Aliases.getDefaultOptions());
-        alias.set(aliasToSet, username);
-        await alias.write();
+        const stateAggregator = await StateAggregator.getInstance();
+        stateAggregator.aliases.set(aliasToSet, { username: username });
+        await stateAggregator.aliases.write();
     }
 }

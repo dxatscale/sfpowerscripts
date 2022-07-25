@@ -3,7 +3,7 @@ import * as fs from 'fs-extra';
 import GeneratePackageChangelog from '../../changelog/GeneratePackageChangelog';
 import { Changelog } from '../../changelog/interfaces/GenericChangelogInterfaces';
 import * as rimraf from 'rimraf';
-import SFPLogger, { LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import AdmZip = require('adm-zip');
 import SfpPackage from '../../package/SfpPackage';
 
@@ -70,7 +70,7 @@ export default class ArtifactGenerator {
             SFPLogger.log(`Zipping ${artifactFolder}`, LoggerLevel.DEBUG);
 
             let packageVersionNumber: string = ArtifactGenerator.substituteBuildNumberWithPreRelease(
-                sfpPackage.package_version_number
+                sfpPackage.versionNumber
             );
 
             let zipArtifactFilepath: string = artifactFilepath + `_` + packageVersionNumber + `.zip`;

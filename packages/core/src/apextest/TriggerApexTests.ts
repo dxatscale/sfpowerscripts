@@ -1,4 +1,4 @@
-import * as fs from 'fs-extra';
+const fs = require('fs-extra');
 import path = require('path');
 import {
     RunSpecifiedTestsOption,
@@ -11,7 +11,7 @@ import {
 import IndividualClassCoverage, { CoverageOptions } from '../apex/coverage/IndividualClassCoverage';
 import { TestReportDisplayer } from './TestReportDisplayer';
 import PackageTestCoverage from '../package/coverage/PackageTestCoverage';
-import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel, COLOR_ERROR } from '../logger/SFPLogger';
+import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel, COLOR_ERROR } from '@dxatscale/sfp-logger';
 import SFPStatsSender from '../stats/SFPStatsSender';
 import { Connection, Org } from '@salesforce/core';
 import {
@@ -26,7 +26,6 @@ import {
 } from '@salesforce/apex-node';
 import { CliJsonFormat, JsonReporter } from './JSONReporter';
 import { Duration } from '@salesforce/kit';
-import { UpsertResult } from 'jsforce';
 import ClearCodeCoverage from './ClearCodeCoverage';
 import _ from 'lodash';
 const retry = require('async-retry');
@@ -597,8 +596,8 @@ export default class TriggerApexTests {
         try {
             SFPLogger.log(`Set enableDisableParallelApexTesting:${toEnable}`, LoggerLevel.TRACE, logger);
             let apexSettingMetadata = { fullName: 'ApexSettings', enableDisableParallelApexTesting: toEnable };
-            let result: UpsertResult | UpsertResult[] = await conn.metadata.upsert('ApexSettings', apexSettingMetadata);
-            if ((result as UpsertResult).success) {
+            let result = await conn.metadata.upsert('ApexSettings', apexSettingMetadata);
+            if (result.success) {
                 SFPLogger.log(`Successfully updated apex testing setting`, LoggerLevel.INFO, logger);
             }
         } catch (error) {

@@ -1,6 +1,6 @@
 import child_process = require('child_process');
 import ProjectConfig from '../../project/ProjectConfig';
-import SFPLogger, { LoggerLevel, Logger } from '../../logger/SFPLogger';
+import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 import { delay } from '../../utils/Delay';
 import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
@@ -97,7 +97,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
             this.params.configFilePath,
             this.logger,
             LoggerLevel.INFO,
-            this.params.packageVersionNumber,
+            sfpPackage.versionNumber,
             this.packageCreationParams.installationkeybypass,
             this.packageCreationParams.installationkey,
             sfpPackage.tag,

@@ -1,5 +1,5 @@
 import { Connection } from '@salesforce/core';
-import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import Package2VersionFetcher from '../version/Package2VersionFetcher';
 
 export default class PackageVersionCoverage {

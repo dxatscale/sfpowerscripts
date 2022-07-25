@@ -1,5 +1,5 @@
 import { BufferedMetricsLogger } from 'datadog-metrics';
-import SFPLogger, { Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { NativeMetricSender } from '../NativeMetricSender';
 
 export class DataDogMetricsSender extends NativeMetricSender {

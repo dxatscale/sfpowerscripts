@@ -1,4 +1,4 @@
-import SFPLogger from '../../logger/SFPLogger';
+import SFPLogger from '@dxatscale/sfp-logger';
 import { Org } from '@salesforce/core';
 import { PoolBaseImpl } from './PoolBaseImpl';
 import ScratchOrg from '../ScratchOrg';
@@ -50,9 +50,9 @@ export default class PoolDeleteImpl extends PoolBaseImpl {
                 );
 
                 if (activeScrathOrgs.records.length > 0) {
-                    for (let ScratchOrg of activeScrathOrgs.records) {
-                        await new ScratchOrgOperator(this.hubOrg).delete(ScratchOrg.Id);
-                        SFPLogger.log(`Scratch org with username ${ScratchOrg.SignupUsername} is deleted successfully`);
+                    for (let scratchOrg of activeScrathOrgs.records) {
+                        await new ScratchOrgOperator(this.hubOrg).delete(scratchOrg.Id);
+                        SFPLogger.log(`Scratch org with username ${scratchOrg.SignupUsername} is deleted successfully`);
                     }
                 }
             }

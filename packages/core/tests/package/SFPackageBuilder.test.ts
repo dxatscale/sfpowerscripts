@@ -1,9 +1,8 @@
 import { jest, expect } from '@jest/globals';
 import SfpPackage, { PackageType, SfpPackageParams } from '../../src/package/SfpPackage';
 import SfpPackageBuilder, { PackageCreationParams } from '../../src/package/SfpPackageBuilder';
-
-import fs from 'fs-extra';
-import { Logger } from '../../src/logger/SFPLogger';
+import * as fs from "fs-extra";
+import { Logger } from '@dxatscale/sfp-logger';
 
 
 let packageType = PackageType.Source;

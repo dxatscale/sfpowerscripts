@@ -3,7 +3,7 @@ import Ajv from 'ajv';
 const yaml = require('js-yaml');
 import lodash = require('lodash');
 import get18DigitSalesforceId from '../../utils/Get18DigitSalesforceId';
-import * as fs from 'fs-extra';
+const fs = require('fs-extra');
 const path = require('path');
 
 export default class ReleaseDefinition {

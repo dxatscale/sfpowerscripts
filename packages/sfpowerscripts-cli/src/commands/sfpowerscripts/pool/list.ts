@@ -3,7 +3,7 @@ import { AnyJson } from '@salesforce/ts-types';
 import poolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl';
 import { isNullOrUndefined } from 'util';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { Messages } from '@salesforce/core';
 
 // Initialize Messages with the current plugin directory

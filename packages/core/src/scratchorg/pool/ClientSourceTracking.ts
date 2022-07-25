@@ -1,7 +1,7 @@
 const path = require('path');
 import * as fs from 'fs-extra';
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '../../logger/SFPLogger';
-import { Connection, SfdxProject } from '@salesforce/core';
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import { Connection, SfdxProject, SfProject } from '@salesforce/core';
 import SFPOrg from '../../org/SFPOrg';
 import { SourceTracking } from '@salesforce/source-tracking';
 import simplegit, { SimpleGit } from 'simple-git';
@@ -29,7 +29,7 @@ export default class ClientSourceTracking {
         clientSourceTracking.org = await SFPOrg.create({ connection: clientSourceTracking.conn });
         clientSourceTracking.logger = logger;
 
-        clientSourceTracking.sfdxOrgIdDir = `.sfdx/orgs/${clientSourceTracking.org.getOrgId()}`;
+        clientSourceTracking.sfdxOrgIdDir = `.sf/orgs/${clientSourceTracking.org.getOrgId()}`;
 
         return clientSourceTracking;
     }
@@ -40,7 +40,7 @@ export default class ClientSourceTracking {
     }
 
     private async createRemoteSourceTracking() {
-        const project = await SfdxProject.resolve();
+        const project = await SfProject.resolve();
         const tracking = await SourceTracking.create({
             org: this.org,
             project: project,
@@ -61,18 +61,21 @@ export default class ClientSourceTracking {
 
             const sfpowerscriptsArtifacts = await this.org.getInstalledArtifacts();
 
+            if(sfpowerscriptsArtifacts.length==0)
+             throw new Error(`Unable to find any artifacts in the org`);
+
             //clean up MPD to just one package, so that source tracking lib
             //does do a full scan and break
             this.cleanupSFDXProjectJsonTonOnePackage(tempDir.name, sfpowerscriptsArtifacts[0].Name);
 
-            const project = await SfdxProject.resolve(tempDir.name);
+            const project = await SfProject.resolve(tempDir.name);
 
             // Create local source tracking files in temp repo
             const tracking = await SourceTracking.create({
                 org: this.org,
                 project: project,
             });
-
+            tracking
             git = simplegit(tempDir.name);
 
             SFPLogger.log(

@@ -1,4 +1,5 @@
 import { Connection } from '@salesforce/core';
+
 const retry = require('async-retry');
 
 export default class QueryHelper {
@@ -6,8 +7,8 @@ export default class QueryHelper {
         return retry(
             async (bail) => {
                 let records;
-                if (isTooling) records = (await conn.tooling.query<T>(query)).records;
-                else records = (await conn.query<T>(query)).records;
+                if (isTooling) records = (await conn.tooling.query(query)).records;
+                else records = (await conn.query(query)).records;
 
                 return records;
             },

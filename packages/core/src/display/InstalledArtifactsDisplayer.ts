@@ -1,5 +1,5 @@
 const Table = require('cli-table');
-import SFPLogger, { Logger, LoggerLevel, COLOR_KEY_MESSAGE } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 
 export default class InstalledArtifactsDisplayer {
     public static printInstalledArtifacts(artifacts: any, logger: Logger) {

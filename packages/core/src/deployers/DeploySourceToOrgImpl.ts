@@ -5,7 +5,7 @@ import SFPLogger, {
     COLOR_SUCCESS,
     Logger,
     LoggerLevel,
-} from '../logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
 import DeployErrorDisplayer from '../display/DeployErrorDisplayer';
 import { Duration } from '@salesforce/kit';
 import DeploymentExecutor, { DeploySourceResult } from './DeploymentExecutor';
@@ -18,7 +18,6 @@ import {
     RequestStatus,
 } from '@salesforce/source-deploy-retrieve';
 import PackageComponentPrinter from '../display/PackageComponentPrinter';
-import ApexTestSuite from '../apextest/ApexTestSuite';
 const Table = require('cli-table');
 import * as fs from 'fs-extra';
 import path from 'path';
@@ -29,25 +28,17 @@ import { TestLevel } from '../apextest/TestOptions';
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public constructor(
         private org: SFPOrg,
-        private projectDirectory: string,
-        private sourceDirectory: string,
+        private componentSet: ComponentSet,
         private deploymentOptions: DeploymentOptions,
-        private isToBreakBuildIfEmpty: boolean,
         private logger?: Logger
     ) {}
 
     public async exec(): Promise<DeploySourceResult> {
         let deploySourceResult = {} as DeploySourceResult;
 
-        //Create path
-        let sourceDirPath: string = path.resolve(this.sourceDirectory);
-        if (this.projectDirectory) sourceDirPath = path.resolve(this.projectDirectory, this.sourceDirectory);
+        if (this.deploymentOptions.apiVersion) this.componentSet.sourceApiVersion = this.deploymentOptions.apiVersion;
 
-        //Create component set from source directory
-        let componentSet = ComponentSet.fromSource(sourceDirPath);
-        if (this.deploymentOptions.apiVersion) componentSet.sourceApiVersion = this.deploymentOptions.apiVersion;
-
-        let components = componentSet.getSourceComponents();
+        let components = this.componentSet.getSourceComponents();
 
         //Print components inside Component Set
         PackageComponentPrinter.printComponentTable(components, this.logger);
@@ -56,7 +47,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         this.printDeploymentOptions();
 
         //Get Deploy ID
-        let result = await this.deploy(sourceDirPath, componentSet);
+        let result = await this.deploy(this.componentSet);
 
         this.writeResultToReport(result);
 
@@ -193,7 +184,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         SFPLogger.log(table.toString(), LoggerLevel.WARN, this.logger);
     }
 
-    private async buildDeploymentOptions(sourceDir: string, org: SFPOrg): Promise<MetadataApiDeployOptions> {
+    private async buildDeploymentOptions(org: SFPOrg): Promise<MetadataApiDeployOptions> {
         let metdataDeployOptions: MetadataApiDeployOptions = {
             usernameOrConnection: org.getConnection(),
             apiOptions: {},
@@ -201,14 +192,9 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
         if (this.deploymentOptions.apiVersion) metdataDeployOptions.apiVersion = this.deploymentOptions.apiVersion;
 
-        if (this.deploymentOptions.testLevel == TestLevel.RunApexTestSuite) {
-            metdataDeployOptions.apiOptions.testLevel = TestLevel.RunSpecifiedTests;
-            let apexTestSuite = new ApexTestSuite(sourceDir, this.deploymentOptions.apexTestSuite);
-            metdataDeployOptions.apiOptions.runTests = await apexTestSuite.getConstituentClasses();
-        } else if (this.deploymentOptions.testLevel == TestLevel.RunLocalTests) {
+        if (this.deploymentOptions.testLevel == TestLevel.RunLocalTests) {
             metdataDeployOptions.apiOptions.testLevel = TestLevel.RunLocalTests;
-        }
-        else if (this.deploymentOptions.testLevel == TestLevel.RunSpecifiedTests) {
+        } else if (this.deploymentOptions.testLevel == TestLevel.RunSpecifiedTests) {
             metdataDeployOptions.apiOptions.testLevel = TestLevel.RunSpecifiedTests;
             metdataDeployOptions.apiOptions.runTests = this.deploymentOptions.specifiedTests.split(`,`);
         } else {
@@ -224,8 +210,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         return metdataDeployOptions;
     }
 
-    private async deploy(backingSourceDir: string, componentSet: ComponentSet) {
-        let deploymentOptions = await this.buildDeploymentOptions(backingSourceDir, this.org);
+    private async deploy(componentSet: ComponentSet) {
+        let deploymentOptions = await this.buildDeploymentOptions(this.org);
         const deploy = await componentSet.deploy(deploymentOptions);
 
         let startTime = Date.now();

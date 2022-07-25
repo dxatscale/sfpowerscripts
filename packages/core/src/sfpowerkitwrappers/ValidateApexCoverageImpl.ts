@@ -1,5 +1,5 @@
 import child_process = require('child_process');
-import SFPLogger from '../logger/SFPLogger';
+import SFPLogger from '@dxatscale/sfp-logger';
 
 export default class ValidateApexCoverageImpl {
     public constructor(private target_org: string, private required_coverage: number) {}

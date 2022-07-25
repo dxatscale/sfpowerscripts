@@ -16,10 +16,10 @@ import SFPLogger, {
     COLOR_SUCCESS,
     COLOR_TIME,
     COLOR_KEY_MESSAGE,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
-import { COLOR_WARNING } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { COLOR_WARNING } from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'prepare');
@@ -137,6 +137,8 @@ export default class Prepare extends SfpowerscriptsCommand {
                 await this.getCurrentRemainingNumberOfOrgsInPoolAndReport();
 
                 SFPStatsSender.logGauge('prepare.succeededorgs', results.value.scratchOrgs.length, tags);
+                if(results.value.scratchOrgs.length>0)
+                SFPStatsSender.logGauge('prepare.duration', Date.now() - executionStartTime, tags);
             } else if (results.isErr()) {
                 SFPLogger.log(
                     COLOR_HEADER(
@@ -166,7 +168,7 @@ export default class Prepare extends SfpowerscriptsCommand {
                         break;
                 }
             }
-            SFPStatsSender.logGauge('prepare.duration', Date.now() - executionStartTime, tags);
+           
         } catch (err) {
             throw new SfdxError('Unable to execute command .. ' + err);
         }

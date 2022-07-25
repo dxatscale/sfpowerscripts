@@ -1,7 +1,7 @@
 import ProjectConfig from '../project/ProjectConfig';
 import simplegit, { SimpleGit, LogOptions } from 'simple-git';
 import { Changelog } from './interfaces/GenericChangelogInterfaces';
-import SFPLogger, { LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 
 /**
  * A class for generating a changelog between two commits

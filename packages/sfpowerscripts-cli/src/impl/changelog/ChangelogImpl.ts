@@ -12,7 +12,7 @@ const retry = require('async-retry');
 import { GitError } from 'simple-git';
 import GitIdentity from '../git/GitIdentity';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 
 marked.setOptions({
@@ -105,13 +105,17 @@ export default class ChangelogImpl {
             if (!artifactSourceBranch) throw new Error('Atleast one artifact must carry branch information');
 
             const repoTempDir = tempDir.name;
-
-            // Copy source directory to temp dir
-            fs.copySync(process.cwd(), repoTempDir);
-
             let git: SimpleGit = simplegit(repoTempDir);
-            // Update local refs from remote
-            await git.fetch('origin');
+
+            if (process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL) {
+                //Change in ORIGIN_URL, so do a clone
+                await git.clone(process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL, repoTempDir);
+            } else {
+                // Copy source directory to temp dir
+                fs.copySync(process.cwd(), repoTempDir);
+                // Update local refs from remote
+                await git.fetch('origin');
+            }
 
             console.log(`Checking out branch ${this.branch}`);
             if (await this.isBranchExists(this.branch, git)) {

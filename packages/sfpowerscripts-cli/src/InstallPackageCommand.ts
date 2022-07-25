@@ -4,7 +4,7 @@ import { flags } from '@salesforce/command';
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
 import * as rimraf from 'rimraf';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import { ConsoleLogger } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 

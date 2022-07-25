@@ -1,5 +1,5 @@
 import { jest, expect } from '@jest/globals';
-import fs from 'fs-extra';
+const fs = require('fs-extra');
 import ReleaseDefinition from '../../../src/impl/release/ReleaseDefinition';
 
 describe('Given a release definition, validateReleaseDefinition', () => {

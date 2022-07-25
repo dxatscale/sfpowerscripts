@@ -1,5 +1,5 @@
-import SFPLogger from '../../logger/SFPLogger';
-import { LoggerLevel, Org, SfdxError } from '@salesforce/core';
+import SFPLogger from '@dxatscale/sfp-logger';
+import { LoggerLevel, Org, SfdxError, SfError } from '@salesforce/core';
 import child_process = require('child_process');
 import { PoolBaseImpl } from './PoolBaseImpl';
 import ScratchOrg from '../ScratchOrg';
@@ -55,7 +55,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
             availableSo = results.records.filter((soInfo) => soInfo.Allocation_status__c === 'Available');
         }
         if (availableSo.length == 0) {
-            throw new SfdxError(`No scratch org available at the moment for ${this.tag}, try again in sometime.`);
+            throw new SfError(`No scratch org available at the moment for ${this.tag}, try again in sometime.`);
         }
 
         if (this.fetchAllScratchOrgs) {

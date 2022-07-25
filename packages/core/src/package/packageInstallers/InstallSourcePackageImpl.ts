@@ -2,7 +2,7 @@ import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../de
 import ReconcileProfileAgainstOrgImpl from '../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl';
 import DeployDestructiveManifestToOrgImpl from '../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl';
 import OrgDetailsFetcher, { OrgDetails } from '../../org/OrgDetailsFetcher';
-import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 const path = require('path');
 const glob = require('glob');
@@ -13,9 +13,11 @@ import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
-import SfpPackage from '../SfpPackage';
+import SfpPackage, { PackageType } from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
-
+import { ComponentSet } from '@salesforce/source-deploy-retrieve';
+import ProjectConfig from '../../project/ProjectConfig';
+import { DeploymentFilterRegistry } from '../deploymentFilters/DeploymentFilterRegistry';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;
@@ -60,7 +62,11 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 profileFolders,
                 isReconcileActivated,
                 isReconcileErrored,
-            } = await this.reconcileProfilesBeforeDeployment(this.sfpPackage.sourceDir,  this.sfpOrg.getUsername(), tempDir));
+            } = await this.reconcileProfilesBeforeDeployment(
+                this.sfpPackage.sourceDir,
+                this.sfpOrg.getUsername(),
+                tempDir
+            ));
 
             let deploymentOptions: DeploymentOptions;
             let result: DeploySourceResult;
@@ -84,7 +90,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     this.options.waitTime,
                     this.options.optimizeDeployment,
                     this.options.skipTesting,
-                     this.sfpOrg.getUsername(),
+                    this.sfpOrg.getUsername(),
                     this.options.apiVersion
                 );
 
@@ -124,12 +130,38 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                         );
                     }
 
+                    //Create componentSet To Be Deployed
+                    let componentSet = ComponentSet.fromSource(
+                        path.resolve(emptyCheck.resolvedSourceDirectory, this.packageDirectory)
+                    );
+
+                    //Apply Filters
+                    let deploymentFilters = DeploymentFilterRegistry.getImplementations();
+
+                    for (const deploymentFilter of deploymentFilters) {
+                        if (
+                            deploymentFilter.isToApply(
+                                ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory),
+                                this.sfpPackage.packageType
+                            )
+                        )
+                            componentSet = await deploymentFilter.apply(this.sfpOrg, componentSet, this.logger);
+                    }
+
+                    //Check if there are components to be deployed after filtering
+                    //Asssume its sucessfully deployed
+                    if (componentSet.size == 0) {
+                        return {
+                            deploy_id: `000000`,
+                            result: true,
+                            message: `Package contents were filtered out, nothing to install`,
+                        };
+                    }
+
                     let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
                         this.sfpOrg,
-                        emptyCheck.resolvedSourceDirectory,
-                        this.packageDirectory,
+                        componentSet,
                         deploymentOptions,
-                        false,
                         this.logger
                     );
 
@@ -143,7 +175,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                                 await this.reconcileAndRedeployProfiles(
                                     profileFolders,
                                     this.sfpPackage.sourceDir,
-                                     this.sfpOrg.getUsername(),
+                                    this.sfpOrg.getUsername(),
                                     this.packageDirectory,
                                     tempDir,
                                     deploymentOptions
@@ -218,7 +250,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 this.logger
             );
             let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
-                 this.sfpOrg.getUsername(),
+                this.sfpOrg.getUsername(),
                 path.join(this.sfpPackage.sourceDir, 'destructive', 'destructiveChanges.xml')
             );
 
@@ -231,8 +263,6 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             );
         }
     }
-
-
 
     private async reconcileProfilesBeforeDeployment(sourceDirectoryPath: string, target_org: string, tempDir: string) {
         let profileFolders: any;
@@ -255,7 +285,11 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 return { isReconcileActivated: false };
             }
 
-            SFPLogger.log('Attempting reconcile to profiles as payload contain profiles', LoggerLevel.INFO, this.logger);
+            SFPLogger.log(
+                'Attempting reconcile to profiles as payload contain profiles',
+                LoggerLevel.INFO,
+                this.logger
+            );
             //copy the original profiles to temporary location
             profileFolders = glob.sync('**/profiles', {
                 cwd: path.join(sourceDirectoryPath),
@@ -351,12 +385,15 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 path.join(profileDeploymentStagingDirectory, '.forceignore')
             );
 
+            //Create componentSet To Be Deployed
+            let componentSet = ComponentSet.fromSource(
+                path.resolve(profileDeploymentStagingDirectory, sourceDirectory)
+            );
+
             let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
                 this.sfpOrg,
-                profileDeploymentStagingDirectory,
-                sourceDirectory,
+                componentSet,
                 deploymentOptions,
-                false,
                 this.logger
             );
             let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
@@ -380,62 +417,54 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         };
         deploymentOptions.ignoreWarnings = true;
         deploymentOptions.waitTime = waitTime;
-
         deploymentOptions.apiVersion = apiVersion;
 
-        if (skipTest) {
-            let orgDetails: OrgDetails;
-            try {
-                orgDetails = await new OrgDetailsFetcher(target_org).getOrgDetails();
-            } catch (err) {
-                SFPLogger.log(
-                    ` -------------------------WARNING! SKIPPING TESTS AS ORG TYPE CANNOT BE DETERMINED! ------------------------------------${EOL}` +
-                        `Tests are mandatory for deployments to production and cannot be skipped. This deployment might fail as org${EOL}` +
-                        `type cannot be determined` +
-                        `-------------------------------------------------------------------------------------------------------------${EOL}`,
-                    LoggerLevel.WARN,
-                    this.logger
-                );
+        //Find Org Type
+        let orgDetails: OrgDetails;
+        try {
+            orgDetails = await new OrgDetailsFetcher(target_org).getOrgDetails();
+        } catch (err) {
+            SFPLogger.log(`Unable to fetch org details,assuming it is production`, LoggerLevel.WARN, this.logger);
+            orgDetails = {
+                instanceUrl: undefined,
+                isSandbox: false,
+                organizationType: undefined,
+                sfdxAuthUrl: undefined,
+                status: undefined,
+            };
+        }
 
-                deploymentOptions.testLevel = TestLevel.RunLocalTests;
-                return deploymentOptions;
-            }
-
-            if (orgDetails?.isSandbox) {
-                if (!this.options.isInstallingForValidation)
-                    SFPLogger.log(
-                        ` ------------------------------------WARNING! SKIPPING TESTS-------------------------------------------------${EOL}` +
-                            `  Skipping tests for deployment to sandbox. Be cautious that deployments to prod will require tests and >75% code coverage ${EOL}` +
-                            `-------------------------------------------------------------------------------------------------------------`,
-                        LoggerLevel.WARN,
-                        this.logger
+        if (this.sfpPackage.isApexFound) {
+            if (orgDetails.isSandbox) {
+                if (skipTest) {
+                    deploymentOptions.testLevel = TestLevel.RunNoTests;
+                } else if (this.sfpPackage.apexTestClassses.length > 0 && optimizeDeployment) {
+                    deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                    deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
+                        this.sfpPackage.apexTestClassses
                     );
-                deploymentOptions.testLevel = TestLevel.RunNoTests;
+                } else {
+                    deploymentOptions.testLevel = TestLevel.RunLocalTests;
+                }
             } else {
-                SFPLogger.log(
-                    `---------------------WARNING! TESTS ARE MANDATORY FOR PROD DEPLOYMENTS------------------------------------${EOL}` +
-                        `Tests are mandatory for deployments to production and cannot be skipped. Running all local tests! ${EOL}` +
-                        `-------------------------------------------------------------------------------------------------------------`,
-                    LoggerLevel.WARN,
-                    this.logger
-                );
-                deploymentOptions.testLevel = TestLevel.RunLocalTests;
-            }
-        } else if (this.sfpPackage.isApexFound) {
-            if (this.sfpPackage.isTriggerAllTests) {
-                deploymentOptions.testLevel = TestLevel.RunLocalTests;
-            } else if (this.sfpPackage.apexTestClassses?.length > 0 && optimizeDeployment) {
-                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
-                deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
-                    this.sfpPackage.apexTestClassses
-                );
-            } else {
-                deploymentOptions.testLevel = TestLevel.RunLocalTests;
+                if (this.sfpPackage.apexTestClassses.length > 0 && optimizeDeployment) {
+                    deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                    deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
+                        this.sfpPackage.apexTestClassses
+                    );
+                } else {
+                    deploymentOptions.testLevel = TestLevel.RunLocalTests;
+                }
             }
         } else {
-            deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
-            deploymentOptions.specifiedTests = 'skip';
+            if (orgDetails.isSandbox) {
+                deploymentOptions.testLevel = TestLevel.RunNoTests;
+            } else {
+                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                deploymentOptions.specifiedTests = 'skip';
+            }
         }
+
         return deploymentOptions;
     }
 

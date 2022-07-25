@@ -13,7 +13,7 @@ import SFPLogger, {
     COLOR_SUCCESS,
     COLOR_WARNING,
     COLOR_KEY_MESSAGE,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'release');
@@ -51,7 +51,7 @@ export default class Release extends SfpowerscriptsCommand {
         scope: flags.string({
             description: messages.getMessage('scopeFlagDescription'),
             dependsOn: ['npm'],
-            parse: (scope) => scope.replace(/@/g, '').toLowerCase(),
+            parse: async (scope) => scope.replace(/@/g, '').toLowerCase()
         }),
         npmrcpath: flags.filepath({
             description: messages.getMessage('npmrcPathFlagDescription'),

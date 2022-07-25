@@ -1,15 +1,15 @@
 import { SfdxCommand } from '@salesforce/command';
-import { OutputFlags } from '@oclif/parser';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import * as rimraf from 'rimraf';
 import ProjectValidation from './ProjectValidation';
 import DemoReelPlayer from './impl/demoreelplayer/DemoReelPlayer';
-import { fs } from '@salesforce/core';
+import * as fs from "fs-extra";
 import SFPLogger, {
     COLOR_HEADER,
     ConsoleLogger,
     LoggerLevel,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
+import { OutputFlags } from '@oclif/core/lib/interfaces';
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -50,6 +50,10 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
         this.setLogLevel();
 
+        if (this.flags.json) {
+            SFPLogger.disableLogs();
+        }
+
         // Setting the environment variable for disabling sfpowerkit header
 
         if (SFPLogger.logLevel > LoggerLevel.DEBUG) process.env.SFPOWERKIT_NOHEADER = 'true';
@@ -70,7 +74,6 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         if (this.statics.requiresProject) {
             let projectValidation = new ProjectValidation();
             projectValidation.validateSFDXProjectJSON();
-            projectValidation.validatePackageBuildNumbers();
             projectValidation.validatePackageNames();
         }
 
@@ -91,18 +94,24 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
             }
         }
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
-        SFPLogger.log(
-            COLOR_HEADER(
-                `sfpowerscripts  -- The DX@Scale CI/CD Orchestrator -Version:${this.sfpowerscriptsConfig.version} -Release:${this.sfpowerscriptsConfig.pjson.release}`
-            )
-        );
+        if (!this.flags.json) {
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `-------------------------------------------------------------------------------------------`
+                )
+            );
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `sfpowerscripts  -- The DX@Scale CI/CD Orchestrator -Version:${this.sfpowerscriptsConfig.version} -Release:${this.sfpowerscriptsConfig.pjson.release}`
+                )
+            );
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `-------------------------------------------------------------------------------------------`
+                )
+            );
+        }
 
         if (!this.isSfpowerkitFound) {
             throw new Error('sfpowerscripts require sfpowerkit to function, please install sfpowerkit and try again!');
@@ -115,7 +124,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         }
 
         // Execute command run code
-        await this.execute();
+        return await this.execute();
     }
 
     /**

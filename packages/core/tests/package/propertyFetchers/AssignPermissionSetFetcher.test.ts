@@ -1,5 +1,5 @@
 import { jest, expect } from '@jest/globals';
-import { Logger } from '../../../src/logger/SFPLogger';
+import { Logger } from '@dxatscale/sfp-logger';
 import AssignPermissionSetFetcher from '../../../src/package/propertyFetchers/AssignPermissionSetFetcher';
 import PropertyFetcher from '../../../src/package/propertyFetchers/PropertyFetcher';
 import SfpPackage from '../../../src/package/SfpPackage';

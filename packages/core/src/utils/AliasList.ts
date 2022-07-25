@@ -1,34 +1,16 @@
-import { Aliases, AliasGroup } from '@salesforce/core';
-import { Dictionary } from '@salesforce/ts-types';
+import { StateAggregator } from '@salesforce/core';
+
 
 export async function convertAliasToUsername(alias: string) {
-    const aliases = await Aliases.create(Aliases.getDefaultOptions());
-    const keyValues = (aliases.getGroup(AliasGroup.ORGS) as Dictionary<string>) || {};
-    const aliasList = Object.keys(keyValues).map((alias) => ({
-        alias,
-        value: keyValues[alias],
-    }));
-
-    let matchedAlias = aliasList.find((elem) => {
-        return elem.alias === alias;
-    });
-
-    if (matchedAlias !== undefined) return matchedAlias.value;
-    else return alias;
+    const stateAggregator = await StateAggregator.getInstance();
+    await stateAggregator.orgs.readAll();
+    return await stateAggregator.aliases.resolveUsername(alias)
 }
 
 export async function convertUsernameToAlias(username: string) {
-    const aliases = await Aliases.create(Aliases.getDefaultOptions());
-    const keyValues = (aliases.getGroup(AliasGroup.ORGS) as Dictionary<string>) || {};
-    const aliasList = Object.keys(keyValues).map((alias) => ({
-        alias,
-        value: keyValues[alias],
-    }));
-
-    let matchedUsername = aliasList.find((elem) => {
-        return elem.value === username;
-    });
-
-    if (matchedUsername !== undefined) return matchedUsername.alias;
-    else return username;
+   
+    const stateAggregator = await StateAggregator.getInstance();
+    await stateAggregator.orgs.readAll();
+    return await stateAggregator.aliases.resolveAlias(username)
+  
 }

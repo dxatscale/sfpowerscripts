@@ -1,4 +1,4 @@
-import SFPLogger, { LoggerLevel, Logger } from '../../logger/SFPLogger';
+import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import { EOL } from 'os';
 import { ApexSortedByType, FileDescriptor } from '../../apex/parser/ApexTypeFetcher';
 import SFPStatsSender from '../../stats/SFPStatsSender';

@@ -1,5 +1,5 @@
 import { RunAllTestsInPackageOptions, RunApexTestSuitesOption, TestOptions } from './TestOptions';
-import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from '@dxatscale/sfp-logger';
 
 const Table = require('cli-table');
 

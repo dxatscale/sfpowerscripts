@@ -6,7 +6,7 @@ import SFPLogger, {
     LoggerLevel,
     Logger,
     COLOR_KEY_MESSAGE,
-} from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+} from '@dxatscale/sfp-logger';
 import { Stage } from '../Stage';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import InstallUnlockedPackageWrapper from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl';
@@ -19,9 +19,11 @@ import PoolJobExecutor, {
 import { Connection, Org } from '@salesforce/core';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
-import RelaxIPRange from '@dxatscale/sfpowerscripts.core/lib/iprange/RelaxIPRange';
 import VlocityPackUpdateSettings from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings';
 import VlocityInitialInstall from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall';
+import ScriptExecutor from '@dxatscale/sfpowerscripts.core/lib/scriptExecutor/ScriptExecutorHelpers';
+import DeploymentSettingsService from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentSettingsService';
+const fs = require('fs-extra');
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor {
@@ -69,6 +71,8 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
             await installUnlockedPackageWrapper.exec(true);
 
+            await this.preInstallScript(scratchOrg, hubOrg, packageLogger);
+
             SFPLogger.log(`Installing package depedencies to the ${scratchOrg.alias}`, LoggerLevel.INFO, packageLogger);
             SFPLogger.log(`Installing Package Dependencies of this repo in ${scratchOrg.alias}`);
 
@@ -91,7 +95,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
             //Hook Velocity Deployment
             if (this.pool.enableVlocity) await this.prepareVlocityDataPacks(scratchOrg, packageLogger, logLevel);
-
+            let deploymentSucceed;
             if (this.pool.installAll) {
                 let deploymentResult: DeploymentResult;
 
@@ -120,8 +124,12 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                     this.pool.succeedOnDeploymentErrors
                         ? this.handleDeploymentErrorsForPartialDeployment(scratchOrg, deploymentResult, packageLogger)
                         : this.handleDeploymentErrorsForFullDeployment(scratchOrg, deploymentResult, packageLogger);
+                    deploymentSucceed ='failed';
                 }
+                deploymentSucceed = 'succeed'
             }
+
+            await this.postInstallScript(scratchOrg, hubOrg, packageLogger, deploymentSucceed);
 
             return ok({ scratchOrgUsername: scratchOrg.username });
         } catch (error) {
@@ -227,13 +235,13 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         isRelaxAllIPRanges: boolean,
         relaxIPRanges: string[],
         logger: Logger
-    ): Promise<{ username: string; success: boolean }> {
+    ): Promise<void> {
         SFPLogger.log(`Relaxing ip ranges for scratchOrg with user ${conn.getUsername()}`, LoggerLevel.INFO);
         if (isRelaxAllIPRanges) {
             relaxIPRanges = [];
-            return new RelaxIPRange(logger).setIp(conn, relaxIPRanges, true);
+            return new DeploymentSettingsService(conn).relaxAllIPRanges(logger);
         } else {
-            return new RelaxIPRange(logger).setIp(conn, relaxIPRanges);
+            return new DeploymentSettingsService(conn).relaxAllIPRanges(logger,relaxIPRanges);
         }
     }
 
@@ -260,5 +268,32 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             LoggerLevel.INFO,
             logger
         );
+    }
+
+    public async preInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, packageLogger: any) {
+
+        if (fs.existsSync(this.pool.preDependencyInstallationScriptPath)) {
+            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.preDependencyInstallationScriptPath, LoggerLevel.INFO);
+            await ScriptExecutor.executeScript(
+                packageLogger,
+                this.pool.preDependencyInstallationScriptPath,
+                scratchOrg.username,
+                hubOrg.getUsername()
+            );
+        }
+    }
+
+    public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, packageLogger: any, deploymentStatus: string) {
+
+        if (fs.existsSync(this.pool.postDeploymentScriptPath)) {
+            SFPLogger.log(`Executing pre script for `+ scratchOrg.alias +', script path:'+ this.pool.postDeploymentScriptPath, LoggerLevel.INFO);
+            await ScriptExecutor.executeScript(
+                packageLogger,
+                this.pool.postDeploymentScriptPath,
+                scratchOrg.username,
+                hubOrg.getUsername(),
+                deploymentStatus
+            );
+        }
     }
 }

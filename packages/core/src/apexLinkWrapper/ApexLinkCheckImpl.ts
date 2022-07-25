@@ -1,5 +1,5 @@
 import { SFDXCommand } from '../command/SFDXCommand';
-import { Logger, LoggerLevel } from '../logger/SFPLogger';
+import { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 
 export default class ApexLinkCheckImpl extends SFDXCommand {
     public constructor(working_directory: string, logger: Logger, logLevel: LoggerLevel) {

@@ -3,7 +3,7 @@ import * as fs from 'fs-extra';
 import { EOL } from 'os';
 import { NativeMetricSender } from './NativeMetricSender';
 import { DataDogMetricsSender } from './nativeMetricSenderImpl/DataDogMetricSender';
-import { Logger } from '../logger/SFPLogger';
+import { Logger } from '@dxatscale/sfp-logger';
 import { NewRelicMetricSender } from './nativeMetricSenderImpl/NewRelicMetricSender';
 
 export default class SFPStatsSender {

@@ -13,7 +13,7 @@ import {
     CommonTokenStream,
     ParseTreeWalker,
 } from 'apex-parser';
-import SFPLogger, { LoggerLevel } from '../../logger/SFPLogger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { ApexClasses } from '../../package/SfpPackage';
 
 /**

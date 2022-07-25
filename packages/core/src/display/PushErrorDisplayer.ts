@@ -1,5 +1,5 @@
 const Table = require('cli-table');
-import SFPLogger, { Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 
 export default class PushErrorDisplayer {
     public static printMetadataFailedToPush(error: any, packageLogger: Logger) {
@@ -31,7 +31,7 @@ export default class PushErrorDisplayer {
             };
         } else if (error.name === 'DeployFailed') {
             table = new Table({
-                head: ['Metadata Type', 'API Name', 'Problem Type', 'Problem'],
+                head: ['Metadata Type', 'API Name', 'Problem Type', 'FilePath','Problem'],
             });
 
             pushComponentFailureIntoTable = (componentFailure) => {
@@ -40,6 +40,7 @@ export default class PushErrorDisplayer {
                     componentFailure.fullName,
                     componentFailure.problemType,
                     componentFailure.error,
+                    componentFailure.filePath,
                 ];
 
                 // Replace "undefined" values with "NA". cli-table breaks for undefined cells

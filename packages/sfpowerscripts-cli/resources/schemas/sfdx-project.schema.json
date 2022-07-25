@@ -463,6 +463,12 @@
                             "description": "Path to forceignore for build stage"
                         }
                     }
+                },
+                "disableEntitlementFilter": {
+                    "title": "Disable Entitlment filter",
+                    "type": "boolean",
+                    "description": "Disable Entitlement filtering in source package,which skips entitlements that are already in the target org",
+                    "default": false
                 }
             }
         }

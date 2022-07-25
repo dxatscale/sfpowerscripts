@@ -1,5 +1,5 @@
 import { Org } from '@salesforce/core';
-import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '../logger/SFPLogger';
+import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import PackageDetails from '../package/PackageDetails';
 import SfpPackage from '../package/SfpPackage';
 import QueryHelper from '../queryHelper/QueryHelper';
@@ -11,21 +11,25 @@ export default class SFPOrg extends Org {
     /**
      * Get list of all artifacts in an org
      */
-    public async getInstalledArtifacts(orderBy: string = `CreatedDate`) {
+    public async getInstalledArtifacts(orderBy: string = `CreatedDate`,logger?:Logger) {
+        let records=[]
         try {
-            let records = await QueryHelper.query<SfpowerscriptsArtifact2__c>(
+             records = await QueryHelper.query<SfpowerscriptsArtifact2__c>(
                 `SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c ORDER BY ${orderBy} ASC`,
                 this.getConnection(),
                 false
             );
             return records;
         } catch (error) {
-            throw new Error(
+            SFPLogger.log(
                 'Unable to fetch any sfpowerscripts artifacts in the org\n' +
-                    '1. sfpowerscripts package is notinstalled in the org\n' +
-                    '2. The required prerequisite object is not deployed to this org\n'
+                    '1. sfpowerscripts package is not installed in the org\n' +
+                    '2. The required prerequisite object is not deployed to this org\n',
+                LoggerLevel.WARN,
+                logger
             );
         }
+        return records;
     }
     /**
      * Check whether an artifact is installed in a Org
@@ -54,7 +58,6 @@ export default class SFPOrg extends Org {
                 }
             }
         } catch (error) {
-            console.log(error);
             SFPLogger.log(
                 'Unable to fetch any sfpowerscripts artifacts in the org\n' +
                     '1. sfpowerscripts package is not installed in the org\n' +
@@ -83,10 +86,10 @@ export default class SFPOrg extends Org {
             logger
         );
 
-        let packageName = sfpPackage.packageName;
+        let packageName = sfpPackage.package_name;
 
         if (artifactId == null) {
-            artifactId = await ObjectCRUDHelper.createRecord<SfpowerscriptsArtifact2__c>(
+            artifactId = await ObjectCRUDHelper.createRecord(
                 this.getConnection(),
                 'SfpowerscriptsArtifact2__c',
                 {
@@ -97,7 +100,7 @@ export default class SFPOrg extends Org {
                 }
             );
         } else {
-            artifactId = await ObjectCRUDHelper.updateRecord<SfpowerscriptsArtifact2__c>(
+            artifactId = await ObjectCRUDHelper.updateRecord(
                 this.getConnection(),
                 'SfpowerscriptsArtifact2__c',
                 {
@@ -182,8 +185,55 @@ export default class SFPOrg extends Org {
         } else throw new Error('Package Type Information can only be fetched from a DevHub');
     }
 
-    public async getAlias():Promise<string>{
+    public async getAlias(): Promise<string> {
         return await convertUsernameToAlias(this.getUsername());
+    }
+
+    /**
+     *  Return all artifacts including sfpowerscripts as well as external unlocked/managed
+     */
+    public async getAllInstalledArtifacts():Promise<InstalledArtifact[]> {
+        let artifacts = await this.getInstalledArtifacts(`Name`);
+        let installedArtifacts: InstalledArtifact[]=[];
+        let installed2GPPackages = await this.getAllInstalled2GPPackages();
+
+        artifacts.forEach((artifact) => {
+            let installedArtifact: InstalledArtifact = {
+                name: artifact.Name,
+                version: artifact.Version__c,
+                commitId:artifact.CommitId__c,
+                isInstalledBySfpowerscripts: true,
+            };
+            let packageFound = installed2GPPackages.find((elem) => elem.name == artifact.Name);
+            if (packageFound) {
+                installedArtifact.subscriberVersion = packageFound.subscriberPackageVersionId;
+                if (packageFound.isOrgDependent) installedArtifact.type = `OrgDependendent`;
+                else installedArtifact.type = `Unlocked`;
+            } else {
+                installedArtifact.subscriberVersion = `N/A`;
+                installedArtifact.type = `Source/Data`;
+            }
+            installedArtifacts.push(installedArtifact);
+        });
+
+        installed2GPPackages.forEach((installed2GPPackage) => {
+            let packageFound = installedArtifacts.find((elem) => elem.name == installed2GPPackage.name);
+            if (!packageFound) {
+                let installedArtifact: InstalledArtifact = {
+                    name: installed2GPPackage.name,
+                    version: installed2GPPackage.versionNumber,
+                    commitId: `N/A`,
+                };
+                if (installed2GPPackage.isOrgDependent) installedArtifact.type = `OrgDependendent`;
+                else if (installed2GPPackage.type == `Managed`) installedArtifact.type = `Managed`;
+                else installedArtifact.type = `Unlocked`;
+
+                installedArtifact.subscriberVersion = installed2GPPackage.subscriberPackageVersionId;
+                installedArtifact.isInstalledBySfpowerscripts = false;
+                installedArtifacts.push(installedArtifact);
+            }
+        });
+        return installedArtifacts;
     }
 }
 
@@ -192,6 +242,16 @@ const packageQuery =
     'FROM Package2 ' +
     'WHERE IsDeprecated != true ' +
     'ORDER BY NamespacePrefix, Name';
+
+
+export interface InstalledArtifact {
+    name: string;
+    version: string;
+    commitId?: string;
+    subscriberVersion?: string;
+    type?: string;
+    isInstalledBySfpowerscripts?: boolean;
+}
 
 export interface SfpowerscriptsArtifact2__c {
     Id?: string;

@@ -7,7 +7,7 @@ const fs = require('fs-extra');
 const path = require('path');
 import * as rimraf from 'rimraf';
 const Table = require('cli-table');
-import SFPLogger, { LoggerLevel, COLOR_SUCCESS } from '@dxatscale/sfpowerscripts.core/lib/logger/SFPLogger';
+import SFPLogger, { LoggerLevel, COLOR_SUCCESS } from '@dxatscale/sfp-logger';
 import lodash = require('lodash');
 
 // Initialize Messages with the current plugin directory
@@ -15,7 +15,18 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'analyze_with_PMD');
+const messages = Messages.load('@dxatscale/sfpowerscripts', 'analyze_with_PMD',[
+    'sourceDirectoryFlagDescription',
+    'rulesetFlagDescription',
+    'rulesetPathFlagDescription',
+    'formatFlagDescription',
+    'outputPathFlagDescription',
+    'thresholdFlagDescription',
+    'versionFlagDescription',
+    'isToBreakBuildFlagDescription',
+    'refNameFlagDescription',
+    'commandDescription'
+]);
 
 export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');

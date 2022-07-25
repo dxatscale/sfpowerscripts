@@ -7,18 +7,14 @@
     "devDependencies": {
         "@commitlint/cli": "^15.0.0",
         "@commitlint/config-conventional": "^15.0.0",
-        "@oclif/dev-cli": "^1.26.5",
-        "@oclif/test": "^1",
-        "@salesforce/dev-config": "1.4.1",
         "@types/async-retry": "^1.4.2",
         "@types/fs-extra": "^9.0.11",
         "@types/mocha": "^5.2.7",
         "@types/node": "^10",
         "@types/q": "^1.5.2",
         "@types/xml2js": "^0.4.5",
-        "lerna": "^4.0.0",
+        "lerna": "^5.1.8",
         "lerna-update-wizard": "^1.1.0",
-        "node": "^11.0.0",
         "prettier": "^2.0.5",
         "rimraf": "^3.0.2",
         "semver": "7.3.6",
@@ -28,6 +24,7 @@
         "typescript": "^4.0.2"
     },
     "dependencies": {
+        "@dxatscale/sfp-logger": "1.0.2",
         "neverthrow": "^4.2.1"
     }
 }
