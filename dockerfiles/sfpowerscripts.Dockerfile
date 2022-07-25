@@ -77,10 +77,10 @@ RUN export XDG_DATA_HOME && \
 RUN npm install --global yarn
 
 # Install sfdx-cli
-RUN yarn global add sfdx-cli@7.156.1 
+RUN yarn global add sfdx-cli@7.160.0 
 
 # Install vlocity
-RUN yarn global add vlocity@1.15.2
+RUN yarn global add vlocity@1.15.6
 
 #Install Puppeteer
 RUN yarn global add puppeteer@10.4.0
@@ -110,8 +110,8 @@ RUN cd $HOME/sfpowerkit \
 # Install sfdx plugins
 RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.8.0
 RUN echo 'y' | sfdx plugins:install apexlink@2.3.2
-RUN echo 'y' | sfdx plugins:install sfdmu@4.13.0
-RUN echo 'y' | sfdx plugins:install sfpowerkit@4.2.8
+RUN echo 'y' | sfdx plugins:install sfdmu@4.15.0
+RUN echo 'y' | sfdx plugins:install sfpowerkit@4.2.11
 
 
 
@@ -129,4 +129,4 @@ LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - June 22"
+LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - July 22"
