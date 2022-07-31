@@ -110,12 +110,14 @@ export default class Generate extends SfpowerscriptsCommand {
                 
                 if(!this.flags.branchname) {
                     branchName = releaseName;
+                }else {
+                    branchName = this.flags.branchname;
                 }
             } else {
                 releaseName = this.flags.releasename;
                 branchName = this.flags.branchname;
             }
-            
+
             let releaseDefinitionGenerator: ReleaseDefinitionGenerator = new ReleaseDefinitionGenerator(
                 sfpOrg,
                 releaseName,
