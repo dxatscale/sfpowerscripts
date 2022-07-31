@@ -12,9 +12,14 @@ import lodash = require('lodash');
 export default class PackageDependencyResolver {
     private package2VersionCache: Package2VersionCache = new Package2VersionCache();
 
-    constructor(private conn: Connection, private projectConfig, private packagesToBeBuilt: string[]) {
-      // prevent mutation of original config
-      this.projectConfig = lodash.cloneDeep(this.projectConfig);
+    constructor(
+        private conn: Connection,
+        private projectConfig,
+        private packagesToBeBuilt?: string[],
+        private resolveExternalDepenciesOnly?: boolean
+    ) {
+        // prevent mutation of original config
+        this.projectConfig = lodash.cloneDeep(this.projectConfig);
     }
 
     /**
@@ -24,26 +29,34 @@ export default class PackageDependencyResolver {
      */
     public async resolvePackageDependencyVersions() {
         for (const packageDirectory of this.projectConfig.packageDirectories) {
-            if (this.packagesToBeBuilt.includes(packageDirectory.package)) {
-                if (packageDirectory.dependencies && Array.isArray(packageDirectory.dependencies)) {
-                    for (const dependency of packageDirectory.dependencies) {
-                        if (this.isSubscriberPackageVersionId(this.projectConfig.packageAliases[dependency.package])) {
-                            // Already resolved
-                            continue;
-                        }
+            if (this.packagesToBeBuilt && !this.packagesToBeBuilt.includes(packageDirectory.package)) {
+                continue;
+            }
 
-                        if (this.packagesToBeBuilt.includes(dependency.package)) {
-                            // Dependency is part of the same build, will be resolved when new version is created
-                            continue;
-                        }
-
-                        const package2VersionForDependency = await this.getPackage2VersionForDependency(
-                            this.conn,
-                            dependency
-                        );
-
-                        dependency.versionNumber = `${package2VersionForDependency.MajorVersion}.${package2VersionForDependency.MinorVersion}.${package2VersionForDependency.PatchVersion}.${package2VersionForDependency.BuildNumber}`;
+            if (packageDirectory.dependencies && Array.isArray(packageDirectory.dependencies)) {
+                for (let i=0;i<packageDirectory.dependencies.length;i++) {
+                    let dependency=packageDirectory.dependencies[i];
+                    if (this.isSubscriberPackageVersionId(this.projectConfig.packageAliases[dependency.package])) {
+                        // Already resolved
+                        continue;
                     }
+
+                    if (this.packagesToBeBuilt && this.packagesToBeBuilt.includes(dependency.package)) {
+                        // Dependency is part of the same build, will be resolved when new version is created
+                        continue;
+                    }
+
+                    const package2VersionForDependency = await this.getPackage2VersionForDependency(
+                        this.conn,
+                        dependency
+                    );
+
+               
+                    if (package2VersionForDependency == null) {
+                        packageDirectory.dependencies.splice(i, 1);
+                        i--;
+                    } else
+                        dependency.versionNumber = `${package2VersionForDependency.MajorVersion}.${package2VersionForDependency.MinorVersion}.${package2VersionForDependency.PatchVersion}.${package2VersionForDependency.BuildNumber}`;
                 }
             }
         }
@@ -100,7 +113,8 @@ export default class PackageDependencyResolver {
         }
 
         if (this.projectConfig.packageDirectories.find((dir) => dir.package === dependency.package)) {
-            package2Version = await this.getPackage2VersionFromCurrentBranch(package2Versions, dependency);
+            if (this.resolveExternalDepenciesOnly) return null;
+            else package2Version = await this.getPackage2VersionFromCurrentBranch(package2Versions, dependency);
         } else {
             // Take last validated package for external packages
             package2Version = package2Versions[0];

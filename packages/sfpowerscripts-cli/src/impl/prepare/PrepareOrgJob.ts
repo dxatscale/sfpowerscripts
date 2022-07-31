@@ -1,5 +1,3 @@
-import InstallPackageDependenciesImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl';
-import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../deploy/DeployImpl';
 import SFPLogger, {
     FileLogger,
@@ -23,13 +21,16 @@ import VlocityPackUpdateSettings from '@dxatscale/sfpowerscripts.core/lib/vlocit
 import VlocityInitialInstall from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall';
 import ScriptExecutor from '@dxatscale/sfpowerscripts.core/lib/scriptExecutor/ScriptExecutorHelpers';
 import DeploymentSettingsService from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentSettingsService';
+import PackageDetails from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import { PackageDetailBasedInstaller } from '../dependencies/PackageDetailBasedInstaller';
 const fs = require('fs-extra');
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor {
     private checkPointPackages: string[];
 
-    public constructor(protected pool: PoolConfig) {
+    public constructor(protected pool: PoolConfig,private externalPackage2s:PackageDetails[]) {
         super(pool);
     }
 
@@ -74,22 +75,13 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             await this.preInstallScript(scratchOrg, hubOrg, packageLogger);
 
             SFPLogger.log(`Installing package depedencies to the ${scratchOrg.alias}`, LoggerLevel.INFO, packageLogger);
+
+
             SFPLogger.log(`Installing Package Dependencies of this repo in ${scratchOrg.alias}`);
 
-            // Install Dependencies
-            let installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
-                scratchOrg.username,
-                hubOrg.getUsername(),
-                120,
-                null,
-                this.pool.keys,
-                true,
-                packageLogger
-            );
-            let installationResult = await installDependencies.exec();
-            if (installationResult.result == PackageInstallationStatus.Failed) {
-                throw new Error(installationResult.message);
-            }
+            let sfpOrg = await SFPOrg.create({aliasOrUsername:scratchOrg.alias});
+            let packageDetailsBasedInstaller = new PackageDetailBasedInstaller(sfpOrg,this.externalPackage2s,true,packageLogger);
+            await packageDetailsBasedInstaller.install();
 
             SFPLogger.log(`Successfully completed Installing Package Dependencies of this repo in ${scratchOrg.alias}`);
 
