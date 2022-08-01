@@ -20,7 +20,7 @@ export default class InstallUnlockedPackageWrapper extends SFDXCommand {
     }
 
     public async exec(quiet?: boolean): Promise<any> {
-        let result = await super.exec(quiet, 0, quiet);
+        let result = await super.exec(quiet, 0, !quiet);
         return result;
     }
 
