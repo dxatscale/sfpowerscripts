@@ -1,14 +1,18 @@
 import { Connection } from '@salesforce/core';
 import PackageDependencyResolver from './PackageDependencyResolver';
-import Package2VersionFetcher from '@dxatscale/sfpowerscripts.core/lib/package/version/Package2VersionFetcher';
 import _ from 'lodash';
-import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
+import Package2VersionFetcher from '../version/Package2VersionFetcher';
+import Package2Detail from '../Package2Detail';
 
+
+/**
+ * Resolves external package dependency versions to their subscriber version
+ */
 export default class ExternalPackage2DependencyResolver {
     //TOOD: Finalize Keys
     constructor(private conn: Connection, private projectConfig, private keys) {}
 
-    public async fetchExternalPackage2Dependencies(): Promise<Package2Detail[]> {
+    public async fetchExternalPackage2Dependencies(pkg?:string): Promise<Package2Detail[]> {
 
         //Do a dependency resolution first only for external dependencies
         //Resolve .LATEST to exact version numbers
@@ -16,6 +20,7 @@ export default class ExternalPackage2DependencyResolver {
             this.conn,
             this.projectConfig,
             null,
+            pkg?[pkg]:null,
             true
         ).resolvePackageDependencyVersions();
 
@@ -24,6 +29,10 @@ export default class ExternalPackage2DependencyResolver {
 
         //Resolve provided version Number to SubscriberVersionId
         for (const packageDirectory of revisedProjectConfig.packageDirectories) {
+
+            if(pkg && packageDirectory.package!=pkg)
+              continue;
+
             if (packageDirectory.dependencies && Array.isArray(packageDirectory.dependencies)) {
                 for (let i = 0; i < packageDirectory.dependencies.length; i++) {
                     let dependency = packageDirectory.dependencies[i];

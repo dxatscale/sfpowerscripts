@@ -1,7 +1,7 @@
 import { SFDXCommand } from '../command/SFDXCommand';
 import { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 
-export default class InstallUnlockedPackageImpl extends SFDXCommand {
+export default class InstallUnlockedPackageWrapper extends SFDXCommand {
     public constructor(
         logger: Logger,
         logLevel: LoggerLevel,
@@ -20,7 +20,7 @@ export default class InstallUnlockedPackageImpl extends SFDXCommand {
     }
 
     public async exec(quiet?: boolean): Promise<any> {
-        let result = await super.exec(quiet, 0, true);
+        let result = await super.exec(quiet, 0, quiet);
         return result;
     }
 

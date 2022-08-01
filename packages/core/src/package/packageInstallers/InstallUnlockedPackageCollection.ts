@@ -1,22 +1,21 @@
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import InstallUnlockedPackageWrapper from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallUnlockedPackageImpl';
-import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
+import Package2Detail from '../Package2Detail';
+import InstallUnlockedPackageWrapper from '../../sfdxwrappers/InstallUnlockedPackageWrapper';
+import SFPOrg from '../../org/SFPOrg';
 
-export class PackageDetailBasedInstaller {
+export default class InstallUnlockedPackageCollection {
     private installedPackages: Package2Detail[];
-    constructor(
-        private sfpOrg: SFPOrg,
-        private package2s: Package2Detail[],
-        private skipIfInstalled: boolean,
-        private logger: Logger
-    ) {}
+    constructor(private sfpOrg: SFPOrg, private logger: Logger) {}
 
-    public async install() {
+    public async install(
+        package2s: Package2Detail[],
+        skipIfInstalled: boolean,
+        ignoreErrorIfAHigherVersionPackageIsInstalled: boolean = true
+    ) {
         this.installedPackages = await this.sfpOrg.getAllInstalled2GPPackages();
 
-        for (const package2 of this.package2s) {
-            if (this.isPackageToBeInstalled(this.skipIfInstalled, package2.subscriberPackageVersionId)) {
+        for (const package2 of package2s) {
+            if (this.isPackageToBeInstalled(skipIfInstalled, package2.subscriberPackageVersionId)) {
                 SFPLogger.log(
                     `Installing Package ${package2.name} in ${this.sfpOrg.getUsername()}`,
                     LoggerLevel.INFO,
@@ -31,10 +30,25 @@ export class PackageDetailBasedInstaller {
                     '120'
                 );
 
-                await installUnlockedPackageWrapper.exec(true);
+                try {
+                    await installUnlockedPackageWrapper.exec(true);
+                } catch (error) {
+                    let message: string = error.message;
+                    if (
+                        message.includes(`A newer version of this package is currently installed`) &&
+                        ignoreErrorIfAHigherVersionPackageIsInstalled
+                    ) {
+                        SFPLogger.log(
+                            `A higher version of this package is already installed and cant be dowgraded,skipping`,
+                            LoggerLevel.INFO,
+                            this.logger
+                        );
+                        continue;
+                    } else throw error;
+                }
             } else {
                 SFPLogger.log(
-                    `Skipping Installing of package ${package2.name} in ${this.sfpOrg.getAlias()}`,
+                    `Skipping Installing of package ${package2.name} in ${this.sfpOrg.getUsername()}`,
                     LoggerLevel.INFO,
                     this.logger
                 );
@@ -70,7 +84,7 @@ export class PackageDetailBasedInstaller {
                     return false;
                 } else {
                     SFPLogger.log(
-                        `Package to be installed was not found in the target org  ${this.sfpOrg.getUsername()}, Proceeding to instal.. `,
+                        `Package to be installed was not found in the target org  ${this.sfpOrg.getUsername()}, Proceeding to install.. `,
                         LoggerLevel.INFO,
                         this.logger
                     );

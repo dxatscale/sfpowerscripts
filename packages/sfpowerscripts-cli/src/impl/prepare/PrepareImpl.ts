@@ -1,7 +1,7 @@
 import { Org } from '@salesforce/core';
 import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
 import isValidSfdxAuthUrl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/prequisitecheck/IsValidSfdxAuthUrl';
-import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { Result } from 'neverthrow';
@@ -20,9 +20,9 @@ import OrgDetailsFetcher from '@dxatscale/sfpowerscripts.core/lib/org/OrgDetails
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import { EOL } from 'os';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import ExternalPackage2DependencyResolver, {
-} from '../dependencies/ExternalPackage2DependencyResolver';
+import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
 import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
+import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
 const Table = require('cli-table');
 
 export default class PrepareImpl {
@@ -55,24 +55,9 @@ export default class PrepareImpl {
         );
         let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies();
 
-        let table = new Table({
-            head: ['Order','Package', 'Version', 'Subscriber Version Id'],
-        });
-        if (externalPackage2s.length > 0) {
-            let i=0;
-            for (const externalPackage of externalPackage2s) {
-                table.push([
-                    i++,
-                    externalPackage.name,
-                    externalPackage.versionNumber ? externalPackage.versionNumber : 'N/A',
-                    externalPackage.subscriberPackageVersionId,
-                ]);
-            }
-        }
-
-        SFPLogger.log(EOL, LoggerLevel.INFO);
-        SFPLogger.log(COLOR_KEY_MESSAGE(`Resolved Package Dependencies`), LoggerLevel.INFO);
-        SFPLogger.log(table.toString(), LoggerLevel.INFO);
+        //Display resolved dependenencies
+        let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s,new ConsoleLogger());
+        externalDependencyDisplayer.display();
 
         return this.poolScratchOrgs(externalPackage2s);
     }

@@ -23,7 +23,7 @@ import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/pack
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { COLON_MIDDLE_BORDER_TABLE, ZERO_BORDER_TABLE } from '../../ui/TableConstants';
-import PackageDependencyResolver from '../dependencies/PackageDependencyResolver';
+import PackageDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/PackageDependencyResolver';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;

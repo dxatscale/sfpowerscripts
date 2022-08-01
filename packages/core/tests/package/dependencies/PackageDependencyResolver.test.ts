@@ -1,7 +1,7 @@
 import { jest, expect } from '@jest/globals';
-import PackageDependencyResolver from "../../../src/impl/dependencies/PackageDependencyResolver";
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
 import { Connection, AuthInfo } from '@salesforce/core';
+import PackageDependencyResolver from '../../../src/package/dependencies/PackageDependencyResolver';
 const $$ = testSetup();
 
 const setupFakeConnection = async () => {
@@ -22,13 +22,13 @@ const setupFakeConnection = async () => {
   return conn;
 }
 
-jest.mock('../../../../core/lib/git/Git', () => {
+jest.mock('../../../../core/src/git/Git', () => {
   class Git {}
 
   return Git;
 });
 
-jest.mock('../../../../core/lib/git/GitTags', () => {
+jest.mock('../../../../core/src/git/GitTags', () => {
   class GitTags {
       async listTagsOnBranch(): Promise<string[]> {
           return gitTags;

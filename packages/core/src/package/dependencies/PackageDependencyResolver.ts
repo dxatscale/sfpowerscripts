@@ -1,13 +1,11 @@
-import Package2VersionFetcher, {
-    Package2Version,
-} from '@dxatscale/sfpowerscripts.core/lib/package/version/Package2VersionFetcher';
 import { Connection } from '@salesforce/core';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
-import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags';
 import lodash = require('lodash');
+import Git from '../../git/Git';
+import GitTags from '../../git/GitTags';
+import Package2VersionFetcher, { Package2Version } from '../version/Package2VersionFetcher';
 
 /**
- * Resolves package dependency versions in project config, for Build orchestrator command
+ * Resolves package dependency versions to their exact versions
  */
 export default class PackageDependencyResolver {
     private package2VersionCache: Package2VersionCache = new Package2VersionCache();
@@ -15,7 +13,8 @@ export default class PackageDependencyResolver {
     constructor(
         private conn: Connection,
         private projectConfig,
-        private packagesToBeBuilt?: string[],
+        private packagesToBeSkipped?: string[],
+        private packagesToBeResolved?: string[],
         private resolveExternalDepenciesOnly?: boolean
     ) {
         // prevent mutation of original config
@@ -24,24 +23,32 @@ export default class PackageDependencyResolver {
 
     /**
      * Resolves package dependency versions in project config
-     * Skips dependencies on packages that are queued for build, as they are resolved dynamically
+     * Skips dependencies on packages that are queued for build, as they are resolved dynamically(packagesToBeSkipped)
      * @returns new project config JSON, does not change original JSON
      */
     public async resolvePackageDependencyVersions() {
         for (const packageDirectory of this.projectConfig.packageDirectories) {
-            if (this.packagesToBeBuilt && !this.packagesToBeBuilt.includes(packageDirectory.package)) {
+            if (this.packagesToBeResolved?.length > 0 && this.packagesToBeSkipped?.length > 0) {
+                throw Error(`Unsupported path.. Use only one at a time`);
+            }
+
+            if (this.packagesToBeSkipped && !this.packagesToBeSkipped.includes(packageDirectory.package)) {
+                continue;
+            }
+
+            if (this.packagesToBeResolved && !this.packagesToBeResolved.includes(packageDirectory.package)) {
                 continue;
             }
 
             if (packageDirectory.dependencies && Array.isArray(packageDirectory.dependencies)) {
-                for (let i=0;i<packageDirectory.dependencies.length;i++) {
-                    let dependency=packageDirectory.dependencies[i];
+                for (let i = 0; i < packageDirectory.dependencies.length; i++) {
+                    let dependency = packageDirectory.dependencies[i];
                     if (this.isSubscriberPackageVersionId(this.projectConfig.packageAliases[dependency.package])) {
                         // Already resolved
                         continue;
                     }
 
-                    if (this.packagesToBeBuilt && this.packagesToBeBuilt.includes(dependency.package)) {
+                    if (this.packagesToBeSkipped && this.packagesToBeSkipped.includes(dependency.package)) {
                         // Dependency is part of the same build, will be resolved when new version is created
                         continue;
                     }
@@ -51,7 +58,6 @@ export default class PackageDependencyResolver {
                         dependency
                     );
 
-               
                     if (package2VersionForDependency == null) {
                         packageDirectory.dependencies.splice(i, 1);
                         i--;
@@ -74,6 +80,12 @@ export default class PackageDependencyResolver {
         conn: Connection,
         dependency: { package: string; versionNumber: string }
     ): Promise<Package2Version> {
+
+        //Dont hit api's if its only for external dependencies
+        if (this.projectConfig.packageDirectories.find((dir) => dir.package === dependency.package)) {
+            if (this.resolveExternalDepenciesOnly) return null;
+        }
+
         let package2Version: Package2Version;
 
         let versionNumber: string = dependency.versionNumber;
@@ -113,8 +125,7 @@ export default class PackageDependencyResolver {
         }
 
         if (this.projectConfig.packageDirectories.find((dir) => dir.package === dependency.package)) {
-            if (this.resolveExternalDepenciesOnly) return null;
-            else package2Version = await this.getPackage2VersionFromCurrentBranch(package2Versions, dependency);
+            package2Version = await this.getPackage2VersionFromCurrentBranch(package2Versions, dependency);
         } else {
             // Take last validated package for external packages
             package2Version = package2Versions[0];
