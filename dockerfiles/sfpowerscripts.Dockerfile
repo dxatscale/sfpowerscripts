@@ -112,7 +112,8 @@ RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.8.0
 RUN echo 'y' | sfdx plugins:install apexlink@2.3.2
 RUN echo 'y' | sfdx plugins:install sfdmu@4.15.0
 RUN echo 'y' | sfdx plugins:install sfpowerkit@4.2.11
-
+# Downgraded Data plugin to 2.0.0
+RUN echo 'y' | sfdx plugins:install data@2.0.0
 
 
 # install sfpowerscripts
