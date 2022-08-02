@@ -189,8 +189,11 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     }
 
     private async installPackageDependencies(scratchOrgAsSFPOrg: SFPOrg,sfpPackage:SfpPackage) {
-        this.printOpenLoggingGroup(
-            `Installing package Dependencies of this ${sfpPackage.packageName}  in ${scratchOrgAsSFPOrg.getUsername()}`
+    
+       SFPLogger.log(
+            `Installing package dependencies of this ${sfpPackage.packageName}  in ${scratchOrgAsSFPOrg.getUsername()}`,
+            LoggerLevel.INFO,
+            new ConsoleLogger()
         );
 
         //Resolve external package dependencies
@@ -208,12 +211,12 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         let packageCollectionInstaller = new InstallUnlockedPackageCollection(scratchOrgAsSFPOrg, new ConsoleLogger());
         await packageCollectionInstaller.install(externalPackage2s, true, true);
 
-        console.log(
+        SFPLogger.log(
             COLOR_KEY_MESSAGE(
                 `Successfully completed external dependencies of this ${sfpPackage.packageName} in ${scratchOrgAsSFPOrg.getUsername()}`
             )
         );
-        this.printClosingLoggingGroup();
+      
     }
 
     private async handleScratchOrgStatus(
