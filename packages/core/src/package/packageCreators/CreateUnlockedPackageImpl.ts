@@ -167,6 +167,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
         delete packageDescriptorInWorkingDirectory['aliasfy'];
         delete packageDescriptorInWorkingDirectory['checkpointForPrepare'];
         delete packageDescriptorInWorkingDirectory['testSynchronous'];
+        delete packageDescriptorInWorkingDirectory['tags'];
 
         fs.writeJsonSync(path.join(workingDirectory, 'sfdx-project.json'), projectManifestFromWorkingDirectory);
     }
