@@ -116,6 +116,9 @@
                     "skipCoverageValidation": {
                         "$ref": "#/definitions/packageDirectory.skipCoverageValidation"
                     },
+                    "tags":{
+                        "$ref": "#/definitions/packageDirectory.tags"
+                    },
                     "testSynchronous": {
                         "$ref": "#/definitions/packageDirectory.testSynchronous"
                     },
@@ -405,6 +408,14 @@
             "type": "boolean",
             "title": "Skip Test Coverage Validation",
             "description": "Skip the coverage validation of a package (unlocked/source)"
+        },
+        "packageDirectory.tags": {
+            "type": "array",
+            "title": "Annotate a package with tags",
+            "description": "Utilize this to annotate a package with tags",
+            "items": {
+                "type": "string"
+            }
         },
         "packageDirectory.testSynchronous": {
             "type": "boolean",
