@@ -190,12 +190,6 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
     private async installPackageDependencies(scratchOrgAsSFPOrg: SFPOrg,sfpPackage:SfpPackage) {
     
-       SFPLogger.log(
-            `Installing package dependencies of this ${sfpPackage.packageName}  in ${scratchOrgAsSFPOrg.getUsername()}`,
-            LoggerLevel.INFO,
-            new ConsoleLogger()
-        );
-
         //Resolve external package dependencies
         let externalPackageResolver = new ExternalPackage2DependencyResolver(
             this.props.hubOrg.getConnection(),
@@ -204,6 +198,12 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         );
         let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies(sfpPackage.packageName);
 
+
+        SFPLogger.log(
+            `Installing package dependencies of this ${sfpPackage.packageName}  in ${scratchOrgAsSFPOrg.getUsername()}`,
+            LoggerLevel.INFO,
+            new ConsoleLogger()
+        );
         //Display resolved dependenencies
         let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s, new ConsoleLogger());
         externalDependencyDisplayer.display();
