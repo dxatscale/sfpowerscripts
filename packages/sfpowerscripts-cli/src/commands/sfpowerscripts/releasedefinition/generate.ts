@@ -25,14 +25,13 @@ export default class Generate extends SfpowerscriptsCommand {
             required:true,
             description: messages.getMessage('configFileFlagDescription'),
         }),
-        push: flags.boolean({
-            description: messages.getMessage('pushFlagDescription'),
-            default: false,
-        }),
         branchname: flags.string({
             char: 'b',
-            dependsOn: ['push'],
             description: messages.getMessage('branchNameFlagDescription'),
+        }),
+        push: flags.boolean({
+            description: messages.getMessage('pushFlagDescription'),
+            dependsOn: ['branchname'],
         }),
         forcepush: flags.boolean({
             description: messages.getMessage('forcePushFlagDescription'),
