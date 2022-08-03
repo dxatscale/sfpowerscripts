@@ -508,6 +508,13 @@ export default class BuildImpl {
         isValidateMode: boolean
     ): Promise<SfpPackage> {
         console.log(COLOR_KEY_MESSAGE(`Package creation initiated for  ${sfdx_package}`));
+        let configFilePath = this.props.configFilePath
+        if(this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles){
+            if(this.projectConfig.plugins.sfpowerscripts.scratchOrgDefFilePaths.packages[sfdx_package]){
+                configFilePath = this.projectConfig.plugins.sfpowerscripts.soDefinitionFiles.packages[sfdx_package]
+                console.log(COLOR_KEY_MESSAGE(`Matched sratch org definition file found for ${sfdx_package}: ${configFilePath}`));
+            }
+        }
 
         return SfpPackageBuilder.buildPackageFromProjectDirectory(
             new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`),
@@ -519,7 +526,7 @@ export default class BuildImpl {
                 branch: this.props.branch,
                 sourceVersion: this.commit_id,
                 repositoryUrl: this.repository_url,
-                configFilePath: this.props.configFilePath,
+                configFilePath: configFilePath,
                 pathToReplacementForceIgnore: this.getPathToForceIgnoreForCurrentStage(
                     this.projectConfig,
                     this.props.currentStage

@@ -475,6 +475,23 @@
                         }
                     }
                 },
+                "scratchOrgDefFilePaths": {
+                    "type": "object",
+                    "title": "Scratch Org Definition Files",
+                    "description": "Map of packages to scratch org definition files filepaths",
+                    "properties": {
+                        "enableMultiDefinitionFiles": {
+                            "type": "boolean",
+                            "title": "Enable Multi Definition Files",
+                            "description": "Enable multi definition files for different packages"
+                        },
+                        "packages": {
+                            "type": "object",
+                            "title": "Packages with filepaths",
+                            "description": "Path to scratch org definition for packages"
+                        }
+                    }
+                },
                 "disableEntitlementFilter": {
                     "title": "Disable Entitlment filter",
                     "type": "boolean",
