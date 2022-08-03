@@ -90,7 +90,7 @@ export default class Generate extends SfpowerscriptsCommand {
             let sfpOrg: SFPOrg = await SFPOrg.create({ connection: this.org.getConnection() });
 
             //grab release name from changelog.json
-            let releaseName;
+            let releaseName, branchName;
             if (this.flags.changelogbranchref) {
                 const git: Git = new Git(null);
                 await git.fetch();
@@ -107,14 +107,21 @@ export default class Generate extends SfpowerscriptsCommand {
                 let name = release.names.pop();
                 let buildNumber = release.buildNumber;
                 releaseName = name.replace(/[/\\?%*:|"<>]/g, '-').concat(`-`, buildNumber.toString());
+                
+                if(!this.flags.branchname) {
+                    branchName = releaseName;
+                }else {
+                    branchName = this.flags.branchname;
+                }
             } else {
-                releaseName = this.flags.releaseName;
+                releaseName = this.flags.releasename;
+                branchName = this.flags.branchname;
             }
 
             let releaseDefinitionGenerator: ReleaseDefinitionGenerator = new ReleaseDefinitionGenerator(
                 sfpOrg,
                 releaseName,
-                this.flags.branchname,
+                branchName,
                 this.flags.workitemfilter,
                 this.flags.workitemurl,
                 this.flags.showallartifacts,
