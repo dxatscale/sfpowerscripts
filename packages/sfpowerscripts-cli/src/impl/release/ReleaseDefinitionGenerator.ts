@@ -19,7 +19,7 @@ export default class ReleaseDefinitionGenerator {
     private _releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema;
     private releaseName;
 
-    get releaseDefinitionGenratorConfigSchema() {
+    get releaseDefinitionGeneratorConfigSchema() {
         // Return clone of releaseDefinition for immutability
         return lodash.cloneDeep(this._releaseDefinitionGeneratorSchema);
     }
@@ -103,7 +103,7 @@ export default class ReleaseDefinitionGenerator {
                     for (const packageAlias of packageAliases) {
                         if (installedArtifact.subscriberVersion == projectConfig.packageAliases[packageAlias]) {
                             if (
-                                !this.releaseDefinitionGenratorConfigSchema.excludePackageDependencies?.includes(
+                                !this.releaseDefinitionGeneratorConfigSchema.excludePackageDependencies?.includes(
                                     installedArtifact.name
                                 )
                             )
@@ -115,7 +115,7 @@ export default class ReleaseDefinitionGenerator {
                     let packageFound = packagesInRepo.find((elem) => elem == installedArtifact.name);
                     if (packageFound) {
                         if (
-                            !this.releaseDefinitionGenratorConfigSchema.excludeArtifacts?.includes(
+                            !this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts?.includes(
                                 installedArtifact.name
                             )
                         ) {
@@ -141,7 +141,7 @@ export default class ReleaseDefinitionGenerator {
                 releaseDefinition.packageDependencies = packageDependencies;
 
             //Add changelog info
-            releaseDefinition.changelog = this.releaseDefinitionGenratorConfigSchema.changelog;
+            releaseDefinition.changelog = this.releaseDefinitionGeneratorConfigSchema.changelog;
 
             let releaseDefinitonYAML = yaml.dump(releaseDefinition, {
                 styles: {
@@ -180,7 +180,7 @@ export default class ReleaseDefinitionGenerator {
         releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema
     ): void {
         let schema = fs.readJSONSync(
-            path.join(__dirname, '..', '..', '..', 'resources', 'schemas', 'releasedefintiongenerator.schema.json'),
+            path.join(__dirname, '..', '..', '..', 'resources', 'schemas', 'releasedefinitiongenerator.schema.json'),
             { encoding: 'UTF-8' }
         );
 
@@ -207,8 +207,8 @@ export default class ReleaseDefinitionGenerator {
     private async generateReleaseName(): Promise<string> {
         //grab release name from changelog.json
         let releaseName;
-        if (this.releaseDefinitionGenratorConfigSchema.changelogBranchRef) {
-            let changelogBranchRef = this.releaseDefinitionGenratorConfigSchema.changelogBranchRef;
+        if (this.releaseDefinitionGeneratorConfigSchema.changelogBranchRef) {
+            let changelogBranchRef = this.releaseDefinitionGeneratorConfigSchema.changelogBranchRef;
             const git: Git = new Git(null);
             await git.fetch();
 
@@ -226,7 +226,7 @@ export default class ReleaseDefinitionGenerator {
             releaseName = name.replace(/[/\\?%*:|"<>]/g, '-').concat(`-`, buildNumber.toString());
             return releaseName;
         } else {
-            return this.releaseDefinitionGenratorConfigSchema.releaseName;
+            return this.releaseDefinitionGeneratorConfigSchema.releaseName;
         }
     }
 
