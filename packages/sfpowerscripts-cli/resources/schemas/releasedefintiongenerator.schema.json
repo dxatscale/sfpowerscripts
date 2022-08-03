@@ -31,6 +31,13 @@
                 "type": "string"
             }
         },
+        "includeArtifacts": {
+            "type": "array",
+            "title": "Include the below artifacts while creating a release definition",
+            "items": {
+                "type": "string"
+            }
+        },
         "excludeArtifactsWithTag": {
             "type": "array",
             "title": "Exclude any artifacts that have the following tags",
@@ -41,6 +48,13 @@
         "excludePackageDependencies": {
             "type": "array",
             "title": "Exclude the below external package dependencies while creating a release definition",
+            "items": {
+                "type": "string"
+            }
+        },
+        "includePackageDependencies": {
+            "type": "array",
+            "title": "Include only the below external package dependencies while creating a release definition",
             "items": {
                 "type": "string"
             }
