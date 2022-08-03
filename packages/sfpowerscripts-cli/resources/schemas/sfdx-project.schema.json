@@ -475,7 +475,7 @@
                         }
                     }
                 },
-                "scratchOrgaDefFilePaths": {
+                "scratchOrgDefFilePaths": {
                     "type": "object",
                     "title": "Scratch Org Definition Files",
                     "description": "Map of packages to scratch org definition files filepaths",
