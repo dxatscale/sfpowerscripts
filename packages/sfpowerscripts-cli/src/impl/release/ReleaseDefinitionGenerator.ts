@@ -103,7 +103,7 @@ export default class ReleaseDefinitionGenerator {
                     for (const packageAlias of packageAliases) {
                         if (installedArtifact.subscriberVersion == projectConfig.packageAliases[packageAlias]) {
                             if (
-                                !this.releaseDefinitionGenratorConfigSchema.excludePackageDependencies.includes(
+                                !this.releaseDefinitionGenratorConfigSchema.excludePackageDependencies?.includes(
                                     installedArtifact.name
                                 )
                             )
@@ -115,7 +115,7 @@ export default class ReleaseDefinitionGenerator {
                     let packageFound = packagesInRepo.find((elem) => elem == installedArtifact.name);
                     if (packageFound) {
                         if (
-                            !this.releaseDefinitionGenratorConfigSchema.excludeArtifacts.includes(
+                            !this.releaseDefinitionGenratorConfigSchema.excludeArtifacts?.includes(
                                 installedArtifact.name
                             )
                         ) {
