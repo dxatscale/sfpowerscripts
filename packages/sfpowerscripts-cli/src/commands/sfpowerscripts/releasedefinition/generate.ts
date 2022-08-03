@@ -3,7 +3,7 @@ import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import ReleaseDefinitionGenerator from '../../../impl/release/ReleaseDefinitionGenerator';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import { ReleaseChangelog } from '../../../impl/changelog/ReleaseChangelogInterfaces';
+
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'releasedefinition_generate');
