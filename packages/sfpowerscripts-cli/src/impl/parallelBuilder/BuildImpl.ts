@@ -511,7 +511,7 @@ export default class BuildImpl {
         let configFilePath = this.props.configFilePath
         if(this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles){
             if(this.projectConfig.plugins.sfpowerscripts.scratchOrgDefFilePaths.packages[sfdx_package]){
-                configFilePath = this.projectConfig.plugins.sfpowerscripts.soDefinitionFiles.packages[sfdx_package]
+                configFilePath = this.projectConfig.plugins.sfpowerscripts.scratchOrgDefFilePaths.packages[sfdx_package]
                 console.log(COLOR_KEY_MESSAGE(`Matched sratch org definition file found for ${sfdx_package}: ${configFilePath}`));
             }
         }
