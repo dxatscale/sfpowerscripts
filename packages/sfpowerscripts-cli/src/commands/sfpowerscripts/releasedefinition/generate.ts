@@ -25,6 +25,11 @@ export default class Generate extends SfpowerscriptsCommand {
             required:true,
             description: messages.getMessage('configFileFlagDescription'),
         }),
+        releasename: flags.string({
+            char: 'n',
+            required:false,
+            description: messages.getMessage('releaseNameFlagDescription'),
+        }),
         branchname: flags.string({
             char: 'b',
             description: messages.getMessage('branchNameFlagDescription'),
@@ -68,6 +73,7 @@ export default class Generate extends SfpowerscriptsCommand {
             let releaseDefinitionGenerator: ReleaseDefinitionGenerator = new ReleaseDefinitionGenerator(
                 sfpOrg,
                 this.flags.configfile,
+                this.flags.releasename,
                 this.flags.branchname,
                 this.flags.push,
                 this.flags.forcepush,

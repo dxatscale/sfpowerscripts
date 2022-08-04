@@ -18,7 +18,7 @@ const path = require('path');
 
 export default class ReleaseDefinitionGenerator {
     private _releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema;
-    private releaseName;
+  
 
     get releaseDefinitionGeneratorConfigSchema() {
         // Return clone of releaseDefinition for immutability
@@ -28,6 +28,7 @@ export default class ReleaseDefinitionGenerator {
     public constructor(
         private sfpOrg: SFPOrg,
         pathToReleaseDefinition: string,
+        private releaseName:string,
         private branch: string,
         private push: boolean = false,
         private forcePush: boolean = false
@@ -60,8 +61,10 @@ export default class ReleaseDefinitionGenerator {
     }
 
     async exec() {
-        //Generate releaseName
-        this.releaseName = await this.generateReleaseName();
+        //Generate releaseName if not set in the cli
+        if(!this.releaseName)
+          this.releaseName = await this.generateReleaseName();
+
         return retry(
             async (bail, retryNum) => {
                 try {
