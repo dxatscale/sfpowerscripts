@@ -65,8 +65,12 @@
         "changelog": {
             "type": "object",
             "properties": {
-                "workItemFilter": {
-                    "type": "string"
+                "workItemFilters": {
+                    "type": "array",
+                    "title": "Regex to filter workitems from commit messages",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "workItemUrl": {
                     "type": "string"

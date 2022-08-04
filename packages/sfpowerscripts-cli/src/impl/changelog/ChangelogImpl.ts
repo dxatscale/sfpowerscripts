@@ -24,7 +24,7 @@ export default class ChangelogImpl {
     constructor(
         private artifactDir: string,
         private releaseName: string,
-        private workItemFilter: string,
+        private workItemFilters: string[],
         private limit: number,
         private workItemUrl: string,
         private showAllArtifacts: boolean,
@@ -144,7 +144,7 @@ export default class ChangelogImpl {
                 this.releaseName,
                 artifactsToSfpPackage,
                 packagesToChangelogFilePaths,
-                this.workItemFilter,
+                this.workItemFilters,
                 this.org
             ).update();
 

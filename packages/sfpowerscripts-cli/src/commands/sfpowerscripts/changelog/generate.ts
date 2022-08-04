@@ -86,7 +86,7 @@ export default class GenerateChangelog extends SfdxCommand {
             let changelogImpl: ChangelogImpl = new ChangelogImpl(
                 this.flags.artifactdir,
                 this.flags.releasename,
-                this.flags.workitemfilter,
+                this.flags.workitemfilter.split(':'),
                 this.flags.limit,
                 this.flags.workitemurl,
                 this.flags.showallartifacts,

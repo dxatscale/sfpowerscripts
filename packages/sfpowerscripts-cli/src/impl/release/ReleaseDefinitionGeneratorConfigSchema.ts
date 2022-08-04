@@ -11,7 +11,7 @@ export default interface ReleaseDefinitionGeneratorSchema {
     promotePackagesBeforeDeploymentToOrg?: string;
     changelog?: {
         repoUrl?: string;
-        workItemFilter?: string;
+        workItemFilters?: string[];
         workItemUrl?: string;
         limit?: number;
         showAllArtifacts?: boolean;
