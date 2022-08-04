@@ -37,14 +37,14 @@ export default class ReleaseDefinitionGenerator {
         this.validateReleaseDefinitionGeneratorConfig(this._releaseDefinitionGeneratorSchema);
         // Easy to handle here than with schema
         if (
-            this._releaseDefinitionGeneratorSchema.includeArtifacts &&
+            this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts &&
             this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts
         ) {
             throw new Error('Error: Invalid schema: either use includeArtifacts or excludeArtifacts');
         }
         // Easy to handle here than with schema
         if (
-            this._releaseDefinitionGeneratorSchema.includePackageDependencies &&
+            this._releaseDefinitionGeneratorSchema.includeOnlyPackageDependencies &&
             this.releaseDefinitionGeneratorConfigSchema.excludePackageDependencies
         ) {
             throw new Error(
@@ -290,16 +290,16 @@ export default class ReleaseDefinitionGenerator {
         return listOfBranches.all.find((elem) => elem.endsWith(branch)) ? true : false;
     }
     private getArtifactPredicate(artifact: string): boolean {
-        if (this.releaseDefinitionGeneratorConfigSchema.includeArtifacts) {
-            return this.releaseDefinitionGeneratorConfigSchema.includeArtifacts?.includes(artifact);
+        if (this.releaseDefinitionGeneratorConfigSchema.includeOnlyArtifacts) {
+            return this.releaseDefinitionGeneratorConfigSchema.includeOnlyArtifacts?.includes(artifact);
         } else if (this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts) {
             return !this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts?.includes(artifact);
         } else return true;
     }
 
     private getDependencyPredicate(artifact: string): boolean {
-        if (this.releaseDefinitionGeneratorConfigSchema.includePackageDependencies) {
-            return this.releaseDefinitionGeneratorConfigSchema.includePackageDependencies?.includes(artifact);
+        if (this.releaseDefinitionGeneratorConfigSchema.includeOnlyPackageDependencies) {
+            return this.releaseDefinitionGeneratorConfigSchema.includeOnlyPackageDependencies?.includes(artifact);
         } else if (this.releaseDefinitionGeneratorConfigSchema.excludePackageDependencies) {
             return !this.releaseDefinitionGeneratorConfigSchema.excludePackageDependencies?.includes(artifact);
         } else return true;

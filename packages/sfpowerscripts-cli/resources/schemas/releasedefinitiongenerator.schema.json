@@ -31,7 +31,7 @@
                 "type": "string"
             }
         },
-        "includeArtifacts": {
+        "includeOnlyArtifacts": {
             "type": "array",
             "title": "Include the below artifacts while creating a release definition",
             "items": {
@@ -52,7 +52,7 @@
                 "type": "string"
             }
         },
-        "includePackageDependencies": {
+        "includeOnlyPackageDependencies": {
             "type": "array",
             "title": "Include only the below external package dependencies while creating a release definition",
             "items": {

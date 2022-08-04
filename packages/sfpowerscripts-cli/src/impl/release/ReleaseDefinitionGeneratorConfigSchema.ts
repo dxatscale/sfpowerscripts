@@ -3,11 +3,11 @@ export default interface ReleaseDefinitionGeneratorSchema {
     changelogBranchRef?:string;
     skipIfAlreadyInstalled: boolean;
     baselineOrg?: string;
-    includeArtifacts?:string[]
+    includeOnlyArtifacts?:string[]
     excludeArtifacts?:string[];
     excludeArtifactsWithTag?:string[];
     excludePackageDependencies?:string[];
-    includePackageDependencies?:string[]
+    includeOnlyPackageDependencies?:string[]
     promotePackagesBeforeDeploymentToOrg?: string;
     changelog?: {
         repoUrl?: string;
