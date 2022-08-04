@@ -530,10 +530,10 @@ export default class BuildImpl {
     ): Promise<SfpPackage> {
         console.log(COLOR_KEY_MESSAGE(`Package creation initiated for  ${sfdx_package}`));
         let configFilePath = this.props.configFilePath
-        if(this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles){
-            if(this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.packages[sfdx_package]){
-                configFilePath = this.projectConfig.plugins.sfpowerscripts.scratchOrgDefFilePaths.packages[sfdx_package]
-                console.log(COLOR_KEY_MESSAGE(`Matched sratch org definition file found for ${sfdx_package}: ${configFilePath}`));
+        if(this.isMultiConfigFilesEnabled){
+            if(this.scratchOrgDefinitions[sfdx_package]){
+                configFilePath = this.scratchOrgDefinitions[sfdx_package]
+                console.log(COLOR_KEY_MESSAGE(`Matched scratch org definition file found for ${sfdx_package}: ${configFilePath}`));
             }
         }
 
