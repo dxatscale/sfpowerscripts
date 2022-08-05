@@ -24,10 +24,13 @@ import path from 'path';
 import SFPOrg from '../org/SFPOrg';
 import getFormattedTime from '../utils/GetFormattedTime';
 import { TestLevel } from '../apextest/TestOptions';
+import { SfProject } from '@salesforce/core';
+import { SourceTracking } from '@salesforce/source-tracking';
 
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public constructor(
         private org: SFPOrg,
+        private projectDir: string,
         private componentSet: ComponentSet,
         private deploymentOptions: DeploymentOptions,
         private logger?: Logger
@@ -50,6 +53,10 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         let result = await this.deploy(this.componentSet);
 
         this.writeResultToReport(result);
+
+        if (this.deploymentOptions.sourceTracking) {
+            await this.handleSourceTracking(this.org, this.logger, this.projectDir, result);
+        }
 
         //Handle Responses
         if (result.response.success) {
@@ -263,6 +270,22 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             },
         };
     }
+
+    private async handleSourceTracking(org: SFPOrg, logger: Logger, projectDir: string, result: DeployResult) {
+        if (result.response.success) {
+            try {
+                const project = await SfProject.resolve(this.projectDir);
+                const tracking = await SourceTracking.create({
+                    org: org,
+                    project: project,
+                });
+                await tracking.ensureRemoteTracking();
+                tracking.updateTrackingFromDeploy(result);
+            } catch (error) {
+                SFPLogger.log(`Unable to update source tracking due to \n ${error}`, LoggerLevel.WARN, logger);
+            }
+        }
+    }
 }
 
 export class DeploymentOptions {
@@ -273,4 +296,5 @@ export class DeploymentOptions {
     testLevel?: TestLevel;
     apexTestSuite?: string;
     specifiedTests?: string;
+    sourceTracking?: boolean;
 }
