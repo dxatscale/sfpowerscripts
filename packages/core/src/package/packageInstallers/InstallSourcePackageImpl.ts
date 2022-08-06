@@ -6,14 +6,12 @@ import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '@d
 import * as fs from 'fs-extra';
 const path = require('path');
 const glob = require('glob');
-const { EOL } = require('os');
 const tmp = require('tmp');
 import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
-import PushSourceToOrgImpl from '../../deployers/PushSourceToOrgImpl';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import PackageEmptyChecker from '../PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
-import SfpPackage, { PackageType } from '../SfpPackage';
+import SfpPackage from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 import ProjectConfig from '../../project/ProjectConfig';
@@ -70,129 +68,120 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
             let deploymentOptions: DeploymentOptions;
             let result: DeploySourceResult;
+            //Construct Deploy Command for actual payload
+            deploymentOptions = await this.generateDeploymentOptions(
+                this.options.waitTime,
+                this.options.optimizeDeployment,
+                this.options.skipTesting,
+                this.sfpOrg.getUsername(),
+                this.options.apiVersion
+            );
+
+            //enable source tracking
             if (this.deploymentType === DeploymentType.SOURCE_PUSH) {
-                let pushSourceToOrgImpl: DeploymentExecutor = new PushSourceToOrgImpl(
-                    this.sfpOrg.getUsername(),
+                deploymentOptions.sourceTracking = true;
+            }
+
+            //Make a copy.. dont mutate sourceDirectory
+            let resolvedSourceDirectory = this.sfpPackage.sourceDir;
+
+            if (this.isDiffFolderAvailable) {
+                SFPLogger.log(
+                    `${COLOR_SUCCESS(`Selective mode activated, Only changed components in package is deployed`)}`,
+                    LoggerLevel.INFO,
+                    this.logger
+                );
+                resolvedSourceDirectory = path.join(this.sfpPackage.sourceDir, 'diff');
+            }
+
+            let emptyCheck = this.handleEmptyPackage(resolvedSourceDirectory, this.packageDirectory);
+
+            if (emptyCheck.isToSkip == true) {
+                SFPLogger.log(
+                    `${COLOR_SUCCESS(`Skipping the package as there is nothing to be deployed`)}`,
+                    LoggerLevel.INFO,
+                    this.logger
+                );
+                return;
+            } else if (emptyCheck.isToSkip == false) {
+                //Display a warning
+                if (
+                    this.deploymentType == DeploymentType.SELECTIVE_MDAPI_DEPLOY &&
+                    resolvedSourceDirectory != emptyCheck.resolvedSourceDirectory
+                ) {
+                    SFPLogger.log(
+                        `${COLOR_WARNING(
+                            `Overriding selective mode to full deployment mode as selective component calculation was not successful`
+                        )}`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
+                }
+
+                //Create componentSet To Be Deployed
+                let componentSet = ComponentSet.fromSource(
+                    path.resolve(emptyCheck.resolvedSourceDirectory, this.packageDirectory)
+                );
+
+                //Apply Filters
+                let deploymentFilters = DeploymentFilterRegistry.getImplementations();
+
+                for (const deploymentFilter of deploymentFilters) {
+                    if (
+                        deploymentFilter.isToApply(
+                            ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory),
+                            this.sfpPackage.packageType
+                        )
+                    )
+                        componentSet = await deploymentFilter.apply(this.sfpOrg, componentSet, this.logger);
+                }
+
+                //Check if there are components to be deployed after filtering
+                //Asssume its sucessfully deployed
+                if (componentSet.size == 0) {
+                    return {
+                        deploy_id: `000000`,
+                        result: true,
+                        message: `Package contents were filtered out, nothing to install`,
+                    };
+                }
+
+                let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
+                    this.sfpOrg,
                     this.sfpPackage.sourceDir,
-                    this.packageDirectory,
+                    componentSet,
+                    deploymentOptions,
                     this.logger
                 );
 
-                result = await pushSourceToOrgImpl.exec();
-                if (result.result == false) {
-                    throw new Error(
-                        `Pushing package ${this.sfpPackage.packageName} failed with following error ${result.message}`
-                    );
-                }
-            } else {
-                //Construct Deploy Command for actual payload
-                deploymentOptions = await this.generateDeploymentOptions(
-                    this.options.waitTime,
-                    this.options.optimizeDeployment,
-                    this.options.skipTesting,
-                    this.sfpOrg.getUsername(),
-                    this.options.apiVersion
-                );
+                result = await deploySourceToOrgImpl.exec();
 
-                //Make a copy.. dont mutate sourceDirectory
-                let resolvedSourceDirectory = this.sfpPackage.sourceDir;
-
-                if (this.isDiffFolderAvailable) {
-                    SFPLogger.log(
-                        `${COLOR_SUCCESS(`Selective mode activated, Only changed components in package is deployed`)}`,
-                        LoggerLevel.INFO,
-                        this.logger
-                    );
-                    resolvedSourceDirectory = path.join(this.sfpPackage.sourceDir, 'diff');
-                }
-
-                let emptyCheck = this.handleEmptyPackage(resolvedSourceDirectory, this.packageDirectory);
-
-                if (emptyCheck.isToSkip == true) {
-                    SFPLogger.log(
-                        `${COLOR_SUCCESS(`Skipping the package as there is nothing to be deployed`)}`,
-                        LoggerLevel.INFO,
-                        this.logger
-                    );
-                    return;
-                } else if (emptyCheck.isToSkip == false) {
-                    //Display a warning
-                    if (
-                        this.deploymentType == DeploymentType.SELECTIVE_MDAPI_DEPLOY &&
-                        resolvedSourceDirectory != emptyCheck.resolvedSourceDirectory
-                    ) {
+                if (result.result) {
+                    //Apply PostDeployment Activities
+                    try {
+                        if (isReconcileActivated) {
+                            //Bring back the original profiles, reconcile and redeploy again
+                            await this.reconcileAndRedeployProfiles(
+                                profileFolders,
+                                this.sfpPackage.sourceDir,
+                                this.sfpOrg.getUsername(),
+                                this.packageDirectory,
+                                tempDir,
+                                deploymentOptions
+                            );
+                        }
+                    } catch (error) {
                         SFPLogger.log(
-                            `${COLOR_WARNING(
-                                `Overriding selective mode to full deployment mode as selective component calculation was not successful`
-                            )}`,
+                            'Failed to apply reconcile the second time, Partial Metadata applied',
                             LoggerLevel.INFO,
                             this.logger
                         );
                     }
-
-                    //Create componentSet To Be Deployed
-                    let componentSet = ComponentSet.fromSource(
-                        path.resolve(emptyCheck.resolvedSourceDirectory, this.packageDirectory)
-                    );
-
-                    //Apply Filters
-                    let deploymentFilters = DeploymentFilterRegistry.getImplementations();
-
-                    for (const deploymentFilter of deploymentFilters) {
-                        if (
-                            deploymentFilter.isToApply(
-                                ProjectConfig.getSFDXProjectConfig(emptyCheck.resolvedSourceDirectory),
-                                this.sfpPackage.packageType
-                            )
-                        )
-                            componentSet = await deploymentFilter.apply(this.sfpOrg, componentSet, this.logger);
-                    }
-
-                    //Check if there are components to be deployed after filtering
-                    //Asssume its sucessfully deployed
-                    if (componentSet.size == 0) {
-                        return {
-                            deploy_id: `000000`,
-                            result: true,
-                            message: `Package contents were filtered out, nothing to install`,
-                        };
-                    }
-
-                    let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
-                        this.sfpOrg,
-                        componentSet,
-                        deploymentOptions,
-                        this.logger
-                    );
-
-                    result = await deploySourceToOrgImpl.exec();
-
-                    if (result.result) {
-                        //Apply PostDeployment Activities
-                        try {
-                            if (isReconcileActivated) {
-                                //Bring back the original profiles, reconcile and redeploy again
-                                await this.reconcileAndRedeployProfiles(
-                                    profileFolders,
-                                    this.sfpPackage.sourceDir,
-                                    this.sfpOrg.getUsername(),
-                                    this.packageDirectory,
-                                    tempDir,
-                                    deploymentOptions
-                                );
-                            }
-                        } catch (error) {
-                            SFPLogger.log(
-                                'Failed to apply reconcile the second time, Partial Metadata applied',
-                                LoggerLevel.INFO,
-                                this.logger
-                            );
-                        }
-                    } else if (result.result === false) {
-                        throw new Error(result.message);
-                    }
+                } else if (result.result === false) {
+                    throw new Error(result.message);
                 }
             }
+            //}
         } catch (error) {
             tmpDirObj.removeCallback();
             throw error;
@@ -392,6 +381,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
             let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
                 this.sfpOrg,
+                this.sfpPackage.sourceDir,
                 componentSet,
                 deploymentOptions,
                 this.logger
