@@ -7,6 +7,7 @@ import { Messages } from '@salesforce/core';
 import fs = require('fs');
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import BuildImpl from './impl/parallelBuilder/BuildImpl';
+import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { Stage } from './impl/Stage';
 import SFPLogger, {
     COLOR_ERROR,
@@ -114,10 +115,16 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             const artifactDirectory: string = this.flags.artifactdir;
             const diffcheck: boolean = this.flags.diffcheck;
             const branch: string = this.flags.branch;
+            // Read Manifest
+            let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
 
             SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(this.getStage())}`));
             SFPLogger.log(COLOR_HEADER(`Build Packages Only Changed: ${this.flags.diffcheck}`));
-            SFPLogger.log(COLOR_HEADER(`Config File Path: ${this.flags.configfilepath}`));
+            if(projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles){
+                SFPLogger.log(COLOR_HEADER(`Multiple Config Files Mode: enabled`));
+            }else{
+                SFPLogger.log(COLOR_HEADER(`Config File Path: ${this.flags.configfilepath}`));
+            }
             SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${this.flags.artifactdir}`));
             SFPLogger.log(
                 COLOR_HEADER(
