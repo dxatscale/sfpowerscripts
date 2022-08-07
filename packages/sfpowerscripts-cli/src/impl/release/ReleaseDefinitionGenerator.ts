@@ -37,7 +37,7 @@ export default class ReleaseDefinitionGenerator {
         this.validateReleaseDefinitionGeneratorConfig(this._releaseDefinitionGeneratorSchema);
         // Easy to handle here than with schema
         if (
-            this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts &&
+            this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts && 
             this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts
         ) {
             throw new Error('Error: Invalid schema: either use includeArtifacts or excludeArtifacts');
@@ -117,13 +117,14 @@ export default class ReleaseDefinitionGenerator {
                 repoDir = process.cwd();
             }
 
+            //Read Project Config from current branch
+            let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
             let installedArtifacts = await this.sfpOrg.getAllInstalledArtifacts();
             //figure out all package dependencies
             let packageDependencies = {};
             let artifacts = {};
             for (const installedArtifact of installedArtifacts) {
                 if (installedArtifact.isInstalledBySfpowerscripts == false && installedArtifact.subscriberVersion) {
-                    let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
                     let packageAliases = Object.keys(projectConfig.packageAliases);
                     for (const packageAlias of packageAliases) {
                         if (installedArtifact.subscriberVersion == projectConfig.packageAliases[packageAlias]) {
