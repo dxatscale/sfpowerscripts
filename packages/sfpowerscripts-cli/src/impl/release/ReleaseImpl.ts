@@ -67,7 +67,7 @@ export default class ReleaseImpl {
                 let changelogImpl: ChangelogImpl = new ChangelogImpl(
                     'artifacts',
                     this.props.releaseDefinition.release,
-                    this.props.releaseDefinition.changelog.workItemFilter,
+                    this.props.releaseDefinition.changelog.workItemFilters,
                     this.props.releaseDefinition.changelog.limit,
                     this.props.releaseDefinition.changelog.workItemUrl,
                     this.props.releaseDefinition.changelog.showAllArtifacts,

@@ -13,7 +13,7 @@ export default class ReleaseChangelogUpdater {
         private releaseName: string,
         private artifactsToSfpPackage: { [p: string]: SfpPackage },
         private packagesToChangelogFilePaths: { [p: string]: string },
-        private workItemFilter: string,
+        private workItemFilters: string[],
         private org: string
     ) {}
 
@@ -45,7 +45,7 @@ export default class ReleaseChangelogUpdater {
                 readPackageChangelog
             ).update();
 
-            new WorkItemUpdater(latestRelease, this.workItemFilter).update();
+            new WorkItemUpdater(latestRelease, this.workItemFilters).update();
 
             this.releaseChangelog.releases.push(latestRelease);
         } else {
