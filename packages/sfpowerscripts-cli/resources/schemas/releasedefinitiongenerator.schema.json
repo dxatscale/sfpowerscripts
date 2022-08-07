@@ -82,7 +82,7 @@
                     "type": "boolean"
                 }
             },
-            "required": ["workItemFilter"],
+            "required": ["workItemFilters"],
             "additionalProperties": false
         }
     }
