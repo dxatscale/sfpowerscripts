@@ -121,7 +121,6 @@ export default class BuildImpl {
         }
         //Log Packages to be built
         console.log(COLOR_KEY_MESSAGE('Packages scheduled for build'));
-        console.log(table)
         console.log(table.toString());
 
         for await (const pkg of this.packagesToBeBuilt) {
