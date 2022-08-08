@@ -112,13 +112,16 @@ export default class BuildImpl {
                 this.props.projectDirectory,
                 this.packagesToBeBuilt
             );
+            console.log('1')
             table = this.createDiffPackageScheduledDisplayedAsATable(packagesToBeBuiltWithReasons);
             this.packagesToBeBuilt = Array.from(packagesToBeBuiltWithReasons.keys()); //Assign it back to the instance variable
         } else {
+            console.log('2')
             table = this.createAllPackageScheduledDisplayedAsATable();
         }
         //Log Packages to be built
         console.log(COLOR_KEY_MESSAGE('Packages scheduled for build'));
+        console.log(table)
         console.log(table.toString());
 
         for await (const pkg of this.packagesToBeBuilt) {
@@ -226,7 +229,7 @@ export default class BuildImpl {
 
     private createAllPackageScheduledDisplayedAsATable() {
         let tableHead = ['Package', 'Reason to be built']
-        if(this.isMultiConfigFilesEnabled){
+        if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
             tableHead.push('Scratch Org Config File')
         }
         let table = new Table({
@@ -234,7 +237,7 @@ export default class BuildImpl {
         });
         for (const pkg of this.packagesToBeBuilt) {
             let item = [pkg, 'Activated as part of all package build'];
-            if(this.isMultiConfigFilesEnabled){
+            if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
                 item.push(this.scratchOrgDefinitions[pkg]?this.scratchOrgDefinitions[pkg]:this.props.configFilePath)
             }
             table.push(item);
