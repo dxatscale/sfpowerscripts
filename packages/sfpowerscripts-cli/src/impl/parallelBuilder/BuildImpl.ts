@@ -205,7 +205,7 @@ export default class BuildImpl {
 
     private createDiffPackageScheduledDisplayedAsATable(packagesToBeBuilt: Map<string, any>) {
         let tableHead = ['Package', 'Reason to be built', 'Last Known Tag']
-        if(this.isMultiConfigFilesEnabled){
+        if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
             tableHead.push('Scratch Org Config File')
         }
         let table = new Table({
@@ -218,7 +218,7 @@ export default class BuildImpl {
                 packagesToBeBuilt.get(pkg).reason,
                 packagesToBeBuilt.get(pkg).tag ? packagesToBeBuilt.get(pkg).tag : '',
             ];
-            if(this.isMultiConfigFilesEnabled){
+            if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
                 item.push(this.scratchOrgDefinitions[pkg]?this.scratchOrgDefinitions[pkg]:this.props.configFilePath)
             }
 
