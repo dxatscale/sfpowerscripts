@@ -1,6 +1,4 @@
 export default interface ReleaseDefinitionGeneratorSchema {
-    releaseName?: string;
-    changelogBranchRef?:string;
     skipIfAlreadyInstalled: boolean;
     baselineOrg?: string;
     includeOnlyArtifacts?:string[]

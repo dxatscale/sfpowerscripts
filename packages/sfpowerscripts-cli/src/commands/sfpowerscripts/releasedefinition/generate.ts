@@ -27,7 +27,7 @@ export default class Generate extends SfpowerscriptsCommand {
         }),
         releasename: flags.string({
             char: 'n',
-            required:false,
+            required:true,
             description: messages.getMessage('releaseNameFlagDescription'),
         }),
         branchname: flags.string({

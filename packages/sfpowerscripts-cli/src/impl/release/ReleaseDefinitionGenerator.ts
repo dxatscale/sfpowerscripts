@@ -8,9 +8,7 @@ import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectCon
 import Ajv, { _ } from 'ajv';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import ReleaseDefinitionGeneratorConfigSchema from './ReleaseDefinitionGeneratorConfigSchema';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import lodash = require('lodash');
-import { ReleaseChangelog } from '../changelog/ReleaseChangelogInterfaces';
 import { LoggerLevel } from '@dxatscale/sfp-logger';
 const retry = require('async-retry');
 const yaml = require('js-yaml');
@@ -61,9 +59,6 @@ export default class ReleaseDefinitionGenerator {
     }
 
     async exec() {
-        //Generate releaseName if not set in the cli
-        if(!this.releaseName)
-          this.releaseName = await this.generateReleaseName();
 
         return retry(
             async (bail, retryNum) => {
@@ -235,31 +230,6 @@ export default class ReleaseDefinitionGenerator {
         }
     }
 
-    private async generateReleaseName(): Promise<string> {
-        //grab release name from changelog.json
-        let releaseName;
-        if (this.releaseDefinitionGeneratorConfigSchema.changelogBranchRef) {
-            let changelogBranchRef = this.releaseDefinitionGeneratorConfigSchema.changelogBranchRef;
-            const git: Git = new Git(null);
-            await git.fetch();
-
-            if (!changelogBranchRef.includes('origin')) {
-                // for user convenience, use full ref name to avoid errors involving missing local refs
-                changelogBranchRef = `remotes/origin/${changelogBranchRef}`;
-            }
-
-            let changelogFileContents = await git.show([`${changelogBranchRef}:releasechangelog.json`]);
-            let changelog: ReleaseChangelog = JSON.parse(changelogFileContents);
-            //Get last release name and sanitize it
-            let release = changelog.releases.pop();
-            let name = release.names.pop();
-            let buildNumber = release.buildNumber;
-            releaseName = name.replace(/[/\\?%*:|"<>]/g, '-').concat(`-`, buildNumber.toString());
-            return releaseName;
-        } else {
-            return this.releaseDefinitionGeneratorConfigSchema.releaseName;
-        }
-    }
 
     private async pushReleaseDefinitionToBranch(branch: string, git: SimpleGit, isForce: boolean) {
         SFPLogger.log(`Pushing release definiton file to ${branch}`);

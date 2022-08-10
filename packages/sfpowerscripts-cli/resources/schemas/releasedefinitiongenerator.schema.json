@@ -4,16 +4,11 @@
     "title": "release definition generator",
     "description": "The definition for generating a release defintion using generator command",
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "dependencies": {
         "baselineOrg": ["skipIfAlreadyInstalled"]
     },
-    "oneOf": [{ "required": ["releaseName"] }, { "required": ["changelogBranchRef"] }],
     "properties": {
-        "releaseName": {
-            "type": "string",
-            "description": "Name of the release"
-        },
         "changelogBranchRef": {
             "type": "string",
             "description": "Name of the release to be fetched from a changelog branch"
