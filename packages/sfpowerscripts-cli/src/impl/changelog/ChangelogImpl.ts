@@ -99,10 +99,7 @@ export default class ChangelogImpl {
                             `This will cause an error in the future. Re-create the artifact using the latest version of sfpowerscripts to maintain compatibility.`
                         );
                     }
-                } else if (artifactSourceBranch !== sfpPackage.branch) {
-                    // TODO: throw error
-                    console.log('Artifacts must be created from the same branch');
-                }
+                } 
             }
 
             if (!artifactSourceBranch) throw new Error('Atleast one artifact must carry branch information');

@@ -1,9 +1,9 @@
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import FetchImpl from '../../../impl/artifacts/FetchImpl';
+import FetchImpl, { ArtifactVersion } from '../../../impl/artifacts/FetchImpl';
 import ReleaseDefinition from '../../../impl/release/ReleaseDefinition';
-import FetchArtifactsError from '../../../errors/FetchArtifactsError';
+import FetchArtifactsError from '../../../impl/artifacts/FetchArtifactsError';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'fetch');
@@ -72,17 +72,17 @@ export default class Fetch extends SfpowerscriptsCommand {
     public async execute() {
         this.validateFlags();
 
-        let releaseDefinition = new ReleaseDefinition(this.flags.releasedefinition).releaseDefinition;
+        let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(this.flags.releasedefinition)).releaseDefinition;
 
         let result: {
-            success: [string, string][];
-            failed: [string, string][];
+            success: ArtifactVersion[];
+            failed:  ArtifactVersion[];
         };
 
         let executionStartTime = Date.now();
         try {
             let fetchImpl: FetchImpl = new FetchImpl(
-                releaseDefinition,
+                [releaseDefinition],
                 this.flags.artifactdir,
                 this.flags.scriptpath,
                 this.flags.npm,
@@ -107,7 +107,7 @@ export default class Fetch extends SfpowerscriptsCommand {
     }
 
     private printSummary(
-        result: { success: [string, string][]; failed: [string, string][] },
+        result: { success: ArtifactVersion[]; failed:ArtifactVersion[] },
         totalElapsedTime: number
     ) {
         console.log(
