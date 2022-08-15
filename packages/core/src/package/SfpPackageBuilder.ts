@@ -63,7 +63,6 @@ export default class SfpPackageBuilder {
         sfpPackage.sourceVersion = params?.sourceVersion;
         sfpPackage.branch = params?.branch;
         sfpPackage.repository_url = params?.repositoryUrl;
-
         if (params?.configFilePath == null) sfpPackage.configFilePath = 'config/project-scratch-def.json';
         else sfpPackage.configFilePath = params?.configFilePath;
 
@@ -188,9 +187,9 @@ export default class SfpPackageBuilder {
     * else allow autosubstitute using buildNumber for Source and Data if available
     */
     private static handleVersionNumber(params: SfpPackageParams, sfpPackage: SfpPackage, packageCreationParams: PackageCreationParams) {
-        if (params.packageVersionNumber) {
+        if (params?.packageVersionNumber) {
             sfpPackage.versionNumber = params.packageVersionNumber;
-        } else if (packageCreationParams.buildNumber) {
+        } else if (packageCreationParams?.buildNumber) {
             if (sfpPackage.packageType == PackageType.Source || sfpPackage.packageType == PackageType.Data) {
                 let versionUpdater: PackageVersionUpdater = new PackageVersionUpdater();
                 sfpPackage.versionNumber = versionUpdater.substituteBuildNumber(
