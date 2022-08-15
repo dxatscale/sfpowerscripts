@@ -44,8 +44,8 @@ export default class PackageDependencyResolver {
                 for (let i = 0; i < packageDirectory.dependencies.length; i++) {
                     let dependency = packageDirectory.dependencies[i];
                     if (this.projectConfig.packageAliases[dependency.package] === undefined) {
-
-                        throw new Error(`Can't find packager id for dependency: ` + dependency.package);
+                        
+                        throw new Error(`Can't find package id for dependency: ` + dependency.package);
                     }
 
                     if (this.isSubscriberPackageVersionId(this.projectConfig.packageAliases[dependency.package])) {
