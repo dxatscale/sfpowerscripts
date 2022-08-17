@@ -16,7 +16,6 @@ const path = require('path');
 
 export default class ReleaseDefinitionGenerator {
     private _releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema;
-  
 
     get releaseDefinitionGeneratorConfigSchema() {
         // Return clone of releaseDefinition for immutability
@@ -26,8 +25,9 @@ export default class ReleaseDefinitionGenerator {
     public constructor(
         private sfpOrg: SFPOrg,
         pathToReleaseDefinition: string,
-        private releaseName:string,
+        private releaseName: string,
         private branch: string,
+        private directory?: string,
         private push: boolean = false,
         private forcePush: boolean = false
     ) {
@@ -35,7 +35,7 @@ export default class ReleaseDefinitionGenerator {
         this.validateReleaseDefinitionGeneratorConfig(this._releaseDefinitionGeneratorSchema);
         // Easy to handle here than with schema
         if (
-            this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts && 
+            this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts &&
             this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts
         ) {
             throw new Error('Error: Invalid schema: either use includeArtifacts or excludeArtifacts');
@@ -59,7 +59,6 @@ export default class ReleaseDefinitionGenerator {
     }
 
     async exec() {
-
         return retry(
             async (bail, retryNum) => {
                 try {
@@ -172,14 +171,19 @@ export default class ReleaseDefinitionGenerator {
             if (this.push) {
                 SFPLogger.log(`Checking out branch ${this.branch}`);
                 await this.createBranch(git);
+                repoDir = this.createDirectory(this.directory, repoDir);
                 fs.writeFileSync(path.join(repoDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
-                await this.pushReleaseDefinitionToBranch(this.branch, git, this.forcePush);
+                await this.pushReleaseDefinitionToBranch(this.directory, this.branch, git, this.forcePush);
             } else if (this.branch && !this.push) {
                 SFPLogger.log(`Checking out branch ${this.branch}`);
                 await this.createBranch(git);
+                repoDir = this.createDirectory(this.directory, repoDir);
                 fs.writeFileSync(path.join(repoDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
-                await this.commitFile(git);
-            } else fs.writeFileSync(path.join(repoDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
+                await this.commitFile(this.directory, git);
+            } else {
+                repoDir = this.createDirectory(this.directory, repoDir);
+                fs.writeFileSync(path.join(repoDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
+            }
 
             return releaseDefinitonYAML.toString();
         } catch (error) {
@@ -188,6 +192,16 @@ export default class ReleaseDefinitionGenerator {
             tempDir.removeCallback();
         }
     }
+    private createDirectory(directory: string, repoDir: string): string {
+        if (this.directory) {
+            if (!fs.pathExistsSync(path.join(repoDir, directory))) {
+                fs.mkdirpSync(path.join(repoDir, directory));
+            }
+            repoDir = path.join(repoDir, this.directory);
+        }
+        return repoDir;
+    }
+
     private async createBranch(git: SimpleGit) {
         if (await this.isBranchExists(this.branch, git)) {
             await git.checkout(this.branch, ['-f']);
@@ -195,7 +209,7 @@ export default class ReleaseDefinitionGenerator {
                 // For ease-of-use when running locally and local branch exists
                 await git.merge([`refs/remotes/origin/${this.branch}`]);
             } catch (error) {
-                SFPLogger.log(`Unable to find remote`,LoggerLevel.TRACE);
+                SFPLogger.log(`Unable to find remote`, LoggerLevel.TRACE);
             }
         } else {
             await git.checkout(['-b', this.branch]);
@@ -230,10 +244,9 @@ export default class ReleaseDefinitionGenerator {
         }
     }
 
-
-    private async pushReleaseDefinitionToBranch(branch: string, git: SimpleGit, isForce: boolean) {
+    private async pushReleaseDefinitionToBranch(directory: string, branch: string, git: SimpleGit, isForce: boolean) {
         SFPLogger.log(`Pushing release definiton file to ${branch}`);
-        await this.commitFile(git);
+        await this.commitFile(directory, git);
         if (isForce) {
             await git.push('origin', branch, [`--force`]);
         } else {
@@ -241,17 +254,19 @@ export default class ReleaseDefinitionGenerator {
         }
     }
 
-    private async commitFile(git: SimpleGit) {
-        try
-        {
-        await new GitIdentity(git).setUsernameAndEmail();
-        await git.add([`${this.releaseName}.yml`]);
-        await git.commit(`[skip ci] Updated Release Defintiion ${this.releaseName}`);
-        SFPLogger.log(`Committed Release defintion ${this.releaseName}.yml to branch ${this.branch} `);
-        }
-        catch(errror)
-        {
-            SFPLogger.log(`Unable to commit file, probably due to no change or something else,Please try manually`,LoggerLevel.ERROR);
+    private async commitFile(directory: string, git: SimpleGit) {
+        try {
+            await new GitIdentity(git).setUsernameAndEmail();
+            if (directory) {
+                await git.add([path.join(this.directory, `${this.releaseName}.yml`)]);
+            } else await git.add([`${this.releaseName}.yml`]);
+            await git.commit(`[skip ci] Updated Release Defintiion ${this.releaseName}`);
+            SFPLogger.log(`Committed Release defintion ${this.releaseName}.yml to branch ${this.branch} `);
+        } catch (errror) {
+            SFPLogger.log(
+                `Unable to commit file, probably due to no change or something else,Please try manually`,
+                LoggerLevel.ERROR
+            );
         }
     }
 

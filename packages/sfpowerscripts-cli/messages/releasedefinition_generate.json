@@ -1,7 +1,8 @@
 {
     "commandDescription": "Generates release defintion based on the artifacts installed in a org",
     "configFileFlagDescription":"Path to the config file which determines how the release defintion should be generated",
-    "releaseNameFlagDescription": "Override releaseName set either in defintion or automatically created",
+    "releaseNameFlagDescription": "Set a releasename on the release definition file created",
+    "directoryFlagDescription": "Relative path to directory to which the release defintion file should be generated, if the directory doesnt exist, it will be created",
     "branchNameFlagDescription": "Repository branch in which the release defintion files are to be written",
     "pushFlagDescription":"Push the changelog to a repository to the provided branch",
     "forcePushFlagDescription": "Force push changes to the repository branch"
