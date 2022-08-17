@@ -34,6 +34,10 @@ export default class Generate extends SfpowerscriptsCommand {
             char: 'b',
             description: messages.getMessage('branchNameFlagDescription'),
         }),
+        directory: flags.string({
+            char: 'd',
+            description: messages.getMessage('directoryFlagDescription'),
+        }),
         push: flags.boolean({
             description: messages.getMessage('pushFlagDescription'),
             dependsOn: ['branchname'],
@@ -75,6 +79,7 @@ export default class Generate extends SfpowerscriptsCommand {
                 this.flags.configfile,
                 this.flags.releasename,
                 this.flags.branchname,
+                this.flags.directory,
                 this.flags.push,
                 this.flags.forcepush,
             );
