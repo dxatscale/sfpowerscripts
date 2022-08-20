@@ -1,19 +1,19 @@
-import simplegit, { SimpleGit } from 'simple-git';
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
 import { ReleaseChangelog } from './ReleaseChangelogInterfaces';
 import ChangelogMarkdownGenerator from './ChangelogMarkdownGenerator';
 import ReleaseChangelogUpdater from './ReleaseChangelogUpdater';
 import * as fs from 'fs-extra';
 import path = require('path');
-const tmp = require('tmp');
 import { marked } from 'marked';
 const TerminalRenderer = require('marked-terminal');
 const retry = require('async-retry');
 import { GitError } from 'simple-git';
-import GitIdentity from '../git/GitIdentity';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import SFPLogger, { LoggerLevel, ConsoleLogger, Logger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+
+
 
 marked.setOptions({
     // Define custom renderer
@@ -22,14 +22,17 @@ marked.setOptions({
 
 export default class ChangelogImpl {
     constructor(
+        private logger:Logger,
         private artifactDir: string,
         private releaseName: string,
         private workItemFilters: string[],
         private limit: number,
         private workItemUrl: string,
         private showAllArtifacts: boolean,
+        private directory:string,
         private forcePush: boolean,
         private branch: string,
+        private push:boolean,
         private isDryRun: boolean,
         private org?: string
     ) {
@@ -47,8 +50,8 @@ export default class ChangelogImpl {
                             // Do not retry for Git errors that are not related to push
                             bail(err);
                         } else {
-                            console.log('Failed to push changelog');
-                            console.log(`Retrying...(${retryNum})`);
+                            SFPLogger.log('Failed to push changelog',LoggerLevel.WARN,this.logger);
+                            SFPLogger.log(`Retrying...(${retryNum})`,LoggerLevel.WARN,this.logger);
                             throw err;
                         }
                     } else {
@@ -66,8 +69,8 @@ export default class ChangelogImpl {
     }
 
     private async execHandler() {
-        let tempDir = tmp.dirSync({ unsafeCleanup: true });
 
+        let git:Git;
         try {
             let artifactFilePaths: Artifact[] = ArtifactFetcher.fetchArtifacts(this.artifactDir);
 
@@ -104,32 +107,17 @@ export default class ChangelogImpl {
 
             if (!artifactSourceBranch) throw new Error('Atleast one artifact must carry branch information');
 
-            const repoTempDir = tempDir.name;
-            let git: SimpleGit = simplegit(repoTempDir);
+           
+            
+            //duplicate repo
+            let git=await Git.initiateRepoAtTempLocation(this.logger,null,this.branch);
+            SFPLogger.log(`Checking out branch ${this.branch}`,LoggerLevel.INFO,this.logger);
 
-            if (process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL) {
-                //Change in ORIGIN_URL, so do a clone
-                await git.clone(process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL, repoTempDir);
-            } else {
-                // Copy source directory to temp dir
-                fs.copySync(process.cwd(), repoTempDir);
-                // Update local refs from remote
-                await git.fetch('origin');
-            }
-
-            console.log(`Checking out branch ${this.branch}`);
-            if (await this.isBranchExists(this.branch, git)) {
-                await git.checkout(this.branch);
-
-                // For ease-of-use when running locally and local branch exists
-                await git.merge([`refs/remotes/origin/${this.branch}`]);
-            } else {
-                await git.checkout(['-b', this.branch]);
-            }
+            let pathToChangelogDirectory = this.createDirectory(this.directory, git.getRepositoryPath());
 
             let releaseChangelog: ReleaseChangelog;
-            if (fs.existsSync(path.join(repoTempDir, `releasechangelog.json`))) {
-                releaseChangelog = JSON.parse(fs.readFileSync(path.join(repoTempDir, `releasechangelog.json`), 'utf8'));
+            if (fs.existsSync(path.join(pathToChangelogDirectory, `releasechangelog.json`))) {
+                releaseChangelog = JSON.parse(fs.readFileSync(path.join(pathToChangelogDirectory, `releasechangelog.json`), 'utf8'));
             } else {
                 releaseChangelog = {
                     orgs: [],
@@ -137,7 +125,7 @@ export default class ChangelogImpl {
                 };
             }
 
-            console.log('Generating changelog...');
+            SFPLogger.log('Generating changelog...',LoggerLevel.INFO,this.logger);
 
             releaseChangelog = new ReleaseChangelogUpdater(
                 releaseChangelog,
@@ -149,12 +137,14 @@ export default class ChangelogImpl {
             ).update();
 
             // Preview changelog in console
-            console.log(
-                marked(new ChangelogMarkdownGenerator(releaseChangelog, this.workItemUrl, 1, false).generate())
+            SFPLogger.log(
+                marked(new ChangelogMarkdownGenerator(releaseChangelog, this.workItemUrl, 1, false).generate()),
+                LoggerLevel.INFO,
+                this.logger
             );
 
             fs.writeFileSync(
-                path.join(repoTempDir, `releasechangelog.json`),
+                path.join(pathToChangelogDirectory, `releasechangelog.json`),
                 JSON.stringify(releaseChangelog, null, 4)
             );
 
@@ -165,34 +155,34 @@ export default class ChangelogImpl {
                 this.showAllArtifacts
             ).generate();
 
-            fs.writeFileSync(path.join(repoTempDir, `Release-Changelog.md`), payload);
+            fs.writeFileSync(path.join(pathToChangelogDirectory, `Release-Changelog.md`), payload);
 
-            if (!this.isDryRun) await this.pushChangelogToBranch(this.branch, git, this.forcePush);
+            if (!this.isDryRun)
+            { 
+                await git.commitFile([path.join(pathToChangelogDirectory, `releasechangelog.json`),path.join(pathToChangelogDirectory, `Release-Changelog.md`)]);
+                if(this.push)
+                 await git.pushToRemote(this.branch,this.forcePush)
+            }
 
-            console.log(`Successfully generated changelog`);
+            SFPLogger.log(`Successfully generated changelog`,LoggerLevel.INFO,this.logger);
             return releaseChangelog;
         } finally {
-            tempDir.removeCallback();
+           if(git)
+             git.deleteTempoRepoIfAny();
         }
     }
 
-    private async pushChangelogToBranch(branch: string, git: SimpleGit, isForce: boolean) {
-        console.log('Pushing changelog files to', branch);
+    
 
-        await new GitIdentity(git).setUsernameAndEmail();
-        await git.add([`releasechangelog.json`, `Release-Changelog.md`]);
-        await git.commit(`[skip ci] Updated Changelog ${this.releaseName}`);
-
-        if (isForce) {
-            await git.push('origin', branch, [`--force`]);
-        } else {
-            await git.push('origin', branch);
+    private createDirectory(directory: string, repoDir: string): string {
+        if (this.directory) {
+            if (!fs.pathExistsSync(path.join(repoDir, directory))) {
+                fs.mkdirpSync(path.join(repoDir, directory));
+            }
+            repoDir = path.join(repoDir, this.directory);
         }
+        return repoDir;
     }
 
-    private async isBranchExists(branch: string, git: SimpleGit): Promise<boolean> {
-        const listOfBranches = await git.branch(['-la']);
 
-        return listOfBranches.all.find((elem) => elem.endsWith(branch)) ? true : false;
-    }
 }

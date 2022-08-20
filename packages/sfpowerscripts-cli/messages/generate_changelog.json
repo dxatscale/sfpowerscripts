@@ -7,6 +7,8 @@
     "workItemUrlFlagDescription": "Generic URL for work items. Each work item ID will be appended to the URL, providing quick access to work items",
     "repoUrlFlagDescription": "Repository in which the changelog files are located. Assumes user is already authenticated.",
     "branchNameFlagDescription": "Repository branch in which the changelog files are located",
+    "pushFlagDescription":"Push the changelog to a repository to the provided branch",
     "showAllArtifactsFlagDescription": "Show all artifacts in changelog markdown, including those that have not changed in the release",
-    "forcePushFlagDescription": "Force push changes to the repository branch"
+    "forcePushFlagDescription": "Force push changes to the repository branch",
+    "directoryFlagDescription": "Relative path to directory to which the release defintion file should be generated, if the directory doesnt exist, it will be created"
 }

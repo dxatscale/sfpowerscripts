@@ -28,9 +28,12 @@ export default class GitTags {
 
         // Get the tags' associated commit ID
         // Dereference (-d) tags into object IDs
+        //TODO: Remove this direct usage
         let gitShowRefTagsBuffer = child_process.execSync(`git show-ref --tags -d | grep "${this.sfdx_package}_v*"`, {
+            maxBuffer:5*1024*1024,
             stdio: 'pipe',
         });
+        
         let gitShowRefTags = gitShowRefTagsBuffer.toString();
 
         let refTags: string[] = gitShowRefTags.split('\n');
@@ -38,7 +41,7 @@ export default class GitTags {
 
         // Filter ref tags, only including tags that point to the branch
         // By checking whether all 40 digits in the tag commit ID matches an ID in the branch's commit log
-        let refTagsPointingToBranch: string[] = refTags.filter((refTag) => commits.includes(refTag.substr(0, 40)));
+        let refTagsPointingToBranch: string[] = refTags.filter((refTag) => commits.includes(refTag.substring(0,40)));
 
         // Only match the name of the tags pointing to the branch
         refTagsPointingToBranch = refTagsPointingToBranch.map(
@@ -49,5 +52,36 @@ export default class GitTags {
         let tagsPointingToBranch: string[] = tags.filter((tag) => refTagsPointingToBranch.includes(tag));
 
         return tagsPointingToBranch;
+    }
+
+
+    public async getVersionFromLatestTag(): Promise<string> {
+        let version: string;
+
+        let tags = await this.listTagsOnBranch();
+        let latestTag = tags.pop();
+
+        if (latestTag) {
+            let match: RegExpMatchArray = latestTag.match(
+                /^.*_v(?<version>[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+|\.LATEST|\.NEXT)?)$/
+            );
+            if (match) version = this.substituteBuildNumberWithPreRelease(match.groups.version);
+            else throw new Error(`Failed to find valid tag for ${this.sfdx_package}`);
+        } else throw new Error(`Failed to find latest tag for ${this.sfdx_package}`);
+
+        return version;
+    }
+
+    private substituteBuildNumberWithPreRelease(packageVersionNumber: string) {
+        let segments = packageVersionNumber.split('.');
+
+        if (segments.length === 4) {
+            packageVersionNumber = segments.reduce((version, segment, segmentsIdx) => {
+                if (segmentsIdx === 3) return version + '-' + segment;
+                else return version + '.' + segment;
+            });
+        }
+
+        return packageVersionNumber;
     }
 }

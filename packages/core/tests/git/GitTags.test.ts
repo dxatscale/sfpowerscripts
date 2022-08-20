@@ -9,6 +9,9 @@ jest.mock('../../src/git/Git', () => {
     class Git {
         tag = jest.fn().mockReturnValue(tags);
         log = jest.fn().mockReturnValue(gitLog);
+        static async initiateRepo(){
+          return new Git();
+        }
     }
 
     return Git;
@@ -22,24 +25,21 @@ describe('Given a package, listTagsOnBranch', () => {
 
     it('should return tags belonging to package, on current branch', async () => {
         tags = coreTags;
-        let git: Git = new Git();
-
+        let git: Git = await Git.initiateRepo();
         const gitTags: GitTags = new GitTags(git, 'core');
         expect(await gitTags.listTagsOnBranch()).toEqual(coreTags.slice(0, 4));
     });
 
     it('should return an empty array if there are no tags', async () => {
         tags = [];
-        let git: Git = new Git();
-
+        let git: Git = await Git.initiateRepo();
         const gitTags: GitTags = new GitTags(git, 'core');
         expect(await gitTags.listTagsOnBranch()).toEqual([]);
     });
 
     it('should return an empty array if there are no tags belonging to package, on current branch', async () => {
         tags = coreTags.slice(4);
-        let git: Git = new Git();
-
+        let git: Git = await Git.initiateRepo();
         const gitTags: GitTags = new GitTags(git, 'core');
         expect(await gitTags.listTagsOnBranch()).toEqual([]);
     });

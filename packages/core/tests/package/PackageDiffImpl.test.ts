@@ -12,6 +12,9 @@ jest.mock('../../src/git/Git', () => {
     class Git {
         diff = jest.fn().mockReturnValue(gitDiff);
         show = jest.fn().mockReturnValue(gitShow);
+        static async initiateRepo(){
+          return new Git();
+        }
     }
 
     return Git;

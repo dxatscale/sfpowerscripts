@@ -1,9 +1,9 @@
+import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import ReleaseDefinitionGenerator from '../../../impl/release/ReleaseDefinitionGenerator';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'releasedefinition_generate');
@@ -16,18 +16,22 @@ export default class Generate extends SfpowerscriptsCommand {
     ];
 
     protected static requiresProject = true;
-    protected static requiresUsername = true;
     protected static requiresDevhubUsername = false;
 
     protected static flagsConfig = {
+        gitref: flags.string({
+            char: 'c',
+            description: messages.getMessage('commitFlagDescription'),
+            required:true
+        }),
         configfile: flags.string({
             char: 'f',
-            required:true,
+            required: true,
             description: messages.getMessage('configFileFlagDescription'),
         }),
         releasename: flags.string({
             char: 'n',
-            required:true,
+            required: true,
             description: messages.getMessage('releaseNameFlagDescription'),
         }),
         branchname: flags.string({
@@ -69,19 +73,15 @@ export default class Generate extends SfpowerscriptsCommand {
 
     async execute(): Promise<any> {
         try {
-
-            //Create Org
-            await this.org.refreshAuth();
-            let sfpOrg: SFPOrg = await SFPOrg.create({ connection: this.org.getConnection() });
-
             let releaseDefinitionGenerator: ReleaseDefinitionGenerator = new ReleaseDefinitionGenerator(
-                sfpOrg,
+                new ConsoleLogger(),
+                this.flags.gitref,
                 this.flags.configfile,
                 this.flags.releasename,
                 this.flags.branchname,
                 this.flags.directory,
                 this.flags.push,
-                this.flags.forcepush,
+                this.flags.forcepush
             );
             return await releaseDefinitionGenerator.exec();
         } catch (err) {

@@ -13,6 +13,7 @@ import SFPLogger, {
     COLOR_SUCCESS,
     COLOR_WARNING,
     COLOR_KEY_MESSAGE,
+    ConsoleLogger,
 } from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
@@ -82,6 +83,10 @@ export default class Release extends SfpowerscriptsCommand {
         generatechangelog: flags.boolean({
             default: false,
             description: messages.getMessage('generateChangelogFlagDescription'),
+        }),
+        directory: flags.string({
+            char: 'd',
+            description: messages.getMessage('directoryFlagDescription'),
         }),
         branchname: flags.string({
             dependsOn: ['generatechangelog'],
@@ -182,9 +187,10 @@ export default class Release extends SfpowerscriptsCommand {
                 isGenerateChangelog: this.flags.generatechangelog,
                 devhubUserName: this.flags.devhubalias,
                 branch: this.flags.branchname,
+                directory:this.flags.directory,
             };
 
-            let releaseImpl: ReleaseImpl = new ReleaseImpl(props);
+            let releaseImpl: ReleaseImpl = new ReleaseImpl(props,new ConsoleLogger());
 
             releaseResult = await releaseImpl.exec();
 
@@ -263,7 +269,5 @@ export default class Release extends SfpowerscriptsCommand {
     protected validateFlags() {
         if (this.flags.npm && !this.flags.scope) throw new Error('--scope parameter is required for NPM');
 
-        if (this.flags.generatechangelog && !this.flags.branchname)
-            throw new Error('--branchname parameter is required to generate changelog');
     }
 }
