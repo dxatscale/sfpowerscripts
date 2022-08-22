@@ -94,7 +94,7 @@ changelog:
 
 ```
 
-* Implementation notes *
+***Implementation notes***
 
 1. The command should expect the name of the release as an input. The passed in name will be substituted in the generated release file
 2. The command is expectected to be used from any stage in the repository
