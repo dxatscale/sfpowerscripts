@@ -1,11 +1,14 @@
+import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import ChangelogImpl from '../../../impl/changelog/ChangelogImpl';
+import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'generate_changelog');
 
-export default class GenerateChangelog extends SfdxCommand {
+export default class GenerateChangelog extends SfpowerscriptsCommand {
+    
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
@@ -46,10 +49,18 @@ export default class GenerateChangelog extends SfdxCommand {
             deprecated: { messageOverride: '--repourl has been deprecated' },
             hidden: true,
         }),
+        directory: flags.string({
+            required: false,
+            description: messages.getMessage('directoryFlagDescription'),
+        }),
         branchname: flags.string({
             required: true,
             char: 'b',
             description: messages.getMessage('branchNameFlagDescription'),
+        }),
+        push: flags.boolean({
+            description: messages.getMessage('pushFlagDescription'),
+            dependsOn: ['branchname'],
         }),
         showallartifacts: flags.boolean({
             required: false,
@@ -81,17 +92,20 @@ export default class GenerateChangelog extends SfdxCommand {
         }),
     };
 
-    async run() {
+    async execute() {
         try {
             let changelogImpl: ChangelogImpl = new ChangelogImpl(
+                new ConsoleLogger(),
                 this.flags.artifactdir,
                 this.flags.releasename,
                 this.flags.workitemfilter.split(':'),
                 this.flags.limit,
                 this.flags.workitemurl,
                 this.flags.showallartifacts,
+                this.flags.directory,
                 this.flags.forcepush,
                 this.flags.branchname,
+                this.flags.push,
                 null
             );
 

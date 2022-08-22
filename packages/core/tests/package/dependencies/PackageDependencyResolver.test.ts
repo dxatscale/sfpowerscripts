@@ -23,7 +23,12 @@ const setupFakeConnection = async () => {
 }
 
 jest.mock('../../../../core/src/git/Git', () => {
-  class Git {}
+  class Git {
+    static async initiateRepo()
+     {
+      return new Git();
+     }
+  }
 
   return Git;
 });

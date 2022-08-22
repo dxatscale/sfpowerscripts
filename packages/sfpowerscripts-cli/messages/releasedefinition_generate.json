@@ -1,7 +1,8 @@
 {
-    "commandDescription": "Generates release defintion based on the artifacts installed in a org",
+    "commandDescription": "Generates release defintion based on the artifacts installed from a commit reference",
     "configFileFlagDescription":"Path to the config file which determines how the release defintion should be generated",
     "releaseNameFlagDescription": "Set a releasename on the release definition file created",
+    "commitFlagDescription": "Utilize the tags on the source branch to generate release definiton",
     "directoryFlagDescription": "Relative path to directory to which the release defintion file should be generated, if the directory doesnt exist, it will be created",
     "branchNameFlagDescription": "Repository branch in which the release defintion files are to be written",
     "pushFlagDescription":"Push the changelog to a repository to the provided branch",

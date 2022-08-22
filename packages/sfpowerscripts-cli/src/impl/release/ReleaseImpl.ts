@@ -1,7 +1,7 @@
 import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
 import FetchImpl from '../artifacts/FetchImpl';
 import DeployImpl, { DeployProps, DeploymentMode, DeploymentResult } from '../deploy/DeployImpl';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { Logger,LoggerLevel } from '@dxatscale/sfp-logger';
 import { Stage } from '../Stage';
 import child_process = require('child_process');
 import ReleaseError from '../../errors/ReleaseError';
@@ -25,10 +25,11 @@ export interface ReleaseProps {
     isGenerateChangelog: boolean;
     devhubUserName: string;
     branch: string;
+    directory:string;
 }
 
 export default class ReleaseImpl {
-    constructor(private props: ReleaseProps) {}
+    constructor(private props: ReleaseProps,private logger?:Logger) {}
 
     public async exec(): Promise<ReleaseResult> {
         this.printOpenLoggingGroup('Fetching artifacts');
@@ -65,14 +66,17 @@ export default class ReleaseImpl {
                 this.printOpenLoggingGroup('Release changelog');
 
                 let changelogImpl: ChangelogImpl = new ChangelogImpl(
+                    this.logger,
                     'artifacts',
                     this.props.releaseDefinition.release,
                     this.props.releaseDefinition.changelog.workItemFilters,
                     this.props.releaseDefinition.changelog.limit,
                     this.props.releaseDefinition.changelog.workItemUrl,
                     this.props.releaseDefinition.changelog.showAllArtifacts,
+                    this.props.directory,
                     false,
                     this.props.branch,
+                    true,
                     this.props.isDryRun,
                     this.props.targetOrg
                 );

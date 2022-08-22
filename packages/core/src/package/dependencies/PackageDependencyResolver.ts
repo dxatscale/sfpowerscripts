@@ -151,7 +151,7 @@ export default class PackageDependencyResolver {
     ) {
         let package2VersionOnCurrentBranch: Package2Version;
 
-        const git = new Git();
+        const git = await Git.initiateRepo();
         const gitTags = new GitTags(git, dependency.package);
         const tags = await gitTags.listTagsOnBranch();
 

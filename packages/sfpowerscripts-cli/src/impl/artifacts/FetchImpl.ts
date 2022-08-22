@@ -1,10 +1,11 @@
 import * as fs from 'fs-extra';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags'
 import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
 import FetchArtifactsError from '../../errors/FetchArtifactsError';
 import * as rimraf from 'rimraf';
 import FetchArtifactSelector from './FetchArtifactSelector';
-import { LatestGitTagVersion } from './LatestGitTagVersion';
+
 
 export default class FetchImpl {
     constructor(
@@ -50,8 +51,8 @@ export default class FetchImpl {
         success: [string, string][];
         failed: [string, string][];
     }> {
-        const git: Git = new Git(null);
-        let latestGitTagVersion: LatestGitTagVersion = new LatestGitTagVersion(git);
+        const git: Git = await Git.initiateRepo(null,process.cwd());
+      
 
         let fetchedArtifacts = {
             success: [],
@@ -65,7 +66,8 @@ export default class FetchImpl {
             for (i = 0; i < artifacts.length; i++) {
                 let version: string;
                 if (artifacts[i][1] === 'LATEST_TAG' || artifacts[i][1] === 'LATEST_GIT_TAG') {
-                    version = await latestGitTagVersion.getVersionFromLatestTag(artifacts[i][0]);
+                    let latestGitTagVersion: GitTags = new GitTags(git,artifacts[i][0]);
+                    version = await latestGitTagVersion.getVersionFromLatestTag();
                 } else version = artifacts[i][1];
 
                 let artifactFetcher = new FetchArtifactSelector(scriptPath, scope, npmrcPath).getArtifactFetcher();

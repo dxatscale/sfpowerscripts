@@ -14,8 +14,8 @@ import { Stage } from '../Stage';
 import PrepareOrgJob from './PrepareOrgJob';
 import * as rimraf from 'rimraf';
 import * as fs from 'fs-extra';
-import { LatestGitTagVersion } from '../artifacts/LatestGitTagVersion';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags'
 import OrgDetailsFetcher from '@dxatscale/sfpowerscripts.core/lib/org/OrgDetailsFetcher';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import { EOL } from 'os';
@@ -172,14 +172,15 @@ export default class PrepareImpl {
                 this.pool.fetchArtifacts.npm?.npmrcPath
             ).getArtifactFetcher();
 
-            const git: Git = new Git(null);
-            let latestGitTagVersion: LatestGitTagVersion = new LatestGitTagVersion(git);
+            const git: Git = await Git.initiateRepo();
+
 
             //During Prepare, there could be a race condition where a main is merged with a new package
             //but the package is not yet available in the validated package list and can cause prepare to fail
             for (const pkg of packages) {
                 try {
-                    let version = await latestGitTagVersion.getVersionFromLatestTag(pkg.package);
+                    let latestGitTagVersion: GitTags = new GitTags(git,pkg.package);
+                    let version = await latestGitTagVersion.getVersionFromLatestTag();
                     artifactFetcher.fetchArtifact(pkg.package, 'artifacts', version, true);
                     this.artifactFetchedCount++;
                 } catch (error) {

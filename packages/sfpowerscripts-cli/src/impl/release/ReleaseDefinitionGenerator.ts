@@ -1,15 +1,14 @@
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import simplegit, { GitError, SimpleGit } from 'simple-git';
-const tmp = require('tmp');
+import  { GitError } from 'simple-git';
 import * as fs from 'fs-extra';
-import GitIdentity from '../git/GitIdentity';
 import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import Ajv, { _ } from 'ajv';
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, Logger } from '@dxatscale/sfp-logger';
 import ReleaseDefinitionGeneratorConfigSchema from './ReleaseDefinitionGeneratorConfigSchema';
 import lodash = require('lodash');
 import { LoggerLevel } from '@dxatscale/sfp-logger';
+import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags';
 const retry = require('async-retry');
 const yaml = require('js-yaml');
 const path = require('path');
@@ -17,22 +16,25 @@ const path = require('path');
 export default class ReleaseDefinitionGenerator {
     private _releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema;
 
+
     get releaseDefinitionGeneratorConfigSchema() {
         // Return clone of releaseDefinition for immutability
         return lodash.cloneDeep(this._releaseDefinitionGeneratorSchema);
     }
 
     public constructor(
-        private sfpOrg: SFPOrg,
+        private logger:Logger,
+        private gitRef: string,
         pathToReleaseDefinition: string,
         private releaseName: string,
         private branch: string,
         private directory?: string,
         private push: boolean = false,
-        private forcePush: boolean = false
+        private forcePush: boolean = false,
     ) {
         this._releaseDefinitionGeneratorSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, 'utf8'));
         this.validateReleaseDefinitionGeneratorConfig(this._releaseDefinitionGeneratorSchema);
+     
         // Easy to handle here than with schema
         if (
             this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts &&
@@ -69,8 +71,8 @@ export default class ReleaseDefinitionGenerator {
                             // Do not retry for Git errors that are not related to push
                             bail(err);
                         } else {
-                            console.log('Failed to push changelog');
-                            console.log(`Retrying...(${retryNum})`);
+                            SFPLogger.log('Failed to push changelog',LoggerLevel.WARN,this.logger);
+                            SFPLogger.log(`Retrying...(${retryNum})`,LoggerLevel.WARN,this.logger);
                             throw err;
                         }
                     } else {
@@ -88,110 +90,126 @@ export default class ReleaseDefinitionGenerator {
     }
 
     private async execHandler() {
-        let tempDir = tmp.dirSync({ unsafeCleanup: true });
         let repoDir: string;
-        let git: SimpleGit;
+        let git;
         try {
+            SFPLogger.log(`Processing Artifacts from reference.. ${this.gitRef}`,LoggerLevel.INFO,this.logger)
             if (this.push) {
-                repoDir = tempDir.name;
-                // Copy source directory to temp dir
-                fs.copySync(process.cwd(), repoDir);
-                git = simplegit(repoDir);
-                if (process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL) {
-                    //Change in ORIGIN_URL, so do a clone
-                    await git.clone(process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL, repoDir);
-                } else {
-                    // Copy source directory to temp dir
-                    fs.copySync(process.cwd(), repoDir);
-                    // Update local refs from remote
-                    await git.fetch('origin');
-                }
+                git = await Git.initiateRepoAtTempLocation(this.logger);
+                repoDir = git.getRepositoryPath();
             } else {
-                git = simplegit(repoDir);
+                git = await Git.initiateRepo();
                 repoDir = process.cwd();
             }
 
-            //Read Project Config from current branch
-            let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
-            let installedArtifacts = await this.sfpOrg.getAllInstalledArtifacts();
-            //figure out all package dependencies
-            let packageDependencies = {};
-            let artifacts = {};
-            for (const installedArtifact of installedArtifacts) {
-                if (installedArtifact.isInstalledBySfpowerscripts == false && installedArtifact.subscriberVersion) {
-                    let packageAliases = Object.keys(projectConfig.packageAliases);
-                    for (const packageAlias of packageAliases) {
-                        if (installedArtifact.subscriberVersion == projectConfig.packageAliases[packageAlias]) {
-                            if (this.getDependencyPredicate(installedArtifact.name))
-                                packageDependencies[installedArtifact.name] = installedArtifact.subscriberVersion;
-                        }
-                    }
-                } else if (installedArtifact.isInstalledBySfpowerscripts == true) {
-                    let packagesInRepo = ProjectConfig.getAllPackages(null);
-                    let packageFound = packagesInRepo.find((elem) => elem == installedArtifact.name);
-                    if (packageFound) {
-                        let pos = installedArtifact.version.lastIndexOf('.');
-                        let version =
-                            installedArtifact.version.substring(0, pos) +
-                            '-' +
-                            installedArtifact.version.substring(pos + 1);
-                        if (this.getArtifactPredicate(installedArtifact.name)) {
-                            artifacts[installedArtifact.name] = version;
-                        }
-                    }
-                }
-            }
+            let fetchedArtifacts = await this.fetchFromGitRef(git);
 
-            let releaseDefinition: ReleaseDefinitionSchema = {
-                release: this.releaseName,
-                skipIfAlreadyInstalled: true,
-                artifacts: artifacts,
-            };
-
-            //Add package dependencies
-            if (Object.keys(packageDependencies).length > 0)
-                releaseDefinition.packageDependencies = packageDependencies;
-
-            //Add changelog info
-            releaseDefinition.changelog = this.releaseDefinitionGeneratorConfigSchema.changelog;
-
-            let releaseDefinitonYAML = yaml.dump(releaseDefinition, {
-                styles: {
-                    '!!null': 'canonical', // dump null as ~
-                },
-                sortKeys: false, // sort object keys
-            });
-
-            SFPLogger.log(
-                COLOR_HEADER(`------------Generated Release Definition for ${this.releaseName}----------------`)
+            let releaseDefinitonYAML = await this.generateReleaseDefintion(
+                fetchedArtifacts.artifacts,
+                fetchedArtifacts.packageDependencies,
+                git
             );
-            SFPLogger.log(``);
-            SFPLogger.log(COLOR_KEY_MESSAGE(releaseDefinitonYAML));
-
-            if (this.push) {
-                SFPLogger.log(`Checking out branch ${this.branch}`);
-                await this.createBranch(git);
-                repoDir = this.createDirectory(this.directory, repoDir);
-                fs.writeFileSync(path.join(repoDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
-                await this.pushReleaseDefinitionToBranch(this.directory, this.branch, git, this.forcePush);
-            } else if (this.branch && !this.push) {
-                SFPLogger.log(`Checking out branch ${this.branch}`);
-                await this.createBranch(git);
-                repoDir = this.createDirectory(this.directory, repoDir);
-                fs.writeFileSync(path.join(repoDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
-                await this.commitFile(this.directory, git);
-            } else {
-                repoDir = this.createDirectory(this.directory, repoDir);
-                fs.writeFileSync(path.join(repoDir, `${this.releaseName}.yml`), releaseDefinitonYAML);
-            }
-
             return releaseDefinitonYAML.toString();
         } catch (error) {
-            console.log(error);
+            SFPLogger.log(error, LoggerLevel.ERROR, this.logger);
         } finally {
-            tempDir.removeCallback();
+            git.deleteTempoRepoIfAny();
         }
     }
+
+    private async fetchFromGitRef(git: Git) {
+        let artifacts = {};
+        let packageDependencies = {};
+        let isNewDuplicateCreated: boolean = false;
+        let headCommit: string;
+        //Create A copy of repository to a particular commit
+        //If already a duplicate directory switch to the passed git ref
+        //then switch it back
+        let gitRepository = git;
+        if (!git.isATemporaryRepo()) {
+            gitRepository = await Git.initiateRepoAtTempLocation(this.logger,this.gitRef);
+            isNewDuplicateCreated = true;
+        } else {
+            headCommit = await git.getCurrentCommitId();
+            git.checkout(this.gitRef);
+        }
+
+    
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(gitRepository.getRepositoryPath());
+        //Read sfdx project json
+        let sfdxPackages = ProjectConfig.getAllPackagesFromProjectConfig(projectConfig);
+        for (const sfdxPackage of sfdxPackages) {
+            let latestGitTagVersion = new GitTags(gitRepository,sfdxPackage);
+            let version = await latestGitTagVersion.getVersionFromLatestTag();
+            if (this.getArtifactPredicate(sfdxPackage)) {
+                artifacts[sfdxPackage] = version;
+            }
+        }
+
+        let allExternalPackages = ProjectConfig.getAllExternalPackages(projectConfig);
+        for (const externalPackage of allExternalPackages) {
+            if (
+                this.getDependencyPredicate(externalPackage.alias) &&
+                externalPackage.Package2IdOrSubscriberPackageVersionId.startsWith('04t')
+            ) {
+                packageDependencies[externalPackage.alias] = externalPackage.Package2IdOrSubscriberPackageVersionId;
+            }
+        }
+        if (isNewDuplicateCreated) gitRepository.deleteTempoRepoIfAny();
+        else git.checkout(headCommit);
+        return { artifacts, packageDependencies };
+    }
+
+    private async generateReleaseDefintion(artifacts: any, packageDependencies: any, git: Git) {
+        artifacts = Object.keys(artifacts)
+            .sort()
+            .reduce((obj, key) => {
+                obj[key] = artifacts[key];
+                return obj;
+            }, {});
+
+        packageDependencies = Object.keys(packageDependencies)
+            .sort()
+            .reduce((obj, key) => {
+                obj[key] = packageDependencies[key];
+                return obj;
+            }, {});
+
+        let releaseDefinition: ReleaseDefinitionSchema = {
+            release: this.releaseName,
+            skipIfAlreadyInstalled: true,
+            artifacts: artifacts,
+        };
+
+        //Add package dependencies
+        if (Object.keys(packageDependencies).length > 0) releaseDefinition.packageDependencies = packageDependencies;
+
+        //Add changelog info
+        releaseDefinition.changelog = this.releaseDefinitionGeneratorConfigSchema.changelog;
+
+        let releaseDefinitonYAML = yaml.dump(releaseDefinition, {
+            styles: {
+                '!!null': 'canonical', // dump null as ~
+            },
+            sortKeys: false, // sort object keys
+        });
+
+        SFPLogger.log(COLOR_HEADER(`------------Generated Release Definition for ${this.releaseName}----------------`));
+        SFPLogger.log(``);
+        SFPLogger.log(COLOR_KEY_MESSAGE(releaseDefinitonYAML));
+
+        let pathToReleaseDefnDirectory = this.createDirectory(this.directory, git.getRepositoryPath());
+        fs.writeFileSync(path.join(pathToReleaseDefnDirectory, `${this.releaseName}.yml`), releaseDefinitonYAML);
+        if (this.branch) {
+            SFPLogger.log(`Checking out branch ${this.branch}`);
+            await git.createBranch(this.branch);
+            await git.commitFile([path.join(pathToReleaseDefnDirectory, `${this.releaseName}.yml`)]);
+            if (this.push) await git.pushToRemote(this.branch, this.forcePush);
+        }
+
+        return { releaseDefinitonYAML, pathToReleaseDefnDirectory };
+    }
+
     private createDirectory(directory: string, repoDir: string): string {
         if (this.directory) {
             if (!fs.pathExistsSync(path.join(repoDir, directory))) {
@@ -200,20 +218,6 @@ export default class ReleaseDefinitionGenerator {
             repoDir = path.join(repoDir, this.directory);
         }
         return repoDir;
-    }
-
-    private async createBranch(git: SimpleGit) {
-        if (await this.isBranchExists(this.branch, git)) {
-            await git.checkout(this.branch, ['-f']);
-            try {
-                // For ease-of-use when running locally and local branch exists
-                await git.merge([`refs/remotes/origin/${this.branch}`]);
-            } catch (error) {
-                SFPLogger.log(`Unable to find remote`, LoggerLevel.TRACE);
-            }
-        } else {
-            await git.checkout(['-b', this.branch]);
-        }
     }
 
     private validateReleaseDefinitionGeneratorConfig(
@@ -244,37 +248,6 @@ export default class ReleaseDefinitionGenerator {
         }
     }
 
-    private async pushReleaseDefinitionToBranch(directory: string, branch: string, git: SimpleGit, isForce: boolean) {
-        SFPLogger.log(`Pushing release definiton file to ${branch}`);
-        await this.commitFile(directory, git);
-        if (isForce) {
-            await git.push('origin', branch, [`--force`]);
-        } else {
-            await git.push('origin', branch);
-        }
-    }
-
-    private async commitFile(directory: string, git: SimpleGit) {
-        try {
-            await new GitIdentity(git).setUsernameAndEmail();
-            if (directory) {
-                await git.add([path.join(this.directory, `${this.releaseName}.yml`)]);
-            } else await git.add([`${this.releaseName}.yml`]);
-            await git.commit(`[skip ci] Updated Release Defintiion ${this.releaseName}`);
-            SFPLogger.log(`Committed Release defintion ${this.releaseName}.yml to branch ${this.branch} `);
-        } catch (errror) {
-            SFPLogger.log(
-                `Unable to commit file, probably due to no change or something else,Please try manually`,
-                LoggerLevel.ERROR
-            );
-        }
-    }
-
-    private async isBranchExists(branch: string, git: SimpleGit): Promise<boolean> {
-        const listOfBranches = await git.branch(['-la']);
-
-        return listOfBranches.all.find((elem) => elem.endsWith(branch)) ? true : false;
-    }
     private getArtifactPredicate(artifact: string): boolean {
         if (this.releaseDefinitionGeneratorConfigSchema.includeOnlyArtifacts) {
             return this.releaseDefinitionGeneratorConfigSchema.includeOnlyArtifacts?.includes(artifact);

@@ -9,10 +9,6 @@
         "baselineOrg": ["skipIfAlreadyInstalled"]
     },
     "properties": {
-        "changelogBranchRef": {
-            "type": "string",
-            "description": "Name of the release to be fetched from a changelog branch"
-        },
         "skipIfAlreadyInstalled": {
             "type": "boolean"
         },
