@@ -1,6 +1,6 @@
 # Automatic generation of release definition
 
-* Status: Accepted  <!-- optional -->
+* Status: Review  <!-- optional -->
 * Deciders: Azlam, Vu, Zhebin <!-- optional -->
 * Date: 15/08/22 <!-- optional -->
 
