@@ -78,17 +78,17 @@ export default class Git {
 
         SFPLogger.log(`Copying the repository to ${locationOfCopiedDirectory.name}`, LoggerLevel.INFO, logger);
         let repoDir = locationOfCopiedDirectory.name;
-        let gitImplementor = simplegit(repoDir);
+       
 
         // Copy source directory to temp dir
         fs.copySync(process.cwd(), repoDir);
-        // Update local refs from remote
-        await gitImplementor.fetch();
+
 
         //Initiate git on new repo on using the abstracted object
         let git = new Git(repoDir, logger);
         git._isATemporaryRepo = true;
         git.tempRepoLocation = locationOfCopiedDirectory;
+        await git.fetch();
 
         if (branch) {
             await git.createBranch(branch);
@@ -98,7 +98,7 @@ export default class Git {
         }
 
         SFPLogger.log(
-            `Successfully created temporary repository at ${locationOfCopiedDirectory} with commit ${
+            `Successfully created temporary repository at ${repoDir} with commit ${
                 commitRef ? commitRef : 'HEAD'
             }`,
             LoggerLevel.INFO,
