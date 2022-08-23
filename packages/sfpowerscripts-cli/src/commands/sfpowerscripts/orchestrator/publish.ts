@@ -15,7 +15,7 @@ import SFPLogger, {
 } from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import simplegit from 'simple-git';
-import GitIdentity from '../../../impl/git/GitIdentity';
+import GitIdentity from '@dxatscale/sfpowerscripts.core/lib/git/GitIdentity';
 import defaultShell from '@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell';
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';

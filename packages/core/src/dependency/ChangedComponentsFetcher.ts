@@ -13,7 +13,7 @@ export default class ChangedComponentsFetcher {
     async fetch(): Promise<Component[]> {
         const components: Component[] = [];
 
-        let git: Git = new Git();
+        let git: Git = await Git.initiateRepo();
 
         let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
 

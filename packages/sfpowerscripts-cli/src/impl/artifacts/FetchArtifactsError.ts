@@ -1,12 +1,15 @@
-import SfpowerscriptsError from './SfpowerscriptsError';
+
+import SfpowerscriptsError from '../../errors/SfpowerscriptsError';
+import { ArtifactVersion } from './FetchImpl';
+
 
 export default class FetchArtifactsError extends SfpowerscriptsError {
     /**
      * Payload consisting of artifacts that succeeded and failed to fetch
      */
     readonly data: {
-        success: [string, string][];
-        failed: [string, string][];
+        success: ArtifactVersion[];
+        failed: ArtifactVersion[];
     };
 
     /**
@@ -14,7 +17,7 @@ export default class FetchArtifactsError extends SfpowerscriptsError {
      */
     readonly cause: Error;
 
-    constructor(message: string, data: { success: [string, string][]; failed: [string, string][] }, cause: Error) {
+    constructor(message: string, data: { success:ArtifactVersion[]; failed: ArtifactVersion[] }, cause: Error) {
         super(message);
 
         this.data = data;

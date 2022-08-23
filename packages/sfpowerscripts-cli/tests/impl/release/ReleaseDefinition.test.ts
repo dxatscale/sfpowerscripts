@@ -12,28 +12,28 @@ describe('Given a release definition, validateReleaseDefinition', () => {
         });
     });
 
-    it('should throw if artifacts field is missing', () => {
+    it('should throw if artifacts field is missing', async () => {
         releaseDefinitionYaml = `
       release: "test-release"
     `;
 
-        expect(() => {
-            new ReleaseDefinition(null);
-        }).toThrow();
+        expect(async () => {
+            await ReleaseDefinition.loadReleaseDefinition('path');
+        }).rejects.toThrowError();
     });
 
-    it('should throw if release field is missing', () => {
+    it('should throw if release field is missing', async () => {
         releaseDefinitionYaml = `
       artifacts:
         packageA: "1.0.0-0"
     `;
 
-        expect(() => {
-            new ReleaseDefinition(null);
-        }).toThrow();
+        expect(async () => {
+            await ReleaseDefinition.loadReleaseDefinition('path');
+        }).rejects.toThrowError();
     });
 
-    it('should not throw an error for valid package dependency', () => {
+    it('should not throw an error for valid package dependency', async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       artifacts:
@@ -42,12 +42,12 @@ describe('Given a release definition, validateReleaseDefinition', () => {
         packageX: 04t0H000000xVrwQAE
     `;
 
-        expect(() => {
-            new ReleaseDefinition(null);
-        }).not.toThrow();
+        expect(async () => {
+            await ReleaseDefinition.loadReleaseDefinition('path');
+        }).toBeDefined();
     });
 
-    it('should throw an error for an invalid package dependency', () => {
+    it('should throw an error for an invalid package dependency', async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       artifacts:
@@ -56,12 +56,12 @@ describe('Given a release definition, validateReleaseDefinition', () => {
         packageX: 04t0H000000xVrwQAE123
     `;
 
-        expect(() => {
-            new ReleaseDefinition(null);
-        }).toThrow();
+        expect(async () => {
+            await ReleaseDefinition.loadReleaseDefinition('path');
+        }).rejects.toThrowError();
     });
 
-    it('should not throw an error for valid release parameters', () => {
+    it('should not throw an error for valid release parameters', async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       skipIfAlreadyInstalled: true
@@ -70,12 +70,12 @@ describe('Given a release definition, validateReleaseDefinition', () => {
         packageA: "3.0.5-13"
     `;
 
-        expect(() => {
-            new ReleaseDefinition(null);
-        }).not.toThrow();
+        expect(async () => {
+            await ReleaseDefinition.loadReleaseDefinition('path');
+        }).toBeDefined();
     });
 
-    it('should throw an error if baselineOrg specified but skipIfAlreadyInstalled is false', () => {
+    it('should throw an error if baselineOrg specified but skipIfAlreadyInstalled is false', async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       skipIfAlreadyInstalled: false
@@ -84,12 +84,12 @@ describe('Given a release definition, validateReleaseDefinition', () => {
         packageA: "3.0.5-13"
     `;
 
-        expect(() => {
-            new ReleaseDefinition(null);
-        }).toThrow();
+        expect(async () => {
+            await ReleaseDefinition.loadReleaseDefinition('path');
+        }).rejects.toThrowError();
     });
 
-    it('should not throw an error for valid changelog parameters', () => {
+    it('should not throw an error for valid changelog parameters', async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       artifacts:
@@ -102,12 +102,12 @@ describe('Given a release definition, validateReleaseDefinition', () => {
         showAllArtifacts: false
     `;
 
-        expect(() => {
-            new ReleaseDefinition(null);
-        }).not.toThrow();
+        expect(async () => {
+            await ReleaseDefinition.loadReleaseDefinition('path');
+        }).toBeDefined();
     });
 
-    it('should throw an error if required changelog parameters are missing', () => {
+    it('should throw an error if required changelog parameters are missing', async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       artifacts:
@@ -118,8 +118,8 @@ describe('Given a release definition, validateReleaseDefinition', () => {
         showAllArtifacts: false
     `;
 
-        expect(() => {
-            new ReleaseDefinition(null);
-        }).toThrow();
+        expect(async () => {
+            await ReleaseDefinition.loadReleaseDefinition('path');
+        }).rejects.toThrow();
     });
 });

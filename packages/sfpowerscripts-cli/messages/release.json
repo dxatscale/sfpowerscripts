@@ -1,6 +1,6 @@
 {
-    "commandDescription": "Initiate a release to an org, according to the configuration defined in a release-definition YAML file",
-    "releaseDefinitionFlagDescription": "Path to YAML file containing map of packages and package versions to download",
+    "commandDescription": "Release a  collection of artifacts as defined in the release definition file",
+    "releaseDefinitionFlagDescription": "Path to release definiton yaml, Multiple paths can be seperated by commas",
     "targetOrgFlagDescription": "Alias/User Name of the target environment",
     "scriptPathFlagDescription": "(Optional: no-NPM) Path to script that authenticates and downloads artifacts from the registry",
     "npmFlagDescription": "Download artifacts from a pre-authenticated private npm registry",
@@ -14,5 +14,6 @@
     "generateChangelogFlagDescription": "Create a release changelog",
     "allowUnpromotedPackagesFlagDescription": "Allow un-promoted packages to be installed in production",
     "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg",
+    "directoryFlagDescription": "Relative path to directory to which the release defintion file should be generated, if the directory doesnt exist, it will be created",
     "branchNameFlagDescription": "Repository branch in which the changelog files are located"
 }
