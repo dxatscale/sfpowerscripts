@@ -50,7 +50,9 @@ export default class ExternalPackage2DependencyResolver {
                         } else {
                             dependendentPackage.subscriberPackageVersionId = revisedProjectConfig.packageAliases[dependendentPackage.name];
                         }
-
+                        if(this.keys[dependency.package]){
+                            dependendentPackage.key = this.keys[dependency.package];
+                        }
                         packageVersions.push(dependendentPackage);
                     }
                 }

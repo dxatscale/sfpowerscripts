@@ -27,7 +27,8 @@ export default class InstallUnlockedPackageCollection {
                     null,
                     this.sfpOrg.getUsername(),
                     package2.subscriberPackageVersionId,
-                    '120'
+                    '120',
+                    package2.key
                 );
 
                 try {
