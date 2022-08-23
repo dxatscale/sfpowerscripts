@@ -26,25 +26,23 @@ export default class ReleaseDefinition {
     }
 
     public static async loadReleaseDefinition(pathToReleaseDefinition: string) {
-        try
-        {
         //Check whether path contains gitRef
         let releaseDefinitionSchema: ReleaseDefinitionSchema;
-        if (pathToReleaseDefinition.includes(':')) {
-            let git = await Git.initiateRepo();
-            await git.fetch();
-            let releaseFile = await git.show([pathToReleaseDefinition]);
-            releaseDefinitionSchema = yaml.load(releaseFile);
-        } else {
-            releaseDefinitionSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, 'UTF8'));
+        try {
+            if (pathToReleaseDefinition.includes(':')) {
+                let git = await Git.initiateRepo();
+                await git.fetch();
+                let releaseFile = await git.show([pathToReleaseDefinition]);
+                releaseDefinitionSchema = yaml.load(releaseFile);
+            } else {
+                releaseDefinitionSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, 'UTF8'));
+            }
+        } catch (error) {
+            throw new Error(`Unable to read the release definition file due to ${JSON.stringify(error)}`);
         }
 
         let releaseDefinition = new ReleaseDefinition(releaseDefinitionSchema);
         return releaseDefinition;
-        }catch(error)
-        {
-            throw new Error(`Unable to read the release definition file due to ${JSON.stringify(error)}`);
-        }
     }
 
     private convertPackageDependenciesIdTo18Digits(packageDependencies: { [p: string]: string }) {
