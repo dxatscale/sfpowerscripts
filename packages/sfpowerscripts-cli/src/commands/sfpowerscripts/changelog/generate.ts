@@ -58,9 +58,10 @@ export default class GenerateChangelog extends SfpowerscriptsCommand {
             char: 'b',
             description: messages.getMessage('branchNameFlagDescription'),
         }),
-        push: flags.boolean({
-            description: messages.getMessage('pushFlagDescription'),
+        nopush: flags.boolean({
+            description: messages.getMessage('noPushFlagDescription'),
             dependsOn: ['branchname'],
+            default: false
         }),
         showallartifacts: flags.boolean({
             required: false,
@@ -105,7 +106,7 @@ export default class GenerateChangelog extends SfpowerscriptsCommand {
                 this.flags.directory,
                 this.flags.forcepush,
                 this.flags.branchname,
-                this.flags.push,
+                this.flags.nopush,
                 null
             );
 

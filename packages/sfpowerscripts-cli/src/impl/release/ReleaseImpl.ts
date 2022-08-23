@@ -100,7 +100,7 @@ export default class ReleaseImpl {
                     this.props.directory,
                     false,
                     this.props.branch,
-                    true,
+                    false,
                     this.props.isDryRun,
                     this.props.targetOrg
                 );

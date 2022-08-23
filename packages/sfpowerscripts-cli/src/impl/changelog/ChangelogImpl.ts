@@ -32,7 +32,7 @@ export default class ChangelogImpl {
         private directory:string,
         private forcePush: boolean,
         private branch: string,
-        private push:boolean,
+        private nopush:boolean,
         private isDryRun: boolean,
         private org?: string
     ) {
@@ -157,8 +157,8 @@ export default class ChangelogImpl {
             if (!this.isDryRun)
             { 
                 await git.commitFile([path.join(pathToChangelogDirectory, `releasechangelog.json`),path.join(pathToChangelogDirectory, `Release-Changelog.md`)]);
-                if(this.push)
-                 await git.pushToRemote(this.branch,this.forcePush)
+                if(!this.nopush)
+                  await git.pushToRemote(this.branch,this.forcePush)
             }
 
             SFPLogger.log(`Successfully generated changelog`,LoggerLevel.INFO,this.logger);

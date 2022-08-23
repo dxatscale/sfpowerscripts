@@ -1,4 +1,4 @@
-import  { GitError } from 'simple-git';
+import { GitError } from 'simple-git';
 import * as fs from 'fs-extra';
 import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
@@ -16,25 +16,24 @@ const path = require('path');
 export default class ReleaseDefinitionGenerator {
     private _releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema;
 
-
     get releaseDefinitionGeneratorConfigSchema() {
         // Return clone of releaseDefinition for immutability
         return lodash.cloneDeep(this._releaseDefinitionGeneratorSchema);
     }
 
     public constructor(
-        private logger:Logger,
+        private logger: Logger,
         private gitRef: string,
         pathToReleaseDefinition: string,
         private releaseName: string,
         private branch: string,
         private directory?: string,
-        private push: boolean = false,
-        private forcePush: boolean = false,
+        private noPush: boolean = false,
+        private forcePush: boolean = false
     ) {
         this._releaseDefinitionGeneratorSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, 'utf8'));
         this.validateReleaseDefinitionGeneratorConfig(this._releaseDefinitionGeneratorSchema);
-     
+
         // Easy to handle here than with schema
         if (
             this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts &&
@@ -71,8 +70,8 @@ export default class ReleaseDefinitionGenerator {
                             // Do not retry for Git errors that are not related to push
                             bail(err);
                         } else {
-                            SFPLogger.log('Failed to push changelog',LoggerLevel.WARN,this.logger);
-                            SFPLogger.log(`Retrying...(${retryNum})`,LoggerLevel.WARN,this.logger);
+                            SFPLogger.log('Failed to push changelog', LoggerLevel.WARN, this.logger);
+                            SFPLogger.log(`Retrying...(${retryNum})`, LoggerLevel.WARN, this.logger);
                             throw err;
                         }
                     } else {
@@ -93,15 +92,9 @@ export default class ReleaseDefinitionGenerator {
         let repoDir: string;
         let git;
         try {
-            SFPLogger.log(`Processing Artifacts from reference.. ${this.gitRef}`,LoggerLevel.INFO,this.logger)
-            if (this.push) {
-                git = await Git.initiateRepoAtTempLocation(this.logger);
-                repoDir = git.getRepositoryPath();
-            } else {
-                git = await Git.initiateRepo();
-                repoDir = process.cwd();
-            }
-
+            SFPLogger.log(`Processing Artifacts from reference.. ${this.gitRef}`, LoggerLevel.INFO, this.logger);
+            git = await Git.initiateRepoAtTempLocation(this.logger);
+            repoDir = git.getRepositoryPath();
             let fetchedArtifacts = await this.fetchFromGitRef(git);
 
             let releaseDefinitonYAML = await this.generateReleaseDefintion(
@@ -127,19 +120,18 @@ export default class ReleaseDefinitionGenerator {
         //then switch it back
         let gitRepository = git;
         if (!git.isATemporaryRepo()) {
-            gitRepository = await Git.initiateRepoAtTempLocation(this.logger,this.gitRef);
+            gitRepository = await Git.initiateRepoAtTempLocation(this.logger, this.gitRef);
             isNewDuplicateCreated = true;
         } else {
             headCommit = await git.getCurrentCommitId();
             git.checkout(this.gitRef);
         }
 
-    
         let projectConfig = ProjectConfig.getSFDXProjectConfig(gitRepository.getRepositoryPath());
         //Read sfdx project json
         let sfdxPackages = ProjectConfig.getAllPackagesFromProjectConfig(projectConfig);
         for (const sfdxPackage of sfdxPackages) {
-            let latestGitTagVersion = new GitTags(gitRepository,sfdxPackage);
+            let latestGitTagVersion = new GitTags(gitRepository, sfdxPackage);
             let version = await latestGitTagVersion.getVersionFromLatestTag();
             if (this.getArtifactPredicate(sfdxPackage)) {
                 artifacts[sfdxPackage] = version;
@@ -204,7 +196,7 @@ export default class ReleaseDefinitionGenerator {
             SFPLogger.log(`Checking out branch ${this.branch}`);
             await git.createBranch(this.branch);
             await git.commitFile([path.join(pathToReleaseDefnDirectory, `${this.releaseName}.yml`)]);
-            if (this.push) await git.pushToRemote(this.branch, this.forcePush);
+            if (!this.noPush) await git.pushToRemote(this.branch, this.forcePush);
         }
 
         return { releaseDefinitonYAML, pathToReleaseDefnDirectory };

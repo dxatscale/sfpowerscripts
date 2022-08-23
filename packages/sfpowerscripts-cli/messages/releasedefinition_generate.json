@@ -5,6 +5,6 @@
     "commitFlagDescription": "Utilize the tags on the source branch to generate release definiton",
     "directoryFlagDescription": "Relative path to directory to which the release defintion file should be generated, if the directory doesnt exist, it will be created",
     "branchNameFlagDescription": "Repository branch in which the release defintion files are to be written",
-    "pushFlagDescription":"Push the changelog to a repository to the provided branch",
+    "noPushFlagDescription":"Do not push the changelog to a repository to the provided branch",
     "forcePushFlagDescription": "Force push changes to the repository branch"
 }
