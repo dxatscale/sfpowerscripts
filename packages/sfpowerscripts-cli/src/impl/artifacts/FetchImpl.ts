@@ -2,14 +2,15 @@ import * as fs from 'fs-extra';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags'
 import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
-import FetchArtifactsError from '../../errors/FetchArtifactsError';
+import FetchArtifactsError from './FetchArtifactsError';
 import * as rimraf from 'rimraf';
 import FetchArtifactSelector from './FetchArtifactSelector';
-
+import _ from 'lodash';
+import path from 'path';
 
 export default class FetchImpl {
-    constructor(
-        private releaseDefinition: ReleaseDefinitionSchema,
+     constructor(
+        private releaseDefinitions: ReleaseDefinitionSchema[],
         private artifactDirectory: string,
         private scriptPath: string,
         private isNpm: boolean,
@@ -18,20 +19,16 @@ export default class FetchImpl {
     ) {}
 
     async exec(): Promise<{
-        success: [string, string][];
-        failed: [string, string][];
+        success: ArtifactVersion[];
+        failed: ArtifactVersion[];
     }> {
-        //Create Artifact Directory
-        rimraf.sync('artifacts');
-        fs.mkdirpSync('artifacts');
-
         let fetchedArtifacts: {
-            success: [string, string][];
-            failed: [string, string][];
+            success: ArtifactVersion[];
+            failed: ArtifactVersion[];
         };
 
         fetchedArtifacts = await this.fetchArtifacts(
-            this.releaseDefinition,
+            this.releaseDefinitions,
             this.artifactDirectory,
             this.scriptPath,
             this.scope,
@@ -42,45 +39,70 @@ export default class FetchImpl {
     }
 
     private async fetchArtifacts(
-        releaseDefinition: ReleaseDefinitionSchema,
+        releaseDefinitions: ReleaseDefinitionSchema[],
         artifactDirectory: string,
         scriptPath: string,
         scope: string,
         npmrcPath: string
     ): Promise<{
-        success: [string, string][];
-        failed: [string, string][];
+        success: ArtifactVersion[];
+        failed: ArtifactVersion[];
     }> {
-        const git: Git = await Git.initiateRepo(null,process.cwd());
-      
+        const git: Git = await Git.initiateRepo();
 
-        let fetchedArtifacts = {
+
+        let fetchedArtifacts: { success: ArtifactVersion[]; failed: ArtifactVersion[] }={
             success: [],
-            failed: [],
-        };
+            failed: []
+        }
 
-        let artifacts: [string, string][];
+        let allArtifacts: { name: string; version: string }[] = [];
+       
+
         let i: number;
         try {
-            artifacts = Object.entries(releaseDefinition.artifacts);
-            for (i = 0; i < artifacts.length; i++) {
-                let version: string;
-                if (artifacts[i][1] === 'LATEST_TAG' || artifacts[i][1] === 'LATEST_GIT_TAG') {
-                    let latestGitTagVersion: GitTags = new GitTags(git,artifacts[i][0]);
-                    version = await latestGitTagVersion.getVersionFromLatestTag();
-                } else version = artifacts[i][1];
+            for (const releaseDefinition of releaseDefinitions) {
 
-                let artifactFetcher = new FetchArtifactSelector(scriptPath, scope, npmrcPath).getArtifactFetcher();
-                artifactFetcher.fetchArtifact(artifacts[i][0], artifactDirectory, version, false);
+              
+                //Each release will be downloaded to specific subfolder inside the provided artifact directory
+                //As each release is a collection of artifacts
+                let revisedArtifactDirectory = path.join(artifactDirectory,releaseDefinition.release.replace(/[/\\?%*:|"<>]/g, '-'));
 
-                fetchedArtifacts.success.push(artifacts[i]);
+                rimraf.sync(revisedArtifactDirectory);
+                fs.mkdirpSync(revisedArtifactDirectory);
+
+                let artifactsToDownload: { name: string; version: string }[] = [];
+                //additional sanity to not  repeat download
+                for (let artifactEntry of Object.entries(releaseDefinition.artifacts)) {
+                    if (!_.includes(allArtifacts, { name: artifactEntry[0], version: artifactEntry[1] }, 0)){
+                        allArtifacts.push({ name: artifactEntry[0], version: artifactEntry[1] });
+                        artifactsToDownload.push({ name: artifactEntry[0], version: artifactEntry[1] });
+                    }   
+                }
+
+                for (let artifact of artifactsToDownload) {
+                    let version: string;
+                    if (artifact.version === 'LATEST_TAG' || artifact.version === 'LATEST_GIT_TAG') {
+                        let latestGitTagVersion: GitTags = new GitTags(git,artifact.name);
+                        version = await latestGitTagVersion.getVersionFromLatestTag();
+                    } else version = artifact.version;
+
+                    let artifactFetcher = new FetchArtifactSelector(scriptPath, scope, npmrcPath).getArtifactFetcher();
+                    artifactFetcher.fetchArtifact(artifact.name, revisedArtifactDirectory, version, false);
+
+                    fetchedArtifacts.success.push(artifact);
+                }
             }
         } catch (error) {
             console.log(error.message);
-            fetchedArtifacts.failed = artifacts.slice(i);
+            fetchedArtifacts.failed = allArtifacts.slice(i);
             throw new FetchArtifactsError('Failed to fetch artifacts', fetchedArtifacts, error);
         }
 
         return fetchedArtifacts;
     }
 }
+export type ArtifactVersion = {
+    name: string;
+    version: string;
+};
