@@ -66,6 +66,7 @@ export default class ExternalPackage2DependencyResolver {
         return packageVersions;
     }
 
+
     /**
      * Parse keys in string format "packageA:key packageB:key packageC:key"
      * Returns map of packages to keys
