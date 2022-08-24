@@ -27,6 +27,11 @@ export default class ExternalPackage2DependencyResolver {
         let packageVersions: Package2Detail[] = [];
         let packageVersionFetcher = new Package2VersionFetcher(this.conn);
 
+        let packagesToKeys: { [p: string]: string };
+        if (this.keys) {
+            packagesToKeys = this.parseKeys(this.keys);
+        }
+
         //Resolve provided version Number to SubscriberVersionId
         for (const packageDirectory of revisedProjectConfig.packageDirectories) {
 
@@ -50,8 +55,8 @@ export default class ExternalPackage2DependencyResolver {
                         } else {
                             dependendentPackage.subscriberPackageVersionId = revisedProjectConfig.packageAliases[dependendentPackage.name];
                         }
-                        if(this.keys[dependency.package]){
-                            dependendentPackage.key = this.keys[dependency.package];
+                        if(packagesToKeys?.[pkg]){
+                            dependendentPackage.key = packagesToKeys[pkg];
                         }
                         packageVersions.push(dependendentPackage);
                     }
@@ -59,6 +64,30 @@ export default class ExternalPackage2DependencyResolver {
             }
         }
         return packageVersions;
+    }
+
+    /**
+     * Parse keys in string format "packageA:key packageB:key packageC:key"
+     * Returns map of packages to keys
+     * @param keys
+     */
+     private parseKeys(keys: string) {
+        let output: { [p: string]: string } = {};
+
+        keys = keys.trim();
+        let listOfKeys = keys.split(' ');
+
+        for (let key of listOfKeys) {
+            let packageKeyPair = key.split(':');
+            if (packageKeyPair.length === 2) {
+                output[packageKeyPair[0]] = packageKeyPair[1];
+            } else {
+                // Format is incorrect, throw an error
+                throw new Error(`Error parsing keys, format should be: "packageA:key packageB:key packageC:key"`);
+            }
+        }
+
+        return output;
     }
 }
 
