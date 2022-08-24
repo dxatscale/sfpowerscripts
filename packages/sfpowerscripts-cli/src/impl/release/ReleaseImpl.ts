@@ -265,7 +265,9 @@ export default class ReleaseImpl {
             for (let pkg in packageDependencies) {
                 let dependendentPackage: Package2Detail = { name: pkg };
                 dependendentPackage.subscriberPackageVersionId = packageDependencies[pkg];
-                dependendentPackage.key = packagesToKeys[pkg]
+                if(packagesToKeys?.[pkg]){
+                    dependendentPackage.key = packagesToKeys[pkg]
+                }
                 externalPackage2s.push(dependendentPackage);
 
             }
