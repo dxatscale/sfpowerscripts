@@ -33,7 +33,7 @@ describe("Given a InstallUnlockedPackageWrapper", () => {
 
 
   it("should generate command with installation key", async () => {
-    const externalPackageDependencyResolver = new ExternalPackage2DependencyResolver(conn, falseProjectConfig, {"tech-framework@2.0.0.38":"123123"});
+    const externalPackageDependencyResolver = new ExternalPackage2DependencyResolver(conn, falseProjectConfig, "tech-framework@2.0.0.38:123123");
     let externalPackage2s = await externalPackageDependencyResolver.fetchExternalPackage2Dependencies();
     let logger = new ConsoleLogger();
     let installUnlockedPackageWrapper: InstallUnlockedPackageWrapper = new InstallUnlockedPackageWrapper(

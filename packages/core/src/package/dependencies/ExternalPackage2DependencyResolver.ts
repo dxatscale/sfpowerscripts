@@ -55,8 +55,8 @@ export default class ExternalPackage2DependencyResolver {
                         } else {
                             dependendentPackage.subscriberPackageVersionId = revisedProjectConfig.packageAliases[dependendentPackage.name];
                         }
-                        if(packagesToKeys?.[pkg]){
-                            dependendentPackage.key = packagesToKeys[pkg];
+                        if(packagesToKeys?.[dependendentPackage.name]){
+                            dependendentPackage.key = packagesToKeys[dependency.package];
                         }
                         packageVersions.push(dependendentPackage);
                     }
@@ -86,7 +86,6 @@ export default class ExternalPackage2DependencyResolver {
                 throw new Error(`Error parsing keys, format should be: "packageA:key packageB:key packageC:key"`);
             }
         }
-
         return output;
     }
 }
