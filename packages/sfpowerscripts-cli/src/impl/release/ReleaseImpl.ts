@@ -1,7 +1,7 @@
 import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
 import FetchImpl from '../artifacts/FetchImpl';
 import DeployImpl, { DeployProps, DeploymentMode, DeploymentResult } from '../deploy/DeployImpl';
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { Stage } from '../Stage';
 import child_process = require('child_process');
 import ReleaseError from '../../errors/ReleaseError';
@@ -11,6 +11,9 @@ import { Release } from '../changelog/ReleaseChangelogInterfaces';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import path = require('path');
 import { EOL } from 'os';
+import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
+import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
+
 
 export interface ReleaseProps {
     releaseDefinitions: ReleaseDefinitionSchema[];
@@ -257,38 +260,18 @@ export default class ReleaseImpl {
             if (keys) {
                 packagesToKeys = this.parseKeys(keys);
             }
-
+            let externalPackage2s: Package2Detail[] = [];
             // print packages dependencies to install
-
             for (let pkg in packageDependencies) {
-                if (!(await this.isPackageInstalledInOrg(packageDependencies[pkg], targetOrg))) {
-                    if (this.props.isDryRun) {
-                        SFPLogger.log(
-                            `Package Dependency ${packageDependencies[pkg]} will be installed`,
-                            LoggerLevel.INFO
-                        );
-                    } else {
-                        let cmd = `sfdx force:package:install -p ${packageDependencies[pkg]} -u ${targetOrg} -w ${waitTime} -b ${waitTime} --noprompt`;
+                let dependendentPackage: Package2Detail = { name: pkg };
+                dependendentPackage.subscriberPackageVersionId = packageDependencies[pkg];
+                dependendentPackage.key = packagesToKeys[pkg]
+                externalPackage2s.push(dependendentPackage);
 
-                        if (packagesToKeys?.[pkg]) cmd += ` -k ${packagesToKeys[pkg]}`;
-
-                        SFPLogger.log(
-                            `Installing package dependency ${pkg}: ${packageDependencies[pkg]}`,
-                            LoggerLevel.INFO
-                        );
-                        child_process.execSync(cmd, {
-                            stdio: 'inherit',
-                        });
-                        result.success.push([pkg, packageDependencies[pkg]]);
-                    }
-                } else {
-                    result.skipped.push([pkg, packageDependencies[pkg]]);
-                    SFPLogger.log(
-                        `Package dependency ${pkg}: ${packageDependencies[pkg]} is already installed in target org`
-                    );
-                    continue;
-                }
             }
+            let sfpOrg = await SFPOrg.create({ aliasOrUsername: targetOrg });
+            let packageCollectionInstaller = new InstallUnlockedPackageCollection(sfpOrg, new ConsoleLogger());
+            await packageCollectionInstaller.install(externalPackage2s, true, true);
 
             this.printClosingLoggingGroup();
             return result;

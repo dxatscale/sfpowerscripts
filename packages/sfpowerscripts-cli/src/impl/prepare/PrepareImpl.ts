@@ -51,7 +51,7 @@ export default class PrepareImpl {
         let externalPackageResolver = new ExternalPackage2DependencyResolver(
             this.hubOrg.getConnection(),
             ProjectConfig.getSFDXProjectConfig(null),
-            null
+            this.pool.keys
         );
         let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies();
 

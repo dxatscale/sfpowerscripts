@@ -6,4 +6,5 @@ export default interface Package2Detail {
     versionNumber?: string;
     type?: string;
     isOrgDependent?: boolean;
+    key?: string;
 }
