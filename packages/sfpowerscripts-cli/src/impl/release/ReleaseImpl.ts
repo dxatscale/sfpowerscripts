@@ -155,7 +155,7 @@ export default class ReleaseImpl {
     private getAggregatedNumberOfWorkItemsInRelease(releaseName: string, releases: Release[]) {
         let aggregatedNumberOfWorkItemsInRelease: number = 0;
         releases.forEach((release) => {
-            if (release.names.includes(releaseName)) {
+            if (release.names?.includes(releaseName)) {
                 aggregatedNumberOfWorkItemsInRelease += this.getNumberOfWorkItems(release);
             }
         });
@@ -170,7 +170,7 @@ export default class ReleaseImpl {
     private getAggregatedNumberOfCommitsInRelease(releaseName: string, releases: Release[]) {
         let aggregatedNumberOfCommitsInRelease: number = 0;
         releases.forEach((release) => {
-            if (release.names.includes(releaseName)) {
+            if (release.names?.includes(releaseName)) {
                 aggregatedNumberOfCommitsInRelease += this.getNumberOfCommits(release);
             }
         });

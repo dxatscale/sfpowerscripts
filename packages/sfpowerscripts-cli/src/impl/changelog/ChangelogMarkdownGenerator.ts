@@ -36,9 +36,13 @@ export default class ChangelogMarkdownGenerator {
         for (let releaseNum = this.releaseChangelog.releases.length - 1; releaseNum >= limitReleases; releaseNum--) {
             let release: Release = this.releaseChangelog.releases[releaseNum];
 
-            payload += `\n<a id=${release.hashId}></a>\n`; // Create anchor from release hash Id
-            payload += `# ${this.concatReleaseNames(release.names, release.buildNumber)}\n`;
-
+            if (!release.names) {
+                payload += `\n<a id=${release['name']}></a>\n`; // Create anchor from release hash Id
+                payload += `# ${release['name']}\n`;
+            } else {
+                payload += `\n<a id=${release.hashId}></a>\n`; // Create anchor from release hash Id
+                payload += `# ${this.concatReleaseNames(release.names, release.buildNumber)}\n`;
+            }
             payload = this.generateArtifacts(payload, release);
 
             payload = this.generateWorkItems(payload, release);
@@ -149,7 +153,7 @@ export default class ChangelogMarkdownGenerator {
     }
 
     private concatReleaseNames(releaseNames: string[], buildNumber: number): string {
-        return releaseNames.map((name) => name + '-' + buildNumber).join('/');
+        if (releaseNames) return releaseNames.map((name) => name + '-' + buildNumber).join('/');
     }
 
     private getDate(date: Date): string {
