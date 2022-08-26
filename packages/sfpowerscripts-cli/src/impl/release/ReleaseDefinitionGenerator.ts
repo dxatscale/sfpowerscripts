@@ -132,9 +132,15 @@ export default class ReleaseDefinitionGenerator {
         let sfdxPackages = ProjectConfig.getAllPackagesFromProjectConfig(projectConfig);
         for (const sfdxPackage of sfdxPackages) {
             let latestGitTagVersion = new GitTags(gitRepository, sfdxPackage);
-            let version = await latestGitTagVersion.getVersionFromLatestTag();
-            if (this.getArtifactPredicate(sfdxPackage)) {
-                artifacts[sfdxPackage] = version;
+            try {
+                let version = await latestGitTagVersion.getVersionFromLatestTag();
+
+                if (this.getArtifactPredicate(sfdxPackage)) {
+                    artifacts[sfdxPackage] = version;
+                }
+            } catch (error) {
+                SFPLogger.log(`Unable to capture version of ${sfdxPackage} due to ${error}`,LoggerLevel.WARN,this.logger);
+                continue;
             }
         }
 
