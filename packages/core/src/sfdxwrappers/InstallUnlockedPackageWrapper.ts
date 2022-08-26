@@ -9,7 +9,6 @@ export default class InstallUnlockedPackageWrapper extends SFDXCommand {
         private targetUserName: string,
         private packageId: string,
         private waitTime: string,
-        private key?: string,
         private publishWaitTime?: string,
         private installationkey?: string,
         private securityType?: string,
@@ -19,6 +18,12 @@ export default class InstallUnlockedPackageWrapper extends SFDXCommand {
         
     ) {
         super(targetUserName, working_directory, logger, logLevel);
+    }
+
+
+    public setInstallationKey(installationKey:string)
+    {
+        this.installationkey = installationKey
     }
 
     public async exec(quiet?: boolean): Promise<any> {
@@ -41,7 +46,6 @@ export default class InstallUnlockedPackageWrapper extends SFDXCommand {
         if (this.securityType) command += ` --securitytype=${this.securityType}`;
         if (this.upgradeType) command += ` --upgradetype=${this.upgradeType}`;
         if (this.apiVersion) command += ` --apiversion=${this.apiVersion}`;
-        if (this.key) command += ` --installationkey=${this.key}`;
 
         return command;
     }

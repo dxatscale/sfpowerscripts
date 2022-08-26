@@ -42,9 +42,9 @@ describe("Given a InstallUnlockedPackageWrapper", () => {
       '.',
       'username',
       externalPackage2s[0].subscriberPackageVersionId,
-      '120',
-      externalPackage2s[0].key
+      '120'
   );
+    installUnlockedPackageWrapper.setInstallationKey('123123');
     expect(installUnlockedPackageWrapper.getGeneratedParams()).toContain('--installationkey=123123')
   });
 

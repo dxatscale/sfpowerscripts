@@ -28,9 +28,9 @@ export default class InstallUnlockedPackageCollection {
                     this.sfpOrg.getUsername(),
                     package2.subscriberPackageVersionId,
                     '120',
-                    package2.key
                 );
-
+                if(package2.key)
+                   installUnlockedPackageWrapper.setInstallationKey(package2.key);
                 try {
                     await installUnlockedPackageWrapper.exec(true);
                 } catch (error) {

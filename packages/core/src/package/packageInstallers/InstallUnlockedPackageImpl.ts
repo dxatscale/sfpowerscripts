@@ -29,7 +29,7 @@ export default class InstallUnlockedPackageImpl extends InstallPackage {
             this.logger,
             LoggerLevel.INFO,
             null,
-             this.sfpOrg.getUsername(),
+            this.sfpOrg.getUsername(),
             this.packageVersionId,
             this.options.waitTime,
             this.options.publishWaitTime.toString(),
