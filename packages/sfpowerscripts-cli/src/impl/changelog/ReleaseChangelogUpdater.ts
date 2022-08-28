@@ -139,6 +139,7 @@ export default class ReleaseChangelogUpdater {
         }
 
         latestRelease.hashId = hash(latestRelease.artifacts);
+        latestRelease.date = new Date().toString();
 
         return latestRelease;
     }

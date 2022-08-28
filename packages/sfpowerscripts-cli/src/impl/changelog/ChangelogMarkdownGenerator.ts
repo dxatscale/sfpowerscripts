@@ -1,5 +1,6 @@
 import { ReleaseChangelog, Release, org } from './ReleaseChangelogInterfaces';
 import { URL } from 'url';
+import { EOL } from 'os';
 const markdownTable = require('markdown-table');
 
 export default class ChangelogMarkdownGenerator {
@@ -37,13 +38,17 @@ export default class ChangelogMarkdownGenerator {
             let release: Release = this.releaseChangelog.releases[releaseNum];
 
             if (!release.names) {
-                payload += `\n<a id=${release['name']}></a>\n`; // Create anchor from release hash Id
-                payload += `# ${release['name']}\n`;
+                payload += `\n<a id=${release['name']}></a>${EOL}`; // Create anchor from release hash Id
+                payload += `# ${release['name']}${EOL}`;
             } else {
-                payload += `\n<a id=${release.hashId}></a>\n`; // Create anchor from release hash Id
-                payload += `# ${release.names.join(`/`)}\n`;
-                payload += `Cumulative Release Number: ${release.buildNumber}\n`;
+                payload += `\n<a id=${release.hashId}></a>${EOL}`; // Create anchor from release hash Id
+                payload += `# ${release.names.join(`/`)}${EOL}`;
+                payload += `Cumulative Release Number: ${release.buildNumber} ${EOL} `;
+                if(release.date)
+                  payload += `Matching defintion first deployed to an org on: ${release.date}${EOL}`
+
             }
+
             payload = this.generateArtifacts(payload, release);
 
             payload = this.generateWorkItems(payload, release);
