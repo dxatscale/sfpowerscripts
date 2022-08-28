@@ -41,7 +41,8 @@ export default class ChangelogMarkdownGenerator {
                 payload += `# ${release['name']}\n`;
             } else {
                 payload += `\n<a id=${release.hashId}></a>\n`; // Create anchor from release hash Id
-                payload += `# ${this.concatReleaseNames(release.names, release.buildNumber)}\n`;
+                payload += `# ${release.names.join(`/`)}\n`;
+                payload += `Cumulative Release Number: ${release.buildNumber}\n`;
             }
             payload = this.generateArtifacts(payload, release);
 
@@ -152,8 +153,14 @@ export default class ChangelogMarkdownGenerator {
         return payload;
     }
 
-    private concatReleaseNames(releaseNames: string[], buildNumber: number): string {
-        if (releaseNames) return releaseNames.map((name) => name + '-' + buildNumber).join('/');
+
+    private concatReleaseNames2(releaseNames: string[]): string {
+        return releaseNames.join('/');
+   }
+
+
+    private concatReleaseNamesWithBuild(releaseNames: string[], buildNumber: number): string {
+         return releaseNames.map((name) => name + '-' + buildNumber).join('/');
     }
 
     private getDate(date: Date): string {
