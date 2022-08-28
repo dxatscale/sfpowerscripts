@@ -154,15 +154,6 @@ export default class ChangelogMarkdownGenerator {
     }
 
 
-    private concatReleaseNames2(releaseNames: string[]): string {
-        return releaseNames.join('/');
-   }
-
-
-    private concatReleaseNamesWithBuild(releaseNames: string[], buildNumber: number): string {
-         return releaseNames.map((name) => name + '-' + buildNumber).join('/');
-    }
-
     private getDate(date: Date): string {
         let day: number = date.getDate();
         let month: number = date.getMonth();
