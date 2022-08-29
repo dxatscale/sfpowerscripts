@@ -1,10 +1,10 @@
-FROM  heroku/heroku:20.v77
+FROM  heroku/heroku:20.v85
 
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG SFPOWERSCRIPTS_VERSION=alpha
 
-ARG PMD_VERSION=${PMD_VERSION:-6.39.0}
+ARG PMD_VERSION=${PMD_VERSION:-6.48.0}
 ARG SFPOWERSCRIPTS_VERSION=alpha
 ARG GIT_COMMIT
 
@@ -108,7 +108,7 @@ RUN cd $HOME/sfpowerkit \
 
 
 # Install sfdx plugins
-RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.8.0
+RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.9.1
 RUN echo 'y' | sfdx plugins:install apexlink@2.3.2
 RUN echo 'y' | sfdx plugins:install sfdmu@4.15.0
 RUN echo 'y' | sfdx plugins:install sfpowerkit@4.2.11
