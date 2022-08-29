@@ -53,8 +53,8 @@ export default class ReleaseDefinitionGenerator {
 
         // Workaround for jsonschema not supporting validation based on dependency value
         if (
-            this._releaseDefinitionGeneratorSchema.baselineOrg &&
-            !this._releaseDefinitionGeneratorSchema.skipIfAlreadyInstalled
+            this._releaseDefinitionGeneratorSchema.releasedefinitionProperties?.baselineOrg &&
+            !this._releaseDefinitionGeneratorSchema.releasedefinitionProperties?.skipIfAlreadyInstalled
         )
             throw new Error("Release option 'skipIfAlreadyInstalled' must be true for 'baselineOrg'");
     }
@@ -113,19 +113,14 @@ export default class ReleaseDefinitionGenerator {
     private async fetchFromGitRef(git: Git) {
         let artifacts = {};
         let packageDependencies = {};
-        let isNewDuplicateCreated: boolean = false;
         let headCommit: string;
         //Create A copy of repository to a particular commit
         //If already a duplicate directory switch to the passed git ref
         //then switch it back
         let gitRepository = git;
-        if (!git.isATemporaryRepo()) {
-            gitRepository = await Git.initiateRepoAtTempLocation(this.logger, this.gitRef);
-            isNewDuplicateCreated = true;
-        } else {
-            headCommit = await git.getCurrentCommitId();
-            git.checkout(this.gitRef);
-        }
+
+        headCommit = await git.getCurrentCommitId();
+        git.checkout(this.gitRef, true);
 
         let projectConfig = ProjectConfig.getSFDXProjectConfig(gitRepository.getRepositoryPath());
         //Read sfdx project json
@@ -139,7 +134,11 @@ export default class ReleaseDefinitionGenerator {
                     artifacts[sfdxPackage] = version;
                 }
             } catch (error) {
-                SFPLogger.log(`Unable to capture version of ${sfdxPackage} due to ${error}`,LoggerLevel.WARN,this.logger);
+                SFPLogger.log(
+                    `Unable to capture version of ${sfdxPackage} due to ${error}`,
+                    LoggerLevel.WARN,
+                    this.logger
+                );
                 continue;
             }
         }
@@ -153,8 +152,7 @@ export default class ReleaseDefinitionGenerator {
                 packageDependencies[externalPackage.alias] = externalPackage.Package2IdOrSubscriberPackageVersionId;
             }
         }
-        if (isNewDuplicateCreated) gitRepository.deleteTempoRepoIfAny();
-        else git.checkout(headCommit);
+        
         return { artifacts, packageDependencies };
     }
 
@@ -183,7 +181,7 @@ export default class ReleaseDefinitionGenerator {
         if (Object.keys(packageDependencies).length > 0) releaseDefinition.packageDependencies = packageDependencies;
 
         //Add changelog info
-        releaseDefinition.changelog = this.releaseDefinitionGeneratorConfigSchema.changelog;
+        releaseDefinition.changelog = this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.changelog;
 
         let releaseDefinitonYAML = yaml.dump(releaseDefinition, {
             styles: {

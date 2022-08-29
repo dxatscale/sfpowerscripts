@@ -9,12 +9,6 @@
         "baselineOrg": ["skipIfAlreadyInstalled"]
     },
     "properties": {
-        "skipIfAlreadyInstalled": {
-            "type": "boolean"
-        },
-        "baselineOrg": {
-            "type": "string"
-        },
         "excludeArtifacts": {
             "type": "array",
             "title": "Exclude the below artifacts while creating a release definition",
@@ -50,31 +44,44 @@
                 "type": "string"
             }
         },
-        "promotePackagesBeforeDeploymentToOrg": {
-            "type": "string"
-        },
-        "changelog": {
+        "releasedefinitionProperties":{
             "type": "object",
+            "title": "Properties that need to be set in the generated definition file",
+            "additionalProperties": true,
             "properties": {
-                "workItemFilters": {
-                    "type": "array",
-                    "title": "Regex to filter workitems from commit messages",
-                    "items": {
+            "skipIfAlreadyInstalled": {
+                "type": "boolean"
+            },
+            "baselineOrg": {
+                "type": "string"
+            },
+            "promotePackagesBeforeDeploymentToOrg": {
+                "type": "string"
+            },
+            "changelog": {
+                "type": "object",
+                "properties": {
+                    "workItemFilters": {
+                        "type": "array",
+                        "title": "Regex to filter workitems from commit messages",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "workItemUrl": {
                         "type": "string"
+                    },
+                    "limit": {
+                        "type": "integer"
+                    },
+                    "showAllArtifacts": {
+                        "type": "boolean"
                     }
                 },
-                "workItemUrl": {
-                    "type": "string"
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "showAllArtifacts": {
-                    "type": "boolean"
-                }
-            },
-            "required": ["workItemFilters"],
-            "additionalProperties": false
+                "required": ["workItemFilters"],
+                "additionalProperties": false
+            }
         }
-    }
+     }
+   }
 }

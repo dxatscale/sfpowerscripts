@@ -12,7 +12,7 @@ export default class Generate extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfdx sfpowerscripts:releasedefinition:generate -n <releaseName>  -b <branchName> -u <org>`,
+        `$ sfdx sfpowerscripts:releasedefinition:generate -n <releaseName>`,
     ];
 
     protected static requiresProject = true;
@@ -44,7 +44,6 @@ export default class Generate extends SfpowerscriptsCommand {
         }),
         nopush: flags.boolean({
             description: messages.getMessage('noPushFlagDescription'),
-            dependsOn: ['branchname'],
             default:false
         }),
         forcepush: flags.boolean({
