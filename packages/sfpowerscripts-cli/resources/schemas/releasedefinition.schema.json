@@ -42,6 +42,10 @@
         "changelog": {
             "type": "object",
             "properties": {
+                "workItemFilter": {
+                    "type": "string",
+                    "title": "Support legacy workItemFilter which supports only one single regex pattern"
+                },
                 "workItemFilters": {
                     "type": "array",
                     "title": "Regex to filter workitems from commit messages",
@@ -59,7 +63,7 @@
                     "type": "boolean"
                 }
             },
-            "required": ["workItemFilters"],
+            "oneOf": [{ "required": ["workItemFilter"] }, { "required": ["workItemFilters"] }],
             "additionalProperties": false
         }
     }

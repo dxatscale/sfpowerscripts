@@ -150,6 +150,12 @@ export default class Release extends SfpowerscriptsCommand {
         for (const pathToReleaseDefintion of this.flags.releasedefinition) {
             let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(pathToReleaseDefintion)).releaseDefinition;
 
+            //Support Legacy by taking the existing single workItemFilter and pushing it to the new model
+            if(releaseDefinition.changelog?.workItemFilter)
+            {
+                releaseDefinition.changelog.workItemFilters = new Array<string>();
+                releaseDefinition.changelog.workItemFilters.push(releaseDefinition.changelog?.workItemFilter);
+            }
 
             if (this.flags.isGenerateChangelog && !releaseDefinition.changelog)
                 throw new Error('changelog parameters must be specified in release definition to generate changelog');
