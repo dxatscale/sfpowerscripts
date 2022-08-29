@@ -110,7 +110,12 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         let totalElapsedTime: number;
         let artifactCreationErrors: string[] = [];
 
-        let tags;
+        let tags = {
+            is_diffcheck_enabled: String(this.flags.diffcheck),
+            stage: this.getStage(),
+            branch: this.flags.branch,
+        };
+        
         try {
             const artifactDirectory: string = this.flags.artifactdir;
             const diffcheck: boolean = this.flags.diffcheck;
@@ -134,11 +139,6 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
             let executionStartTime = Date.now();
 
-            let tags = {
-                is_diffcheck_enabled: String(diffcheck),
-                stage: this.getStage(),
-                branch: branch,
-            };
 
             if (!(this.flags.tag == null || this.flags.tag == undefined)) {
                 tags['tag'] = this.flags.tag;
