@@ -78,11 +78,9 @@ export default class Git {
 
         SFPLogger.log(`Copying the repository to ${locationOfCopiedDirectory.name}`, LoggerLevel.INFO, logger);
         let repoDir = locationOfCopiedDirectory.name;
-       
 
         // Copy source directory to temp dir
         fs.copySync(process.cwd(), repoDir);
-
 
         //Initiate git on new repo on using the abstracted object
         let git = new Git(repoDir, logger);
@@ -94,13 +92,11 @@ export default class Git {
             await git.createBranch(branch);
         }
         if (commitRef) {
-            await git.checkout(commitRef);
+            await git.checkout(commitRef,true);
         }
 
         SFPLogger.log(
-            `Successfully created temporary repository at ${repoDir} with commit ${
-                commitRef ? commitRef : 'HEAD'
-            }`,
+            `Successfully created temporary repository at ${repoDir} with commit ${commitRef ? commitRef : 'HEAD'}`,
             LoggerLevel.INFO,
             logger
         );
@@ -143,8 +139,10 @@ export default class Git {
         return this._git.revparse(['HEAD']);
     }
 
-    async checkout(commitRef: string) {
-        await this._git.checkout(commitRef);
+    async checkout(commitRef: string, isForce?: boolean) {
+        if (isForce) {
+            await this._git.checkout(commitRef, [`--force`]);
+        } else await this._git.checkout(commitRef, {});
     }
 
     async createBranch(branch: string) {
