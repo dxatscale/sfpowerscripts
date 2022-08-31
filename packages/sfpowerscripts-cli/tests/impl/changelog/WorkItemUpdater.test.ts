@@ -8,7 +8,7 @@ describe('Given a WorkItemUpdater', () => {
     const resourceDir: string = path.join(__dirname, 'resources');
 
     it('should update latestRelease with work items', () => {
-        new WorkItemUpdater(latestRelease, 'NGV-[0-9]{3,4}').update();
+        new WorkItemUpdater(latestRelease, ['NGV-[0-9]{3,4}']).update();
 
         expect(latestRelease).toEqual(
             fs.readJSONSync(

@@ -1,11 +1,7 @@
 import { Org } from '@salesforce/core';
 import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
 import isValidSfdxAuthUrl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/prequisitecheck/IsValidSfdxAuthUrl';
-import SFPLogger, {
-    COLOR_KEY_MESSAGE,
-    COLOR_WARNING,
-    LoggerLevel,
-} from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { Result } from 'neverthrow';
@@ -18,12 +14,15 @@ import { Stage } from '../Stage';
 import PrepareOrgJob from './PrepareOrgJob';
 import * as rimraf from 'rimraf';
 import * as fs from 'fs-extra';
-import { LatestGitTagVersion } from '../artifacts/LatestGitTagVersion';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags'
 import OrgDetailsFetcher from '@dxatscale/sfpowerscripts.core/lib/org/OrgDetailsFetcher';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import { EOL } from 'os';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
+import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
+import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
+import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
 const Table = require('cli-table');
 
 export default class PrepareImpl {
@@ -49,10 +48,21 @@ export default class PrepareImpl {
                 `Pools have to be created using a DevHub authenticated with auth:web or auth:store or auth:accesstoken:store`
             );
 
-        return this.poolScratchOrgs();
+        let externalPackageResolver = new ExternalPackage2DependencyResolver(
+            this.hubOrg.getConnection(),
+            ProjectConfig.getSFDXProjectConfig(null),
+            this.pool.keys
+        );
+        let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies();
+
+        //Display resolved dependenencies
+        let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s,new ConsoleLogger());
+        externalDependencyDisplayer.display();
+
+        return this.poolScratchOrgs(externalPackage2s);
     }
 
-    private async poolScratchOrgs(): Promise<Result<PoolConfig, PoolError>> {
+    private async poolScratchOrgs(externalPackage2s: Package2Detail[]): Promise<Result<PoolConfig, PoolError>> {
         //Create Artifact Directory
         rimraf.sync('artifacts');
         fs.mkdirpSync('artifacts');
@@ -62,7 +72,7 @@ export default class PrepareImpl {
             await this.getPackageArtifacts();
         }
 
-        let prepareASingleOrgImpl: PrepareOrgJob = new PrepareOrgJob(this.pool);
+        let prepareASingleOrgImpl: PrepareOrgJob = new PrepareOrgJob(this.pool, externalPackage2s);
 
         let createPool: PoolCreateImpl = new PoolCreateImpl(
             this.hubOrg,
@@ -102,18 +112,36 @@ export default class PrepareImpl {
                         `${installationCount}/${this.artifactFetchedCount}`,
                         lastInstalledArifact.Name,
                     ]);
-                    SFPStatsSender.logGauge(`so.packages.requested`,this.artifactFetchedCount,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
-                    SFPStatsSender.logGauge(`so.packages.installed`,installationCount,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+                    SFPStatsSender.logGauge(`so.packages.requested`, this.artifactFetchedCount, {
+                        pool: this.pool.tag,
+                        scratchOrg: scratchOrg.alias,
+                    });
+                    SFPStatsSender.logGauge(`so.packages.installed`, installationCount, {
+                        pool: this.pool.tag,
+                        scratchOrg: scratchOrg.alias,
+                    });
                 } else {
                     table.push([scratchOrg.alias, scratchOrg.username, `NA`, `NA`]);
-                    SFPStatsSender.logGauge(`so.packages.requested`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
-                    SFPStatsSender.logGauge(`so.packages.installed`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+                    SFPStatsSender.logGauge(`so.packages.requested`, 0, {
+                        pool: this.pool.tag,
+                        scratchOrg: scratchOrg.alias,
+                    });
+                    SFPStatsSender.logGauge(`so.packages.installed`, 0, {
+                        pool: this.pool.tag,
+                        scratchOrg: scratchOrg.alias,
+                    });
                 }
-              } catch (error) {
-                SFPStatsSender.logGauge(`so.packages.requested`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
-                SFPStatsSender.logGauge(`so.packages.installed`,0,{pool:this.pool.tag,scratchOrg:scratchOrg.alias});
+            } catch (error) {
+                SFPStatsSender.logGauge(`so.packages.requested`, 0, {
+                    pool: this.pool.tag,
+                    scratchOrg: scratchOrg.alias,
+                });
+                SFPStatsSender.logGauge(`so.packages.installed`, 0, {
+                    pool: this.pool.tag,
+                    scratchOrg: scratchOrg.alias,
+                });
                 table.push([scratchOrg.alias, scratchOrg.username, `Unable to compute`, `Unable to fetch`]);
-              }
+            }
         }
 
         if (table.length >= 1) {
@@ -144,14 +172,15 @@ export default class PrepareImpl {
                 this.pool.fetchArtifacts.npm?.npmrcPath
             ).getArtifactFetcher();
 
-            const git: Git = new Git(null);
-            let latestGitTagVersion: LatestGitTagVersion = new LatestGitTagVersion(git);
+            const git: Git = await Git.initiateRepo();
+
 
             //During Prepare, there could be a race condition where a main is merged with a new package
             //but the package is not yet available in the validated package list and can cause prepare to fail
             for (const pkg of packages) {
                 try {
-                    let version = await latestGitTagVersion.getVersionFromLatestTag(pkg.package);
+                    let latestGitTagVersion: GitTags = new GitTags(git,pkg.package);
+                    let version = await latestGitTagVersion.getVersionFromLatestTag();
                     artifactFetcher.fetchArtifact(pkg.package, 'artifacts', version, true);
                     this.artifactFetchedCount++;
                 } catch (error) {

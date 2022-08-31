@@ -1,5 +1,6 @@
 import { ReleaseChangelog, Release, org } from './ReleaseChangelogInterfaces';
 import { URL } from 'url';
+import { EOL } from 'os';
 const markdownTable = require('markdown-table');
 
 export default class ChangelogMarkdownGenerator {
@@ -36,8 +37,17 @@ export default class ChangelogMarkdownGenerator {
         for (let releaseNum = this.releaseChangelog.releases.length - 1; releaseNum >= limitReleases; releaseNum--) {
             let release: Release = this.releaseChangelog.releases[releaseNum];
 
-            payload += `\n<a id=${release.hashId}></a>\n`; // Create anchor from release hash Id
-            payload += `# ${this.concatReleaseNames(release.names, release.buildNumber)}\n`;
+            if (!release.names) {
+                payload += `\n<a id=${release['name']}></a>\n `; // Create anchor from release hash Id
+                payload += `# ${release['name']}\n`;
+            } else {
+                payload += `\n<a id=${release.hashId}></a>\n`; // Create anchor from release hash Id
+                payload += `# ${release.names.join(`/`)}\n `;
+                payload += `Cumulative Release Number: ${release.buildNumber}\n `;
+                if(release.date)
+                  payload += `Matching defintion first deployed to an org on: ${release.date}\n `
+
+            }
 
             payload = this.generateArtifacts(payload, release);
 
@@ -148,9 +158,6 @@ export default class ChangelogMarkdownGenerator {
         return payload;
     }
 
-    private concatReleaseNames(releaseNames: string[], buildNumber: number): string {
-        return releaseNames.map((name) => name + '-' + buildNumber).join('/');
-    }
 
     private getDate(date: Date): string {
         let day: number = date.getDate();

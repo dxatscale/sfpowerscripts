@@ -1,6 +1,6 @@
 import { Org } from '@salesforce/core';
 import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import PackageDetails from '../package/PackageDetails';
+import Package2Detail from '../package/Package2Detail';
 import SfpPackage from '../package/SfpPackage';
 import QueryHelper from '../queryHelper/QueryHelper';
 import { convertUsernameToAlias } from '../utils/AliasList';
@@ -139,17 +139,17 @@ export default class SFPOrg extends Org {
     /**
      * Retrieves all packages(recognized by Salesforce) installed in the org
      */
-    public async getAllInstalled2GPPackages(): Promise<PackageDetails[]> {
-        const installedPackages: PackageDetails[] = [];
+    public async getAllInstalled2GPPackages(): Promise<Package2Detail[]> {
+        const installedPackages: Package2Detail[] = [];
 
         let records = await InstalledPackagesQueryExecutor.exec(this.getConnection());
 
         records.forEach((record) => {
             let packageVersionNumber = `${record.SubscriberPackageVersion.MajorVersion}.${record.SubscriberPackageVersion.MinorVersion}.${record.SubscriberPackageVersion.PatchVersion}.${record.SubscriberPackageVersion.BuildNumber}`;
 
-            let packageDetails: PackageDetails = {
+            let packageDetails: Package2Detail = {
                 name: record.SubscriberPackage.Name,
-                subscriberPackageId: record.SubscriberPackageId,
+                package2Id: record.SubscriberPackageId,
                 namespacePrefix: record.SubscriberPackage.NamespacePrefix,
                 subscriberPackageVersionId: record.SubscriberPackageVersion.Id,
                 versionNumber: packageVersionNumber,
@@ -166,7 +166,7 @@ export default class SFPOrg extends Org {
     /**
      * Retrives all managed packages in the org
      */
-    public async getAllInstalledManagedPackages(): Promise<PackageDetails[]> {
+    public async getAllInstalledManagedPackages(): Promise<Package2Detail[]> {
         const installedPackages = await this.getAllInstalled2GPPackages();
         return installedPackages.filter((installedPackage) => installedPackage.type === 'Managed');
     }

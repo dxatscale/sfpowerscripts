@@ -1,5 +1,5 @@
 # Dependency Manager 
-•	Status: Proposed
+•	Status: Accepted
 •	Issue: #638
 
 ## Context and Problem Statement 
@@ -22,4 +22,4 @@ For each package in the sfdx-project.json the command will ask
 The packageDirectories portion will then be updated with the input given and written to the sfdx-project.json in the root folder with the option to commit the file (but not push to the repo). 
 
 ## Decision 
-A new command would be built with the above solution and will be added to sfpowerscripts
+A new command would be built with the above solution and will be added to ~~sfpowerscripts~~ in sfp-cli.

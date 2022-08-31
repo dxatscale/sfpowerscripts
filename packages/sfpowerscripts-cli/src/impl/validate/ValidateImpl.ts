@@ -1,10 +1,8 @@
-import child_process = require('child_process');
 import BuildImpl, { BuildProps } from '../parallelBuilder/BuildImpl';
 import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../deploy/DeployImpl';
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import { Stage } from '../Stage';
 import SFPLogger, { ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import InstallPackageDependenciesImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/InstallPackageDependenciesImpl';
 import {
     PackageInstallationResult,
     PackageInstallationStatus,
@@ -43,6 +41,12 @@ import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/Trigge
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { PostDeployHook } from '../deploy/PostDeployHook';
 import * as rimraf from 'rimraf';
+import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
+import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
+import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
+import { PreDeployHook } from '../deploy/PreDeployHook';
+
 
 export enum ValidateMode {
     ORG,
@@ -67,7 +71,7 @@ export interface ValidateProps {
     isFastFeedbackMode?: boolean;
 }
 
-export default class ValidateImpl implements PostDeployHook {
+export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     private changedComponents: Component[];
     private logger = new ConsoleLogger();
     private orgAsSFPOrg: SFPOrg;
@@ -86,15 +90,14 @@ export default class ValidateImpl implements PostDeployHook {
                 if (process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG)
                     scratchOrgUsername = process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG;
                 else scratchOrgUsername = await this.fetchScratchOrgFromPool(this.props.pools);
-                if (!this.props.isFastFeedbackMode) await this.installPackageDependencies(scratchOrgUsername);
             } else throw new Error(`Unknown mode ${this.props.validateMode}`);
 
             //Create Org
             this.orgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrgUsername });
             const connToScratchOrg = this.orgAsSFPOrg.getConnection();
+
             let installedArtifacts = await this.orgAsSFPOrg.getInstalledArtifacts();
-            if(installedArtifacts.length==0)
-            {
+            if (installedArtifacts.length == 0) {
                 console.log(COLOR_ERROR('Failed to query org for Sfpowerscripts Artifacts'));
                 console.log(COLOR_KEY_MESSAGE('Building all packages'));
             }
@@ -185,29 +188,35 @@ export default class ValidateImpl implements PostDeployHook {
         else return new ChangedComponentsFetcher(this.props.baseBranch).fetch();
     }
 
-    private async installPackageDependencies(scratchOrgUsername: string) {
-        this.printOpenLoggingGroup(`Installing Package Dependencies of this repo in ${scratchOrgUsername}`);
-
-        // Install Dependencies
-        const installDependencies: InstallPackageDependenciesImpl = new InstallPackageDependenciesImpl(
-            scratchOrgUsername,
-            this.props.hubOrg.getUsername(),
-            120,
-            null,
+    private async installPackageDependencies(scratchOrgAsSFPOrg: SFPOrg,sfpPackage:SfpPackage) {
+    
+        //Resolve external package dependencies
+        let externalPackageResolver = new ExternalPackage2DependencyResolver(
+            this.props.hubOrg.getConnection(),
+            ProjectConfig.getSFDXProjectConfig(null),
             this.props.keys,
-            true,
-            null
         );
-        const installationResult = await installDependencies.exec();
-        if (installationResult.result == PackageInstallationStatus.Failed) {
-            throw new Error(installationResult.message);
-        }
-        console.log(
+        let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies(sfpPackage.packageName);
+
+
+        SFPLogger.log(
+            `Installing package dependencies of this ${sfpPackage.packageName}  in ${scratchOrgAsSFPOrg.getUsername()}`,
+            LoggerLevel.INFO,
+            new ConsoleLogger()
+        );
+        //Display resolved dependenencies
+        let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s, new ConsoleLogger());
+        externalDependencyDisplayer.display();
+
+        let packageCollectionInstaller = new InstallUnlockedPackageCollection(scratchOrgAsSFPOrg, new ConsoleLogger());
+        await packageCollectionInstaller.install(externalPackage2s, true, true);
+
+        SFPLogger.log(
             COLOR_KEY_MESSAGE(
-                `Successfully completed Installing Package Dependencies of this repo in ${scratchOrgUsername}`
+                `Successfully completed external dependencies of this ${sfpPackage.packageName} in ${scratchOrgAsSFPOrg.getUsername()}`
             )
         );
-        this.printClosingLoggingGroup();
+      
     }
 
     private async handleScratchOrgStatus(
@@ -258,17 +267,6 @@ export default class ValidateImpl implements PostDeployHook {
         await poolOrgDeleteImpl.execute();
     }
 
-    private deployShapeFile(shapeFile: string, scratchOrgUsername: string): void {
-        console.log(COLOR_KEY_MESSAGE(`Deploying scratch org shape`), shapeFile);
-        child_process.execSync(
-            `sfdx force:mdapi:deploy -f ${shapeFile} -u ${scratchOrgUsername} -w 30 --ignorewarnings`,
-            {
-                stdio: 'inherit',
-                encoding: 'utf8',
-            }
-        );
-    }
-
     private async deploySourcePackages(scratchOrgUsername: string): Promise<DeploymentResult> {
         const deployStartTime: number = Date.now();
 
@@ -287,6 +285,7 @@ export default class ValidateImpl implements PostDeployHook {
 
         const deployImpl: DeployImpl = new DeployImpl(deployProps);
         deployImpl.postDeployHook = this;
+        deployImpl.preDeployHook = this;
 
         const deploymentResult = await deployImpl.exec();
 
@@ -599,8 +598,19 @@ export default class ValidateImpl implements PostDeployHook {
         if (this.props.logsGroupSymbol?.[1]) SFPLogger.log(this.props.logsGroupSymbol[1], LoggerLevel.INFO);
     }
 
-    preDeployPackage(sfpPackage: SfpPackage, targetUsername: string, devhubUserName?: string): Promise<boolean> {
-        throw new Error('Method not implemented.');
+    async preDeployPackage(
+        sfpPackage: SfpPackage,
+        targetUsername: string,
+        devhubUserName?: string
+    ): Promise<{ isToFailDeployment: boolean; message?: string }> {
+
+        //Its a scratch org fetched from pool.. install dependencies
+        //Assume hubOrg will be available, no need to check
+        if (this.props.validateMode === ValidateMode.POOL) {
+            if (!this.props.isFastFeedbackMode) await this.installPackageDependencies(this.orgAsSFPOrg,sfpPackage);
+        }
+
+        return { isToFailDeployment: false };
     }
 
     async postDeployPackage(

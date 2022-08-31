@@ -31,6 +31,7 @@ export interface ReleaseId {
     names: string[];
     buildNumber: number;
     hashId: string;
+    date?:string;
 }
 
 export interface Release extends ReleaseId {

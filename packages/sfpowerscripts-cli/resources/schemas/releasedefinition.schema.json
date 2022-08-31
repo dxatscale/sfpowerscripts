@@ -43,7 +43,15 @@
             "type": "object",
             "properties": {
                 "workItemFilter": {
-                    "type": "string"
+                    "type": "string",
+                    "title": "Support legacy workItemFilter which supports only one single regex pattern"
+                },
+                "workItemFilters": {
+                    "type": "array",
+                    "title": "Regex to filter workitems from commit messages",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "workItemUrl": {
                     "type": "string"
@@ -55,7 +63,7 @@
                     "type": "boolean"
                 }
             },
-            "required": ["workItemFilter"],
+            "oneOf": [{ "required": ["workItemFilter"] }, { "required": ["workItemFilters"] }],
             "additionalProperties": false
         }
     }

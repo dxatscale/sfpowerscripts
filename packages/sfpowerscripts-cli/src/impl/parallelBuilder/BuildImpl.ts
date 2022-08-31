@@ -23,7 +23,7 @@ import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/pack
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { COLON_MIDDLE_BORDER_TABLE, ZERO_BORDER_TABLE } from '../../ui/TableConstants';
-import PackageDependencyResolver from './PackageDependencyResolver';
+import PackageDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/PackageDependencyResolver';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
@@ -61,6 +61,8 @@ export default class BuildImpl {
     private failedPackages: string[];
     private generatedPackages: SfpPackage[];
     private sfpOrg: SFPOrg;
+    private scratchOrgDefinitions: {[key: string]: any}[];
+    private isMultiConfigFilesEnabled: boolean;
 
     private repository_url: string;
     private commit_id: string;
@@ -100,6 +102,9 @@ export default class BuildImpl {
         // Read Manifest
         this.projectConfig = ProjectConfig.getSFDXProjectConfig(this.props.projectDirectory);
 
+        //Build Scratch Org Def Files Map
+        this.scratchOrgDefinitions = this.getMultiScratchOrgDefinitionFileMap(this.projectConfig)
+
         //Do a diff Impl
         let table;
         if (this.props.isDiffCheckEnabled) {
@@ -107,9 +112,11 @@ export default class BuildImpl {
                 this.props.projectDirectory,
                 this.packagesToBeBuilt
             );
+            console.log('1')
             table = this.createDiffPackageScheduledDisplayedAsATable(packagesToBeBuiltWithReasons);
             this.packagesToBeBuilt = Array.from(packagesToBeBuiltWithReasons.keys()); //Assign it back to the instance variable
         } else {
+            console.log('2')
             table = this.createAllPackageScheduledDisplayedAsATable();
         }
         //Log Packages to be built
@@ -196,26 +203,42 @@ export default class BuildImpl {
     }
 
     private createDiffPackageScheduledDisplayedAsATable(packagesToBeBuilt: Map<string, any>) {
+        let tableHead = ['Package', 'Reason to be built', 'Last Known Tag']
+        if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
+            tableHead.push('Scratch Org Config File')
+        }
         let table = new Table({
-            head: ['Package', 'Reason to be built', 'Last Known Tag'],
+            head: tableHead,
         });
         for (const pkg of packagesToBeBuilt.keys()) {
+
             let item = [
                 pkg,
                 packagesToBeBuilt.get(pkg).reason,
                 packagesToBeBuilt.get(pkg).tag ? packagesToBeBuilt.get(pkg).tag : '',
             ];
+            if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
+                item.push(this.scratchOrgDefinitions[pkg]?this.scratchOrgDefinitions[pkg]:this.props.configFilePath)
+            }
+
             table.push(item);
         }
         return table;
     }
 
     private createAllPackageScheduledDisplayedAsATable() {
+        let tableHead = ['Package', 'Reason to be built']
+        if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
+            tableHead.push('Scratch Org Config File')
+        }
         let table = new Table({
-            head: ['Package', 'Reason to be built'],
+            head: tableHead,
         });
         for (const pkg of this.packagesToBeBuilt) {
             let item = [pkg, 'Activated as part of all package build'];
+            if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
+                item.push(this.scratchOrgDefinitions[pkg]?this.scratchOrgDefinitions[pkg]:this.props.configFilePath)
+            }
             table.push(item);
         }
         return table;
@@ -508,6 +531,13 @@ export default class BuildImpl {
         isValidateMode: boolean
     ): Promise<SfpPackage> {
         console.log(COLOR_KEY_MESSAGE(`Package creation initiated for  ${sfdx_package}`));
+        let configFilePath = this.props.configFilePath
+        if(this.isMultiConfigFilesEnabled){
+            if(this.scratchOrgDefinitions[sfdx_package]){
+                configFilePath = this.scratchOrgDefinitions[sfdx_package]
+                console.log(COLOR_KEY_MESSAGE(`Matched scratch org definition file found for ${sfdx_package}: ${configFilePath}`));
+            }
+        }
 
         return SfpPackageBuilder.buildPackageFromProjectDirectory(
             new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`),
@@ -519,7 +549,7 @@ export default class BuildImpl {
                 branch: this.props.branch,
                 sourceVersion: this.commit_id,
                 repositoryUrl: this.repository_url,
-                configFilePath: this.props.configFilePath,
+                configFilePath: configFilePath,
                 pathToReplacementForceIgnore: this.getPathToForceIgnoreForCurrentStage(
                     this.projectConfig,
                     this.props.currentStage
@@ -571,5 +601,14 @@ export default class BuildImpl {
         } else return null;
     }
 
+    private getMultiScratchOrgDefinitionFileMap(projectConfig: any): {[key: string]: any}[]{
+        this.isMultiConfigFilesEnabled = this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles
+        let configFiles: {[key: string]: any}[]
+        if(this.isMultiConfigFilesEnabled){
+            configFiles = this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.packages
+        }
+        return configFiles
+    }
   
 }
+

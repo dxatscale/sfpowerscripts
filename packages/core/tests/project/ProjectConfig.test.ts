@@ -163,4 +163,116 @@ describe('Given a project directory or sfdx-project.json with multiple packages'
 
         expect(ProjectConfig.cleanupMPDFromProjectDirectory(null, 'temp')).toStrictEqual(cleaned_sfdx_project);
     });
+
+    it(`Gets all the external dependencies of a project`,()=>{
+        let sfdx_project = {
+            packageDirectories: [
+                {
+                    path: 'packages/temp',
+                    default: true,
+                    package: 'temp',
+                    versionName: 'temp',
+                    versionNumber: '1.0.0.0',
+                    ignoreOnStage: ['prepare', 'validate', 'build'],
+                },
+                {
+                    path: 'packages/domains/core',
+                    package: 'core',
+                    default: false,
+                    versionName: 'core',
+                    versionNumber: '1.0.0.0',
+                },
+                {
+                    path: 'packages/frameworks/mass-dataload',
+                    package: 'mass-dataload',
+                    default: false,
+                    type: 'data',
+                    versionName: 'mass-dataload',
+                    versionNumber: '1.0.0.0',
+                },
+                {
+                    path: 'packages/access-mgmt',
+                    package: 'access-mgmt',
+                    default: false,
+                    versionName: 'access-mgmt',
+                    versionNumber: '1.0.0.0',
+                    reconcileProfiles: 'true',
+                },
+                {
+                    path: 'packages/bi',
+                    package: 'bi',
+                    default: false,
+                    versionName: 'bi',
+                    versionNumber: '1.0.0.0',
+                    ignoreOnStage: ['prepare', 'validate'],
+                },
+            ],
+            namespace: '',
+            sfdcLoginUrl: 'https://login.salesforce.com',
+            sourceApiVersion: '50.0',
+            packageAliases: { bi: '0H432322321',bi2:'0H43232232' },
+        };
+
+        
+       
+        expect(ProjectConfig.getAllExternalPackages(sfdx_project)).toEqual([{
+            alias:'bi2',
+            Package2IdOrSubscriberPackageVersionId:"0H43232232"
+            }])
+        
+    });
+
+    it(`Returns empty if there are no external dependencies`,()=>{
+        let sfdx_project = {
+            packageDirectories: [
+                {
+                    path: 'packages/temp',
+                    default: true,
+                    package: 'temp',
+                    versionName: 'temp',
+                    versionNumber: '1.0.0.0',
+                    ignoreOnStage: ['prepare', 'validate', 'build'],
+                },
+                {
+                    path: 'packages/domains/core',
+                    package: 'core',
+                    default: false,
+                    versionName: 'core',
+                    versionNumber: '1.0.0.0',
+                },
+                {
+                    path: 'packages/frameworks/mass-dataload',
+                    package: 'mass-dataload',
+                    default: false,
+                    type: 'data',
+                    versionName: 'mass-dataload',
+                    versionNumber: '1.0.0.0',
+                },
+                {
+                    path: 'packages/access-mgmt',
+                    package: 'access-mgmt',
+                    default: false,
+                    versionName: 'access-mgmt',
+                    versionNumber: '1.0.0.0',
+                    reconcileProfiles: 'true',
+                },
+                {
+                    path: 'packages/bi',
+                    package: 'bi',
+                    default: false,
+                    versionName: 'bi',
+                    versionNumber: '1.0.0.0',
+                    ignoreOnStage: ['prepare', 'validate'],
+                },
+            ],
+            namespace: '',
+            sfdcLoginUrl: 'https://login.salesforce.com',
+            sourceApiVersion: '50.0',
+            packageAliases: { bi: '0H432322321' },
+        };
+       
+        expect(ProjectConfig.getAllExternalPackages(sfdx_project)).toEqual([])
+      
+    });
+
 });

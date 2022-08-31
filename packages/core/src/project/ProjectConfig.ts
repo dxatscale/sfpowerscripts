@@ -1,4 +1,5 @@
 const fs = require("fs-extra");
+import _ from 'lodash';
 import { PackageType } from '../package/SfpPackage';
 let path = require('path');
 
@@ -32,6 +33,18 @@ export default class ProjectConfig {
               sfdxpackages.push(pkg.package);
         });
         return sfdxpackages;
+    }
+
+    public static getAllExternalPackages(projectConfig: any):{alias:string;Package2IdOrSubscriberPackageVersionId:string}[]
+    {
+        let externalPackages:{alias:string;Package2IdOrSubscriberPackageVersionId:string}[]=[];
+        let packagesInCurrentDirectory = ProjectConfig.getAllPackageDirectoriesFromConfig(projectConfig)
+        const packageAliases = projectConfig.packageAliases || {};
+        Object.entries(packageAliases).forEach(([key, value]) => {
+           if(!_.find(packagesInCurrentDirectory,(elem)=>{return elem.package==key},0))
+              externalPackages.push({alias:key, Package2IdOrSubscriberPackageVersionId:value as string})
+        });
+        return externalPackages;
     }
 
     /**
@@ -201,4 +214,6 @@ export default class ProjectConfig {
         projectConfig['packageDirectories'][0]['default'] = true; //add default = true
         return projectConfig;
     }
+
+     
 }

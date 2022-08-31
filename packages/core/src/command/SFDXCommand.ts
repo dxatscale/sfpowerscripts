@@ -9,7 +9,7 @@ export abstract class SFDXCommand {
         protected logLevel?: LoggerLevel
     ) {}
 
-    public async exec(quiet = true, timeout: number = 0, showProgress: boolean = false): Promise<any> {
+    public async exec(quiet:boolean = true, timeout: number = 0, showProgress: boolean = false): Promise<any> {
         let command = this.getSFDXCommand();
         if (quiet) command += ` --json`;
         command += ' ' + this.getGeneratedParams();

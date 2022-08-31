@@ -4,7 +4,7 @@ FROM  heroku/heroku:20.v77
 ENV DEBIAN_FRONTEND=noninteractive
 ARG SFPOWERSCRIPTS_VERSION=alpha
 
-ARG PMD_VERSION=${PMD_VERSION:-6.39.0}
+ARG PMD_VERSION=${PMD_VERSION:-6.48.0}
 ARG SFPOWERSCRIPTS_VERSION=alpha
 ARG GIT_COMMIT
 
@@ -108,10 +108,10 @@ RUN cd $HOME/sfpowerkit \
 
 
 # Install sfdx plugins
-RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.8.0
+RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.9.1
 RUN echo 'y' | sfdx plugins:install apexlink@2.3.2
 RUN echo 'y' | sfdx plugins:install sfdmu@4.15.0
-RUN echo 'y' | sfdx plugins:install sfpowerkit@4.2.11
+RUN echo 'y' | sfdx plugins:install sfpowerkit@5.0.0
 # Downgraded Data plugin to 2.0.0
 RUN echo 'y' | sfdx plugins:install data@2.0.0
 
@@ -130,4 +130,4 @@ LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - July 22"
+LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - August 22"

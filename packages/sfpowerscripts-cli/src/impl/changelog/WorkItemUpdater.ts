@@ -1,18 +1,23 @@
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { Release } from './ReleaseChangelogInterfaces';
+ 
 
 export default class WorkItemUpdater {
-    constructor(private latestRelease: Release, private workItemFilter: string) {}
+    constructor(private latestRelease: Release, private workItemFilters: string[],private logger?:Logger) {}
 
     /**
      * Generate work items in latest release
      */
     update(): void {
-        let workItemFilter: RegExp = RegExp(this.workItemFilter, 'gi');
+        for (const workItemFilter of this.workItemFilters) {
+     
+        let workItemFilterRegex: RegExp = RegExp(workItemFilter, 'gi');
+        SFPLogger.log(`Matching...${workItemFilterRegex}`,LoggerLevel.INFO,this.logger);
 
         for (let artifact of this.latestRelease['artifacts']) {
             for (let commit of artifact['commits']) {
                 let commitMessage: String = commit['message'] + '\n' + commit['body'];
-                let workItems: RegExpMatchArray = commitMessage.match(workItemFilter);
+                let workItems: RegExpMatchArray = commitMessage.match(workItemFilterRegex);
                 if (workItems) {
                     for (let item of workItems) {
                         if (this.latestRelease['workItems'][item] == null) {
@@ -25,6 +30,7 @@ export default class WorkItemUpdater {
                 }
             }
         }
+       }
 
         // Convert each work item Set to Array
         // Enables JSON stringification of work item

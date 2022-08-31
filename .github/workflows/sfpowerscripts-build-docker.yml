@@ -71,6 +71,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
               ghcr.io/${{ inputs.repo }}/${{ inputs.image }}:${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: | 
                   SFPOWERSCRIPTS_VERSION=${{ env.PKG_VERSION }}
                   GIT_COMMIT=${{ github.sha}}

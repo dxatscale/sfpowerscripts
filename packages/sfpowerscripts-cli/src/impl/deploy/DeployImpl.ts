@@ -591,7 +591,8 @@ export default class DeployImpl {
 
         //Add Installation Options
         let installationOptions = new SfpPackageInstallationOptions();
-        (installationOptions.installationkey = null), (installationOptions.apexcompile = 'package');
+        installationOptions.installationkey = null, 
+        installationOptions.apexcompile = 'package';
         installationOptions.securitytype = 'AdminsOnly';
         installationOptions.upgradetype = 'Mixed';
         installationOptions.waitTime = waitTime;

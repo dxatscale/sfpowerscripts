@@ -6,7 +6,7 @@ import { Messages } from '@salesforce/core';
 import { EOL } from 'os';
 import SfpowerscriptsCommand from './SfpowerscriptsCommand';
 import simplegit from 'simple-git';
-import GitIdentity from './impl/git/GitIdentity';
+import GitIdentity from '@dxatscale/sfpowerscripts.core/lib/git/GitIdentity';
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 const fs = require('fs-extra');
