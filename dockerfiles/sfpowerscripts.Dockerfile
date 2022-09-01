@@ -1,7 +1,6 @@
-FROM  heroku/heroku:20.v77
+FROM  salesforce/salesforcedx:7.165.0-full
 
 
-ENV DEBIAN_FRONTEND=noninteractive
 ARG SFPOWERSCRIPTS_VERSION=alpha
 
 ARG PMD_VERSION=${PMD_VERSION:-6.48.0}
@@ -30,15 +29,6 @@ RUN apt-get update && \
   &&   apt-get autoremove --assume-yes \
   && apt-get clean --assume-yes \
   && rm -rf /var/lib/apt/lists/*
-
-# Install NODE 18
-RUN echo '01c2060503bb42caa1c6cc2ee4b432f80c0b38ad46b4eed956774fb36302f46e  ./nodejs.tar.gz' > node-file-lock.sha \
-  && curl -s -o nodejs.tar.gz https://nodejs.org/dist/v18.8.0/node-v18.8.0-linux-x64.tar.gz \
-  && shasum --check node-file-lock.sha
-RUN mkdir /usr/local/lib/nodejs \
-  && tar xf nodejs.tar.gz -C /usr/local/lib/nodejs/ --strip-components 1 \
-  && rm nodejs.tar.gz node-file-lock.sha
-ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 
 # Install OpenJDK-11
@@ -75,9 +65,6 @@ RUN export XDG_DATA_HOME && \
 
 # Install Yarn
 RUN npm install --global yarn
-
-# Install sfdx-cli
-RUN yarn global add sfdx-cli@7.165.0 
 
 # Install vlocity
 RUN yarn global add vlocity@1.15.6
