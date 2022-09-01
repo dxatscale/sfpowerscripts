@@ -14,7 +14,6 @@ import { EOL } from 'os';
 import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
 import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
 
-
 export interface ReleaseProps {
     releaseDefinitions: ReleaseDefinitionSchema[];
     targetOrg: string;
@@ -30,11 +29,11 @@ export interface ReleaseProps {
     isGenerateChangelog: boolean;
     devhubUserName: string;
     branch: string;
-    directory:string;
+    directory: string;
 }
 
 export default class ReleaseImpl {
-    constructor(private props: ReleaseProps,private logger?:Logger) {}
+    constructor(private props: ReleaseProps, private logger?: Logger) {}
 
     public async exec(): Promise<ReleaseResult> {
         this.printOpenLoggingGroup('Fetching artifacts');
@@ -79,7 +78,7 @@ export default class ReleaseImpl {
             let workItemUrl: string;
             let showAllArtifacts: boolean = false;
             for (const releaseDefinition of this.props.releaseDefinitions) {
-                releaseName = releaseName.concat(releaseDefinition.release,'-')
+                releaseName = releaseName.concat(releaseDefinition.release, '-');
                 if (releaseDefinition.changelog) {
                     workitemFilters.push(releaseDefinition.changelog?.workItemFilters);
                     if (releaseDefinition.changelog.limit > limit) limit = releaseDefinition.changelog.limit;
@@ -87,8 +86,8 @@ export default class ReleaseImpl {
                     showAllArtifacts = releaseDefinition.changelog.showAllArtifacts;
                 }
             }
-           //Remove the last '-' from the name
-            releaseName = releaseName.slice(0,-1);
+            //Remove the last '-' from the name
+            releaseName = releaseName.slice(0, -1);
             if (this.props.isGenerateChangelog) {
                 this.printOpenLoggingGroup('Release changelog');
 
@@ -228,6 +227,8 @@ export default class ReleaseImpl {
             let deploymentResult = await deployImpl.exec();
             deploymentResults.push({ releaseDefinition: releaseDefinition, result: deploymentResult });
             this.printClosingLoggingGroup();
+            //Don't continue deployments if a release breaks in between
+            if (deploymentResult.failed.length>0) break;
         }
 
         return deploymentResults;
@@ -265,11 +266,10 @@ export default class ReleaseImpl {
             for (let pkg in packageDependencies) {
                 let dependendentPackage: Package2Detail = { name: pkg };
                 dependendentPackage.subscriberPackageVersionId = packageDependencies[pkg];
-                if(packagesToKeys?.[pkg]){
-                    dependendentPackage.key = packagesToKeys[pkg]
+                if (packagesToKeys?.[pkg]) {
+                    dependendentPackage.key = packagesToKeys[pkg];
                 }
                 externalPackage2s.push(dependendentPackage);
-
             }
             let sfpOrg = await SFPOrg.create({ aliasOrUsername: targetOrg });
             let packageCollectionInstaller = new InstallUnlockedPackageCollection(sfpOrg, new ConsoleLogger());
