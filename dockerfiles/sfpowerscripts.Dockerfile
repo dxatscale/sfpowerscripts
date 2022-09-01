@@ -31,9 +31,9 @@ RUN apt-get update && \
   && apt-get clean --assume-yes \
   && rm -rf /var/lib/apt/lists/*
 
-# Install NODE 16
-RUN echo 'a0f23911d5d9c371e95ad19e4e538d19bffc0965700f187840eb39a91b0c3fb0  ./nodejs.tar.gz' > node-file-lock.sha \
-  && curl -s -o nodejs.tar.gz https://nodejs.org/dist/v16.13.2/node-v16.13.2-linux-x64.tar.gz \
+# Install NODE 18
+RUN echo '01c2060503bb42caa1c6cc2ee4b432f80c0b38ad46b4eed956774fb36302f46e  ./nodejs.tar.gz' > node-file-lock.sha \
+  && curl -s -o nodejs.tar.gz https://nodejs.org/dist/v18.8.0/node-v18.8.0-linux-x64.tar.gz \
   && shasum --check node-file-lock.sha
 RUN mkdir /usr/local/lib/nodejs \
   && tar xf nodejs.tar.gz -C /usr/local/lib/nodejs/ --strip-components 1 \
