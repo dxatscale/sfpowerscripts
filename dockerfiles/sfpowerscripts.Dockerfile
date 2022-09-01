@@ -77,7 +77,7 @@ RUN export XDG_DATA_HOME && \
 RUN npm install --global yarn
 
 # Install sfdx-cli
-RUN yarn global add sfdx-cli@7.160.0 
+RUN yarn global add sfdx-cli@7.165.0 
 
 # Install vlocity
 RUN yarn global add vlocity@1.15.6
@@ -130,4 +130,4 @@ LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - August 22"
+LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - September 22"
