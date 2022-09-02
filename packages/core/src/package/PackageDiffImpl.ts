@@ -31,7 +31,9 @@ export default class PackageDiffImpl {
 
         SFPLogger.log(
             COLOR_KEY_MESSAGE(
-                `${EOL}Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`
+                `${EOL}Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`,
+                LoggerLevel.TRACE,
+                this.logger
             )
         );
 
@@ -63,21 +65,21 @@ export default class PackageDiffImpl {
 
             SFPLogger.log(
                 `Checking for changes in source directory ${path.normalize(pkgDescriptor.path)}`,
-                LoggerLevel.INFO,
+                LoggerLevel.TRACE,
                 this.logger
             );
 
             // Check whether the package has been modified
             for (let filename of modified_files) {
                 if (filename.includes(path.normalize(pkgDescriptor.path))) {
-                    SFPLogger.log(`Found change(s) in ${filename}`, LoggerLevel.INFO, this.logger);
+                    SFPLogger.log(`Found change(s) in ${filename}`, LoggerLevel.TRACE, this.logger);
                     return { isToBeBuilt: true, reason: `Found change(s) in package`, tag: tag };
                 }
             }
 
             SFPLogger.log(
                 `Checking for changes to package descriptor in sfdx-project.json`,
-                LoggerLevel.INFO,
+                LoggerLevel.TRACE,
                 this.logger
             );
             let isPackageDescriptorChanged = await this.isPackageDescriptorChanged(git, tag, pkgDescriptor);
