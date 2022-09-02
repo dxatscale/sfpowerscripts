@@ -412,8 +412,6 @@ export default class BuildImpl {
             return !pushedPackages.includes(el);
         });
         this.packagesInQueue = this.packagesInQueue.filter((pkg_name) => pkg_name !== sfpPackage.packageName);
-
-        this.printQueueDetails();
     }
 
     private resolveDependenciesOnCompletedPackage(dependentPackage: string, completedPackage: SfpPackage) {
