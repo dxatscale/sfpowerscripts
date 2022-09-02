@@ -31,8 +31,10 @@ export default class PackageDiffImpl {
 
         SFPLogger.log(
             COLOR_KEY_MESSAGE(
-                `${EOL}Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`
-            )
+                `${EOL}Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`,
+            ),
+            LoggerLevel.TRACE,
+            this.logger
         );
 
         let tag: string;
@@ -43,7 +45,7 @@ export default class PackageDiffImpl {
         }
 
         if (tag) {
-            SFPLogger.log(COLOR_KEY_MESSAGE(`\nUtilizing tag ${tag} for ${this.sfdx_package}`));
+            SFPLogger.log(COLOR_KEY_MESSAGE(`\nUtilizing tag ${tag} for ${this.sfdx_package}`),LoggerLevel.TRACE,this.logger);
 
             // Get the list of modified files between the tag and HEAD refs
             let modified_files: string[];
@@ -63,21 +65,21 @@ export default class PackageDiffImpl {
 
             SFPLogger.log(
                 `Checking for changes in source directory ${path.normalize(pkgDescriptor.path)}`,
-                LoggerLevel.INFO,
+                LoggerLevel.TRACE,
                 this.logger
             );
 
             // Check whether the package has been modified
             for (let filename of modified_files) {
                 if (filename.includes(path.normalize(pkgDescriptor.path))) {
-                    SFPLogger.log(`Found change(s) in ${filename}`, LoggerLevel.INFO, this.logger);
+                    SFPLogger.log(`Found change(s) in ${filename}`, LoggerLevel.TRACE, this.logger);
                     return { isToBeBuilt: true, reason: `Found change(s) in package`, tag: tag };
                 }
             }
 
             SFPLogger.log(
                 `Checking for changes to package descriptor in sfdx-project.json`,
-                LoggerLevel.INFO,
+                LoggerLevel.TRACE,
                 this.logger
             );
             let isPackageDescriptorChanged = await this.isPackageDescriptorChanged(git, tag, pkgDescriptor);
@@ -89,7 +91,7 @@ export default class PackageDiffImpl {
         } else {
             SFPLogger.log(
                 `Tag missing for ${this.sfdx_package}...marking package for build anyways`,
-                LoggerLevel.INFO,
+                LoggerLevel.TRACE,
                 this.logger
             );
             return { isToBeBuilt: true, reason: `Previous version not found` };
@@ -116,9 +118,9 @@ export default class PackageDiffImpl {
 
         SFPLogger.log('Analysing tags:', LoggerLevel.DEBUG);
         if (tags.length > 10) {
-            SFPLogger.log(tags.slice(-10).toString().replace(/,/g, '\n'), LoggerLevel.DEBUG);
+            SFPLogger.log(tags.slice(-10).toString().replace(/,/g, '\n'), LoggerLevel.TRACE,this.logger);
         } else {
-            SFPLogger.log(tags.toString().replace(/,/g, '\n'), LoggerLevel.DEBUG);
+            SFPLogger.log(tags.toString().replace(/,/g, '\n'), LoggerLevel.TRACE,this.logger);
         }
 
         return tags.pop();
@@ -136,11 +138,11 @@ export default class PackageDiffImpl {
         }
 
         if (!lodash.isEqual(packageDescriptor, packageDescriptorFromLatestTag)) {
-            SFPLogger.log(`Found change in ${this.sfdx_package} package descriptor`, LoggerLevel.INFO, this.logger);
+            SFPLogger.log(`Found change in ${this.sfdx_package} package descriptor`, LoggerLevel.TRACE, this.logger);
 
             //skip check and ignore
             if (this.diffOptions?.skipPackageDescriptorChange) {
-                SFPLogger.log(`Ignoring changes in package desriptor as asked to..`, LoggerLevel.INFO, this.logger);
+                SFPLogger.log(`Ignoring changes in package desriptor as asked to..`, LoggerLevel.TRACE, this.logger);
                 return false;
             } else return true;
         } else return false;
