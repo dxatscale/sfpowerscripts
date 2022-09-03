@@ -2,7 +2,8 @@
     "name": "sfpowerscripts",
     "private": true,
     "scripts": {
-        "format": "npx prettier --write ."
+        "format": "npx prettier --write .",
+        "deps":" npx depcruise --exclude '(node_modules|tests|resources|coverage|dist)' --output-type dot packages | dot -T svg > dependencygraph.svg"
     },
     "devDependencies": {
         "@commitlint/cli": "^15.0.0",
