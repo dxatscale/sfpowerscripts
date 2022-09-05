@@ -70,12 +70,7 @@ export default class SfpPackageBuilder {
             await propertyFetcher.getSfpowerscriptsProperties(sfpPackage, logger);
         }
 
-        //Get Package Type
-        sfpPackage.package_type = ProjectConfig.getPackageType(
-            ProjectConfig.getSFDXProjectConfig(sfpPackage.workingDirectory),
-            sfdx_package
-        );
-
+       
    
         sfpPackage = SfpPackageBuilder.handleVersionNumber(params, sfpPackage, packageCreationParams);
 
@@ -93,6 +88,13 @@ export default class SfpPackageBuilder {
             params?.revisionFrom,
             params?.revisionTo
         );
+
+         //Get Package Type
+         sfpPackage.package_type = ProjectConfig.getPackageType(
+            ProjectConfig.getSFDXProjectConfig(sfpPackage.workingDirectory),
+            sfdx_package
+        );
+
 
         sfpPackage.resolvedPackageDirectory = path.join(sfpPackage.workingDirectory, sfpPackage.packageDescriptor.path);
 
