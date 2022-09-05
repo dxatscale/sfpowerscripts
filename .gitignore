@@ -14,3 +14,4 @@ oclif.manifest.json
 packages/core/coverage
 packages/sfpowerscripts-cli/coverage
 .DS_Store
+packages/core/.sfpowerscripts/**
