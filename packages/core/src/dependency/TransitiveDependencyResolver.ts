@@ -59,7 +59,7 @@ export default class TransitiveDependencyResolver {
   }
 
   private printDependencyTable(dependencies: any){
-    let tableHead = ['Package', 'Version Number']
+    let tableHead = ['Dependency', 'Version Number']
     let table = new Table({
       head: tableHead,
     });
