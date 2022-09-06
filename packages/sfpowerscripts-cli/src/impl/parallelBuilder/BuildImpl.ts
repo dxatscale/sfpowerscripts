@@ -25,6 +25,8 @@ import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormat
 import { COLON_MIDDLE_BORDER_TABLE, ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import PackageDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/PackageDependencyResolver';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/dependency/TransitiveDependencyResolver';
+
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -86,6 +88,12 @@ export default class BuildImpl {
     }> {
         if (this.props.devhubAlias) this.sfpOrg = await SFPOrg.create({ aliasOrUsername: this.props.devhubAlias });
 
+        //Validate dependencies in sfdx-project.json
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
+        const dependencyValidator = new TransitiveDependencyResolver(projectConfig);
+
+       this.projectConfig = await dependencyValidator.exec();
+
         SFPLogger.log(`Invoking build...`, LoggerLevel.INFO);
         const git = simplegit();
         if (this.props.repourl == null) {
@@ -112,11 +120,9 @@ export default class BuildImpl {
                 this.props.projectDirectory,
                 this.packagesToBeBuilt
             );
-            console.log('1')
             table = this.createDiffPackageScheduledDisplayedAsATable(packagesToBeBuiltWithReasons);
             this.packagesToBeBuilt = Array.from(packagesToBeBuiltWithReasons.keys()); //Assign it back to the instance variable
         } else {
-            console.log('2')
             table = this.createAllPackageScheduledDisplayedAsATable();
         }
         //Log Packages to be built
