@@ -248,7 +248,8 @@ export default class TriggerApexTests {
                 idx = _.findIndex(
                     modifiedTestResult.tests,
                     (elem: any) => {
-                        return elem.methodName == modifiedTestResult.tests[index].methodName;
+                        return elem.methodName == modifiedTestResult.tests[index].methodName
+                        && elem.apexClass.name == modifiedTestResult.tests[index].apexClass.name;
                     },
                     idx + 1
                 );
