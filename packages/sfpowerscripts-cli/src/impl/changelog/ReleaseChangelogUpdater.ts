@@ -1,4 +1,4 @@
-import { ReleaseChangelog, Release, Artifact } from './ReleaseChangelogInterfaces';
+import { ReleaseChangelog, Release, Artifact } from './ReleaseChangelog';
 import CommitUpdater from './CommitUpdater';
 import WorkItemUpdater from './WorkItemUpdater';
 import OrgsUpdater from './OrgsUpdater';

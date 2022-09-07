@@ -7,7 +7,7 @@ import child_process = require('child_process');
 import ReleaseError from '../../errors/ReleaseError';
 import ChangelogImpl from '../../impl/changelog/ChangelogImpl';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import { Release } from '../changelog/ReleaseChangelogInterfaces';
+import { Release } from '../changelog/ReleaseChangelog';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import path = require('path');
 import { EOL } from 'os';

@@ -1,4 +1,4 @@
-import { ReleaseChangelog, Release, org } from './ReleaseChangelogInterfaces';
+import { ReleaseChangelog, Release, org } from './ReleaseChangelog';
 import { URL } from 'url';
 import { EOL } from 'os';
 const markdownTable = require('markdown-table');

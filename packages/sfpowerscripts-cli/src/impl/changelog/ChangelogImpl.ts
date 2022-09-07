@@ -1,5 +1,5 @@
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import { ReleaseChangelog } from './ReleaseChangelogInterfaces';
+import { ReleaseChangelog } from './ReleaseChangelog';
 import ChangelogMarkdownGenerator from './ChangelogMarkdownGenerator';
 import ReleaseChangelogUpdater from './ReleaseChangelogUpdater';
 import * as fs from 'fs-extra';
