@@ -112,11 +112,9 @@ export default class BuildImpl {
                 this.props.projectDirectory,
                 this.packagesToBeBuilt
             );
-            console.log('1')
             table = this.createDiffPackageScheduledDisplayedAsATable(packagesToBeBuiltWithReasons);
             this.packagesToBeBuilt = Array.from(packagesToBeBuiltWithReasons.keys()); //Assign it back to the instance variable
         } else {
-            console.log('2')
             table = this.createAllPackageScheduledDisplayedAsATable();
         }
         //Log Packages to be built
