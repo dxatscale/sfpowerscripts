@@ -70,8 +70,9 @@ export default class SfpPackageBuilder {
             await propertyFetcher.getSfpowerscriptsProperties(sfpPackage, logger);
         }
 
-       
-   
+        //Get Package Type
+        sfpPackage.package_type = ProjectConfig.getPackageType(projectConfig, sfdx_package);
+
         sfpPackage = SfpPackageBuilder.handleVersionNumber(params, sfpPackage, packageCreationParams);
 
         // Requires destructiveChangesPath which is set by the property fetcher
@@ -88,13 +89,6 @@ export default class SfpPackageBuilder {
             params?.revisionFrom,
             params?.revisionTo
         );
-
-         //Get Package Type
-         sfpPackage.package_type = ProjectConfig.getPackageType(
-            ProjectConfig.getSFDXProjectConfig(sfpPackage.workingDirectory),
-            sfdx_package
-        );
-
 
         sfpPackage.resolvedPackageDirectory = path.join(sfpPackage.workingDirectory, sfpPackage.packageDescriptor.path);
 
@@ -146,7 +140,7 @@ export default class SfpPackageBuilder {
 
         if (!packageCreationParams) packageCreationParams = { breakBuildIfEmpty: true };
 
-        let packageType = sfpPackage.packageType;
+        let packageType = sfpPackage.package_type;
         if (params?.overridePackageTypeWith) packageType = params?.overridePackageTypeWith.toLocaleLowerCase();
 
         //Get Implementors
@@ -184,11 +178,15 @@ export default class SfpPackageBuilder {
     }
 
     /*
-    *  Handle version Numbers of package
-    *  If VersionNumber is explcitly passed, use that 
-    * else allow autosubstitute using buildNumber for Source and Data if available
-    */
-    private static handleVersionNumber(params: SfpPackageParams, sfpPackage: SfpPackage, packageCreationParams: PackageCreationParams) {
+     *  Handle version Numbers of package
+     *  If VersionNumber is explcitly passed, use that
+     * else allow autosubstitute using buildNumber for Source and Data if available
+     */
+    private static handleVersionNumber(
+        params: SfpPackageParams,
+        sfpPackage: SfpPackage,
+        packageCreationParams: PackageCreationParams
+    ) {
         if (params?.packageVersionNumber) {
             sfpPackage.versionNumber = params.packageVersionNumber;
         } else if (packageCreationParams?.buildNumber) {
@@ -199,8 +197,7 @@ export default class SfpPackageBuilder {
                     packageCreationParams.buildNumber
                 );
             }
-        }
-        else {
+        } else {
             sfpPackage.versionNumber = sfpPackage.packageDescriptor.versionNumber;
         }
         return sfpPackage;
