@@ -1,7 +1,7 @@
 import { jest, expect } from '@jest/globals';
 const fs = require('fs');
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
-import PackageDiffImpl from '../../src/package/PackageDiffImpl';
+import PackageDiffImpl from '../../src/package/diff/PackageDiffImpl';
 import ProjectConfig from '../../src/project/ProjectConfig';
 
 let gitTags: string[] = [];

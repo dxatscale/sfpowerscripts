@@ -1,6 +1,6 @@
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger } from '@dxatscale/sfp-logger';
-import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
+import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import { EOL } from 'os';

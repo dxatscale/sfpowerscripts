@@ -1,5 +1,5 @@
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
-import Component from '../dependency/Component';
+import Component from '../../dependency/Component';
 
 
 export default class PackageToComponent {

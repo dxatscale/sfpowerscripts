@@ -1,7 +1,7 @@
 import BatchingTopoSort from './BatchingTopoSort';
 import DependencyHelper from './DependencyHelper';
 import Bottleneck from 'bottleneck';
-import PackageDiffImpl, { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
+import PackageDiffImpl, { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
 import simplegit from 'simple-git';
 import { EOL } from 'os';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
