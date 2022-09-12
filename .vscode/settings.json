@@ -1,4 +1,5 @@
 {
+    
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
@@ -6,8 +7,10 @@
         "**/CVS": true,
         "**/.DS_Store": true,
         "**/node_modules": true,
-        "packages/azpipelines/build": true,
-        "**/lib": true
+        "packages/forcemula/lib":false,
+        "lib":true,
+        "**/[^forcemula|^sfdc-soup]*/lib":true
+
     },
     "files.associations": {
         "*.log": "vt100"

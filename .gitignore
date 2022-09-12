@@ -1,4 +1,6 @@
 lib
+!packages/forcemula/lib
+!packages/sfdc-soup/lib
 tsconfig.tsbuildinfo
 node_modules
 build
