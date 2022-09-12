@@ -1,9 +1,7 @@
 import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
-import FetchImpl from '../artifacts/FetchImpl';
 import DeployImpl, { DeployProps, DeploymentMode, DeploymentResult } from '../deploy/DeployImpl';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { Stage } from '../Stage';
-import child_process = require('child_process');
 import ReleaseError from '../../errors/ReleaseError';
 import ChangelogImpl from '../../impl/changelog/ChangelogImpl';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
@@ -13,6 +11,7 @@ import path = require('path');
 import { EOL } from 'os';
 import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
 import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
+import FetchImpl from '../artifacts/FetchImpl';
 
 export interface ReleaseProps {
     releaseDefinitions: ReleaseDefinitionSchema[];
@@ -38,14 +37,13 @@ export default class ReleaseImpl {
     public async exec(): Promise<ReleaseResult> {
         this.printOpenLoggingGroup('Fetching artifacts');
         let fetchImpl: FetchImpl = new FetchImpl(
-            this.props.releaseDefinitions,
             'artifacts',
             this.props.fetchArtifactScript,
-            this.props.isNpm,
             this.props.scope,
-            this.props.npmrcPath
+            this.props.npmrcPath,
+            this.logger
         );
-        await fetchImpl.exec();
+        await fetchImpl.fetchArtifacts(this.props.releaseDefinitions);
         this.printClosingLoggingGroup();
 
         let installDependenciesResult: InstallDependenciesResult;
@@ -228,7 +226,7 @@ export default class ReleaseImpl {
             deploymentResults.push({ releaseDefinition: releaseDefinition, result: deploymentResult });
             this.printClosingLoggingGroup();
             //Don't continue deployments if a release breaks in between
-            if (deploymentResult.failed.length>0) break;
+            if (deploymentResult.failed.length > 0) break;
         }
 
         return deploymentResults;
@@ -265,7 +263,10 @@ export default class ReleaseImpl {
             // print packages dependencies to install
             for (let pkg in packageDependencies) {
                 let dependendentPackage: Package2Detail = { name: pkg };
-                dependendentPackage.subscriberPackageVersionId = packageDependencies[pkg];
+                if (packageDependencies[pkg].startsWith('04t'))
+                    dependendentPackage.subscriberPackageVersionId = packageDependencies[pkg];
+              
+
                 if (packagesToKeys?.[pkg]) {
                     dependendentPackage.key = packagesToKeys[pkg];
                 }
@@ -310,24 +311,6 @@ export default class ReleaseImpl {
         }
 
         return output;
-    }
-
-    private async isPackageInstalledInOrg(packageVersionId: string, targetUsername: string): Promise<boolean> {
-        try {
-            let targetOrg = await SFPOrg.create({ aliasOrUsername: targetUsername });
-
-            SFPLogger.log(`Checking Whether Package with ID ${packageVersionId} is installed in  ${targetUsername}`);
-            let installedPackages = await targetOrg.getAllInstalled2GPPackages();
-
-            let packageFound = installedPackages.find((installedPackage) => {
-                return installedPackage.subscriberPackageVersionId === packageVersionId;
-            });
-
-            return packageFound ? true : false;
-        } catch (error) {
-            SFPLogger.log('Unable to check whether this package is installed in the target org');
-            return false;
-        }
     }
 
     private printOpenLoggingGroup(message: string) {
