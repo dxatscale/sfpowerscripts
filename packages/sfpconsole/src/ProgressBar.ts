@@ -1,6 +1,6 @@
 import cli from 'cli-ux';
 
-export class ProgressBar {
+export default class ProgressBar {
     private progressBarImpl;
 
     public create(title: string, unit: string, displayTillLogLevel: number): ProgressBar {
