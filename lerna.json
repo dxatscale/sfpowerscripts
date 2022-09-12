@@ -1,5 +1,5 @@
 {
-    "packages": ["packages/core", "packages/sfpowerscripts-cli"],
+    "packages": ["packages/sfplogger","packages/core", "packages/sfpowerscripts-cli"],
     "version": "independent",
     "command": {
         "publish": {
