@@ -57,7 +57,7 @@ jobs:
 
       - name: 'Publish CLI/Core'
         if: ${{ inputs.publish == true }}
-        run: 'npx lerna publish from-package --yes --dist-tag ${{ inputs.version }}'
+        run: 'npx lerna publish from-package --yes --dist-tag ${{ inputs.version }} -- --access public'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
 
