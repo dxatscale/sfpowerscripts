@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node examples/example.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\"",
     "update-api": "npm install sfdc-happy-api@latest && npm version minor && git commit -a -m \"updated api\" && npm publish"
   },
   "repository": {
