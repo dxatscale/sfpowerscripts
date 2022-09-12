@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfpowerscripts.core",
-    "version": "32.0.3",
+    "version": "32.0.4",
     "description": "Core Module used by sfpowerscripts",
     "main": "lib/index",
     "types": "lib/index",
@@ -20,7 +20,7 @@
     },
     "dependencies": {
         "@dxatscale/sfdc-soup": "18.2.3",
-        "@dxatscale/sfp-logger": "1.1.0",
+        "@dxatscale/sfp-logger": "1.1.1",
         "@newrelic/telemetry-sdk": "^0.6.0",
         "@salesforce/apex-node": "1.1.0",
         "@salesforce/command": "4.2.2",
