@@ -1,6 +1,6 @@
 
-let utils = require('../../lib/services/utils');
-let {initCache,cacheApi} = require('../../lib/services/caching');
+let utils = require('../lib/services/utils');
+let {initCache,cacheApi} = require('../lib/services/caching');
 
 function sfdcSoup(connection,entryPoint,cache){
 
@@ -10,9 +10,9 @@ function sfdcSoup(connection,entryPoint,cache){
     entryPoint = validatedParams.entryPoint;
     cache = validatedParams.cache;
 
-    let dependencyApi = require('../../lib/sfdc_apis/dependencies');
-    let usageApi = require('../../lib/sfdc_apis/usage');
-    let workflowApi = require('../../lib/sfdc_apis/workflowToFlow');
+    let dependencyApi = require('../lib/sfdc_apis/dependencies');
+    let usageApi = require('../lib/sfdc_apis/usage');
+    let workflowApi = require('../lib/sfdc_apis/workflowToFlow');
 
     dependencyApi = dependencyApi(connection,entryPoint,cache);
     usageApi = usageApi(connection,entryPoint,cache);
