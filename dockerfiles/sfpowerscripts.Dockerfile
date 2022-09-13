@@ -8,6 +8,9 @@ ARG SFPOWERSCRIPTS_VERSION=alpha
 ARG GIT_COMMIT
 
 
+# update git
+RUN apt-get update && apt-get install git
+
 # Create symbolic link from sh to bash
 RUN ln -sf bash /bin/sh
 
