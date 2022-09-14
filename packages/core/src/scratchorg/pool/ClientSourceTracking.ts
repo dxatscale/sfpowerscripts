@@ -1,14 +1,14 @@
 const path = require('path');
 import * as fs from 'fs-extra';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { Connection, SfdxProject, SfProject } from '@salesforce/core';
+import { Connection, SfProject } from '@salesforce/core';
 import SFPOrg from '../../org/SFPOrg';
 import { SourceTracking } from '@salesforce/source-tracking';
-import simplegit, { SimpleGit } from 'simple-git';
 import ProjectConfig from '../../project/ProjectConfig';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 import { EOL } from 'os';
 import { PackageType } from '../../package/SfpPackage';
+import Git from '../../git/Git';
 
 const tmp = require('tmp');
 
@@ -53,11 +53,10 @@ export default class ClientSourceTracking {
      * Create local source tracking from sfpowerscripts artifacts installed in scratch org
      */
     private async createLocalSourceTracking() {
-        let tempDir = tmp.dirSync({ unsafeCleanup: true });
+        
+        let git;
         try {
-            let git: SimpleGit = simplegit();
-            const repoPath = (await git.getConfig('remote.origin.url')).value;
-            await git.clone(repoPath, tempDir.name);
+            git = await Git.initiateRepoAtTempLocation(this.logger);
 
             const sfpowerscriptsArtifacts = await this.org.getInstalledArtifacts();
 
@@ -66,17 +65,17 @@ export default class ClientSourceTracking {
 
             //clean up MPD to just one package, so that source tracking lib
             //does do a full scan and break
-            this.cleanupSFDXProjectJsonTonOnePackage(tempDir.name, sfpowerscriptsArtifacts[0].Name);
+            this.cleanupSFDXProjectJsonTonOnePackage(git.getRepositoryPath(), sfpowerscriptsArtifacts[0].Name);
 
-            const project = await SfProject.resolve(tempDir.name);
+            const project = await SfProject.resolve(git.getRepositoryPath());
 
             // Create local source tracking files in temp repo
             const tracking = await SourceTracking.create({
                 org: this.org,
                 project: project,
             });
-            tracking
-            git = simplegit(tempDir.name);
+
+           
 
             SFPLogger.log(
                 `Total Artifacts to Analyze: ${sfpowerscriptsArtifacts.length}`,
@@ -94,7 +93,7 @@ export default class ClientSourceTracking {
                 );
                 SFPLogger.log(`Analyzing package ${COLOR_KEY_MESSAGE(artifact.Name)}`, LoggerLevel.INFO, this.logger);
                 // Checkout version of source code from which artifact was created
-                await git.checkout(['-f', artifact.CommitId__c]);
+                await git.checkout(artifact.CommitId__c,true)
 
                 SFPLogger.log(
                     `Version pushed while preparing this org is ${artifact.Version__c} with SHA ${artifact.CommitId__c}`,
@@ -103,16 +102,16 @@ export default class ClientSourceTracking {
                 );
 
                 //clean up MPD to per package, to speed up
-                this.cleanupSFDXProjectJsonTonOnePackage(tempDir.name, artifact.Name);
+                this.cleanupSFDXProjectJsonTonOnePackage(git.getRepositoryPath(), artifact.Name);
 
-                const projectConfig = ProjectConfig.getSFDXProjectConfig(tempDir.name);
+                const projectConfig = ProjectConfig.getSFDXProjectConfig(git.getRepositoryPath());
 
                 try {
                     const packageType = ProjectConfig.getPackageType(projectConfig, artifact.Name);
                     if (packageType === PackageType.Unlocked || packageType === PackageType.Source) {
                         let componentSet = ComponentSet.fromSource(
                             path.join(
-                                tempDir.name,
+                                git.getRepositoryPath(),
                                 ProjectConfig.getPackageDescriptorFromConfig(artifact.Name, projectConfig).path
                             )
                         );
@@ -154,7 +153,7 @@ export default class ClientSourceTracking {
             // Copy source tracking files from temp repo to actual repo
             fs.mkdirpSync(path.join(this.sfdxOrgIdDir, 'localSourceTracking'));
             fs.copySync(
-                path.join(tempDir.name, this.sfdxOrgIdDir, 'localSourceTracking'),
+                path.join(git.getRepositoryPath(), this.sfdxOrgIdDir, 'localSourceTracking'),
                 path.join(this.sfdxOrgIdDir, 'localSourceTracking')
             );
         } catch (error) {
@@ -164,7 +163,8 @@ export default class ClientSourceTracking {
                 this.logger
             );
         } finally {
-            tempDir.removeCallback();
+            if(git)
+              git.deleteTempoRepoIfAny();
         }
     }
 
