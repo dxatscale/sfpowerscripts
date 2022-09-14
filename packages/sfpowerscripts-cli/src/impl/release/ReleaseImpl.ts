@@ -88,42 +88,45 @@ export default class ReleaseImpl {
             releaseName = releaseName.slice(0, -1);
             if (this.props.isGenerateChangelog) {
                 this.printOpenLoggingGroup('Release changelog');
+                try {
+                    let changelogImpl: ChangelogImpl = new ChangelogImpl(
+                        this.logger,
+                        'artifacts',
+                        releaseName,
+                        workitemFilters,
+                        limit,
+                        workItemUrl,
+                        showAllArtifacts,
+                        this.props.directory,
+                        false,
+                        this.props.branch,
+                        false,
+                        this.props.isDryRun,
+                        this.props.targetOrg
+                    );
 
-                let changelogImpl: ChangelogImpl = new ChangelogImpl(
-                    this.logger,
-                    'artifacts',
-                    releaseName,
-                    workitemFilters,
-                    limit,
-                    workItemUrl,
-                    showAllArtifacts,
-                    this.props.directory,
-                    false,
-                    this.props.branch,
-                    false,
-                    this.props.isDryRun,
-                    this.props.targetOrg
-                );
+                    let releaseChangelog = await changelogImpl.exec();
 
-                let releaseChangelog = await changelogImpl.exec();
+                    const aggregatedNumberOfWorkItemsInRelease = this.getAggregatedNumberOfWorkItemsInRelease(
+                        releaseName,
+                        releaseChangelog.releases
+                    );
 
-                const aggregatedNumberOfWorkItemsInRelease = this.getAggregatedNumberOfWorkItemsInRelease(
-                    releaseName,
-                    releaseChangelog.releases
-                );
+                    SFPStatsSender.logGauge('release.workitems', aggregatedNumberOfWorkItemsInRelease, {
+                        releaseName: releaseName,
+                    });
 
-                SFPStatsSender.logGauge('release.workitems', aggregatedNumberOfWorkItemsInRelease, {
-                    releaseName: releaseName,
-                });
+                    const aggregatedNumberOfCommitsInRelease = this.getAggregatedNumberOfCommitsInRelease(
+                        releaseName,
+                        releaseChangelog.releases
+                    );
 
-                const aggregatedNumberOfCommitsInRelease = this.getAggregatedNumberOfCommitsInRelease(
-                    releaseName,
-                    releaseChangelog.releases
-                );
-
-                SFPStatsSender.logGauge('release.commits', aggregatedNumberOfCommitsInRelease, {
-                    releaseName: releaseName,
-                });
+                    SFPStatsSender.logGauge('release.commits', aggregatedNumberOfCommitsInRelease, {
+                        releaseName: releaseName,
+                    });
+                } catch (error) {
+                    SFPLogger.log(`Unable to push changelog`, LoggerLevel.WARN, this.logger);
+                }
 
                 this.printClosingLoggingGroup();
             }
@@ -265,7 +268,6 @@ export default class ReleaseImpl {
                 let dependendentPackage: Package2Detail = { name: pkg };
                 if (packageDependencies[pkg].startsWith('04t'))
                     dependendentPackage.subscriberPackageVersionId = packageDependencies[pkg];
-              
 
                 if (packagesToKeys?.[pkg]) {
                     dependendentPackage.key = packagesToKeys[pkg];

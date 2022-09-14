@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "19.5.5",
+    "version": "19.5.6",
     "author": "dxatscale",
     "release": "September 22",
     "bin": {
