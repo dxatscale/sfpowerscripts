@@ -67,7 +67,7 @@ export default class Git {
                 await this._git.addConfig('safe.directory', this.repositoryLocation, false, 'global');
                 remoteOriginURL = (await this._git.getConfig('remote.origin.url')).value;
             }
-            SFPLogger.log(`Fetched Remote URL ${remoteOriginURL}`, LoggerLevel.INFO);
+            SFPLogger.log(`Fetched Remote URL ${remoteOriginURL}`, LoggerLevel.DEBUG);
         } else remoteOriginURL = overrideOriginURL;
 
     
