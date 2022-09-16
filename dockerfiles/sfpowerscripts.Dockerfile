@@ -37,12 +37,6 @@ RUN apt-get update && \
   && rm -rf /var/lib/apt/lists/*
 
 
-# Install OpenJDK-11
-RUN apt-get update && apt-get install --assume-yes openjdk-11-jdk-headless\ 
-     && apt-get autoremove --assume-yes \
-     && apt-get clean --assume-yes \
-     && rm -rf /var/lib/apt/lists/*
-
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 RUN export JAVA_HOME
 
@@ -69,14 +63,11 @@ RUN export XDG_DATA_HOME && \
     export XDG_CONFIG_HOME && \
     export XDG_CACHE_HOME
 
-# Install Yarn
-RUN npm install --global yarn
-
 # Install vlocity
-RUN yarn global add vlocity@1.15.6
+RUN npm install --global vlocity@1.15.6
 
 #Install Puppeteer
-RUN yarn global add puppeteer@10.4.0
+RUN npm install --global puppeteer@10.4.0
 
 # Install all shared dependencies for chrome and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and a few others)
 # Note: this installs the necessary libs to make the bundled version of Chromium that Puppeteer
