@@ -88,11 +88,10 @@ export default class BuildImpl {
     }> {
         if (this.props.devhubAlias) this.sfpOrg = await SFPOrg.create({ aliasOrUsername: this.props.devhubAlias });
 
-        //Validate dependencies in sfdx-project.json
-        let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
-        const dependencyValidator = new TransitiveDependencyResolver(projectConfig);
-
-       this.projectConfig = await dependencyValidator.exec();
+        //Validate dependencies in sfdx-project.json // Read Manifest
+        this.projectConfig = ProjectConfig.getSFDXProjectConfig(this.props.projectDirectory);
+        const transitiveDependencyResolver = new TransitiveDependencyResolver(this.projectConfig, this.sfpOrg.getConnection());
+        this.projectConfig = await transitiveDependencyResolver.exec();
 
         SFPLogger.log(`Invoking build...`, LoggerLevel.INFO);
         const git = simplegit();
@@ -106,9 +105,6 @@ export default class BuildImpl {
         this.commit_id = await git.revparse(['HEAD']);
 
         this.packagesToBeBuilt = this.getAllPackages(this.props.projectDirectory);
-
-        // Read Manifest
-        this.projectConfig = ProjectConfig.getSFDXProjectConfig(this.props.projectDirectory);
 
         //Build Scratch Org Def Files Map
         this.scratchOrgDefinitions = this.getMultiScratchOrgDefinitionFileMap(this.projectConfig)
