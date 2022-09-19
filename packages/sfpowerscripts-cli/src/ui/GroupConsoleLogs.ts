@@ -7,7 +7,7 @@ export default class GroupConsoleLogs {
     constructor(private section: string) {}
 
     public static setLogGroupsSymbol(logGroupSymbols: string[]) {
-        this.logGroupSymbols = logGroupSymbols;
+        GroupConsoleLogs.logGroupSymbols = logGroupSymbols;
     }
 
     public begin():GroupConsoleLogs {
@@ -32,7 +32,7 @@ export default class GroupConsoleLogs {
         } else if (process.env.SYSTEM_TEAMFOUNDATIONCOLLECTIONURI) {
             return `##[group]${this.section}`;
         } else if (GroupConsoleLogs.logGroupSymbols && GroupConsoleLogs.logGroupSymbols[0]) {
-            return `${GroupConsoleLogs.logGroupSymbols[0]}${this.section}`;
+            return `${GroupConsoleLogs.logGroupSymbols[0]} ${this.section}`;
         } else {
             return undefined;
         }
