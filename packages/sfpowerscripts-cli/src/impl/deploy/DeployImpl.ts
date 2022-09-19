@@ -21,6 +21,7 @@ import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPac
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 import * as _ from 'lodash';
+import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
 
 const Table = require('cli-table');
 const retry = require('async-retry');
@@ -142,7 +143,7 @@ export default class DeployImpl {
                     sfdxProjectConfig
                 );
 
-                this.printOpenLoggingGroup('Installing ', queue[i].packageName);
+                let groupSection = new GroupConsoleLogs(`Installing ${queue[i].packageName}`);
                 this.displayHeader(sfpPackage, pkgDescriptor, queue[i].packageName);
 
                 let preHookStatus = await this._preDeployHook?.preDeployPackage(
@@ -233,7 +234,7 @@ export default class DeployImpl {
                     throw new Error(packageInstallationResult.message);
                 }
 
-                this.printClosingLoggingGroup();
+                groupSection.end();
             }
 
             return {
@@ -352,10 +353,10 @@ export default class DeployImpl {
                     );
             }
         }
-        
-        if(pkgDescriptor.skipTesting){
+
+        if (pkgDescriptor.skipTesting) {
             SFPLogger.log(
-                `Skip Testing: ${COLOR_KEY_MESSAGE(pkgDescriptor.skipTesting?"true":"false")}`,
+                `Skip Testing: ${COLOR_KEY_MESSAGE(pkgDescriptor.skipTesting ? 'true' : 'false')}`,
                 LoggerLevel.INFO,
                 this.props.packageLogger
             );
@@ -396,7 +397,7 @@ export default class DeployImpl {
         packagesToPackageInfo: { [p: string]: PackageInfo },
         isBaselinOrgModeActivated: boolean
     ) {
-        this.printOpenLoggingGroup(`Full Deployment Breakdown`);
+        let groupSection = new GroupConsoleLogs(`Full Deployment Breakdown`);
         let maxTable = new Table({
             head: [
                 'Package',
@@ -417,9 +418,9 @@ export default class DeployImpl {
             ]);
         });
         SFPLogger.log(maxTable.toString(), LoggerLevel.INFO, this.props.packageLogger);
-        this.printClosingLoggingGroup();
+        groupSection.end();
 
-        this.printOpenLoggingGroup(`Packages to be deployed`);
+        groupSection = new GroupConsoleLogs(`Packages to be deployed`);
         let minTable = new Table({
             head: [
                 'Package',
@@ -439,11 +440,11 @@ export default class DeployImpl {
                 ]);
         });
         SFPLogger.log(minTable.toString(), LoggerLevel.INFO, this.props.packageLogger);
-        this.printClosingLoggingGroup();
+        groupSection.end();
     }
 
     private printArtifactVersions(queue: SfpPackage[], packagesToPackageInfo: { [p: string]: PackageInfo }) {
-        this.printOpenLoggingGroup(`Packages to be deployed`);
+        let groupSection = new GroupConsoleLogs(`Packages to be deployed`);
         let table = new Table({
             head: ['Package', 'Version to be installed'],
         });
@@ -452,7 +453,7 @@ export default class DeployImpl {
             table.push([pkg.packageName, pkg.versionNumber]);
         });
         SFPLogger.log(table.toString(), LoggerLevel.INFO, this.props.packageLogger);
-        this.printClosingLoggingGroup();
+        groupSection.end();
     }
 
     private async filterByPackagesInstalledInTheOrg(
@@ -487,20 +488,6 @@ export default class DeployImpl {
         }
 
         return clonedQueue;
-    }
-
-    private printOpenLoggingGroup(message: string, pkg?: string) {
-        if (this.props.logsGroupSymbol?.[0])
-            SFPLogger.log(
-                `${this.props.logsGroupSymbol[0]} ${message}   ${pkg ? pkg : ''}`,
-                LoggerLevel.INFO,
-                this.props.packageLogger
-            );
-    }
-
-    private printClosingLoggingGroup() {
-        if (this.props.logsGroupSymbol?.[1])
-            SFPLogger.log(this.props.logsGroupSymbol[1], LoggerLevel.INFO, this.props.packageLogger);
     }
 
     /**
@@ -591,8 +578,7 @@ export default class DeployImpl {
 
         //Add Installation Options
         let installationOptions = new SfpPackageInstallationOptions();
-        installationOptions.installationkey = null, 
-        installationOptions.apexcompile = 'package';
+        (installationOptions.installationkey = null), (installationOptions.apexcompile = 'package');
         installationOptions.securitytype = 'AdminsOnly';
         installationOptions.upgradetype = 'Mixed';
         installationOptions.waitTime = waitTime;

@@ -91,6 +91,10 @@ export default class Promote extends SfpowerscriptsCommand {
             dependsOn: ['npm'],
             required: false,
         }),
+        logsgroupsymbol: flags.array({
+            char: 'g',
+            description: messages.getMessage('logsGroupSymbolFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',

@@ -12,6 +12,7 @@ import { EOL } from 'os';
 import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
 import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
 import FetchImpl from '../artifacts/FetchImpl';
+import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
 
 export interface ReleaseProps {
     releaseDefinitions: ReleaseDefinitionSchema[];
@@ -35,7 +36,7 @@ export default class ReleaseImpl {
     constructor(private props: ReleaseProps, private logger?: Logger) {}
 
     public async exec(): Promise<ReleaseResult> {
-        this.printOpenLoggingGroup('Fetching artifacts');
+        let groupSection = new GroupConsoleLogs('Fetching artifacts');
         let fetchImpl: FetchImpl = new FetchImpl(
             'artifacts',
             this.props.fetchArtifactScript,
@@ -44,7 +45,7 @@ export default class ReleaseImpl {
             this.logger
         );
         await fetchImpl.fetchArtifacts(this.props.releaseDefinitions);
-        this.printClosingLoggingGroup();
+        groupSection.end();
 
         let installDependenciesResult: InstallDependenciesResult;
         installDependenciesResult = await this.installPackageDependencies(
@@ -87,7 +88,7 @@ export default class ReleaseImpl {
             //Remove the last '-' from the name
             releaseName = releaseName.slice(0, -1);
             if (this.props.isGenerateChangelog) {
-                this.printOpenLoggingGroup('Release changelog');
+                let groupSection = new GroupConsoleLogs('Release changelog');
                 try {
                     let changelogImpl: ChangelogImpl = new ChangelogImpl(
                         this.logger,
@@ -128,7 +129,7 @@ export default class ReleaseImpl {
                     SFPLogger.log(`Unable to push changelog`, LoggerLevel.WARN, this.logger);
                 }
 
-                this.printClosingLoggingGroup();
+                groupSection.end();
             }
         }
 
@@ -196,7 +197,7 @@ export default class ReleaseImpl {
     ): Promise<{ releaseDefinition: ReleaseDefinitionSchema; result: DeploymentResult }[]> {
         let deploymentResults: { releaseDefinition: ReleaseDefinitionSchema; result: DeploymentResult }[] = [];
         for (const releaseDefinition of releaseDefinitions) {
-            this.printOpenLoggingGroup(`Release ${releaseDefinition.release}`);
+            let groupSection = new GroupConsoleLogs(`Release ${releaseDefinition.release}`);
             SFPLogger.log(EOL);
 
             this.displayReleaseInfo(releaseDefinition, this.props);
@@ -227,7 +228,7 @@ export default class ReleaseImpl {
 
             let deploymentResult = await deployImpl.exec();
             deploymentResults.push({ releaseDefinition: releaseDefinition, result: deploymentResult });
-            this.printClosingLoggingGroup();
+            groupSection.end();
             //Don't continue deployments if a release breaks in between
             if (deploymentResult.failed.length > 0) break;
         }
@@ -255,7 +256,7 @@ export default class ReleaseImpl {
             }
         });
 
-        this.printOpenLoggingGroup('Installing package dependencies');
+        let groupSection = new GroupConsoleLogs('Installing package dependencies');
 
         try {
             let packagesToKeys: { [p: string]: string };
@@ -278,7 +279,7 @@ export default class ReleaseImpl {
             let packageCollectionInstaller = new InstallUnlockedPackageCollection(sfpOrg, new ConsoleLogger());
             await packageCollectionInstaller.install(externalPackage2s, true, true);
 
-            this.printClosingLoggingGroup();
+            groupSection.end();
             return result;
         } catch (err) {
             console.log(err.message);
@@ -313,15 +314,6 @@ export default class ReleaseImpl {
         }
 
         return output;
-    }
-
-    private printOpenLoggingGroup(message: string) {
-        if (this.props.logsGroupSymbol?.[0])
-            SFPLogger.log(`${this.props.logsGroupSymbol[0]} ${message}`, LoggerLevel.INFO);
-    }
-
-    private printClosingLoggingGroup() {
-        if (this.props.logsGroupSymbol?.[1]) SFPLogger.log(this.props.logsGroupSymbol[1], LoggerLevel.INFO);
     }
 
     private displayReleaseInfo(releaseDefinition: ReleaseDefinitionSchema, props: ReleaseProps) {
