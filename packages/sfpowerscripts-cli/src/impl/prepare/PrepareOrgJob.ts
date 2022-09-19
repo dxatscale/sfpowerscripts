@@ -286,11 +286,13 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         logger: Logger
     ): Promise<void> {
         if (isRelaxAllIPRanges || relaxIPRanges) {
-            SFPLogger.log(`Relaxing ip ranges for scratchOrg with user ${conn.getUsername()}`, LoggerLevel.INFO);
+            
             if (isRelaxAllIPRanges) {
+                SFPLogger.log(`Relaxing all ip ranges for scratchOrg with user ${conn.getUsername()}`, LoggerLevel.INFO);
                 relaxIPRanges = [];
                 return new DeploymentSettingsService(conn).relaxAllIPRanges(logger);
             } else {
+                SFPLogger.log(`Relaxing ip ranges for scratchOrg with user ${conn.getUsername()}`, LoggerLevel.INFO);
                 return new DeploymentSettingsService(conn).relaxAllIPRanges(logger, relaxIPRanges);
             }
         }
