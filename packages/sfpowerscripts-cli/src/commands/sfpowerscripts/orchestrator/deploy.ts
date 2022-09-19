@@ -143,9 +143,7 @@ export default class Deploy extends SfpowerscriptsCommand {
         } finally {
             let totalElapsedTime: number = Date.now() - executionStartTime;
 
-            if (this.flags.logsgroupsymbol?.[0])
-                SFPLogger.log(COLOR_HEADER(this.flags.logsgroupsymbol[0], 'Deployment Summary'));
-
+        
             SFPLogger.log(
                 COLOR_HEADER(
                     `----------------------------------------------------------------------------------------------------`
@@ -173,8 +171,7 @@ export default class Deploy extends SfpowerscriptsCommand {
                 )
             );
 
-            if (this.flags.logsgroupsymbol?.[1]) SFPLogger.log(COLOR_HEADER(this.flags.logsgroupsymbol[1]));
-
+          
             SFPStatsSender.logCount('deploy.scheduled', tags);
 
             SFPStatsSender.logGauge('deploy.packages.scheduled', deploymentResult.scheduled, tags);
