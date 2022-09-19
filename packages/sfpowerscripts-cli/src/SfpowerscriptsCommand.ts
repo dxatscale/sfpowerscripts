@@ -48,7 +48,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         this.setLogLevel();
 
         if (this.flags.logsgroupsymbol) {
-            GroupConsoleLogs.setLogGroupsSymbol(this.flags.logsGroupSymbol);
+            GroupConsoleLogs.setLogGroupsSymbol(this.flags.logsgroupsymbol);
         }
 
         if (this.flags.json) {
