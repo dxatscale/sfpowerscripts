@@ -44,10 +44,6 @@ export default class Deploy extends SfpowerscriptsCommand {
             description: messages.getMessage('waitTimeFlagDescription'),
             default: 120,
         }),
-        logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
-        }),
         tag: flags.string({
             char: 't',
             description: messages.getMessage('tagFlagDescription'),
@@ -71,6 +67,10 @@ export default class Deploy extends SfpowerscriptsCommand {
         retryonfailure: flags.boolean({
             description: messages.getMessage('retryOnFailureFlagDescription'),
             hidden: true,
+        }),
+        logsgroupsymbol: flags.array({
+            char: 'g',
+            description: messages.getMessage('logsGroupSymbolFlagDescription'),
         }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',

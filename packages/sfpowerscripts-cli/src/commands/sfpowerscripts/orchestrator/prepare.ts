@@ -43,6 +43,10 @@ export default class Prepare extends SfpowerscriptsCommand {
             required: false,
             description: messages.getMessage('keysDescription'),
         }),
+        logsgroupsymbol: flags.array({
+            char: 'g',
+            description: messages.getMessage('logsGroupSymbolFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
