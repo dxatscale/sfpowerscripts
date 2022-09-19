@@ -143,7 +143,7 @@ export default class DeployImpl {
                     sfdxProjectConfig
                 );
 
-                let groupSection = new GroupConsoleLogs(`Installing ${queue[i].packageName}`);
+                let groupSection = new GroupConsoleLogs(`Installing ${queue[i].packageName}`).begin();
                 this.displayHeader(sfpPackage, pkgDescriptor, queue[i].packageName);
 
                 let preHookStatus = await this._preDeployHook?.preDeployPackage(
@@ -397,7 +397,7 @@ export default class DeployImpl {
         packagesToPackageInfo: { [p: string]: PackageInfo },
         isBaselinOrgModeActivated: boolean
     ) {
-        let groupSection = new GroupConsoleLogs(`Full Deployment Breakdown`);
+        let groupSection = new GroupConsoleLogs(`Full Deployment Breakdown`).begin();
         let maxTable = new Table({
             head: [
                 'Package',
@@ -420,7 +420,7 @@ export default class DeployImpl {
         SFPLogger.log(maxTable.toString(), LoggerLevel.INFO, this.props.packageLogger);
         groupSection.end();
 
-        groupSection = new GroupConsoleLogs(`Packages to be deployed`);
+        groupSection = new GroupConsoleLogs(`Packages to be deployed`).begin();
         let minTable = new Table({
             head: [
                 'Package',
@@ -444,7 +444,7 @@ export default class DeployImpl {
     }
 
     private printArtifactVersions(queue: SfpPackage[], packagesToPackageInfo: { [p: string]: PackageInfo }) {
-        let groupSection = new GroupConsoleLogs(`Packages to be deployed`);
+        let groupSection = new GroupConsoleLogs(`Packages to be deployed`).begin();
         let table = new Table({
             head: ['Package', 'Version to be installed'],
         });

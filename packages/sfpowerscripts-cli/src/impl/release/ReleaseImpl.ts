@@ -36,7 +36,7 @@ export default class ReleaseImpl {
     constructor(private props: ReleaseProps, private logger?: Logger) {}
 
     public async exec(): Promise<ReleaseResult> {
-        let groupSection = new GroupConsoleLogs('Fetching artifacts');
+        let groupSection = new GroupConsoleLogs('Fetching artifacts').begin();
         let fetchImpl: FetchImpl = new FetchImpl(
             'artifacts',
             this.props.fetchArtifactScript,
@@ -88,7 +88,7 @@ export default class ReleaseImpl {
             //Remove the last '-' from the name
             releaseName = releaseName.slice(0, -1);
             if (this.props.isGenerateChangelog) {
-                let groupSection = new GroupConsoleLogs('Release changelog');
+                let groupSection = new GroupConsoleLogs('Release changelog').begin();
                 try {
                     let changelogImpl: ChangelogImpl = new ChangelogImpl(
                         this.logger,
@@ -197,7 +197,7 @@ export default class ReleaseImpl {
     ): Promise<{ releaseDefinition: ReleaseDefinitionSchema; result: DeploymentResult }[]> {
         let deploymentResults: { releaseDefinition: ReleaseDefinitionSchema; result: DeploymentResult }[] = [];
         for (const releaseDefinition of releaseDefinitions) {
-            let groupSection = new GroupConsoleLogs(`Release ${releaseDefinition.release}`);
+            let groupSection = new GroupConsoleLogs(`Release ${releaseDefinition.release}`).begin();
             SFPLogger.log(EOL);
 
             this.displayReleaseInfo(releaseDefinition, this.props);
@@ -256,7 +256,7 @@ export default class ReleaseImpl {
             }
         });
 
-        let groupSection = new GroupConsoleLogs('Installing package dependencies');
+        let groupSection = new GroupConsoleLogs('Installing package dependencies').begin();
 
         try {
             let packagesToKeys: { [p: string]: string };
