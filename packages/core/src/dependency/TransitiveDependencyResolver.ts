@@ -9,6 +9,7 @@ const Table = require('cli-table');
 export default class TransitiveDependencyResolver {
 
   private dependencyMap;
+  private updatedprojectConfig: any
 
   constructor(
     private projectConfig: ProjectConfig,
@@ -17,11 +18,13 @@ export default class TransitiveDependencyResolver {
   public async exec(): Promise<ProjectConfig>{
     console.log('Validating Project Dependencies...')
 
+    this.updatedprojectConfig = this.projectConfig
+
     this.dependencyMap = await this.getAllPackageDependencyMap(this.projectConfig);
 
     await this.validateDependency(this.dependencyMap, this.projectConfig)
 
-    return this.dependencyMap
+    return this.updatedprojectConfig
      
   }
 
@@ -59,9 +62,13 @@ export default class TransitiveDependencyResolver {
       let uniqueDependencies =  [...new Set(dependenencies.map(objects => JSON.stringify(objects)))].map(tmpString => JSON.parse(tmpString));
       dependencyMap[pkg] = uniqueDependencies
       console.log(this.printDependencyTable(uniqueDependencies).toString());
+      //Update project config
+      await this.UpdateProjectConfig(pkg, uniqueDependencies)
+
       //fetch dependency for external packages
       if(projectConfig.packageAliases && projectConfig.packageAliases[pkg] && projectConfig.packageAliases[pkg].startsWith('04t')){
         const packageDependencies = await this.ExternalPackageDependencyFetcher(projectConfig.packageAliases[pkg])
+        console.log(packageDependencies)
         if(packageDependencies.length == uniqueDependencies.length){
           console.log('Dependencies verified')
         }else if(packageDependencies.length > uniqueDependencies.length ){
@@ -97,6 +104,11 @@ export default class TransitiveDependencyResolver {
     return await QueryHelper.query<{ Dependencies: any }>(query, this.conn, true);
 
   }
+
+  private async UpdateProjectConfig(packageName: string, fixedDependencies: any){
+    this.updatedprojectConfig.packageDirectories.map(pkg => { if(pkg.package == packageName){return Object.assign(pkg, {dependencies: fixedDependencies})}})
+  }
+
   
 
 }
