@@ -24,6 +24,11 @@ export default class Git {
         return this._git.fetch('origin');
     }
 
+    async getHeadCommit():Promise<string>
+    {
+        return this._git.revparse(['HEAD'])
+    }
+
     async show(options: string[]): Promise<string> {
         return this._git.show(options);
     }
@@ -36,6 +41,7 @@ export default class Git {
 
         return temp;
     }
+
 
     async diff(options: string[]): Promise<string[]> {
         let diffResult = await this._git.diff(options);
@@ -52,6 +58,24 @@ export default class Git {
         return gitLogResult['all'][0]['hash'].split('\n');
     }
 
+    public async getRemoteOriginUrl(overrideOriginURL?: string):Promise<string> {
+        let remoteOriginURL;
+        if (!overrideOriginURL) {
+            remoteOriginURL = (await this._git.getConfig('remote.origin.url')).value;
+            if (!remoteOriginURL) {
+                //add workaround for safe directory (https://github.com/actions/runner/issues/2033)
+                await this._git.addConfig('safe.directory', this.repositoryLocation, false, 'global');
+                remoteOriginURL = (await this._git.getConfig('remote.origin.url')).value;
+            }
+            SFPLogger.log(`Fetched Remote URL ${remoteOriginURL}`, LoggerLevel.DEBUG);
+        } else remoteOriginURL = overrideOriginURL;
+
+    
+        if (!remoteOriginURL) throw new Error('Remote origin must be set in repository');
+
+        return remoteOriginURL;
+    }
+
     public async commitFile(pathToFiles: string[]) {
         try {
             await new GitIdentity(this._git).setUsernameAndEmail();
@@ -66,6 +90,30 @@ export default class Git {
             throw error;
         }
     }
+
+    async pushTags()
+    {
+        await this._git.pushTags();
+    }
+
+
+    async addAnnotatedTag(tagName:string, annotation:string)
+    {
+        try {
+            await new GitIdentity(this._git).setUsernameAndEmail();
+            await this._git.addAnnotatedTag(
+                tagName,
+                annotation
+            );
+        } catch (error) {
+            SFPLogger.log(
+                `Unable to commit file, probably due to no change or something else,Please try manually`,
+                LoggerLevel.ERROR
+            );
+            throw error;
+        }
+    }
+
 
     public async isBranchExists(branch: string): Promise<boolean> {
         const listOfBranches = await this._git.branch(['-la']);
@@ -86,13 +134,13 @@ export default class Git {
         let git = new Git(repoDir, logger);
         git._isATemporaryRepo = true;
         git.tempRepoLocation = locationOfCopiedDirectory;
+        await git.getRemoteOriginUrl();
         await git.fetch();
-
         if (branch) {
             await git.createBranch(branch);
         }
         if (commitRef) {
-            await git.checkout(commitRef,true);
+            await git.checkout(commitRef, true);
         }
 
         SFPLogger.log(
@@ -105,6 +153,7 @@ export default class Git {
 
     static async initiateRepo(logger?: Logger, projectDir?: string) {
         let git = new Git(projectDir, logger);
+        await git.getRemoteOriginUrl();
         return git;
     }
 

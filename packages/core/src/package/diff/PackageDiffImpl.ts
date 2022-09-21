@@ -1,13 +1,13 @@
 const fs = require('fs');
 const path = require('path');
-import Git from '../git/Git';
-import IgnoreFiles from '../ignore/IgnoreFiles';
+import Git from '../../git/Git';
+import IgnoreFiles from '../../ignore/IgnoreFiles';
 import SFPLogger, { COLOR_ERROR, COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import ProjectConfig from '../project/ProjectConfig';
-import GitTags from '../git/GitTags';
+import ProjectConfig from '../../project/ProjectConfig';
+import GitTags from '../../git/GitTags';
 import lodash = require('lodash');
 import { EOL } from 'os';
-import { PackageType } from './SfpPackage';
+import { PackageType } from '../SfpPackage';
 
 export class PackageDiffOptions {
     skipPackageDescriptorChange: boolean = false;

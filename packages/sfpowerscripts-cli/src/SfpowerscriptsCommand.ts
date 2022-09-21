@@ -3,13 +3,10 @@ import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import * as rimraf from 'rimraf';
 import ProjectValidation from './ProjectValidation';
 import DemoReelPlayer from './impl/demoreelplayer/DemoReelPlayer';
-import * as fs from "fs-extra";
-import SFPLogger, {
-    COLOR_HEADER,
-    ConsoleLogger,
-    LoggerLevel,
-} from '@dxatscale/sfp-logger';
+import * as fs from 'fs-extra';
+import SFPLogger, { COLOR_HEADER, ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { OutputFlags } from '@oclif/core/lib/interfaces';
+import GroupConsoleLogs from './ui/GroupConsoleLogs';
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -49,6 +46,10 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         else SFPLogger.enableColor();
 
         this.setLogLevel();
+
+        if (this.flags.logsgroupsymbol) {
+            GroupConsoleLogs.setLogGroupsSymbol(this.flags.logsgroupsymbol);
+        }
 
         if (this.flags.json) {
             SFPLogger.disableLogs();

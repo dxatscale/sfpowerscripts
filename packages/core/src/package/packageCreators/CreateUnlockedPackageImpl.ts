@@ -6,7 +6,7 @@ import { delay } from '../../utils/Delay';
 import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
 import { CreatePackage } from './CreatePackage';
 import CreateUnlockedPackageVersionImpl from '../../sfdxwrappers/CreateUnlockedPackageVersionImpl';
-import PackageEmptyChecker from '../PackageEmptyChecker';
+import PackageEmptyChecker from '../validators/PackageEmptyChecker';
 import PackageVersionCoverage from '../coverage/PackageVersionCoverage';
 import { Connection } from '@salesforce/core';
 import SFPStatsSender from '../../stats/SFPStatsSender';

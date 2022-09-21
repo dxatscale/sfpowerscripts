@@ -1,6 +1,6 @@
 import path from 'path';
 import { readFileSync, existsSync } from 'fs';
-import FileSystem from '../utils/FileSystem';
+import FileSystem from '../../utils/FileSystem';
 import ignore from 'ignore';
 
 export default class PackageEmptyChecker {

@@ -61,10 +61,6 @@ export default class Validate extends SfpowerscriptsCommand {
             description: messages.getMessage('coveragePercentFlagDescription'),
             default: 75,
         }),
-        logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
-        }),
         deletescratchorg: flags.boolean({
             char: 'x',
             description: messages.getMessage('deleteScratchOrgFlagDescription'),
@@ -105,6 +101,10 @@ export default class Validate extends SfpowerscriptsCommand {
         }),
         fastfeedback: flags.boolean({
             description: messages.getMessage('fastfeedbackFlagDescription'),
+        }),
+        logsgroupsymbol: flags.array({
+            char: 'g',
+            description: messages.getMessage('logsGroupSymbolFlagDescription'),
         }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',

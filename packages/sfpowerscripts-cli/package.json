@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfpowerscripts",
-    "description": "A build system for package based development in Salesforce,delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/",
-    "version": "19.7.0",
+    "description": "DX@Scale Toolkit",
+    "version": "19.6.0",
     "author": "dxatscale",
     "release": "September 22",
     "bin": {
@@ -9,9 +9,9 @@
     },
     "bugs": "https://github.com/dxatscale/sfpowerscripts/issues",
     "dependencies": {
-        "@dxatscale/sfdc-soup": "18.2.3",
-        "@dxatscale/sfp-logger": "1.0.2",
-        "@dxatscale/sfpowerscripts.core": "31.5.0",
+        "@dxatscale/sfdc-soup": "18.2.5",
+        "@dxatscale/sfp-logger": "1.1.2",
+        "@dxatscale/sfpowerscripts.core": "32.0.10",
         "@oclif/core": "1.10.0",
         "@oclif/plugin-help": "5.1.12",
         "@salesforce/command": "5.2.1",
@@ -78,7 +78,7 @@
         "commands": "./lib/commands",
         "topics": {
             "sfpowerscripts": {
-                "description": "An opinionated salesforce build system (statsd metrics enabled) as a sfdx plugin that can be implemented in any CI/CD system of choice",
+                "description": "The DX@Scale CI/CD Orchestrator",
                 "external": true,
                 "subtopics": {
                     "releasedefinition": {
