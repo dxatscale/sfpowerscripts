@@ -19,6 +19,7 @@ import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/pack
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git"
+import GroupConsoleLogs from '../../../ui/GroupConsoleLogs';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
@@ -276,6 +277,7 @@ export default class Promote extends SfpowerscriptsCommand {
     }
 
     private publishUsingNpm(sfpPackage: SfpPackage, packageVersionNumber: string, npmrcFilesToCleanup: string[]) {
+        let publishGroupSection = new GroupConsoleLogs(`Publishing ${sfpPackage.packageName}`).begin();
         let artifactRootDirectory = path.dirname(sfpPackage.sourceDir);
 
         // NPM does not accept packages with uppercase characters
@@ -309,10 +311,11 @@ export default class Promote extends SfpowerscriptsCommand {
             );
         }
 
+
         child_process.execSync(cmd, {
             cwd: artifactRootDirectory,
-            stdio: 'ignore',
         });
+        publishGroupSection.end();
     }
 
     private publishUsingScript(packageName: string, packageVersionNumber: string, artifact: string) {
