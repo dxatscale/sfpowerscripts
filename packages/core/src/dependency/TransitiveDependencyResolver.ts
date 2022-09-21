@@ -28,7 +28,7 @@ export default class TransitiveDependencyResolver {
      
   }
 
-  private getAllPackageDependencyMap(projectConfig: any): {} {
+  private getAllPackageDependencyMap(projectConfig: any): any {
     let pkgWithDependencies = {}
     let packages = projectConfig.packageDirectories
     for(let pkg of packages){
