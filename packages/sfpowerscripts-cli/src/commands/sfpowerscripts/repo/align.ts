@@ -164,7 +164,7 @@ export default class Align extends SfpowerscriptsCommand {
 
     private async overwriteModules(releaseDefinitions: ReleaseDefinitionSchema[], git: Git, logger: Logger) {
         let temporaryWorkingDirectory = git.getRepositoryPath();
-        let sfdxProjectConfigInSourceBranch = ProjectConfig.getSFDXProjectConfig(temporaryWorkingDirectory);
+        let revisedProjectConfig = ProjectConfig.getSFDXProjectConfig(temporaryWorkingDirectory);
         for (const releaseDefinition of releaseDefinitions) {
             let revisedArtifactDirectory = path.join(
                 'artifacts',
@@ -181,26 +181,31 @@ export default class Align extends SfpowerscriptsCommand {
             //Grab the latest projectConfig from Packages
             let sfpPackageInquirer: SfpPackageInquirer = new SfpPackageInquirer(sfpPackages, logger);
             let sfdxProjectConfigFromLeadingArtifact = sfpPackageInquirer.getLatestProjectConfig();
+           
 
             let idx = 0;
             for (const sfpPackage of sfpPackages) {
                 SFPLogger.log(`Processing package ${sfpPackage.packageName}`);
-                //Retrieve the project directory from target
-                let targetPackageDescriptorFromConfig;
+
+                let packageDescriptorFromArtifact=ProjectConfig.getPackageDescriptorFromConfig(
+                    sfpPackage.packageName,
+                    sfdxProjectConfigFromLeadingArtifact
+                );
+
+
+                //Retrieve the project directory path from the current working directory and remove it
                 try {
-                    targetPackageDescriptorFromConfig = ProjectConfig.getPackageDescriptorFromConfig(
+                    //Find path
+                    let pathToPackageInSourceBranch = ProjectConfig.getPackageDescriptorFromConfig(
                         sfpPackage.packageName,
-                        sfdxProjectConfigInSourceBranch
-                    );
+                        revisedProjectConfig
+                    ).path;
                     //Remove the path mentioned in the target path
-                    fs.removeSync(path.join(temporaryWorkingDirectory, targetPackageDescriptorFromConfig.path));
+                    fs.removeSync(path.join(temporaryWorkingDirectory, pathToPackageInSourceBranch));
                 } catch (error) {
-                    //Package not found
-                    targetPackageDescriptorFromConfig = ProjectConfig.getPackageDescriptorFromConfig(
-                        sfpPackage.packageName,
-                        sfdxProjectConfigFromLeadingArtifact
-                    );
+                    //Package not found, do nothing
                 }
+
                 //Create new path as mentioned in artifact
                 fs.mkdirpSync(path.join(temporaryWorkingDirectory, sfpPackage.packageDirectory));
 
@@ -216,14 +221,14 @@ export default class Align extends SfpowerscriptsCommand {
                     LoggerLevel.INFO
                 );
 
-                //Find package index
-                let packageIndex = this.getPackageIndex(sfpPackage.packageName, sfdxProjectConfigInSourceBranch);
+                //Find package index and replace the descriptor from the artifact
+                let packageIndex = this.getPackageIndex(sfpPackage.packageName, revisedProjectConfig);
                 if (packageIndex != -1) {
-                    sfdxProjectConfigInSourceBranch.packageDirectories = sfdxProjectConfigInSourceBranch.packageDirectories.map(
+                    revisedProjectConfig.packageDirectories = revisedProjectConfig.packageDirectories.map(
                         (sfdxPackage) => {
                             if (sfdxPackage.package == sfpPackage.packageName) {
-                                delete sfpPackage.packageDescriptor.default;
-                                return sfpPackage.packageDescriptor;
+                                delete packageDescriptorFromArtifact.default;
+                                return packageDescriptorFromArtifact;
                             } else {
                                 return sfdxPackage;
                             }
@@ -235,21 +240,21 @@ export default class Align extends SfpowerscriptsCommand {
                     while (true) {
                         if ((currentIdx = -1)) {
                             //There is no package above me to anchor. so just add it 0
-                            sfdxProjectConfigInSourceBranch.packageDirectories.splice(
+                            revisedProjectConfig.packageDirectories.splice(
                                 0,
                                 0,
-                                sfpPackage.packageDescriptor
+                                packageDescriptorFromArtifact
                             );
                         } else {
                             packageIndex = this.getPackageIndex(
                                 sfpPackages[currentIdx].packageName,
-                                sfdxProjectConfigInSourceBranch
+                                revisedProjectConfig
                             );
                             if (packageIndex >= 0) {
-                                sfdxProjectConfigInSourceBranch.packageDirectories.splice(
+                                revisedProjectConfig.packageDirectories.splice(
                                     packageIndex,
                                     0,
-                                    sfpPackage.packageDescriptor
+                                    packageDescriptorFromArtifact
                                 );
                             } else currentIdx--;
                         }
@@ -258,7 +263,7 @@ export default class Align extends SfpowerscriptsCommand {
                 //Write sfdx project.json immediately
                 fs.writeJSONSync(
                     path.join(temporaryWorkingDirectory, 'sfdx-project.json'),
-                    sfdxProjectConfigInSourceBranch,
+                    revisedProjectConfig,
                     {
                         spaces: 4,
                     }
