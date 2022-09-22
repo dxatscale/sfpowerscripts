@@ -59,8 +59,19 @@ describe("Given a TransitiveDependencyResolver", () => {
     const resolvedProjectConfig: any = await transitiveDependencyResolver.exec();
 
     let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "candidate-management");
-    let coreDependency = packageDescriptor.dependencies.find(dependency => dependency.package === "temp");
-    expect(coreDependency.versionNumber).toBe("1.0.0.LATEST");
+    let tempDependency = packageDescriptor.dependencies.find(dependency => dependency.package === "temp");
+    expect(tempDependency.versionNumber).toBe("1.0.0.LATEST");
+  });
+
+  it("should resolve package dependencies in the same order as its dependent packages", async () => {
+    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
+    const resolvedProjectConfig: any = await transitiveDependencyResolver.exec();
+
+    let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "candidate-management");
+    let tempIndex = packageDescriptor.dependencies.findIndex(dependency => dependency.package === "temp");
+    let baseIndex = packageDescriptor.dependencies.findIndex(dependency => dependency.package === "base");
+    expect(tempIndex).toBe(2);
+    expect(baseIndex).toBe(1);
   });
 
 
@@ -71,11 +82,24 @@ describe("Given a TransitiveDependencyResolver", () => {
 const projectConfig = {
   packageDirectories: [
       {
+      path: 'packages/base',
+      default: true,
+      package: 'base',
+      versionName: 'temp',
+      versionNumber: '1.0.2.NEXT',
+      },
+      {
           path: 'packages/temp',
           default: true,
           package: 'temp',
           versionName: 'temp',
           versionNumber: '1.0.0.NEXT',
+          dependencies: [
+            {
+              package: 'base',
+              versionNumber: '1.0.2.LATEST'
+            }
+          ] 
       },
       {
           path: 'packages/core',
@@ -88,7 +112,7 @@ const projectConfig = {
               package: 'temp',
               versionNumber: '1.0.0.LATEST'
             }
-          ]
+          ] 
       },
       {
           path: 'packages/candidate-management',

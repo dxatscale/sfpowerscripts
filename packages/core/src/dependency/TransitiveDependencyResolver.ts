@@ -3,6 +3,7 @@ import ProjectConfig from '../project/ProjectConfig';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_ERROR } from '@dxatscale/sfp-logger';
 import QueryHelper from '../queryHelper/QueryHelper';
 import { Connection } from '@salesforce/core';
+import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 const Table = require('cli-table');
 
 
@@ -13,10 +14,11 @@ export default class TransitiveDependencyResolver {
 
   constructor(
     private projectConfig: ProjectConfig,
-    private conn: Connection 
+    private conn: Connection,
+    private logger?: Logger,
     ){}
   public async exec(): Promise<ProjectConfig>{
-    console.log('Validating Project Dependencies...')
+    SFPLogger.log('Validating Project Dependencies...', LoggerLevel.INFO);
 
     this.updatedprojectConfig = this.projectConfig
 
@@ -28,7 +30,7 @@ export default class TransitiveDependencyResolver {
      
   }
 
-  private getAllPackageDependencyMap(projectConfig: any): any {
+  private getAllPackageDependencyMap(projectConfig: any): {[key: string]: Dependency[]} {
     let pkgWithDependencies = {}
     let packages = projectConfig.packageDirectories
     for(let pkg of packages){
@@ -49,30 +51,29 @@ export default class TransitiveDependencyResolver {
       let dependenencies = []
       for(let dependency of dependencyMap[pkg]){
         if(dependencyMap[dependency.package]){
-          console.log(`pushing ${dependencyMap[dependency.package].length} dependencies from package ${dependency.package}`)
+          SFPLogger.log(`pushing ${dependencyMap[dependency.package].length} dependencies from package ${dependency.package}`, LoggerLevel.INFO)
           for( let temp of dependencyMap[dependency.package]){
             dependenencies.push(temp)
           }          
         }else{
-          console.log(`no dependency found for ${dependency.package} in the map`)
+          SFPLogger.log(`no dependency found for ${dependency.package} in the map`, LoggerLevel.INFO)
         }
         dependenencies.push(dependency)
       }
       //deduplicate dependency list
       let uniqueDependencies =  [...new Set(dependenencies.map(objects => JSON.stringify(objects)))].map(tmpString => JSON.parse(tmpString));
       dependencyMap[pkg] = uniqueDependencies
-      console.log(this.printDependencyTable(uniqueDependencies).toString());
+      SFPLogger.log(this.printDependencyTable(uniqueDependencies).toString(), LoggerLevel.INFO);
       //Update project config
       await this.UpdateProjectConfig(pkg, uniqueDependencies)
 
       //fetch dependency for external packages
       if(projectConfig.packageAliases && projectConfig.packageAliases[pkg] && projectConfig.packageAliases[pkg].startsWith('04t')){
         const packageDependencies = await this.ExternalPackageDependencyFetcher(projectConfig.packageAliases[pkg])
-        console.log(packageDependencies)
         if(packageDependencies.length == uniqueDependencies.length){
-          console.log('Dependencies verified')
+          SFPLogger.log('Dependencies verified', LoggerLevel.INFO)
         }else if(packageDependencies.length > uniqueDependencies.length ){
-          console.log('Missing dependencies')
+          SFPLogger.log('Missing dependencies', LoggerLevel.INFO)
         }
       }
 
@@ -108,7 +109,13 @@ export default class TransitiveDependencyResolver {
   private async UpdateProjectConfig(packageName: string, fixedDependencies: any){
     this.updatedprojectConfig.packageDirectories.map(pkg => { if(pkg.package == packageName){return Object.assign(pkg, {dependencies: fixedDependencies})}})
   }
+  
 
   
 
+}
+
+interface Dependency {
+  packagename: string;
+  versionNumber: string;
 }

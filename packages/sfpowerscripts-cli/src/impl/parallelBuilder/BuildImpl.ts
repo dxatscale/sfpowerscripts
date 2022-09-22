@@ -26,6 +26,7 @@ import PackageDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/packag
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/dependency/TransitiveDependencyResolver';
+import { Connection } from '@salesforce/core';
 
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
@@ -90,13 +91,13 @@ export default class BuildImpl {
 
         //Validate dependencies in sfdx-project.json // Read Manifest
         this.projectConfig = ProjectConfig.getSFDXProjectConfig(this.props.projectDirectory);
-        const transitiveDependencyResolver = new TransitiveDependencyResolver(this.projectConfig, this.sfpOrg.getConnection());
-        this.projectConfig = await transitiveDependencyResolver.exec();
 
         SFPLogger.log(`Invoking build...`, LoggerLevel.INFO);
         let git = await Git.initiateRepo(new ConsoleLogger())
         this.repository_url = await git.getRemoteOriginUrl(this.props.repourl);    
         this.commit_id = await git.getHeadCommit();
+
+        this.projectConfig = this.resolvePackageDependencies(this.projectConfig, this.sfpOrg.getConnection())
 
         this.packagesToBeBuilt = this.getAllPackages(this.props.projectDirectory);
 
@@ -602,6 +603,11 @@ export default class BuildImpl {
             configFiles = this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.packages
         }
         return configFiles
+    }
+
+    private resolvePackageDependencies(projectConfig: any, conn: Connection){
+        const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
+        return transitiveDependencyResolver.exec();
     }
   
 }
