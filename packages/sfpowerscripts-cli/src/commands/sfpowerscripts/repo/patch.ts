@@ -17,14 +17,15 @@ import * as fs from 'fs-extra';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import { EOL } from 'os';
 import { COLOR_WARNING } from '@dxatscale/sfp-logger';
+import { COLOR_HEADER } from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'align');
+const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'patch');
 
-export default class Align extends SfpowerscriptsCommand {
+export default class Patch extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfdx sfpowerscripts:repo:align -n <releaseName>`];
+    public static examples = [`$ sfdx sfpowerscripts:repo:patch -n <releaseName>`];
 
     protected static requiresProject = true;
     protected static requiresDevhubUsername = false;
@@ -93,12 +94,26 @@ export default class Align extends SfpowerscriptsCommand {
         try {
             let logger: Logger = new ConsoleLogger();
 
-            //Load release definition
             SFPLogger.log(
-                COLOR_KEY_MESSAGE(`Release Defintion: ${this.flags.releasedefinitions}`),
+                COLOR_HEADER(`Source Branch: ${this.flags.sourcebranchname}`),
                 LoggerLevel.INFO,
                 logger
             );
+            SFPLogger.log(
+                COLOR_HEADER(`Release Defintion: ${this.flags.releasedefinitions}`),
+                LoggerLevel.INFO,
+                logger
+            );
+            SFPLogger.log(
+                COLOR_HEADER(`Target Branch: ${this.flags.targetbranchname}`),
+                LoggerLevel.INFO,
+                logger
+            );
+            SFPLogger.log(
+                COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+            );
+
+            //Load release definition
             let releaseDefinitions = await this.loadReleaseDefintions(this.flags.releasedefinitions);
 
             SFPLogger.log(EOL, LoggerLevel.INFO, logger);
@@ -122,21 +137,16 @@ export default class Align extends SfpowerscriptsCommand {
 
             SFPLogger.log(
                 COLOR_KEY_MESSAGE(
-                    `Align of Branch  ${this.flags.targetbranchname} with release  ${this.flags.releasedefinitions} completed`
+                    `Patching of Branch  ${this.flags.targetbranchname} with release  ${this.flags.releasedefinitions} completed`
                 ),
                 LoggerLevel.INFO
             );
-            SFPLogger.log(COLOR_KEY_MESSAGE(`New Branch created ${this.flags.targetbranchname}`), LoggerLevel.INFO);
+            SFPLogger.log(COLOR_KEY_MESSAGE(`New Branch with patches created ${this.flags.targetbranchname}`), LoggerLevel.INFO);
         } finally {
             if (git) await git.deleteTempoRepoIfAny();
         }
     }
 
-    private getTag(packageName: string, packageVersionNumber: string) {
-        let revisedVersionNumber = packageVersionNumber.replace('-', '.');
-        let tagName = packageName.concat('_v', revisedVersionNumber);
-        return tagName;
-    }
 
     private async fetchArtifacts(
         releaseDefintions: ReleaseDefinitionSchema[],
@@ -275,6 +285,8 @@ export default class Align extends SfpowerscriptsCommand {
                         [sfpPackage.packageDescriptor.path, 'sfdx-project.json'],
                         `Reset ${sfpPackage.packageName} to ${sfpPackage.package_version_number}`
                     );
+                    await git.addAnnotatedTag(`${sfpPackage.packageName}_v${sfpPackage.package_version_number}-ALIGN`,
+                     `${sfpPackage.packageName} ${sfpPackage.packageType} Package ${sfpPackage.package_version_number}`);
                 } catch (error) {
                     //Ignore
                 }
@@ -290,6 +302,7 @@ export default class Align extends SfpowerscriptsCommand {
         }
         //Push back
         await git.pushToRemote(this.flags.targetbranchname, true);
+        await git.pushTags();
     }
 
     private async generateSfpPackageFromArtifacts(artifacts: Artifact[], logger: Logger): Promise<SfpPackage[]> {

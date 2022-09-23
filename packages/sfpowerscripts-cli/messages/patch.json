@@ -1,5 +1,5 @@
 {
-    "commandDescription": "[Alpha] Align a branch in the repository as per the release definition",
+    "commandDescription": "[Alpha] Patch a branch in the repository as per the release definition and create a new branch",
     "releaseDefinitionFlagDescription": "Path to release definiton yaml",
     "sourcebranchNameFlagDescription": "Name of the source branch to be used on which the alignment need to be applied",
     "targetbranchNameFlagDescription": "Name of the target branch to be created after the alignment",
