@@ -67,9 +67,11 @@ export default class PrepareImpl {
         rimraf.sync('artifacts');
         fs.mkdirpSync('artifacts');
 
+        // Fetch all or only specified latest Artifacts to Artifact Directory
         if (this.pool.installAll) {
-            // Fetch Latest Artifacts to Artifact Directory
-            await this.getPackageArtifacts();
+            await this.getPackageArtifacts(null);
+        } else if (this.pool.fetchArtifacts?.npm?.artifacts) {
+            await this.getPackageArtifacts(this.pool.fetchArtifacts.npm.artifacts);
         }
 
         let prepareASingleOrgImpl: PrepareOrgJob = new PrepareOrgJob(this.pool, externalPackage2s);
@@ -151,17 +153,10 @@ export default class PrepareImpl {
         }
     }
 
-    private async getPackageArtifacts() {
-        //Filter Packages to be ignore from prepare to be fetched
+    private async getPackageArtifacts(artifacts: string[]) {
+        //Filter Packages to be ignored from prepare to be fetched
         let packages = ProjectConfig.getAllPackageDirectoriesFromDirectory(null).filter((pkg) => {
-            if (
-                pkg.ignoreOnStage?.find((stage) => {
-                    stage = stage.toLowerCase();
-                    return stage === 'prepare';
-                })
-            )
-                return false;
-            else return true;
+            return this.isPkgToBeInstalled(pkg, artifacts);
         });
 
         let artifactFetcher: FetchAnArtifact;
@@ -226,5 +221,17 @@ export default class PrepareImpl {
                 this.artifactFetchedCount++;
             }
         }
+    }
+    
+    private isPkgToBeInstalled(pkg, artifacts: string[]): boolean {
+        pkg.ignoreOnStage?.find((stage) => {
+            stage = stage.toLowerCase();
+            if (stage === 'prepare')
+                return false;
+        })
+        if(artifacts == null)
+            return true;
+        else
+            return artifacts.includes(pkg.package);
     }
 }

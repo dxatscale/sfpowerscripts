@@ -19,6 +19,7 @@ export interface PoolConfig {
         npm?: {
             npmrcPath?: string;
             scope: string;
+            artifacts?: [];
         };
     };
     snapshotPool?:string;
@@ -32,6 +33,5 @@ export interface PoolConfig {
     to_satisfy_max?: number;
     scratchOrgs?: ScratchOrg[];
     failedToCreate?: number;
-
 
 }

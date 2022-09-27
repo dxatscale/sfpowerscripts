@@ -90,7 +90,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
             if (this.pool.enableVlocity)
                 await this.prepareVlocityDataPacks(scratchOrg, invidualScratchOrgLogFile, logLevel);
             let deploymentSucceed;
-            if (this.pool.installAll) {
+            if (this.pool.installAll || this.pool.fetchArtifacts?.npm?.artifacts) {
                 let deploymentResult: DeploymentResult;
 
                 let deploymentMode: DeploymentMode;
@@ -100,7 +100,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
                     deploymentMode = DeploymentMode.SOURCEPACKAGES;
                 }
 
-                deploymentResult = await this.deployAllPackagesInTheRepo(
+                deploymentResult = await this.deployAllFetchedArtifacts(
                     scratchOrg,
                     invidualScratchOrgLogFile,
                     deploymentMode
@@ -146,13 +146,13 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         }
     }
 
-    private async deployAllPackagesInTheRepo(
+    private async deployAllFetchedArtifacts(
         scratchOrg: ScratchOrg,
         packageLogger: any,
         deploymentMode: DeploymentMode
     ) {
-        SFPLogger.log(`Deploying all packages in the repo to  ${scratchOrg.alias}`);
-        SFPLogger.log(`Deploying all packages in the repo to  ${scratchOrg.alias}`, LoggerLevel.INFO, packageLogger);
+        SFPLogger.log(`Deploying packages in the repo to  ${scratchOrg.alias}`);
+        SFPLogger.log(`Deploying packages in the repo to  ${scratchOrg.alias}`, LoggerLevel.INFO, packageLogger);
 
         let deployProps: DeployProps = {
             targetUsername: scratchOrg.username,
