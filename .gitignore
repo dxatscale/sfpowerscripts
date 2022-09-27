@@ -8,6 +8,7 @@ packages/azpipelines/.taskkey
 lerna-debug.log
 tmp/
 oclif.manifest.json
+.idea
 
  packages/azpipelines_release_management_extensions/BuildTasks/ManageReleaseTask/*
 
