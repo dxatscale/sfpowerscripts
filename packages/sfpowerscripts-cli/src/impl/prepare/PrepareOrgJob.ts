@@ -228,11 +228,19 @@ export default class PrepareOrgJob extends PoolJobExecutor {
     //Fetch all checkpoints
     private getcheckPointPackages(logger: FileLogger) {
         SFPLogger.log('Fetching checkpoints for prepare if any.....', LoggerLevel.INFO, logger);
+        let onlySpecifiedArtifactsToInstall = this.pool.fetchArtifacts?.npm?.artifacts;
 
         let checkPointPackages = [];
-        ProjectConfig.getAllPackageDirectoriesFromDirectory(null).forEach((pkg) => {
-            if (pkg.checkpointForPrepare) checkPointPackages.push(pkg['package']);
-        });
+        if (!onlySpecifiedArtifactsToInstall) {
+            ProjectConfig.getAllPackageDirectoriesFromDirectory(null).forEach((pkg) => {
+                if (pkg.checkpointForPrepare) checkPointPackages.push(pkg['package']);
+            });
+        } else {
+            ProjectConfig.getAllPackageDirectoriesFromDirectory(null).forEach((pkg) => {
+                if (pkg.checkpointForPrepare && onlySpecifiedArtifactsToInstall.includes(pkg.package))
+                    checkPointPackages.push(pkg['package']);
+            });
+        }
         return checkPointPackages;
     }
 
