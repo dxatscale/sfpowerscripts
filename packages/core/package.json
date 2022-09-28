@@ -24,7 +24,7 @@
         "@newrelic/telemetry-sdk": "^0.6.0",
         "@salesforce/apex-node": "1.1.0",
         "@salesforce/command": "4.2.2",
-        "@salesforce/core": "3.24.5",
+        "@salesforce/core": "3.30.8",
         "@salesforce/source-deploy-retrieve": "6.8.2",
         "@salesforce/source-tracking": "2.2.1",
         "adm-zip": "^0.5.6",
