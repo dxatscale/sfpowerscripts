@@ -1,7 +1,7 @@
 import Component from './Component';
 import DependencyViolation from './DependencyViolation';
 import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
-import PackageManifest from '../package/PackageManifest';
+import PackageManifest from '../package/components/PackageManifest';
 import ProjectConfig from '../project/ProjectConfig';
 import * as fs from 'fs-extra';
 import DependencyFetcher from './DependencyFetcher';

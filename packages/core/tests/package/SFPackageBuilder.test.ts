@@ -66,7 +66,7 @@ jest.mock('../../src/package/packageFormatConvertors/SourceToMDAPIConvertor', ()
     return SourceToMDAPIConvertor;
 });
 
-jest.mock('../../src/package/MetadataCount', () => {
+jest.mock('../../src/package/components/MetadataCount', () => {
     class MetadataCount {
         static getMetadataCount = jest.fn().mockReturnValue(20);
     }

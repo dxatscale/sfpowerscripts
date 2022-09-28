@@ -41,11 +41,19 @@ export default class InstallUnlockedPackageCollection {
                     ) {
                         SFPLogger.log(
                             `A higher version of this package is already installed and cant be dowgraded,skipping`,
-                            LoggerLevel.INFO,
+                            LoggerLevel.WARN,
                             this.logger
                         );
                         continue;
-                    } else throw error;
+                    } else 
+                    {
+                        SFPLogger.log(
+                            `Unable to install ${package2.name}  in ${this.sfpOrg.getUsername()} due to ${message}`,
+                            LoggerLevel.ERROR,
+                            this.logger
+                        );
+                        throw error;
+                    }
                 }
             } else {
                 SFPLogger.log(

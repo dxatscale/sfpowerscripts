@@ -1,4 +1,4 @@
-import { Release } from './ReleaseChangelogInterfaces';
+import { Release } from './ReleaseChangelog';
 import { Changelog as PackageChangelog } from '@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces';
 import ReadPackageChangelog from './ReadPackageChangelog';
 

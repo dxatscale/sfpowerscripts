@@ -1,6 +1,6 @@
 import { expect } from '@jest/globals';
 import OrgsUpdater from '../../../src/impl/changelog/OrgsUpdater';
-import { ReleaseChangelog, Release, ReleaseId } from '../../../src/impl/changelog/ReleaseChangelogInterfaces';
+import { ReleaseChangelog, Release, ReleaseId } from '../../../src/impl/changelog/ReleaseChangelog';
 import lodash = require('lodash');
 
 describe('Given an OrgsUpdater', () => {

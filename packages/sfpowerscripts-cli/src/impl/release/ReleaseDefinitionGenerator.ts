@@ -143,16 +143,18 @@ export default class ReleaseDefinitionGenerator {
             }
         }
 
-        let allExternalPackages = ProjectConfig.getAllExternalPackages(projectConfig);
-        for (const externalPackage of allExternalPackages) {
-            if (
-                this.getDependencyPredicate(externalPackage.alias) &&
-                externalPackage.Package2IdOrSubscriberPackageVersionId.startsWith('04t')
-            ) {
-                packageDependencies[externalPackage.alias] = externalPackage.Package2IdOrSubscriberPackageVersionId;
+        if (!this.releaseDefinitionGeneratorConfigSchema.excludeAllPackageDependencies) {
+            let allExternalPackages = ProjectConfig.getAllExternalPackages(projectConfig);
+            for (const externalPackage of allExternalPackages) {
+                if (
+                    this.getDependencyPredicate(externalPackage.alias) &&
+                    externalPackage.Package2IdOrSubscriberPackageVersionId.startsWith('04t')
+                ) {
+                    packageDependencies[externalPackage.alias] = externalPackage.Package2IdOrSubscriberPackageVersionId;
+                }
             }
         }
-        
+
         return { artifacts, packageDependencies };
     }
 

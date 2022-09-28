@@ -1,21 +1,21 @@
 {
     "name": "@dxatscale/sfpowerscripts",
-    "description": "A build system for package based development in Salesforce,delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://dxatscale.gitbook.io/sfpowerscripts/",
-    "version": "19.4.1",
+    "description": "DX@Scale Toolkit",
+    "version": "19.7.3",
     "author": "dxatscale",
-    "release": "August 22",
+    "release": "September 22",
     "bin": {
         "readVars": "./scripts/readVars.sh"
     },
     "bugs": "https://github.com/dxatscale/sfpowerscripts/issues",
     "dependencies": {
-        "@dxatscale/sfdc-soup": "18.2.3",
-        "@dxatscale/sfp-logger": "1.0.2",
-        "@dxatscale/sfpowerscripts.core": "31.1.0",
+        "@dxatscale/sfdc-soup": "18.2.4",
+        "@dxatscale/sfp-logger": "1.1.1",
+        "@dxatscale/sfpowerscripts.core": "32.2.3",
         "@oclif/core": "1.10.0",
         "@oclif/plugin-help": "5.1.12",
         "@salesforce/command": "5.2.1",
-        "@salesforce/core": "3.24.5",
+        "@salesforce/core": "3.30.8",
         "adm-zip": "^0.5.4",
         "ajv": "8.11.0",
         "async-retry": "^1.3.1",
@@ -78,7 +78,7 @@
         "commands": "./lib/commands",
         "topics": {
             "sfpowerscripts": {
-                "description": "An opinionated salesforce build system (statsd metrics enabled) as a sfdx plugin that can be implemented in any CI/CD system of choice",
+                "description": "The DX@Scale CI/CD Orchestrator",
                 "external": true,
                 "subtopics": {
                     "releasedefinition": {
@@ -113,6 +113,9 @@
                     },
                     "apextests": {
                         "description": "Trigger Apex Tests and validate apex tests in a package"
+                    },
+                    "repo": {
+                        "description": "Commands to help with maintaing repository"
                     }
                 }
             }

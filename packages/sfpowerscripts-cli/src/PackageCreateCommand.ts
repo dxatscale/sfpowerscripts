@@ -1,15 +1,15 @@
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger } from '@dxatscale/sfp-logger';
-import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
+import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
 import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import { EOL } from 'os';
 import SfpowerscriptsCommand from './SfpowerscriptsCommand';
-import simplegit from 'simple-git';
 import GitIdentity from '@dxatscale/sfpowerscripts.core/lib/git/GitIdentity';
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 const fs = require('fs-extra');
+import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create-package');
@@ -115,11 +115,9 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
         } else isToRunBuild = true;
 
         if (isToRunBuild) {
-            let git = simplegit();
-            if (this.flags.repourl == null) {
-                this.repositoryURL = (await git.getConfig('remote.origin.url')).value;
-            } else this.repositoryURL = this.flags.repourl;
-            this.commitId = await git.revparse(['HEAD']);
+            let git = await Git.initiateRepo(new ConsoleLogger());
+            this.repositoryURL = await git.getRemoteOriginUrl(this.flags.repourl);
+            this.commitId = await git.getHeadCommit();
         }
         return isToRunBuild;
     }
@@ -132,16 +130,10 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
         this.printPackageDetails(sfpPackage);
 
         if (this.flags.gittag) {
-            let git = simplegit();
-
-            await new GitIdentity(git).setUsernameAndEmail();
-
+           
+            let git = await Git.initiateRepo(new ConsoleLogger());
             let tagname = `${this.sfdxPackage}_v${sfpPackage.package_version_number}`;
-            console.log(`Creating tag ${tagname}`);
-            await git.addAnnotatedTag(
-                tagname,
-                `${sfpPackage.packageName} sfpowerscripts package ${sfpPackage.package_version_number}`
-            );
+            await git.addAnnotatedTag(tagname, `${sfpPackage.packageName} sfpowerscripts package ${sfpPackage.package_version_number}`)
 
             sfpPackage.tag = tagname;
         }
