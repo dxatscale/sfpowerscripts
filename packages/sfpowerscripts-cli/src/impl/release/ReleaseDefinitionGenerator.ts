@@ -120,7 +120,7 @@ export default class ReleaseDefinitionGenerator {
         let gitRepository = git;
 
         headCommit = await git.getCurrentCommitId();
-        git.checkout(this.gitRef, true);
+        await git.checkout(this.gitRef, true);
 
         let projectConfig = ProjectConfig.getSFDXProjectConfig(gitRepository.getRepositoryPath());
         //Read sfdx project json
