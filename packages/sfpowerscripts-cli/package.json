@@ -1,9 +1,9 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "19.7.4",
+    "version": "19.8.0",
     "author": "dxatscale",
-    "release": "September 22",
+    "release": "October 22",
     "bin": {
         "readVars": "./scripts/readVars.sh"
     },
