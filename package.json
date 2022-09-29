@@ -2,7 +2,8 @@
     "name": "sfpowerscripts",
     "private": true,
     "scripts": {
-        "format": "npx prettier --write ."
+        "format": "npx prettier --write .",
+        "deps":" depcruise --exclude '(node_modules|tests|resources|coverage|lib|index.ts|.babel.config.js|jest.config.js)' --ts-pre-compilation-deps --output-type dot  packages | dot -T svg > dependencygraph.svg"
     },
     "devDependencies": {
         "@commitlint/cli": "^15.0.0",
@@ -13,7 +14,7 @@
         "@types/node": "^10",
         "@types/q": "^1.5.2",
         "@types/xml2js": "^0.4.5",
-        "lerna": "^5.1.8",
+        "lerna": "5.5.2",
         "lerna-update-wizard": "^1.1.0",
         "prettier": "^2.0.5",
         "rimraf": "^3.0.2",
@@ -24,7 +25,6 @@
         "typescript": "^4.0.2"
     },
     "dependencies": {
-        "@dxatscale/sfp-logger": "1.0.2",
         "neverthrow": "^4.2.1"
     }
 }

@@ -1,19 +1,18 @@
 import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
-import FetchImpl from '../artifacts/FetchImpl';
 import DeployImpl, { DeployProps, DeploymentMode, DeploymentResult } from '../deploy/DeployImpl';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { Stage } from '../Stage';
-import child_process = require('child_process');
 import ReleaseError from '../../errors/ReleaseError';
 import ChangelogImpl from '../../impl/changelog/ChangelogImpl';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import { Release } from '../changelog/ReleaseChangelogInterfaces';
+import { Release } from '../changelog/ReleaseChangelog';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import path = require('path');
 import { EOL } from 'os';
 import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
 import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
-
+import FetchImpl from '../artifacts/FetchImpl';
+import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
 
 export interface ReleaseProps {
     releaseDefinitions: ReleaseDefinitionSchema[];
@@ -30,24 +29,23 @@ export interface ReleaseProps {
     isGenerateChangelog: boolean;
     devhubUserName: string;
     branch: string;
-    directory:string;
+    directory: string;
 }
 
 export default class ReleaseImpl {
-    constructor(private props: ReleaseProps,private logger?:Logger) {}
+    constructor(private props: ReleaseProps, private logger?: Logger) {}
 
     public async exec(): Promise<ReleaseResult> {
-        this.printOpenLoggingGroup('Fetching artifacts');
+        let groupSection = new GroupConsoleLogs('Fetching artifacts').begin();
         let fetchImpl: FetchImpl = new FetchImpl(
-            this.props.releaseDefinitions,
             'artifacts',
             this.props.fetchArtifactScript,
-            this.props.isNpm,
             this.props.scope,
-            this.props.npmrcPath
+            this.props.npmrcPath,
+            this.logger
         );
-        await fetchImpl.exec();
-        this.printClosingLoggingGroup();
+        await fetchImpl.fetchArtifacts(this.props.releaseDefinitions);
+        groupSection.end();
 
         let installDependenciesResult: InstallDependenciesResult;
         installDependenciesResult = await this.installPackageDependencies(
@@ -79,7 +77,7 @@ export default class ReleaseImpl {
             let workItemUrl: string;
             let showAllArtifacts: boolean = false;
             for (const releaseDefinition of this.props.releaseDefinitions) {
-                releaseName = releaseName.concat(releaseDefinition.release,'-')
+                releaseName = releaseName.concat(releaseDefinition.release, '-');
                 if (releaseDefinition.changelog) {
                     workitemFilters.push(releaseDefinition.changelog?.workItemFilters);
                     if (releaseDefinition.changelog.limit > limit) limit = releaseDefinition.changelog.limit;
@@ -87,48 +85,51 @@ export default class ReleaseImpl {
                     showAllArtifacts = releaseDefinition.changelog.showAllArtifacts;
                 }
             }
-           //Remove the last '-' from the name
-            releaseName = releaseName.slice(0,-1);
+            //Remove the last '-' from the name
+            releaseName = releaseName.slice(0, -1);
             if (this.props.isGenerateChangelog) {
-                this.printOpenLoggingGroup('Release changelog');
+                let groupSection = new GroupConsoleLogs('Release changelog').begin();
+                try {
+                    let changelogImpl: ChangelogImpl = new ChangelogImpl(
+                        this.logger,
+                        'artifacts',
+                        releaseName,
+                        workitemFilters,
+                        limit,
+                        workItemUrl,
+                        showAllArtifacts,
+                        this.props.directory,
+                        false,
+                        this.props.branch,
+                        false,
+                        this.props.isDryRun,
+                        this.props.targetOrg
+                    );
 
-                let changelogImpl: ChangelogImpl = new ChangelogImpl(
-                    this.logger,
-                    'artifacts',
-                    releaseName,
-                    workitemFilters,
-                    limit,
-                    workItemUrl,
-                    showAllArtifacts,
-                    this.props.directory,
-                    false,
-                    this.props.branch,
-                    false,
-                    this.props.isDryRun,
-                    this.props.targetOrg
-                );
+                    let releaseChangelog = await changelogImpl.exec();
 
-                let releaseChangelog = await changelogImpl.exec();
+                    const aggregatedNumberOfWorkItemsInRelease = this.getAggregatedNumberOfWorkItemsInRelease(
+                        releaseName,
+                        releaseChangelog.releases
+                    );
 
-                const aggregatedNumberOfWorkItemsInRelease = this.getAggregatedNumberOfWorkItemsInRelease(
-                    releaseName,
-                    releaseChangelog.releases
-                );
+                    SFPStatsSender.logGauge('release.workitems', aggregatedNumberOfWorkItemsInRelease, {
+                        releaseName: releaseName,
+                    });
 
-                SFPStatsSender.logGauge('release.workitems', aggregatedNumberOfWorkItemsInRelease, {
-                    releaseName: releaseName,
-                });
+                    const aggregatedNumberOfCommitsInRelease = this.getAggregatedNumberOfCommitsInRelease(
+                        releaseName,
+                        releaseChangelog.releases
+                    );
 
-                const aggregatedNumberOfCommitsInRelease = this.getAggregatedNumberOfCommitsInRelease(
-                    releaseName,
-                    releaseChangelog.releases
-                );
+                    SFPStatsSender.logGauge('release.commits', aggregatedNumberOfCommitsInRelease, {
+                        releaseName: releaseName,
+                    });
+                } catch (error) {
+                    SFPLogger.log(`Unable to push changelog`, LoggerLevel.WARN, this.logger);
+                }
 
-                SFPStatsSender.logGauge('release.commits', aggregatedNumberOfCommitsInRelease, {
-                    releaseName: releaseName,
-                });
-
-                this.printClosingLoggingGroup();
+                groupSection.end();
             }
         }
 
@@ -196,7 +197,7 @@ export default class ReleaseImpl {
     ): Promise<{ releaseDefinition: ReleaseDefinitionSchema; result: DeploymentResult }[]> {
         let deploymentResults: { releaseDefinition: ReleaseDefinitionSchema; result: DeploymentResult }[] = [];
         for (const releaseDefinition of releaseDefinitions) {
-            this.printOpenLoggingGroup(`Release ${releaseDefinition.release}`);
+            let groupSection = new GroupConsoleLogs(`Release ${releaseDefinition.release}`).begin();
             SFPLogger.log(EOL);
 
             this.displayReleaseInfo(releaseDefinition, this.props);
@@ -227,7 +228,9 @@ export default class ReleaseImpl {
 
             let deploymentResult = await deployImpl.exec();
             deploymentResults.push({ releaseDefinition: releaseDefinition, result: deploymentResult });
-            this.printClosingLoggingGroup();
+            groupSection.end();
+            //Don't continue deployments if a release breaks in between
+            if (deploymentResult.failed.length > 0) break;
         }
 
         return deploymentResults;
@@ -253,7 +256,7 @@ export default class ReleaseImpl {
             }
         });
 
-        this.printOpenLoggingGroup('Installing package dependencies');
+        let groupSection = new GroupConsoleLogs('Installing package dependencies').begin();
 
         try {
             let packagesToKeys: { [p: string]: string };
@@ -264,18 +267,19 @@ export default class ReleaseImpl {
             // print packages dependencies to install
             for (let pkg in packageDependencies) {
                 let dependendentPackage: Package2Detail = { name: pkg };
-                dependendentPackage.subscriberPackageVersionId = packageDependencies[pkg];
-                if(packagesToKeys?.[pkg]){
-                    dependendentPackage.key = packagesToKeys[pkg]
+                if (packageDependencies[pkg].startsWith('04t'))
+                    dependendentPackage.subscriberPackageVersionId = packageDependencies[pkg];
+
+                if (packagesToKeys?.[pkg]) {
+                    dependendentPackage.key = packagesToKeys[pkg];
                 }
                 externalPackage2s.push(dependendentPackage);
-
             }
             let sfpOrg = await SFPOrg.create({ aliasOrUsername: targetOrg });
             let packageCollectionInstaller = new InstallUnlockedPackageCollection(sfpOrg, new ConsoleLogger());
             await packageCollectionInstaller.install(externalPackage2s, true, true);
 
-            this.printClosingLoggingGroup();
+            groupSection.end();
             return result;
         } catch (err) {
             console.log(err.message);
@@ -310,33 +314,6 @@ export default class ReleaseImpl {
         }
 
         return output;
-    }
-
-    private async isPackageInstalledInOrg(packageVersionId: string, targetUsername: string): Promise<boolean> {
-        try {
-            let targetOrg = await SFPOrg.create({ aliasOrUsername: targetUsername });
-
-            SFPLogger.log(`Checking Whether Package with ID ${packageVersionId} is installed in  ${targetUsername}`);
-            let installedPackages = await targetOrg.getAllInstalled2GPPackages();
-
-            let packageFound = installedPackages.find((installedPackage) => {
-                return installedPackage.subscriberPackageVersionId === packageVersionId;
-            });
-
-            return packageFound ? true : false;
-        } catch (error) {
-            SFPLogger.log('Unable to check whether this package is installed in the target org');
-            return false;
-        }
-    }
-
-    private printOpenLoggingGroup(message: string) {
-        if (this.props.logsGroupSymbol?.[0])
-            SFPLogger.log(`${this.props.logsGroupSymbol[0]} ${message}`, LoggerLevel.INFO);
-    }
-
-    private printClosingLoggingGroup() {
-        if (this.props.logsGroupSymbol?.[1]) SFPLogger.log(this.props.logsGroupSymbol[1], LoggerLevel.INFO);
     }
 
     private displayReleaseInfo(releaseDefinition: ReleaseDefinitionSchema, props: ReleaseProps) {

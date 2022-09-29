@@ -9,7 +9,7 @@ const glob = require('glob');
 const tmp = require('tmp');
 import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
-import PackageEmptyChecker from '../PackageEmptyChecker';
+import PackageEmptyChecker from '../validators/PackageEmptyChecker';
 import { TestLevel } from '../../apextest/TestOptions';
 import SfpPackage from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';

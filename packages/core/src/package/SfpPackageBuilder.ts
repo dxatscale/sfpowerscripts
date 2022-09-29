@@ -2,8 +2,8 @@ import ApexTypeFetcher from '../apex/parser/ApexTypeFetcher';
 import ProjectConfig from '../project/ProjectConfig';
 import SfpPackageContentGenerator from './generators/SfpPackageContentGenerator';
 import SourceToMDAPIConvertor from './packageFormatConvertors/SourceToMDAPIConvertor';
-import PackageManifest from './PackageManifest';
-import MetadataCount from './MetadataCount';
+import PackageManifest from './components/PackageManifest';
+import MetadataCount from './components/MetadataCount';
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 import path from 'path';
@@ -18,7 +18,7 @@ import CreateSourcePackageImpl from './packageCreators/CreateSourcePackageImpl';
 import CreateDataPackageImpl from './packageCreators/CreateDataPackageImpl';
 import ImpactedApexTestClassFetcher from '../apextest/ImpactedApexTestClassFetcher';
 import * as rimraf from 'rimraf';
-import PackageToComponent from './PackageToComponent';
+import PackageToComponent from './components/PackageToComponent';
 import lodash = require('lodash');
 import { EOL } from 'os';
 import PackageVersionUpdater from './version/PackageVersionUpdater';
@@ -71,12 +71,8 @@ export default class SfpPackageBuilder {
         }
 
         //Get Package Type
-        sfpPackage.package_type = ProjectConfig.getPackageType(
-            ProjectConfig.getSFDXProjectConfig(sfpPackage.workingDirectory),
-            sfdx_package
-        );
+        sfpPackage.package_type = ProjectConfig.getPackageType(projectConfig, sfdx_package);
 
-   
         sfpPackage = SfpPackageBuilder.handleVersionNumber(params, sfpPackage, packageCreationParams);
 
         // Requires destructiveChangesPath which is set by the property fetcher
@@ -144,7 +140,7 @@ export default class SfpPackageBuilder {
 
         if (!packageCreationParams) packageCreationParams = { breakBuildIfEmpty: true };
 
-        let packageType = sfpPackage.packageType;
+        let packageType = sfpPackage.package_type;
         if (params?.overridePackageTypeWith) packageType = params?.overridePackageTypeWith.toLocaleLowerCase();
 
         //Get Implementors
@@ -182,11 +178,15 @@ export default class SfpPackageBuilder {
     }
 
     /*
-    *  Handle version Numbers of package
-    *  If VersionNumber is explcitly passed, use that 
-    * else allow autosubstitute using buildNumber for Source and Data if available
-    */
-    private static handleVersionNumber(params: SfpPackageParams, sfpPackage: SfpPackage, packageCreationParams: PackageCreationParams) {
+     *  Handle version Numbers of package
+     *  If VersionNumber is explcitly passed, use that
+     * else allow autosubstitute using buildNumber for Source and Data if available
+     */
+    private static handleVersionNumber(
+        params: SfpPackageParams,
+        sfpPackage: SfpPackage,
+        packageCreationParams: PackageCreationParams
+    ) {
         if (params?.packageVersionNumber) {
             sfpPackage.versionNumber = params.packageVersionNumber;
         } else if (packageCreationParams?.buildNumber) {
@@ -197,8 +197,7 @@ export default class SfpPackageBuilder {
                     packageCreationParams.buildNumber
                 );
             }
-        }
-        else {
+        } else {
             sfpPackage.versionNumber = sfpPackage.packageDescriptor.versionNumber;
         }
         return sfpPackage;

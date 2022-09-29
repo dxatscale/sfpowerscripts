@@ -37,6 +37,10 @@
                 "type": "string"
             }
         },
+        "excludeAllPackageDependencies": {
+            "type": "boolean",
+            "title": "Exclude all external package dependencies while creating a release definition"
+        },
         "includeOnlyPackageDependencies": {
             "type": "array",
             "title": "Include only the below external package dependencies while creating a release definition",

@@ -1,5 +1,5 @@
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { Release } from './ReleaseChangelogInterfaces';
+import { Release } from './ReleaseChangelog';
  
 
 export default class WorkItemUpdater {

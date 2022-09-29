@@ -1,4 +1,6 @@
 lib
+!packages/forcemula/lib
+!packages/sfdc-soup/lib
 tsconfig.tsbuildinfo
 node_modules
 build
@@ -15,3 +17,4 @@ oclif.manifest.json
 packages/core/coverage
 packages/sfpowerscripts-cli/coverage
 .DS_Store
+packages/core/.sfpowerscripts/**

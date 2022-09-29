@@ -7,7 +7,7 @@ import {
     PackageInstallationResult,
     PackageInstallationStatus,
 } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
+import { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
 import PoolFetchImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl';
 import { Org } from '@salesforce/core';
 import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
@@ -46,7 +46,7 @@ import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib
 import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
 import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
 import { PreDeployHook } from '../deploy/PreDeployHook';
-
+import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
 
 export enum ValidateMode {
     ORG,
@@ -134,7 +134,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
     private async dependencyAnalysis(orgAsSFPOrg: SFPOrg, deploymentResult: DeploymentResult) {
         if (this.props.isDependencyAnalysis) {
-            this.printOpenLoggingGroup(`Validate Dependency tree`);
+            let groupSection = new GroupConsoleLogs(`Validate Dependency tree`).begin();
             SFPLogger.log(
                 COLOR_HEADER(
                     `-------------------------------------------------------------------------------------------`
@@ -161,7 +161,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                     `-------------------------------------------------------------------------------------------`
                 )
             );
-            this.printClosingLoggingGroup();
+            groupSection.end();
             return dependencyViolations;
         }
     }
@@ -188,16 +188,14 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         else return new ChangedComponentsFetcher(this.props.baseBranch).fetch();
     }
 
-    private async installPackageDependencies(scratchOrgAsSFPOrg: SFPOrg,sfpPackage:SfpPackage) {
-    
+    private async installPackageDependencies(scratchOrgAsSFPOrg: SFPOrg, sfpPackage: SfpPackage) {
         //Resolve external package dependencies
         let externalPackageResolver = new ExternalPackage2DependencyResolver(
             this.props.hubOrg.getConnection(),
             ProjectConfig.getSFDXProjectConfig(null),
-            this.props.keys,
+            this.props.keys
         );
         let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies(sfpPackage.packageName);
-
 
         SFPLogger.log(
             `Installing package dependencies of this ${sfpPackage.packageName}  in ${scratchOrgAsSFPOrg.getUsername()}`,
@@ -213,10 +211,11 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         SFPLogger.log(
             COLOR_KEY_MESSAGE(
-                `Successfully completed external dependencies of this ${sfpPackage.packageName} in ${scratchOrgAsSFPOrg.getUsername()}`
+                `Successfully completed external dependencies of this ${
+                    sfpPackage.packageName
+                } in ${scratchOrgAsSFPOrg.getUsername()}`
             )
         );
-      
     }
 
     private async handleScratchOrgStatus(
@@ -412,7 +411,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     }
 
     private async buildChangedSourcePackages(packagesToCommits: { [p: string]: string }): Promise<any> {
-        this.printOpenLoggingGroup('Building Packages');
+        let groupSection = new GroupConsoleLogs('Building Packages').begin();
 
         const buildStartTime: number = Date.now();
 
@@ -459,7 +458,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         this.printBuildSummary(generatedPackages, failedPackages, buildElapsedTime);
 
-        this.printClosingLoggingGroup();
+        groupSection.end();
 
         return generatedPackages;
     }
@@ -481,11 +480,11 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     }
 
     private printArtifactVersions(installedArtifacts: any) {
-        this.printOpenLoggingGroup(`Artifacts installed in the Scratch Org`);
+        let groupSection = new GroupConsoleLogs(`Artifacts installed in the Scratch Org`).begin();
 
         InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
 
-        this.printClosingLoggingGroup();
+        groupSection.end();
     }
 
     private async fetchScratchOrgFromPool(pools: string[]): Promise<string> {
@@ -557,7 +556,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     }
 
     private printDeploySummary(deploymentResult: DeploymentResult, totalElapsedTime: number): void {
-        if (this.props.logsGroupSymbol?.[0]) console.log(this.props.logsGroupSymbol[0], 'Deployment Summary');
+        let groupSection = new GroupConsoleLogs(`Deployment Summary`).begin();
 
         console.log(
             COLOR_HEADER(
@@ -586,16 +585,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                 `----------------------------------------------------------------------------------------------------`
             )
         );
-        this.printClosingLoggingGroup();
-    }
-
-    private printOpenLoggingGroup(message: string, pkg?: string) {
-        if (this.props.logsGroupSymbol?.[0])
-            SFPLogger.log(`${this.props.logsGroupSymbol[0]} ${message} ${pkg ? pkg : ''}`, LoggerLevel.INFO);
-    }
-
-    private printClosingLoggingGroup() {
-        if (this.props.logsGroupSymbol?.[1]) SFPLogger.log(this.props.logsGroupSymbol[1], LoggerLevel.INFO);
+        groupSection.end();
     }
 
     async preDeployPackage(
@@ -603,11 +593,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         targetUsername: string,
         devhubUserName?: string
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
-
         //Its a scratch org fetched from pool.. install dependencies
         //Assume hubOrg will be available, no need to check
         if (this.props.validateMode === ValidateMode.POOL) {
-            if (!this.props.isFastFeedbackMode) await this.installPackageDependencies(this.orgAsSFPOrg,sfpPackage);
+            if (!this.props.isFastFeedbackMode) await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
         }
 
         return { isToFailDeployment: false };

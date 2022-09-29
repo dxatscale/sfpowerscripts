@@ -113,20 +113,17 @@ export default class ReleaseDefinitionGenerator {
     private async fetchFromGitRef(git: Git) {
         let artifacts = {};
         let packageDependencies = {};
-        let headCommit: string;
         //Create A copy of repository to a particular commit
         //If already a duplicate directory switch to the passed git ref
         //then switch it back
-        let gitRepository = git;
+        let headCommit = await git.getCurrentCommitId();
+        await git.checkout(this.gitRef, true);
 
-        headCommit = await git.getCurrentCommitId();
-        git.checkout(this.gitRef, true);
-
-        let projectConfig = ProjectConfig.getSFDXProjectConfig(gitRepository.getRepositoryPath());
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(git.getRepositoryPath());
         //Read sfdx project json
         let sfdxPackages = ProjectConfig.getAllPackagesFromProjectConfig(projectConfig);
         for (const sfdxPackage of sfdxPackages) {
-            let latestGitTagVersion = new GitTags(gitRepository, sfdxPackage);
+            let latestGitTagVersion = new GitTags(git, sfdxPackage);
             try {
                 let version = await latestGitTagVersion.getVersionFromLatestTag();
 
@@ -143,16 +140,18 @@ export default class ReleaseDefinitionGenerator {
             }
         }
 
-        let allExternalPackages = ProjectConfig.getAllExternalPackages(projectConfig);
-        for (const externalPackage of allExternalPackages) {
-            if (
-                this.getDependencyPredicate(externalPackage.alias) &&
-                externalPackage.Package2IdOrSubscriberPackageVersionId.startsWith('04t')
-            ) {
-                packageDependencies[externalPackage.alias] = externalPackage.Package2IdOrSubscriberPackageVersionId;
+        if (!this.releaseDefinitionGeneratorConfigSchema.excludeAllPackageDependencies) {
+            let allExternalPackages = ProjectConfig.getAllExternalPackages(projectConfig);
+            for (const externalPackage of allExternalPackages) {
+                if (
+                    this.getDependencyPredicate(externalPackage.alias) &&
+                    externalPackage.Package2IdOrSubscriberPackageVersionId.startsWith('04t')
+                ) {
+                    packageDependencies[externalPackage.alias] = externalPackage.Package2IdOrSubscriberPackageVersionId;
+                }
             }
         }
-        
+
         return { artifacts, packageDependencies };
     }
 
