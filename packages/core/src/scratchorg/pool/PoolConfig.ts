@@ -16,10 +16,10 @@ export interface PoolConfig {
     retryOnFailure?: boolean;
     fetchArtifacts: {
         artifactFetchScript?: string;
+        releaseDefinitionFilePath?: string;
         npm?: {
             npmrcPath?: string;
             scope: string;
-            artifacts?: [];
         };
     };
     snapshotPool?:string;
@@ -33,5 +33,4 @@ export interface PoolConfig {
     to_satisfy_max?: number;
     scratchOrgs?: ScratchOrg[];
     failedToCreate?: number;
-
 }

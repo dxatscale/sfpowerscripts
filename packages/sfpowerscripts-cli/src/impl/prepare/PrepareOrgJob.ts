@@ -18,14 +18,17 @@ import DeploymentSettingsService from '@dxatscale/sfpowerscripts.core/lib/deploy
 import PackageDetails from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
 import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import ReleaseDefinition from "../release/ReleaseDefinition";
 const fs = require('fs-extra');
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor {
     private checkPointPackages: string[];
+    private isReleaseDefinitionFileSpecified: boolean;
 
     public constructor(protected pool: PoolConfig, private externalPackage2s: PackageDetails[]) {
         super(pool);
+        this.isReleaseDefinitionFileSpecified = this.pool.fetchArtifacts.releaseDefinitionFilePath;
     }
 
     async executeJob(
@@ -34,7 +37,6 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         logToFilePath: string,
         logLevel: LoggerLevel
     ): Promise<Result<ScriptExecutionResult, JobError>> {
-        //Install sfpowerscripts Artifact
 
         try {
             const conn = (await Org.create({ aliasOrUsername: scratchOrg.username })).getConnection();
@@ -93,7 +95,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
 
         let deploymentSucceed: string;
-        if (this.pool.installAll || this.pool.fetchArtifacts?.npm?.artifacts) {
+        if (this.pool.installAll || this.isReleaseDefinitionFileSpecified) {
             let deploymentResult: DeploymentResult;
 
             let deploymentMode: DeploymentMode;
@@ -271,16 +273,18 @@ export default class PrepareOrgJob extends PoolJobExecutor {
     //Fetch all checkpoints
     private getcheckPointPackages(logger: FileLogger) {
         SFPLogger.log('Fetching checkpoints for prepare if any.....', LoggerLevel.INFO, logger);
-        let onlySpecifiedArtifactsToInstall = this.pool.fetchArtifacts?.npm?.artifacts;
 
         let checkPointPackages = [];
-        if (!onlySpecifiedArtifactsToInstall) {
+        if (!this.isReleaseDefinitionFileSpecified) {
             ProjectConfig.getAllPackageDirectoriesFromDirectory(null).forEach((pkg) => {
                 if (pkg.checkpointForPrepare) checkPointPackages.push(pkg['package']);
             });
         } else {
+            let artifactsFromReleaseDefinition =
+                ReleaseDefinition.getArtifactsFromReleaseDefinitionFile(this.pool.fetchArtifacts.releaseDefinitionFilePath);
+
             ProjectConfig.getAllPackageDirectoriesFromDirectory(null).forEach((pkg) => {
-                if (pkg.checkpointForPrepare && onlySpecifiedArtifactsToInstall.includes(pkg.package))
+                if (pkg.checkpointForPrepare && artifactsFromReleaseDefinition[pkg.package])
                     checkPointPackages.push(pkg['package']);
             });
         }

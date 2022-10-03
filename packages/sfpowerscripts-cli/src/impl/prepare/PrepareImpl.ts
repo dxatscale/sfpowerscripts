@@ -23,10 +23,12 @@ import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
 import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
 import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
+import ReleaseDefinition from "../release/ReleaseDefinition";
 const Table = require('cli-table');
 
 export default class PrepareImpl {
     private artifactFetchedCount: number = 0;
+    private isReleaseDefinitionFileSpecified: boolean;
 
     public constructor(private hubOrg: Org, private pool: PoolConfig, private logLevel: LoggerLevel) {
         // set defaults
@@ -37,6 +39,8 @@ export default class PrepareImpl {
         if (this.pool.succeedOnDeploymentErrors === undefined) this.pool.succeedOnDeploymentErrors = true;
 
         if (!this.pool.waitTime) this.pool.waitTime = 6;
+
+        this.isReleaseDefinitionFileSpecified = this.pool.fetchArtifacts.releaseDefinitionFilePath;
     }
 
     public async exec() {
@@ -55,7 +59,7 @@ export default class PrepareImpl {
         );
         let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies();
 
-        //Display resolved dependenencies
+        //Display resolved dependencies
         let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s,new ConsoleLogger());
         externalDependencyDisplayer.display();
 
@@ -68,10 +72,8 @@ export default class PrepareImpl {
         fs.mkdirpSync('artifacts');
 
         // Fetch all or only specified latest Artifacts to Artifact Directory
-        if (this.pool.installAll) {
-            await this.getPackageArtifacts(null);
-        } else if (this.pool.fetchArtifacts?.npm?.artifacts) {
-            await this.getPackageArtifacts(this.pool.fetchArtifacts.npm.artifacts);
+        if (this.pool.installAll || this.isReleaseDefinitionFileSpecified) {
+            await this.getPackageArtifacts();
         }
 
         let prepareASingleOrgImpl: PrepareOrgJob = new PrepareOrgJob(this.pool, externalPackage2s);
@@ -153,7 +155,13 @@ export default class PrepareImpl {
         }
     }
 
-    private async getPackageArtifacts(artifacts: string[]) {
+    private async getPackageArtifacts() {
+        let artifacts = {};
+        if(this.isReleaseDefinitionFileSpecified) {
+            artifacts =
+                await ReleaseDefinition.getArtifactsFromReleaseDefinitionFile(this.pool.fetchArtifacts.releaseDefinitionFilePath);
+        }
+
         //Filter Packages to be ignored from prepare to be fetched
         let packages = ProjectConfig.getAllPackageDirectoriesFromDirectory(null).filter((pkg) => {
             return this.isPkgToBeInstalled(pkg, artifacts);
@@ -222,16 +230,13 @@ export default class PrepareImpl {
             }
         }
     }
-    
-    private isPkgToBeInstalled(pkg, artifacts: string[]): boolean {
+
+    private isPkgToBeInstalled(pkg, artifacts): boolean {
         pkg.ignoreOnStage?.find((stage) => {
             stage = stage.toLowerCase();
             if (stage === 'prepare')
                 return false;
         })
-        if(artifacts == null)
-            return true;
-        else
-            return artifacts.includes(pkg.package);
+        return artifacts[pkg.package] !== undefined;
     }
 }
