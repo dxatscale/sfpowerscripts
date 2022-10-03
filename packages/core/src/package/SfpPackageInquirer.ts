@@ -132,7 +132,7 @@ export default class SfpPackageInquirer {
                     this.packageLogger
                 );
                 throw new Error(
-                    `Artifacts must originate from the same source repository, for deployment to work. The artifact ${sfpPackage.packageName} has repository URL that doesn't meet the current repository URL ${currentRemoteURL}`
+                    `Artifacts must originate from the same source repository, for deployment to work. The artifact ${sfpPackage.packageName} has repository URL that doesn't meet the current repository URL ${JSON.stringify(currentRemoteURL)} not equal ${JSON.stringify(remoteURL)}`
                 );
             }
         }

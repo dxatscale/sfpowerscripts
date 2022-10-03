@@ -1,11 +1,11 @@
 import { Changelog, Commit } from '@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces';
 
-export interface ReleaseChangelog {
+export class ReleaseChangelog {
     releases: Release[];
     orgs?: org[];
 }
 
-export interface org {
+export class org {
     /**
      * Name of the org
      */
@@ -27,7 +27,7 @@ export interface org {
     retryCount: number;
 }
 
-export interface ReleaseId {
+export class ReleaseId {
     names: string[];
     buildNumber: number;
     hashId: string;

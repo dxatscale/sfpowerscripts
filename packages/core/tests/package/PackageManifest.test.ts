@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import { jest, expect } from '@jest/globals';
-import PackageManifest from '../../src/package/PackageManifest';
+import PackageManifest from '../../src/package/components/PackageManifest';
 
 describe('Given a mdapi directory that contains manifest file', () => {
     beforeEach(() => {

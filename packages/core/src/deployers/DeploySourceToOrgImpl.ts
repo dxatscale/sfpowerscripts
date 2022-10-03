@@ -137,7 +137,9 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     private async displayErrors(result: DeployResult): Promise<string> {
         SFPLogger.log(`Gathering Final Deployment Status`, null, this.logger);
 
-        if (result.response.numberComponentErrors > 0) {
+        if (result.response.numberComponentErrors == 0) {
+            return 'Unable to fetch report, Check your org for details';
+        } else if (result.response.numberComponentErrors > 0) {
             DeployErrorDisplayer.printMetadataFailedToDeploy(result.response.details.componentFailures, this.logger);
             return result.response.errorMessage;
         } else if (result.response.details.runTestResult) {
@@ -150,7 +152,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             }
             return 'Unable to deploy due to unsatisfactory code coverage and/or test failures';
         } else {
-            return 'Unable to fetch report';
+            return 'Unable to fetch report, Check your org for details';
         }
     }
 
@@ -167,15 +169,18 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             table.push([codeCoverageWarnings['name'], codeCoverageWarnings.message]);
         }
 
-        SFPLogger.log(
-            'Unable to deploy due to unsatisfactory code coverage, Check the following classes:',
-            LoggerLevel.WARN,
-            this.logger
-        );
-        SFPLogger.log(table.toString(), LoggerLevel.WARN, this.logger);
+        if (table.length > 1) {
+            SFPLogger.log(
+                'Unable to deploy due to unsatisfactory code coverage, Check the following classes:',
+                LoggerLevel.WARN,
+                this.logger
+            );
+            SFPLogger.log(table.toString(), LoggerLevel.WARN, this.logger);
+        }
     }
 
     private displayTestFailures(testFailures: Failures | Failures[]) {
+
         let table = new Table({
             head: ['Test Name', 'Method Name', 'Message'],
         });
@@ -187,8 +192,10 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         } else {
             table.push([testFailures.name, testFailures.methodName, testFailures.message]);
         }
-        SFPLogger.log('Unable to deploy due to test failures:', LoggerLevel.WARN, this.logger);
-        SFPLogger.log(table.toString(), LoggerLevel.WARN, this.logger);
+        if (table.length > 1) {
+            SFPLogger.log('Unable to deploy due to test failures:', LoggerLevel.WARN, this.logger);
+            SFPLogger.log(table.toString(), LoggerLevel.WARN, this.logger);
+        }
     }
 
     private async buildDeploymentOptions(org: SFPOrg): Promise<MetadataApiDeployOptions> {

@@ -14,12 +14,12 @@ import SFPLogger, {
     COLOR_TIME,
 } from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
-import simplegit from 'simple-git';
-import GitIdentity from '@dxatscale/sfpowerscripts.core/lib/git/GitIdentity';
 import defaultShell from '@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell';
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git"
+import GroupConsoleLogs from '../../../ui/GroupConsoleLogs';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
@@ -92,6 +92,10 @@ export default class Promote extends SfpowerscriptsCommand {
             dependsOn: ['npm'],
             required: false,
         }),
+        logsgroupsymbol: flags.array({
+            char: 'g',
+            description: messages.getMessage('logsGroupSymbolFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -112,6 +116,7 @@ export default class Promote extends SfpowerscriptsCommand {
             ],
         }),
     };
+    private git: Git;
 
     public async execute() {
         let nPublishedArtifacts: number = 0;
@@ -127,6 +132,7 @@ export default class Promote extends SfpowerscriptsCommand {
         }[] = [];
 
         let npmrcFilesToCleanup: string[] = [];
+        this.git = await Git.initiateRepo(new ConsoleLogger());
 
         try {
             SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`publish`)}`));
@@ -271,6 +277,7 @@ export default class Promote extends SfpowerscriptsCommand {
     }
 
     private publishUsingNpm(sfpPackage: SfpPackage, packageVersionNumber: string, npmrcFilesToCleanup: string[]) {
+        let publishGroupSection = new GroupConsoleLogs(`Publishing ${sfpPackage.packageName}`).begin();
         let artifactRootDirectory = path.dirname(sfpPackage.sourceDir);
 
         // NPM does not accept packages with uppercase characters
@@ -304,10 +311,11 @@ export default class Promote extends SfpowerscriptsCommand {
             );
         }
 
+
         child_process.execSync(cmd, {
             cwd: artifactRootDirectory,
-            stdio: 'ignore',
         });
+        publishGroupSection.end();
     }
 
     private publishUsingScript(packageName: string, packageVersionNumber: string, artifact: string) {
@@ -343,8 +351,7 @@ export default class Promote extends SfpowerscriptsCommand {
     private async pushGitTags() {
         SFPLogger.log(COLOR_KEY_MESSAGE('Pushing Git Tags to Repo'));
         if (this.flags.pushgittag) {
-            let git = simplegit();
-            await git.pushTags();
+           await this.git.pushTags();
         }
     }
 
@@ -358,12 +365,8 @@ export default class Promote extends SfpowerscriptsCommand {
     ) {
         SFPLogger.log(COLOR_KEY_MESSAGE('Creating Git Tags in Repo'));
 
-        let git = simplegit();
-
-        await new GitIdentity(git).setUsernameAndEmail();
-
         for (let packageTag of succesfullyPublishedPackageNamesForTagging) {
-            await git.addAnnotatedTag(
+            await this.git.addAnnotatedTag(
                 packageTag.tag,
                 `${packageTag.name} ${packageTag.type} Package ${packageTag.version}`
             );

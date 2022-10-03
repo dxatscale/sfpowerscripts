@@ -2,7 +2,7 @@ import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import { EOL } from 'os';
 import { ApexSortedByType, FileDescriptor } from '../../apex/parser/ApexTypeFetcher';
 import SFPStatsSender from '../../stats/SFPStatsSender';
-import PackageEmptyChecker from '../PackageEmptyChecker';
+import PackageEmptyChecker from '../validators/PackageEmptyChecker';
 import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
 import { CreatePackage } from './CreatePackage';
 import { PackageCreationParams } from '../SfpPackageBuilder';

@@ -19,7 +19,7 @@ module.exports = {
         "This is an orphan module - it's likely not used (anymore?). Either use it or " +
         "remove it. If it's logical this module is an orphan (i.e. it's a config file), " +
         "add an exception for it in your dependency-cruiser configuration. By default " +
-        "this rule does not scrutinize dotfiles (e.g. .eslintrc.js), TypeScript declaration " +
+        "this rule does not scrutinize dot-files (e.g. .eslintrc.js), TypeScript declaration " +
         "files (.d.ts), tsconfig.json and some of the babel and webpack configs.",
       severity: 'warn',
       from: {
@@ -59,7 +59,6 @@ module.exports = {
           '^(node-inspect\/lib\/internal\/inspect_client)$',
           '^(node-inspect\/lib\/internal\/inspect_repl)$',
           '^(async_hooks)$',
-          '^(assert)$',
           '^(punycode)$',
           '^(domain)$',
           '^(constants)$',
@@ -112,31 +111,21 @@ module.exports = {
     {
       name: 'no-duplicate-dep-types',
       comment:
-        "Likeley this module depends on an external ('npm') package that occurs more than once " +
+        "Likely this module depends on an external ('npm') package that occurs more than once " +
         "in your package.json i.e. bot as a devDependencies and in dependencies. This will cause " +
         "maintenance problems later on.",
       severity: 'warn',
       from: {},
       to: {
-        moreThanOneDependencyType: true
+        moreThanOneDependencyType: true,
+        // as it's pretty common to have a type import be a type only import 
+        // _and_ (e.g.) a devDependency - don't consider type-only dependency
+        // types for this rule
+        dependencyTypesNot: ["type-only"]
       }
     },
 
     /* rules you might want to tweak for your specific situation: */
-    {
-      name: 'not-to-test',
-      comment:
-        "This module depends on code within a folder that should only contain tests. As tests don't " +
-        "implement functionality this is odd. Either you're writing a test outside the test folder " +
-        "or there's something in the test folder that isn't a test.",
-      severity: 'error',
-      from: {
-        pathNot: '^(tests)'
-      },
-      to: {
-        path: '^(tests)'
-      }
-    },
     {
       name: 'not-to-spec',
       comment:
@@ -159,7 +148,7 @@ module.exports = {
         'section of your package.json. If this module is development only - add it to the ' +
         'from.pathNot re of the not-to-dev-dep rule in the dependency-cruiser configuration',
       from: {
-        path: '^(src)',
+        path: '^(packages)',
         pathNot: '\\.(spec|test)\\.(js|mjs|cjs|ts|ls|coffee|litcoffee|coffee\\.md)$'
       },
       to: {
@@ -175,7 +164,7 @@ module.exports = {
         "This module depends on an npm package that is declared as an optional dependency " +
         "in your package.json. As this makes sense in limited situations only, it's flagged here. " +
         "If you're using an optional dependency here by design - add an exception to your" +
-        "depdency-cruiser configuration.",
+        "dependency-cruiser configuration.",
       from: {},
       to: {
         dependencyTypes: [
@@ -203,19 +192,11 @@ module.exports = {
 
     /* conditions specifying which files not to follow further when encountered:
        - path: a regular expression to match
-       - dependencyTypes: see https://github.com/sverweij/dependency-cruiser/blob/master/doc/rules-reference.md#dependencytypes
+       - dependencyTypes: see https://github.com/sverweij/dependency-cruiser/blob/master/doc/rules-reference.md#dependencytypes-and-dependencytypesnot
        for a complete list
     */
     doNotFollow: {
-      path: 'node_modules',
-      dependencyTypes: [
-        'npm',
-        'npm-dev',
-        'npm-optional',
-        'npm-peer',
-        'npm-bundled',
-        'npm-no-pkg'
-      ]
+      path: 'node_modules'
     },
 
     /* conditions specifying which dependencies to exclude
@@ -223,14 +204,15 @@ module.exports = {
        - dynamic: a boolean indicating whether to ignore dynamic (true) or static (false) dependencies.
           leave out if you want to exclude neither (recommended!)
     */
-     exclude : {
-       path: '^(packages/core/coverage|packages/sfpowerscripts-cli/resources|packages/sfpowerscripts-cli/coverage|packages/core/tests|packages/sfpowerscripts-cli/tests|packages/sfpowerscripts-cli/lib|packages/core/lib|coverage|test|packages/sfpowerscripts-cli/node_modules|packages/core/node_modules|lib|dist|tests)',
-     },
+    // exclude : {
+    //   path: '',
+    //   dynamic: true
+    // },
 
     /* pattern specifying which files to include (regular expression)
        dependency-cruiser will skip everything not matching this pattern
     */
-    //includeOnly : '^(packages/core/src|packages/sfpowerscripts-cli/src)',
+    // includeOnly : '',
 
     /* dependency-cruiser will include modules matching against the focus
        regular expression in its output, as well as their neighbours (direct
@@ -251,13 +233,16 @@ module.exports = {
        true: also detect dependencies that only exist before typescript-to-javascript compilation
        "specify": for each dependency identify whether it only exists before compilation or also after
      */
-    tsPreCompilationDeps: false,
+    tsPreCompilationDeps: true,
+    
+    /* list of extensions (typically non-parseable) to scan. Empty by default. */
+    // extraExtensionsToScan: [".json", ".jpg", ".png", ".svg", ".webp"],
 
     /* if true combines the package.jsons found from the module up to the base
        folder the cruise is initiated from. Useful for how (some) mono-repos
        manage dependencies & dependency definitions.
      */
-    combinedDependencies: true,
+    // combinedDependencies: false,
 
     /* if true leave symlinks untouched, otherwise use the realpath */
     // preserveSymlinks: false,
@@ -302,7 +287,7 @@ module.exports = {
 
     /* List of strings you have in use in addition to cjs/ es6 requires
        & imports to declare module dependencies. Use this e.g. if you've
-       redeclared require, use a require-wrapper or use window.require as
+       re-declared require, use a require-wrapper or use window.require as
        a hack.
     */
     // exoticRequireStrings: [],
@@ -357,13 +342,39 @@ module.exports = {
         //   },
         //   modules: [
         //     {
+        //       criteria: { matchesFocus: true },
+        //       attributes: {
+        //         fillcolor: "lime",
+        //         penwidth: 2,
+        //       },
+        //     },
+        //     {
+        //       criteria: { matchesFocus: false },
+        //       attributes: {
+        //         fillcolor: "lightgrey",
+        //       },
+        //     },
+        //     {
+        //       criteria: { matchesReaches: true },
+        //       attributes: {
+        //         fillcolor: "lime",
+        //         penwidth: 2,
+        //       },
+        //     },
+        //     {
+        //       criteria: { matchesReaches: false },
+        //       attributes: {
+        //         fillcolor: "lightgrey",
+        //       },
+        //     },
+        //     {
         //       criteria: { source: "^src/model" },
         //       attributes: { fillcolor: "#ccccff" }
         //     },
         //     {
         //       criteria: { source: "^src/view" },
         //       attributes: { fillcolor: "#ccffcc" }
-        //     }
+        //     },
         //   ],
         //   dependencies: [
         //     {
@@ -395,7 +406,7 @@ module.exports = {
           dependency graph reporter (`archi`) you probably want to tweak
           this collapsePattern to your situation.
         */
-        collapsePattern: '^(node_modules|packages|src|lib|app|bin|test(s?)|spec(s?))/[^/]+',
+        collapsePattern: '^(packages|src|lib|app|bin|test(s?)|spec(s?))/[^/]+|node_modules/[^/]+',
 
         /* Options to tweak the appearance of your graph.See
            https://github.com/sverweij/dependency-cruiser/blob/master/doc/options-reference.md#reporteroptions
@@ -405,8 +416,11 @@ module.exports = {
          */
         // theme: {
         // },
-      }
+      },
+      "text": {
+        "highlightFocused": true
+      },
     }
   }
 };
-// generated: dependency-cruiser@10.0.1 on 2021-05-28T23:11:56.624Z
+// generated: dependency-cruiser@11.15.0 on 2022-09-03T11:40:06.576Z

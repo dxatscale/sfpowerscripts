@@ -1,4 +1,4 @@
-import { ReleaseChangelog, Release, ReleaseId } from './ReleaseChangelogInterfaces';
+import { ReleaseChangelog, Release, ReleaseId } from './ReleaseChangelog';
 import lodash = require('lodash');
 
 export default class OrgsUpdater {
