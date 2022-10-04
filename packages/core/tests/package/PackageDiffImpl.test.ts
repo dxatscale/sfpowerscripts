@@ -1,7 +1,7 @@
 import { jest, expect } from '@jest/globals';
 const fs = require('fs');
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
-import PackageDiffImpl from '../../src/package/diff/PackageDiffImpl';
+import PackageDiffImpl, { PackageDiffOptions } from '../../src/package/diff/PackageDiffImpl';
 import ProjectConfig from '../../src/project/ProjectConfig';
 
 let gitTags: string[] = [];
@@ -57,8 +57,6 @@ describe('Determines whether a given package has changed', () => {
             new ConsoleLogger(),
             'UNKNOWN-PACKAGE',
             null,
-            null,
-            null
         );
         expect(() => packageDiffImpl.exec()).rejects.toThrowError();
     });
@@ -72,7 +70,7 @@ describe('Determines whether a given package has changed', () => {
         // Assume passthrough filter for ignore
         ignoreFilterResult = gitDiff;
 
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null);
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null);
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(true);
         expect(result.reason).toEqual(`Found change(s) in package`);
@@ -86,7 +84,7 @@ describe('Determines whether a given package has changed', () => {
         // Assume passthrough filter for ignore
         ignoreFilterResult = gitDiff;
 
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null);
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null);
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(true);
         expect(result.reason).toEqual(`Package Descriptor Changed`);
@@ -100,7 +98,7 @@ describe('Determines whether a given package has changed', () => {
       // Assume passthrough filter for ignore
       ignoreFilterResult = gitDiff;
 
-      let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null,null,{skipPackageDescriptorChange:true});
+      let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null,{skipPackageDescriptorChange:true});
       let result = await packageDiffImpl.exec();
       expect(result.isToBeBuilt).toEqual(false);
   });
@@ -115,7 +113,7 @@ describe('Determines whether a given package has changed', () => {
         ignoreFilterResult = gitDiff;
 
         gitTags = coreTags;
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null);
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null);
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(false);
         expect(result.reason).toEqual(`No changes found`);
@@ -124,14 +122,16 @@ describe('Determines whether a given package has changed', () => {
     it('should return true if package does not have any tags', async () => {
         gitTags = [];
 
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null);
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null);
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(true);
         expect(result.reason).toEqual(`Previous version not found`);
     });
 
     it('should return true if packageToCommits is an empty object', async () => {
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, {});
+        let packageDiffOptions = new PackageDiffOptions();
+        packageDiffOptions.packagesMappedToLastKnownCommitId={};
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null,packageDiffOptions);
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(true);
         expect(result.reason).toEqual(`Previous version not found`);
@@ -146,7 +146,7 @@ describe('Determines whether a given package has changed', () => {
         // Assume passthrough filter for ignore
         ignoreFilterResult = gitDiff;
 
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null, null);
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null);
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(false);
         expect(result.reason).toEqual(`No changes found`);

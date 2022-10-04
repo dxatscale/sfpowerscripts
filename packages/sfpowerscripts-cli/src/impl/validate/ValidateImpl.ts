@@ -2,7 +2,7 @@ import BuildImpl, { BuildProps } from '../parallelBuilder/BuildImpl';
 import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../deploy/DeployImpl';
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import { Stage } from '../Stage';
-import SFPLogger, { ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_KEY_VALUE, ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import {
     PackageInstallationResult,
     PackageInstallationStatus,
@@ -46,15 +46,26 @@ import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib
 import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
 import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
 import { PreDeployHook } from '../deploy/PreDeployHook';
-import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
+import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
+import ReleaseDefinitionGenerator from '../release/ReleaseDefinitionGenerator';
+import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
 
-export enum ValidateMode {
-    ORG,
-    POOL,
+export enum ValidateAgainst {
+    PROVIDED_ORG,
+    PRECREATED_POOL,
+}
+export enum ValidationMode {
+    INDIVIDUAL = 'individual',
+    FAST_FEEDBACK = 'fastfeedback',
+    THOROUGH = 'thorough',
+    FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG = 'ff-release-config',
+    THOROUGH_LIMITED_BY_RELEASE_CONFIG = 'thorough-release-config',
 }
 
 export interface ValidateProps {
-    validateMode: ValidateMode;
+    validateAgainst: ValidateAgainst;
+    validationMode: ValidationMode;
+    releaseConfigPath?: string;
     coverageThreshold: number;
     logsGroupSymbol: string[];
     targetOrg?: string;
@@ -68,7 +79,6 @@ export interface ValidateProps {
     isDependencyAnalysis?: boolean;
     diffcheck?: boolean;
     disableArtifactCommit?: boolean;
-    isFastFeedbackMode?: boolean;
 }
 
 export default class ValidateImpl implements PostDeployHook, PreDeployHook {
@@ -84,33 +94,24 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         let deploymentResult: DeploymentResult;
         let scratchOrgUsername: string;
         try {
-            if (this.props.validateMode === ValidateMode.ORG) {
+            if (this.props.validateAgainst === ValidateAgainst.PROVIDED_ORG) {
                 scratchOrgUsername = this.props.targetOrg;
-            } else if (this.props.validateMode === ValidateMode.POOL) {
+            } else if (this.props.validateAgainst === ValidateAgainst.PRECREATED_POOL) {
                 if (process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG)
                     scratchOrgUsername = process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG;
                 else scratchOrgUsername = await this.fetchScratchOrgFromPool(this.props.pools);
-            } else throw new Error(`Unknown mode ${this.props.validateMode}`);
+            } else throw new Error(`Unknown mode ${this.props.validateAgainst}`);
 
             //Create Org
             this.orgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrgUsername });
             const connToScratchOrg = this.orgAsSFPOrg.getConnection();
 
-            let installedArtifacts = await this.orgAsSFPOrg.getInstalledArtifacts();
-            if (installedArtifacts.length == 0) {
-                console.log(COLOR_ERROR('Failed to query org for Sfpowerscripts Artifacts'));
-                console.log(COLOR_KEY_MESSAGE('Building all packages'));
-            }
+            //Fetch Artifacts in the org
+            let packagesInstalledInOrgMappedToCommits: { [p: string]: string };
+            if (this.props.validationMode != ValidationMode.INDIVIDUAL)
+                packagesInstalledInOrgMappedToCommits = await this.fetchCommitsOfPackagesInstalledInOrg();
 
-            let packagesToCommits: { [p: string]: string } = {};
-
-            if (installedArtifacts != null) {
-                packagesToCommits = this.getPackagesToCommits(installedArtifacts);
-                this.printArtifactVersions(installedArtifacts);
-            }
-
-            await this.buildChangedSourcePackages(packagesToCommits);
-
+            let builtSfpPackages = await this.buildChangedSourcePackages(packagesInstalledInOrgMappedToCommits);
             deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
             if (deploymentResult.failed.length > 0 || deploymentResult.error)
@@ -129,6 +130,46 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             throw error;
         } finally {
             await this.handleScratchOrgStatus(scratchOrgUsername, deploymentResult, this.props.isDeleteScratchOrg);
+        }
+    }
+
+    private async fetchCommitsOfPackagesInstalledInOrg() {
+        let installedArtifacts = await this.orgAsSFPOrg.getInstalledArtifacts();
+        if (installedArtifacts.length == 0) {
+            console.log(COLOR_ERROR('Failed to query org for Sfpowerscripts Artifacts'));
+            console.log(COLOR_KEY_MESSAGE('Building all packages'));
+        }
+
+        //Read artifacts installed in the org
+        let packagesMappedToLastKnownCommitId: { [p: string]: string } = {};
+        if (installedArtifacts != null) {
+            packagesMappedToLastKnownCommitId = getPackagesToCommits(installedArtifacts);
+            printArtifactVersions(installedArtifacts);
+        }
+        return packagesMappedToLastKnownCommitId;
+
+        function getPackagesToCommits(installedArtifacts: any): { [p: string]: string } {
+            const packagesToCommits: { [p: string]: string } = {};
+
+            // Construct map of artifact and associated commit Id
+            installedArtifacts.forEach((artifact) => {
+                packagesToCommits[artifact.Name] = artifact.CommitId__c;
+                //Override for debugging purposes
+                if (process.env.VALIDATE_OVERRIDE_PKG)
+                    packagesToCommits[process.env.VALIDATE_OVERRIDE_PKG] = process.env.VALIDATE_PKG_COMMIT_ID;
+            });
+
+            if (process.env.VALIDATE_REMOVE_PKG) delete packagesToCommits[process.env.VALIDATE_REMOVE_PKG];
+
+            return packagesToCommits;
+        }
+
+        function printArtifactVersions(installedArtifacts: any) {
+            let groupSection = new GroupConsoleLogs(`Artifacts installed in the Scratch Org`).begin();
+
+            InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
+
+            groupSection.end();
         }
     }
 
@@ -223,6 +264,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         deploymentResult: DeploymentResult,
         isToDelete: boolean
     ) {
+
         //No scratch org available.. just return
         if (scratchOrgUsername == undefined) return;
 
@@ -251,19 +293,18 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             } else {
                 try {
                     if (scratchOrgUsername && this.props.hubOrg.getUsername()) {
-                        await this.deleteScratchOrg(this.props.hubOrg, scratchOrgUsername);
+                        await deleteScratchOrg(this.props.hubOrg, scratchOrgUsername);
                     }
                 } catch (error) {
                     console.log(COLOR_WARNING(error.message));
                 }
             }
         }
-    }
-
-    private async deleteScratchOrg(hubOrg: Org, scratchOrgUsername: string) {
-        console.log(`Deleting scratch org`, scratchOrgUsername);
-        const poolOrgDeleteImpl = new PoolOrgDeleteImpl(hubOrg, scratchOrgUsername);
-        await poolOrgDeleteImpl.execute();
+        async function deleteScratchOrg(hubOrg: Org, scratchOrgUsername: string) {
+            console.log(`Deleting scratch org`, scratchOrgUsername);
+            const poolOrgDeleteImpl = new PoolOrgDeleteImpl(hubOrg, scratchOrgUsername);
+            await poolOrgDeleteImpl.execute();
+        }
     }
 
     private async deploySourcePackages(scratchOrgUsername: string): Promise<DeploymentResult> {
@@ -279,7 +320,8 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             logsGroupSymbol: this.props.logsGroupSymbol,
             currentStage: Stage.VALIDATE,
             disableArtifactCommit: this.props.disableArtifactCommit,
-            isFastFeedbackMode: this.props.isFastFeedbackMode,
+            selectiveComponentDeployment: this.props.validationMode == ValidationMode.FAST_FEEDBACK 
+                                      || this.props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG,
         };
 
         const deployImpl: DeployImpl = new DeployImpl(deployProps);
@@ -289,128 +331,47 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         const deploymentResult = await deployImpl.exec();
 
         const deploymentElapsedTime: number = Date.now() - deployStartTime;
-        this.printDeploySummary(deploymentResult, deploymentElapsedTime);
+        printDeploySummary(deploymentResult, deploymentElapsedTime);
 
         return deploymentResult;
-    }
 
-    private async triggerApexTests(
-        sfpPackage: SfpPackage,
-        targetUsername: string,
-        logger: Logger
-    ): Promise<{
-        id: string;
-        result: boolean;
-        message: string;
-    }> {
-        if (sfpPackage.packageDescriptor.skipTesting) return { id: null, result: true, message: 'No Tests To Run' };
+        function printDeploySummary(deploymentResult: DeploymentResult, totalElapsedTime: number): void {
+            let groupSection = new GroupConsoleLogs(`Deployment Summary`).begin();
 
-        if (!sfpPackage.isApexFound) return { id: null, result: true, message: 'No Tests To Run' };
+            console.log(
+                COLOR_HEADER(
+                    `----------------------------------------------------------------------------------------------------`
+                )
+            );
+            console.log(
+                COLOR_SUCCESS(
+                    `${deploymentResult.deployed.length} packages deployed in ${COLOR_TIME(
+                        getFormattedTime(totalElapsedTime)
+                    )} with {${COLOR_ERROR(deploymentResult.failed.length)}} failed deployments`
+                )
+            );
 
-        if (sfpPackage.packageDescriptor.isOptimizedDeployment == false)
-            return { id: null, result: true, message: 'Tests would have already run' };
-
-        let testOptions: TestOptions, testCoverageOptions: CoverageOptions;
-
-        if (this.props.isFastFeedbackMode) {
-            ({ testOptions, testCoverageOptions } = this.getTestOptionsForFastFeedBackPackage(sfpPackage));
-        } else {
-            ({ testOptions, testCoverageOptions } = this.getTestOptionsForFullPackageTest(sfpPackage));
-        }
-        if (testOptions == undefined) {
-            return { id: null, result: true, message: 'No Tests To Run' };
-        }
-
-        this.displayTestHeader(sfpPackage);
-
-        const triggerApexTests: TriggerApexTests = new TriggerApexTests(
-            targetUsername,
-            testOptions,
-            testCoverageOptions,
-            null,
-            logger
-        );
-
-        return triggerApexTests.exec();
-    }
-
-    private getTestOptionsForFullPackageTest(
-        sfpPackage: SfpPackage
-    ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
-        const testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
-        const testCoverageOptions = {
-            isIndividualClassCoverageToBeValidated: false,
-            isPackageCoverageToBeValidated: !sfpPackage.packageDescriptor.skipCoverageValidation,
-            coverageThreshold: this.props.coverageThreshold || 75,
-        };
-        return { testOptions, testCoverageOptions };
-    }
-
-    private getTestOptionsForFastFeedBackPackage(
-        sfpPackage: SfpPackage
-    ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
-        //Change in security model trigger full
-
-        if (sfpPackage.diffPackageMetadata) {
-            if (
-                sfpPackage.diffPackageMetadata.isProfilesFound ||
-                sfpPackage.diffPackageMetadata.isPermissionSetFound ||
-                sfpPackage.diffPackageMetadata.isPermissionSetGroupFound
-            ) {
-                SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
-                return this.getTestOptionsForFullPackageTest(sfpPackage);
-            }
-
-            const impactedTestClasses = sfpPackage.diffPackageMetadata.invalidatedTestClasses;
-
-            //No impacted test class available
-            if (!impactedTestClasses || impactedTestClasses.length == 0) {
-                SFPLogger.log(
-                    `${COLOR_HEADER(
-                        'Unable to find any impacted test classses,skipping tests, You might need to use thorough option'
-                    )}`
+            if (deploymentResult.failed.length > 0) {
+                console.log(
+                    COLOR_ERROR(
+                        `\nPackages Failed to Deploy`,
+                        deploymentResult.failed.map((packageInfo) => packageInfo.sfpPackage.packageName)
+                    )
                 );
-                return { testOptions: undefined, testCoverageOptions: undefined };
             }
 
-            SFPLogger.log(
-                `${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`
+            console.log(
+                COLOR_HEADER(
+                    `----------------------------------------------------------------------------------------------------`
+                )
             );
-
-            const testOptions = new RunSpecifiedTestsOption(
-                60,
-                '.testResults',
-                impactedTestClasses.join(),
-                sfpPackage.packageDescriptor.testSynchronous
-            );
-            const testCoverageOptions = {
-                isIndividualClassCoverageToBeValidated: false,
-                isPackageCoverageToBeValidated: false,
-                coverageThreshold: 0,
-            };
-            return { testOptions, testCoverageOptions };
-        } else {
-            SFPLogger.log(
-                `${COLOR_HEADER(
-                    'Selective components were not found to compute invalidated test class, skipping tests'
-                )}`
-            );
-            SFPLogger.log(`${COLOR_HEADER('Please use thorough mode on this package, if its new')}`);
-            return { testOptions: undefined, testCoverageOptions: undefined };
+            groupSection.end();
         }
     }
 
-    private displayTestHeader(sfpPackage: SfpPackage) {
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
-        SFPLogger.log(`Triggering Apex tests for ${sfpPackage.packageName}`, LoggerLevel.INFO);
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
-    }
-
-    private async buildChangedSourcePackages(packagesToCommits: { [p: string]: string }): Promise<any> {
+    private async buildChangedSourcePackages(packagesInstalledInOrgMappedToCommits: {
+        [p: string]: string;
+    }): Promise<SfpPackage[]> {
         let groupSection = new GroupConsoleLogs('Building Packages').begin();
 
         const buildStartTime: number = Date.now();
@@ -422,20 +383,21 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             isDiffCheckEnabled: this.props.diffcheck,
             isQuickBuild: true,
             isBuildAllAsSourcePackages: true,
-            packagesToCommits: packagesToCommits,
             currentStage: Stage.VALIDATE,
             baseBranch: this.props.baseBranch,
         };
 
-        //In fast feedback ignore package descriptor changes
-        if (this.props.isFastFeedbackMode) {
-            const diffOptions: PackageDiffOptions = new PackageDiffOptions();
-            diffOptions.skipPackageDescriptorChange = true;
-            buildProps.diffOptions = diffOptions;
+        //Build DiffOptions
+        const diffOptions: PackageDiffOptions = buildDiffOption(this.props);
+        buildProps.diffOptions = diffOptions;
+
+        //Compute packages to be included
+        buildProps.includeOnlyPackages = await computePackagesIfReleaseDefnIsProvided(this.props);
+        if (buildProps.includeOnlyPackages) {
+            printIncludeOnlyPackages(buildProps.includeOnlyPackages);
         }
 
         const buildImpl: BuildImpl = new BuildImpl(buildProps);
-
         const { generatedPackages, failedPackages } = await buildImpl.exec();
 
         if (failedPackages.length > 0) throw new Error(`Failed to create source packages ${failedPackages}`);
@@ -456,35 +418,99 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         }
         const buildElapsedTime: number = Date.now() - buildStartTime;
 
-        this.printBuildSummary(generatedPackages, failedPackages, buildElapsedTime);
+        printBuildSummary(generatedPackages, failedPackages, buildElapsedTime);
 
         groupSection.end();
 
         return generatedPackages;
-    }
 
-    private getPackagesToCommits(installedArtifacts: any): { [p: string]: string } {
-        const packagesToCommits: { [p: string]: string } = {};
+        async function computePackagesIfReleaseDefnIsProvided(props: ValidateProps) {
+            if (
+                props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
+                props.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
+            ) {
+                //Generate release definition
+                let releaseDefinitionGenerator: ReleaseDefinitionGenerator = new ReleaseDefinitionGenerator(
+                    new ConsoleLogger(),
+                    'HEAD',
+                    props.releaseConfigPath,
+                    'validate',
+                    'test',
+                    undefined,
+                    true,
+                    false,
+                    true
+                );
+                let releaseDefinition = (await releaseDefinitionGenerator.exec()) as ReleaseDefinitionSchema;
+                return Object.keys(releaseDefinition.artifacts);
+            }
+        }
 
-        // Construct map of artifact and associated commit Id
-        installedArtifacts.forEach((artifact) => {
-            packagesToCommits[artifact.Name] = artifact.CommitId__c;
-            //Override for debugging purposes
-            if (process.env.VALIDATE_OVERRIDE_PKG)
-                packagesToCommits[process.env.VALIDATE_OVERRIDE_PKG] = process.env.VALIDATE_PKG_COMMIT_ID;
-        });
+        //generate diff Option
+        function buildDiffOption(props: ValidateProps) {
+            const diffOptions: PackageDiffOptions = new PackageDiffOptions();
+            //In fast feedback ignore package descriptor changes
+            if (props.validationMode == ValidationMode.FAST_FEEDBACK) {
+                diffOptions.skipPackageDescriptorChange = true;
+                diffOptions.useLatestGitTags = false;
+                diffOptions.packagesMappedToLastKnownCommitId = packagesInstalledInOrgMappedToCommits;
+            } else if (props.validationMode == ValidationMode.THOROUGH) {
+                diffOptions.skipPackageDescriptorChange = false;
+                diffOptions.useLatestGitTags = false;
+                diffOptions.packagesMappedToLastKnownCommitId = packagesInstalledInOrgMappedToCommits;
+            } else if (props.validationMode == ValidationMode.INDIVIDUAL) {
+                diffOptions.skipPackageDescriptorChange = false;
+                //Dont send whats installed in orgs, use only the changed package from last know git tags
+                diffOptions.useLatestGitTags = true;
+                diffOptions.packagesMappedToLastKnownCommitId = null;
+            } else if (props.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG) {
+                diffOptions.skipPackageDescriptorChange = false;
+                diffOptions.useLatestGitTags = false;
+                diffOptions.packagesMappedToLastKnownCommitId = packagesInstalledInOrgMappedToCommits;
+            }
+            else if (props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG) {
+                diffOptions.skipPackageDescriptorChange = true;
+                diffOptions.useLatestGitTags = false;
+                diffOptions.packagesMappedToLastKnownCommitId = packagesInstalledInOrgMappedToCommits;
+            }
+            return diffOptions;
+        }
 
-        if (process.env.VALIDATE_REMOVE_PKG) delete packagesToCommits[process.env.VALIDATE_REMOVE_PKG];
+        function printBuildSummary(
+            generatedPackages: SfpPackage[],
+            failedPackages: string[],
+            totalElapsedTime: number
+        ): void {
+            console.log(
+                COLOR_HEADER(
+                    `----------------------------------------------------------------------------------------------------`
+                )
+            );
+            console.log(
+                COLOR_SUCCESS(
+                    `${generatedPackages.length} packages created in ${COLOR_TIME(
+                        getFormattedTime(totalElapsedTime)
+                    )} with {${COLOR_ERROR(failedPackages.length)}} errors`
+                )
+            );
 
-        return packagesToCommits;
-    }
+            if (failedPackages.length > 0) {
+                console.log(COLOR_ERROR(`Packages Failed To Build`, failedPackages));
+            }
+            console.log(
+                COLOR_HEADER(
+                    `----------------------------------------------------------------------------------------------------`
+                )
+            );
+        }
 
-    private printArtifactVersions(installedArtifacts: any) {
-        let groupSection = new GroupConsoleLogs(`Artifacts installed in the Scratch Org`).begin();
-
-        InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
-
-        groupSection.end();
+        function printIncludeOnlyPackages(includeOnlyPackages: string[]) {
+            SFPLogger.log(
+                COLOR_KEY_MESSAGE(`Build will include the below packages as per inclusive filter`),
+                LoggerLevel.INFO
+            );
+            SFPLogger.log(COLOR_KEY_VALUE(`${includeOnlyPackages.toString()}`), LoggerLevel.INFO);
+        }
     }
 
     private async fetchScratchOrgFromPool(pools: string[]): Promise<string> {
@@ -527,67 +553,6 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         }
     }
 
-    private printBuildSummary(
-        generatedPackages: SfpPackage[],
-        failedPackages: string[],
-        totalElapsedTime: number
-    ): void {
-        console.log(
-            COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
-        );
-        console.log(
-            COLOR_SUCCESS(
-                `${generatedPackages.length} packages created in ${COLOR_TIME(
-                    getFormattedTime(totalElapsedTime)
-                )} with {${COLOR_ERROR(failedPackages.length)}} errors`
-            )
-        );
-
-        if (failedPackages.length > 0) {
-            console.log(COLOR_ERROR(`Packages Failed To Build`, failedPackages));
-        }
-        console.log(
-            COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
-        );
-    }
-
-    private printDeploySummary(deploymentResult: DeploymentResult, totalElapsedTime: number): void {
-        let groupSection = new GroupConsoleLogs(`Deployment Summary`).begin();
-
-        console.log(
-            COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
-        );
-        console.log(
-            COLOR_SUCCESS(
-                `${deploymentResult.deployed.length} packages deployed in ${COLOR_TIME(
-                    getFormattedTime(totalElapsedTime)
-                )} with {${COLOR_ERROR(deploymentResult.failed.length)}} failed deployments`
-            )
-        );
-
-        if (deploymentResult.failed.length > 0) {
-            console.log(
-                COLOR_ERROR(
-                    `\nPackages Failed to Deploy`,
-                    deploymentResult.failed.map((packageInfo) => packageInfo.sfpPackage.packageName)
-                )
-            );
-        }
-
-        console.log(
-            COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
-        );
-        groupSection.end();
-    }
-
     async preDeployPackage(
         sfpPackage: SfpPackage,
         targetUsername: string,
@@ -595,8 +560,9 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Its a scratch org fetched from pool.. install dependencies
         //Assume hubOrg will be available, no need to check
-        if (this.props.validateMode === ValidateMode.POOL) {
-            if (!this.props.isFastFeedbackMode) await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
+        if (this.props.validateAgainst === ValidateAgainst.PRECREATED_POOL) {
+            if (this.props.validationMode != ValidationMode.FAST_FEEDBACK)
+                await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
         }
 
         return { isToFailDeployment: false };
@@ -617,5 +583,125 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             }
         }
         return { isToFailDeployment: false };
+    }
+
+    private async triggerApexTests(
+        sfpPackage: SfpPackage,
+        targetUsername: string,
+        logger: Logger
+    ): Promise<{
+        id: string;
+        result: boolean;
+        message: string;
+    }> {
+        if (sfpPackage.packageDescriptor.skipTesting) return { id: null, result: true, message: 'No Tests To Run' };
+
+        if (!sfpPackage.isApexFound) return { id: null, result: true, message: 'No Tests To Run' };
+
+        if (sfpPackage.packageDescriptor.isOptimizedDeployment == false)
+            return { id: null, result: true, message: 'Tests would have already run' };
+
+        let testOptions: TestOptions, testCoverageOptions: CoverageOptions;
+
+        if (this.props.validationMode == ValidationMode.FAST_FEEDBACK) {
+            ({ testOptions, testCoverageOptions } = getTestOptionsForFastFeedBackPackage(sfpPackage));
+        } else {
+            ({ testOptions, testCoverageOptions } = getTestOptionsForFullPackageTest(sfpPackage));
+        }
+        if (testOptions == undefined) {
+            return { id: null, result: true, message: 'No Tests To Run' };
+        }
+
+        displayTestHeader(sfpPackage);
+
+        const triggerApexTests: TriggerApexTests = new TriggerApexTests(
+            targetUsername,
+            testOptions,
+            testCoverageOptions,
+            null,
+            logger
+        );
+
+        return triggerApexTests.exec();
+
+        function getTestOptionsForFullPackageTest(
+            sfpPackage: SfpPackage
+        ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
+            const testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
+            const testCoverageOptions = {
+                isIndividualClassCoverageToBeValidated: false,
+                isPackageCoverageToBeValidated: !sfpPackage.packageDescriptor.skipCoverageValidation,
+                coverageThreshold: this.props.coverageThreshold || 75,
+            };
+            return { testOptions, testCoverageOptions };
+        }
+
+        function getTestOptionsForFastFeedBackPackage(
+            sfpPackage: SfpPackage
+        ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
+            //Change in security model trigger full
+
+            if (sfpPackage.diffPackageMetadata) {
+                if (
+                    sfpPackage.diffPackageMetadata.isProfilesFound ||
+                    sfpPackage.diffPackageMetadata.isPermissionSetFound ||
+                    sfpPackage.diffPackageMetadata.isPermissionSetGroupFound
+                ) {
+                    SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
+                    return this.getTestOptionsForFullPackageTest(sfpPackage);
+                }
+
+                const impactedTestClasses = sfpPackage.diffPackageMetadata.invalidatedTestClasses;
+
+                //No impacted test class available
+                if (!impactedTestClasses || impactedTestClasses.length == 0) {
+                    SFPLogger.log(
+                        `${COLOR_HEADER(
+                            'Unable to find any impacted test classses,skipping tests, You might need to use thorough option'
+                        )}`
+                    );
+                    return { testOptions: undefined, testCoverageOptions: undefined };
+                }
+
+                SFPLogger.log(
+                    `${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`
+                );
+
+                const testOptions = new RunSpecifiedTestsOption(
+                    60,
+                    '.testResults',
+                    impactedTestClasses.join(),
+                    sfpPackage.packageDescriptor.testSynchronous
+                );
+                const testCoverageOptions = {
+                    isIndividualClassCoverageToBeValidated: false,
+                    isPackageCoverageToBeValidated: false,
+                    coverageThreshold: 0,
+                };
+                return { testOptions, testCoverageOptions };
+            } else {
+                SFPLogger.log(
+                    `${COLOR_HEADER(
+                        'Selective components were not found to compute invalidated test class, skipping tests'
+                    )}`
+                );
+                SFPLogger.log(`${COLOR_HEADER('Please use thorough mode on this package, if its new')}`);
+                return { testOptions: undefined, testCoverageOptions: undefined };
+            }
+        }
+
+        function displayTestHeader(sfpPackage: SfpPackage) {
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `-------------------------------------------------------------------------------------------`
+                )
+            );
+            SFPLogger.log(`Triggering Apex tests for ${sfpPackage.packageName}`, LoggerLevel.INFO);
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `-------------------------------------------------------------------------------------------`
+                )
+            );
+        }
     }
 }
