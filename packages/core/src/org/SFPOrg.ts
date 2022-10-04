@@ -44,7 +44,7 @@ export default class SFPOrg extends Org {
             isInstalled: false,
         };
         try {
-            SFPLogger.log(`Querying for version of  ${sfpPackage.packageName} in the Org..`, LoggerLevel.INFO, logger);
+            SFPLogger.log(`Querying for version of  ${sfpPackage.packageName} in the Org..`, LoggerLevel.TRACE, logger);
             result.isInstalled = false;
             let installedArtifacts = await this.getInstalledArtifacts();
             let packageName = sfpPackage.packageName;

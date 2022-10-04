@@ -29,7 +29,7 @@ export default class DeploymentSettingsService {
     }
 
     public async relaxAllIPRanges(logger: Logger, ipRangesAsStringArray?: string[]) {
-        let ipRanges:IpRange[]=[];
+        let ipRanges: IpRange[] = [];
         if (!ipRangesAsStringArray) {
             ipRanges = this.getFullRange();
         } else {
@@ -43,9 +43,14 @@ export default class DeploymentSettingsService {
             fullName: 'SecuritySettings',
             networkAccess: { ipRanges: ipRanges },
         };
-        let result = await this.conn.metadata.upsert('SecuritySettings', securitySettingsMetadata);
-        if (result.success) {
-            SFPLogger.log(`${COLOR_KEY_MESSAGE('Relaxed all ipRanges in the org')}`, LoggerLevel.INFO, logger);
+        try {
+            let result = await this.conn.metadata.upsert('SecuritySettings', securitySettingsMetadata);
+            if (result.success) {
+                SFPLogger.log(`${COLOR_KEY_MESSAGE('Relaxed all ipRanges in the org')}`, LoggerLevel.INFO, logger);
+            }
+        } catch (error) {
+            SFPLogger.log(`Unable to relax IP range in org due to ${error.message}`, LoggerLevel.ERROR, logger);
+            throw error;
         }
     }
 

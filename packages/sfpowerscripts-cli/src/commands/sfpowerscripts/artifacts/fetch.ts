@@ -82,7 +82,6 @@ export default class Fetch extends SfpowerscriptsCommand {
         let executionStartTime = Date.now();
         try {
             let fetchImpl: FetchImpl = new FetchImpl(
-                [releaseDefinition],
                 this.flags.artifactdir,
                 this.flags.scriptpath,
                 this.flags.npm,
@@ -90,7 +89,7 @@ export default class Fetch extends SfpowerscriptsCommand {
                 this.flags.npmrcpath
             );
 
-            result = await fetchImpl.exec();
+            result = await fetchImpl.fetchArtifacts([releaseDefinition]);
         } catch (err) {
             if (err instanceof FetchArtifactsError) {
                 result = err.data;

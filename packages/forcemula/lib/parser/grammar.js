@@ -1,0 +1,150 @@
+const RELATIONSHIP_SUFFIX = '__R';
+
+const STRING_DELIMETER = '"';
+
+const STANDARD_RELATIONSHIP_ID_NAME = 'Id';
+
+const CUSTOM_ENTITY_SUFFIX = '__C';
+
+const USER_FIELDS = ['OWNER','MANAGER','CREATEDBY','LASTMODIFIEDBY'];
+
+const CPQ_NAMESPACE = 'SBQQ__';
+
+const SPECIAL_PREFIXES = ['$USER','$PROFILE','$ORGANIZATION','$USERROLE','$SYSTEM'];
+
+const CUSTOM_METADATA_PREFIX = '__MDT';
+
+const CUSTOM_LABEL_PREFIX = '$LABEL.';
+
+const CUSTOM_SETTING_PREFIX = '$SETUP.';
+
+const OBJECT_TYPE_PREFIX = '$OBJECTTYPE.'
+
+const COMMENT_START = '/*';
+
+const COMMENT_END = '*/';
+
+const SELF_REFERENTIAL_PARENT_FIELD = 'PARENTID';
+
+const SELF_REFERENTIAL_PARENT_OBJECT = 'PARENT';
+
+const PROCESS_BUILDER_BRACKET_START = '[';
+
+const PROCESS_BUILDER_BRACKET_END = ']';
+
+const DOLLAR_SIGN = '$';
+
+const OPERATORS = [
+    `+`,
+    `-`,
+    `*`,
+    `/`,
+    `^`,
+    `(`,
+    `)`,
+    `=`,
+    `<`,
+    `>`,
+    `&`,
+    `|`,
+    `!`,
+    `,`,
+    
+]
+
+const FUNCTIONS = [
+    `TRUE`,
+    `FALSE`,
+    `ADDMONTHS`,
+    `DATE`,
+    `DATEVALUE`,
+    `DATETIMEVALUE`,
+    `DAY`,
+    `HOUR`,
+    `MILLISECOND`,
+    `MINUTE`,
+    `MONTH`,
+    `NOW`,
+    `SECOND`,
+    `TIMEVALUE`,
+    `TODAY`,
+    `WEEKDAY`,
+    `YEAR`,
+    `AND`,
+    `BLANKVALUE`,
+    `CASE`,
+    `IF`,
+    `ISBLANK`,
+    `ISCLONE`,
+    `ISNEW`,
+    `ISNULL`,
+    `ISNUMBER`,
+    `NOT`,
+    `NOTVALUE`,
+    `OR`,
+    `PRIORVALUE`,
+    `ABS`,
+    `CEILING`,
+    `DISTANCE`,
+    `EXP`,
+    `FLOOR`,
+    `GEOLOCATION`,
+    `LN`,
+    `LOG`,
+    `MAX`,
+    `MCEILING`,
+    `MFLOOR`,
+    `MIN`,
+    `MOD`,
+    `ROUND`,
+    `SQRT`,
+    `BEGINS`,
+    `BR`,
+    `CASESAFEID`,
+    `CONTAINS`,
+    `FIND`,
+    `GETSESSIONID`,
+    `HTMLENCODE`,
+    `HYPERLINK`,
+    `IMAGE`,
+    `INCLUDES`,
+    `ISPICKVAL`,
+    `JSENCODE`,
+    `JSINHTMLENCODE`,
+    `LEFT`,
+    `LEN`,
+    `LOWER`,
+    `LPAD`,
+    `MID`,
+    `RIGHT`,
+    `RPAD`,
+    `SUBSTITUTE`,
+    `TEXT`,
+    `TRIM`,
+    `UPPER`,
+    `URLENCODE`,
+    `VALUE`,
+    `PARENTGROUPVAL`,
+    `PREVGROUPVAL`,
+    `CURRENCYRATE`,
+    `GETRECORDIDS`,
+    `IMAGEPROXYURL`,
+    `INCLUDE`,
+    `ISCHANGED`,
+    `JUNCTIONIDLIST`,
+    `LINKTO`,
+    `PREDICT`,
+    `REGEX`,
+    `REQUIRESCRIPT`,
+    `URLFOR`,
+    `VLOOKUP`,
+]
+
+module.exports = {
+    RELATIONSHIP_SUFFIX,STANDARD_RELATIONSHIP_ID_NAME,CUSTOM_ENTITY_SUFFIX,
+    USER_FIELDS,CPQ_NAMESPACE,SPECIAL_PREFIXES,
+    CUSTOM_METADATA_PREFIX,CUSTOM_LABEL_PREFIX,CUSTOM_SETTING_PREFIX,
+    OBJECT_TYPE_PREFIX,COMMENT_START,COMMENT_END,STRING_DELIMETER,
+    SELF_REFERENTIAL_PARENT_FIELD,SELF_REFERENTIAL_PARENT_OBJECT,PROCESS_BUILDER_BRACKET_START,
+    PROCESS_BUILDER_BRACKET_END,DOLLAR_SIGN,OPERATORS,FUNCTIONS
+}

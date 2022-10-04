@@ -1,4 +1,4 @@
-import { ReleaseChangelog, Release, org } from './ReleaseChangelogInterfaces';
+import { ReleaseChangelog, Release, org } from './ReleaseChangelog';
 import { URL } from 'url';
 import { EOL } from 'os';
 const markdownTable = require('markdown-table');
@@ -43,9 +43,9 @@ export default class ChangelogMarkdownGenerator {
             } else {
                 payload += `\n<a id=${release.hashId}></a>\n`; // Create anchor from release hash Id
                 payload += `# ${release.names.join(`/`)}\n `;
-                payload += `Cumulative Release Number: ${release.buildNumber}\n `;
+                payload += `Cumulative Release Number: <b>${release.buildNumber}</b> \n\n`;
                 if(release.date)
-                  payload += `Matching defintion first deployed to an org on: ${release.date}\n `
+                  payload += `Matching defintion first created or deployed to an org on: ${release.date}\n `
 
             }
 

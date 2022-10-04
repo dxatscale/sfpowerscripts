@@ -1,8 +1,7 @@
 import BatchingTopoSort from './BatchingTopoSort';
 import DependencyHelper from './DependencyHelper';
 import Bottleneck from 'bottleneck';
-import PackageDiffImpl, { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/PackageDiffImpl';
-import simplegit from 'simple-git';
+import PackageDiffImpl, { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
 import { EOL } from 'os';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import { Stage } from '../Stage';
@@ -25,6 +24,7 @@ import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormat
 import { COLON_MIDDLE_BORDER_TABLE, ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import PackageDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/PackageDependencyResolver';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -87,15 +87,9 @@ export default class BuildImpl {
         if (this.props.devhubAlias) this.sfpOrg = await SFPOrg.create({ aliasOrUsername: this.props.devhubAlias });
 
         SFPLogger.log(`Invoking build...`, LoggerLevel.INFO);
-        const git = simplegit();
-        if (this.props.repourl == null) {
-            this.repository_url = (await git.getConfig('remote.origin.url')).value;
-            SFPLogger.log(`Fetched Remote URL ${this.repository_url}`, LoggerLevel.INFO);
-        } else this.repository_url = this.props.repourl;
-
-        if (!this.repository_url) throw new Error('Remote origin must be set in repository');
-
-        this.commit_id = await git.revparse(['HEAD']);
+        let git = await Git.initiateRepo(new ConsoleLogger())
+        this.repository_url = await git.getRemoteOriginUrl(this.props.repourl);    
+        this.commit_id = await git.getHeadCommit();
 
         this.packagesToBeBuilt = this.getAllPackages(this.props.projectDirectory);
 
@@ -112,11 +106,9 @@ export default class BuildImpl {
                 this.props.projectDirectory,
                 this.packagesToBeBuilt
             );
-            console.log('1')
             table = this.createDiffPackageScheduledDisplayedAsATable(packagesToBeBuiltWithReasons);
             this.packagesToBeBuilt = Array.from(packagesToBeBuiltWithReasons.keys()); //Assign it back to the instance variable
         } else {
-            console.log('2')
             table = this.createAllPackageScheduledDisplayedAsATable();
         }
         //Log Packages to be built
@@ -412,8 +404,6 @@ export default class BuildImpl {
             return !pushedPackages.includes(el);
         });
         this.packagesInQueue = this.packagesInQueue.filter((pkg_name) => pkg_name !== sfpPackage.packageName);
-
-        this.printQueueDetails();
     }
 
     private resolveDependenciesOnCompletedPackage(dependentPackage: string, completedPackage: SfpPackage) {

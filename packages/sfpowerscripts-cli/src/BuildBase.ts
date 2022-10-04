@@ -81,6 +81,10 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             description: messages.getMessage('devhubAliasFlagDescription'),
             default: 'HubOrg',
         }),
+        logsgroupsymbol: flags.array({
+            char: 'g',
+            description: messages.getMessage('logsGroupSymbolFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
