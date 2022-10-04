@@ -10,16 +10,18 @@ import { EOL } from 'os';
 import { PackageType } from '../SfpPackage';
 
 export class PackageDiffOptions {
-    skipPackageDescriptorChange: boolean = false;
+    skipPackageDescriptorChange?: boolean = false;
+    //If not set, utlize latest git tags
+    useLatestGitTags?:boolean=true;
+    packagesMappedToLastKnownCommitId?: { [p: string]: string };
+    pathToReplacementForceIgnore?: string;
 }
 
 export default class PackageDiffImpl {
     public constructor(
         private logger: Logger,
         private sfdx_package: string,
-        private project_directory: string,
-        private packagesToCommits?: { [p: string]: string },
-        private pathToReplacementForceIgnore?: string,
+        private project_directory: string|null,
         private diffOptions?: PackageDiffOptions
     ) {}
 
@@ -38,8 +40,8 @@ export default class PackageDiffImpl {
         );
 
         let tag: string;
-        if (this.packagesToCommits != null) {
-            tag = this.getLatestCommitFromMap(this.sfdx_package, this.packagesToCommits);
+        if (!this.diffOptions?.useLatestGitTags && this.diffOptions?.packagesMappedToLastKnownCommitId != null) {
+            tag = this.getLatestCommitFromMap(this.sfdx_package, this.diffOptions?.packagesMappedToLastKnownCommitId);
         } else {
             tag = await this.getLatestTagFromGit(git, this.sfdx_package);
         }
@@ -100,7 +102,7 @@ export default class PackageDiffImpl {
 
     private applyForceIgnoreToModifiedFiles(modified_files: string[]) {
         let forceignorePath: string;
-        if (this.pathToReplacementForceIgnore) forceignorePath = this.pathToReplacementForceIgnore;
+        if (this.diffOptions?.pathToReplacementForceIgnore) forceignorePath = this.diffOptions?.pathToReplacementForceIgnore;
         else if (this.project_directory != null) forceignorePath = path.join(this.project_directory, '.forceignore');
         else forceignorePath = '.forceignore';
 
