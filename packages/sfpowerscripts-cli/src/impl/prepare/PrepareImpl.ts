@@ -40,7 +40,7 @@ export default class PrepareImpl {
 
         if (!this.pool.waitTime) this.pool.waitTime = 6;
 
-        this.isReleaseDefinitionFileSpecified = this.pool.fetchArtifacts.releaseDefinitionFilePath;
+        this.isReleaseDefinitionFileSpecified = this.pool.fetchArtifacts?.releaseDefinitionFilePath;
     }
 
     public async exec() {
@@ -156,8 +156,8 @@ export default class PrepareImpl {
     }
 
     private async getPackageArtifacts() {
-        let artifacts = {};
-        if(this.isReleaseDefinitionFileSpecified) {
+        let artifacts;
+        if(this.isReleaseDefinitionFileSpecified && !this.pool.installAll) {
             artifacts =
                 await ReleaseDefinition.getArtifactsFromReleaseDefinitionFile(this.pool.fetchArtifacts.releaseDefinitionFilePath);
         }
@@ -237,6 +237,9 @@ export default class PrepareImpl {
             if (stage === 'prepare')
                 return false;
         })
-        return artifacts[pkg.package] !== undefined;
+        if (artifacts)
+            return artifacts[pkg.package] !== undefined;
+        else
+            return true;
     }
 }

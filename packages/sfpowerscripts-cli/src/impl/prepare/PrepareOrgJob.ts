@@ -28,7 +28,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
     public constructor(protected pool: PoolConfig, private externalPackage2s: PackageDetails[]) {
         super(pool);
-        this.isReleaseDefinitionFileSpecified = this.pool.fetchArtifacts.releaseDefinitionFilePath;
+        this.isReleaseDefinitionFileSpecified = this.pool.fetchArtifacts?.releaseDefinitionFilePath;
     }
 
     async executeJob(
@@ -90,8 +90,8 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
     private async deployAllPackages(scratchOrg: ScratchOrg, invidualScratchOrgLogFile: FileLogger) {
 
-         //Get Most critical packages
-         this.checkPointPackages = this.getcheckPointPackages(invidualScratchOrgLogFile);
+        //Get Most critical packages
+        this.checkPointPackages = this.getcheckPointPackages(invidualScratchOrgLogFile);
 
 
         let deploymentSucceed: string;
@@ -148,7 +148,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         packageCollectionInstaller: InstallUnlockedPackageCollection
     ) {
         SFPLogger.log(
-            `Installing package depedencies to the ${scratchOrg.alias}`,
+            `Installing package dependencies to the ${scratchOrg.alias}`,
             LoggerLevel.INFO,
             invidualScratchOrgLogFile
         );
@@ -275,17 +275,17 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         SFPLogger.log('Fetching checkpoints for prepare if any.....', LoggerLevel.INFO, logger);
 
         let checkPointPackages = [];
-        if (!this.isReleaseDefinitionFileSpecified) {
-            ProjectConfig.getAllPackageDirectoriesFromDirectory(null).forEach((pkg) => {
-                if (pkg.checkpointForPrepare) checkPointPackages.push(pkg['package']);
-            });
-        } else {
+        if (this.isReleaseDefinitionFileSpecified && !this.pool.installAll) {
             let artifactsFromReleaseDefinition =
                 ReleaseDefinition.getArtifactsFromReleaseDefinitionFile(this.pool.fetchArtifacts.releaseDefinitionFilePath);
 
             ProjectConfig.getAllPackageDirectoriesFromDirectory(null).forEach((pkg) => {
                 if (pkg.checkpointForPrepare && artifactsFromReleaseDefinition[pkg.package])
                     checkPointPackages.push(pkg['package']);
+            });
+        } else {
+            ProjectConfig.getAllPackageDirectoriesFromDirectory(null).forEach((pkg) => {
+                if (pkg.checkpointForPrepare) checkPointPackages.push(pkg['package']);
             });
         }
         return checkPointPackages;
