@@ -49,7 +49,7 @@ export interface DeployProps {
     promotePackagesBeforeDeploymentToOrg?: string;
     devhubUserName?: string;
     disableArtifactCommit?: boolean;
-    isFastFeedbackMode?: boolean;
+    selectiveComponentDeployment?:boolean;
 }
 
 export default class DeployImpl {
@@ -337,7 +337,7 @@ export default class DeployImpl {
         );
         if (sfpPackage.packageType == PackageType.Source || sfpPackage.packageType == PackageType.Unlocked) {
             if (!pkgDescriptor.aliasfy) {
-                if (this.props.isFastFeedbackMode && sfpPackage.diffPackageMetadata?.metadataCount)
+                if (this.props.selectiveComponentDeployment && sfpPackage.diffPackageMetadata?.metadataCount)
                     SFPLogger.log(
                         `Metadata to be deployed: ${COLOR_KEY_MESSAGE(
                             sfpPackage.diffPackageMetadata?.metadataCount
@@ -572,7 +572,7 @@ export default class DeployImpl {
         let deploymentType =
             this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
                 ? DeploymentType.SOURCE_PUSH
-                : this.props.isFastFeedbackMode
+                : this.props.selectiveComponentDeployment
                 ? DeploymentType.SELECTIVE_MDAPI_DEPLOY
                 : DeploymentType.MDAPI_DEPLOY;
 
