@@ -20,3 +20,9 @@ During the build stage, fields from the package along with history-tracking.csv 
 As a post installation step of a package, the entities in the json file will be retrieved from the org and redeployed after updating the history tracking attributes.
 
 ![image](./006-field-history-tracking-resolution.png)
+
+
+### Issues/Challenges with the solution:
+- This solution still doesn't address the challenge the organizing aspect of managed package fields. A possible area would be to store the csv file in src-env-specific-post
+- This solution always apply FHT whenever the associated package is installed, We could consider applying a filter to fields which do not have it enabled l, reducing or eliminating the post deployment aspect considerably.
+- The solution currently doesn't consider future 'bundling' or single transaction deployment
