@@ -19,7 +19,7 @@ During the build stage, history-tracking.csv will be scanned to generate a JSON 
 
 As a post installation step of a package, the entities (fields and objects since history tracking needs to be enabled on the object level) in the JSON file will be retrieved from the org and redeployed after updating the history tracking attributes (another option here is to merge the JSON files from all the packages together into one before retrieving entities from the org).
 
-![image](./006-field-history-tracking-resolution_v2.png)
+![image](./006-field-history-tracking-resolution.png)
 
 
 ### Issues/Challenges with the solution:
