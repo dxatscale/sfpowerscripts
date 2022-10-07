@@ -28,7 +28,7 @@ const Table = require('cli-table');
 
 export default class PrepareImpl {
     private artifactFetchedCount: number = 0;
-    private isReleaseDefinitionFileSpecified: boolean;
+    private releaseDefinitionFilePath;
 
     public constructor(private hubOrg: Org, private pool: PoolConfig, private logLevel: LoggerLevel) {
         // set defaults
@@ -40,7 +40,7 @@ export default class PrepareImpl {
 
         if (!this.pool.waitTime) this.pool.waitTime = 6;
 
-        this.isReleaseDefinitionFileSpecified = this.pool.fetchArtifacts?.releaseDefinitionFilePath;
+        this.releaseDefinitionFilePath = this.pool.fetchArtifacts?.releaseDefinitionFilePath;
     }
 
     public async exec() {
@@ -72,7 +72,7 @@ export default class PrepareImpl {
         fs.mkdirpSync('artifacts');
 
         // Fetch all or only specified latest Artifacts to Artifact Directory
-        if (this.pool.installAll || this.isReleaseDefinitionFileSpecified) {
+        if (this.pool.installAll || this.releaseDefinitionFilePath) {
             await this.getPackageArtifacts();
         }
 
@@ -157,9 +157,9 @@ export default class PrepareImpl {
 
     private async getPackageArtifacts() {
         let artifacts;
-        if(this.isReleaseDefinitionFileSpecified && !this.pool.installAll) {
+        if(this.releaseDefinitionFilePath && !this.pool.installAll) {
             artifacts =
-                await ReleaseDefinition.getArtifactsFromReleaseDefinitionFile(this.pool.fetchArtifacts.releaseDefinitionFilePath);
+                await ReleaseDefinition.getArtifactsFromReleaseDefinitionFile(this.releaseDefinitionFilePath);
         }
 
         //Filter Packages to be ignored from prepare to be fetched

@@ -24,11 +24,11 @@ const fs = require('fs-extra');
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor {
     private checkPointPackages: string[];
-    private isReleaseDefinitionFileSpecified: boolean;
+    private releaseDefinitionFilePath;
 
     public constructor(protected pool: PoolConfig, private externalPackage2s: PackageDetails[]) {
         super(pool);
-        this.isReleaseDefinitionFileSpecified = this.pool.fetchArtifacts?.releaseDefinitionFilePath;
+        this.releaseDefinitionFilePath = this.pool.fetchArtifacts?.releaseDefinitionFilePath;
     }
 
     async executeJob(
@@ -95,7 +95,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
 
         let deploymentSucceed: string;
-        if (this.pool.installAll || this.isReleaseDefinitionFileSpecified) {
+        if (this.pool.installAll || this.releaseDefinitionFilePath) {
             let deploymentResult: DeploymentResult;
 
             let deploymentMode: DeploymentMode;
@@ -275,9 +275,9 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         SFPLogger.log('Fetching checkpoints for prepare if any.....', LoggerLevel.INFO, logger);
 
         let checkPointPackages = [];
-        if (this.isReleaseDefinitionFileSpecified && !this.pool.installAll) {
+        if (this.releaseDefinitionFilePath && !this.pool.installAll) {
             let artifactsFromReleaseDefinition =
-                ReleaseDefinition.getArtifactsFromReleaseDefinitionFile(this.pool.fetchArtifacts.releaseDefinitionFilePath);
+                ReleaseDefinition.getArtifactsFromReleaseDefinitionFile(this.releaseDefinitionFilePath);
 
             ProjectConfig.getAllPackageDirectoriesFromDirectory(null).forEach((pkg) => {
                 if (pkg.checkpointForPrepare && artifactsFromReleaseDefinition[pkg.package])
