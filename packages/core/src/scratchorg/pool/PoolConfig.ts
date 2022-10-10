@@ -16,7 +16,7 @@ export interface PoolConfig {
     retryOnFailure?: boolean;
     fetchArtifacts: {
         artifactFetchScript?: string;
-        releaseDefinitionFilePath?: string;
+        releaseDefinitionConfigFilePath?: string;
         npm?: {
             npmrcPath?: string;
             scope: string;

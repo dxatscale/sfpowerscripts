@@ -1,5 +1,5 @@
 import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../deploy/DeployImpl';
-import SFPLogger, { FileLogger, LoggerLevel, Logger, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
+import SFPLogger, {FileLogger, LoggerLevel, Logger, COLOR_KEY_MESSAGE, ConsoleLogger} from '@dxatscale/sfp-logger';
 import { Stage } from '../Stage';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
@@ -18,17 +18,21 @@ import DeploymentSettingsService from '@dxatscale/sfpowerscripts.core/lib/deploy
 import PackageDetails from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
 import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import ReleaseDefinition from "../release/ReleaseDefinition";
+import ReleaseDefinitionGeneratorConfigSchema from "../release/ReleaseDefinitionGeneratorConfigSchema";
+import ReleaseDefinitionGenerator from "../release/ReleaseDefinitionGenerator";
 const fs = require('fs-extra');
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor {
     private checkPointPackages: string[];
-    private releaseDefinitionFilePath;
+    private _releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema;
 
     public constructor(protected pool: PoolConfig, private externalPackage2s: PackageDetails[]) {
         super(pool);
-        this.releaseDefinitionFilePath = this.pool.fetchArtifacts?.releaseDefinitionFilePath;
+        if (this.pool.fetchArtifacts?.releaseDefinitionConfigFilePath) {
+            this._releaseDefinitionGeneratorSchema = new ReleaseDefinitionGenerator(
+                new ConsoleLogger(), this.pool.fetchArtifacts.releaseDefinitionConfigFilePath).releaseDefinitionGeneratorConfigSchema;
+        }
     }
 
     async executeJob(
@@ -95,7 +99,7 @@ export default class PrepareOrgJob extends PoolJobExecutor {
 
 
         let deploymentSucceed: string;
-        if (this.pool.installAll || this.releaseDefinitionFilePath) {
+        if (this.pool.installAll || this._releaseDefinitionGeneratorSchema) {
             let deploymentResult: DeploymentResult;
 
             let deploymentMode: DeploymentMode;
@@ -275,12 +279,11 @@ export default class PrepareOrgJob extends PoolJobExecutor {
         SFPLogger.log('Fetching checkpoints for prepare if any.....', LoggerLevel.INFO, logger);
 
         let checkPointPackages = [];
-        if (this.releaseDefinitionFilePath && !this.pool.installAll) {
-            let artifactsFromReleaseDefinition =
-                ReleaseDefinition.getArtifactsFromReleaseDefinitionFile(this.releaseDefinitionFilePath);
+        if (this._releaseDefinitionGeneratorSchema && !this.pool.installAll) {
+            const artifactsFromReleaseDefinition = this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts;
 
             ProjectConfig.getAllPackageDirectoriesFromDirectory(null).forEach((pkg) => {
-                if (pkg.checkpointForPrepare && artifactsFromReleaseDefinition[pkg.package])
+                if (pkg.checkpointForPrepare && artifactsFromReleaseDefinition.includes(pkg.package))
                     checkPointPackages.push(pkg['package']);
             });
         } else {

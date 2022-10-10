@@ -45,11 +45,6 @@ export default class ReleaseDefinition {
         return releaseDefinition;
     }
 
-    public static async getArtifactsFromReleaseDefinitionFile(pathToReleaseDefinition: string) {
-        let releaseDefinition = await this.loadReleaseDefinition(pathToReleaseDefinition);
-        return releaseDefinition.releaseDefinition.artifacts;
-    }
-
     private convertPackageDependenciesIdTo18Digits(packageDependencies: { [p: string]: string }) {
         for (let pkg in packageDependencies) {
             packageDependencies[pkg] = get18DigitSalesforceId(packageDependencies[pkg]);

@@ -23,12 +23,13 @@ import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSen
 import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
 import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
 import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
-import ReleaseDefinition from "../release/ReleaseDefinition";
+import ReleaseDefinitionGeneratorConfigSchema from "../release/ReleaseDefinitionGeneratorConfigSchema";
+import ReleaseDefinitionGenerator from "../release/ReleaseDefinitionGenerator";
 const Table = require('cli-table');
 
 export default class PrepareImpl {
     private artifactFetchedCount: number = 0;
-    private releaseDefinitionFilePath;
+    private _releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema;
 
     public constructor(private hubOrg: Org, private pool: PoolConfig, private logLevel: LoggerLevel) {
         // set defaults
@@ -40,7 +41,10 @@ export default class PrepareImpl {
 
         if (!this.pool.waitTime) this.pool.waitTime = 6;
 
-        this.releaseDefinitionFilePath = this.pool.fetchArtifacts?.releaseDefinitionFilePath;
+        if (this.pool.fetchArtifacts?.releaseDefinitionConfigFilePath) {
+            this._releaseDefinitionGeneratorSchema = new ReleaseDefinitionGenerator(
+                new ConsoleLogger(), this.pool.fetchArtifacts.releaseDefinitionConfigFilePath).releaseDefinitionGeneratorConfigSchema;
+        }
     }
 
     public async exec() {
@@ -72,7 +76,7 @@ export default class PrepareImpl {
         fs.mkdirpSync('artifacts');
 
         // Fetch all or only specified latest Artifacts to Artifact Directory
-        if (this.pool.installAll || this.releaseDefinitionFilePath) {
+        if (this.pool.installAll || this._releaseDefinitionGeneratorSchema) {
             await this.getPackageArtifacts();
         }
 
@@ -157,9 +161,8 @@ export default class PrepareImpl {
 
     private async getPackageArtifacts() {
         let artifacts;
-        if(this.releaseDefinitionFilePath && !this.pool.installAll) {
-            artifacts =
-                await ReleaseDefinition.getArtifactsFromReleaseDefinitionFile(this.releaseDefinitionFilePath);
+        if(this._releaseDefinitionGeneratorSchema && !this.pool.installAll) {
+            artifacts = this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts;
         }
 
         //Filter Packages to be ignored from prepare to be fetched
@@ -238,7 +241,7 @@ export default class PrepareImpl {
                 return false;
         })
         if (artifacts)
-            return artifacts[pkg.package] !== undefined;
+            return artifacts.includes(pkg.package);
         else
             return true;
     }

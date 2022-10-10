@@ -23,10 +23,10 @@ export default class ReleaseDefinitionGenerator {
 
     public constructor(
         private logger: Logger,
-        private gitRef: string,
         pathToReleaseDefinition: string,
-        private releaseName: string,
-        private branch: string,
+        private gitRef?: string,
+        private releaseName?: string,
+        private branch?: string,
         private directory?: string,
         private noPush: boolean = false,
         private forcePush: boolean = false

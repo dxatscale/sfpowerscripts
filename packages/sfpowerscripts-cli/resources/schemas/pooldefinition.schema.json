@@ -113,9 +113,9 @@
                     "description": "Path to Shell script that handles fetching artifacts from a registry",
                     "type": "string"
                 },
-                "releaseDefinitionFilePath": {
-                    "title": "Path to release definition file",
-                    "description": "Reference an external release YAML file where you can specify the artifacts to be installed in the org, in addition to other parameters.",
+                "releaseDefinitionConfigFilePath": {
+                    "title": "Path to release definition config file",
+                    "description": "Reference an external config YAML file where you can specify the artifacts to be installed in the org, in addition to other parameters.",
                     "type": "string"
                 },
                 "npm": {

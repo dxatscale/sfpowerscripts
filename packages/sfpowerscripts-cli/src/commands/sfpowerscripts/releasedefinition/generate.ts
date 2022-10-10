@@ -75,8 +75,8 @@ export default class Generate extends SfpowerscriptsCommand {
         try {
             let releaseDefinitionGenerator: ReleaseDefinitionGenerator = new ReleaseDefinitionGenerator(
                 new ConsoleLogger(),
-                this.flags.gitref,
                 this.flags.configfile,
+                this.flags.gitref,
                 this.flags.releasename,
                 this.flags.branchname,
                 this.flags.directory,
