@@ -4,7 +4,7 @@ import child_process = require('child_process');
 export default class GitTags {
     constructor(private git: Git, private sfdx_package: string) {}
 
-    /**
+    /***
      * Returns list of sorted tags, belonging to package, that are reachable from HEAD and
      * follow the first parent on merge commits.
      * If there are no tags, returns empty array
