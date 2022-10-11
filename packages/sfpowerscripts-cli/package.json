@@ -1,9 +1,9 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "19.7.4",
+    "version": "19.8.2",
     "author": "dxatscale",
-    "release": "September 22",
+    "release": "October 22",
     "bin": {
         "readVars": "./scripts/readVars.sh"
     },
@@ -11,7 +11,7 @@
     "dependencies": {
         "@dxatscale/sfdc-soup": "18.2.4",
         "@dxatscale/sfp-logger": "1.1.1",
-        "@dxatscale/sfpowerscripts.core": "32.2.3",
+        "@dxatscale/sfpowerscripts.core": "32.2.5",
         "@oclif/core": "1.10.0",
         "@oclif/plugin-help": "5.1.12",
         "@salesforce/command": "5.2.1",
