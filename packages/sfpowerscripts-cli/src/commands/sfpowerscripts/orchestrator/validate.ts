@@ -102,6 +102,13 @@ export default class Validate extends SfpowerscriptsCommand {
         fastfeedback: flags.boolean({
             description: messages.getMessage('fastfeedbackFlagDescription'),
         }),
+        retryable: flags.boolean({
+            description: messages.getMessage('retryableFlagDescription'),
+            default: false
+        }),
+        validationid: flags.string({
+            description: messages.getMessage('validationIdFlagDescription'),
+        }),
         logsgroupsymbol: flags.array({
             char: 'g',
             description: messages.getMessage('logsGroupSymbolFlagDescription'),
@@ -176,6 +183,8 @@ export default class Validate extends SfpowerscriptsCommand {
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
                 isFastFeedbackMode: this.flags.fastfeedback,
+                isRetryable: this.flags.retryable,
+                validationId: this.flags.validationId,
             };
 
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);

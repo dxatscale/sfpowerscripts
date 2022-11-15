@@ -19,6 +19,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
     private setdefaultusername: boolean;
     private authURLEnabledScratchOrg: boolean;
     private isSourceTrackingToBeSet: boolean = false;
+    private validationId: string;
 
     public constructor(
         hubOrg: Org,
@@ -28,7 +29,8 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         sendToUser?: string,
         alias?: string,
         setdefaultusername?: boolean,
-        private fetchAllScratchOrgs?: boolean
+        private fetchAllScratchOrgs?: boolean,
+        validationId?: string
     ) {
         super(hubOrg);
         this.tag = tag;
@@ -37,6 +39,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         this.sendToUser = sendToUser;
         this.alias = alias;
         this.setdefaultusername = setdefaultusername;
+        this.validationId = validationId;
     }
 
     public setSourceTrackingOnFetch() {
@@ -131,6 +134,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
                 let allocateSO = await new ScratchOrgInfoAssigner(this.hubOrg).setScratchOrgInfo({
                     Id: element.Id,
                     Allocation_status__c: 'Allocate',
+                    ValidationId__c: this.validationId
                 });
                 if (allocateSO === true) {
                     SFPLogger.log(
