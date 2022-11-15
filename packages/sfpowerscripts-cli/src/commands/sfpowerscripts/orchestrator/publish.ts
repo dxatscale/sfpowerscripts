@@ -5,6 +5,7 @@ import * as fs from 'fs-extra';
 import path = require('path');
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
 import child_process = require('child_process');
+import defaultProcessOptions from "../../../utils/defaultProcessOptions";
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import SFPLogger, {
     COLOR_ERROR,
@@ -153,7 +154,7 @@ export default class Promote extends SfpowerscriptsCommand {
                         cwd: process.cwd(),
                         stdio: ['ignore', 'pipe', 'pipe'],
                         encoding: 'utf8',
-                        maxBuffer: 5 * 1024 * 1024,
+                        ... defaultProcessOptions()
                     }
                 );
                 packageVersionList = JSON.parse(packageVersionListJson);
@@ -314,6 +315,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
         child_process.execSync(cmd, {
             cwd: artifactRootDirectory,
+            ... defaultProcessOptions()
         });
         publishGroupSection.end();
     }
@@ -335,6 +337,7 @@ export default class Promote extends SfpowerscriptsCommand {
         child_process.execSync(cmd, {
             cwd: process.cwd(),
             stdio: ['ignore', 'inherit', 'inherit'],
+            ... defaultProcessOptions()
         });
     }
 
