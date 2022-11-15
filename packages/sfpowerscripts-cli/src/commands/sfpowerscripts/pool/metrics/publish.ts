@@ -70,12 +70,13 @@ export default class Publish extends SfpowerscriptsCommand {
         const limits = await new LimitsFetcher(this.hubOrg.getConnection()).getApiLimits();
         const remainingActiveScratchOrgs = limits.find((limit) => limit.name === 'ActiveScratchOrgs').remaining;
         const remainingDailyScratchOrgs = limits.find((limit) => limit.name === 'DailyScratchOrgs').remaining;
+        const devhubUserName = this.hubOrg.getUsername()
 
-        SFPStatsSender.logGauge(`scratchorgs.active.remaining`, remainingActiveScratchOrgs);
-        SFPStatsSender.logGauge(`scratchorgs.daily.remaining`, remainingDailyScratchOrgs);
+        SFPStatsSender.logGauge(`scratchorgs.active.remaining`, remainingActiveScratchOrgs, {target_org: devhubUserName});
+        SFPStatsSender.logGauge(`scratchorgs.daily.remaining`, remainingDailyScratchOrgs, {target_org: devhubUserName});
 
-        table.push(['sfpowerscripts.scratchorgs.active.remaining', remainingActiveScratchOrgs, '']);
-        table.push(['sfpowerscripts.scratchorgs.daily.remaining', remainingDailyScratchOrgs, '']);
+        table.push(['sfpowerscripts.scratchorgs.active.remaining', remainingActiveScratchOrgs, devhubUserName]);
+        table.push(['sfpowerscripts.scratchorgs.daily.remaining', remainingDailyScratchOrgs, devhubUserName]);
 
         SFPStatsSender.logGauge(`pool.footprint`, nPooledScratchOrgs);
         table.push(['sfpowerscripts.pool.footprint', nPooledScratchOrgs, '']);
