@@ -237,7 +237,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
                 logger
             );
             //Display resolved dependenencies
-            let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s, new ConsoleLogger());
+            let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s, logger);
             externalDependencyDisplayer.display();
 
             let packageCollectionInstaller = new InstallUnlockedPackageCollection(
