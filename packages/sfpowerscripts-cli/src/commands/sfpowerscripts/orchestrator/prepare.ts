@@ -20,6 +20,7 @@ import SFPLogger, {
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
 import { COLOR_WARNING } from '@dxatscale/sfp-logger';
+import PoolSchema from '@dxatscale/sfpowerscripts.core/resources/pooldefinition.schema.json'
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'prepare');
@@ -237,10 +238,9 @@ export default class Prepare extends SfpowerscriptsCommand {
     }
 
     public validatePoolConfig(poolConfig: any) {
-        let resourcesDir = path.join(__dirname, '..', '..', '..', '..', 'resources', 'schemas');
+       
         let ajv = new Ajv({ allErrors: true });
-        let schema = fs.readJSONSync(path.join(resourcesDir, `pooldefinition.schema.json`), { encoding: 'UTF-8' });
-        let validator = ajv.compile(schema);
+        let validator = ajv.compile(PoolSchema);
         let isSchemaValid = validator(poolConfig);
         if (!isSchemaValid) {
             let errorMsg: string = `The pool configuration is invalid, Please fix the following errors\n`;
