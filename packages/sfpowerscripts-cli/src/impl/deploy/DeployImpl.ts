@@ -149,7 +149,8 @@ export default class DeployImpl {
                 let preHookStatus = await this._preDeployHook?.preDeployPackage(
                     sfpPackage,
                     this.props.targetUsername,
-                    this.props.devhubUserName
+                    this.props.devhubUserName,
+                    this.props.packageLogger
                 );
                 if (preHookStatus?.isToFailDeployment) {
                     failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
@@ -217,7 +218,8 @@ export default class DeployImpl {
                     sfpPackage,
                     packageInstallationResult,
                     this.props.targetUsername,
-                    this.props.devhubUserName
+                    this.props.devhubUserName,
+                    this.props.packageLogger
                 );
 
                 if (postHookStatus?.isToFailDeployment) {
