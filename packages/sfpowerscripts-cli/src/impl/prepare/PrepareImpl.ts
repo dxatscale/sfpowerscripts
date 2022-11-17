@@ -29,7 +29,6 @@ const Table = require('cli-table');
 
 export default class PrepareImpl {
     private artifactFetchedCount: number = 0;
-    private _releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema;
 
     public constructor(private hubOrg: Org, private pool: PoolConfig, private logLevel: LoggerLevel) {
         // set defaults
@@ -40,11 +39,6 @@ export default class PrepareImpl {
         if (this.pool.succeedOnDeploymentErrors === undefined) this.pool.succeedOnDeploymentErrors = true;
 
         if (!this.pool.waitTime) this.pool.waitTime = 6;
-
-        if (this.pool.fetchArtifacts?.releaseDefinitionConfigFilePath) {
-            this._releaseDefinitionGeneratorSchema = new ReleaseDefinitionGenerator(
-                new ConsoleLogger(), this.pool.fetchArtifacts.releaseDefinitionConfigFilePath).releaseDefinitionGeneratorConfigSchema;
-        }
     }
 
     public async exec() {
@@ -200,7 +194,7 @@ export default class PrepareImpl {
     private async getPackageArtifacts(restrictedPackages?: string[]) {
         //Filter Packages to be ignored from prepare to be fetched
         let packages = ProjectConfig.getAllPackageDirectoriesFromDirectory(null).filter((pkg) => {
-            return this.isPkgToBeInstalled(pkg, artifacts);
+            return isPkgToBeInstalled(pkg, restrictedPackages);
         });
 
         let artifactFetcher: FetchAnArtifact;
