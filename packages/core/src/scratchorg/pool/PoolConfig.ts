@@ -7,6 +7,7 @@ export interface PoolConfig {
     expiry?: number;
     batchSize?: number;
     configFilePath: string;
+    releaseConfigFile?:string;
     succeedOnDeploymentErrors?: boolean;
     keys?: string;
     installAll: boolean;
