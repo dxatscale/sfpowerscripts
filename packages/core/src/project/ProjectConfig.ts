@@ -215,5 +215,38 @@ export default class ProjectConfig {
         return projectConfig;
     }
 
+    /**
+     * Returns pruned package manifest, containing sfdxPackages only
+     * @param projectConfig
+     * @param sfdxPackages
+     */
+     public static cleanupPackagesFromProjectConfig(projectConfig: any, sfdxPackages: string[]): any {
+       
+        let revisedPackageDirectory =[];
+        let originalPackageDirectory = projectConfig['packageDirectories']
+        for (let pkg of originalPackageDirectory) {
+             for (const sfdxPackage of sfdxPackages) {
+                if(pkg.name == sfdxPackage)
+                {
+                  pkg.default=false;
+                  revisedPackageDirectory.push(pkg);
+                }
+             }  
+        }
+        projectConfig['packageDirectories'][0]['default'] = true; //add default = true
+        projectConfig.packageDirectories=revisedPackageDirectory;
+       return projectConfig;
+    }
+
+     /**
+     * Returns pruned package manifest, containing sfdxPackages only
+     * @param projectConfig
+     * @param sfdxPackages
+     */
+      public static cleanupPackagesFromProjectDirectory(projectDirectory: string, sfdxPackages: string[]): any {
+       
+        const projectConfig = this.getSFDXProjectConfig(projectDirectory);
+        return ProjectConfig.cleanupPackagesFromProjectConfig(projectConfig,sfdxPackages);
+    }
      
 }
