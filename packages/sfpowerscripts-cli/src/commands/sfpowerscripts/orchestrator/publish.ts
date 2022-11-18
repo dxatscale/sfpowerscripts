@@ -83,6 +83,8 @@ export default class Promote extends SfpowerscriptsCommand {
             dependsOn: ['npm'],
             required: false,
             deprecated: {
+                message:
+                '--npmtag is deprecated, sfpowerscripts will automatically tag the artifact with the branch name',
                 messageOverride:
                     '--npmtag is deprecated, sfpowerscripts will automatically tag the artifact with the branch name',
             },

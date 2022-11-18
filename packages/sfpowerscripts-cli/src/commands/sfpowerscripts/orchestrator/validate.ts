@@ -26,7 +26,10 @@ export default class Validate extends SfpowerscriptsCommand {
     protected static flagsConfig = {
         devhubusername: flags.string({
             char: 'u',
-            deprecated: { messageOverride: '--devhubusername is deprecated, utilize the default devhub flag' },
+            deprecated: {
+                 message: '--devhubusername is deprecated, utilize the default devhub flag',
+                 messageOverride: '--devhubusername is deprecated, utilize the default devhub flag' 
+            },
             description: messages.getMessage('devhubUsernameFlagDescription'),
             required: false,
             hidden: true,
@@ -38,6 +41,7 @@ export default class Validate extends SfpowerscriptsCommand {
         }),
         jwtkeyfile: flags.filepath({
             deprecated: {
+                message: '--jwtkeyfile is deprecated, Validate no longer accepts jwt based auth mechanism',
                 messageOverride: '--jwtkeyfile is deprecated, Validate no longer accepts jwt based auth mechanism',
             },
             char: 'f',
@@ -47,6 +51,7 @@ export default class Validate extends SfpowerscriptsCommand {
         }),
         clientid: flags.string({
             deprecated: {
+                message: '--clientid is deprecated, Validate no longer accepts jwt based auth mechanism',
                 messageOverride: '--clientid is deprecated, Validate no longer accepts jwt based auth mechanism',
             },
             char: 'i',
@@ -74,6 +79,7 @@ export default class Validate extends SfpowerscriptsCommand {
             char: 'c',
             description: messages.getMessage('visualizeChangesAgainstFlagDescription'),
             deprecated: {
+                message: '--visualizechangesagainst is deprecated, use --basebranch instead',
                 messageOverride: '--visualizechangesagainst is deprecated, use --basebranch instead',
             },
         }),

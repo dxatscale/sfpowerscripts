@@ -33,6 +33,8 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
             description: messages.getMessage('packageInstalledFromFlagDescription'),
             hidden: true,
             deprecated: {
+                message:
+                '--packageinstalledfrom is deprecated, Please utilize sfdx force package install commands directly',
                 messageOverride:
                     '--packageinstalledfrom is deprecated, Please utilize sfdx force package install commands directly',
             },
@@ -43,6 +45,8 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
             exclusive: ['packageinstalledfrom'],
             hidden: true,
             deprecated: {
+                message:
+                '--packageversionid is deprecated, Please utilize sfdx force package install commands directly',
                 messageOverride:
                     '--packageversionid is deprecated, Please utilize sfdx force package install commands directly',
             },
