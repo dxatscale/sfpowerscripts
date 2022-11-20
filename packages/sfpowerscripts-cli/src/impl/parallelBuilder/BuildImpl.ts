@@ -25,6 +25,8 @@ import { COLON_MIDDLE_BORDER_TABLE, ZERO_BORDER_TABLE } from '../../ui/TableCons
 import PackageDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/PackageDependencyResolver';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/dependency/TransitiveDependencyResolver';
+import { Connection } from '@salesforce/core';
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -114,6 +116,8 @@ export default class BuildImpl {
         //Log Packages to be built
         console.log(COLOR_KEY_MESSAGE('Packages scheduled for build'));
         console.log(table.toString());
+        //Fix transitive dependency gap
+        this.projectConfig = await this.resolvePackageDependencies(this.projectConfig, this.sfpOrg.getConnection())
 
         for await (const pkg of this.packagesToBeBuilt) {
             let type = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg).type;
@@ -598,6 +602,11 @@ export default class BuildImpl {
             configFiles = this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.packages
         }
         return configFiles
+    }
+
+    private resolvePackageDependencies(projectConfig: any, conn: Connection){
+        const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
+        return transitiveDependencyResolver.exec();
     }
   
 }

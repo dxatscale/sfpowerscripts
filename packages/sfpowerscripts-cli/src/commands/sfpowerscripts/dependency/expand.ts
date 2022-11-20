@@ -65,7 +65,7 @@ export default class Expand extends SfpowerscriptsCommand {
         rimraf.sync(defaultProjectConfigPath);
 
       fs.mkdirpSync(defaultProjectConfigPath);
-      let projectConfigFilePath: string = path.join(defaultProjectConfigPath, `sfdx-project.json`);
+      let projectConfigFilePath: string = path.join(defaultProjectConfigPath, `sfdx-project.exp.json`);
       fs.writeFileSync(projectConfigFilePath, JSON.stringify(projectConfig, null, 4));
 
       console.log(`Generated project config file has been saved to ${projectConfigFilePath}`)
