@@ -47,6 +47,7 @@ import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/l
 import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
 import { PreDeployHook } from '../deploy/PreDeployHook';
 import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
+import validation from "ajv/dist/vocabularies/validation";
 
 export enum ValidateMode {
     ORG,
@@ -69,6 +70,8 @@ export interface ValidateProps {
     diffcheck?: boolean;
     disableArtifactCommit?: boolean;
     isFastFeedbackMode?: boolean;
+    isRetryable?: boolean;
+    validationId: string;
 }
 
 export default class ValidateImpl implements PostDeployHook, PreDeployHook {
@@ -89,7 +92,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             } else if (this.props.validateMode === ValidateMode.POOL) {
                 if (process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG)
                     scratchOrgUsername = process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG;
-                else scratchOrgUsername = await this.fetchScratchOrgFromPool(this.props.pools);
+                else scratchOrgUsername = await this.fetchScratchOrgFromPool(this.props.pools, this.props.isRetryable, this.props.validationId);
             } else throw new Error(`Unknown mode ${this.props.validateMode}`);
 
             //Create Org
@@ -487,13 +490,19 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         groupSection.end();
     }
 
-    private async fetchScratchOrgFromPool(pools: string[]): Promise<string> {
+    private async fetchScratchOrgFromPool(pools: string[], fetchByValidationId: boolean, validationId: string): Promise<string> {
         let scratchOrgUsername: string;
 
         for (const pool of pools) {
             let scratchOrg: ScratchOrg;
             try {
-                const poolFetchImpl = new PoolFetchImpl(this.props.hubOrg, pool.trim(), false, true);
+
+                const poolFetchImpl = new PoolFetchImpl(this.props.hubOrg, pool.trim(), false, true, validationId);
+
+                //TODO: refactor this attributes to constructor
+                //poolFetchImpl.validationId = this.props.validationId;
+                //poolFetchImpl.fetchByValidationId = this.props.isRetryable;
+
                 scratchOrg = (await poolFetchImpl.execute()) as ScratchOrg;
             } catch (error) {
                 SFPLogger.log(error.message, LoggerLevel.TRACE);

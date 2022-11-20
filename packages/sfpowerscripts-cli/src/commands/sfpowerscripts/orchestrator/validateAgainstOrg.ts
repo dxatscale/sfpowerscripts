@@ -41,6 +41,13 @@ export default class Validate extends SfpowerscriptsCommand {
         fastfeedback: flags.boolean({
             description: messages.getMessage('fastfeedbackFlagDescription'),
         }),
+        retryable: flags.boolean({
+            description: messages.getMessage('retryableFlagDescription'),
+            default: false
+        }),
+        validationid: flags.string({
+            description: messages.getMessage('validationIdFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -93,6 +100,8 @@ export default class Validate extends SfpowerscriptsCommand {
                 baseBranch: this.flags.basebranch,
                 disableArtifactCommit: this.flags.disableartifactupdate,
                 isFastFeedbackMode: this.flags.fastfeedback,
+                validationId: this.flags.validationid,
+                isRetryable: this.flags.retryable
             };
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
             await validateImpl.exec();

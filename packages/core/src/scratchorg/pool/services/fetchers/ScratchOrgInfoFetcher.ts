@@ -39,7 +39,16 @@ export default class ScratchOrgInfoFetcher {
         );
     }
 
-    public async getScratchOrgsByTag(tag: string, isMyPool: boolean, unAssigned: boolean) {
+    public async getScratchOrgsByTagAndValidationId(tag: string, isMyPool: boolean, unAssigned: boolean, validationId?: string) {
+        let results: any = this.getScratchOrgsByTag(tag, isMyPool, unAssigned, validationId);
+        if (results.records.length == 0) {
+            results = this.getScratchOrgsByTag(tag, isMyPool, unAssigned);
+        }
+        return results;
+    }
+
+
+    public async getScratchOrgsByTag(tag: string, isMyPool: boolean, unAssigned: boolean, validationId?: string) {
         let hubConn = this.hubOrg.getConnection();
 
         return retry(
@@ -51,6 +60,9 @@ export default class ScratchOrgInfoFetcher {
                 else
                     query = `SELECT Pooltag__c, Id,  CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl,SfdxAuthUrl__c FROM ScratchOrgInfo WHERE Pooltag__c != null  AND Status = 'Active' `;
 
+                if (validationId !== null) {
+                    query = query + ` AND ValidationId__c = '${validationId}' `;
+                }
                 if (isMyPool) {
                     query = query + ` AND createdby.username = '${this.hubOrg.getUsername()}' `;
                 }
