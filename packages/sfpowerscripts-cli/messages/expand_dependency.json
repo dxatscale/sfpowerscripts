@@ -1,4 +1,0 @@
-{
-  "commandDescription":"Expand the dependency list in sfdx-project.json file for each package, fix the gap of dependencies from its dependent packages",
-  "devhubAliasFlagDescription":"Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
-}
