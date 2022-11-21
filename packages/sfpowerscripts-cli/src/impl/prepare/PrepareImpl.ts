@@ -1,7 +1,7 @@
 import { Org } from '@salesforce/core';
 import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
 import isValidSfdxAuthUrl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/prequisitecheck/IsValidSfdxAuthUrl';
-import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { Result } from 'neverthrow';
@@ -15,14 +15,16 @@ import PrepareOrgJob from './PrepareOrgJob';
 import * as rimraf from 'rimraf';
 import * as fs from 'fs-extra';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
-import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags'
+import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags';
 import OrgDetailsFetcher from '@dxatscale/sfpowerscripts.core/lib/org/OrgDetailsFetcher';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import { EOL } from 'os';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
-import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
 import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
+import ReleaseDefinitionGenerator from '../release/ReleaseDefinitionGenerator';
+import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
+
 const Table = require('cli-table');
 
 export default class PrepareImpl {
@@ -48,31 +50,40 @@ export default class PrepareImpl {
                 `Pools have to be created using a DevHub authenticated with auth:web or auth:store or auth:accesstoken:store`
             );
 
-        let externalPackageResolver = new ExternalPackage2DependencyResolver(
-            this.hubOrg.getConnection(),
-            ProjectConfig.getSFDXProjectConfig(null),
-            this.pool.keys
-        );
-        let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies();
+       
 
-        //Display resolved dependenencies
-        let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s,new ConsoleLogger());
-        externalDependencyDisplayer.display();
-
-        return this.poolScratchOrgs(externalPackage2s);
+        return this.poolScratchOrgs();
     }
 
-    private async poolScratchOrgs(externalPackage2s: Package2Detail[]): Promise<Result<PoolConfig, PoolError>> {
+    private async poolScratchOrgs(): Promise<Result<PoolConfig, PoolError>> {
         //Create Artifact Directory
         rimraf.sync('artifacts');
         fs.mkdirpSync('artifacts');
 
-        if (this.pool.installAll) {
-            // Fetch Latest Artifacts to Artifact Directory
-            await this.getPackageArtifacts();
+        let restrictedPackages = null;
+        let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
+
+        if (this.pool.releaseConfigFile) {
+            restrictedPackages = await getArtifactsByGeneratingReleaseDefinitionFromConfig(this.pool.releaseConfigFile);
+            projectConfig = ProjectConfig.cleanupPackagesFromProjectDirectory(null, restrictedPackages);
         }
 
-        let prepareASingleOrgImpl: PrepareOrgJob = new PrepareOrgJob(this.pool, externalPackage2s);
+        await this.getPackageArtifacts(restrictedPackages);
+        let checkpointPackages = this.getcheckPointPackages(new ConsoleLogger(), projectConfig);
+
+        let externalPackageResolver = new ExternalPackage2DependencyResolver(
+            this.hubOrg.getConnection(),
+            projectConfig,
+            this.pool.keys
+        );
+        let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies();
+
+        //Display resolved dependencies
+        let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s, new ConsoleLogger());
+        externalDependencyDisplayer.display();
+
+
+        let prepareASingleOrgImpl: PrepareOrgJob = new PrepareOrgJob(this.pool, checkpointPackages);
 
         let createPool: PoolCreateImpl = new PoolCreateImpl(
             this.hubOrg,
@@ -87,6 +98,35 @@ export default class PrepareImpl {
         }
 
         return pool;
+
+        async function getArtifactsByGeneratingReleaseDefinitionFromConfig(releaseConfigFile: string) {
+            let releaseDefinitionGenerator: ReleaseDefinitionGenerator = new ReleaseDefinitionGenerator(
+                new ConsoleLogger(),
+                'HEAD',
+                releaseConfigFile,
+                'prepare',
+                'test',
+                undefined,
+                true,
+                false,
+                true
+            );
+            let releaseDefinition = (await releaseDefinitionGenerator.exec()) as ReleaseDefinitionSchema;
+            return Object.keys(releaseDefinition.artifacts);
+        }
+    }
+
+    //Fetch all checkpoints
+    private getcheckPointPackages(projectConfig: any, logger: Logger) {
+        SFPLogger.log('Fetching checkpoints for prepare if any.....', LoggerLevel.INFO, logger);
+
+        let checkPointPackages = [];
+
+        ProjectConfig.getAllPackageDirectoriesFromConfig(projectConfig).forEach((pkg) => {
+            if (pkg.checkpointForPrepare) checkPointPackages.push(pkg['package']);
+        });
+
+        return checkPointPackages;
     }
 
     private async displayPoolSummary(pool: PoolConfig) {
@@ -151,17 +191,10 @@ export default class PrepareImpl {
         }
     }
 
-    private async getPackageArtifacts() {
-        //Filter Packages to be ignore from prepare to be fetched
+    private async getPackageArtifacts(restrictedPackages?: string[]) {
+        //Filter Packages to be ignored from prepare to be fetched
         let packages = ProjectConfig.getAllPackageDirectoriesFromDirectory(null).filter((pkg) => {
-            if (
-                pkg.ignoreOnStage?.find((stage) => {
-                    stage = stage.toLowerCase();
-                    return stage === 'prepare';
-                })
-            )
-                return false;
-            else return true;
+            return isPkgToBeInstalled(pkg, restrictedPackages);
         });
 
         let artifactFetcher: FetchAnArtifact;
@@ -174,12 +207,11 @@ export default class PrepareImpl {
 
             const git: Git = await Git.initiateRepo();
 
-
             //During Prepare, there could be a race condition where a main is merged with a new package
             //but the package is not yet available in the validated package list and can cause prepare to fail
             for (const pkg of packages) {
                 try {
-                    let latestGitTagVersion: GitTags = new GitTags(git,pkg.package);
+                    let latestGitTagVersion: GitTags = new GitTags(git, pkg.package);
                     let version = await latestGitTagVersion.getVersionFromLatestTag();
                     artifactFetcher.fetchArtifact(pkg.package, 'artifacts', version, true);
                     this.artifactFetchedCount++;
@@ -225,6 +257,15 @@ export default class PrepareImpl {
                 await ArtifactGenerator.generateArtifact(generatedPackage, process.cwd(), 'artifacts');
                 this.artifactFetchedCount++;
             }
+        }
+
+        function isPkgToBeInstalled(pkg, restrictedPackages?: string[]): boolean {
+            pkg.ignoreOnStage?.find((stage) => {
+                stage = stage.toLowerCase();
+                if (stage === 'prepare') return false;
+            });
+            if (restrictedPackages) return restrictedPackages.includes(pkg.package);
+            else return true;
         }
     }
 }

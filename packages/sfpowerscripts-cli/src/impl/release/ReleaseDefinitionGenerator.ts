@@ -10,7 +10,7 @@ import { LoggerLevel } from '@dxatscale/sfp-logger';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags';
 const retry = require('async-retry');
-const yaml = require('js-yaml');
+import yaml from 'js-yaml'
 const path = require('path');
 
 export default class ReleaseDefinitionGenerator {
@@ -29,7 +29,8 @@ export default class ReleaseDefinitionGenerator {
         private branch: string,
         private directory?: string,
         private noPush: boolean = false,
-        private forcePush: boolean = false
+        private forcePush: boolean = false,
+        private inMemoryMode:boolean = false
     ) {
         this._releaseDefinitionGeneratorSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, 'utf8'));
         this.validateReleaseDefinitionGeneratorConfig(this._releaseDefinitionGeneratorSchema);
@@ -59,7 +60,10 @@ export default class ReleaseDefinitionGenerator {
             throw new Error("Release option 'skipIfAlreadyInstalled' must be true for 'baselineOrg'");
     }
 
-    async exec() {
+    async exec(): Promise<ReleaseDefinitionSchema | {
+        releaseDefinitonYAML: string;
+        pathToReleaseDefnDirectory: string;
+    }> {
         return retry(
             async (bail, retryNum) => {
                 try {
@@ -88,7 +92,10 @@ export default class ReleaseDefinitionGenerator {
         );
     }
 
-    private async execHandler() {
+    private async execHandler(): Promise<ReleaseDefinitionSchema | {
+        releaseDefinitonYAML: string;
+        pathToReleaseDefnDirectory: string;
+    }> {
         let repoDir: string;
         let git;
         try {
@@ -97,12 +104,12 @@ export default class ReleaseDefinitionGenerator {
             repoDir = git.getRepositoryPath();
             let fetchedArtifacts = await this.fetchFromGitRef(git);
 
-            let releaseDefinitonYAML = await this.generateReleaseDefintion(
+            let releaseDefiniton = await this.generateReleaseDefintion(
                 fetchedArtifacts.artifacts,
                 fetchedArtifacts.packageDependencies,
                 git
             );
-            return releaseDefinitonYAML.toString();
+            return releaseDefiniton;
         } catch (error) {
             SFPLogger.log(error, LoggerLevel.ERROR, this.logger);
         } finally {
@@ -155,7 +162,10 @@ export default class ReleaseDefinitionGenerator {
         return { artifacts, packageDependencies };
     }
 
-    private async generateReleaseDefintion(artifacts: any, packageDependencies: any, git: Git) {
+    private async generateReleaseDefintion(artifacts: any, packageDependencies: any, git: Git): Promise<ReleaseDefinitionSchema | {
+    releaseDefinitonYAML: string;
+    pathToReleaseDefnDirectory: string;
+}> {
         artifacts = Object.keys(artifacts)
             .sort()
             .reduce((obj, key) => {
@@ -181,6 +191,9 @@ export default class ReleaseDefinitionGenerator {
 
         //Add changelog info
         releaseDefinition.changelog = this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.changelog;
+
+        if(this.inMemoryMode)
+         return releaseDefinition;
 
         let releaseDefinitonYAML = yaml.dump(releaseDefinition, {
             styles: {
