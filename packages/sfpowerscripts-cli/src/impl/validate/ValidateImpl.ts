@@ -110,6 +110,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             let packagesInstalledInOrgMappedToCommits: { [p: string]: string };
             if (this.props.validationMode != ValidationMode.INDIVIDUAL)
                 packagesInstalledInOrgMappedToCommits = await this.fetchCommitsOfPackagesInstalledInOrg();
+            
+            //In individual mode, always build changed packages only especially for validateAgainstOrg
+            if(this.props.validationMode == ValidationMode.INDIVIDUAL)
+               this.props.diffcheck = true;
 
             let builtSfpPackages = await this.buildChangedSourcePackages(packagesInstalledInOrgMappedToCommits);
             deploymentResult = await this.deploySourcePackages(scratchOrgUsername);

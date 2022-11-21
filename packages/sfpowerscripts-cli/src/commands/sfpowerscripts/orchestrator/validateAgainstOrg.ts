@@ -4,6 +4,8 @@ import { flags } from '@salesforce/command';
 import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from '../../../impl/validate/ValidateImpl';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
+import * as fs from 'fs-extra';
+
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validateAgainstOrg');
@@ -23,11 +25,10 @@ export default class Validate extends SfpowerscriptsCommand {
             description: 'validation mode',
             default: 'thorough',
             required: true,
-            options: [
-                'individual',
-                'fastfeedback',
-                'thorough'
-            ],
+            options: ['individual', 'fastfeedback', 'thorough', 'ff-release-config', 'thorough-release-config'],
+        }),
+        releaseconfig: flags.string({
+            description: messages.getMessage('configFileFlagDescription'),
         }),
         coveragepercent: flags.integer({
             description: messages.getMessage('coveragePercentFlagDescription'),
@@ -74,16 +75,23 @@ export default class Validate extends SfpowerscriptsCommand {
 
         SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`validateAgainstOrg`)}`));
         SFPLogger.log(COLOR_HEADER(`Target Org: ${this.flags.targetorg}`));
-        if (this.flags.mode==ValidationMode.FAST_FEEDBACK) SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Fast Feedback`)}`));
-        else {
-            SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Thorough`)}`));
-            SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
-        }
         SFPLogger.log(
             COLOR_HEADER(
-                `Using shapefile to override existing shape of the org: ${this.flags.shapefile ? 'true' : 'false'}`
+                `Validation Mode: ${COLOR_KEY_MESSAGE(
+                    `${
+                        ValidationMode[
+                            Object.keys(ValidationMode)[
+                                (Object.values(ValidationMode) as string[]).indexOf(this.flags.mode)
+                            ]
+                        ]
+                    }`
+                )}`
             )
         );
+        if (this.flags.mode != ValidationMode.FAST_FEEDBACK) {
+            SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
+        }
+      
 
         SFPLogger.log(
             COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
@@ -93,7 +101,11 @@ export default class Validate extends SfpowerscriptsCommand {
         try {
             let validateProps: ValidateProps = {
                 validateAgainst: ValidateAgainst.PROVIDED_ORG,
-                validationMode:ValidationMode[this.flags.mode],
+                validationMode:  ValidationMode[
+                    Object.keys(ValidationMode)[
+                        (Object.values(ValidationMode) as string[]).indexOf(this.flags.mode)
+                    ]
+                ],
                 coverageThreshold: this.flags.coveragepercent,
                 logsGroupSymbol: this.flags.logsgroupsymbol,
                 targetOrg: this.flags.targetorg,
@@ -101,6 +113,7 @@ export default class Validate extends SfpowerscriptsCommand {
                 baseBranch: this.flags.basebranch,
                 disableArtifactCommit: this.flags.disableartifactupdate,
             };
+            setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
             await validateImpl.exec();
         } catch (error) {
@@ -113,6 +126,22 @@ export default class Validate extends SfpowerscriptsCommand {
 
             if (validateResult) SFPStatsSender.logCount('validate.succeeded');
             else SFPStatsSender.logCount('validate.failed');
+        }
+
+        function setReleaseConfigForReleaseBasedModes(releaseconfigPath:string,validateProps: ValidateProps) {
+            if (validateProps.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
+                validateProps.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG) {
+                if (releaseconfigPath && fs.existsSync(releaseconfigPath)) {
+                    validateProps.releaseConfigPath = releaseconfigPath;
+                }
+
+                else {
+                    if (!releaseconfigPath)
+                        throw new Error(`Release config is required when using validation by release config`);
+                    else if (!fs.existsSync(releaseconfigPath))
+                        throw new Error(`Release config at ${releaseconfigPath} doesnt exist, Please check the path`);
+                }
+            }
         }
     }
 }
