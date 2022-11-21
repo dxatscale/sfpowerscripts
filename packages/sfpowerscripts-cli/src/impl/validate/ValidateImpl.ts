@@ -578,7 +578,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         if (sfpPackage.packageType && sfpPackage.packageType != PackageType.Data) {
             if (packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
                 //Get Changed Components
-                const testResult = await this.triggerApexTests(sfpPackage, targetUsername, this.logger);
+                const testResult = await this.triggerApexTests(sfpPackage, targetUsername,this.props,this.logger);
                 return { isToFailDeployment: !testResult.result, message: testResult.message };
             }
         }
@@ -588,6 +588,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     private async triggerApexTests(
         sfpPackage: SfpPackage,
         targetUsername: string,
+        props:ValidateProps,
         logger: Logger
     ): Promise<{
         id: string;
@@ -603,10 +604,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         let testOptions: TestOptions, testCoverageOptions: CoverageOptions;
 
-        if (this.props.validationMode == ValidationMode.FAST_FEEDBACK) {
-            ({ testOptions, testCoverageOptions } = getTestOptionsForFastFeedBackPackage(sfpPackage));
-        } else {
-            ({ testOptions, testCoverageOptions } = getTestOptionsForFullPackageTest(sfpPackage));
+        if (props.validationMode == ValidationMode.FAST_FEEDBACK || props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG) {
+            ({ testOptions, testCoverageOptions } = getTestOptionsForFastFeedBackPackage(sfpPackage,props));
+        } else  {
+            ({ testOptions, testCoverageOptions } = getTestOptionsForFullPackageTest(sfpPackage,props));
         }
         if (testOptions == undefined) {
             return { id: null, result: true, message: 'No Tests To Run' };
@@ -625,19 +626,21 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         return triggerApexTests.exec();
 
         function getTestOptionsForFullPackageTest(
-            sfpPackage: SfpPackage
+            sfpPackage: SfpPackage,
+            props:ValidateProps
         ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
             const testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
             const testCoverageOptions = {
                 isIndividualClassCoverageToBeValidated: false,
                 isPackageCoverageToBeValidated: !sfpPackage.packageDescriptor.skipCoverageValidation,
-                coverageThreshold: this.props.coverageThreshold || 75,
+                coverageThreshold: props.coverageThreshold || 75,
             };
             return { testOptions, testCoverageOptions };
         }
 
         function getTestOptionsForFastFeedBackPackage(
-            sfpPackage: SfpPackage
+            sfpPackage: SfpPackage,
+            props:ValidateProps
         ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
             //Change in security model trigger full
 
@@ -648,7 +651,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                     sfpPackage.diffPackageMetadata.isPermissionSetGroupFound
                 ) {
                     SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
-                    return this.getTestOptionsForFullPackageTest(sfpPackage);
+                    return getTestOptionsForFullPackageTest(sfpPackage,props);
                 }
 
                 const impactedTestClasses = sfpPackage.diffPackageMetadata.invalidatedTestClasses;

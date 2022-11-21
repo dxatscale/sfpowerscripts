@@ -25,43 +25,19 @@ export default class Validate extends SfpowerscriptsCommand {
     static aliases = ['sfpowerscripts:orchestrator:validateAgainstPool'];
 
     protected static flagsConfig = {
-        devhubusername: flags.string({
-            char: 'u',
-            deprecated: {
-                 message: '--devhubusername is deprecated, utilize the default devhub flag',
-                 messageOverride: '--devhubusername is deprecated, utilize the default devhub flag' 
-            },
-            description: messages.getMessage('devhubUsernameFlagDescription'),
-            required: false,
-            hidden: true,
-        }),
         pools: flags.array({
             char: 'p',
             description: messages.getMessage('poolsFlagDescription'),
             required: true,
         }),
-        jwtkeyfile: flags.filepath({
-            deprecated: {
-                message: '--jwtkeyfile is deprecated, Validate no longer accepts jwt based auth mechanism',
-                messageOverride: '--jwtkeyfile is deprecated, Validate no longer accepts jwt based auth mechanism',
-            },
-            char: 'f',
-            description: messages.getMessage('jwtKeyFileFlagDescription'),
-            required: false,
-            hidden: true,
+        mode: flags.enum({
+            description: 'validation mode',
+            default: 'thorough',
+            required: true,
+            options: ['individual', 'fastfeedback', 'thorough', 'ff-release-config', 'thorough-release-config'],
         }),
-        clientid: flags.string({
-            deprecated: {
-                message: '--clientid is deprecated, Validate no longer accepts jwt based auth mechanism',
-                messageOverride: '--clientid is deprecated, Validate no longer accepts jwt based auth mechanism',
-            },
-            char: 'i',
-            description: messages.getMessage('clientIdFlagDescription'),
-            required: false,
-            hidden: true,
-        }),
-        shapefile: flags.string({
-            description: messages.getMessage('shapeFileFlagDescription'),
+        releaseconfig: flags.string({
+            description: messages.getMessage('configFileFlagDescription'),
         }),
         coveragepercent: flags.integer({
             description: messages.getMessage('coveragePercentFlagDescription'),
@@ -75,14 +51,6 @@ export default class Validate extends SfpowerscriptsCommand {
         keys: flags.string({
             required: false,
             description: messages.getMessage('keysFlagDescription'),
-        }),
-        visualizechangesagainst: flags.string({
-            char: 'c',
-            description: messages.getMessage('visualizeChangesAgainstFlagDescription'),
-            deprecated: {
-                message:'--visualizechangesagainst is deprecated, use --basebranch instead',
-                messageOverride: '--visualizechangesagainst is deprecated, use --basebranch instead',
-            },
         }),
         basebranch: flags.string({
             description: messages.getMessage('baseBranchFlagDescription'),
