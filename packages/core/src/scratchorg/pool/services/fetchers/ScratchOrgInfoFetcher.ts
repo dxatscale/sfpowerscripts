@@ -52,13 +52,14 @@ export default class ScratchOrgInfoFetcher {
     public async getScratchOrgsByTag(tag: string, isMyPool: boolean, unAssigned: boolean, validationId?: string) {
         let hubConn = this.hubOrg.getConnection();
 
-        let scratchOrgInfoSchema: DescribeSObjectResult = await (hubConn.describeSObject('ScratchOrgInfo'));
-        const isValidationIdFieldAvailable: boolean = scratchOrgInfoSchema.fields.some((field) => {
-            return field.name == 'ValidationId__c'
-        })
-
         return retry(
             async (bail) => {
+
+                let scratchOrgInfoSchema: DescribeSObjectResult = await (hubConn.describeSObject('ScratchOrgInfo'));
+                const isValidationIdFieldAvailable: boolean = scratchOrgInfoSchema.fields.some((field) => {
+                    return field.name == 'ValidationId__c'
+                })
+
                 let query;
 
                 if (tag)
