@@ -1,11 +1,12 @@
 import { Messages } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { flags } from '@salesforce/command';
-import ValidateImpl, { ValidateMode, ValidateProps } from '../../../impl/validate/ValidateImpl';
+import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from '../../../impl/validate/ValidateImpl';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import ValidateError from '../../../errors/ValidateError';
 import ValidateResult from '../../../impl/validate/ValidateResult';
+import * as fs from 'fs-extra';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
@@ -24,43 +25,19 @@ export default class Validate extends SfpowerscriptsCommand {
     static aliases = ['sfpowerscripts:orchestrator:validateAgainstPool'];
 
     protected static flagsConfig = {
-        devhubusername: flags.string({
-            char: 'u',
-            deprecated: {
-                 message: '--devhubusername is deprecated, utilize the default devhub flag',
-                 messageOverride: '--devhubusername is deprecated, utilize the default devhub flag' 
-            },
-            description: messages.getMessage('devhubUsernameFlagDescription'),
-            required: false,
-            hidden: true,
-        }),
         pools: flags.array({
             char: 'p',
             description: messages.getMessage('poolsFlagDescription'),
             required: true,
         }),
-        jwtkeyfile: flags.filepath({
-            deprecated: {
-                message: '--jwtkeyfile is deprecated, Validate no longer accepts jwt based auth mechanism',
-                messageOverride: '--jwtkeyfile is deprecated, Validate no longer accepts jwt based auth mechanism',
-            },
-            char: 'f',
-            description: messages.getMessage('jwtKeyFileFlagDescription'),
-            required: false,
-            hidden: true,
+        mode: flags.enum({
+            description: 'validation mode',
+            default: 'thorough',
+            required: true,
+            options: ['individual', 'fastfeedback', 'thorough', 'ff-release-config', 'thorough-release-config'],
         }),
-        clientid: flags.string({
-            deprecated: {
-                message: '--clientid is deprecated, Validate no longer accepts jwt based auth mechanism',
-                messageOverride: '--clientid is deprecated, Validate no longer accepts jwt based auth mechanism',
-            },
-            char: 'i',
-            description: messages.getMessage('clientIdFlagDescription'),
-            required: false,
-            hidden: true,
-        }),
-        shapefile: flags.string({
-            description: messages.getMessage('shapeFileFlagDescription'),
+        releaseconfig: flags.string({
+            description: messages.getMessage('configFileFlagDescription'),
         }),
         coveragepercent: flags.integer({
             description: messages.getMessage('coveragePercentFlagDescription'),
@@ -74,14 +51,6 @@ export default class Validate extends SfpowerscriptsCommand {
         keys: flags.string({
             required: false,
             description: messages.getMessage('keysFlagDescription'),
-        }),
-        visualizechangesagainst: flags.string({
-            char: 'c',
-            description: messages.getMessage('visualizeChangesAgainstFlagDescription'),
-            deprecated: {
-                message: '--visualizechangesagainst is deprecated, use --basebranch instead',
-                messageOverride: '--visualizechangesagainst is deprecated, use --basebranch instead',
-            },
         }),
         basebranch: flags.string({
             description: messages.getMessage('baseBranchFlagDescription'),
@@ -104,9 +73,6 @@ export default class Validate extends SfpowerscriptsCommand {
         disableartifactupdate: flags.boolean({
             description: messages.getMessage('disableArtifactUpdateFlagDescription'),
             default: false,
-        }),
-        fastfeedback: flags.boolean({
-            description: messages.getMessage('fastfeedbackFlagDescription'),
         }),
         logsgroupsymbol: flags.array({
             char: 'g',
@@ -141,15 +107,25 @@ export default class Validate extends SfpowerscriptsCommand {
         let tags: { [p: string]: string };
         tags = {
             tag: this.flags.tag != null ? this.flags.tag : undefined,
-            validation_mode: this.flags.fastfeedback ? 'fast-feedback' : 'thorough',
+            validation_mode: this.flags.mode,
         };
 
         SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`validate`)}`));
         SFPLogger.log(COLOR_HEADER(`Pools being used: ${this.flags.pools}`));
-        if (this.flags.fastfeedback)
-            SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Fast Feedback`)}`));
-        else {
-            SFPLogger.log(COLOR_HEADER(`Validation Mode: ${COLOR_KEY_MESSAGE(`Thorough`)}`));
+        SFPLogger.log(
+            COLOR_HEADER(
+                `Validation Mode: ${COLOR_KEY_MESSAGE(
+                    `${
+                        ValidationMode[
+                            Object.keys(ValidationMode)[
+                                (Object.values(ValidationMode) as string[]).indexOf(this.flags.mode)
+                            ]
+                        ]
+                    }`
+                )}`
+            )
+        );
+        if (this.flags.mode != ValidationMode.FAST_FEEDBACK) {
             SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
         }
         SFPLogger.log(
@@ -168,7 +144,13 @@ export default class Validate extends SfpowerscriptsCommand {
         let validateResult: ValidateResult;
         try {
             let validateProps: ValidateProps = {
-                validateMode: ValidateMode.POOL,
+                validateAgainst: ValidateAgainst.PRECREATED_POOL,
+                validationMode:
+                    ValidationMode[
+                        Object.keys(ValidationMode)[
+                            (Object.values(ValidationMode) as string[]).indexOf(this.flags.mode)
+                        ]
+                    ],
                 coverageThreshold: this.flags.coveragepercent,
                 logsGroupSymbol: this.flags.logsgroupsymbol,
                 pools: this.flags.pools,
@@ -181,8 +163,9 @@ export default class Validate extends SfpowerscriptsCommand {
                 isDependencyAnalysis: this.flags.enabledependencyvalidation,
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
-                isFastFeedbackMode: this.flags.fastfeedback,
             };
+
+            setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);
 
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
 
@@ -222,6 +205,22 @@ export default class Validate extends SfpowerscriptsCommand {
                     validateResult.deploymentResult?.failed?.length,
                     tags
                 );
+            }
+        }
+
+        function setReleaseConfigForReleaseBasedModes(releaseconfigPath:string,validateProps: ValidateProps) {
+            if (validateProps.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
+                validateProps.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG) {
+                if (releaseconfigPath && fs.existsSync(releaseconfigPath)) {
+                    validateProps.releaseConfigPath = releaseconfigPath;
+                }
+
+                else {
+                    if (!releaseconfigPath)
+                        throw new Error(`Release config is required when using validation by release config`);
+                    else if (!fs.existsSync(releaseconfigPath))
+                        throw new Error(`Release config at ${releaseconfigPath} doesnt exist, Please check the path`);
+                }
             }
         }
     }

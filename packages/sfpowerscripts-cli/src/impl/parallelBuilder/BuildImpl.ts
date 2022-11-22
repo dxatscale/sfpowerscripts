@@ -9,12 +9,7 @@ import * as fs from 'fs-extra';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import BuildCollections from './BuildCollections';
 const Table = require('cli-table');
-import SFPLogger, {
-    ConsoleLogger,
-    FileLogger,
-    LoggerLevel,
-    VoidLogger,
-} from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_KEY_VALUE, ConsoleLogger, FileLogger, LoggerLevel, VoidLogger } from '@dxatscale/sfp-logger';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import { COLOR_HEADER } from '@dxatscale/sfp-logger';
 import { COLOR_ERROR } from '@dxatscale/sfp-logger';
@@ -45,10 +40,10 @@ export interface BuildProps {
     executorcount: number;
     isBuildAllAsSourcePackages: boolean;
     branch?: string;
-    packagesToCommits?: { [p: string]: string };
     currentStage: Stage;
     baseBranch?: string;
     diffOptions?: PackageDiffOptions;
+    includeOnlyPackages?:string[]
 }
 export default class BuildImpl {
     private limiter: Bottleneck;
@@ -63,7 +58,7 @@ export default class BuildImpl {
     private failedPackages: string[];
     private generatedPackages: SfpPackage[];
     private sfpOrg: SFPOrg;
-    private scratchOrgDefinitions: {[key: string]: any}[];
+    private scratchOrgDefinitions: { [key: string]: any }[];
     private isMultiConfigFilesEnabled: boolean;
 
     private repository_url: string;
@@ -89,22 +84,22 @@ export default class BuildImpl {
         if (this.props.devhubAlias) this.sfpOrg = await SFPOrg.create({ aliasOrUsername: this.props.devhubAlias });
 
         SFPLogger.log(`Invoking build...`, LoggerLevel.INFO);
-        let git = await Git.initiateRepo(new ConsoleLogger())
-        this.repository_url = await git.getRemoteOriginUrl(this.props.repourl);    
+        let git = await Git.initiateRepo(new ConsoleLogger());
+        this.repository_url = await git.getRemoteOriginUrl(this.props.repourl);
         this.commit_id = await git.getHeadCommit();
 
-        this.packagesToBeBuilt = this.getAllPackages(this.props.projectDirectory);
+        this.packagesToBeBuilt = this.getPackagesToBeBuilt(this.props.projectDirectory,this.props.includeOnlyPackages);
 
         // Read Manifest
         this.projectConfig = ProjectConfig.getSFDXProjectConfig(this.props.projectDirectory);
 
         //Build Scratch Org Def Files Map
-        this.scratchOrgDefinitions = this.getMultiScratchOrgDefinitionFileMap(this.projectConfig)
+        this.scratchOrgDefinitions = this.getMultiScratchOrgDefinitionFileMap(this.projectConfig);
 
         //Do a diff Impl
         let table;
         if (this.props.isDiffCheckEnabled) {
-            let packagesToBeBuiltWithReasons = await this.getListOfOnlyChangedPackages(
+            let packagesToBeBuiltWithReasons = await this.filterPackagesToBeBuiltByChanged(
                 this.props.projectDirectory,
                 this.packagesToBeBuilt
             );
@@ -199,22 +194,23 @@ export default class BuildImpl {
     }
 
     private createDiffPackageScheduledDisplayedAsATable(packagesToBeBuilt: Map<string, any>) {
-        let tableHead = ['Package', 'Reason to be built', 'Last Known Tag']
-        if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
-            tableHead.push('Scratch Org Config File')
+        let tableHead = ['Package', 'Reason to be built', 'Last Known Tag'];
+        if (this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD) {
+            tableHead.push('Scratch Org Config File');
         }
         let table = new Table({
             head: tableHead,
         });
         for (const pkg of packagesToBeBuilt.keys()) {
-
             let item = [
                 pkg,
                 packagesToBeBuilt.get(pkg).reason,
                 packagesToBeBuilt.get(pkg).tag ? packagesToBeBuilt.get(pkg).tag : '',
             ];
-            if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
-                item.push(this.scratchOrgDefinitions[pkg]?this.scratchOrgDefinitions[pkg]:this.props.configFilePath)
+            if (this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD) {
+                item.push(
+                    this.scratchOrgDefinitions[pkg] ? this.scratchOrgDefinitions[pkg] : this.props.configFilePath
+                );
             }
 
             table.push(item);
@@ -223,34 +219,39 @@ export default class BuildImpl {
     }
 
     private createAllPackageScheduledDisplayedAsATable() {
-        let tableHead = ['Package', 'Reason to be built']
-        if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
-            tableHead.push('Scratch Org Config File')
+        let tableHead = ['Package', 'Reason to be built'];
+        if (this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD) {
+            tableHead.push('Scratch Org Config File');
         }
         let table = new Table({
             head: tableHead,
         });
         for (const pkg of this.packagesToBeBuilt) {
             let item = [pkg, 'Activated as part of all package build'];
-            if(this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD){
-                item.push(this.scratchOrgDefinitions[pkg]?this.scratchOrgDefinitions[pkg]:this.props.configFilePath)
+            if (this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD) {
+                item.push(
+                    this.scratchOrgDefinitions[pkg] ? this.scratchOrgDefinitions[pkg] : this.props.configFilePath
+                );
             }
             table.push(item);
         }
         return table;
     }
 
-    private async getListOfOnlyChangedPackages(projectDirectory: string, allPackagesInRepo: any) {
+    private async filterPackagesToBeBuiltByChanged(projectDirectory: string, allPackagesInRepo: any) {
         let packagesToBeBuilt = new Map<string, any>();
         let buildCollections = new BuildCollections(projectDirectory);
+        if (this.props.diffOptions)
+            this.props.diffOptions.pathToReplacementForceIgnore = this.getPathToForceIgnoreForCurrentStage(
+                this.projectConfig,
+                this.props.currentStage
+            );
 
         for await (const pkg of allPackagesInRepo) {
             let diffImpl: PackageDiffImpl = new PackageDiffImpl(
                 new ConsoleLogger(),
                 pkg,
                 this.props.projectDirectory,
-                this.props.packagesToCommits,
-                this.getPathToForceIgnoreForCurrentStage(this.projectConfig, this.props.currentStage),
                 this.props.diffOptions
             );
             let packageDiffCheck = await diffImpl.exec();
@@ -270,8 +271,7 @@ export default class BuildImpl {
         return packagesToBeBuilt;
     }
 
-
-    private getAllPackages(projectDirectory: string): string[] {
+    private getPackagesToBeBuilt(projectDirectory: string, includeOnlyPackages?: string[]): string[] {
         let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let sfdxpackages = [];
 
@@ -286,6 +286,17 @@ export default class BuildImpl {
             else return true;
         });
 
+        //Filter Packages
+        if (includeOnlyPackages) {
+           //Display include only packages
+          printIncludeOnlyPackages();
+            packageDescriptors = packageDescriptors.filter((pkg) => {
+                if (includeOnlyPackages.find((includedPkg)=>{return includedPkg == pkg.package}))
+                 return true;
+                else return false;
+            });
+        }
+
         // Ignore aliasfied packages on validate & prepare stages
         packageDescriptors = packageDescriptors.filter((pkg) => {
             return !(
@@ -299,6 +310,11 @@ export default class BuildImpl {
             if (pkg.package && pkg.versionNumber) sfdxpackages.push(pkg['package']);
         }
         return sfdxpackages;
+
+       function printIncludeOnlyPackages() {
+            SFPLogger.log(COLOR_KEY_MESSAGE(`Build will include the below packages as per inclusive filter`),LoggerLevel.TRACE);
+            SFPLogger.log(COLOR_KEY_VALUE(`${includeOnlyPackages.toString()}`),LoggerLevel.TRACE);
+        }
     }
 
     private printQueueDetails() {
@@ -448,7 +464,7 @@ export default class BuildImpl {
         SFPLogger.log(COLOR_HEADER(`-- Package Details:--`));
         const table = new Table({
             chars: COLON_MIDDLE_BORDER_TABLE,
-            style: { 'padding-left': 2 }
+            style: { 'padding-left': 2 },
         });
         table.push([COLOR_HEADER(`Package Type`), COLOR_KEY_MESSAGE(sfpPackage.package_type)]);
         table.push([COLOR_HEADER(`Package Version Number`), COLOR_KEY_MESSAGE(sfpPackage.package_version_number)]);
@@ -474,14 +490,20 @@ export default class BuildImpl {
             ]);
 
             if (sfpPackage.diffPackageMetadata) {
-                table.push([COLOR_HEADER(`Source Version From`), COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom)]);
-                table.push([COLOR_HEADER(`Source Version From`), COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo)]);
+                table.push([
+                    COLOR_HEADER(`Source Version From`),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom),
+                ]);
+                table.push([
+                    COLOR_HEADER(`Source Version From`),
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo),
+                ]);
                 table.push([
                     COLOR_HEADER(`Metadata Count for Diff Package`),
                     COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.metadataCount),
                 ]);
                 table.push([
-                    COLOR_HEADER(`Metadata Count for Diff Package`),
+                    COLOR_HEADER(`Invalidated Test Classes`),
                     COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.invalidatedTestClasses?.length),
                 ]);
             }
@@ -501,7 +523,7 @@ export default class BuildImpl {
         const table = new Table({
             head: ['Package', 'Version'],
             chars: ZERO_BORDER_TABLE,
-            style: { 'padding-left': 3 }
+            style: { 'padding-left': 3 },
         });
 
         for (const dependency of dependencies) {
@@ -525,11 +547,15 @@ export default class BuildImpl {
         isValidateMode: boolean
     ): Promise<SfpPackage> {
         console.log(COLOR_KEY_MESSAGE(`Package creation initiated for  ${sfdx_package}`));
-        let configFilePath = this.props.configFilePath
-        if(this.isMultiConfigFilesEnabled){
-            if(this.scratchOrgDefinitions[sfdx_package]){
-                configFilePath = this.scratchOrgDefinitions[sfdx_package]
-                console.log(COLOR_KEY_MESSAGE(`Matched scratch org definition file found for ${sfdx_package}: ${configFilePath}`));
+        let configFilePath = this.props.configFilePath;
+        if (this.isMultiConfigFilesEnabled) {
+            if (this.scratchOrgDefinitions[sfdx_package]) {
+                configFilePath = this.scratchOrgDefinitions[sfdx_package];
+                console.log(
+                    COLOR_KEY_MESSAGE(
+                        `Matched scratch org definition file found for ${sfdx_package}: ${configFilePath}`
+                    )
+                );
             }
         }
 
@@ -549,10 +575,15 @@ export default class BuildImpl {
                     this.props.currentStage
                 ),
                 revisionFrom:
-                    this.props.packagesToCommits && this.props.packagesToCommits[sfdx_package]
-                        ? this.props.packagesToCommits[sfdx_package]
+                    this.props.diffOptions?.packagesMappedToLastKnownCommitId &&
+                    this.props.diffOptions?.packagesMappedToLastKnownCommitId[sfdx_package]
+                        ? this.props.diffOptions?.packagesMappedToLastKnownCommitId[sfdx_package]
                         : null,
-                revisionTo: this.props.packagesToCommits && this.props.packagesToCommits[sfdx_package] ? 'HEAD' : null,
+                revisionTo:
+                    this.props.diffOptions?.packagesMappedToLastKnownCommitId &&
+                    this.props.diffOptions?.packagesMappedToLastKnownCommitId[sfdx_package]
+                        ? 'HEAD'
+                        : null,
             },
             {
                 devHub: this.props.devhubAlias,
@@ -563,7 +594,7 @@ export default class BuildImpl {
                 isSkipValidation: this.props.isQuickBuild,
                 breakBuildIfEmpty: true,
                 baseBranch: this.props.baseBranch,
-                buildNumber:this.props.buildNumber.toString()
+                buildNumber: this.props.buildNumber.toString(),
             },
             this.projectConfig
         );
@@ -595,13 +626,13 @@ export default class BuildImpl {
         } else return null;
     }
 
-    private getMultiScratchOrgDefinitionFileMap(projectConfig: any): {[key: string]: any}[]{
-        this.isMultiConfigFilesEnabled = this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles
-        let configFiles: {[key: string]: any}[]
-        if(this.isMultiConfigFilesEnabled){
-            configFiles = this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.packages
+    private getMultiScratchOrgDefinitionFileMap(projectConfig: any): { [key: string]: any }[] {
+        this.isMultiConfigFilesEnabled = this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles;
+        let configFiles: { [key: string]: any }[];
+        if (this.isMultiConfigFilesEnabled) {
+            configFiles = this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.packages;
         }
-        return configFiles
+        return configFiles;
     }
 
     private resolvePackageDependencies(projectConfig: any, conn: Connection){
@@ -615,4 +646,3 @@ export default class BuildImpl {
     }
 
 }
-
