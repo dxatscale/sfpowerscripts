@@ -143,7 +143,10 @@ export default class Git {
 
     static async initiateRepo(logger?: Logger, projectDir?: string) {
         let git = new Git(projectDir, logger);
-        await git.addSafeConfig(projectDir);
+        if(projectDir)
+         await git.addSafeConfig(projectDir);
+        else
+        await git.addSafeConfig(process.cwd());
         await git.getRemoteOriginUrl();
         return git;
     }
@@ -157,10 +160,12 @@ export default class Git {
     }
 
     async addSafeConfig(repoDir: string) {
+        //Temporary log incoming repoDir
+        console.log(`Repo Dir`,repoDir);
         //add workaround for safe directory (https://github.com/actions/runner/issues/2033)
         await this._git.addConfig('safe.directory', repoDir, false, 'global');
     }
-    
+
     async pushToRemote(branch: string, isForce: boolean) {
         if (!branch) branch = (await this._git.branch()).current;
         SFPLogger.log(`Pushing ${branch}`, LoggerLevel.INFO, this.logger);

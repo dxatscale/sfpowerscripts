@@ -32,6 +32,7 @@ export default class GitTags {
         let gitShowRefTagsBuffer = child_process.execSync(`git show-ref --tags -d | grep "${this.sfdx_package}_v*"`, {
             maxBuffer: 5 * 1024 * 1024,
             stdio: 'pipe',
+            cwd: this.git.getRepositoryPath()
         });
 
         let gitShowRefTags = gitShowRefTagsBuffer.toString();
