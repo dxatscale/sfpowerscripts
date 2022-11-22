@@ -1,6 +1,7 @@
 import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { Org } from '@salesforce/core';
 import ScratchOrg from '../../../ScratchOrg';
+import {DescribeSObjectResult} from "jsforce/src/types";
 const retry = require('async-retry');
 const ORDER_BY_FILTER = ' ORDER BY CreatedDate ASC';
 
@@ -51,6 +52,11 @@ export default class ScratchOrgInfoFetcher {
     public async getScratchOrgsByTag(tag: string, isMyPool: boolean, unAssigned: boolean, validationId?: string) {
         let hubConn = this.hubOrg.getConnection();
 
+        let scratchOrgInfoSchema: DescribeSObjectResult = await (hubConn.describeSObject('ScratchOrgInfo'));
+        const isValidationIdFieldAvailable: boolean = scratchOrgInfoSchema.fields.some((field) => {
+            return field.name == 'ValidationId__c'
+        })
+
         return retry(
             async (bail) => {
                 let query;
@@ -60,7 +66,7 @@ export default class ScratchOrgInfoFetcher {
                 else
                     query = `SELECT Pooltag__c, Id,  CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl,SfdxAuthUrl__c FROM ScratchOrgInfo WHERE Pooltag__c != null  AND Status = 'Active' `;
 
-                if (validationId !== null) {
+                if (validationId && isValidationIdFieldAvailable) {
                     query = query + ` AND ValidationId__c = '${validationId}' `;
                 }
                 if (isMyPool) {
