@@ -118,7 +118,7 @@ export default class BuildImpl {
         console.log(table.toString());
         //Fix transitive dependency gap
         this.projectConfig = await this.resolvePackageDependencies(this.projectConfig, this.sfpOrg.getConnection())
-
+    
         for await (const pkg of this.packagesToBeBuilt) {
             let type = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg).type;
             SFPStatsSender.logCount('build.scheduled.packages', {
@@ -605,9 +605,14 @@ export default class BuildImpl {
     }
 
     private resolvePackageDependencies(projectConfig: any, conn: Connection){
-        const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
-        return transitiveDependencyResolver.exec();
+        let isDependencyResolverEnabled = projectConfig?.plugins?.sfpowerscripts?.enableTransitiveDependencyResolver
+        if(isDependencyResolverEnabled){
+            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn)
+            return transitiveDependencyResolver.exec()
+        }else{
+            return projectConfig
+        } 
     }
-  
+
 }
 
