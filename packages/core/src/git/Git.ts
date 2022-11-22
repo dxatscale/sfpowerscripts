@@ -160,8 +160,6 @@ export default class Git {
     }
 
     async addSafeConfig(repoDir: string) {
-        //Temporary log incoming repoDir
-        console.log(`Repo Dir`,repoDir);
         //add workaround for safe directory (https://github.com/actions/runner/issues/2033)
         await this._git.addConfig('safe.directory', repoDir, false, 'global');
     }
