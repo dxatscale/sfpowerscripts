@@ -57,9 +57,6 @@ export default class Git {
     }
 
     public async getRemoteOriginUrl(overrideOriginURL?: string): Promise<string> {
-        //add workaround for safe directory (https://github.com/actions/runner/issues/2033)
-        await this._git.addConfig('safe.directory', this.repositoryLocation, false, 'global');
-
         let remoteOriginURL;
         if (!overrideOriginURL) {
             remoteOriginURL = (await this._git.getConfig('remote.origin.url')).value;
@@ -126,6 +123,7 @@ export default class Git {
         git._isATemporaryRepo = true;
         git.tempRepoLocation = locationOfCopiedDirectory;
 
+        await git.addSafeConfig(repoDir);
         await git.getRemoteOriginUrl();
         await git.fetch();
         if (branch) {
@@ -145,6 +143,7 @@ export default class Git {
 
     static async initiateRepo(logger?: Logger, projectDir?: string) {
         let git = new Git(projectDir, logger);
+        await git.addSafeConfig(projectDir);
         await git.getRemoteOriginUrl();
         return git;
     }
@@ -157,6 +156,11 @@ export default class Git {
         if (this.tempRepoLocation) this.tempRepoLocation.removeCallback();
     }
 
+    async addSafeConfig(repoDir: string) {
+        //add workaround for safe directory (https://github.com/actions/runner/issues/2033)
+        await this._git.addConfig('safe.directory', repoDir, false, 'global');
+    }
+    
     async pushToRemote(branch: string, isForce: boolean) {
         if (!branch) branch = (await this._git.branch()).current;
         SFPLogger.log(`Pushing ${branch}`, LoggerLevel.INFO, this.logger);
