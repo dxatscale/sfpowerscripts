@@ -74,7 +74,7 @@ export default class ReleaseDefinitionGenerator {
                             // Do not retry for Git errors that are not related to push
                             bail(err);
                         } else {
-                            SFPLogger.log('Failed to push changelog', LoggerLevel.WARN, this.logger);
+                            SFPLogger.log('Failed to push definition', LoggerLevel.WARN, this.logger);
                             SFPLogger.log(`Retrying...(${retryNum})`, LoggerLevel.WARN, this.logger);
                             throw err;
                         }
