@@ -4,6 +4,7 @@ import fs = require('fs-extra');
 import GitIdentity from './GitIdentity';
 const tmp = require('tmp');
 
+//Git Abstraction
 export default class Git {
     private _git: SimpleGit;
     private repositoryLocation: string;
