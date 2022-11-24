@@ -17,6 +17,6 @@ Use of orchestrator such as sfpowerscripts allows for many packages to be served
 
 ## Decision
 
-In order to improve the speed of feedback on PR, sfpowerscripts will provide additional validation modes 'ff-release-config' and 'thorough-release-config'. These two modes are analogous to exiting modes fast feedback and thorough, however will be filtered by the provided release config.  The passed in release config will be used to generate the filter list and only the changed packages in the list (by comparing against what's installed in the org) will be utilized for validating and providing feedback to the devs regarding quality of their change.
+In order to improve the speed of feedback on PR, sfpowerscripts will provide additional validation modes 'ff-release-config' and 'thorough-release-config'. These two modes are analogous to existing modes fast feedback and thorough, however will be filtered by the provided release config.  The passed in release config will be used to generate the filter list and only the changed packages in the list (by comparing against what's installed in the org) will be utilized for validating and providing feedback to the devs regarding quality of their change.
 
 Prepare command will also be modified to add support for creating pools of scratch orgs which are filtered by release config.
