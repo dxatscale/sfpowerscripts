@@ -8,7 +8,6 @@ import * as fs from 'fs-extra';
 import path = require('path');
 import * as rimraf from 'rimraf';
 
-
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
@@ -17,66 +16,62 @@ Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'expand_dependency');
 
 export default class Expand extends SfpowerscriptsCommand {
-  public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage('commandDescription');
 
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;
     protected static requiresProject = false;
 
     protected static flagsConfig = {
-      devhubalias: flags.string({
-        char: 'v',
-        description: messages.getMessage('devhubAliasFlagDescription'),
-        default: 'HubOrg',
-      }),
-      loglevel: flags.enum({
-          description: 'logging level for this command invocation',
-          default: 'info',
-          required: false,
-          options: [
-              'trace',
-              'debug',
-              'info',
-              'warn',
-              'error',
-              'fatal',
-              'TRACE',
-              'DEBUG',
-              'INFO',
-              'WARN',
-              'ERROR',
-              'FATAL',
-          ],
-      }),
+        devhubalias: flags.string({
+            char: 'v',
+            description: messages.getMessage('devhubAliasFlagDescription'),
+            default: 'HubOrg',
+        }),
+        loglevel: flags.enum({
+            description: 'logging level for this command invocation',
+            default: 'info',
+            required: false,
+            options: [
+                'trace',
+                'debug',
+                'info',
+                'warn',
+                'error',
+                'fatal',
+                'TRACE',
+                'DEBUG',
+                'INFO',
+                'WARN',
+                'ERROR',
+                'FATAL',
+            ],
+        }),
+    };
+
+    public async execute() {
+        let sfpOrg: SFPOrg;
+        let defaultProjectConfigPath = './project-config';
+        if (this.flags.devhubalias) sfpOrg = await SFPOrg.create({ aliasOrUsername: this.flags.devhubalias });
+        try {
+            //Validate dependencies in sfdx-project.json // Read Manifest
+            let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
+            const transitiveDependencyResolver = new TransitiveDependencyResolver(
+                projectConfig,
+                sfpOrg.getConnection()
+            );
+            projectConfig = await transitiveDependencyResolver.resolveDependencies();
+
+            //Clean up temp directory
+            if (fs.existsSync(defaultProjectConfigPath)) rimraf.sync(defaultProjectConfigPath);
+
+            fs.mkdirpSync(defaultProjectConfigPath);
+            let projectConfigFilePath: string = path.join(defaultProjectConfigPath, `sfdx-project.exp.json`);
+            fs.writeFileSync(projectConfigFilePath, JSON.stringify(projectConfig, null, 4));
+
+            console.log(`Generated project config file has been saved to ${projectConfigFilePath}`);
+        } catch (error) {
+            throw new Error('Unable to generate project config file:' + error);
+        }
     }
-
-  public async execute() {
-    let sfpOrg: SFPOrg
-    let defaultProjectConfigPath = './project-config'
-    if (this.flags.devhubalias) sfpOrg = await SFPOrg.create({ aliasOrUsername: this.flags.devhubalias });
-    try{
-      //Validate dependencies in sfdx-project.json // Read Manifest
-      let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
-      const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, sfpOrg.getConnection());
-      projectConfig = await transitiveDependencyResolver.resolveDependencies();
-
-      //Clean up temp directory
-      if (fs.existsSync(defaultProjectConfigPath))
-        rimraf.sync(defaultProjectConfigPath);
-
-      fs.mkdirpSync(defaultProjectConfigPath);
-      let projectConfigFilePath: string = path.join(defaultProjectConfigPath, `sfdx-project.exp.json`);
-      fs.writeFileSync(projectConfigFilePath, JSON.stringify(projectConfig, null, 4));
-
-      console.log(`Generated project config file has been saved to ${projectConfigFilePath}`)
-
-    }catch( error) {
-
-      throw new Error('Unable to generate project config file:' + error);
-
-    }
-    
-    
-  }
-
 }

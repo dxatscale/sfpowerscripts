@@ -1,18 +1,18 @@
-import child_process = require('child_process');
 import ProjectConfig from '../../project/ProjectConfig';
-import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
+import SFPLogger, { LoggerLevel, Logger, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 import { delay } from '../../utils/Delay';
 import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
 import { CreatePackage } from './CreatePackage';
-import CreateUnlockedPackageVersionImpl from '../../sfdxwrappers/CreateUnlockedPackageVersionImpl';
 import PackageEmptyChecker from '../validators/PackageEmptyChecker';
 import PackageVersionCoverage from '../coverage/PackageVersionCoverage';
-import { Connection } from '@salesforce/core';
+import { Connection, SfProject } from '@salesforce/core';
 import SFPStatsSender from '../../stats/SFPStatsSender';
 import { EOL } from 'os';
 import SFPOrg, { PackageTypeInfo } from '../../org/SFPOrg';
 import { PackageCreationParams } from '../SfpPackageBuilder';
+import { PackageVersion, PackageVersionCreateRequestResult } from '@salesforce/packaging';
+import { Duration } from '@salesforce/kit';
 const path = require('path');
 
 export default class CreateUnlockedPackageImpl extends CreatePackage {
@@ -89,30 +89,58 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
     }
 
     async createPackage(sfpPackage: SfpPackage) {
-        let createUnlockedPackageImpl: CreateUnlockedPackageVersionImpl = new CreateUnlockedPackageVersionImpl(
-            this.packageCreationParams.devHub,
-            this.workingDirectory, //Use working directory for unlocked package
-            this.sfpPackage.packageName,
-            this.packageCreationParams.waitTime,
-            this.params.configFilePath,
-            this.logger,
-            LoggerLevel.INFO,
-            sfpPackage.versionNumber,
-            this.packageCreationParams.installationkeybypass,
-            this.packageCreationParams.installationkey,
-            sfpPackage.tag,
-            this.packageCreationParams.isSkipValidation,
-            this.isOrgDependentPackage,
-            this.packageCreationParams.isCoverageEnabled
+        const sfProject = await SfProject.resolve(this.workingDirectory);
+
+        let result = await PackageVersion.create(
+            {
+                connection: this.devhubOrg.getConnection(),
+                project: sfProject,
+                installationkey: this.packageCreationParams.installationkey,
+                installationkeybypass: this.packageCreationParams.installationkeybypass,
+                tag: sfpPackage.tag,
+                skipvalidation:
+                    this.packageCreationParams.isSkipValidation && !this.isOrgDependentPackage ? true : false,
+                codecoverage:
+                    this.packageCreationParams.isCoverageEnabled && !this.isOrgDependentPackage ? true : false,
+                versionnumber: sfpPackage.versionNumber,
+                definitionfile: this.params.configFilePath,
+                packageId: this.sfpPackage.packageName,
+            },
+            { timeout: Duration.minutes(0), frequency: Duration.seconds(30) }
         );
 
-        let result = await createUnlockedPackageImpl.exec(true);
+        SFPLogger.log(`Package creation for ${this.sfpPackage.packageName} Initiated`,LoggerLevel.INFO,this.logger); 
+        //Poll for package creation every 30 seconds
+        let currentPackageCreationStatus:PackageVersionCreateRequestResult;
+        while (true) {
+            await delay(30000); //Poll every 30 seconds
+            currentPackageCreationStatus = await PackageVersion.getCreateStatus(
+                result.Id,
+                this.devhubOrg.getConnection()
+            );
 
-        SFPLogger.log(`Package Result:${JSON.stringify(result)}`, LoggerLevel.TRACE, this.logger);
+            SFPLogger.log(`Status: ${COLOR_KEY_MESSAGE(currentPackageCreationStatus.Status)}, Next Status check in 30 seconds`,LoggerLevel.INFO,this.logger); 
+            if (currentPackageCreationStatus.Status === `Success`) {
+                break;
+            } else if (currentPackageCreationStatus.Status === 'Error') {
+                let errorMessage = '<empty>';
+                const errors = currentPackageCreationStatus?.Error;
+                if (errors?.length) {
+                    errorMessage = 'Creation errors: ';
+                    for (let i = 0; i < errors.length; i++) {
+                        errorMessage += `\n${i + 1}) ${errors[i].message}`;
+                    }
+                }
+                throw new Error(`Unable to create  ${this.sfpPackage.packageName} due to \n` + errorMessage);
+            }
+            
+        }
+
+        SFPLogger.log(`Package Result:${JSON.stringify(currentPackageCreationStatus)}`, LoggerLevel.TRACE, this.logger);
 
         //Get the full details on the package and throw an error if the result is null, usually when the comamnd is timed out
-        if (result.SubscriberPackageVersionId) {
-            sfpPackage.package_version_id = result.SubscriberPackageVersionId;
+        if (currentPackageCreationStatus.SubscriberPackageVersionId) {
+            sfpPackage.package_version_id = currentPackageCreationStatus.SubscriberPackageVersionId;
             await this.getPackageInfo(sfpPackage);
         } else {
             throw new Error(

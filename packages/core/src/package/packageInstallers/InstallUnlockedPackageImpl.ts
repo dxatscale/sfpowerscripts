@@ -1,99 +1,96 @@
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_SUCCESS, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import PackageMetadataPrinter from '../../display/PackageMetadataPrinter';
-import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
-import InstallUnlockedPackageWrapper from '../../sfdxwrappers/InstallUnlockedPackageWrapper';
-import SfpPackage from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
+import { PackageInstallCreateRequest, PackagingSObjects, SubscriberPackageVersion } from '@salesforce/packaging';
+import { delay } from '../../utils/Delay';
+import { SfpPackageInstallationOptions } from './InstallPackage';
 
 
-export default class InstallUnlockedPackageImpl extends InstallPackage {
-    private packageVersionId;
 
-
+export default class InstallUnlockedPackageImpl {
     public constructor(
-        sfpPackage: SfpPackage,
-        targetOrg: SFPOrg,
-        options: SfpPackageInstallationOptions,
-        logger: Logger,
+        private logger: Logger,
+        private targetUserName: string,
+        private packageId: string,
+        private installationOptions: SfpPackageInstallationOptions,
+        private packageName?:string
     ) {
-        super(sfpPackage, targetOrg, logger,options);
-        this.packageVersionId = sfpPackage.package_version_id;
-        this.options = options;
     }
 
-    public async install() {
+    public setInstallationKey(installationKey: string) {
+        this.installationOptions.installationkey = installationKey;
+    }
+
+    public async install(payloadToDisplay?: any): Promise<any> {
+        let connection = (await SFPOrg.create({ aliasOrUsername: this.targetUserName })).getConnection();
         //Print Metadata carried in the package
-        PackageMetadataPrinter.printMetadataToDeploy(this.sfpPackage?.payload, this.logger);
+        if (payloadToDisplay) PackageMetadataPrinter.printMetadataToDeploy(payloadToDisplay, this.logger);
 
-        let installUnlockedPackageWrapper: InstallUnlockedPackageWrapper = new InstallUnlockedPackageWrapper(
-            this.logger,
-            LoggerLevel.INFO,
-            null,
-            this.sfpOrg.getUsername(),
-            this.packageVersionId,
-            this.options.waitTime,
-            this.options.publishWaitTime.toString(),
-            this.options.installationkey,
-            this.options.securitytype,
-            this.options.upgradetype,
-            this.options.apiVersion
+        const subscriberPackageVersion = new SubscriberPackageVersion({
+            connection,
+            aliasOrId: this.packageId,
+            password: this.installationOptions.installationkey,
+        });
+
+        const request: PackageInstallCreateRequest = {
+            SubscriberPackageVersionKey: await subscriberPackageVersion.getId(),
+            Password: this.installationOptions.installationkey as PackageInstallCreateRequest['Password'],
+            ApexCompileType: 'package' as PackageInstallCreateRequest['ApexCompileType'],
+            SecurityType: this.installationOptions.securitytype as PackageInstallCreateRequest['SecurityType'],
+            UpgradeType: this.installationOptions.upgradetype as PackageInstallCreateRequest['UpgradeType'],
+            EnableRss: true,
+        };
+
+        //Fire a package installation
+        let pkgInstallRequest = await subscriberPackageVersion.install(request, {});
+        let status = this.parseStatus(
+            pkgInstallRequest,
+            this.targetUserName,
+            this.packageName ? this.packageName : this.packageId,
+            this.logger
         );
-        SFPLogger.log(
-            `Executing installation command: ${installUnlockedPackageWrapper.getGeneratedSFDXCommandWithParams()}`
-        );
-        await installUnlockedPackageWrapper.exec(false);
-    }
-
-    /**
-     * Checks whether unlocked package version is installed in org.
-     * Overrides base class method.
-     * @param skipIfPackageInstalled
-     * @returns
-     */
-    protected async isPackageToBeInstalled(skipIfPackageInstalled: boolean): Promise<boolean> {
-        try {
-            if (skipIfPackageInstalled) {
-                SFPLogger.log(
-                    `Checking Whether Package with ID ${this.packageVersionId} is installed in  ${ this.sfpOrg.getUsername()}`,
-                    null,
-                    this.logger
-                );
-                let installedPackages = await this.sfpOrg.getAllInstalled2GPPackages();
-
-                let packageFound = installedPackages.find((installedPackage) => {
-                    return installedPackage.subscriberPackageVersionId === this.packageVersionId;
-                });
-
-                if (packageFound) {
-                    SFPLogger.log(
-                        `Package to be installed was found in the target org  ${ this.sfpOrg.getUsername()}`,
-                        LoggerLevel.INFO,
-                        this.logger
-                    );
-                    return false;
-                } else {
-                    SFPLogger.log(
-                        `Package to be installed was not found in the target org  ${ this.sfpOrg.getUsername()}, Proceeding to instal.. `,
-                        LoggerLevel.INFO,
-                        this.logger
-                    );
-                    return true;
-                }
-            } else {
-                SFPLogger.log(
-                    'Skip if package to be installed is false, Proceeding with installation',
-                    LoggerLevel.INFO,
-                    this.logger
-                );
-                return true;
-            }
-        } catch (error) {
-            SFPLogger.log(
-                'Unable to check whether this package is installed in the target org',
-                LoggerLevel.INFO,
+        while (status == 'IN_PROGRESS') {
+            pkgInstallRequest = await SubscriberPackageVersion.getInstallRequest(pkgInstallRequest.Id, connection);
+            status = this.parseStatus(
+                pkgInstallRequest,
+                this.targetUserName,
+                this.packageName ? this.packageName : this.packageId,
                 this.logger
             );
-            return true;
+            await delay(30000); //Poll every 30 seconds
+        }
+    }
+    public parseStatus(
+        request: PackagingSObjects.PackageInstallRequest,
+        username: string,
+        pkgName: string,
+        logger: Logger
+    ): 'IN_PROGRESS' | 'SUCCESS' {
+        const { Status } = request;
+        if (Status === 'SUCCESS') {
+            SFPLogger.log(
+                `Status: ${COLOR_SUCCESS(`Succesfully Installed`)}  ${pkgName} to ${username} with Id ${request.Id}`,
+                LoggerLevel.INFO,
+                logger
+            );
+            return Status;
+        } else if (['IN_PROGRESS', 'UNKNOWN'].includes(Status)) {
+            SFPLogger.log(
+                `Status: ${COLOR_KEY_MESSAGE(`In Progress`)} Installing  ${pkgName} to ${username} with Id ${request.Id}`,
+                LoggerLevel.INFO,
+                logger
+            );
+            return 'IN_PROGRESS';
+        } else {
+            let errorMessage = '<empty>';
+            const errors = request?.Errors?.errors;
+            if (errors?.length) {
+                errorMessage = 'Installation errors: ';
+                for (let i = 0; i < errors.length; i++) {
+                    errorMessage += `\n${i + 1}) ${errors[i].message}`;
+                }
+            }
+            throw new Error(`Unable to install  ${pkgName} due to \n` + errorMessage);
         }
     }
 }

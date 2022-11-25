@@ -20,6 +20,9 @@ import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git"
 import GroupConsoleLogs from '../../../ui/GroupConsoleLogs';
+import PackageVersionLister from "@dxatscale/sfpowerscripts.core/lib/package/version/PackageVersionLister"
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
@@ -149,16 +152,10 @@ export default class Promote extends SfpowerscriptsCommand {
             );
             let packageVersionList: any;
             if (this.flags.publishpromotedonly) {
-                let packageVersionListJson: string = child_process.execSync(
-                    `sfdx force:package:version:list --released -v ${this.flags.devhubalias} --json`,
-                    {
-                        cwd: process.cwd(),
-                        stdio: ['ignore', 'pipe', 'pipe'],
-                        encoding: 'utf8',
-                        maxBuffer: 5 * 1024 * 1024,
-                    }
-                );
-                packageVersionList = JSON.parse(packageVersionListJson);
+                let hubOrg = await SFPOrg.create({aliasOrUsername:this.flags.devhubalias})
+                let packageVersionLister:PackageVersionLister = new PackageVersionLister(hubOrg);
+                 packageVersionList = await packageVersionLister.listAllReleasedVersions(process.cwd())
+                
             }
 
             let artifacts = ArtifactFetcher.findArtifacts(this.flags.artifactdir);
@@ -405,4 +402,6 @@ export default class Promote extends SfpowerscriptsCommand {
             `Unable to find artifact metadata for ${packageName} Version ${packageVersionNumber.replace('-', '.')}`
         );
     }
+
+   
 }
