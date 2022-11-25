@@ -56,7 +56,7 @@ describe("Given a TransitiveDependencyResolver", () => {
 
   it("should resolve missing package dependencies with transitive dependency", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
-    const resolvedProjectConfig: any = await transitiveDependencyResolver.exec();
+    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies();
 
     let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "candidate-management");
     let tempDependency = packageDescriptor.dependencies.find(dependency => dependency.package === "temp");
@@ -65,7 +65,7 @@ describe("Given a TransitiveDependencyResolver", () => {
 
   it("should resolve package dependencies in the same order as its dependent packages", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
-    const resolvedProjectConfig: any = await transitiveDependencyResolver.exec();
+    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies();
 
     let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "candidate-management");
     let tempIndex = packageDescriptor.dependencies.findIndex(dependency => dependency.package === "temp");
