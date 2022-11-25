@@ -98,7 +98,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         }
     }
 
-    private async deployAllPackages(scratchOrg: ScratchOrg, hubOrg:Org,logger: Logger) {
+    private async deployAllPackages(scratchOrg: ScratchOrg, hubOrg:Org,logger: FileLogger) {
         let deploymentSucceed: string;
         if (this.pool.installAll) {
             let deploymentResult: DeploymentResult;
@@ -110,7 +110,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
                 deploymentMode = DeploymentMode.SOURCEPACKAGES;
             }
 
-            deploymentResult = await this.deployAllFetchedArtifacts(scratchOrg,hubOrg, logger, deploymentMode);
+            deploymentResult = await this.invokeDeployImpl(scratchOrg,hubOrg, logger, deploymentMode);
 
             SFPStatsSender.logGauge('prepare.packages.scheduled', deploymentResult.scheduled, {
                 poolName: this.pool.tag,
@@ -166,7 +166,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         );
     }
 
-    private async deployAllFetchedArtifacts(scratchOrg: ScratchOrg,hubOrg:Org, logger: Logger, deploymentMode: DeploymentMode) {
+    private async invokeDeployImpl(scratchOrg: ScratchOrg,hubOrg:Org, logger: FileLogger, deploymentMode: DeploymentMode) {
         SFPLogger.log(`Deploying packages in the repo to  ${scratchOrg.alias}`);
         SFPLogger.log(`Deploying packages in the repo to  ${scratchOrg.alias}`, LoggerLevel.INFO, logger);
 
