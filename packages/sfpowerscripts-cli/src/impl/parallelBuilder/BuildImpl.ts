@@ -639,7 +639,7 @@ export default class BuildImpl {
         let isDependencyResolverEnabled = projectConfig?.plugins?.sfpowerscripts?.enableTransitiveDependencyResolver
         if(isDependencyResolverEnabled){
             const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn)
-            return transitiveDependencyResolver.exec()
+            return transitiveDependencyResolver.resolveDependencies()
         }else{
             return projectConfig
         } 
