@@ -32,7 +32,7 @@ const fs = require('fs-extra');
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployHook {
-    private individualSODeploymentActivityLogger:FileLogger;
+  
 
     public constructor(protected pool: PoolConfig, private checkPointPackages: PackageDetails[]) {
         super(pool);
@@ -47,10 +47,10 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         try {
             const conn = (await Org.create({ aliasOrUsername: scratchOrg.username })).getConnection();
             let sfpOrg = await SFPOrg.create({ connection: conn });
-            this.individualSODeploymentActivityLogger = new FileLogger(logToFilePath);
+            let individualSODeploymentActivityLogger = new FileLogger(logToFilePath);
             let packageCollectionInstaller = new InstallUnlockedPackageCollection(
                 sfpOrg,
-                this.individualSODeploymentActivityLogger
+                individualSODeploymentActivityLogger
             );
 
             //Relax IP ranges on Scractch Org
@@ -58,34 +58,34 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
                 conn,
                 this.pool.relaxAllIPRanges,
                 this.pool.ipRangesToBeRelaxed,
-                this.individualSODeploymentActivityLogger
+                individualSODeploymentActivityLogger
             );
 
             //Install sfpowerscripts package
             await this.installSfPowerscriptsArtifactPackage(
                 scratchOrg,
-                this.individualSODeploymentActivityLogger,
+                individualSODeploymentActivityLogger,
                 packageCollectionInstaller
             );
 
             //Execute pre installs script
-            await this.preInstallScript(scratchOrg, hubOrg, this.individualSODeploymentActivityLogger);
+            await this.preInstallScript(scratchOrg, hubOrg, individualSODeploymentActivityLogger);
 
             //Hook Velocity Deployment
-            await this.prepareVlocityDataPacks(scratchOrg, this.individualSODeploymentActivityLogger, logLevel);
+            await this.prepareVlocityDataPacks(scratchOrg, individualSODeploymentActivityLogger, logLevel);
 
             //Deploy All Packages
             let deploymentStatus = await this.deployAllPackages(
                 scratchOrg,
                 hubOrg,
-                this.individualSODeploymentActivityLogger
+                individualSODeploymentActivityLogger
             );
 
             //Execute Post Install Script
             await this.postInstallScript(
                 scratchOrg,
                 hubOrg,
-                this.individualSODeploymentActivityLogger,
+                individualSODeploymentActivityLogger,
                 deploymentStatus
             );
 
