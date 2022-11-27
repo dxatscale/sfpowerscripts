@@ -112,7 +112,7 @@ export default class BuildImpl {
         console.log(COLOR_KEY_MESSAGE('Packages scheduled for build'));
         console.log(table.toString());
         //Fix transitive dependency gap
-        this.projectConfig = await this.resolvePackageDependencies(this.projectConfig, this.sfpOrg.getConnection())
+        this.projectConfig = await this.resolvePackageDependencies(this.projectConfig, this.sfpOrg?.getConnection())
     
         for await (const pkg of this.packagesToBeBuilt) {
             let type = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg).type;
@@ -635,10 +635,10 @@ export default class BuildImpl {
         return configFiles;
     }
 
-    private resolvePackageDependencies(projectConfig: any, conn: Connection){
+    private resolvePackageDependencies(projectConfig: any, connToDevHub: Connection){
         let isDependencyResolverEnabled = projectConfig?.plugins?.sfpowerscripts?.enableTransitiveDependencyResolver
-        if(isDependencyResolverEnabled){
-            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn)
+        if(isDependencyResolverEnabled && connToDevHub){
+            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, connToDevHub)
             return transitiveDependencyResolver.resolveDependencies()
         }else{
             return projectConfig
