@@ -422,7 +422,7 @@ export default class DeployImpl {
         SFPLogger.log(maxTable.toString(), LoggerLevel.INFO, this.props.packageLogger);
         groupSection.end();
 
-        groupSection = new GroupConsoleLogs(`Packages to be deployed`).begin();
+        groupSection = new GroupConsoleLogs(`Packages to be deployed`,this.props.packageLogger).begin();
         let minTable = new Table({
             head: [
                 'Package',
