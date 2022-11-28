@@ -495,7 +495,7 @@ export default class BuildImpl {
                     COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom),
                 ]);
                 table.push([
-                    COLOR_HEADER(`Source Version From`),
+                    COLOR_HEADER(`Source Version To`),
                     COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo),
                 ]);
                 table.push([
