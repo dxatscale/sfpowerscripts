@@ -260,10 +260,14 @@ export default class PrepareImpl {
         }
 
         function isPkgToBeInstalled(pkg, restrictedPackages?: string[]): boolean {
-            pkg.ignoreOnStage?.find((stage) => {
+            let validatePkgForIgnore = pkg.ignoreOnStage?.find((stage) => {
                 stage = stage.toLowerCase();
                 if (stage === 'prepare') return false;
             });
+
+            //if ignored .. skip
+            if(!validatePkgForIgnore) return false;
+         
             if (restrictedPackages) return restrictedPackages.includes(pkg.package);
             else return true;
         }
