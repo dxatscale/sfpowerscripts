@@ -6,9 +6,9 @@ Issue: #1133
 
 ## Context and Problem Statement
 
-sfpowerscripts is used as an orchestrator for modules in mono repositories. These mono repositories come in different forms and sizes.  Consider a mono repo which houses modules (packages) that are fairly independent of each other, like a repository that houses tech frameworks. Using the current approach of PR validation, a significant amount of time is wasted, when a changed package is validated, as the command undertakes validation of all the packages above the changed package and then proceeds to validate the packages changed below the package as specified in the installation order described by 'sfdx-project.json' (non pooled validation scenario). Though this could be fastened up by using a pooled scratch org in this repo, maintaining a pool for such repos are compute and ops intensive. Often these repos are support repos which seldom changes and pools are wasteful.
+sfpowerscripts is used as an orchestrator for modules in mono repositories. These mono repositories come in different forms and sizes.  Consider a mono repo which stores modules (packages) that are fairly independent of each other, like a repository that is comprised of technical frameworks. Using the current approach of PR validation, a significant amount of time is wasted, when a changed package is validated.  The command undertakes validation of all the packages above the changed package and then proceeds to validate the packages changed below the package as specified in the installation order described by 'sfdx-project.json' (non-pooled validation scenario). Though this could be sped up by using a pooled scratch org in this repo, maintaining a pool for such repos are compute and ops intensive for both cloud and self-hosted runners. Oftentimes these technical framework modules/packages support repos which seldom changes and pools are wasteful.
 
-sfpowerscripts should provide options to only validate the changed package(s) without  validating any other packages as specified in the project config
+sfpowerscripts should provide options to only validate the changed package(s) without validating any other packages as specified in the project config.
 
 ## Decision
 
