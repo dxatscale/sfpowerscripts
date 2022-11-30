@@ -298,7 +298,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 SFPStatsSender.logCount('prepare.org.succeeded');
             }
 
-            SFPStatsSender.logElapsedTime('prepare.org.singlejob', Date.now() - startTime);
+            SFPStatsSender.logElapsedTime('prepare.org.singlejob.elapsed_time', Date.now() - startTime, {poolname: this.pool.tag});
         } else {
             scratchOrg.isScriptExecuted = false;
             scratchOrg.failureMessage = result.error.message;
