@@ -1,7 +1,7 @@
 import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl';
+import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/promote/PromoteUnlockedPackageImpl'
 import ArtifactFetcher from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
@@ -83,7 +83,7 @@ export default class Promote extends SfpowerscriptsCommand {
                             sfpPackage.package_version_id,
                             this.hubOrg.getUsername()
                         );
-                        await promoteUnlockedPackageImpl.exec();
+                        await promoteUnlockedPackageImpl.promote();
                     }
 
                     promotedPackages.push(sfpPackage.packageName);

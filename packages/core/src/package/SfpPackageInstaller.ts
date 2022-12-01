@@ -4,7 +4,7 @@ import SFPOrg from '../org/SFPOrg';
 import InstallDataPackageImpl from './packageInstallers/InstallDataPackageImpl';
 import { SfpPackageInstallationOptions } from './packageInstallers/InstallPackage';
 import InstallSourcePackageImpl from './packageInstallers/InstallSourcePackageImpl';
-import InstallUnlockedPackageImpl from './packageInstallers/InstallUnlockedPackageImpl';
+import InstallUnlockedPackage from './packageInstallers/InstallUnlockedPackage';
 import { PackageInstallationResult } from './packageInstallers/PackageInstallationResult';
 import SfpPackage, { PackageType } from './SfpPackage';
 
@@ -22,7 +22,7 @@ export default class SfpPackageInstaller {
 
         switch (packageType) {
             case PackageType.Unlocked:
-                let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
+                let installUnlockedPackageImpl: InstallUnlockedPackage = new InstallUnlockedPackage(
                     sfpPackage,
                     targetOrg,
                     installationOptions,
