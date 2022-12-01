@@ -64,7 +64,7 @@ export default class InstallUnlockedPackage extends InstallPackage {
                     return false;
                 } else {
                     SFPLogger.log(
-                        `Package to be installed was not found in the target org  ${this.sfpOrg.getUsername()}, Proceeding to instal.. `,
+                        `Package to be installed was not found in the target org  ${this.sfpOrg.getUsername()}, Proceeding to install.. `,
                         LoggerLevel.INFO,
                         this.logger
                     );
