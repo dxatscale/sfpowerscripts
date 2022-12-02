@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "20.1.9",
+    "version": "20.1.10",
     "author": "dxatscale",
     "release": "November 22",
     "bin": {
@@ -33,7 +33,7 @@
         "marked-terminal": "5.1.1",
         "neverthrow": "4.2.1",
         "object-hash": "^2.1.1",
-        "puppeteer": "13.4.1",
+        "puppeteer": "19.2.0",
         "rimraf": "^3.0.2",
         "semver": "7.3.7",
         "simple-git": "3.7.1"
