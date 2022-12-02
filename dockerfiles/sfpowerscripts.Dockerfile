@@ -62,11 +62,13 @@ RUN ln -sf bash /bin/sh && \
 
 
 
+# this downloads chromium in ~/.npm/chromium (it only downloads it the first time)
+ENV PUPPETEER_DOWNLOAD_PATH=~/.npm/chromium 
+
 
 #Install Puppeteer
-RUN npm install --global puppeteer@19.2.0
+RUN npm i -g puppeteer@19.2.0 
 
-# Install vlocity
 RUN npm install --global vlocity@1.16.1
 
 
