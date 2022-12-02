@@ -1,10 +1,5 @@
 import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../deploy/DeployImpl';
-import SFPLogger, {
-    LoggerLevel,
-    Logger,
-    COLOR_KEY_MESSAGE,
-    ConsoleLogger,
-} from '@dxatscale/sfp-logger';
+import SFPLogger, { LoggerLevel, Logger, COLOR_KEY_MESSAGE, ConsoleLogger } from '@dxatscale/sfp-logger';
 import { Stage } from '../Stage';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
@@ -32,30 +27,31 @@ const fs = require('fs-extra');
 
 const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployHook {
-  
-
-    public constructor(protected pool: PoolConfig, private checkPointPackages: PackageDetails[]) {
+    public constructor(
+        protected pool: PoolConfig,
+        private checkPointPackages: PackageDetails[],
+        private externalPackage2s?: PackageDetails[]
+    ) {
         super(pool);
     }
 
     async executeJob(
         scratchOrg: ScratchOrg,
-        hubOrg: Org,
+        hubOrg: SFPOrg,
         logToFilePath: string,
         logLevel: LoggerLevel
     ): Promise<Result<ScriptExecutionResult, JobError>> {
         try {
-            const conn = (await Org.create({ aliasOrUsername: scratchOrg.username })).getConnection();
-            let sfpOrg = await SFPOrg.create({ connection: conn });
+            let scratchOrgAsSfPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrg.username });
             let individualSODeploymentActivityLogger = new FileLogger(logToFilePath);
             let packageCollectionInstaller = new InstallUnlockedPackageCollection(
-                sfpOrg,
+                scratchOrgAsSfPOrg,
                 individualSODeploymentActivityLogger
             );
 
             //Relax IP ranges on Scractch Org
             await this.relaxIPRanges(
-                conn,
+                scratchOrgAsSfPOrg.getConnection(),
                 this.pool.relaxAllIPRanges,
                 this.pool.ipRangesToBeRelaxed,
                 individualSODeploymentActivityLogger
@@ -71,6 +67,14 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
             //Execute pre installs script
             await this.preInstallScript(scratchOrg, hubOrg, individualSODeploymentActivityLogger);
 
+            //Install all external dependencies for non release config type
+            if (!this.pool.releaseConfigFile)
+                await this.installAllExternalPackageDependencies(
+                    individualSODeploymentActivityLogger,
+                    scratchOrgAsSfPOrg,
+                    this.externalPackage2s
+                );
+
             //Hook Velocity Deployment
             await this.prepareVlocityDataPacks(scratchOrg, individualSODeploymentActivityLogger, logLevel);
 
@@ -82,12 +86,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
             );
 
             //Execute Post Install Script
-            await this.postInstallScript(
-                scratchOrg,
-                hubOrg,
-                individualSODeploymentActivityLogger,
-                deploymentStatus
-            );
+            await this.postInstallScript(scratchOrg, hubOrg, individualSODeploymentActivityLogger, deploymentStatus);
 
             return ok({ scratchOrgUsername: scratchOrg.username });
         } catch (error) {
@@ -98,7 +97,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         }
     }
 
-    private async deployAllPackages(scratchOrg: ScratchOrg, hubOrg:Org,logger: FileLogger) {
+    private async deployAllPackages(scratchOrg: ScratchOrg, hubOrg: Org, logger: FileLogger) {
         let deploymentSucceed: string;
         if (this.pool.installAll) {
             let deploymentResult: DeploymentResult;
@@ -110,7 +109,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
                 deploymentMode = DeploymentMode.SOURCEPACKAGES;
             }
 
-            deploymentResult = await this.invokeDeployImpl(scratchOrg,hubOrg, logger, deploymentMode);
+            deploymentResult = await this.invokeDeployImpl(scratchOrg, hubOrg, logger, deploymentMode);
 
             SFPStatsSender.logGauge('prepare.packages.scheduled', deploymentResult.scheduled, {
                 poolName: this.pool.tag,
@@ -140,11 +139,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         logger: Logger,
         packageCollectionInstaller: InstallUnlockedPackageCollection
     ) {
-        SFPLogger.log(
-            `Installing sfpowerscripts_artifact package to the ${scratchOrg.alias}`,
-            null,
-            logger
-        );
+        SFPLogger.log(`Installing sfpowerscripts_artifact package to the ${scratchOrg.alias}`, null, logger);
 
         //Install sfpowerscripts artifact package
         await packageCollectionInstaller.install(
@@ -159,14 +154,15 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
             true
         );
 
-        SFPLogger.log(
-            `Sucessfully Installed sfpowerscripts_artifact package to the ${scratchOrg.alias}`,
-            null,
-            logger
-        );
+        SFPLogger.log(`Sucessfully Installed sfpowerscripts_artifact package to the ${scratchOrg.alias}`, null, logger);
     }
 
-    private async invokeDeployImpl(scratchOrg: ScratchOrg,hubOrg:Org, logger: FileLogger, deploymentMode: DeploymentMode) {
+    private async invokeDeployImpl(
+        scratchOrg: ScratchOrg,
+        hubOrg: Org,
+        logger: FileLogger,
+        deploymentMode: DeploymentMode
+    ) {
         SFPLogger.log(`Deploying packages in the repo to  ${scratchOrg.alias}`);
         SFPLogger.log(`Deploying packages in the repo to  ${scratchOrg.alias}`, LoggerLevel.INFO, logger);
 
@@ -180,7 +176,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
             skipIfPackageInstalled: true,
             deploymentMode: deploymentMode,
             isRetryOnFailure: this.pool.retryOnFailure,
-            devhubUserName: hubOrg.getUsername()
+            devhubUserName: hubOrg.getUsername(),
         };
 
         //Deploy the fetched artifacts to the org
@@ -196,39 +192,55 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         sfpPackage: SfpPackage,
         targetUsername: string,
         devhubUserName?: string,
-        logger?:Logger
+        logger?: Logger
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
+        //Install dependencies per package if release config is provided
+        if (this.pool.releaseConfigFile) {
+            let sfpOrg = await SFPOrg.create({ aliasOrUsername: targetUsername });
+            let hubOrg = await SFPOrg.create({ aliasOrUsername: devhubUserName });
+            await this.installExternalPackageDependenciesPerPackage(logger, sfpOrg, hubOrg, this.pool.keys, sfpPackage);
+        }
+        return { isToFailDeployment: false };
+    }
 
+    private async installAllExternalPackageDependencies(
+        logger: Logger,
+        scratchOrgAsSFPOrg: SFPOrg,
+        externalPackage2s: PackageDetails[]
+    ) {
+        SFPLogger.log(
+            `Installing all external package dependencies  in ${scratchOrgAsSFPOrg.getUsername()}`,
+            LoggerLevel.INFO,
+            logger
+        );
+        let packageCollectionInstaller = new InstallUnlockedPackageCollection(scratchOrgAsSFPOrg, logger);
+        await packageCollectionInstaller.install(externalPackage2s, true, true);
 
-        let sfpOrg = await SFPOrg.create({ aliasOrUsername: targetUsername });
-        let hubOrg = await SFPOrg.create({ aliasOrUsername: devhubUserName });
-        await installExternalPackageDependencies(
-            logger,
-            sfpOrg,
-            hubOrg,
-            this.pool.keys,
-            sfpPackage
+        SFPLogger.log(
+            `Successfully completed installing all external dependencies  in ${scratchOrgAsSFPOrg.getUsername()}`,
+            LoggerLevel.INFO,
+            logger
+        );
+    }
+
+    private async installExternalPackageDependenciesPerPackage(
+        logger: Logger,
+        scratchOrgAsSFPOrg: SFPOrg,
+        hubOrg: SFPOrg,
+        keys: string,
+        sfpPackage: SfpPackage
+    ) {
+        //Resolve external package dependencies
+        let externalPackageResolver = new ExternalPackage2DependencyResolver(
+            hubOrg.getConnection(),
+            ProjectConfig.getSFDXProjectConfig(null),
+            keys
+        );
+        let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies(
+            sfpPackage?.packageName
         );
 
-        return { isToFailDeployment: false };
-
-        async function installExternalPackageDependencies(
-            logger: Logger,
-            scratchOrgAsSFPOrg: SFPOrg,
-            hubOrg: SFPOrg,
-            keys: string,
-            sfpPackage: SfpPackage
-        ) {
-            //Resolve external package dependencies
-            let externalPackageResolver = new ExternalPackage2DependencyResolver(
-                hubOrg.getConnection(),
-                ProjectConfig.getSFDXProjectConfig(null),
-                keys
-            );
-            let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies(
-                sfpPackage.packageName
-            );
-
+        if (sfpPackage) {
             SFPLogger.log(
                 `Installing package dependencies of this ${
                     sfpPackage.packageName
@@ -239,17 +251,22 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
             //Display resolved dependenencies
             let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s, logger);
             externalDependencyDisplayer.display();
+        }
 
-            let packageCollectionInstaller = new InstallUnlockedPackageCollection(
-                scratchOrgAsSFPOrg,
+        let packageCollectionInstaller = new InstallUnlockedPackageCollection(scratchOrgAsSFPOrg, logger);
+        await packageCollectionInstaller.install(externalPackage2s, true, true);
+
+        if (sfpPackage) {
+            SFPLogger.log(
+                `Successfully completed external dependencies of this ${
+                    sfpPackage.packageName
+                } in ${scratchOrgAsSFPOrg.getUsername()}`,
+                LoggerLevel.INFO,
                 logger
             );
-            await packageCollectionInstaller.install(externalPackage2s, true, true);
-
+        } else {
             SFPLogger.log(
-                    `Successfully completed external dependencies of this ${
-                        sfpPackage.packageName
-                    } in ${scratchOrgAsSFPOrg.getUsername()}`,
+                `Successfully completed installing all external dependencies  in ${scratchOrgAsSFPOrg.getUsername()}`,
                 LoggerLevel.INFO,
                 logger
             );
@@ -314,7 +331,6 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         logger: Logger
     ): Promise<void> {
         if (isRelaxAllIPRanges || relaxIPRanges) {
-
             if (isRelaxAllIPRanges) {
                 SFPLogger.log(
                     `Relaxing all ip ranges for scratchOrg with user ${conn.getUsername()}`,

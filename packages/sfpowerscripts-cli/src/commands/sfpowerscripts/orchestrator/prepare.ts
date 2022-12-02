@@ -20,7 +20,8 @@ import SFPLogger, {
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
 import { COLOR_WARNING } from '@dxatscale/sfp-logger';
-import PoolSchema from '@dxatscale/sfpowerscripts.core/resources/pooldefinition.schema.json'
+import PoolSchema from '@dxatscale/sfpowerscripts.core/resources/pooldefinition.schema.json';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'prepare');
@@ -114,7 +115,8 @@ export default class Prepare extends SfpowerscriptsCommand {
 
             this.flags.apiversion = this.flags.apiversion || (await hubConn.retrieveMaxApiVersion());
 
-            let prepareImpl = new PrepareImpl(this.hubOrg, poolConfig, this.flags.loglevel);
+            let hubOrgAsSfPOrg = await SFPOrg.create({ connection: this.hubOrg.getConnection() });
+            let prepareImpl = new PrepareImpl(hubOrgAsSfPOrg, poolConfig, this.flags.loglevel);
 
             let results = await prepareImpl.exec();
             if (results.isOk()) {
@@ -142,8 +144,8 @@ export default class Prepare extends SfpowerscriptsCommand {
                 await this.getCurrentRemainingNumberOfOrgsInPoolAndReport();
 
                 SFPStatsSender.logGauge('prepare.succeededorgs', results.value.scratchOrgs.length, tags);
-                if(results.value.scratchOrgs.length>0)
-                SFPStatsSender.logGauge('prepare.duration', Date.now() - executionStartTime, tags);
+                if (results.value.scratchOrgs.length > 0)
+                    SFPStatsSender.logGauge('prepare.duration', Date.now() - executionStartTime, tags);
             } else if (results.isErr()) {
                 SFPLogger.log(
                     COLOR_HEADER(
@@ -173,7 +175,6 @@ export default class Prepare extends SfpowerscriptsCommand {
                         break;
                 }
             }
-           
         } catch (err) {
             throw new SfdxError('Unable to execute command .. ' + err);
         }
@@ -238,7 +239,6 @@ export default class Prepare extends SfpowerscriptsCommand {
     }
 
     public validatePoolConfig(poolConfig: any) {
-       
         let ajv = new Ajv({ allErrors: true });
         let validator = ajv.compile(PoolSchema);
         let isSchemaValid = validator(poolConfig);

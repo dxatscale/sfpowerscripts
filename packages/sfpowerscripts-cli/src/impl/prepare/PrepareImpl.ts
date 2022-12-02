@@ -30,7 +30,7 @@ const Table = require('cli-table');
 export default class PrepareImpl {
     private artifactFetchedCount: number = 0;
 
-    public constructor(private hubOrg: Org, private pool: PoolConfig, private logLevel: LoggerLevel) {
+    public constructor(private hubOrg: SFPOrg, private pool: PoolConfig, private logLevel: LoggerLevel) {
         // set defaults
         if (!this.pool.expiry) this.pool.expiry = 2;
 
@@ -49,8 +49,6 @@ export default class PrepareImpl {
             throw new Error(
                 `Pools have to be created using a DevHub authenticated with auth:web or auth:store or auth:accesstoken:store`
             );
-
-       
 
         return this.poolScratchOrgs();
     }
@@ -82,8 +80,7 @@ export default class PrepareImpl {
         let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s, new ConsoleLogger());
         externalDependencyDisplayer.display();
 
-
-        let prepareASingleOrgImpl: PrepareOrgJob = new PrepareOrgJob(this.pool, checkpointPackages);
+        let prepareASingleOrgImpl: PrepareOrgJob = new PrepareOrgJob(this.pool, checkpointPackages, externalPackage2s);
 
         let createPool: PoolCreateImpl = new PoolCreateImpl(
             this.hubOrg,
@@ -266,8 +263,8 @@ export default class PrepareImpl {
             });
 
             //if ignored .. skip
-            if(ignoreOnStageFound) return false;
-         
+            if (ignoreOnStageFound) return false;
+
             if (restrictedPackages) return restrictedPackages.includes(pkg.package);
             else return true;
         }
