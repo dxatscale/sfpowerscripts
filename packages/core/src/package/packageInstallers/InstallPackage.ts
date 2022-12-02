@@ -153,7 +153,7 @@ export abstract class InstallPackage {
 
     private sendMetricsWhenSuccessfullyInstalled() {
         let elapsedTime = Date.now() - this.startTime;
-        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)}  installation took  ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`);
+        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)}  installation took  ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`,LoggerLevel.INFO,this.logger);
         SFPStatsSender.logElapsedTime('package.installation.elapsed_time', elapsedTime, {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
