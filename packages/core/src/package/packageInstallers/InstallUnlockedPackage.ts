@@ -20,9 +20,7 @@ export default class InstallUnlockedPackage extends InstallPackage {
     }
 
     public async install() {
-        //Print Metadata carried in the package
-        PackageMetadataPrinter.printMetadataToDeploy(this.sfpPackage?.payload, this.logger);
-
+    
         let installUnlockedPackageWrapper: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
             this.logger,
             this.sfpOrg.getUsername(),
