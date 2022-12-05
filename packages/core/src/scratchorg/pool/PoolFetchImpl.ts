@@ -28,7 +28,8 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         sendToUser?: string,
         alias?: string,
         setdefaultusername?: boolean,
-        private fetchAllScratchOrgs?: boolean
+        private fetchAllScratchOrgs?: boolean,
+        private limitBy?:number
     ) {
         super(hubOrg);
         this.tag = tag;
@@ -59,11 +60,11 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         }
 
         if (this.fetchAllScratchOrgs) {
-            return this.fetchAllScratchOrg(availableSo);
+            return this.fetchAllScratchOrg(availableSo,this.limitBy);
         } else return this.fetchSingleScratchOrg(availableSo);
     }
 
-    private async fetchAllScratchOrg(availableSo: any[]): Promise<ScratchOrg[]> {
+    private async fetchAllScratchOrg(availableSo: any[],limitBy?:number): Promise<ScratchOrg[]> {
         let fetchedSOs: ScratchOrg[] = [];
 
         if (availableSo.length > 0) {
@@ -80,6 +81,8 @@ export default class PoolFetchImpl extends PoolBaseImpl {
                         continue;
                     }
                 }
+                
+              
 
                 SFPLogger.log(
                     `Scratch org ${element.SignupUsername} is allocated from the pool. Expiry date is ${element.ExpirationDate}`,
@@ -94,8 +97,14 @@ export default class PoolFetchImpl extends PoolBaseImpl {
                 soDetail.expiryDate = element.ExpirationDate;
                 soDetail.sfdxAuthUrl = element.SfdxAuthUrl__c;
                 soDetail.status = 'Available';
-                soDetail.alias = `SO` + count++;
+                soDetail.alias = `SO` + count;
                 fetchedSOs.push(soDetail);
+
+
+                if(limitBy && count==limitBy)
+                 break;
+                
+                 count++;  
             }
         }
 
