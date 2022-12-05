@@ -131,11 +131,7 @@ export default class Validate extends SfpowerscriptsCommand {
         SFPLogger.log(
             COLOR_HEADER(`Dependency Validation: ${this.flags.enabledependencyvalidation ? 'true' : 'false'}`)
         );
-        SFPLogger.log(
-            COLOR_HEADER(
-                `Using shapefile to override existing shape of the org: ${this.flags.shapefile ? 'true' : 'false'}`
-            )
-        );
+       
 
         SFPLogger.log(
             COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
