@@ -373,7 +373,7 @@ export default class Promote extends SfpowerscriptsCommand {
     }
 
     private isPackageVersionIdReleased(packageVersionList: any, packageVersionId: string): boolean {
-        let packageVersion = packageVersionList.result.find((pkg) => {
+        let packageVersion = packageVersionList.find((pkg) => {
             return pkg.SubscriberPackageVersionId === packageVersionId;
         });
 
