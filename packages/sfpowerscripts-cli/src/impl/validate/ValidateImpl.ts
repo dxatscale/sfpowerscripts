@@ -110,10 +110,9 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             let packagesInstalledInOrgMappedToCommits: { [p: string]: string };
             if (this.props.validationMode != ValidationMode.INDIVIDUAL)
                 packagesInstalledInOrgMappedToCommits = await this.fetchCommitsOfPackagesInstalledInOrg();
-            
+
             //In individual mode, always build changed packages only especially for validateAgainstOrg
-            if(this.props.validationMode == ValidationMode.INDIVIDUAL)
-               this.props.diffcheck = true;
+            if (this.props.validationMode == ValidationMode.INDIVIDUAL) this.props.diffcheck = true;
 
             let builtSfpPackages = await this.buildChangedSourcePackages(packagesInstalledInOrgMappedToCommits);
             deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
@@ -129,7 +128,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             }
             return null; //TODO: Fix with actual object
         } catch (error) {
-            if (error instanceof ValidateError) SFPLogger.log(`Error: ${error}}`, LoggerLevel.DEBUG);
+            if (error.message?.includes(`No changes detected in the packages to be built`)) {
+                SFPLogger.log(`WARNING: No changes detected in any of the packages, Validation is treated as a sucess`, LoggerLevel.WARN);
+                return;
+            } else if (error instanceof ValidateError) SFPLogger.log(`Error: ${error}`, LoggerLevel.DEBUG);
             else SFPLogger.log(`Error: ${error}}`, LoggerLevel.ERROR);
             throw error;
         } finally {
