@@ -62,12 +62,6 @@ RUN ln -sf bash /bin/sh && \
 
 
 
-# this downloads chromium in ~/.npm/chromium (it only downloads it the first time)
-ENV PUPPETEER_DOWNLOAD_PATH=~/.npm/chromium 
-
-
-#Install Puppeteer
-RUN npm i -g puppeteer@19.2.0 
 
 RUN npm install --global vlocity@1.16.1
 
@@ -81,7 +75,7 @@ RUN cd $HOME/sfpowerkit \
 
 
 # Install sfdx plugins
-RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.10.0
+RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.9.1
 RUN echo 'y' | sfdx plugins:install apexlink@2.3.2
 RUN echo 'y' | sfdx plugins:install sfdmu@4.18.2
 RUN echo 'y' | sfdx plugins:install sfpowerkit@5.0.0
