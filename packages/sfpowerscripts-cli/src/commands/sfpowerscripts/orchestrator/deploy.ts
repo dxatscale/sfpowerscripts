@@ -61,7 +61,9 @@ export default class Deploy extends SfpowerscriptsCommand {
         }),
         allowunpromotedpackages: flags.boolean({
             description: messages.getMessage('allowUnpromotedPackagesFlagDescription'),
-            deprecated: { messageOverride: '--allowunpromotedpackages is deprecated, All packages are allowed' },
+            deprecated: { 
+                message: '--allowunpromotedpackages is deprecated, All packages are allowed',
+                messageOverride: '--allowunpromotedpackages is deprecated, All packages are allowed' },
             hidden: true,
         }),
         retryonfailure: flags.boolean({

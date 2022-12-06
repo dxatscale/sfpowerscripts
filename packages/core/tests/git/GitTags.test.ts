@@ -9,6 +9,10 @@ jest.mock('../../src/git/Git', () => {
     class Git {
         tag = jest.fn().mockReturnValue(tags);
         log = jest.fn().mockReturnValue(gitLog);
+        getRepositoryPath()
+        {
+            return process.cwd();
+        }
         static async initiateRepo(){
           return new Git();
         }

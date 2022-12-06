@@ -90,6 +90,8 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
         istobreakbuild: flags.boolean({
             char: 'b',
             deprecated: {
+                message:
+                '--istobreakbuild has been deprecated, the command will always break if there are critical errors',
                 messageOverride:
                     '--istobreakbuild has been deprecated, the command will always break if there are critical errors',
             },

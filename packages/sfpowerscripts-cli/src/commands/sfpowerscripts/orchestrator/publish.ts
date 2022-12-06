@@ -4,7 +4,6 @@ import { Messages } from '@salesforce/core';
 import * as fs from 'fs-extra';
 import path = require('path');
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import child_process = require('child_process');
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import SFPLogger, {
     COLOR_ERROR,
@@ -18,8 +17,12 @@ import defaultShell from '@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell'
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git"
+import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import GroupConsoleLogs from '../../../ui/GroupConsoleLogs';
+import PackageVersionLister from '@dxatscale/sfpowerscripts.core/lib/package/version/PackageVersionLister';
+import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import ExecuteCommand from '@dxatscale/sfpowerscripts.core/lib/command/commandExecutor/ExecuteCommand';
+import { LoggerLevel } from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
@@ -76,13 +79,15 @@ export default class Promote extends SfpowerscriptsCommand {
         scope: flags.string({
             description: messages.getMessage('scopeFlagDescription'),
             dependsOn: ['npm'],
-            parse: async (scope) => scope.replace(/@/g, '').toLowerCase()
+            parse: async (scope) => scope.replace(/@/g, '').toLowerCase(),
         }),
         npmtag: flags.string({
             description: messages.getMessage('npmTagFlagDescription'),
             dependsOn: ['npm'],
             required: false,
             deprecated: {
+                message:
+                    '--npmtag is deprecated, sfpowerscripts will automatically tag the artifact with the branch name',
                 messageOverride:
                     '--npmtag is deprecated, sfpowerscripts will automatically tag the artifact with the branch name',
             },
@@ -147,16 +152,9 @@ export default class Promote extends SfpowerscriptsCommand {
             );
             let packageVersionList: any;
             if (this.flags.publishpromotedonly) {
-                let packageVersionListJson: string = child_process.execSync(
-                    `sfdx force:package:version:list --released -v ${this.flags.devhubalias} --json`,
-                    {
-                        cwd: process.cwd(),
-                        stdio: ['ignore', 'pipe', 'pipe'],
-                        encoding: 'utf8',
-                        maxBuffer: 5 * 1024 * 1024,
-                    }
-                );
-                packageVersionList = JSON.parse(packageVersionListJson);
+                let hubOrg = await SFPOrg.create({ aliasOrUsername: this.flags.devhubalias });
+                let packageVersionLister: PackageVersionLister = new PackageVersionLister(hubOrg);
+                packageVersionList = await packageVersionLister.listAllReleasedVersions(process.cwd());
             }
 
             let artifacts = ArtifactFetcher.findArtifacts(this.flags.artifactdir);
@@ -198,9 +196,9 @@ export default class Promote extends SfpowerscriptsCommand {
 
                 try {
                     if (this.flags.npm) {
-                        this.publishUsingNpm(sfpPackage, packageVersionNumber, npmrcFilesToCleanup);
+                        await this.publishUsingNpm(sfpPackage, packageVersionNumber, npmrcFilesToCleanup);
                     } else {
-                        this.publishUsingScript(packageName, packageVersionNumber, artifact);
+                        await this.publishUsingScript(packageName, packageVersionNumber, artifact);
                     }
 
                     succesfullyPublishedPackageNamesForTagging.push({
@@ -276,7 +274,7 @@ export default class Promote extends SfpowerscriptsCommand {
         }
     }
 
-    private publishUsingNpm(sfpPackage: SfpPackage, packageVersionNumber: string, npmrcFilesToCleanup: string[]) {
+    private async publishUsingNpm(sfpPackage: SfpPackage, packageVersionNumber: string, npmrcFilesToCleanup: string[]) {
         let publishGroupSection = new GroupConsoleLogs(`Publishing ${sfpPackage.packageName}`).begin();
         let artifactRootDirectory = path.dirname(sfpPackage.sourceDir);
 
@@ -311,14 +309,14 @@ export default class Promote extends SfpowerscriptsCommand {
             );
         }
 
+        let npmPublishExecutor: ExecuteCommand = new ExecuteCommand(new ConsoleLogger(), LoggerLevel.INFO, true);
+        await npmPublishExecutor.execCommand(cmd, artifactRootDirectory);
 
-        child_process.execSync(cmd, {
-            cwd: artifactRootDirectory,
-        });
         publishGroupSection.end();
     }
 
-    private publishUsingScript(packageName: string, packageVersionNumber: string, artifact: string) {
+    private async publishUsingScript(packageName: string, packageVersionNumber: string, artifact: string) {
+        let publishGroupSection = new GroupConsoleLogs(`Publishing ${packageName}`).begin();
         let cmd: string;
         if (process.platform !== 'win32') {
             cmd = `${defaultShell()} -e ${this.flags.scriptpath} ${packageName} ${packageVersionNumber} ${artifact} ${
@@ -332,10 +330,9 @@ export default class Promote extends SfpowerscriptsCommand {
 
         SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing ${packageName} Version ${packageVersionNumber}...`));
 
-        child_process.execSync(cmd, {
-            cwd: process.cwd(),
-            stdio: ['ignore', 'inherit', 'inherit'],
-        });
+        let scriptExecutor: ExecuteCommand = new ExecuteCommand(new ConsoleLogger(), LoggerLevel.INFO, true);
+        await scriptExecutor.execCommand(cmd, process.cwd());
+        publishGroupSection.end();
     }
 
     protected validateFlags() {
@@ -351,7 +348,7 @@ export default class Promote extends SfpowerscriptsCommand {
     private async pushGitTags() {
         SFPLogger.log(COLOR_KEY_MESSAGE('Pushing Git Tags to Repo'));
         if (this.flags.pushgittag) {
-           await this.git.pushTags();
+            await this.git.pushTags();
         }
     }
 
@@ -374,7 +371,7 @@ export default class Promote extends SfpowerscriptsCommand {
     }
 
     private isPackageVersionIdReleased(packageVersionList: any, packageVersionId: string): boolean {
-        let packageVersion = packageVersionList.result.find((pkg) => {
+        let packageVersion = packageVersionList.find((pkg) => {
             return pkg.SubscriberPackageVersionId === packageVersionId;
         });
 

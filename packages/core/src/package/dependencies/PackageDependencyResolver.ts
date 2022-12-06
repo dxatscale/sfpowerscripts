@@ -43,12 +43,14 @@ export default class PackageDependencyResolver {
             if (packageDirectory.dependencies && Array.isArray(packageDirectory.dependencies)) {
                 for (let i = 0; i < packageDirectory.dependencies.length; i++) {
                     let dependency = packageDirectory.dependencies[i];
-                    if (this.projectConfig.packageAliases[dependency.package] === undefined) {
+                    if (this.projectConfig.packageAliases[dependency.package] === undefined && !this.isSubscriberPackageVersionId(dependency.package)) {
                         
                         throw new Error(`Can't find package id for dependency: ` + dependency.package);
                     }
 
-                    if (this.isSubscriberPackageVersionId(this.projectConfig.packageAliases[dependency.package])) {
+                    let packageVersionId = this.isSubscriberPackageVersionId(dependency.package)?dependency.package:this.projectConfig.packageAliases[dependency.package]
+
+                    if (this.isSubscriberPackageVersionId(packageVersionId)) {
                         // Already resolved
                         continue;
                     }
@@ -60,7 +62,8 @@ export default class PackageDependencyResolver {
 
                     const package2VersionForDependency = await this.getPackage2VersionForDependency(
                         this.conn,
-                        dependency
+                        dependency,
+                        packageVersionId
                     );
 
                     if (package2VersionForDependency == null) {
@@ -83,7 +86,8 @@ export default class PackageDependencyResolver {
      */
     private async getPackage2VersionForDependency(
         conn: Connection,
-        dependency: { package: string; versionNumber: string }
+        dependency: { package: string; versionNumber: string },
+        packageVersionId: string
     ): Promise<Package2Version> {
 
         //Dont hit api's if its only for external dependencies
@@ -100,25 +104,25 @@ export default class PackageDependencyResolver {
         }
 
         let package2Versions: Package2Version[];
-        if (this.package2VersionCache.has(this.projectConfig.packageAliases[dependency.package], versionNumber)) {
+        if (this.package2VersionCache.has(packageVersionId, versionNumber)) {
             package2Versions = this.package2VersionCache.get(
-                this.projectConfig.packageAliases[dependency.package],
+                packageVersionId,
                 versionNumber
             );
         } else {
             const package2VersionFetcher = new Package2VersionFetcher(conn);
             const records = await package2VersionFetcher.fetchByPackage2Id(
-                this.projectConfig.packageAliases[dependency.package],
+                packageVersionId,
                 versionNumber,
                 true
             );
             this.package2VersionCache.set(
-                this.projectConfig.packageAliases[dependency.package],
+                packageVersionId,
                 versionNumber,
                 records
             );
             package2Versions = this.package2VersionCache.get(
-                this.projectConfig.packageAliases[dependency.package],
+                packageVersionId,
                 versionNumber
             );
         }

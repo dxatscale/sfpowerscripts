@@ -4,7 +4,7 @@ import { EOL } from 'os';
 import { Stage } from '../Stage';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import semver = require('semver');
-import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/sfdxwrappers/PromoteUnlockedPackageImpl';
+import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/promote/PromoteUnlockedPackageImpl';
 import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentExecutor';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import { COLOR_HEADER } from '@dxatscale/sfp-logger';
@@ -49,7 +49,7 @@ export interface DeployProps {
     promotePackagesBeforeDeploymentToOrg?: string;
     devhubUserName?: string;
     disableArtifactCommit?: boolean;
-    isFastFeedbackMode?: boolean;
+    selectiveComponentDeployment?:boolean;
 }
 
 export default class DeployImpl {
@@ -143,13 +143,14 @@ export default class DeployImpl {
                     sfdxProjectConfig
                 );
 
-                let groupSection = new GroupConsoleLogs(`Installing ${queue[i].packageName}`).begin();
+                let groupSection = new GroupConsoleLogs(`Installing ${queue[i].packageName}`,this.props.packageLogger).begin();
                 this.displayHeader(sfpPackage, pkgDescriptor, queue[i].packageName);
 
                 let preHookStatus = await this._preDeployHook?.preDeployPackage(
                     sfpPackage,
                     this.props.targetUsername,
-                    this.props.devhubUserName
+                    this.props.devhubUserName,
+                    this.props.packageLogger
                 );
                 if (preHookStatus?.isToFailDeployment) {
                     failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
@@ -217,7 +218,8 @@ export default class DeployImpl {
                     sfpPackage,
                     packageInstallationResult,
                     this.props.targetUsername,
-                    this.props.devhubUserName
+                    this.props.devhubUserName,
+                    this.props.packageLogger
                 );
 
                 if (postHookStatus?.isToFailDeployment) {
@@ -278,7 +280,7 @@ export default class DeployImpl {
                     sfpPackage.package_version_id,
                     this.props.devhubUserName
                 );
-                await promoteUnlockedPackageImpl.exec();
+                await promoteUnlockedPackageImpl.promote();
             }
         }
     }
@@ -337,7 +339,7 @@ export default class DeployImpl {
         );
         if (sfpPackage.packageType == PackageType.Source || sfpPackage.packageType == PackageType.Unlocked) {
             if (!pkgDescriptor.aliasfy) {
-                if (this.props.isFastFeedbackMode && sfpPackage.diffPackageMetadata?.metadataCount)
+                if (this.props.selectiveComponentDeployment && sfpPackage.diffPackageMetadata?.metadataCount)
                     SFPLogger.log(
                         `Metadata to be deployed: ${COLOR_KEY_MESSAGE(
                             sfpPackage.diffPackageMetadata?.metadataCount
@@ -397,7 +399,7 @@ export default class DeployImpl {
         packagesToPackageInfo: { [p: string]: PackageInfo },
         isBaselinOrgModeActivated: boolean
     ) {
-        let groupSection = new GroupConsoleLogs(`Full Deployment Breakdown`).begin();
+        let groupSection = new GroupConsoleLogs(`Full Deployment Breakdown`,this.props.packageLogger).begin();
         let maxTable = new Table({
             head: [
                 'Package',
@@ -420,7 +422,7 @@ export default class DeployImpl {
         SFPLogger.log(maxTable.toString(), LoggerLevel.INFO, this.props.packageLogger);
         groupSection.end();
 
-        groupSection = new GroupConsoleLogs(`Packages to be deployed`).begin();
+        groupSection = new GroupConsoleLogs(`Packages to be deployed`,this.props.packageLogger).begin();
         let minTable = new Table({
             head: [
                 'Package',
@@ -444,7 +446,7 @@ export default class DeployImpl {
     }
 
     private printArtifactVersions(queue: SfpPackage[], packagesToPackageInfo: { [p: string]: PackageInfo }) {
-        let groupSection = new GroupConsoleLogs(`Packages to be deployed`).begin();
+        let groupSection = new GroupConsoleLogs(`Packages to be deployed`,this.props.packageLogger).begin();
         let table = new Table({
             head: ['Package', 'Version to be installed'],
         });
@@ -572,15 +574,13 @@ export default class DeployImpl {
         let deploymentType =
             this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
                 ? DeploymentType.SOURCE_PUSH
-                : this.props.isFastFeedbackMode
+                : this.props.selectiveComponentDeployment
                 ? DeploymentType.SELECTIVE_MDAPI_DEPLOY
                 : DeploymentType.MDAPI_DEPLOY;
 
         //Add Installation Options
         let installationOptions = new SfpPackageInstallationOptions();
         (installationOptions.installationkey = null), (installationOptions.apexcompile = 'package');
-        installationOptions.securitytype = 'AdminsOnly';
-        installationOptions.upgradetype = 'Mixed';
         installationOptions.waitTime = waitTime;
         installationOptions.apiVersion = apiVersion;
         installationOptions.publishWaitTime = 60;

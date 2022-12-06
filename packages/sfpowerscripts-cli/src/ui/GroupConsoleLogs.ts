@@ -1,10 +1,10 @@
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 
 //TODO: Move to sfpconsole package
 export default class GroupConsoleLogs {
     private static logGroupSymbols?: string[];
 
-    constructor(private section: string) {}
+    constructor(private section: string,private logger?:Logger) {}
 
     public static setLogGroupsSymbol(logGroupSymbols: string[]) {
         GroupConsoleLogs.logGroupSymbols = logGroupSymbols;
@@ -12,13 +12,13 @@ export default class GroupConsoleLogs {
 
     public begin():GroupConsoleLogs {
         let sectionStart = this.getSectionStart();
-        if (sectionStart && sectionStart.length > 0) SFPLogger.log(sectionStart, LoggerLevel.INFO);
+        if (sectionStart && sectionStart.length > 0) SFPLogger.log(sectionStart, LoggerLevel.INFO,this.logger);
         return this;
     }
 
     public end():GroupConsoleLogs {
         let sectionEnd = this.getSectionEnd();
-        if (sectionEnd && sectionEnd.length > 0) SFPLogger.log(sectionEnd, LoggerLevel.INFO);
+        if (sectionEnd && sectionEnd.length > 0) SFPLogger.log(sectionEnd, LoggerLevel.INFO,this.logger);
         return this;
     }
 

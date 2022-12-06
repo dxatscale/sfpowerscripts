@@ -217,7 +217,8 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             undefined,
             undefined,
             undefined,
-            true
+            true,
+            this.pool.maxAllocation
         ).execute()) as ScratchOrg[];
         this.pool.scratchOrgs = await this.scratchOrgInfoFetcher.getScratchOrgRecordId(this.pool.scratchOrgs);
 

@@ -43,6 +43,7 @@ export default class CreateUnlockedPackage extends PackageCreateCommand {
             char: 'b',
             description: messages.getMessage('buildArtifactEnabledFlagDescription'),
             deprecated: {
+                message: '--buildartifactenabled is deprecated. Artifacts are always created',
                 messageOverride: '--buildartifactenabled is deprecated. Artifacts are always created',
             },
         }),

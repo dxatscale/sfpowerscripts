@@ -1,7 +1,8 @@
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+ import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import Package2Detail from '../Package2Detail';
-import InstallUnlockedPackageWrapper from '../../sfdxwrappers/InstallUnlockedPackageWrapper';
+import InstallUnlockedPackageImpl from './InstallUnlockedPackageImpl';
 import SFPOrg from '../../org/SFPOrg';
+import { SfpPackageInstallationOptions } from './InstallPackage';
 
 export default class InstallUnlockedPackageCollection {
     private installedPackages: Package2Detail[];
@@ -21,18 +22,17 @@ export default class InstallUnlockedPackageCollection {
                     LoggerLevel.INFO,
                     this.logger
                 );
-                let installUnlockedPackageWrapper: InstallUnlockedPackageWrapper = new InstallUnlockedPackageWrapper(
+                let installUnlockedPackageImpl: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
                     this.logger,
-                    LoggerLevel.INFO,
-                    null,
                     this.sfpOrg.getUsername(),
                     package2.subscriberPackageVersionId,
-                    '120',
+                    new SfpPackageInstallationOptions(),
+                    package2.name
                 );
                 if(package2.key)
-                   installUnlockedPackageWrapper.setInstallationKey(package2.key);
+                installUnlockedPackageImpl.setInstallationKey(package2.key);
                 try {
-                    await installUnlockedPackageWrapper.exec(true);
+                    await installUnlockedPackageImpl.install();
                 } catch (error) {
                     let message: string = error.message;
                     if (

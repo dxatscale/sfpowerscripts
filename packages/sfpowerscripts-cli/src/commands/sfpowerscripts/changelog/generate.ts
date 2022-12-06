@@ -46,8 +46,7 @@ export default class GenerateChangelog extends SfpowerscriptsCommand {
             required: false,
             char: 'r',
             description: messages.getMessage('repoUrlFlagDescription'),
-            deprecated: { messageOverride: '--repourl has been deprecated' },
-            hidden: true,
+            deprecated: {message:'--repourl has been deprecated',messageOverride: '--repourl has been deprecated'}
         }),
         directory: flags.string({
             required: false,

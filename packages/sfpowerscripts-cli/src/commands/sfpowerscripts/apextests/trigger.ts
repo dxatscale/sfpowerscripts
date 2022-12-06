@@ -63,6 +63,8 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
         synchronous: flags.boolean({
             char: 's',
             deprecated: {
+                message:
+                'synchronous mode is no longer supported, all tests are triggered asynchronously, Please use cli or disable parallel testing in the org ',
                 messageOverride:
                     'synchronous mode is no longer supported, all tests are triggered asynchronously, Please use cli or disable parallel testing in the org ',
             },

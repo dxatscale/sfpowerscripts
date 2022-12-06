@@ -1,4 +1,4 @@
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { PackageInstallationResult, PackageInstallationStatus } from './PackageInstallationResult';
 import ProjectConfig from '../../project/ProjectConfig';
 import SFPStatsSender from '../../stats/SFPStatsSender';
@@ -13,12 +13,13 @@ import PermissionSetGroupUpdateAwaiter from '../../permsets/PermissionSetGroupUp
 import SfpOrg from '../../org/SFPOrg';
 import SfpPackage from '../SfpPackage';
 import { DeploymentType } from '../../deployers/DeploymentExecutor';
+import getFormattedTime from '../../utils/GetFormattedTime';
 
 export class SfpPackageInstallationOptions {
     installationkey?: string;
     apexcompile?: string = 'package';
-    securitytype?: string = 'AdminsOnly';
-    upgradetype?: string = 'Mixed';
+    securitytype?: string = 'none';
+    upgradetype?: string = 'mixed-mode';
     waitTime?: string;
     apiVersion?: string;
     publishWaitTime?: number = 60;
@@ -141,6 +142,8 @@ export abstract class InstallPackage {
     }
 
     private sendMetricsWhenFailed() {
+        let elapsedTime = Date.now() - this.startTime;
+        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)}  installation attempt failed,it took  ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`);
         SFPStatsSender.logCount('package.installation.failure', {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
@@ -150,6 +153,7 @@ export abstract class InstallPackage {
 
     private sendMetricsWhenSuccessfullyInstalled() {
         let elapsedTime = Date.now() - this.startTime;
+        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)}  installation took  ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`,LoggerLevel.INFO,this.logger);
         SFPStatsSender.logElapsedTime('package.installation.elapsed_time', elapsedTime, {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,

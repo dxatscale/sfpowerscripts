@@ -41,6 +41,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             description: messages.getMessage('gitTagFlagDescription'),
             hidden: true,
             deprecated: {
+                message:'--gittag is deprecated, Please utilize git tags on publish stage',
                 messageOverride: '--gittag is deprecated, Please utilize git tags on publish stage',
             },
         }),

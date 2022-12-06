@@ -97,7 +97,10 @@ export default class Release extends SfpowerscriptsCommand {
         allowunpromotedpackages: flags.boolean({
             description: messages.getMessage('allowUnpromotedPackagesFlagDescription'),
             hidden: true,
-            deprecated: { messageOverride: '--allowunpromotedpackages is deprecated, All packages are allowed' },
+            deprecated: { 
+                message: '--allowunpromotedpackages is deprecated, All packages are allowed',
+                messageOverride: '--allowunpromotedpackages is deprecated, All packages are allowed'
+             },
         }),
         devhubalias: flags.string({
             char: 'v',
