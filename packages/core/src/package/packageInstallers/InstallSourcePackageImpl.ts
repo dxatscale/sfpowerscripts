@@ -1,7 +1,6 @@
 import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../deployers/DeploymentExecutor';
 import ReconcileProfileAgainstOrgImpl from '../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl';
 import DeployDestructiveManifestToOrgImpl from '../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl';
-import OrgDetailsFetcher, { OrgDetails } from '../../org/OrgDetailsFetcher';
 import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 const path = require('path');
@@ -10,7 +9,6 @@ const tmp = require('tmp');
 import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import PackageEmptyChecker from '../validators/PackageEmptyChecker';
-import { TestLevel } from '../../apextest/TestOptions';
 import SfpPackage from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
@@ -392,75 +390,6 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 SFPLogger.log('Unable to deploy reconciled  profiles', LoggerLevel.INFO, this.logger);
             }
         }
-    }
-
-    private async generateDeploymentOptions(
-        waitTime: string,
-        optimizeDeployment: boolean,
-        skipTest: boolean,
-        target_org: string,
-        apiVersion: string
-    ): Promise<any> {
-        let deploymentOptions: DeploymentOptions = {
-            ignoreWarnings: true,
-            waitTime: waitTime,
-        };
-        deploymentOptions.ignoreWarnings = true;
-        deploymentOptions.waitTime = waitTime;
-        deploymentOptions.apiVersion = apiVersion;
-
-        //Find Org Type
-        let orgDetails: OrgDetails;
-        try {
-            orgDetails = await new OrgDetailsFetcher(target_org).getOrgDetails();
-        } catch (err) {
-            SFPLogger.log(`Unable to fetch org details,assuming it is production`, LoggerLevel.WARN, this.logger);
-            orgDetails = {
-                instanceUrl: undefined,
-                isSandbox: false,
-                organizationType: undefined,
-                sfdxAuthUrl: undefined,
-                status: undefined,
-            };
-        }
-
-        if (this.sfpPackage.isApexFound) {
-            if (orgDetails.isSandbox) {
-                if (skipTest) {
-                    deploymentOptions.testLevel = TestLevel.RunNoTests;
-                } else if (this.sfpPackage.apexTestClassses.length > 0 && optimizeDeployment) {
-                    deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
-                    deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
-                        this.sfpPackage.apexTestClassses
-                    );
-                } else {
-                    deploymentOptions.testLevel = TestLevel.RunLocalTests;
-                }
-            } else {
-                if (this.sfpPackage.apexTestClassses.length > 0 && optimizeDeployment) {
-                    deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
-                    deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
-                        this.sfpPackage.apexTestClassses
-                    );
-                } else {
-                    deploymentOptions.testLevel = TestLevel.RunLocalTests;
-                }
-            }
-        } else {
-            if (orgDetails.isSandbox) {
-                deploymentOptions.testLevel = TestLevel.RunNoTests;
-            } else {
-                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
-                deploymentOptions.specifiedTests = 'skip';
-            }
-        }
-
-        return deploymentOptions;
-    }
-
-    private getAStringOfSpecificTestClasses(apexTestClassses: string[]) {
-        let specifedTests = apexTestClassses.join();
-        return specifedTests;
     }
 
     /**

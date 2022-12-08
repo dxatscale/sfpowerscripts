@@ -22,6 +22,8 @@ import PackageToComponent from './components/PackageToComponent';
 import lodash = require('lodash');
 import { EOL } from 'os';
 import PackageVersionUpdater from './version/PackageVersionUpdater';
+import FHTJsonGenerator from './generators/FHTJsonGenerator';
+import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 
 export default class SfpPackageBuilder {
     public static async buildPackageFromProjectDirectory(
@@ -132,6 +134,19 @@ export default class SfpPackageBuilder {
                     rimraf.sync(workingDirectory);
                 }
                 sfpPackage.diffPackageMetadata = undefined;
+            }
+
+            //Generate components
+            let componentSet = ComponentSet.fromSource(path.join(sfpPackage.workingDirectory, sfpPackage.packageDirectory));
+
+            //Check if field history tracking related operations are needed
+            let fhtGenerator = new FHTJsonGenerator();
+            let fhtInfo = await fhtGenerator.getFht(sfpPackage.workingDirectory, componentSet);
+            sfpPackage.isFHTFieldsFound = fhtInfo.isFHTFieldsFound;
+
+            if (fhtInfo.fhtFields) {
+                let fhtJsonPath = path.join(sfpPackage.workingDirectory, '/postDeployTransfomations/fhtJson.json');
+                fs.writeFileSync(fhtJsonPath, JSON.stringify(fhtInfo.fhtFields));
             }
         }
 
