@@ -1,6 +1,6 @@
 {
   "name": "@dxatscale/sfpconsole",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "library for sfp console commands",
   "main": "lib/SfpConsole.js",
   "types": "lib/SfpConsole.d.ts",

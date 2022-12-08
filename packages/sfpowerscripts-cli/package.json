@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "20.3.0",
+    "version": "20.3.1",
     "author": "dxatscale",
     "release": "December 22",
     "bin": {
@@ -9,9 +9,9 @@
     },
     "bugs": "https://github.com/dxatscale/sfpowerscripts/issues",
     "dependencies": {
-        "@dxatscale/sfdc-soup": "18.2.5",
-        "@dxatscale/sfp-logger": "1.1.2",
-        "@dxatscale/sfpowerscripts.core": "33.2.7",
+        "@dxatscale/sfdc-soup": "^18.2.6",
+        "@dxatscale/sfp-logger": "^1.1.3",
+        "@dxatscale/sfpowerscripts.core": "^33.2.8",
         "@oclif/core": "1.10.0",
         "@oclif/plugin-help": "5.1.12",
         "@salesforce/command": "5.2.24",
