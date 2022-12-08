@@ -8,7 +8,7 @@ import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
 export default class FHTJsonGenerator {
     public async getFht(workingDirectory: string, componentSet: ComponentSet): Promise<any> {
         let fhtYamlPath;
-        let isFHTFieldsFound = false;
+        let isFHTFieldFound = false;
 
         //read the yaml
         if (workingDirectory != null) fhtYamlPath = path.join(workingDirectory, 'postDeployTransfomations/history-tracking.yaml');
@@ -22,10 +22,10 @@ export default class FHTJsonGenerator {
         let fhtFields = await this.getFieldsFromComponent(fhtFieldsFromYaml, componentSet);
 
         if (fhtFields !== null) {
-            isFHTFieldsFound = true;
+            isFHTFieldFound = true;
         }
 
-        return {isFHTFieldsFound: isFHTFieldsFound, fhtFields: fhtFields};
+        return {isFHTFieldsFound: isFHTFieldFound, fhtFields: fhtFields};
     }
 
     private async getFieldsFromComponent(fhtFieldsFromYaml: any, componentSet: ComponentSet): Promise<any> {

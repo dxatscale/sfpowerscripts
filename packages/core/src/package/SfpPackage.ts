@@ -55,7 +55,7 @@ export default class SfpPackage extends PackageInfo {
     public mdapiDir: string;
     public destructiveChangesPath: string;
     public resolvedPackageDirectory: string;
-    public isFHTFieldsFound: string;
+    public isFHTFieldFound: string;
 
     public version: string = '4';
 

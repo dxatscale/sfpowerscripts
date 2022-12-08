@@ -14,8 +14,8 @@ export default class FHTPostDeploymentGenerator {
 
     public static async generateFHTEnabledComponents(sfpPackage: SfpPackage, conn: Connection, logger: Logger): Promise<ComponentSet> {
 
-        //only do if isFHTFieldsFound is true
-        if(!sfpPackage.isFHTFieldsFound) {
+        //only do if isFHTFieldFound is true
+        if(!sfpPackage.isFHTFieldFound) {
             return;
         }
 

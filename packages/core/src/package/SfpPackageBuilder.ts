@@ -142,7 +142,7 @@ export default class SfpPackageBuilder {
             //Check if field history tracking related operations are needed
             let fhtGenerator = new FHTJsonGenerator();
             let fhtInfo = await fhtGenerator.getFht(sfpPackage.workingDirectory, componentSet);
-            sfpPackage.isFHTFieldsFound = fhtInfo.isFHTFieldsFound;
+            sfpPackage.isFHTFieldFound = fhtInfo.isFHTFieldFound;
 
             if (fhtInfo.fhtFields) {
                 let fhtJsonPath = path.join(sfpPackage.workingDirectory, '/postDeployTransfomations/fhtJson.json');
