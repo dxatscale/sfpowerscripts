@@ -69,14 +69,14 @@ export default class InstallUnlockedPackageImpl {
         const { Status } = request;
         if (Status === 'SUCCESS') {
             SFPLogger.log(
-                `Status: ${COLOR_SUCCESS(`Succesfully Installed`)}  ${pkgName} to ${username} with Id ${request.Id}`,
+                `Status: ${COLOR_SUCCESS(`Succesfully Installed`)} ${pkgName} to ${username} with Id ${request.Id}`,
                 LoggerLevel.INFO,
                 logger
             );
             return Status;
         } else if (['IN_PROGRESS', 'UNKNOWN'].includes(Status)) {
             SFPLogger.log(
-                `Status: ${COLOR_KEY_MESSAGE(`In Progress`)} Installing  ${pkgName} to ${username} with Id ${request.Id}`,
+                `Status: ${COLOR_KEY_MESSAGE(`In Progress`)} Installing ${pkgName} to ${username} with Id ${request.Id}`,
                 LoggerLevel.INFO,
                 logger
             );
@@ -90,7 +90,7 @@ export default class InstallUnlockedPackageImpl {
                     errorMessage += `\n${i + 1}) ${errors[i].message}`;
                 }
             }
-            throw new Error(`Unable to install  ${pkgName} due to \n` + errorMessage);
+            throw new Error(`Unable to install ${pkgName} due to \n` + errorMessage);
         }
     }
 }

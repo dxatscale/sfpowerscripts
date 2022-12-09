@@ -50,7 +50,7 @@ export default class PackageEmptyChecker {
             if (err.code === 'ENOENT') {
                 throw new Error(`No such file or directory ${err.path}`); // Re-throw error if .forceignore does not exist
             } else if (!isToBreakBuildIfEmpty) {
-                status.message = `Something wrong with the path provided  ${directoryToCheck},,but skipping, The exception is ${err}`;
+                status.message = `Something wrong with the path provided ${directoryToCheck}, but skipping, The exception is ${err}`;
                 status.result = 'skip';
                 return status;
             } else throw err;

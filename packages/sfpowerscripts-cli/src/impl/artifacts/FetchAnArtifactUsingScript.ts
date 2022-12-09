@@ -31,7 +31,7 @@ export class FetchAnArtifactUsingScript implements FetchAnArtifact {
                 if (process.platform !== 'win32') {
                     cmd = `${defaultShell()} -e ${this.scriptPath} ${packageName} ${artifactDirectory}`;
                 } else {
-                    cmd = `cmd.exe /c ${this.scriptPath} ${packageName}  ${artifactDirectory}`;
+                    cmd = `cmd.exe /c ${this.scriptPath} ${packageName} ${artifactDirectory}`;
                 }
             }
 
