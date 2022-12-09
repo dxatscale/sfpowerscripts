@@ -11,7 +11,7 @@ export default class ProjectValidation {
 
     constructor() {
         this.projectConfig = ProjectConfig.getSFDXProjectConfig(null);
-        this.ajv = new Ajv({ allErrors: true });
+        this.ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
         this.resourcesDir = path.join(__dirname, '..', 'resources', 'schemas');
     }
 
