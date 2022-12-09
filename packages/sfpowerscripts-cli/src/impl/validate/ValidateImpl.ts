@@ -129,7 +129,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             return null; //TODO: Fix with actual object
         } catch (error) {
             if (error.message?.includes(`No changes detected in the packages to be built`)) {
-                SFPLogger.log(`WARNING: No changes detected in any of the packages, Validation is treated as a sucess`, LoggerLevel.WARN);
+                SFPLogger.log(`WARNING: No changes detected in any of the packages, Validation is treated as a success`, LoggerLevel.WARN);
                 return;
             } else if (error instanceof ValidateError) SFPLogger.log(`Error: ${error}`, LoggerLevel.DEBUG);
             else SFPLogger.log(`Error: ${error}}`, LoggerLevel.ERROR);
@@ -326,7 +326,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             logsGroupSymbol: this.props.logsGroupSymbol,
             currentStage: Stage.VALIDATE,
             disableArtifactCommit: this.props.disableArtifactCommit,
-            selectiveComponentDeployment: this.props.validationMode == ValidationMode.FAST_FEEDBACK 
+            selectiveComponentDeployment: this.props.validationMode == ValidationMode.FAST_FEEDBACK
                                       || this.props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG,
         };
 

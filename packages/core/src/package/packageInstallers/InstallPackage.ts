@@ -58,8 +58,8 @@ export abstract class InstallPackage {
                 this.sfpPackage.packageName
             );
 
-           
-           
+
+
             this.connection = this.sfpOrg.getConnection();
 
             if (await this.isPackageToBeInstalled(this.options.skipIfPackageInstalled)) {
@@ -126,7 +126,7 @@ export abstract class InstallPackage {
 
             if (!aliasDir) {
                 throw new Error(
-                    `Aliasfied package '${this.sfpPackage.packageName}' does not have an alias with '${alias}'' or 'default' directory`
+                    `Aliasfied package '${this.sfpPackage.packageName}' does not have an alias with '${alias}' or 'default' directory`
                 );
             }
 
@@ -143,7 +143,7 @@ export abstract class InstallPackage {
 
     private sendMetricsWhenFailed() {
         let elapsedTime = Date.now() - this.startTime;
-        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)}  installation attempt failed,it took  ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`);
+        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)} installation attempt failed,it took ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`);
         SFPStatsSender.logCount('package.installation.failure', {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
@@ -153,7 +153,7 @@ export abstract class InstallPackage {
 
     private sendMetricsWhenSuccessfullyInstalled() {
         let elapsedTime = Date.now() - this.startTime;
-        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)}  installation took  ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`,LoggerLevel.INFO,this.logger);
+        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)} installation took ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`,LoggerLevel.INFO,this.logger);
         SFPStatsSender.logElapsedTime('package.installation.elapsed_time', elapsedTime, {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
@@ -212,7 +212,7 @@ export abstract class InstallPackage {
                 this.logger,
                 preDeploymentScript,
                 this.sfpPackage.packageName,
-                this.sfpOrg.getUsername(),     
+                this.sfpOrg.getUsername(),
             );
         }
     }

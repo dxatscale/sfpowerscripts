@@ -23,11 +23,11 @@ export default class AnalyzeWithPMDImpl extends SFDXCommand {
     getGeneratedParams(): string {
         let command: string = '';
 
-        if (this.sourceDirectory) command = `-d  ${this.sourceDirectory}`;
-        if (this.format) command += ` -f  ${this.format}`;
-        if (this.ouputPath) command += ` -o  ${this.ouputPath}`;
-        if (this.rulesets) command += ` -R  ${this.rulesets}`;
-        if (this.version) command += ` --version  ${this.version}`;
+        if (this.sourceDirectory) command = `-d ${this.sourceDirectory}`;
+        if (this.format) command += ` -f ${this.format}`;
+        if (this.ouputPath) command += ` -o ${this.ouputPath}`;
+        if (this.rulesets) command += ` -R ${this.rulesets}`;
+        if (this.version) command += ` --version ${this.version}`;
         command += ` --no-failonviolation`;
         command += ` --loglevel ${LoggerLevel[SFPLogger.logLevel]}`;
 
