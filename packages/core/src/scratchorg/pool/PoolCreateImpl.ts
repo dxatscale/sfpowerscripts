@@ -157,7 +157,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         this.pool.scratchOrgs = new Array<ScratchOrg>();
 
         for (let i = 0; i < this.pool.to_allocate; i++) {
-            SFPLogger.log(`Creating Scratch  Org  ${count} of ${this.totalToBeAllocated}..`);
+            SFPLogger.log(`Creating Scratch Org ${count} of ${this.totalToBeAllocated}..`);
             try {
                 let scratchOrg: ScratchOrg = await this.scratchOrgOperator.create(
                     `SO` + count,
@@ -175,7 +175,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 this.totalAllocated++;
             } catch (error) {
                 SFPLogger.log(error, LoggerLevel.ERROR);
-                SFPLogger.log(`Unable to provision scratch org  ${count} ..   `, LoggerLevel.ERROR);
+                SFPLogger.log(`Unable to provision scratch org ${count} ..   `, LoggerLevel.ERROR);
             }
             count++;
         }
@@ -208,7 +208,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             COLOR_KEY_MESSAGE(`Fetching Scratch Orgs from snapshot pool ${this.pool.snapshotPool}`),
             LoggerLevel.INFO
         );
-       
+
         this.pool.scratchOrgs = (await new PoolFetchImpl(
             this.hubOrg,
             this.pool.snapshotPool,
@@ -263,7 +263,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 );
 
                 await this.scratchOrgOperator.delete([activeScratchOrgRecordId]);
-                console.log(`Succesfully deleted scratchorg  ${scratchOrg.username}`);
+                console.log(`Succesfully deleted scratchorg ${scratchOrg.username}`);
             } catch (error) {
                 SFPLogger.log(
                     `Unable to delete the scratchorg ${scratchOrg.username}.. due to\n` + error,

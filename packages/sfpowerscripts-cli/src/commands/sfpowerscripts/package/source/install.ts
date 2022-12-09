@@ -103,19 +103,19 @@ export default class InstallSourcePackage extends InstallPackageCommand {
                 skipIfPackageInstalled : skipIfAlreadyInstalled
             };
 
-        
+
             let result = await SfpPackageInstaller.installPackage(
                new ConsoleLogger(),
                 this.sfpPackage,
                 this.sfpOrg,
                 options
             );
-        
+
 
             if (result.result == PackageInstallationStatus.Failed) {
                 throw new Error(result.message);
             } else {
-                console.log(`Succesfully Installed source package  ${sfdx_package}`);
+                console.log(`Succesfully Installed source package ${sfdx_package}`);
 
                 console.log('\n\nOutput variables:');
                 if (result.deploy_id) {
