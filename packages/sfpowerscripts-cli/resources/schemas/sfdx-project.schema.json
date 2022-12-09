@@ -5,7 +5,9 @@
     "description": "The properties and shape of the SFDX project enhanced for sfpowerscripts",
     "type": "object",
     "additionalProperties": false,
-    "required": ["packageDirectories"],
+    "required": [
+        "packageDirectories"
+    ],
     "properties": {
         "packageDirectories": {
             "title": "Package Directories",
@@ -16,20 +18,68 @@
             "items": {
                 "type": "object",
                 "dependencies": {
-                    "ancestorId": ["package", "versionNumber"],
-                    "ancestorVersion": ["package", "versionNumber"],
-                    "apexTestAccess": ["package", "versionNumber"],
-                    "definitionFile": ["package", "versionNumber"],
-                    "dependencies": ["package", "versionNumber"],
-                    "package": ["versionNumber"],
-                    "postInstallUrl": ["package", "versionNumber"],
-                    "unpackagedMetadata": ["package", "versionNumber"],
-                    "releaseNotesUrl": ["package", "versionNumber"],
-                    "versionDescription": ["package", "versionNumber"],
-                    "versionName": ["package", "versionNumber"],
-                    "versionNumber": ["package"]
+                    "ancestorId": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "ancestorVersion": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "apexTestAccess": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "definitionFile": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "dependencies": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "functions": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "package": [
+                        "versionNumber"
+                    ],
+                    "postInstallScript": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "postInstallUrl": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "releaseNotesUrl": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "uninstallScript": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "unpackagedMetadata": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "versionDescription": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "versionName": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "versionNumber": [
+                        "package"
+                    ]
                 },
-                "required": ["path"],
+                "required": [
+                    "path"
+                ],
                 "additionalProperties": false,
                 "properties": {
                     "ancestorId": {
@@ -50,6 +100,9 @@
                     "dependencies": {
                         "$ref": "#/definitions/packageDirectory.dependencies"
                     },
+                    "functions": {
+                        "$ref": "#/definitions/packageDirectory.functions"
+                    },
                     "includeProfileUserLicenses": {
                         "$ref": "#/definitions/packageDirectory.includeProfileUserLicenses"
                     },
@@ -59,14 +112,20 @@
                     "path": {
                         "$ref": "#/definitions/packageDirectory.path"
                     },
+                    "postInstallScript": {
+                        "$ref": "#/definitions/packageDirectory.postInstallScript"
+                    },
                     "postInstallUrl": {
                         "$ref": "#/definitions/packageDirectory.postInstallUrl"
                     },
-                    "unpackagedMetadata": {
-                        "$ref": "#/definitions/packageDirectory.unpackagedMetadata"
-                    } ,
                     "releaseNotesUrl": {
                         "$ref": "#/definitions/packageDirectory.releaseNotesUrl"
+                    },
+                    "uninstallScript": {
+                        "$ref": "#/definitions/packageDirectory.uninstallScript"
+                    },
+                    "unpackagedMetadata": {
+                        "$ref": "#/definitions/packageDirectory.unpackagedMetadata"
                     },
                     "versionDescription": {
                         "$ref": "#/definitions/packageDirectory.versionDescription"
@@ -76,6 +135,9 @@
                     },
                     "versionNumber": {
                         "$ref": "#/definitions/packageDirectory.versionNumber"
+                    },
+                    "branch": {
+                        "$ref": "#/definitions/packageDirectory.branch"
                     },
                     "aliasfy": {
                         "$ref": "#/definitions/packageDirectory.aliasfy"
@@ -116,7 +178,7 @@
                     "skipCoverageValidation": {
                         "$ref": "#/definitions/packageDirectory.skipCoverageValidation"
                     },
-                    "tags":{
+                    "tags": {
                         "$ref": "#/definitions/packageDirectory.tags"
                     },
                     "testSynchronous": {
@@ -189,10 +251,371 @@
                     "pattern": "^(0Ho|033|05i|04t)([a-zA-Z0-9]{15}|[a-zA-Z0-9]{12})$"
                 }
             }
+        },
+        "replacements": {
+            "title": "Replacements for metadata that are executed during deployments",
+            "type": "array",
+            "description": "The Salesforce CLI will conditionally replace portions of your metadata during a deployment",
+            "items": {
+                "anyOf": [
+                    {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "replaceWhenEnv": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "env": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "env",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "maxItems": 1
+                            },
+                            "stringToReplace": {
+                                "$ref": "#/definitions/replacements.stringToReplace"
+                            },
+                            "replaceWithEnv": {
+                                "$ref": "#/definitions/replacements.replaceWithEnv"
+                            },
+                            "filename": {
+                                "$ref": "#/definitions/replacements.filename"
+                            }
+                        },
+                        "required": [
+                            "filename",
+                            "replaceWithEnv",
+                            "stringToReplace"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "replaceWhenEnv": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "env": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "env",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "maxItems": 1
+                            },
+                            "regexToReplace": {
+                                "$ref": "#/definitions/replacements.regexToReplace"
+                            },
+                            "replaceWithEnv": {
+                                "$ref": "#/definitions/replacements.replaceWithEnv"
+                            },
+                            "filename": {
+                                "$ref": "#/definitions/replacements.filename"
+                            }
+                        },
+                        "required": [
+                            "filename",
+                            "regexToReplace",
+                            "replaceWithEnv"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "replaceWhenEnv": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "env": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "env",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "stringToReplace": {
+                                "$ref": "#/definitions/replacements.stringToReplace"
+                            },
+                            "replaceWithEnv": {
+                                "$ref": "#/definitions/replacements.replaceWithEnv"
+                            },
+                            "filename": {
+                                "$ref": "#/definitions/replacements.filename"
+                            }
+                        },
+                        "required": [
+                            "filename",
+                            "replaceWithFile",
+                            "stringToReplace"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "replaceWhenEnv": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "env": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "env",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "maxItems": 1
+                            },
+                            "regexToReplace": {
+                                "$ref": "#/definitions/replacements.regexToReplace"
+                            },
+                            "replaceWithFile": {
+                                "$ref": "#/definitions/replacements.replaceWithFile"
+                            },
+                            "filename": {
+                                "$ref": "#/definitions/replacements.filename"
+                            }
+                        },
+                        "required": [
+                            "filename",
+                            "regexToReplace",
+                            "replaceWithFile"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "replaceWhenEnv": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "env": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "env",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "maxItems": 1
+                            },
+                            "stringToReplace": {
+                                "$ref": "#/definitions/replacements.stringToReplace"
+                            },
+                            "replaceWithEnv": {
+                                "$ref": "#/definitions/replacements.replaceWithEnv"
+                            },
+                            "glob": {
+                                "$ref": "#/definitions/replacements.glob"
+                            }
+                        },
+                        "required": [
+                            "glob",
+                            "replaceWithEnv",
+                            "stringToReplace"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "replaceWhenEnv": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "env": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "env",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "maxItems": 1
+                            },
+                            "regexToReplace": {
+                                "$ref": "#/definitions/replacements.regexToReplace"
+                            },
+                            "replaceWithEnv": {
+                                "$ref": "#/definitions/replacements.replaceWithEnv"
+                            },
+                            "glob": {
+                                "$ref": "#/definitions/replacements.glob"
+                            }
+                        },
+                        "required": [
+                            "glob",
+                            "regexToReplace",
+                            "replaceWithEnv"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "replaceWhenEnv": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "env": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "env",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "maxItems": 1
+                            },
+                            "stringToReplace": {
+                                "$ref": "#/definitions/replacements.stringToReplace"
+                            },
+                            "replaceWithEnv": {
+                                "$ref": "#/definitions/replacements.replaceWithEnv"
+                            },
+                            "glob": {
+                                "$ref": "#/definitions/replacements.glob"
+                            }
+                        },
+                        "required": [
+                            "glob",
+                            "replaceWithFile",
+                            "stringToReplace"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "replaceWhenEnv": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "env": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "env",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "maxItems": 1
+                            },
+                            "regexToReplace": {
+                                "$ref": "#/definitions/replacements.regexToReplace"
+                            },
+                            "replaceWithFile": {
+                                "$ref": "#/definitions/replacements.replaceWithFile"
+                            },
+                            "glob": {
+                                "$ref": "#/definitions/replacements.glob"
+                            }
+                        },
+                        "required": [
+                            "glob",
+                            "regexToReplace",
+                            "replaceWithFile"
+                        ]
+                    }
+                ]
+            }
         }
     },
     "definitions": {
         "packageDirectory.path": {
+            "title": "Path",
             "type": "string",
             "description": "If you don’t specify a path, the Salesforce CLI uses a placeholder when you create a package."
         },
@@ -232,15 +655,28 @@
             "description": "To specify dependencies for 2GP within the same Dev Hub, use either the package version alias or a combination of the package name and the version number.",
             "items": {
                 "type": "object",
-                "required": ["package"],
+                "required": [
+                    "package"
+                ],
                 "properties": {
                     "package": {
                         "type": "string"
                     },
                     "versionNumber": {
                         "type": "string"
+                    },
+                    "branch": {
+                        "type": "string"
                     }
                 }
+            }
+        },
+        "packageDirectory.functions": {
+            "title": "Functions To Package",
+            "type": "array",
+            "description": "Relative path to function directories to be packaged.",
+            "items": {
+                "type": "string"
             }
         },
         "packageDirectory.ancestorId": {
@@ -263,23 +699,35 @@
             "title": "Post Install Url",
             "description": "The post install url."
         },
+        "packageDirectory.postInstallScript": {
+            "type": "string",
+            "title": "Post Install Script",
+            "description": "The post install script."
+        },
+        "packageDirectory.uninstallScript": {
+            "type": "string",
+            "title": "Uninstall Script",
+            "description": "The uninstall script."
+        },
         "packageDirectory.unpackagedMetadata": {
             "type": "object",
             "title": "Unpackaged Metadata",
             "description": "Metadata not meant to be packaged, but deployed when testing packaged metadata",
-            "required": ["path"],
+            "required": [
+                "path"
+            ],
             "properties": {
-              "path": {
-                "type": "string",
-                "title": "Path",
-                "description": "The path name of the package directory containing the unpackaged metadata"
-              }
+                "path": {
+                    "type": "string",
+                    "title": "Path",
+                    "description": "The path name of the package directory containing the unpackaged metadata"
+                }
             }
-          },
+        },
         "packageDirectory.includeProfileUserLicenses": {
             "type": "boolean",
             "title": "Include Profile User Licenses",
-            "description": "Whether to include <userLicense> elements in profile metadata "
+            "description": "Whether to include <userLicense> elements in profile metadata"
         },
         "packageDirectory.apexTestAccess": {
             "type": "object",
@@ -329,6 +777,11 @@
                     ]
                 }
             }
+        },
+        "packageDirectory.branch": {
+            "type": "string",
+            "title": "Branch",
+            "description": "The name of the branch to be assigned to the package version"
         },
         "packageDirectory.aliasfy": {
             "type": "boolean",
@@ -380,7 +833,14 @@
             "description": "Ignore this package on any provided stage",
             "items": {
                 "type": "string",
-                "enum": ["prepare", "build", "deploy", "validate", "release", "quickbuild"]
+                "enum": [
+                    "prepare",
+                    "build",
+                    "deploy",
+                    "validate",
+                    "release",
+                    "quickbuild"
+                ]
             }
         },
         "packageDirectory.postDeploymentScript": {
@@ -401,8 +861,13 @@
         "packageDirectory.type": {
             "type": "string",
             "title": "Type of the Package",
-            "enum": ["unlocked", "source", "data"],
-            "description": "Denotes the type of the package,  accepted values are \"source\",\"data\""
+            "enum": [
+                "managed",
+                "unlocked",
+                "source",
+                "data"
+            ],
+            "description": "Denotes the type of the package,  accepted values are \"managed\",\"unlocked\",\"source\",\"data\""
         },
         "packageDirectory.skipCoverageValidation": {
             "type": "boolean",
@@ -505,6 +970,30 @@
                     "default": false
                 }
             }
+        },
+        "replacements.filename": {
+            "type": "string",
+            "description": "an exact filename that contains the text to replace.  Use posix-style forward slashes"
+        },
+        "replacements.regexToReplace": {
+            "type": "string",
+            "description": "a regular expression that, if found, should be replaced. Escape any \\ with an additional \\"
+        },
+        "replacements.glob": {
+            "type": "string",
+            "description": "A glob pattern to match files against.  Use posix-style forward slashes"
+        },
+        "replacements.stringToReplace": {
+            "type": "string",
+            "description": "An exact string that, when found, will be replaced"
+        },
+        "replacements.replaceWithEnv": {
+            "type": "string",
+            "description": "Use the value of this environment variable to replace the target"
+        },
+        "replacements.replaceWithFile": {
+            "type": "string",
+            "description": "Use the contents of this file to replace the target"
         }
     }
 }
