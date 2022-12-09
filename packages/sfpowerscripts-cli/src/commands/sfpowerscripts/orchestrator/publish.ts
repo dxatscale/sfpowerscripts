@@ -281,7 +281,12 @@ export default class Promote extends SfpowerscriptsCommand {
         // NPM does not accept packages with uppercase characters
         let name: string = sfpPackage.packageName.toLowerCase() + '_sfpowerscripts_artifact';
 
-        if (this.flags.scope) name = `@${this.flags.scope.toLowerCase()}/` + name;
+        //Check whether the user has already passed in @
+
+        if (this.flags.scope) {
+            let scope: string = this.flags.scope.replace(/@/g, '').toLowerCase();
+            name = `@${scope}/` + name;
+        }
 
         let packageJson = {
             name: name,
