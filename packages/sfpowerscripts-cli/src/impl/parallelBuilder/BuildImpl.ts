@@ -113,7 +113,7 @@ export default class BuildImpl {
         console.log(table.toString());
         //Fix transitive dependency gap
         this.projectConfig = await this.resolvePackageDependencies(this.projectConfig, this.sfpOrg?.getConnection())
-    
+
         for await (const pkg of this.packagesToBeBuilt) {
             let type = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg).type;
             SFPStatsSender.logCount('build.scheduled.packages', {
@@ -546,7 +546,7 @@ export default class BuildImpl {
         sfdx_package: string,
         isValidateMode: boolean
     ): Promise<SfpPackage> {
-        console.log(COLOR_KEY_MESSAGE(`Package creation initiated for  ${sfdx_package}`));
+        console.log(COLOR_KEY_MESSAGE(`Package creation initiated for ${sfdx_package}`));
         let configFilePath = this.props.configFilePath;
         if (this.isMultiConfigFilesEnabled) {
             if (this.scratchOrgDefinitions[sfdx_package]) {
@@ -642,7 +642,7 @@ export default class BuildImpl {
             return transitiveDependencyResolver.resolveDependencies()
         }else{
             return projectConfig
-        } 
+        }
     }
 
 }

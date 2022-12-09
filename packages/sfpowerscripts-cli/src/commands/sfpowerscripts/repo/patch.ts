@@ -137,7 +137,7 @@ export default class Patch extends SfpowerscriptsCommand {
 
             SFPLogger.log(
                 COLOR_KEY_MESSAGE(
-                    `Patching of Branch  ${this.flags.targetbranchname} with release  ${this.flags.releasedefinitions} completed`
+                    `Patching of Branch ${this.flags.targetbranchname} with release ${this.flags.releasedefinitions} completed`
                 ),
                 LoggerLevel.INFO
             );
@@ -191,7 +191,7 @@ export default class Patch extends SfpowerscriptsCommand {
             //Grab the latest projectConfig from Packages
             let sfpPackageInquirer: SfpPackageInquirer = new SfpPackageInquirer(sfpPackages, logger);
             let sfdxProjectConfigFromLeadingArtifact = sfpPackageInquirer.getLatestProjectConfig();
-           
+
 
             let idx = 0;
             for (const sfpPackage of sfpPackages) {
@@ -292,7 +292,7 @@ export default class Patch extends SfpowerscriptsCommand {
                 }
 
                 SFPLogger.log(
-                    COLOR_KEY_MESSAGE(`Processed  ${sfpPackage.packageName} to ${sfpPackage.package_version_number}`),
+                    COLOR_KEY_MESSAGE(`Processed ${sfpPackage.packageName} to ${sfpPackage.package_version_number}`),
                     LoggerLevel.INFO
                 );
 

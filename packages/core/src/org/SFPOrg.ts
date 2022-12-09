@@ -44,7 +44,7 @@ export default class SFPOrg extends Org {
             isInstalled: false,
         };
         try {
-            SFPLogger.log(`Querying for version of  ${sfpPackage.packageName} in the Org..`, LoggerLevel.TRACE, logger);
+            SFPLogger.log(`Querying for version of ${sfpPackage.packageName} in the Org.`, LoggerLevel.TRACE, logger);
             result.isInstalled = false;
             let installedArtifacts = await this.getInstalledArtifacts();
             let packageName = sfpPackage.packageName;
@@ -78,7 +78,7 @@ export default class SFPOrg extends Org {
 
         SFPLogger.log(
             COLOR_KEY_MESSAGE(
-                `Existing artifact record id for  ${sfpPackage.packageName} in Org for ${
+                `Existing artifact record id for ${sfpPackage.packageName} in Org for ${
                     sfpPackage.package_version_number
                 }: ${artifactId ? artifactId : 'N/A'}`
             ),
