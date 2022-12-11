@@ -131,7 +131,7 @@ export default class Fetch extends SfdxCommand {
             let installedArtifacts = await scratchOrgAsSFPOrg.getInstalledArtifacts();
             InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
         } catch (error) {
-            SFPLogger.log('Failed to query packages/artifacts installed in the org', LoggerLevel.ERROR);
+            SFPLogger.log('Failed to query packages/artifacts installed in the org due to \n' + error.message, LoggerLevel.ERROR);
         }
     }
 }
