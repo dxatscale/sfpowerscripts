@@ -15,6 +15,7 @@ on:
    push:
     branches:
       - develop
+      - main
     paths-ignore:
       - 'docs/**'
       - '**.md'
@@ -66,43 +67,12 @@ jobs:
     steps:
       - name: test builds
         run:  |
-          echo "🍏 This job is just a placeholder"
+          echo "🍏 This job is just a placeholder,for the semi automated test done in sfpowerscripts test repo"
 
 
  #Promotion Stages
 
 # Sfpowercripts
-
-  sfpowerscripts-alpha:
-    name: 'sfpowerscripts alpha'
-    uses: ./.github/workflows/promotePackage.yml
-    with:
-      version: 'alpha'
-      pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
-      environment: sfpowerscripts-alpha
-    secrets:
-      npm-token: ${{ secrets.NPM_TOKEN }}
-    if: ${{ github.ref == 'refs/heads/develop' }}
-    concurrency:
-      group: sfpowerscripts-alpha
-    needs: [test]
-  
-  alpha-docker:
-    name: 'promote docker to alpha'
-    uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
-    with:
-      job-environment: 'sfpowerscripts-alpha'
-      new-tag: alpha 
-      image: 'sfpowerscripts-rc'  
-      repo: 'dxatscale'
-    secrets:
-      username: ${{ secrets.DOCKER_USERNAME }}
-      token: ${{ secrets.DOCKER_SECRET }}
-    if: ${{ github.ref == 'refs/heads/develop' }}
-    concurrency:
-      group: sfpowerscripts-alpha
-    needs: [test]
-
   sfpowerscripts-beta:
     name: 'sfpowerscripts beta'
     uses: ./.github/workflows/promotePackage.yml
@@ -112,10 +82,9 @@ jobs:
       environment: sfpowerscripts-beta
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    if: ${{ github.ref == 'refs/heads/develop' }}
     concurrency:
       group: sfpowerscripts-beta
-    needs: [sfpowerscripts-alpha, alpha-docker]
+    needs: [test]
   
   beta-docker:
     name: 'promote docker to beta'
@@ -128,40 +97,11 @@ jobs:
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
-    if: ${{ github.ref == 'refs/heads/develop' }}
     concurrency:
       group: sfpowerscripts-beta
-    needs: [sfpowerscripts-alpha, alpha-docker]
+    needs: [test]
  
-  sfpowerscripts-hotfix:
-    name: 'sfpowerscripts hotfix'
-    uses: ./.github/workflows/promotePackage.yml
-    with:
-      version: 'hotfix'
-      pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
-      environment: sfpowerscripts-hotfix
-    secrets:
-      npm-token: ${{ secrets.NPM_TOKEN }}
-    if: ${{ github.ref == 'refs/heads/main' }}
-    concurrency:
-      group: sfpowerscripts-hotfix
-    needs: [test]
 
-  hotfix-docker:
-    name: 'promote docker to hotfix'
-    uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
-    with:
-      job-environment: 'sfpowerscripts-hotfix'
-      repo: 'dxatscale'     
-      new-tag: hotfix   
-      image: 'sfpowerscripts-rc'  
-    secrets:
-      username: ${{ secrets.DOCKER_USERNAME }}
-      token: ${{ secrets.DOCKER_SECRET }}
-    if: ${{ github.ref == 'refs/heads/main' }}
-    concurrency:
-      group: sfpowerscripts-hotfix
-    needs: [test]
 
   sfpowerscripts-prod:
     name: 'sfpowerscripts prod'
@@ -172,10 +112,10 @@ jobs:
       environment: sfpowerscripts-prod
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.sfpowerscripts-hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
+    if: ${{ always() && github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success'  }}
     concurrency:
       group: sfpowerscripts-prod
-    needs: [sfpowerscripts-beta, sfpowerscripts-hotfix,hotfix-docker,beta-docker]
+    needs: [sfpowerscripts-beta,beta-docker]
 
   prod-docker:
     name: 'copy rc docker to prod'
@@ -187,9 +127,9 @@ jobs:
       token: ${{ secrets.DOCKER_SECRET }}
       signing_secret: ${{ secrets.SIGNING_SECRET }}
       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
-    if: ${{ always() && (github.ref == 'refs/heads/main' && needs.sfpowerscripts-hotfix.result == 'success' || github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success')  }}
+    if: ${{ always() &&  github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success'  }}
     concurrency:
       group: sfpowerscripts-prod
-    needs: [sfpowerscripts-beta, sfpowerscripts-hotfix, hotfix-docker,beta-docker]
+    needs: [sfpowerscripts-beta,beta-docker]
 
 
