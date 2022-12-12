@@ -9,6 +9,11 @@ import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/disp
 import InstalledPackageDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import { COLOR_HEADER } from '@dxatscale/sfp-logger';
+import { COLOR_SUCCESS } from '@dxatscale/sfp-logger';
+import { COLOR_TIME } from '@dxatscale/sfp-logger';
+import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
+
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
@@ -50,6 +55,11 @@ export default class Fetch extends SfdxCommand {
             description: messages.getMessage('setdefaultusernameDescription'),
             required: false,
         }),
+        nosourcetracking: flags.boolean({
+            default: false,
+            description: messages.getMessage('noSourceTrackingDescription'),
+            required: false,
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -72,6 +82,8 @@ export default class Fetch extends SfdxCommand {
     };
 
     public async run(): Promise<AnyJson> {
+        const fetchStartTime: number = Date.now();
+
         if (!fs.existsSync('sfdx-project.json'))
             throw new Error('This command must be run in the root directory of a SFDX project');
 
@@ -95,11 +107,16 @@ export default class Fetch extends SfdxCommand {
             this.flags.setdefaultusername
         );
 
-        fetchImpl.setSourceTrackingOnFetch();
+        if (!this.flags.nosourcetracking) {
+            SFPLogger.log(
+                COLOR_KEY_MESSAGE(`Enabling source tracking, this will take a bit of time, please hang on`)
+            );
+            fetchImpl.setSourceTrackingOnFetch();
+        }
 
         if (this.flags.json) SFPLogger.logLevel = LoggerLevel.HIDE;
 
-        let result = await fetchImpl.execute() as ScratchOrg;
+        let result = (await fetchImpl.execute()) as ScratchOrg;
 
         if (!this.flags.json && !this.flags.sendtouser) {
             await this.displayOrgContents(result);
@@ -111,7 +128,11 @@ export default class Fetch extends SfdxCommand {
                     list.push({ key: key, value: value });
                 }
             }
+            //add alias info
+            if (this.flags.alias) list.push({ key: 'alias', value: this.flags.alias });
+
             this.ux.table(list, ['key', 'value']);
+            this.printFetchSummary(!this.flags.nosourcetracking, Date.now() - fetchStartTime);
         }
 
         return result as AnyJson;
@@ -131,7 +152,36 @@ export default class Fetch extends SfdxCommand {
             let installedArtifacts = await scratchOrgAsSFPOrg.getInstalledArtifacts();
             InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
         } catch (error) {
-            SFPLogger.log('Failed to query packages/artifacts installed in the org due to \n' + error.message, LoggerLevel.ERROR);
+            SFPLogger.log(
+                'Failed to query packages/artifacts installed in the org due to \n' + error.message,
+                LoggerLevel.ERROR
+            );
         }
+    }
+
+    private printFetchSummary(isSourceTrackingEnabled: boolean, totalElapsedTime: number): void {
+        SFPLogger.log(
+            COLOR_HEADER(
+                `----------------------------------------------------------------------------------------------------`
+            )
+        );
+        if (!isSourceTrackingEnabled) {
+            SFPLogger.log(
+                COLOR_SUCCESS(`Succesfully fetched a scratch org in ${COLOR_TIME(getFormattedTime(totalElapsedTime))}`)
+            );
+        } else {
+            SFPLogger.log(
+                COLOR_SUCCESS(
+                    `Succesfully fetched a scratch org and enabled source tracking  in ${COLOR_TIME(
+                        getFormattedTime(totalElapsedTime)
+                    )}`
+                )
+            );
+        }
+        console.log(
+            COLOR_HEADER(
+                `----------------------------------------------------------------------------------------------------`
+            )
+        );
     }
 }
