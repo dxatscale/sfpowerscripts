@@ -38,8 +38,7 @@ jobs:
       environment: build
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    concurrency:
-      group: build
+
 
  # On successfull creation of packages,(or even if lerna skips), create docker image
   build-docker:
@@ -54,8 +53,7 @@ jobs:
        username: ${{ secrets.DOCKER_USERNAME }}
        token: ${{ secrets.DOCKER_SECRET }}
     needs: [ build ]
-    concurrency:
-      group: build
+
 
 
 # Integration Test Stage
