@@ -25,7 +25,7 @@ on:
 
    workflow_dispatch:
 
-
+run-name: Release ${{ github.run_id  }} / ${{ github.ref_name }}
 
 # Merge to Develop, create builds   
 jobs: 
@@ -112,7 +112,7 @@ jobs:
       environment: sfpowerscripts-prod
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    if: ${{ always() && github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success'  }}
+    if: ${{ always() && needs.sfpowerscripts-beta.result == 'success'  }}
     concurrency:
       group: sfpowerscripts-prod
     needs: [sfpowerscripts-beta,beta-docker]
@@ -127,7 +127,7 @@ jobs:
       token: ${{ secrets.DOCKER_SECRET }}
       signing_secret: ${{ secrets.SIGNING_SECRET }}
       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
-    if: ${{ always() &&  github.ref == 'refs/heads/develop' && needs.sfpowerscripts-beta.result == 'success'  }}
+    if: ${{ always() && needs.sfpowerscripts-beta.result == 'success'  }}
     concurrency:
       group: sfpowerscripts-prod
     needs: [sfpowerscripts-beta,beta-docker]
