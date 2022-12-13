@@ -58,7 +58,7 @@ jobs:
 
 # Sfpowercripts
 
-sfpowerscripts-alpha:
+  sfpowerscripts-alpha:
     name: 'sfpowerscripts alpha'
     uses: ./.github/workflows/promotePackage.yml
     with:
@@ -71,7 +71,7 @@ sfpowerscripts-alpha:
       group: sfpowerscripts-alpha
     needs: [ build-docker ]
   
-  beta-docker:
+  alpha-docker:
     name: 'promote docker to alpha'
     uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
