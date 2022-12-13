@@ -55,17 +55,35 @@ jobs:
     needs: [ build ]
 
 
+# Sfpowercripts
 
-# Integration Test Stage
-  test:
-    name: 'smoke test'
-    environment: test
-    runs-on: ubuntu-latest
-    needs: [build-docker]
-    steps:
-      - name: test builds
-        run:  |
-          echo "🍏 This job is just a placeholder,for the semi automated test done in sfpowerscripts test repo"
+sfpowerscripts-alpha:
+    name: 'sfpowerscripts alpha'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'alpha'
+      pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
+      environment: sfpowerscripts-alpha
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    concurrency:
+      group: sfpowerscripts-alpha
+    needs: [ build-docker ]
+  
+  beta-docker:
+    name: 'promote docker to alpha'
+    uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
+    with:
+      job-environment: 'sfpowerscripts-alpha'
+      repo: 'dxatscale'
+      new-tag: alpha   
+      image: 'sfpowerscripts-rc'  
+    secrets:
+      username: ${{ secrets.DOCKER_USERNAME }}
+      token: ${{ secrets.DOCKER_SECRET }}
+    concurrency:
+      group: sfpowerscripts-alpha
+    needs: [ build-docker ]
 
 
  #Promotion Stages
@@ -82,7 +100,7 @@ jobs:
       npm-token: ${{ secrets.NPM_TOKEN }}
     concurrency:
       group: sfpowerscripts-beta
-    needs: [test]
+    needs: [ build-docker ]
   
   beta-docker:
     name: 'promote docker to beta'
@@ -97,7 +115,7 @@ jobs:
       token: ${{ secrets.DOCKER_SECRET }}
     concurrency:
       group: sfpowerscripts-beta
-    needs: [test]
+    needs: [ build-docker ]
  
 
 
@@ -113,7 +131,7 @@ jobs:
     if: ${{ always() && needs.sfpowerscripts-beta.result == 'success'  }}
     concurrency:
       group: sfpowerscripts-prod
-    needs: [sfpowerscripts-beta,beta-docker]
+    needs: [ build-docker ]
 
   prod-docker:
     name: 'copy rc docker to prod'
@@ -128,6 +146,6 @@ jobs:
     if: ${{ always() && needs.sfpowerscripts-beta.result == 'success'  }}
     concurrency:
       group: sfpowerscripts-prod
-    needs: [sfpowerscripts-beta,beta-docker]
+    needs: [ build-docker ]
 
 
