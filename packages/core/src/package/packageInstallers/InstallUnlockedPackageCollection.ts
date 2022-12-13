@@ -45,7 +45,7 @@ export default class InstallUnlockedPackageCollection {
                             this.logger
                         );
                         continue;
-                    } else 
+                    } else
                     {
                         SFPLogger.log(
                             `Unable to install ${package2.name}  in ${this.sfpOrg.getUsername()} due to ${message}`,
@@ -75,7 +75,7 @@ export default class InstallUnlockedPackageCollection {
         try {
             if (skipIfPackageInstalled) {
                 SFPLogger.log(
-                    `Checking Whether Package with ID ${packageVersionId} is installed in  ${this.sfpOrg.getUsername()}`,
+                    `Checking Whether Package with ID ${packageVersionId} is installed in ${this.sfpOrg.getUsername()}`,
                     null,
                     this.logger
                 );
@@ -86,14 +86,14 @@ export default class InstallUnlockedPackageCollection {
 
                 if (packageFound) {
                     SFPLogger.log(
-                        `Package to be installed was found in the target org  ${this.sfpOrg.getUsername()}`,
+                        `Package to be installed was found in the target org ${this.sfpOrg.getUsername()}`,
                         LoggerLevel.INFO,
                         this.logger
                     );
                     return false;
                 } else {
                     SFPLogger.log(
-                        `Package to be installed was not found in the target org  ${this.sfpOrg.getUsername()}, Proceeding to install.. `,
+                        `Package to be installed was not found in the target org ${this.sfpOrg.getUsername()}, Proceeding to install.. `,
                         LoggerLevel.INFO,
                         this.logger
                     );
