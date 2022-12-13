@@ -56,7 +56,7 @@ jobs:
 
  #Promotion Stages
 
-# sfpowercripts
+# Sfpowercripts
 
 sfpowerscripts-alpha:
     name: 'sfpowerscripts alpha'
@@ -69,7 +69,7 @@ sfpowerscripts-alpha:
       npm-token: ${{ secrets.NPM_TOKEN }}
     concurrency:
       group: sfpowerscripts-alpha
-    needs: [build]
+    needs: [ build-docker ]
   
   beta-docker:
     name: 'promote docker to alpha'
@@ -84,7 +84,7 @@ sfpowerscripts-alpha:
       token: ${{ secrets.DOCKER_SECRET }}
     concurrency:
       group: sfpowerscripts-alpha
-    needs: [build]
+    needs: [ build-docker ]
 
 
   sfpowerscripts-beta:
@@ -98,7 +98,7 @@ sfpowerscripts-alpha:
       npm-token: ${{ secrets.NPM_TOKEN }}
     concurrency:
       group: sfpowerscripts-beta
-    needs: [build]
+    needs: [ build-docker ]
   
   beta-docker:
     name: 'promote docker to beta'
@@ -113,7 +113,7 @@ sfpowerscripts-alpha:
       token: ${{ secrets.DOCKER_SECRET }}
     concurrency:
       group: sfpowerscripts-beta
-    needs: [build]
+    needs: [ build-docker ]
  
 
 
@@ -121,7 +121,7 @@ sfpowerscripts-alpha:
     name: 'sfpowerscripts prod'
     uses: ./.github/workflows/promotePackage.yml
     with:
-      version: 'labuild'
+      version: 'latest'
       pathToPackageJson: 'packages/sfpowerscripts-cli/package.json'
       environment: sfpowerscripts-prod
     secrets:
@@ -129,7 +129,7 @@ sfpowerscripts-alpha:
     if: ${{ always() && needs.sfpowerscripts-beta.result == 'success'  }}
     concurrency:
       group: sfpowerscripts-prod
-    needs: [build]
+    needs: [ build-docker ]
 
   prod-docker:
     name: 'copy rc docker to prod'
@@ -144,6 +144,6 @@ sfpowerscripts-alpha:
     if: ${{ always() && needs.sfpowerscripts-beta.result == 'success'  }}
     concurrency:
       group: sfpowerscripts-prod
-    needs: [build]
+    needs: [ build-docker ]
 
 
