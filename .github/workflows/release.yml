@@ -68,7 +68,7 @@ sfpowerscripts-alpha:
       npm-token: ${{ secrets.NPM_TOKEN }}
     concurrency:
       group: sfpowerscripts-alpha
-    needs: [ build-docker ]
+    needs: [build]
   
   beta-docker:
     name: 'promote docker to alpha'
@@ -83,7 +83,7 @@ sfpowerscripts-alpha:
       token: ${{ secrets.DOCKER_SECRET }}
     concurrency:
       group: sfpowerscripts-alpha
-    needs: [ build-docker ]
+    needs: [build]
 
 
  #Promotion Stages
