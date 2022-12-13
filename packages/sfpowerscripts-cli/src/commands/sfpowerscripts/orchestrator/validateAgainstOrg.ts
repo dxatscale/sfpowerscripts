@@ -1,4 +1,4 @@
-import { Messages } from '@salesforce/core';
+import { Messages, Org } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { flags } from '@salesforce/command';
 import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from '../../../impl/validate/ValidateImpl';
@@ -49,6 +49,10 @@ export default class Validate extends SfpowerscriptsCommand {
         basebranch: flags.string({
             description: messages.getMessage('baseBranchFlagDescription'),
         }),
+        devhubalias: flags.string({
+            char: 'v',
+            description: messages.getMessage('devhubAliasFlagDescription')
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -97,6 +101,7 @@ export default class Validate extends SfpowerscriptsCommand {
             COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
         );
 
+
         let validateResult: boolean = false;
         try {
             let validateProps: ValidateProps = {
@@ -113,6 +118,14 @@ export default class Validate extends SfpowerscriptsCommand {
                 baseBranch: this.flags.basebranch,
                 disableArtifactCommit: this.flags.disableartifactupdate,
             };
+
+
+            //Add check for devhub
+            if(this.flags.devhubalias)
+            {
+                validateProps.hubOrg = await Org.create({aliasOrUsername:this.flags.devhubalias});
+            }
+
             setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
             await validateImpl.exec();

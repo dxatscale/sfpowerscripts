@@ -129,7 +129,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             return null; //TODO: Fix with actual object
         } catch (error) {
             if (error.message?.includes(`No changes detected in the packages to be built`)) {
-                SFPLogger.log(`WARNING: No changes detected in any of the packages, Validation is treated as a success`, LoggerLevel.WARN);
+                SFPLogger.log(
+                    `WARNING: No changes detected in any of the packages, Validation is treated as a success`,
+                    LoggerLevel.WARN
+                );
                 return;
             } else if (error instanceof ValidateError) SFPLogger.log(`Error: ${error}`, LoggerLevel.DEBUG);
             else SFPLogger.log(`Error: ${error}}`, LoggerLevel.ERROR);
@@ -270,7 +273,6 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         deploymentResult: DeploymentResult,
         isToDelete: boolean
     ) {
-
         //No scratch org available.. just return
         if (scratchOrgUsername == undefined) return;
 
@@ -326,8 +328,9 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             logsGroupSymbol: this.props.logsGroupSymbol,
             currentStage: Stage.VALIDATE,
             disableArtifactCommit: this.props.disableArtifactCommit,
-            selectiveComponentDeployment: this.props.validationMode == ValidationMode.FAST_FEEDBACK
-                                      || this.props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG,
+            selectiveComponentDeployment:
+                this.props.validationMode == ValidationMode.FAST_FEEDBACK ||
+                this.props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG,
         };
 
         const deployImpl: DeployImpl = new DeployImpl(deployProps);
@@ -473,8 +476,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                 diffOptions.skipPackageDescriptorChange = false;
                 diffOptions.useLatestGitTags = false;
                 diffOptions.packagesMappedToLastKnownCommitId = packagesInstalledInOrgMappedToCommits;
-            }
-            else if (props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG) {
+            } else if (props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG) {
                 diffOptions.skipPackageDescriptorChange = true;
                 diffOptions.useLatestGitTags = false;
                 diffOptions.packagesMappedToLastKnownCommitId = packagesInstalledInOrgMappedToCommits;
@@ -566,10 +568,24 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Its a scratch org fetched from pool.. install dependencies
         //Assume hubOrg will be available, no need to check
-        if (this.props.validateAgainst === ValidateAgainst.PRECREATED_POOL) {
-            if (this.props.validationMode != ValidationMode.FAST_FEEDBACK)
-                await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
-        }
+         switch (this.props.validateAgainst) {
+             case ValidateAgainst.PRECREATED_POOL:
+                 if (
+                     this.props.validationMode == ValidationMode.THOROUGH ||
+                     this.props.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
+                 ) {
+                     await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
+                 }
+                 break;
+             case ValidateAgainst.PROVIDED_ORG:
+                 if (this.props.validationMode == ValidationMode.INDIVIDUAL) {
+                    if(this.props.hubOrg)
+                      await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
+                    else
+                     SFPLogger.log(`${COLOR_WARNING(`DevHub was not provided, will skip installing /updating external dependencies of this package`)}`,LoggerLevel.INFO)
+                 }
+
+         }
 
         return { isToFailDeployment: false };
     }
@@ -584,7 +600,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         if (sfpPackage.packageType && sfpPackage.packageType != PackageType.Data) {
             if (packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
                 //Get Changed Components
-                const testResult = await this.triggerApexTests(sfpPackage, targetUsername,this.props,this.logger);
+                const testResult = await this.triggerApexTests(sfpPackage, targetUsername, this.props, this.logger);
                 return { isToFailDeployment: !testResult.result, message: testResult.message };
             }
         }
@@ -594,7 +610,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     private async triggerApexTests(
         sfpPackage: SfpPackage,
         targetUsername: string,
-        props:ValidateProps,
+        props: ValidateProps,
         logger: Logger
     ): Promise<{
         id: string;
@@ -610,10 +626,13 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         let testOptions: TestOptions, testCoverageOptions: CoverageOptions;
 
-        if (props.validationMode == ValidationMode.FAST_FEEDBACK || props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG) {
-            ({ testOptions, testCoverageOptions } = getTestOptionsForFastFeedBackPackage(sfpPackage,props));
-        } else  {
-            ({ testOptions, testCoverageOptions } = getTestOptionsForFullPackageTest(sfpPackage,props));
+        if (
+            props.validationMode == ValidationMode.FAST_FEEDBACK ||
+            props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG
+        ) {
+            ({ testOptions, testCoverageOptions } = getTestOptionsForFastFeedBackPackage(sfpPackage, props));
+        } else {
+            ({ testOptions, testCoverageOptions } = getTestOptionsForFullPackageTest(sfpPackage, props));
         }
         if (testOptions == undefined) {
             return { id: null, result: true, message: 'No Tests To Run' };
@@ -633,7 +652,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         function getTestOptionsForFullPackageTest(
             sfpPackage: SfpPackage,
-            props:ValidateProps
+            props: ValidateProps
         ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
             const testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
             const testCoverageOptions = {
@@ -646,7 +665,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         function getTestOptionsForFastFeedBackPackage(
             sfpPackage: SfpPackage,
-            props:ValidateProps
+            props: ValidateProps
         ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
             //Change in security model trigger full
 
@@ -657,7 +676,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                     sfpPackage.diffPackageMetadata.isPermissionSetGroupFound
                 ) {
                     SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
-                    return getTestOptionsForFullPackageTest(sfpPackage,props);
+                    return getTestOptionsForFullPackageTest(sfpPackage, props);
                 }
 
                 const impactedTestClasses = sfpPackage.diffPackageMetadata.invalidatedTestClasses;
