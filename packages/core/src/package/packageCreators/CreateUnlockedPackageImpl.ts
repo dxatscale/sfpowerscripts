@@ -103,7 +103,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
                 codecoverage:
                     this.packageCreationParams.isCoverageEnabled && !this.isOrgDependentPackage ? true : false,
                 versionnumber: sfpPackage.versionNumber,
-                definitionfile: this.params.configFilePath,
+                definitionfile: path.join(this.workingDirectory,this.params.configFilePath),
                 packageId: this.sfpPackage.packageName,
             },
             { timeout: Duration.minutes(0), frequency: Duration.seconds(30) }
