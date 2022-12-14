@@ -68,7 +68,7 @@ jobs:
       npm-token: ${{ secrets.NPM_TOKEN }}
     concurrency:
       group: sfpowerscripts-alpha
-    needs: [build]
+    needs: [ build-docker ]
   
   alpha-docker:
     name: 'promote docker to alpha'
