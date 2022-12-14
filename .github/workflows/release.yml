@@ -126,7 +126,6 @@ jobs:
       environment: sfpowerscripts-prod
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    if: ${{ always() && needs.sfpowerscripts-beta.result == 'success'  }}
     concurrency:
       group: sfpowerscripts-prod
     needs: [ build-docker ]
@@ -141,7 +140,6 @@ jobs:
       token: ${{ secrets.DOCKER_SECRET }}
       signing_secret: ${{ secrets.SIGNING_SECRET }}
       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
-    if: ${{ always() && needs.sfpowerscripts-beta.result == 'success'  }}
     concurrency:
       group: sfpowerscripts-prod
     needs: [ sfpowerscripts-prod ]
