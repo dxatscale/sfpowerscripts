@@ -66,8 +66,6 @@ jobs:
       environment: sfpowerscripts-alpha
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    concurrency:
-      group: sfpowerscripts-alpha
     needs: [ build-docker ]
   
   alpha-docker:
@@ -81,8 +79,6 @@ jobs:
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
-    concurrency:
-      group: sfpowerscripts-alpha
     needs: [ sfpowerscripts-alpha ]
 
 
@@ -98,8 +94,6 @@ jobs:
       environment: sfpowerscripts-beta
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    concurrency:
-      group: sfpowerscripts-beta
     needs: [ build-docker ]
   
   beta-docker:
@@ -113,8 +107,6 @@ jobs:
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
-    concurrency:
-      group: sfpowerscripts-beta
     needs: [ sfpowerscripts-beta ]
  
 
@@ -128,8 +120,6 @@ jobs:
       environment: sfpowerscripts-prod
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    concurrency:
-      group: sfpowerscripts-prod
     needs: [ build-docker ]
 
   prod-docker:
@@ -142,8 +132,6 @@ jobs:
       token: ${{ secrets.DOCKER_SECRET }}
       signing_secret: ${{ secrets.SIGNING_SECRET }}
       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
-    concurrency:
-      group: sfpowerscripts-prod
     needs: [ sfpowerscripts-prod ]
 
 
