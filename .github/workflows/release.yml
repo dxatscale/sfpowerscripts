@@ -75,7 +75,7 @@ jobs:
     name: 'promote docker to alpha'
     uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
-      job-environment: 'sfpowerscripts-alpha'
+      job-environment: 'sfpowerscripts-alpha-docker'
       repo: 'dxatscale'
       new-tag: alpha   
       image: 'sfpowerscripts-rc'  
@@ -84,7 +84,7 @@ jobs:
       token: ${{ secrets.DOCKER_SECRET }}
     concurrency:
       group: sfpowerscripts-alpha
-    needs: [ build-docker ]
+    needs: [ sfpowerscripts-alpha ]
 
 
   sfpowerscripts-beta:
@@ -104,7 +104,7 @@ jobs:
     name: 'promote docker to beta'
     uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
-      job-environment: 'sfpowerscripts-beta'
+      job-environment: 'sfpowerscripts-beta-docker'
       repo: 'dxatscale'
       new-tag: beta   
       image: 'sfpowerscripts-rc'  
@@ -113,7 +113,7 @@ jobs:
       token: ${{ secrets.DOCKER_SECRET }}
     concurrency:
       group: sfpowerscripts-beta
-    needs: [ build-docker ]
+    needs: [ sfpowerscripts-beta ]
  
 
 
@@ -135,7 +135,7 @@ jobs:
     name: 'copy rc docker to prod'
     uses: ./.github/workflows/sfpowerscripts-copy-docker.yml
     with:
-      job-environment: 'sfpowerscripts-prod'
+      job-environment: 'sfpowerscripts-prod-docker'
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
@@ -144,6 +144,6 @@ jobs:
     if: ${{ always() && needs.sfpowerscripts-beta.result == 'success'  }}
     concurrency:
       group: sfpowerscripts-prod
-    needs: [ build-docker ]
+    needs: [ sfpowerscripts-prod ]
 
 
