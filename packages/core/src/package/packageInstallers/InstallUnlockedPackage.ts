@@ -20,7 +20,7 @@ export default class InstallUnlockedPackage extends InstallPackage {
     }
 
     public async install() {
-    
+
         let installUnlockedPackageWrapper: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
             this.logger,
             this.sfpOrg.getUsername(),
@@ -43,7 +43,7 @@ export default class InstallUnlockedPackage extends InstallPackage {
                 SFPLogger.log(
                     `Checking Whether Package with ID ${
                         this.packageVersionId
-                    } is installed in  ${this.sfpOrg.getUsername()}`,
+                    } is installed in ${this.sfpOrg.getUsername()}`,
                     null,
                     this.logger
                 );
@@ -55,14 +55,14 @@ export default class InstallUnlockedPackage extends InstallPackage {
 
                 if (packageFound) {
                     SFPLogger.log(
-                        `Package to be installed was found in the target org  ${this.sfpOrg.getUsername()}`,
+                        `Package to be installed was found in the target org ${this.sfpOrg.getUsername()}`,
                         LoggerLevel.INFO,
                         this.logger
                     );
                     return false;
                 } else {
                     SFPLogger.log(
-                        `Package to be installed was not found in the target org  ${this.sfpOrg.getUsername()}, Proceeding to install.. `,
+                        `Package to be installed was not found in the target org ${this.sfpOrg.getUsername()}, Proceeding to install.. `,
                         LoggerLevel.INFO,
                         this.logger
                     );
