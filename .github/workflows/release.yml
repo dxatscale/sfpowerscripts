@@ -27,8 +27,8 @@ on:
 
 run-name: Release ${{ github.run_id  }} / ${{ github.ref_name }}
 
-# Merge to Develop, create builds   
-jobs: 
+# Merge to Develop, create builds
+jobs:
   build:
     name: 'build packages'
     uses: ./.github/workflows/buildPackages.yml
@@ -54,6 +54,7 @@ jobs:
        token: ${{ secrets.DOCKER_SECRET }}
     needs: [ build ]
 
+ #Promotion Stages
 
 # Sfpowercripts
 
@@ -67,19 +68,23 @@ jobs:
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
     needs: [ build-docker ]
-  
+
   alpha-docker:
     name: 'promote docker to alpha'
     uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
       job-environment: 'sfpowerscripts-alpha-docker'
       repo: 'dxatscale'
-      new-tag: alpha   
-      image: 'sfpowerscripts-rc'  
+      new-tag: alpha
+      image: 'sfpowerscripts-rc'
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
     needs: [ sfpowerscripts-alpha ]
+<<<<<<< HEAD
+=======
+
+>>>>>>> f8568b0f4f58f664b2456cd693736923e6a399a7
 
 
  #Promotion Stages
@@ -95,20 +100,20 @@ jobs:
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
     needs: [ build-docker ]
-  
+
   beta-docker:
     name: 'promote docker to beta'
     uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
       job-environment: 'sfpowerscripts-beta-docker'
       repo: 'dxatscale'
-      new-tag: beta   
-      image: 'sfpowerscripts-rc'  
+      new-tag: beta
+      image: 'sfpowerscripts-rc'
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
     needs: [ sfpowerscripts-beta ]
- 
+
 
 
   sfpowerscripts-prod:
@@ -133,5 +138,3 @@ jobs:
       signing_secret: ${{ secrets.SIGNING_SECRET }}
       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
     needs: [ sfpowerscripts-prod ]
-
-

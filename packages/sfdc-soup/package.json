@@ -1,6 +1,6 @@
 {
   "name": "@dxatscale/sfdc-soup",
-  "version": "18.2.4",
+  "version": "18.2.6",
   "description": "A simple API to view your Salesforce dependencies, powered by HappySoup.io",
   "main": "src/index.js",
   "scripts": {

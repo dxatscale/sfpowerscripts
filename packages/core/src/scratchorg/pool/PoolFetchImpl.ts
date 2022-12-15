@@ -1,6 +1,5 @@
 import SFPLogger from '@dxatscale/sfp-logger';
-import { LoggerLevel, Org, SfdxError, SfError } from '@salesforce/core';
-import child_process = require('child_process');
+import { AuthInfo, LoggerLevel, Org, SfdxError, SfError } from '@salesforce/core';
 import { PoolBaseImpl } from './PoolBaseImpl';
 import ScratchOrg from '../ScratchOrg';
 import { getUserEmail } from './services/fetchers/GetUserEmail';
@@ -110,7 +109,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
 
         for (const soDetail of fetchedSOs) {
             //Login to the org
-            let isLoginSuccessFull = this.loginToScratchOrgIfSfdxAuthURLExists(soDetail);
+            let isLoginSuccessFull = await this.loginToScratchOrgIfSfdxAuthURLExists(soDetail);
             if (!isLoginSuccessFull) {
                 SFPLogger.log(`Unable to login to scratchorg ${soDetail.username}}`, LoggerLevel.ERROR);
                 fetchedSOs = fetchedSOs.filter((item) => item.username !== soDetail.username);
@@ -197,7 +196,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
             }
         } else {
             //Login to the org
-            let isLoginSuccessFull = this.loginToScratchOrgIfSfdxAuthURLExists(soDetail);
+            let isLoginSuccessFull = await this.loginToScratchOrgIfSfdxAuthURLExists(soDetail);
             //Attempt to Fetch Source Tracking Files and silently continue if it fails
             if (isLoginSuccessFull && this.isSourceTrackingToBeSet) {
                 try {
@@ -212,27 +211,26 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         return soDetail;
     }
 
-    public loginToScratchOrgIfSfdxAuthURLExists(soDetail: ScratchOrg): boolean {
+    private async loginToScratchOrgIfSfdxAuthURLExists(soDetail: ScratchOrg): Promise<boolean> {
         try {
             if (soDetail.sfdxAuthUrl && isValidSfdxAuthUrl(soDetail.sfdxAuthUrl)) {
-                let soLogin: any = {};
-                soLogin.sfdxAuthUrl = soDetail.sfdxAuthUrl;
-                soLogin.devHubId = this.hubOrg.getUsername();
-                fs.writeFileSync('soAuth.json', JSON.stringify(soLogin));
+              
 
-                SFPLogger.log(`Authenticating to Scratch Org ${soDetail.username}..`, LoggerLevel.INFO);
+                const oauth2Options = AuthInfo.parseSfdxAuthUrl(soDetail.sfdxAuthUrl);
+                const authInfo = await AuthInfo.create({ oauth2Options });
+                await authInfo.save();
 
-                let authURLStoreCommand: string = `sfdx auth:sfdxurl:store -f soAuth.json`;
-
-                if (this.alias) authURLStoreCommand += ` -a ${this.alias}`;
-                else if (soDetail.alias) authURLStoreCommand += ` -a ${soDetail.alias}`;
-
-                if (this.setdefaultusername) authURLStoreCommand += ` --setdefaultusername`;
-
-                child_process.execSync(authURLStoreCommand, {
-                    encoding: 'utf8',
-                    stdio: 'pipe',
-                });
+                await authInfo.handleAliasAndDefaultSettings({
+                    alias: this.alias?this.alias:soDetail.alias,
+                    setDefault: true,
+                    setDefaultDevHub: false,
+                  });
+              
+                  const result = authInfo.getFields(true);
+                  // ensure the clientSecret field... even if it is empty
+                  // as per https://github.com/salesforcecli/plugin-auth/blob/main/src/commands/auth/sfdxurl/store.ts
+                  result.clientSecret = result.clientSecret ?? '';
+                  await AuthInfo.identifyPossibleScratchOrgs(result, authInfo);
 
                 return true;
             } else {
@@ -242,8 +240,6 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         } catch (error) {
             SFPLogger.log('Unable to autenticate to the scratch org due ' + error.message, LoggerLevel.ERROR);
             return false;
-        } finally {
-            if (fs.existsSync('soAuth.json')) fs.unlinkSync('soAuth.json');
         }
     }
 }
