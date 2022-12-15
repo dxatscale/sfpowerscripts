@@ -313,8 +313,11 @@ export default class SfpPackageBuilder {
         let fhtInfo = await fhtGenerator.getFht(sfpPackage.workingDirectory, componentSet);
 
         if (fhtInfo.fhtFields) {
-            let fhtJsonPath = path.join(sfpPackage.workingDirectory, '/postDeployTransfomations/fhtJson.json');
-            fs.writeFileSync(fhtJsonPath, JSON.stringify(fhtInfo.fhtFields));
+            let fhtJsonPath = path.resolve(sfpPackage.workingDirectory, './postDeployTransfomations');
+            if (!fs.existsSync(fhtJsonPath)) {
+                fs.promises.mkdir(fhtJsonPath, { recursive: true }).catch(console.error);
+            }
+            fs.writeFileSync(path.resolve(fhtJsonPath, './fhtJson.json'), JSON.stringify(fhtInfo.fhtFields));
         }
         return fhtInfo.isFHTFieldFound;
     }

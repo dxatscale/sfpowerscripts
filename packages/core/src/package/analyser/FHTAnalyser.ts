@@ -11,7 +11,7 @@ export default class FHTAnalyser {
         let fhtFieldsFromYaml = {};
 
         //read the yaml
-        if (workingDirectory != null) fhtYamlPath = path.join(workingDirectory, 'postDeployTransfomations/history-tracking.yaml');
+        if (workingDirectory != null) fhtYamlPath = path.join(workingDirectory, '/postDeployTransfomations/history-tracking.yaml');
 
         if (fs.existsSync(fhtYamlPath)) {
             //convert yaml to json

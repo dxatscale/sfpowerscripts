@@ -16,6 +16,7 @@ export default class FHTEnabler {
 
         //only do if isFHTFieldFound is true
         if(!sfpPackage.isFHTFieldFound) {
+            SFPLogger.log(`No FHT handling needed`, LoggerLevel.INFO, logger);
             return;
         }
 
@@ -25,10 +26,14 @@ export default class FHTEnabler {
 
         //read json to get the object names and field names
         let filePath;
-        if (sfpPackage.workingDirectory != null) filePath = path.join(sfpPackage.workingDirectory, 'postDeployTransfomations/fhtJson.json');
+        if (sfpPackage.workingDirectory != null) filePath = path.resolve(sfpPackage.workingDirectory, './postDeployTransfomations/fhtJson.json');
+
+        if (!fs.existsSync(filePath)) {
+            SFPLogger.log(`Unable to find FHT json file`, LoggerLevel.ERROR, logger);
+            return;
+        }
 
         let fhtJson = fs.readFileSync(filePath, 'utf8');
-
         let parsedFHTJson = JSON.parse(fhtJson);
 
         //extract the durableId list and object list for the query from the fht Json
@@ -92,10 +97,10 @@ export default class FHTEnabler {
                     modifiedComponentSet.add(sourceComponent);
                 }
             }
-            SFPLogger.log(`Completed handling FHT\n`, LoggerLevel.INFO, logger);
+            SFPLogger.log(`Completed handling FHT`, LoggerLevel.INFO, logger);
             return modifiedComponentSet;
         } catch (error) {
-            SFPLogger.log(`Unable to handle FHT, returning the unmodified package`, LoggerLevel.ERROR, logger);
+            SFPLogger.log(`Unable to handle FHT, returning the component set`, LoggerLevel.ERROR, logger);
             return componentSet;
         }
     }

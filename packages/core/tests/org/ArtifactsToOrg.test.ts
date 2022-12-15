@@ -15,7 +15,7 @@ const createOrg = async () => {
         contents: await testData.getConfig(),
     });
 
- 
+
     return await SFPOrg.create({ aliasOrUsername: testData.username });
 };
 
@@ -104,6 +104,7 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             packageName: '',
             versionNumber: '',
             packageType: '',
+            isFHTFieldFound: '',
             toJSON: function () {
                 throw new Error('Function not implemented.');
             },
@@ -152,6 +153,7 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             packageName: '',
             versionNumber: '',
             packageType: '',
+            isFHTFieldFound: '',
             toJSON: function (): any {
                 throw new Error('Function not implemented.');
             },
@@ -200,6 +202,7 @@ describe('Update a sfpowerscripts artifact to an org', () => {
             packageName: '',
             versionNumber: '',
             packageType: '',
+            isFHTFieldFound: '',
             toJSON: function () {
                 throw new Error('Function not implemented.');
             },
