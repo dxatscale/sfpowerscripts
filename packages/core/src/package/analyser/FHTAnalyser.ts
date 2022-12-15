@@ -3,20 +3,20 @@ import * as fs from 'fs-extra';
 import * as yaml from 'js-yaml';
 import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
 
-//add disable fht in the sfdx-project.json plugins sections
-
-export default class FHTJsonGenerator {
+//to-do: add disable fht in the sfdx-project.json plugins sections
+export default class FHTAnalyser {
     public async getFht(workingDirectory: string, componentSet: ComponentSet): Promise<any> {
         let fhtYamlPath;
         let isFHTFieldFound = false;
+        let fhtFieldsFromYaml = {};
 
         //read the yaml
         if (workingDirectory != null) fhtYamlPath = path.join(workingDirectory, 'postDeployTransfomations/history-tracking.yaml');
 
-        if (!fs.existsSync(fhtYamlPath)) return {isFHTFieldsFound: false, fhtFields: null};
-
-        //convert yaml to json
-        let fhtFieldsFromYaml = yaml.load(fs.readFileSync(fhtYamlPath, {encoding: 'utf-8'}));
+        if (fs.existsSync(fhtYamlPath)) {
+            //convert yaml to json
+            fhtFieldsFromYaml = yaml.load(fs.readFileSync(fhtYamlPath, {encoding: 'utf-8'}));
+        }
 
         //filter the components in the package
         let fhtFields = await this.getFieldsFromComponent(fhtFieldsFromYaml, componentSet);
@@ -41,11 +41,11 @@ export default class FHTJsonGenerator {
                 let objName = sourceComponent.parent.fullName;
                 let fieldName = sourceComponent.fullName;
 
-                if(fhtFieldsFromYaml[objName]) {
+                if(Object.keys(fhtFieldsFromYaml).length > 0 && fhtFieldsFromYaml[objName]) {
                     fhtFieldsFromYaml[objName].push(fieldName);
                 } else {
                     //if not found - add the field to json
-                    fhtFieldsFromYaml = {...fhtFieldsFromYaml, objName: [fieldName]};
+                    fhtFieldsFromYaml = {...fhtFieldsFromYaml, [objName]: [fieldName]};
                 }
             }
         }

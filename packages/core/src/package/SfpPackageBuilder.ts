@@ -22,7 +22,7 @@ import PackageToComponent from './components/PackageToComponent';
 import lodash = require('lodash');
 import { EOL } from 'os';
 import PackageVersionUpdater from './version/PackageVersionUpdater';
-import FHTJsonGenerator from './generators/FHTJsonGenerator';
+import FHTAnalyser from './analyser/FHTAnalyser';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 
 export default class SfpPackageBuilder {
@@ -123,6 +123,8 @@ export default class SfpPackageBuilder {
 
             sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(sfpPackage, logger);
 
+            sfpPackage.isFHTFieldFound = await SfpPackageBuilder.handleFieldHistoryTracking(sfpPackage);
+
             //Introspect Diff Package Created
             //On Failure.. remove diff and move on
             try {
@@ -134,19 +136,6 @@ export default class SfpPackageBuilder {
                     rimraf.sync(workingDirectory);
                 }
                 sfpPackage.diffPackageMetadata = undefined;
-            }
-
-            //Generate components
-            let componentSet = ComponentSet.fromSource(path.join(sfpPackage.workingDirectory, sfpPackage.packageDirectory));
-
-            //Check if field history tracking related operations are needed
-            let fhtGenerator = new FHTJsonGenerator();
-            let fhtInfo = await fhtGenerator.getFht(sfpPackage.workingDirectory, componentSet);
-            sfpPackage.isFHTFieldFound = fhtInfo.isFHTFieldFound;
-
-            if (fhtInfo.fhtFields) {
-                let fhtJsonPath = path.join(sfpPackage.workingDirectory, '/postDeployTransfomations/fhtJson.json');
-                fs.writeFileSync(fhtJsonPath, JSON.stringify(fhtInfo.fhtFields));
             }
         }
 
@@ -313,6 +302,21 @@ export default class SfpPackageBuilder {
     private static isOptimizedDeploymentForSourcePackage(pkgDescriptor: any): boolean {
         if (pkgDescriptor['isOptimizedDeployment'] == null) return true;
         else return pkgDescriptor['isOptimizedDeployment'];
+    }
+
+    private static async handleFieldHistoryTracking(sfpPackage: SfpPackage): Promise<string> {
+        //Generate components
+        let componentSet = ComponentSet.fromSource(path.join(sfpPackage.workingDirectory, sfpPackage.packageDirectory));
+
+        //Check if field history tracking related operations are needed
+        let fhtGenerator = new FHTAnalyser();
+        let fhtInfo = await fhtGenerator.getFht(sfpPackage.workingDirectory, componentSet);
+
+        if (fhtInfo.fhtFields) {
+            let fhtJsonPath = path.join(sfpPackage.workingDirectory, '/postDeployTransfomations/fhtJson.json');
+            fs.writeFileSync(fhtJsonPath, JSON.stringify(fhtInfo.fhtFields));
+        }
+        return fhtInfo.isFHTFieldFound;
     }
 }
 

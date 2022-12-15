@@ -13,7 +13,7 @@ import PermissionSetGroupUpdateAwaiter from '../../permsets/PermissionSetGroupUp
 import SfpOrg from '../../org/SFPOrg';
 import SfpPackage from '../SfpPackage';
 import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../deployers/DeploymentExecutor';
-import FHTPostDeploymentGenerator from '../generators/FHTPostDeploymentGenerator';
+import FHTEnabler from '../packageInstallers/FHTEnabler';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import getFormattedTime from '../../utils/GetFormattedTime';
 import { TestLevel } from '../../apextest/TestOptions';
@@ -236,6 +236,9 @@ export abstract class InstallPackage {
             );
         }
 
+        //run the post deployment fht enabling process
+        await this.enableFHT();
+
         if (fs.existsSync(postDeploymentScript)) {
             SFPLogger.log('Executing postDeployment script',LoggerLevel.INFO,this.logger);
             await ScriptExecutor.executeScript(
@@ -245,9 +248,11 @@ export abstract class InstallPackage {
                 this.sfpOrg.getUsername()
             );
         }
+    }
 
-        //run the post deployment fht enabling process
-        let modifiedComponentSet = await FHTPostDeploymentGenerator.generateFHTEnabledComponents(this.sfpPackage, this.connection, this.logger);
+    private async enableFHT() {
+        let fhtEnabler = new FHTEnabler();
+        let modifiedComponentSet = await fhtEnabler.generateFHTEnabledComponents(this.sfpPackage, this.connection, this.logger);
         let result: DeploySourceResult;
 
         //Check if there are components to be deployed
@@ -279,6 +284,7 @@ export abstract class InstallPackage {
 
         result = await deploySourceToOrgImpl.exec();
     }
+
     protected async generateDeploymentOptions(
         waitTime: string,
         optimizeDeployment: boolean,

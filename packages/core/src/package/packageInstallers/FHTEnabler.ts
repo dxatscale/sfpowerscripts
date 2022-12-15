@@ -10,9 +10,9 @@ const { XMLBuilder } = require('fast-xml-parser');
 
 const QUERY_BODY = 'SELECT QualifiedApiName, IsFieldHistoryTracked, EntityDefinitionId FROM FieldDefinition WHERE IsFieldHistoryTracked = false AND DurableId IN: ';
 
-export default class FHTPostDeploymentGenerator {
+export default class FHTEnabler {
 
-    public static async generateFHTEnabledComponents(sfpPackage: SfpPackage, conn: Connection, logger: Logger): Promise<ComponentSet> {
+    public async generateFHTEnabledComponents(sfpPackage: SfpPackage, conn: Connection, logger: Logger): Promise<ComponentSet> {
 
         //only do if isFHTFieldFound is true
         if(!sfpPackage.isFHTFieldFound) {
@@ -49,8 +49,7 @@ export default class FHTPostDeploymentGenerator {
             let modifiedComponentSet = new ComponentSet();
 
             for (const sourceComponent of sourceComponents) {
-                let fieldLocal = sourceComponent.parseXmlSync();
-
+                let sourceComponentXml = sourceComponent.parseXmlSync();
                 let componentMatchedByName;
 
                 //if the current component is a field
@@ -58,12 +57,12 @@ export default class FHTPostDeploymentGenerator {
 
                     //check if the current source component needs to be modified
                     componentMatchedByName = fhtFieldsInOrg.find(
-                        (element: CustomField) => element.QualifiedApiName == fieldLocal['CustomField']['name'] && element.EntityDefinitionId == sourceComponent.parent?.fullName
+                        (element: CustomField) => element.QualifiedApiName == sourceComponentXml['CustomField']['name'] && element.EntityDefinitionId == sourceComponent.parent?.fullName
                     );
 
                     //update fht setting on the field
                     if (componentMatchedByName) {
-                        fieldLocal['CustomField']['trackHistory'] = true;
+                        sourceComponentXml['CustomField']['trackHistory'] = true;
                     }
                 }
 
@@ -77,7 +76,7 @@ export default class FHTPostDeploymentGenerator {
 
                     //update fht setting on the object
                     if (componentMatchedByName) {
-                        fieldLocal['CustomObject']['enableHistory'] = true;
+                        sourceComponentXml['CustomObject']['enableHistory'] = true;
                     }
                 }
 
@@ -88,7 +87,7 @@ export default class FHTPostDeploymentGenerator {
                         ignoreAttributes: false,
                         attributeNamePrefix: '@_',
                     });
-                    let xmlContent = builder.build(fieldLocal);
+                    let xmlContent = builder.build(sourceComponentXml);
                     fs.writeFileSync(sourceComponent.xml, xmlContent);
                     modifiedComponentSet.add(sourceComponent);
                 }
