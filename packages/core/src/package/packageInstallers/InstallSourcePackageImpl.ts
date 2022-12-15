@@ -135,7 +135,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 }
 
                 //Check if there are components to be deployed after filtering
-                //Asssume its sucessfully deployed
+                //Asssume its suscessfully deployed
                 if (componentSet.size == 0) {
                     return {
                         deploy_id: `000000`,

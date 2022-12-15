@@ -154,7 +154,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
             true
         );
 
-        SFPLogger.log(`Sucessfully Installed sfpowerscripts_artifact package to the ${scratchOrg.alias}`, null, logger);
+        SFPLogger.log(`Suscessfully Installed sfpowerscripts_artifact package to the ${scratchOrg.alias}`, null, logger);
     }
 
     private async invokeDeployImpl(
@@ -163,8 +163,8 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         logger: FileLogger,
         deploymentMode: DeploymentMode
     ) {
-        SFPLogger.log(`Deploying packages in the repo to  ${scratchOrg.alias}`);
-        SFPLogger.log(`Deploying packages in the repo to  ${scratchOrg.alias}`, LoggerLevel.INFO, logger);
+        SFPLogger.log(`Deploying packages in the repo to ${scratchOrg.alias}`);
+        SFPLogger.log(`Deploying packages in the repo to ${scratchOrg.alias}`, LoggerLevel.INFO, logger);
 
         let deployProps: DeployProps = {
             targetUsername: scratchOrg.username,
@@ -333,13 +333,13 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         if (isRelaxAllIPRanges || relaxIPRanges) {
             if (isRelaxAllIPRanges) {
                 SFPLogger.log(
-                    `Relaxing all ip ranges for scratchOrg with user ${conn.getUsername()}`,
+                    `Relaxing all IP ranges for scratchOrg with user ${conn.getUsername()}`,
                     LoggerLevel.INFO
                 );
                 relaxIPRanges = [];
                 return new DeploymentSettingsService(conn).relaxAllIPRanges(logger);
             } else {
-                SFPLogger.log(`Relaxing ip ranges for scratchOrg with user ${conn.getUsername()}`, LoggerLevel.INFO);
+                SFPLogger.log(`Relaxing IP ranges for scratchOrg with user ${conn.getUsername()}`, LoggerLevel.INFO);
                 return new DeploymentSettingsService(conn).relaxAllIPRanges(logger, relaxIPRanges);
             }
         }

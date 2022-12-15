@@ -64,9 +64,9 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
 
         if (packageTypeInfo.IsOrgDependent == 'Yes') this.isOrgDependentPackage = true;
 
-        SFPLogger.log(`Package  ${packageTypeInfo.Name}`, LoggerLevel.INFO, this.logger);
+        SFPLogger.log(`Package ${packageTypeInfo.Name}`, LoggerLevel.INFO, this.logger);
         SFPLogger.log(`IsOrgDependent ${packageTypeInfo.IsOrgDependent}`, LoggerLevel.INFO, this.logger);
-        SFPLogger.log(`Package Id  ${packageTypeInfo.Id}`, LoggerLevel.INFO, this.logger);
+        SFPLogger.log(`Package Id ${packageTypeInfo.Id}`, LoggerLevel.INFO, this.logger);
         SFPLogger.log('-------------------------', LoggerLevel.INFO, this.logger);
 
         //cleanup sfpowerscripts constructs in working directory
@@ -103,13 +103,13 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
                 codecoverage:
                     this.packageCreationParams.isCoverageEnabled && !this.isOrgDependentPackage ? true : false,
                 versionnumber: sfpPackage.versionNumber,
-                definitionfile: this.params.configFilePath,
+                definitionfile: path.join(this.workingDirectory,this.params.configFilePath),
                 packageId: this.sfpPackage.packageName,
             },
             { timeout: Duration.minutes(0), frequency: Duration.seconds(30) }
         );
 
-        SFPLogger.log(`Package creation for ${this.sfpPackage.packageName} Initiated`,LoggerLevel.INFO,this.logger); 
+        SFPLogger.log(`Package creation for ${this.sfpPackage.packageName} Initiated`,LoggerLevel.INFO,this.logger);
         //Poll for package creation every 30 seconds
         let currentPackageCreationStatus:PackageVersionCreateRequestResult;
         while (true) {
@@ -119,7 +119,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
                 this.devhubOrg.getConnection()
             );
 
-            SFPLogger.log(`Status: ${COLOR_KEY_MESSAGE(currentPackageCreationStatus.Status)}, Next Status check in 30 seconds`,LoggerLevel.INFO,this.logger); 
+            SFPLogger.log(`Status: ${COLOR_KEY_MESSAGE(currentPackageCreationStatus.Status)}, Next Status check in 30 seconds`,LoggerLevel.INFO,this.logger);
             if (currentPackageCreationStatus.Status === `Success`) {
                 break;
             } else if (currentPackageCreationStatus.Status === 'Error') {
@@ -128,12 +128,12 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
                 if (errors?.length) {
                     errorMessage = 'Creation errors: ';
                     for (let i = 0; i < errors.length; i++) {
-                        errorMessage += `\n${i + 1}) ${errors[i].message}`;
+                        errorMessage += `\n${i + 1}) ${errors[i]}`;
                     }
                 }
-                throw new Error(`Unable to create  ${this.sfpPackage.packageName} due to \n` + errorMessage);
+                throw new Error(`Unable to create ${this.sfpPackage.packageName} due to \n` + errorMessage);
             }
-            
+
         }
 
         SFPLogger.log(`Package Result:${JSON.stringify(currentPackageCreationStatus)}`, LoggerLevel.TRACE, this.logger);

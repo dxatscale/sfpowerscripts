@@ -7,5 +7,6 @@
     "disableArtifactUpdateFlagDescription": "Do not update information about deployed artifacts to the org",
     "baseBranchFlagDescription": "The pull request base branch",
     "fastfeedbackFlagDescription": "Enable validation in fast feedback mode, In fast feedback mode, validation will only do selective deployment of changed components and selective tests",
-    "configFileFlagDescription":"(Required if the release modes are ff-relese-config or thorough-release-config), Path to the config file which determines how the release defintion should be generated"
+    "configFileFlagDescription":"(Required if the release modes are ff-relese-config or thorough-release-config), Path to the config file which determines how the release defintion should be generated",
+    "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, used for installing or updating dependency in individual/thorough modes"
 }
