@@ -81,15 +81,8 @@ jobs:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
     needs: [ sfpowerscripts-alpha ]
-<<<<<<< HEAD
-=======
-
->>>>>>> f8568b0f4f58f664b2456cd693736923e6a399a7
 
 
- #Promotion Stages
-
-# Sfpowercripts
   sfpowerscripts-beta:
     name: 'sfpowerscripts beta'
     uses: ./.github/workflows/promotePackage.yml

@@ -273,6 +273,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         deploymentResult: DeploymentResult,
         isToDelete: boolean
     ) {
+
         //No scratch org available.. just return
         if (scratchOrgUsername == undefined) return;
 
