@@ -220,19 +220,23 @@ export default class SfpPackageContentGenerator {
 
         let rootForceIgnore: string = path.join(projectDirectory, '.forceignore');
         let copyForceIgnoreForStage = (stage) => {
-            if (ignoreFiles?.[stage])
-                if (fs.existsSync(path.join(projectDirectory, ignoreFiles[stage])))
+            if (ignoreFiles?.[stage]) {
+                if (fs.existsSync(path.join(projectDirectory, ignoreFiles[stage]))) {
                     fs.copySync(
                         path.join(projectDirectory, ignoreFiles[stage]),
                         path.join(forceIgnoresDir, '.' + stage + 'ignore')
                     );
-                else if (fs.existsSync(path.join(projectDirectory, 'forceignores', '.' + stage + 'ignore')))
+                } else if (fs.existsSync(path.join(projectDirectory, 'forceignores', '.' + stage + 'ignore'))) {
                     fs.copySync(
                         path.join(projectDirectory, 'forceignores', '.' + stage + 'ignore'),
                         path.join(forceIgnoresDir, '.' + stage + 'ignore')
                     );
-                else throw new Error(`${ignoreFiles[stage]} does not exist`);
-            else fs.copySync(rootForceIgnore, path.join(forceIgnoresDir, '.' + stage + 'ignore'));
+                } else throw new Error(`${ignoreFiles[stage]} does not exist`);
+            } else fs.copySync(rootForceIgnore, path.join(forceIgnoresDir, '.' + stage + 'ignore'));
+
+            //append additional entry to force ignore file
+            //TODO: Revisit the location
+            fs.appendFileSync(  path.join(forceIgnoresDir, '.' + stage + 'ignore'),"\n**/postDeploy");
         };
 
         let stages: string[] = ['prepare', 'validate', 'quickbuild', 'build'];

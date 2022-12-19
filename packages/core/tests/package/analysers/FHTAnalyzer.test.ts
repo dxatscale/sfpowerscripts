@@ -2,8 +2,8 @@ import { jest, expect } from '@jest/globals';
 import FHTAnalyser from '../../../src/package/analyser/FHTAnalyzer';
 import SfpPackage, { PackageType } from '../../../src/package/SfpPackage';
 const fs = require('fs-extra');
-import path from 'path';
 import { ComponentSet, SourceComponent, registry, VirtualDirectory } from '@salesforce/source-deploy-retrieve';
+import { VoidLogger } from '@dxatscale/sfp-logger';
 
 let isYamlFileFound: boolean = true;
 
@@ -43,7 +43,7 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        expect(await fhtAnalyzer.isEnabled(sfpPackage)).toBe(false);
+        expect(await fhtAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(false);
     });
 
     it('Should not be enabled for source packages by default', async () => {
@@ -63,7 +63,7 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        expect(await fhtAnalyzer.isEnabled(sfpPackage)).toBe(true);
+        expect(await fhtAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(true);
     });
 
     it('Should not be enabled for unlocked packages by default', async () => {
@@ -83,7 +83,7 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        expect(await fhtAnalyzer.isEnabled(sfpPackage)).toBe(true);
+        expect(await fhtAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(true);
     });
 
     it(' When a yaml is provided and no additional fields, a sfpPackage with additional properties should be created', async () => {
@@ -116,7 +116,7 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage);
+        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
         expect(sfpPackage['isFHTFieldFound']).toBe(true);
         expect(sfpPackage['fhtFields']).toBeDefined();
         let fhtFields = sfpPackage['fhtFields'];
@@ -193,7 +193,7 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage);
+        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
         expect(sfpPackage['isFHTFieldFound']).toBe(true);
         expect(sfpPackage['fhtFields']).toBeDefined();
         let fhtFields = sfpPackage['fhtFields'];
@@ -272,7 +272,7 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage);
+        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
         expect(sfpPackage['isFHTFieldFound']).toBe(true);
         expect(sfpPackage['fhtFields']).toBeDefined();
         let fhtFields = sfpPackage['fhtFields'];
@@ -351,7 +351,7 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage);
+        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
         expect(sfpPackage['isFHTFieldFound']).toBe(true);
         expect(sfpPackage['fhtFields']).toBeDefined();
         let fhtFields = sfpPackage['fhtFields'];

@@ -13,11 +13,11 @@ import PermissionSetGroupUpdateAwaiter from '../../permsets/PermissionSetGroupUp
 import SfpOrg from '../../org/SFPOrg';
 import SfpPackage from '../SfpPackage';
 import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../deployers/DeploymentExecutor';
-import FHTEnabler from '../postDeployers/FHTEnabler';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import getFormattedTime from '../../utils/GetFormattedTime';
 import { TestLevel } from '../../apextest/TestOptions';
 import { PostDeployersRegistry } from '../postDeployers/PostDeployersRegistry';
+import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 
 export class SfpPackageInstallationOptions {
     installationkey?: string;
@@ -259,20 +259,33 @@ export abstract class InstallPackage {
     private async executePostDeployers() {
         SFPLogger.log(`Executing Post Deployers`, LoggerLevel.INFO, this.logger);
 
+        //Gather componentSet
+        let componentSet = ComponentSet.fromSource(
+            path.join(this.sfpPackage.projectDirectory, this.sfpPackage.packageDirectory)
+        );
+
         for (const postDeployer of PostDeployersRegistry.getPostDeployers()) {
             try {
-                SFPLogger.log(`Post Deployer ${postDeployer.getName()}`, LoggerLevel.INFO, this.logger);
                 if (await postDeployer.isEnabled(this.sfpPackage, this.connection, this.logger)) {
-                    let componentSet = await postDeployer.gatherPostDeploymentComponents(
+                    SFPLogger.log(
+                        `Executing Post Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())}`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
+                    let modifiedPackage = await postDeployer.gatherPostDeploymentComponents(
                         this.sfpPackage,
+                        componentSet,
                         this.connection,
                         this.logger
                     );
+
+                    if (!modifiedPackage) continue;
+
                     let result: DeploySourceResult;
 
                     //Check if there are components to be deployed
                     //Asssume its sucessfully deployed
-                    if (componentSet.size == 0) {
+                    if (modifiedPackage.componentSet.getSourceComponents().toArray().length == 0) {
                         return {
                             deploy_id: `000000`,
                             result: true,
@@ -291,16 +304,31 @@ export abstract class InstallPackage {
 
                     let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
                         this.sfpOrg,
-                        this.sfpPackage.sourceDir,
-                        componentSet,
+                        modifiedPackage.location,
+                        modifiedPackage.componentSet,
                         deploymentOptions,
                         this.logger
                     );
 
                     result = await deploySourceToOrgImpl.exec();
+                } else {
+                    SFPLogger.log(
+                        `Post Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())} skipped or not enabled`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
                 }
             } catch (error) {
-                SFPLogger.log(`Unable to process post deploy for ${postDeployer.getName()} due to ${error.message} \n skipping`,LoggerLevel.WARN,this.logger)
+                SFPLogger.log(
+                    `Unable to process post deploy for ${postDeployer.getName()} due to ${error.message}`,
+                    LoggerLevel.WARN,
+                    this.logger
+                );
+                SFPLogger.log(
+                    `Post Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())} skipped due to error`,
+                    LoggerLevel.INFO,
+                    this.logger
+                );
             }
         }
     }

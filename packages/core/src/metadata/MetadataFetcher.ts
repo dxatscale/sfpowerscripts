@@ -3,25 +3,15 @@ import SFPOrg from '../org/SFPOrg';
 import { delay } from '../utils/Delay';
 const fs = require('fs-extra');
 import AdmZip = require('adm-zip');
-import { XMLParser } from 'fast-xml-parser';
 import { Connection } from '@salesforce/core';
 import { RetrieveResult } from 'jsforce/lib/api/metadata';
+import { makeRandomId } from '../utils/RandomId';
 
 export default class MetadataFetcher {
-    constructor(private logger: Logger) {}
+    constructor(protected logger: Logger) {}
 
-    public async getSetttingMetadata(org: SFPOrg, setting: string) {
-        SFPLogger.log(`Fetching ${setting}Settings from Org`, LoggerLevel.INFO, this.logger);
-        let retriveLocation = await new MetadataFetcher(this.logger).fetchPackageFromOrg(org, {
-            types: { name: 'Settings', members: setting },
-        });
-        let resultFile = `${retriveLocation}/settings/${setting}.settings`;
-        const parser = new XMLParser();
-        let parsedSettings = parser.parse(fs.readFileSync(resultFile).toString())[`${setting}Settings`];
-        return parsedSettings;
-    }
-
-    public async fetchPackageFromOrg(org: SFPOrg, members: any) {
+   
+    protected async fetchPackageFromOrg(org: SFPOrg, members: any) {
         let connection = org.getConnection();
         const apiversion = await org.getConnection().retrieveMaxApiVersion();
 
@@ -39,16 +29,16 @@ export default class MetadataFetcher {
         if (!metadata_retrieve_result.zipFile)
             SFPLogger.log('Unable to find the requested metadata', LoggerLevel.ERROR, this.logger);
 
-        let retriveLocation = `.sfpowerscripts/retrieved/${retrievedId}`;
+        let retriveLocation = `.sfpowerscripts/retrieved/${retrievedId.id}`;
         //Extract Security
-        let zipFileName = `${retriveLocation}/unpackaged.zip`;
+        let zipFileName = `${retriveLocation}/unpackaged_${makeRandomId(8)}.zip`;
         fs.mkdirpSync(retriveLocation);
         fs.writeFileSync(zipFileName, metadata_retrieve_result.zipFile, {
             encoding: 'base64',
         });
         this.extract(retriveLocation, zipFileName);
-        fs.unlinkSync(zipFileName);
-        return retriveLocation;
+       // fs.unlinkSync(zipFileName);
+        return {zipLocation:zipFileName,unzippedLocation:retriveLocation};
     }
 
     private async checkRetrievalStatus(
@@ -72,6 +62,7 @@ export default class MetadataFetcher {
         return metadata_result;
     }
 
+    
     private extract(unzippedDirectory: string, zipFile: string) {
         let zip = new AdmZip(zipFile);
         // Overwrite existing files

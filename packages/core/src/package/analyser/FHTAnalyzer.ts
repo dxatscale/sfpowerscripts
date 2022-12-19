@@ -7,9 +7,9 @@ import { PackageAnalyzer } from './PackageAnalyzer';
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 
 export default class FHTAnalyser implements PackageAnalyzer {
-    public async analyze(sfpPackage: SfpPackage,logger:Logger): Promise<SfpPackage> {
+    public async analyze(sfpPackage: SfpPackage, componentSet:ComponentSet, logger:Logger): Promise<SfpPackage> {
         try {
-            let isFHTFieldFound = false;
+         
             let fhtFields: { [key: string]: Array<string> } = {};
 
             //read the yaml
@@ -17,7 +17,7 @@ export default class FHTAnalyser implements PackageAnalyzer {
                 sfpPackage.workingDirectory,
                 sfpPackage.projectDirectory,
                 sfpPackage.packageDirectory,
-                '/postDeploy/history-tracking.yaml'
+                '/postDeploy/history-tracking.yml'
             );
 
             //read components mentioned in yaml
@@ -26,19 +26,11 @@ export default class FHTAnalyser implements PackageAnalyzer {
                 fhtFields = yaml.load(fs.readFileSync(fhtYamlPath, { encoding: 'utf-8' }));
             }
 
-            //Load component Set
-            let componentSet = ComponentSet.fromSource(
-                path.join(sfpPackage.workingDirectory, sfpPackage.projectDirectory, sfpPackage.packageDirectory)
-            );
-
+           
             //filter the components in the package
             fhtFields = await this.addFieldsFromComponentSet(fhtFields, componentSet);
 
-            if (fhtFields !== null) {
-                isFHTFieldFound = true;
-            }
-
-            if (fhtFields) {
+            if (Object.keys(fhtFields).length>0) {
                 sfpPackage['isFHTFieldFound'] = true;
                 sfpPackage['fhtFields'] = fhtFields;
             }
