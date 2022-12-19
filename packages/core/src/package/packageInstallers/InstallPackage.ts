@@ -13,10 +13,11 @@ import PermissionSetGroupUpdateAwaiter from '../../permsets/PermissionSetGroupUp
 import SfpOrg from '../../org/SFPOrg';
 import SfpPackage from '../SfpPackage';
 import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../deployers/DeploymentExecutor';
-import FHTEnabler from '../packageInstallers/FHTEnabler';
+import FHTEnabler from '../postDeployers/FHTEnabler';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import getFormattedTime from '../../utils/GetFormattedTime';
 import { TestLevel } from '../../apextest/TestOptions';
+import { PostDeployersRegistry } from '../postDeployers/PostDeployersRegistry';
 
 export class SfpPackageInstallationOptions {
     installationkey?: string;
@@ -29,13 +30,12 @@ export class SfpPackageInstallationOptions {
     skipTesting?: boolean;
     optimizeDeployment?: boolean;
     deploymentType?: DeploymentType;
-    disableArtifactCommit?: boolean=false;
+    disableArtifactCommit?: boolean = false;
     isInstallingForValidation?: boolean;
     skipIfPackageInstalled: boolean;
-    isDryRun?: boolean=false;
+    isDryRun?: boolean = false;
     pathToReplacementForceIgnore?: string;
 }
-
 
 export abstract class InstallPackage {
     private startTime: number;
@@ -47,7 +47,7 @@ export abstract class InstallPackage {
 
     public constructor(
         protected sfpPackage: SfpPackage,
-        protected sfpOrg:SfpOrg,
+        protected sfpOrg: SfpOrg,
         protected logger: Logger,
         protected options: SfpPackageInstallationOptions
     ) {}
@@ -60,8 +60,6 @@ export abstract class InstallPackage {
                 this.sfpPackage.sourceDir,
                 this.sfpPackage.packageName
             );
-
-
 
             this.connection = this.sfpOrg.getConnection();
 
@@ -107,12 +105,10 @@ export abstract class InstallPackage {
 
             let alias = await this.sfpOrg.getAlias();
             aliasDir = files.find(
-                (file) =>
-                    path.basename(file) === alias &&
-                    fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
+                (file) => path.basename(file) === alias && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
             );
 
-            SFPLogger.log(`Using alias directory ${aliasDir?aliasDir:'default'}`,LoggerLevel.INFO,this.logger);
+            SFPLogger.log(`Using alias directory ${aliasDir ? aliasDir : 'default'}`, LoggerLevel.INFO, this.logger);
 
             if (!aliasDir) {
                 const orgDetails = await new OrgDetailsFetcher(this.sfpOrg.getUsername()).getOrgDetails();
@@ -146,7 +142,11 @@ export abstract class InstallPackage {
 
     private sendMetricsWhenFailed() {
         let elapsedTime = Date.now() - this.startTime;
-        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)} installation attempt failed,it took ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`);
+        SFPLogger.log(
+            `Package ${COLOR_KEY_MESSAGE(
+                this.sfpPackage.package_name
+            )} installation attempt failed,it took ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`
+        );
         SFPStatsSender.logCount('package.installation.failure', {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
@@ -156,7 +156,13 @@ export abstract class InstallPackage {
 
     private sendMetricsWhenSuccessfullyInstalled() {
         let elapsedTime = Date.now() - this.startTime;
-        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)} installation took ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`,LoggerLevel.INFO,this.logger);
+        SFPLogger.log(
+            `Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)} installation took ${COLOR_KEY_MESSAGE(
+                getFormattedTime(elapsedTime)
+            )}`,
+            LoggerLevel.INFO,
+            this.logger
+        );
         SFPStatsSender.logElapsedTime('package.installation.elapsed_time', elapsedTime, {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
@@ -210,12 +216,12 @@ export abstract class InstallPackage {
         }
 
         if (fs.existsSync(preDeploymentScript)) {
-            SFPLogger.log('Executing preDeployment script',LoggerLevel.INFO,this.logger);
+            SFPLogger.log('Executing preDeployment script', LoggerLevel.INFO, this.logger);
             await ScriptExecutor.executeScript(
                 this.logger,
                 preDeploymentScript,
                 this.sfpPackage.packageName,
-                this.sfpOrg.getUsername(),
+                this.sfpOrg.getUsername()
             );
         }
     }
@@ -236,11 +242,11 @@ export abstract class InstallPackage {
             );
         }
 
-        //run the post deployment fht enabling process
-        await this.enableFHT();
+        //run all the post Deployers
+        await this.executePostDeployers();
 
         if (fs.existsSync(postDeploymentScript)) {
-            SFPLogger.log('Executing postDeployment script',LoggerLevel.INFO,this.logger);
+            SFPLogger.log('Executing postDeployment script', LoggerLevel.INFO, this.logger);
             await ScriptExecutor.executeScript(
                 this.logger,
                 postDeploymentScript,
@@ -250,39 +256,53 @@ export abstract class InstallPackage {
         }
     }
 
-    private async enableFHT() {
-        let fhtEnabler = new FHTEnabler();
-        let modifiedComponentSet = await fhtEnabler.generateFHTEnabledComponents(this.sfpPackage, this.connection, this.logger);
-        let result: DeploySourceResult;
+    private async executePostDeployers() {
+        SFPLogger.log(`Executing Post Deployers`, LoggerLevel.INFO, this.logger);
 
-        //Check if there are components to be deployed
-        //Asssume its sucessfully deployed
-        if (modifiedComponentSet.size == 0) {
-            return {
-                deploy_id: `000000`,
-                result: true,
-                message: `No FHT deployment required`,
-            };
+        for (const postDeployer of PostDeployersRegistry.getPostDeployers()) {
+            try {
+                SFPLogger.log(`Post Deployer ${postDeployer.getName()}`, LoggerLevel.INFO, this.logger);
+                if (await postDeployer.isEnabled(this.sfpPackage, this.connection, this.logger)) {
+                    let componentSet = await postDeployer.gatherPostDeploymentComponents(
+                        this.sfpPackage,
+                        this.connection,
+                        this.logger
+                    );
+                    let result: DeploySourceResult;
+
+                    //Check if there are components to be deployed
+                    //Asssume its sucessfully deployed
+                    if (componentSet.size == 0) {
+                        return {
+                            deploy_id: `000000`,
+                            result: true,
+                            message: `No FHT deployment required`,
+                        };
+                    }
+
+                    //deploy the fht enabled components to the org
+                    let deploymentOptions: DeploymentOptions = await this.generateDeploymentOptions(
+                        this.options.waitTime,
+                        this.options.optimizeDeployment,
+                        this.options.skipTesting,
+                        this.sfpOrg.getUsername(),
+                        this.options.apiVersion
+                    );
+
+                    let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
+                        this.sfpOrg,
+                        this.sfpPackage.sourceDir,
+                        componentSet,
+                        deploymentOptions,
+                        this.logger
+                    );
+
+                    result = await deploySourceToOrgImpl.exec();
+                }
+            } catch (error) {
+                SFPLogger.log(`Unable to process post deploy for ${postDeployer.getName()} due to ${error.message} \n skipping`,LoggerLevel.WARN,this.logger)
+            }
         }
-
-        //deploy the fht enabled components to the org
-        let deploymentOptions: DeploymentOptions = await this.generateDeploymentOptions(
-            this.options.waitTime,
-            this.options.optimizeDeployment,
-            this.options.skipTesting,
-            this.sfpOrg.getUsername(),
-            this.options.apiVersion
-        );
-
-        let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
-            this.sfpOrg,
-            this.sfpPackage.sourceDir,
-            modifiedComponentSet,
-            deploymentOptions,
-            this.logger
-        );
-
-        result = await deploySourceToOrgImpl.exec();
     }
 
     protected async generateDeploymentOptions(

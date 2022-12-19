@@ -22,8 +22,7 @@ import PackageToComponent from './components/PackageToComponent';
 import lodash = require('lodash');
 import { EOL } from 'os';
 import PackageVersionUpdater from './version/PackageVersionUpdater';
-import FHTAnalyser from './analyser/FHTAnalyser';
-import { ComponentSet } from '@salesforce/source-deploy-retrieve';
+import { AnalyzerRegistry } from './analyser/AnalyzerRegistry';
 
 export default class SfpPackageBuilder {
     public static async buildPackageFromProjectDirectory(
@@ -123,7 +122,11 @@ export default class SfpPackageBuilder {
 
             sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(sfpPackage, logger);
 
-            sfpPackage.isFHTFieldFound = await SfpPackageBuilder.handleFieldHistoryTracking(sfpPackage);
+            //Run through all analyzers
+            let analyzers = AnalyzerRegistry.getAnalyzers();
+            for (const analyzer of analyzers) {
+                if (analyzer.isEnabled(sfpPackage)) sfpPackage = await analyzer.analyze(sfpPackage);
+            }
 
             //Introspect Diff Package Created
             //On Failure.. remove diff and move on
@@ -302,24 +305,6 @@ export default class SfpPackageBuilder {
     private static isOptimizedDeploymentForSourcePackage(pkgDescriptor: any): boolean {
         if (pkgDescriptor['isOptimizedDeployment'] == null) return true;
         else return pkgDescriptor['isOptimizedDeployment'];
-    }
-
-    private static async handleFieldHistoryTracking(sfpPackage: SfpPackage): Promise<string> {
-        //Generate components
-        let componentSet = ComponentSet.fromSource(path.join(sfpPackage.workingDirectory, sfpPackage.packageDirectory));
-
-        //Check if field history tracking related operations are needed
-        let fhtGenerator = new FHTAnalyser();
-        let fhtInfo = await fhtGenerator.getFht(sfpPackage.workingDirectory, componentSet);
-
-        if (fhtInfo.fhtFields) {
-            let fhtJsonPath = path.resolve(sfpPackage.workingDirectory, './postDeployTransfomations');
-            if (!fs.existsSync(fhtJsonPath)) {
-                fs.promises.mkdir(fhtJsonPath, { recursive: true }).catch(console.error);
-            }
-            fs.writeFileSync(path.resolve(fhtJsonPath, './fhtJson.json'), JSON.stringify(fhtInfo.fhtFields));
-        }
-        return fhtInfo.isFHTFieldFound;
     }
 }
 
