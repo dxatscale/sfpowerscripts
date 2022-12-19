@@ -125,7 +125,7 @@ export default class SfpPackageBuilder {
             //Run through all analyzers
             let analyzers = AnalyzerRegistry.getAnalyzers();
             for (const analyzer of analyzers) {
-                if (analyzer.isEnabled(sfpPackage)) sfpPackage = await analyzer.analyze(sfpPackage);
+                if (analyzer.isEnabled(sfpPackage,logger)) sfpPackage = await analyzer.analyze(sfpPackage,logger);
             }
 
             //Introspect Diff Package Created
