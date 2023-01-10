@@ -3,7 +3,7 @@
     "description": "DX@Scale Toolkit",
     "version": "20.4.3",
     "author": "dxatscale",
-    "release": "December 22",
+    "release": "January 23",
     "bin": {
         "readVars": "./scripts/readVars.sh"
     },
