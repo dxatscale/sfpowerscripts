@@ -189,6 +189,9 @@ export default class ReleaseDefinitionGenerator {
         //Add package dependencies
         if (Object.keys(packageDependencies).length > 0) releaseDefinition.packageDependencies = packageDependencies;
 
+        //add promotePackagesBeforeDeploymentToOrg
+        releaseDefinition.promotePackagesBeforeDeploymentToOrg = this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.promotePackagesBeforeDeploymentToOrg;
+	    
         //Add changelog info
         releaseDefinition.changelog = this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.changelog;
 
