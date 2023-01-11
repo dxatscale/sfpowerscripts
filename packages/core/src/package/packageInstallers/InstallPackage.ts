@@ -7,13 +7,17 @@ import ScriptExecutor from '../../scriptExecutor/ScriptExecutorHelpers';
 import { Connection } from '@salesforce/core';
 import * as fs from 'fs-extra';
 import FileSystem from '../../utils/FileSystem';
-import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
+import OrgDetailsFetcher, { OrgDetails } from '../../org/OrgDetailsFetcher';
 import path = require('path');
 import PermissionSetGroupUpdateAwaiter from '../../permsets/PermissionSetGroupUpdateAwaiter';
 import SfpOrg from '../../org/SFPOrg';
 import SfpPackage from '../SfpPackage';
-import { DeploymentType } from '../../deployers/DeploymentExecutor';
+import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../deployers/DeploymentExecutor';
+import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import getFormattedTime from '../../utils/GetFormattedTime';
+import { TestLevel } from '../../apextest/TestOptions';
+import { PostDeployersRegistry } from '../postDeployers/PostDeployersRegistry';
+import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 
 export class SfpPackageInstallationOptions {
     installationkey?: string;
@@ -26,13 +30,12 @@ export class SfpPackageInstallationOptions {
     skipTesting?: boolean;
     optimizeDeployment?: boolean;
     deploymentType?: DeploymentType;
-    disableArtifactCommit?: boolean=false;
+    disableArtifactCommit?: boolean = false;
     isInstallingForValidation?: boolean;
     skipIfPackageInstalled: boolean;
-    isDryRun?: boolean=false;
+    isDryRun?: boolean = false;
     pathToReplacementForceIgnore?: string;
 }
-
 
 export abstract class InstallPackage {
     private startTime: number;
@@ -44,7 +47,7 @@ export abstract class InstallPackage {
 
     public constructor(
         protected sfpPackage: SfpPackage,
-        protected sfpOrg:SfpOrg,
+        protected sfpOrg: SfpOrg,
         protected logger: Logger,
         protected options: SfpPackageInstallationOptions
     ) {}
@@ -57,8 +60,6 @@ export abstract class InstallPackage {
                 this.sfpPackage.sourceDir,
                 this.sfpPackage.packageName
             );
-
-
 
             this.connection = this.sfpOrg.getConnection();
 
@@ -104,12 +105,10 @@ export abstract class InstallPackage {
 
             let alias = await this.sfpOrg.getAlias();
             aliasDir = files.find(
-                (file) =>
-                    path.basename(file) === alias &&
-                    fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
+                (file) => path.basename(file) === alias && fs.lstatSync(path.join(searchDirectory, file)).isDirectory()
             );
 
-            SFPLogger.log(`Using alias directory ${aliasDir?aliasDir:'default'}`,LoggerLevel.INFO,this.logger);
+            SFPLogger.log(`Using alias directory ${aliasDir ? aliasDir : 'default'}`, LoggerLevel.INFO, this.logger);
 
             if (!aliasDir) {
                 const orgDetails = await new OrgDetailsFetcher(this.sfpOrg.getUsername()).getOrgDetails();
@@ -143,7 +142,11 @@ export abstract class InstallPackage {
 
     private sendMetricsWhenFailed() {
         let elapsedTime = Date.now() - this.startTime;
-        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)} installation attempt failed,it took ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`);
+        SFPLogger.log(
+            `Package ${COLOR_KEY_MESSAGE(
+                this.sfpPackage.package_name
+            )} installation attempt failed,it took ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`
+        );
         SFPStatsSender.logCount('package.installation.failure', {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
@@ -153,7 +156,13 @@ export abstract class InstallPackage {
 
     private sendMetricsWhenSuccessfullyInstalled() {
         let elapsedTime = Date.now() - this.startTime;
-        SFPLogger.log(`Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)} installation took ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`,LoggerLevel.INFO,this.logger);
+        SFPLogger.log(
+            `Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)} installation took ${COLOR_KEY_MESSAGE(
+                getFormattedTime(elapsedTime)
+            )}`,
+            LoggerLevel.INFO,
+            this.logger
+        );
         SFPStatsSender.logElapsedTime('package.installation.elapsed_time', elapsedTime, {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
@@ -207,12 +216,12 @@ export abstract class InstallPackage {
         }
 
         if (fs.existsSync(preDeploymentScript)) {
-            SFPLogger.log('Executing preDeployment script',LoggerLevel.INFO,this.logger);
+            SFPLogger.log('Executing preDeployment script', LoggerLevel.INFO, this.logger);
             await ScriptExecutor.executeScript(
                 this.logger,
                 preDeploymentScript,
                 this.sfpPackage.packageName,
-                this.sfpOrg.getUsername(),
+                this.sfpOrg.getUsername()
             );
         }
     }
@@ -233,8 +242,11 @@ export abstract class InstallPackage {
             );
         }
 
+        //run all the post Deployers
+        await this.executePostDeployers();
+
         if (fs.existsSync(postDeploymentScript)) {
-            SFPLogger.log('Executing postDeployment script',LoggerLevel.INFO,this.logger);
+            SFPLogger.log('Executing postDeployment script', LoggerLevel.INFO, this.logger);
             await ScriptExecutor.executeScript(
                 this.logger,
                 postDeploymentScript,
@@ -243,5 +255,151 @@ export abstract class InstallPackage {
             );
         }
     }
-}
 
+    private async executePostDeployers() {
+        SFPLogger.log(`Executing Post Deployers`, LoggerLevel.INFO, this.logger);
+
+        //Gather componentSet
+        let componentSet = ComponentSet.fromSource(
+            path.join(this.sfpPackage.projectDirectory, this.sfpPackage.packageDirectory)
+        );
+
+        for (const postDeployer of PostDeployersRegistry.getPostDeployers()) {
+            try {
+                if (await postDeployer.isEnabled(this.sfpPackage, this.connection, this.logger)) {
+                    SFPLogger.log(
+                        `Executing Post Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())}`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
+                    let modifiedPackage = await postDeployer.gatherPostDeploymentComponents(
+                        this.sfpPackage,
+                        componentSet,
+                        this.connection,
+                        this.logger
+                    );
+
+                    if (!modifiedPackage) continue;
+
+                    let result: DeploySourceResult;
+
+                    //Check if there are components to be deployed
+                    //Asssume its sucessfully deployed
+                    if (modifiedPackage.componentSet.getSourceComponents().toArray().length == 0) {
+                        return {
+                            deploy_id: `000000`,
+                            result: true,
+                            message: `No FHT deployment required`,
+                        };
+                    }
+
+                    //deploy the fht enabled components to the org
+                    let deploymentOptions: DeploymentOptions = await this.generateDeploymentOptions(
+                        this.options.waitTime,
+                        this.options.optimizeDeployment,
+                        this.options.skipTesting,
+                        this.sfpOrg.getUsername(),
+                        this.options.apiVersion
+                    );
+
+                    let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
+                        this.sfpOrg,
+                        modifiedPackage.location,
+                        modifiedPackage.componentSet,
+                        deploymentOptions,
+                        this.logger
+                    );
+
+                    result = await deploySourceToOrgImpl.exec();
+                } else {
+                    SFPLogger.log(
+                        `Post Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())} skipped or not enabled`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
+                }
+            } catch (error) {
+                SFPLogger.log(
+                    `Unable to process post deploy for ${postDeployer.getName()} due to ${error.message}`,
+                    LoggerLevel.WARN,
+                    this.logger
+                );
+                SFPLogger.log(
+                    `Post Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())} skipped due to error`,
+                    LoggerLevel.INFO,
+                    this.logger
+                );
+            }
+        }
+    }
+
+    protected async generateDeploymentOptions(
+        waitTime: string,
+        optimizeDeployment: boolean,
+        skipTest: boolean,
+        target_org: string,
+        apiVersion: string
+    ): Promise<any> {
+        let deploymentOptions: DeploymentOptions = {
+            ignoreWarnings: true,
+            waitTime: waitTime,
+        };
+        deploymentOptions.ignoreWarnings = true;
+        deploymentOptions.waitTime = waitTime;
+        deploymentOptions.apiVersion = apiVersion;
+
+        //Find Org Type
+        let orgDetails: OrgDetails;
+        try {
+            orgDetails = await new OrgDetailsFetcher(target_org).getOrgDetails();
+        } catch (err) {
+            SFPLogger.log(`Unable to fetch org details,assuming it is production`, LoggerLevel.WARN, this.logger);
+            orgDetails = {
+                instanceUrl: undefined,
+                isScratchOrg: false,
+                isSandbox: false,
+                organizationType: undefined,
+                sfdxAuthUrl: undefined,
+                status: undefined,
+            };
+        }
+
+        if (this.sfpPackage.isApexFound) {
+            if (orgDetails.isSandbox) {
+                if (skipTest) {
+                    deploymentOptions.testLevel = TestLevel.RunNoTests;
+                } else if (this.sfpPackage.apexTestClassses.length > 0 && optimizeDeployment) {
+                    deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                    deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
+                        this.sfpPackage.apexTestClassses
+                    );
+                } else {
+                    deploymentOptions.testLevel = TestLevel.RunLocalTests;
+                }
+            } else {
+                if (this.sfpPackage.apexTestClassses.length > 0 && optimizeDeployment) {
+                    deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                    deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
+                        this.sfpPackage.apexTestClassses
+                    );
+                } else {
+                    deploymentOptions.testLevel = TestLevel.RunLocalTests;
+                }
+            }
+        } else {
+            if (orgDetails.isSandbox) {
+                deploymentOptions.testLevel = TestLevel.RunNoTests;
+            } else {
+                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
+                deploymentOptions.specifiedTests = 'skip';
+            }
+        }
+
+        return deploymentOptions;
+    }
+
+    private getAStringOfSpecificTestClasses(apexTestClassses: string[]) {
+        let specifedTests = apexTestClassses.join();
+        return specifedTests;
+    }
+}

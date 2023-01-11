@@ -1,9 +1,8 @@
 # Field history tracking resolution
 
-* Status: <!-- optional -->
-* Issue: <!-- optional -->
-* Deciders: <!-- optional -->
-* Date:  <!-- optional -->
+* Status: Accepted
+* Deciders: Azlam, Rody, Meng
+* Date: 19/12/2022
 
 
 ## Context and Problem Statement

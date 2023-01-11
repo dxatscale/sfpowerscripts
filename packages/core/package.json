@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfpowerscripts.core",
-    "version": "33.4.2",
+    "version": "33.5.0",
     "description": "Core Module used by sfpowerscripts",
     "main": "lib/index",
     "types": "lib/index",
@@ -13,7 +13,8 @@
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
         "compile": "tsc -b tsconfig.json",
         "clearCache": "jest --clearCache",
-        "test": "FORCE_COLOR=true jest --silent --verbose true --coverage --detectOpenHandles"
+        "test": "FORCE_COLOR=true jest --silent --verbose true --coverage --detectOpenHandles",
+        "spec-test": "FORCE_COLOR=true jest -i packages/core/tests/package/analysers/FHTAnalyzer.test.ts --verbose true --coverage --detectOpenHandles"
     },
     "engines": {
         "node": ">=14.0.0"

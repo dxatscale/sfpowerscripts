@@ -22,6 +22,8 @@ import PackageToComponent from './components/PackageToComponent';
 import lodash = require('lodash');
 import { EOL } from 'os';
 import PackageVersionUpdater from './version/PackageVersionUpdater';
+import { AnalyzerRegistry } from './analyser/AnalyzerRegistry';
+import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 
 export default class SfpPackageBuilder {
     public static async buildPackageFromProjectDirectory(
@@ -54,7 +56,7 @@ export default class SfpPackageBuilder {
             sfdx_package,
             sfpPackage.projectConfig
         );
-        sfpPackage.projectDirectory = projectDirectory;
+        sfpPackage.projectDirectory = projectDirectory?projectDirectory:'';
         sfpPackage.packageDirectory = sfpPackage.packageDescriptor.path;
         //Set Default Version Number
         sfpPackage.versionNumber = sfpPackage.packageDescriptor.versionNumber;
@@ -120,6 +122,17 @@ export default class SfpPackageBuilder {
             sfpPackage.apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
 
             sfpPackage.isTriggerAllTests = this.isAllTestsToBeTriggered(sfpPackage, logger);
+
+            //Load component Set
+            let componentSet = ComponentSet.fromSource(
+                path.resolve(sfpPackage.workingDirectory, sfpPackage.projectDirectory, sfpPackage.packageDirectory)
+            );
+
+            //Run through all analyzers
+            let analyzers = AnalyzerRegistry.getAnalyzers();
+            for (const analyzer of analyzers) {
+                if (analyzer.isEnabled(sfpPackage, logger)) sfpPackage = await analyzer.analyze(sfpPackage,componentSet, logger);
+            }
 
             //Introspect Diff Package Created
             //On Failure.. remove diff and move on
