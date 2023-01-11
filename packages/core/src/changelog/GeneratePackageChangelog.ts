@@ -35,14 +35,19 @@ export default class GeneratePackageChangelog {
         if (this.revFrom) {
             revFrom = await git.revparse(['--short', `${this.revFrom}^{}`]);
         }
+       
 
         let revTo: string = await git.revparse(['--short', `${this.revTo}^{}`]);
 
         let options: LogOptions = {
-            from: revFrom,
-            to: revTo,
             file: packageDescriptor ? `${packageDescriptor['path']}*` : packageDescriptor,
         };
+        if(revFrom)
+        { 
+            options.from = revFrom;
+            options.to = revTo;
+        }
+
         const gitLogResult = await git.log(options);
 
         let changelog: Changelog = {
