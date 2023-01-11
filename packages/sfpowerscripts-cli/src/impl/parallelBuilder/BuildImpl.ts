@@ -22,6 +22,7 @@ import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/dependency/TransitiveDependencyResolver';
 import { Connection } from '@salesforce/core';
+import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -111,8 +112,13 @@ export default class BuildImpl {
         //Log Packages to be built
         console.log(COLOR_KEY_MESSAGE('Packages scheduled for build'));
         console.log(table.toString());
+
+        
         //Fix transitive dependency gap
+        let groupDependencyResolutionLogs = new GroupConsoleLogs("Resolving dependencies").begin();
         this.projectConfig = await this.resolvePackageDependencies(this.projectConfig, this.sfpOrg?.getConnection())
+        groupDependencyResolutionLogs.end();
+
 
         for await (const pkg of this.packagesToBeBuilt) {
             let type = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg).type;

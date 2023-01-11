@@ -69,7 +69,8 @@ export default class TransitiveDependencyResolver {
                 ...new Set(dependenencies.map((objects) => JSON.stringify(objects))),
             ].map((tmpString) => JSON.parse(tmpString));
             dependencyMap[pkg] = uniqueDependencies;
-            SFPLogger.log(this.printDependencyTable(uniqueDependencies).toString(), LoggerLevel.INFO);
+            SFPLogger.log(`Dependencies resolved  for ${pkg}`,LoggerLevel.INFO,this.logger)
+            SFPLogger.log(this.printDependencyTable(uniqueDependencies).toString(), LoggerLevel.INFO,this.logger);
             //Update project config
             await this.updateProjectConfig(pkg, uniqueDependencies);
 
