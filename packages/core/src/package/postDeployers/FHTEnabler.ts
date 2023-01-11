@@ -12,6 +12,7 @@ import { Schema } from 'jsforce';
 import CustomFieldFetcher from '../../metadata/CustomFieldFetcher';
 import SFPOrg from '../../org/SFPOrg';
 import path from 'path';
+import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 const { XMLBuilder } = require('fast-xml-parser');
 
 const QUERY_BODY =
@@ -19,6 +20,13 @@ const QUERY_BODY =
 
 export default class FHTEnabler implements PostDeployer {
     public async isEnabled(sfpPackage: SfpPackage, conn: Connection<Schema>, logger: Logger): Promise<boolean> {
+
+        //ignore if its a scratch org
+        const orgDetails = await new OrgDetailsFetcher(conn.getUsername()).getOrgDetails();
+        if(orgDetails.isScratchOrg)
+         return false;
+
+
         if (
             sfpPackage['isFHTFieldFound'] &&
             (sfpPackage.packageDescriptor.enableFHT == undefined || sfpPackage.packageDescriptor.enableFHT == true)

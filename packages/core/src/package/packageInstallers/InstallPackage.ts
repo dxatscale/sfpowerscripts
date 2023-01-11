@@ -356,6 +356,7 @@ export abstract class InstallPackage {
             SFPLogger.log(`Unable to fetch org details,assuming it is production`, LoggerLevel.WARN, this.logger);
             orgDetails = {
                 instanceUrl: undefined,
+                isScratchOrg: false,
                 isSandbox: false,
                 organizationType: undefined,
                 sfdxAuthUrl: undefined,
