@@ -38,7 +38,7 @@ export default class OrgDetailsFetcher {
 
         OrgDetailsFetcher.usernamesToOrgDetails[this.username] = {
             sfdxAuthUrl: sfdxAuthUrl,
-            instanceUrl: authInfoFields.instanceUrl,
+            instanceUrl: authInfoFields.instanceUrl, 
             ...authInfoFields,
             ...scratchOrgInfo,
             ...organization,
@@ -74,6 +74,7 @@ export default class OrgDetailsFetcher {
 
         if (scratchOrgInfo) {
             return {
+                isScratchOrg:true,
                 status: scratchOrgInfo.Status,
             };
         } else {
@@ -109,6 +110,7 @@ export interface OrgDetails extends ScratchOrgDetails, Organization {
 }
 
 export interface ScratchOrgDetails {
+    isScratchOrg:boolean;
     status: string;
 }
 

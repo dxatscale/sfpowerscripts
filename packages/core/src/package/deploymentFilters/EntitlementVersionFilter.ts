@@ -4,7 +4,7 @@ import QueryHelper from '../../queryHelper/QueryHelper';
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { DeploymentFilter } from './DeploymentFilter';
 import * as fs from 'fs-extra';
-import MetadataFetcher from '../../metadata/MetadataFetcher';
+import SettingsFetcher from '../../metadata/SettingsFetcher';
 import { PackageType } from '../SfpPackage';
 const { XMLBuilder } = require('fast-xml-parser');
 
@@ -26,7 +26,7 @@ export default class EntitlementVersionFilter implements DeploymentFilter {
         if (!isEntitlementFound) return componentSet;
 
         try {
-            let entitlementSettings = await new MetadataFetcher(logger).getSetttingMetadata(org, `Entitlement`);
+            let entitlementSettings = await new SettingsFetcher(logger).getSetttingMetadata(org, `Entitlement`);
 
             let query;
             if (entitlementSettings.enableEntitlementVersioning == true) {

@@ -394,74 +394,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         }
     }
 
-    private async generateDeploymentOptions(
-        waitTime: string,
-        optimizeDeployment: boolean,
-        skipTest: boolean,
-        target_org: string,
-        apiVersion: string
-    ): Promise<any> {
-        let deploymentOptions: DeploymentOptions = {
-            ignoreWarnings: true,
-            waitTime: waitTime,
-        };
-        deploymentOptions.ignoreWarnings = true;
-        deploymentOptions.waitTime = waitTime;
-        deploymentOptions.apiVersion = apiVersion;
-
-        //Find Org Type
-        let orgDetails: OrgDetails;
-        try {
-            orgDetails = await new OrgDetailsFetcher(target_org).getOrgDetails();
-        } catch (err) {
-            SFPLogger.log(`Unable to fetch org details,assuming it is production`, LoggerLevel.WARN, this.logger);
-            orgDetails = {
-                instanceUrl: undefined,
-                isSandbox: false,
-                organizationType: undefined,
-                sfdxAuthUrl: undefined,
-                status: undefined,
-            };
-        }
-
-        if (this.sfpPackage.isApexFound) {
-            if (orgDetails.isSandbox) {
-                if (skipTest) {
-                    deploymentOptions.testLevel = TestLevel.RunNoTests;
-                } else if (this.sfpPackage.apexTestClassses.length > 0 && optimizeDeployment) {
-                    deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
-                    deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
-                        this.sfpPackage.apexTestClassses
-                    );
-                } else {
-                    deploymentOptions.testLevel = TestLevel.RunLocalTests;
-                }
-            } else {
-                if (this.sfpPackage.apexTestClassses.length > 0 && optimizeDeployment) {
-                    deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
-                    deploymentOptions.specifiedTests = this.getAStringOfSpecificTestClasses(
-                        this.sfpPackage.apexTestClassses
-                    );
-                } else {
-                    deploymentOptions.testLevel = TestLevel.RunLocalTests;
-                }
-            }
-        } else {
-            if (orgDetails.isSandbox) {
-                deploymentOptions.testLevel = TestLevel.RunNoTests;
-            } else {
-                deploymentOptions.testLevel = TestLevel.RunSpecifiedTests;
-                deploymentOptions.specifiedTests = 'skip';
-            }
-        }
-
-        return deploymentOptions;
-    }
-
-    private getAStringOfSpecificTestClasses(apexTestClassses: string[]) {
-        let specifedTests = apexTestClassses.join();
-        return specifedTests;
-    }
+   
 
     /**
      * Replaces forceignore in source directory with provided forceignore
