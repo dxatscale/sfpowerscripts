@@ -100,6 +100,9 @@ export default class BuildImpl {
         //Do a diff Impl
         let table;
         if (this.props.isDiffCheckEnabled) {
+            this.props.diffOptions = new PackageDiffOptions(); 
+            this.props.diffOptions.useLatestGitTags=true;
+            this.props.diffOptions.skipPackageDescriptorChange=false;
             let packagesToBeBuiltWithReasons = await this.filterPackagesToBeBuiltByChanged(
                 this.props.projectDirectory,
                 this.packagesToBeBuilt
