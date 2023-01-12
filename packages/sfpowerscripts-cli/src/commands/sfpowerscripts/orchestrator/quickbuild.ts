@@ -30,6 +30,10 @@ export default class QuickBuild extends BuildBase {
             branch: this.flags.branch,
             currentStage: Stage.QUICKBUILD,
             isBuildAllAsSourcePackages: false,
+            diffOptions: {
+                useLatestGitTags:true,
+                skipPackageDescriptorChange:false
+            }
         };
 
         let buildImpl = new BuildImpl(buildProps);

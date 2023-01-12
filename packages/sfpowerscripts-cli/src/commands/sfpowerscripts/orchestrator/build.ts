@@ -30,6 +30,10 @@ export default class Build extends BuildBase {
             branch: this.flags.branch,
             currentStage: Stage.BUILD,
             isBuildAllAsSourcePackages: false,
+            diffOptions: {
+                useLatestGitTags:true,
+                skipPackageDescriptorChange:false
+            }
         };
 
         let buildImpl = new BuildImpl(buildProps);
