@@ -1,8 +1,5 @@
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import {
-    ComponentSet,
-    registry
-} from '@salesforce/source-deploy-retrieve';
+import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
 import * as fs from 'fs-extra';
 import QueryHelper from '../../queryHelper/QueryHelper';
 import SfpPackage from '../SfpPackage';
@@ -13,19 +10,15 @@ import CustomFieldFetcher from '../../metadata/CustomFieldFetcher';
 import SFPOrg from '../../org/SFPOrg';
 import path from 'path';
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
-const { XMLBuilder } = require('fast-xml-parser');
 
 const QUERY_BODY =
     'SELECT QualifiedApiName, EntityDefinitionId  FROM FieldDefinition WHERE IsFieldHistoryTracked = true AND EntityDefinitionId IN ';
 
 export default class FHTEnabler implements PostDeployer {
     public async isEnabled(sfpPackage: SfpPackage, conn: Connection<Schema>, logger: Logger): Promise<boolean> {
-
         //ignore if its a scratch org
         const orgDetails = await new OrgDetailsFetcher(conn.getUsername()).getOrgDetails();
-        if(orgDetails.isScratchOrg)
-         return false;
-
+        if (orgDetails.isScratchOrg) return false;
 
         if (
             sfpPackage['isFHTFieldFound'] &&
@@ -49,13 +42,16 @@ export default class FHTEnabler implements PostDeployer {
             sfpPackage['fhtFields'][key].forEach((field) => fieldList.push(key + '.' + field));
         });
         //Now query all the fields for this object where FHT is already enabled
-        SFPLogger.log(`Gathering fields which are already  trackHistory enabled in the  target org....`, LoggerLevel.INFO, logger);
+        SFPLogger.log(
+            `Gathering fields which are already  trackHistory enabled in the  target org....`,
+            LoggerLevel.INFO,
+            logger
+        );
         let fhtFieldsInOrg = await QueryHelper.query<{
             QualifiedApiName: string;
             EntityDefinitionId: string;
-            IsFieldHistoryTracked:boolean;
+            IsFieldHistoryTracked: boolean;
         }>(QUERY_BODY + '(' + objList + ')', conn, true);
-
 
         //Clear of the fiels that alread has FHT applied and keep a reduced filter
         fhtFieldsInOrg.map((record) => {
@@ -72,27 +68,25 @@ export default class FHTEnabler implements PostDeployer {
             let sfpOrg = await SFPOrg.create({ connection: conn });
             let fetchedCustomFields = await customFieldFetcher.getCustomFields(sfpOrg, fieldList);
 
+            
+
             //Modify the component set
+            //Parsing is risky due to various encoding, so do an inplace replacement
             for (const sourceComponent of fetchedCustomFields.components.getSourceComponents()) {
-                let sourceComponentXml = await sourceComponent.parseXml();
+                let metadataOfComponent = fs.readFileSync(sourceComponent.xml).toString();
+               
+                metadataOfComponent = metadataOfComponent.replace(
+                    '<trackHistory>false</trackHistory>',
+                    '<trackHistory>true</trackHistory>'
+                );
 
-                if (sourceComponent.type.name == registry.types.customobject.children.types.customfield.name) {
-                    sourceComponentXml['CustomField']['trackHistory'] = true;
-                }
+                
 
-                let builder = new XMLBuilder({
-                    format: true,
-                    ignoreAttributes: false,
-                    attributeNamePrefix: '@_',
-                });
-                let xmlContent = builder.build(sourceComponentXml);
-                fs.writeFileSync(path.join(sourceComponent.xml), xmlContent);
+                fs.writeFileSync(path.join(sourceComponent.xml), metadataOfComponent);
             }
 
             return { location: fetchedCustomFields.location, componentSet: fetchedCustomFields.components };
-        }
-        else
-        SFPLogger.log(`No fields are required to be updated,skipping FHT update`, LoggerLevel.INFO, logger);
+        } else SFPLogger.log(`No fields are required to be updated,skipping FHT update`, LoggerLevel.INFO, logger);
     }
 
     public getName(): string {
