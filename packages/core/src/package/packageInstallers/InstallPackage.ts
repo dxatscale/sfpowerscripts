@@ -294,11 +294,9 @@ export abstract class InstallPackage {
                     }
 
                     //deploy the fht enabled components to the org
-                    let deploymentOptions: DeploymentOptions = await this.generateDeploymentOptions(
-                        this.options.waitTime,
-                        this.options.optimizeDeployment,
-                        this.options.skipTesting,
+                    let deploymentOptions = await postDeployer.getDeploymentOptions(
                         this.sfpOrg.getUsername(),
+                        this.options.waitTime,
                         this.options.apiVersion
                     );
 
@@ -395,6 +393,7 @@ export abstract class InstallPackage {
             }
         }
 
+        deploymentOptions.rollBackOnError = true;
         return deploymentOptions;
     }
 

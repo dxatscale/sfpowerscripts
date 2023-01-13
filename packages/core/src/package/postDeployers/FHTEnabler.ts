@@ -10,9 +10,11 @@ import CustomFieldFetcher from '../../metadata/CustomFieldFetcher';
 import SFPOrg from '../../org/SFPOrg';
 import path from 'path';
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
+import { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
+import { TestLevel } from '../../apextest/TestOptions';
 
 const QUERY_BODY =
-    'SELECT QualifiedApiName, EntityDefinitionId  FROM FieldDefinition WHERE IsFieldHistoryTracked = true AND EntityDefinitionId IN ';
+    'SELECT QualifiedApiName, EntityDefinition.QualifiedApiName  FROM FieldDefinition WHERE IsFieldHistoryTracked = true AND EntityDefinitionId IN ';
 
 export default class FHTEnabler implements PostDeployer {
     public async isEnabled(sfpPackage: SfpPackage, conn: Connection<Schema>, logger: Logger): Promise<boolean> {
@@ -25,6 +27,20 @@ export default class FHTEnabler implements PostDeployer {
             (sfpPackage.packageDescriptor.enableFHT == undefined || sfpPackage.packageDescriptor.enableFHT == true)
         ) {
             return true;
+        }
+    }
+
+   
+
+    public async getDeploymentOptions( target_org: string, waitTime: string, apiVersion: string):Promise<DeploymentOptions>
+    {
+        return {
+            ignoreWarnings:true,
+            waitTime:waitTime,
+            apiVersion:apiVersion,
+            testLevel : TestLevel.RunSpecifiedTests,
+            specifiedTests :'skip',
+            rollBackOnError:false
         }
     }
 
@@ -47,15 +63,17 @@ export default class FHTEnabler implements PostDeployer {
             LoggerLevel.INFO,
             logger
         );
+
+        SFPLogger.log('FHT QUERY: '+`${QUERY_BODY + '(' + objList + ')'}`,LoggerLevel.DEBUG)
         let fhtFieldsInOrg = await QueryHelper.query<{
             QualifiedApiName: string;
-            EntityDefinitionId: string;
+            EntityDefinition: any;
             IsFieldHistoryTracked: boolean;
         }>(QUERY_BODY + '(' + objList + ')', conn, true);
 
-        //Clear of the fiels that alread has FHT applied and keep a reduced filter
+        //Clear of the fields that alread has FHT applied and keep a reduced filter
         fhtFieldsInOrg.map((record) => {
-            let field = record.EntityDefinitionId + '.' + record.QualifiedApiName;
+            let field = record.EntityDefinition.QualifiedApiName + '.' + record.QualifiedApiName;
             const index = fieldList.indexOf(field);
             if (index > -1) {
                 fieldList.splice(index, 1);
