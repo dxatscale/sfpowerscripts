@@ -59,7 +59,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         }
 
         //Handle Responses
-        if (result.response.success) {
+        if (result.response.status == RequestStatus.Succeeded) {
             deploySourceResult.message = `Successfully deployed`;
             deploySourceResult.result = result.response.success;
             deploySourceResult.deploy_id = result.response.id;
@@ -109,7 +109,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             this.logger
         );
 
-        SFPLogger.log(`Roll Back on Error: ${COLOR_KEY_MESSAGE('true')}`, LoggerLevel.INFO, this.logger);
+        SFPLogger.log(`Roll Back on Error: ${COLOR_KEY_MESSAGE(this.deploymentOptions.rollBackOnError)}`, LoggerLevel.INFO, this.logger);
 
         SFPLogger.log(
             `API Version: ${COLOR_KEY_MESSAGE(this.deploymentOptions.apiVersion)}`,
@@ -180,7 +180,6 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     }
 
     private displayTestFailures(testFailures: Failures | Failures[]) {
-
         let table = new Table({
             head: ['Test Name', 'Method Name', 'Message'],
         });
@@ -218,8 +217,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         if (this.deploymentOptions.ignoreWarnings) {
             metdataDeployOptions.apiOptions.ignoreWarnings = true;
         }
-        //dont change this and is not part of the input
-        metdataDeployOptions.apiOptions.rollbackOnError = true;
+
+        metdataDeployOptions.apiOptions.rollbackOnError = this.deploymentOptions.rollBackOnError;
 
         return metdataDeployOptions;
     }
@@ -304,4 +303,5 @@ export class DeploymentOptions {
     apexTestSuite?: string;
     specifiedTests?: string;
     sourceTracking?: boolean;
+    rollBackOnError?: boolean;
 }
