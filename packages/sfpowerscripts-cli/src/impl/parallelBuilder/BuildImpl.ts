@@ -65,6 +65,7 @@ export default class BuildImpl {
     private repository_url: string;
     private commit_id: string;
 
+    private logger = new ConsoleLogger();
     private recursiveAll = (a) => Promise.all(a).then((r) => (r.length == a.length ? r : this.recursiveAll(a)));
 
     public constructor(private props: BuildProps) {
@@ -110,12 +111,12 @@ export default class BuildImpl {
             table = this.createAllPackageScheduledDisplayedAsATable();
         }
         //Log Packages to be built
-        console.log(COLOR_KEY_MESSAGE('Packages scheduled for build'));
-        console.log(table.toString());
+        SFPLogger.log(COLOR_KEY_MESSAGE('Packages scheduled for build'));
+        SFPLogger.log(table.toString());
 
         
         //Fix transitive dependency gap
-        let groupDependencyResolutionLogs = new GroupConsoleLogs("Resolving dependencies").begin();
+        let groupDependencyResolutionLogs = new GroupConsoleLogs("Resolving dependencies",this.logger).begin();
         this.projectConfig = await this.resolvePackageDependencies(this.projectConfig, this.sfpOrg?.getConnection())
         groupDependencyResolutionLogs.end();
 
@@ -324,24 +325,23 @@ export default class BuildImpl {
     }
 
     private printQueueDetails() {
-        console.log(`${EOL}Packages currently processed:{${this.packagesInQueue.length}} `, `${this.packagesInQueue}`);
-        console.log(
-            `Awaiting Dependencies to be resolved:{${this.packagesToBeBuilt.length}} `,
-            `${this.packagesToBeBuilt}`
+        SFPLogger.log(`${EOL}Packages currently processed:{${this.packagesInQueue.length}} + ${this.packagesInQueue}`);
+        SFPLogger.log(
+            `Awaiting Dependencies to be resolved:{${this.packagesToBeBuilt.length}} + ${this.packagesToBeBuilt}`
         );
     }
 
     private handlePackageError(reason: any, pkg: string): any {
-        console.log(COLOR_HEADER(`${EOL}-----------------------------------------`));
-        console.log(COLOR_ERROR(`Package Creation Failed for ${pkg}`));
+        SFPLogger.log(COLOR_HEADER(`${EOL}-----------------------------------------`));
+        SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}`));
         try {
             // Append error to log file
             fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, 'utf8');
 
             let data = fs.readFileSync(`.sfpowerscripts/logs/${pkg}`, 'utf8');
-            console.log(data);
+            SFPLogger.log(data);
         } catch (e) {
-            console.log(`Unable to display logs for pkg ${pkg}`);
+            SFPLogger.log(`Unable to display logs for pkg ${pkg}`);
         }
 
         //Remove the package from packages To Be Built
@@ -368,8 +368,8 @@ export default class BuildImpl {
                 return false;
             }
         });
-        console.log(COLOR_KEY_MESSAGE(`${EOL}Removed all childs of ${pkg} from queue`));
-        console.log(COLOR_HEADER(`${EOL}-----------------------------------------`));
+        SFPLogger.log(COLOR_KEY_MESSAGE(`${EOL}Removed all childs of ${pkg} from queue`));
+        SFPLogger.log(COLOR_HEADER(`${EOL}-----------------------------------------`));
     }
 
     private queueChildPackages(sfpPackage: SfpPackage): any {
@@ -418,10 +418,9 @@ export default class BuildImpl {
         });
 
         if (pushedPackages.length > 0) {
-            console.log(
+            SFPLogger.log(
                 COLOR_KEY_MESSAGE(
-                    `${EOL}Packages being pushed to the queue:{${pushedPackages.length}} `,
-                    `${pushedPackages}`
+                    `${EOL}Packages being pushed to the queue:{${pushedPackages.length}} + ${pushedPackages}`
                 )
             );
         }
@@ -552,12 +551,12 @@ export default class BuildImpl {
         sfdx_package: string,
         isValidateMode: boolean
     ): Promise<SfpPackage> {
-        console.log(COLOR_KEY_MESSAGE(`Package creation initiated for ${sfdx_package}`));
+        SFPLogger.log(COLOR_KEY_MESSAGE(`Package creation initiated for ${sfdx_package}`));
         let configFilePath = this.props.configFilePath;
         if (this.isMultiConfigFilesEnabled) {
             if (this.scratchOrgDefinitions[sfdx_package]) {
                 configFilePath = this.scratchOrgDefinitions[sfdx_package];
-                console.log(
+                SFPLogger.log(
                     COLOR_KEY_MESSAGE(
                         `Matched scratch org definition file found for ${sfdx_package}: ${configFilePath}`
                     )
@@ -644,7 +643,7 @@ export default class BuildImpl {
     private resolvePackageDependencies(projectConfig: any, connToDevHub: Connection){
         let isDependencyResolverEnabled = projectConfig?.plugins?.sfpowerscripts?.enableTransitiveDependencyResolver
         if(isDependencyResolverEnabled && connToDevHub){
-            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, connToDevHub)
+            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, connToDevHub,this.logger)
             return transitiveDependencyResolver.resolveDependencies()
         }else{
             return projectConfig
