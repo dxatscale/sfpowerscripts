@@ -119,7 +119,8 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
                 this.devhubOrg.getConnection()
             );
 
-            SFPLogger.log(`Status: ${COLOR_KEY_MESSAGE(currentPackageCreationStatus.Status)}, Next Status check in 30 seconds`,LoggerLevel.INFO,this.logger);
+            //Too Verbose when reading errors.. use only for debug
+            SFPLogger.log(`Status: ${COLOR_KEY_MESSAGE(currentPackageCreationStatus.Status)}, Next Status check in 30 seconds`,LoggerLevel.DEBUG,this.logger);
             if (currentPackageCreationStatus.Status === `Success`) {
                 break;
             } else if (currentPackageCreationStatus.Status === 'Error') {
