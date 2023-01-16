@@ -4,7 +4,8 @@
         "experimentalDecorators": true,
         "outDir": "./lib",
         "rootDir": "./src",
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "declarationMap": true
     },
     "exclude": ["node_modules", "dist", "tests"]
 }

@@ -1,5 +1,5 @@
 {
-    
+    "typescript.disableAutomaticTypeAcquisition": true,
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
@@ -9,8 +9,7 @@
         "**/node_modules": true,
         "packages/forcemula/lib":false,
         "lib":true,
-        "**/[^forcemula|^sfdc-soup]*/lib":true
-
+        "**/[^forcemula|^sfdc-soup]*/lib":true,
     },
     "files.associations": {
         "*.log": "vt100"

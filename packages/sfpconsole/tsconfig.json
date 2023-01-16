@@ -16,7 +16,8 @@
       "allowJs": true,
       "lib": ["es6"],
       "resolveJsonModule": true,
-      "skipLibCheck": true
+      "skipLibCheck": true,
+      "declarationMap": true
   },
   "exclude": ["node_modules", "lib"],
   "include": ["./src/**/*"]
