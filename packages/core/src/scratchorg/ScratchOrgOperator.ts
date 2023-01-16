@@ -6,7 +6,6 @@ import { Duration } from '@salesforce/kit';
 import { ScratchOrgRequest } from '@salesforce/core';
 const retry = require('async-retry');
 
-
 export default class ScratchOrgOperator {
     constructor(private hubOrg: Org) {}
 
@@ -52,9 +51,13 @@ export default class ScratchOrgOperator {
         if (!passwordData.password) {
             throw new Error('Unable to setup password to scratch org');
         } else {
-            SFPLogger.log(`Password successfully set for ${passwordData.username}`, LoggerLevel.INFO);
+            SFPLogger.log(`Password successfully set for ${scratchOrg.alias}`, LoggerLevel.DEBUG);
         }
 
+        SFPLogger.log(
+            `Creation request for Scratch Org  ${scratchOrg.alias}  is completed successfully`,
+            LoggerLevel.INFO
+        );
         return scratchOrg;
     }
 
@@ -121,7 +124,7 @@ export default class ScratchOrgOperator {
 
         await retry(
             async (bail) => {
-                await this.hubOrg.getConnection().requestPost(options.url,options.body)
+                await this.hubOrg.getConnection().requestPost(options.url, options.body);
             },
             { retries: 3, minTimeout: 30000 }
         );

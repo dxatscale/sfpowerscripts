@@ -17,6 +17,9 @@ import { EOL } from 'os';
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import ScratchOrgOperator from '../ScratchOrgOperator';
 import PoolFetchImpl from './PoolFetchImpl';
+import { values } from 'lodash';
+import { COLOR_SUCCESS } from '@dxatscale/sfp-logger';
+import { COLOR_ERROR } from '@dxatscale/sfp-logger';
 
 export default class PoolCreateImpl extends PoolBaseImpl {
     private limiter;
@@ -153,31 +156,49 @@ export default class PoolCreateImpl extends PoolBaseImpl {
     private async generateScratchOrgs() {
         //Generate Scratch Orgs
         SFPLogger.log(COLOR_KEY_MESSAGE('Generate Scratch Orgs..'), LoggerLevel.INFO);
-        let count = 1;
-        this.pool.scratchOrgs = new Array<ScratchOrg>();
 
-        for (let i = 0; i < this.pool.to_allocate; i++) {
-            SFPLogger.log(`Creating Scratch Org ${count} of ${this.totalToBeAllocated}..`);
+        let scratchOrgPromises = new Array<Promise<ScratchOrg>>();
+
+        for (let i = 1; i <= this.pool.to_allocate; i++) {
+            SFPLogger.log(`Requesting Scratch Org ${i} of ${this.totalToBeAllocated}..`);
+            let scratchOrgPromise: Promise<ScratchOrg> = this.scratchOrgOperator.create(
+                `SO` + i,
+                this.pool.configFilePath,
+                this.pool.expiry,
+                this.pool.waitTime
+            );
+            scratchOrgPromises.push(scratchOrgPromise);
+        }
+
+        SFPLogger.log(`Waiting for all scratch org request to complete, Please wait`);
+        //Wait for all orgs to be created
+        let scratchOrgCreationResults = await Promise.allSettled(scratchOrgPromises);
+        //Only worry about scrath orgs that have suceeded
+        const isFulfilled = <T>(p: PromiseSettledResult<T>): p is PromiseFulfilledResult<T> => p.status === 'fulfilled';
+        const isRejected = <T>(p: PromiseSettledResult<T>): p is PromiseRejectedResult => p.status === 'rejected';
+
+        this.pool.scratchOrgs = scratchOrgCreationResults.filter(isFulfilled).map((p) => p.value);
+        const rejectedScratchOrgs = scratchOrgCreationResults.filter(isRejected).map((p) => p.reason);
+        for (const reason of rejectedScratchOrgs) {
+            SFPLogger.log(`A scratch org creation was rejected due to ${reason.message}`);
+        }
+
+        //Display how many we were able to create
+        SFPLogger.log(`Created ${COLOR_SUCCESS(this.pool.scratchOrgs.length)} of ${this.totalToBeAllocated} successfully with ${COLOR_ERROR(rejectedScratchOrgs.length)} failures `);
+        
+        //Splice scratchorgs that are having incorrect status of deleted , Why salesforce why??
+        let index = this.pool.scratchOrgs.length;
+        while (index--) {
             try {
-                let scratchOrg: ScratchOrg = await this.scratchOrgOperator.create(
-                    `SO` + count,
-                    this.pool.configFilePath,
-                    this.pool.expiry,
-                    this.pool.waitTime
-                );
-
-                let orgDetails = await new OrgDetailsFetcher(scratchOrg.username).getOrgDetails();
+                let orgDetails = await new OrgDetailsFetcher(this.pool.scratchOrgs[index].username).getOrgDetails();
                 if (orgDetails.status === 'Deleted') {
-                    throw new Error(`Throwing away scratch org ${count} as it has a status of deleted`);
+                    throw new Error(
+                        `Throwing away scratch org ${this.pool.scratchOrgs[index].alias} as it has a status of deleted`
+                    );
                 }
-
-                this.pool.scratchOrgs.push(scratchOrg);
-                this.totalAllocated++;
             } catch (error) {
-                SFPLogger.log(error, LoggerLevel.ERROR);
-                SFPLogger.log(`Unable to provision scratch org ${count} ..   `, LoggerLevel.ERROR);
+                this.pool.scratchOrgs.splice(index, 1);
             }
-            count++;
         }
 
         this.pool.scratchOrgs = await this.scratchOrgInfoFetcher.getScratchOrgRecordId(this.pool.scratchOrgs);
@@ -299,7 +320,9 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 SFPStatsSender.logCount('prepare.org.succeeded');
             }
 
-            SFPStatsSender.logElapsedTime('prepare.org.singlejob.elapsed_time', Date.now() - startTime, {poolname: this.pool.tag});
+            SFPStatsSender.logElapsedTime('prepare.org.singlejob.elapsed_time', Date.now() - startTime, {
+                poolname: this.pool.tag,
+            });
         } else {
             scratchOrg.isScriptExecuted = false;
             scratchOrg.failureMessage = result.error.message;
