@@ -134,6 +134,7 @@ export default class Promote extends SfpowerscriptsCommand {
             version: string;
             type: string;
             tag: string;
+            commitId: string;
         }[] = [];
 
         let npmrcFilesToCleanup: string[] = [];
@@ -206,6 +207,7 @@ export default class Promote extends SfpowerscriptsCommand {
                         version: packageVersionNumber.replace('-', '.'),
                         type: packageType,
                         tag: `${packageName}_v${packageVersionNumber.replace('-', '.')}`,
+                        commitId: sfpPackage.sourceVersion
                     });
 
                     nPublishedArtifacts++;
@@ -218,7 +220,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
             if (this.flags.gittag) {
                 await this.createGitTags(succesfullyPublishedPackageNamesForTagging);
-                await this.pushGitTags();
+                await this.pushGitTags(succesfullyPublishedPackageNamesForTagging);
             }
         } catch (err) {
             SFPLogger.log(err.message);
@@ -350,10 +352,26 @@ export default class Promote extends SfpowerscriptsCommand {
         if (this.flags.npm && !this.flags.scope) throw new Error('--scope parameter is required for NPM');
     }
 
-    private async pushGitTags() {
+    private async pushGitTags(
+        succesfullyPublishedPackageNamesForTagging: {
+            name: string;
+            version: string;
+            type: string;
+            tag: string;
+            commitId: string;
+        }[]
+    ) {
         SFPLogger.log(COLOR_KEY_MESSAGE('Pushing Git Tags to Repo'));
         if (this.flags.pushgittag) {
-            await this.git.pushTags();
+            let tagsForPushing: {
+                name: string;
+            }[] = [];
+            for (let packageTag of succesfullyPublishedPackageNamesForTagging) {
+                tagsForPushing.push({
+                    name: packageTag.name
+                });
+            }
+            await this.git.pushTags(tagsForPushing)
         }
     }
 
@@ -363,6 +381,7 @@ export default class Promote extends SfpowerscriptsCommand {
             version: string;
             type: string;
             tag: string;
+            commitId: string;
         }[]
     ) {
         SFPLogger.log(COLOR_KEY_MESSAGE('Creating Git Tags in Repo'));
@@ -370,7 +389,8 @@ export default class Promote extends SfpowerscriptsCommand {
         for (let packageTag of succesfullyPublishedPackageNamesForTagging) {
             await this.git.addAnnotatedTag(
                 packageTag.tag,
-                `${packageTag.name} ${packageTag.type} Package ${packageTag.version}`
+                `${packageTag.name} ${packageTag.type} Package ${packageTag.version}`,
+                packageTag.commitId
             );
         }
     }
