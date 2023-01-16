@@ -55,22 +55,22 @@ export default class FTEnabler implements PostDeployer {
             objList.push(`'${key}'`);
             sfpPackage['ftFields'][key].forEach((field) => fieldList.push(key + '.' + field));
         });
-        //Now query all the fields for this object where FHT is already enabled
+        //Now query all the fields for this object where FT is already enabled
         SFPLogger.log(
             `Gathering fields which are already feed traking enabled in the target org....`,
             LoggerLevel.INFO,
             logger
         );
 
-        SFPLogger.log('FHT QUERY: '+`${QUERY_BODY + '(' + objList + ')'}`,LoggerLevel.DEBUG)
-        let fhtFieldsInOrg = await QueryHelper.query<{
+        SFPLogger.log('FT QUERY: '+`${QUERY_BODY + '(' + objList + ')'}`,LoggerLevel.DEBUG)
+        let ftFieldsInOrg = await QueryHelper.query<{
             QualifiedApiName: string;
             EntityDefinition: any;
             IsFeedEnabled: boolean;
         }>(QUERY_BODY + '(' + objList + ')', conn, true);
 
-        //Clear of the fields that alread has FHT applied and keep a reduced filter
-        fhtFieldsInOrg.map((record) => {
+        //Clear of the fields that alread has FT applied and keep a reduced filter
+        ftFieldsInOrg.map((record) => {
             let field = record.EntityDefinition.QualifiedApiName + '.' + record.QualifiedApiName;
             const index = fieldList.indexOf(field);
             if (index > -1) {
