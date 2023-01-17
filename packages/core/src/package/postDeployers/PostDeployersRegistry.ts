@@ -1,4 +1,5 @@
 import FHTEnabler from './FHTEnabler';
+import FTEnabler from './FTEnabler';
 import { PostDeployer } from './PostDeployer';
 
 export class PostDeployersRegistry {
@@ -7,7 +8,9 @@ export class PostDeployersRegistry {
 
         //TODO: Make dynamic
         let fhtEnabler = new FHTEnabler();
+        let ftEnabler = new FTEnabler();
         postDeployers.push(fhtEnabler);
+        postDeployers.push(ftEnabler);
 
         return postDeployers;
     }
