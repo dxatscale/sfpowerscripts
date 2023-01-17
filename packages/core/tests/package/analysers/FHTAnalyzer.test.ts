@@ -46,7 +46,7 @@ describe('FHT Analyzer', () => {
         expect(await fhtAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(false);
     });
 
-    it('Should not be enabled for source packages by default', async () => {
+    it('Should be enabled for source packages by default', async () => {
         let fhtAnalyzer = new FHTAnalyser();
         let sfpPackage: SfpPackage = {
             projectDirectory: '',
@@ -66,7 +66,7 @@ describe('FHT Analyzer', () => {
         expect(await fhtAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(true);
     });
 
-    it('Should not be enabled for unlocked packages by default', async () => {
+    it('Should be enabled for unlocked packages by default', async () => {
         let fhtAnalyzer = new FHTAnalyser();
         let sfpPackage: SfpPackage = {
             projectDirectory: process.cwd(),

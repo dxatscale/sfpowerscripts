@@ -57,7 +57,7 @@ export default class FTEnabler implements PostDeployer {
         });
         //Now query all the fields for this object where FT is already enabled
         SFPLogger.log(
-            `Gathering fields which are already feed traking enabled in the target org....`,
+            `Gathering fields which are already enabled with  feed traking in the target org....`,
             LoggerLevel.INFO,
             logger
         );
@@ -98,7 +98,7 @@ export default class FTEnabler implements PostDeployer {
             }
 
             return { location: fetchedCustomFields.location, componentSet: fetchedCustomFields.components };
-        } else SFPLogger.log(`No fields are required to be updated,skipping FT update`, LoggerLevel.INFO, logger);
+        } else SFPLogger.log(`No fields are required to be updated,skipping updates to Feed History tracking`, LoggerLevel.INFO, logger);
     }
 
     public getName(): string {
