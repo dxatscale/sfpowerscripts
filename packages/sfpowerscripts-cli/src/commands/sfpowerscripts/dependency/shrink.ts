@@ -16,7 +16,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'expand_dependency');
 
-export default class Expand extends SfpowerscriptsCommand {
+export default class Shrink extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresUsername = false;
@@ -61,18 +61,18 @@ export default class Expand extends SfpowerscriptsCommand {
                 projectConfig,
                 sfpOrg.getConnection()
             );
-            projectConfig = await transitiveDependencyResolver.resolveDependencies(Stage.EXPAND);
+            projectConfig = await transitiveDependencyResolver.resolveDependencies(Stage.SHRINK);
 
             //Clean up temp directory
             if (fs.existsSync(defaultProjectConfigPath)) rimraf.sync(defaultProjectConfigPath);
 
             fs.mkdirpSync(defaultProjectConfigPath);
-            let projectConfigFilePath: string = path.join(defaultProjectConfigPath, `sfdx-project.exp.json`);
+            let projectConfigFilePath: string = path.join(defaultProjectConfigPath, `sfdx-project.min.json`);
             fs.writeFileSync(projectConfigFilePath, JSON.stringify(projectConfig, null, 4));
 
-            console.log(`Generated project config file has been saved to ${projectConfigFilePath}`);
+            console.log(`Shrunk project config file has been saved to ${projectConfigFilePath}`);
         } catch (error) {
-            throw new Error('Unable to generate project config file:' + error);
+            throw new Error('Unable to shrink project config file:' + error);
         }
     }
 }

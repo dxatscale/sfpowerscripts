@@ -56,7 +56,7 @@ describe("Given a TransitiveDependencyResolver", () => {
 
   it("should resolve missing package dependencies with transitive dependency", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
-    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies();
+    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies('expand');
 
     let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "candidate-management");
     let tempDependency = packageDescriptor.dependencies.find(dependency => dependency.package === "temp");
@@ -65,7 +65,7 @@ describe("Given a TransitiveDependencyResolver", () => {
 
   it("should resolve package dependencies in the same order as its dependent packages", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
-    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies();
+    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies('expand');
 
     let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "candidate-management");
     let tempIndex = packageDescriptor.dependencies.findIndex(dependency => dependency.package === "temp");
@@ -138,9 +138,16 @@ const projectConfig = {
         versionNumber: '1.0.0.NEXT',
         dependencies: [
           {
+            package: 'tech-framework@2.0.0.38'
+          },
+          {
             package: 'core',
             versionNumber: '1.0.0.LATEST'
-          }
+          },
+          {
+            package: 'candidate-management',
+            versionNumber: '1.0.0.LATEST'
+          },
         ]
     }
   ],

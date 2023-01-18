@@ -24,6 +24,7 @@ import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/dep
 import { Connection } from '@salesforce/core';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 
+
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
 const PRIORITY_SOURCE_PKG = 5;
@@ -644,7 +645,7 @@ export default class BuildImpl {
         let isDependencyResolverEnabled = projectConfig?.plugins?.sfpowerscripts?.enableTransitiveDependencyResolver
         if(isDependencyResolverEnabled && connToDevHub){
             const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, connToDevHub,this.logger)
-            return transitiveDependencyResolver.resolveDependencies()
+            return transitiveDependencyResolver.resolveDependencies(Stage.EXPAND)
         }else{
             return projectConfig
         }
