@@ -1,5 +1,5 @@
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
+import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 import * as fs from 'fs-extra';
 import QueryHelper from '../../queryHelper/QueryHelper';
 import SfpPackage from '../SfpPackage';
@@ -14,23 +14,21 @@ import { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import { TestLevel } from '../../apextest/TestOptions';
 
 const QUERY_BODY =
-    'SELECT QualifiedApiName, EntityDefinition.QualifiedApiName  FROM FieldDefinition WHERE IsFieldHistoryTracked = true AND EntityDefinitionId IN ';
+    'SELECT QualifiedApiName, EntityDefinition.QualifiedApiName  FROM FieldDefinition WHERE IsFeedEnabled = true AND EntityDefinitionId IN ';
 
-export default class FHTEnabler implements PostDeployer {
+export default class FTEnabler implements PostDeployer {
     public async isEnabled(sfpPackage: SfpPackage, conn: Connection<Schema>, logger: Logger): Promise<boolean> {
         //ignore if its a scratch org
         const orgDetails = await new OrgDetailsFetcher(conn.getUsername()).getOrgDetails();
         if (orgDetails.isScratchOrg) return false;
 
         if (
-            sfpPackage['isFHTFieldFound'] &&
-            (sfpPackage.packageDescriptor.enableFHT == undefined || sfpPackage.packageDescriptor.enableFHT == true)
+            sfpPackage['isFTFieldFound'] &&
+            (sfpPackage.packageDescriptor.enableFT == undefined || sfpPackage.packageDescriptor.enableFT == true)
         ) {
             return true;
         }
     }
-
-   
 
     public async getDeploymentOptions( target_org: string, waitTime: string, apiVersion: string):Promise<DeploymentOptions>
     {
@@ -53,26 +51,26 @@ export default class FHTEnabler implements PostDeployer {
         //First retrieve all objects/fields  of interest from the package
         let objList = [];
         let fieldList = [];
-        Object.keys(sfpPackage['fhtFields']).forEach((key) => {
+        Object.keys(sfpPackage['ftFields']).forEach((key) => {
             objList.push(`'${key}'`);
-            sfpPackage['fhtFields'][key].forEach((field) => fieldList.push(key + '.' + field));
+            sfpPackage['ftFields'][key].forEach((field) => fieldList.push(key + '.' + field));
         });
-        //Now query all the fields for this object where FHT is already enabled
+        //Now query all the fields for this object where FT is already enabled
         SFPLogger.log(
-            `Gathering fields which are already enabled wiith  trackHistor  target org....`,
+            `Gathering fields which are already enabled with  feed traking in the target org....`,
             LoggerLevel.INFO,
             logger
         );
 
-        SFPLogger.log('FHT QUERY: '+`${QUERY_BODY + '(' + objList + ')'}`,LoggerLevel.DEBUG)
-        let fhtFieldsInOrg = await QueryHelper.query<{
+        SFPLogger.log('FT QUERY: '+`${QUERY_BODY + '(' + objList + ')'}`,LoggerLevel.DEBUG)
+        let ftFieldsInOrg = await QueryHelper.query<{
             QualifiedApiName: string;
             EntityDefinition: any;
-            IsFieldHistoryTracked: boolean;
+            IsFeedEnabled: boolean;
         }>(QUERY_BODY + '(' + objList + ')', conn, true);
 
-        //Clear of the fields that alread has FHT applied and keep a reduced filter
-        fhtFieldsInOrg.map((record) => {
+        //Clear of the fields that alread has FT applied and keep a reduced filter
+        ftFieldsInOrg.map((record) => {
             let field = record.EntityDefinition.QualifiedApiName + '.' + record.QualifiedApiName;
             const index = fieldList.indexOf(field);
             if (index > -1) {
@@ -86,34 +84,24 @@ export default class FHTEnabler implements PostDeployer {
             let sfpOrg = await SFPOrg.create({ connection: conn });
             let fetchedCustomFields = await customFieldFetcher.getCustomFields(sfpOrg, fieldList);
 
-            
-
             //Modify the component set
             //Parsing is risky due to various encoding, so do an inplace replacement
             for (const sourceComponent of fetchedCustomFields.components.getSourceComponents()) {
                 let metadataOfComponent = fs.readFileSync(sourceComponent.xml).toString();
-               
-                metadataOfComponent = metadataOfComponent.replace(
-                    '<trackHistory>false</trackHistory>',
-                    '<trackHistory>true</trackHistory>'
-                );
 
-                
+                metadataOfComponent = metadataOfComponent.replace(
+                    '<trackFeedHistory>false</trackFeedHistory>',
+                    '<trackFeedHistory>true</trackFeedHistory>'
+                );
 
                 fs.writeFileSync(path.join(sourceComponent.xml), metadataOfComponent);
             }
 
             return { location: fetchedCustomFields.location, componentSet: fetchedCustomFields.components };
-        } else SFPLogger.log(`No fields are required to be updated,skipping update of  Field History Tracking `, LoggerLevel.INFO, logger);
+        } else SFPLogger.log(`No fields are required to be updated,skipping updates to Feed History tracking`, LoggerLevel.INFO, logger);
     }
 
     public getName(): string {
-        return 'Field History Tracking Enabler';
+        return 'Feed Tracking Enabler';
     }
-}
-
-interface CustomField {
-    QualifiedApiName: string;
-    IsFieldHistoryTracked: boolean;
-    EntityDefinitionId: string;
 }
