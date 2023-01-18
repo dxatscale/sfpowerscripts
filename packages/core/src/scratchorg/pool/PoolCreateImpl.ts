@@ -159,14 +159,20 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
         let scratchOrgPromises = new Array<Promise<ScratchOrg>>();
 
+
+        const scratchOrgCreationLimiter = new Bottleneck({
+            maxConcurrent: this.pool.batchSize,
+          });
+
+
         for (let i = 1; i <= this.pool.to_allocate; i++) {
-            SFPLogger.log(`Requesting Scratch Org ${i} of ${this.totalToBeAllocated}..`);
-            let scratchOrgPromise: Promise<ScratchOrg> = this.scratchOrgOperator.create(
+           
+            let scratchOrgPromise: Promise<ScratchOrg> =scratchOrgCreationLimiter.schedule(()=>this.scratchOrgOperator.create(
                 `SO` + i,
                 this.pool.configFilePath,
                 this.pool.expiry,
                 this.pool.waitTime
-            );
+            ));
             scratchOrgPromises.push(scratchOrgPromise);
         }
 
