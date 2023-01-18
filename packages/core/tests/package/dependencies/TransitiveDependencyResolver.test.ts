@@ -74,6 +74,15 @@ describe("Given a TransitiveDependencyResolver", () => {
     expect(baseIndex).toBe(1);
   });
 
+  it("should shrink the dependencies that already exisit in its dependent package", async () => {
+    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
+    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies('shrink');
+
+    let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "contact-management");
+    expect(packageDescriptor.dependencies.length).toBe(1);
+
+  });
+
 
 
   // TODO: test cache
