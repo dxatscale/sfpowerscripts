@@ -1,5 +1,5 @@
 import { jest, expect } from '@jest/globals';
-import FHTAnalyser from '../../../src/package/analyser/FHTAnalyzer';
+import FTAnalyser from '../../../src/package/analyser/FTAnalyzer';
 import SfpPackage, { PackageType } from '../../../src/package/SfpPackage';
 const fs = require('fs-extra');
 import { ComponentSet, SourceComponent, registry, VirtualDirectory } from '@salesforce/source-deploy-retrieve';
@@ -7,7 +7,7 @@ import { VoidLogger } from '@dxatscale/sfp-logger';
 
 let isYamlFileFound: boolean = true;
 
-describe('FHT Analyzer', () => {
+describe('FT Analyzer', () => {
     beforeEach(() => {
         const fsReadMock = jest.spyOn(fs, 'readFileSync');
         fsReadMock.mockImplementationOnce(() => {
@@ -15,7 +15,7 @@ describe('FHT Analyzer', () => {
              Account:
                   - Name
                   - Phone
-             Contact: 
+             Contact:
                  - Name
                  - Phone
           `;
@@ -27,7 +27,7 @@ describe('FHT Analyzer', () => {
     });
 
     it('Should not be enabled for data packages', async () => {
-        let fhtAnalyzer = new FHTAnalyser();
+        let ftAnalyzer = new FTAnalyser();
         let sfpPackage: SfpPackage = {
             projectDirectory: process.cwd(),
             workingDirectory: 'force-app',
@@ -43,11 +43,11 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        expect(await fhtAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(false);
+        expect(await ftAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(false);
     });
 
-    it('Should be enabled for source packages by default', async () => {
-        let fhtAnalyzer = new FHTAnalyser();
+    it('Should  be enabled for source packages by default', async () => {
+        let ftAnalyzer = new FTAnalyser();
         let sfpPackage: SfpPackage = {
             projectDirectory: '',
             workingDirectory: process.cwd(),
@@ -63,11 +63,11 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        expect(await fhtAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(true);
+        expect(await ftAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(true);
     });
 
     it('Should be enabled for unlocked packages by default', async () => {
-        let fhtAnalyzer = new FHTAnalyser();
+        let ftAnalyzer = new FTAnalyser();
         let sfpPackage: SfpPackage = {
             projectDirectory: process.cwd(),
             workingDirectory: 'force-app',
@@ -83,11 +83,11 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        expect(await fhtAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(true);
+        expect(await ftAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(true);
     });
 
     it(' When a yaml is provided and no additional fields, a sfpPackage with additional properties should be created', async () => {
-        
+
        isYamlFileFound = true;
 
         const set = new ComponentSet();
@@ -99,7 +99,7 @@ describe('FHT Analyzer', () => {
             return set;
         });
 
-        let fhtAnalyzer = new FHTAnalyser();
+        let ftAnalyzer = new FTAnalyser();
         let sfpPackage: SfpPackage = {
             projectDirectory: '',
             packageDirectory: 'force-app',
@@ -116,16 +116,16 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
-        expect(sfpPackage['isFHTFieldFound']).toBe(true);
-        expect(sfpPackage['fhtFields']).toBeDefined();
-        let fhtFields = sfpPackage['fhtFields'];
-        expect(fhtFields.Account).toStrictEqual(['Name', 'Phone']);
-        expect(fhtFields.Contact).toStrictEqual(['Name', 'Phone']);
+        sfpPackage = await ftAnalyzer.analyze(sfpPackage,set,new VoidLogger());
+        expect(sfpPackage['isFTFieldFound']).toBe(true);
+        expect(sfpPackage['ftFields']).toBeDefined();
+        let ftFields = sfpPackage['ftFields'];
+        expect(ftFields.Account).toStrictEqual(['Name', 'Phone']);
+        expect(ftFields.Contact).toStrictEqual(['Name', 'Phone']);
     });
 
-    it(' When a yaml is provided, package has no history enabled fields, a sfpPackage with combined additional properties should be created', async () => {
-       
+    it(' When a yaml is provided, package has no feed enabled fields, a sfpPackage with combined additional properties should be created', async () => {
+
        isYamlFileFound = true;
 
         const set = new ComponentSet();
@@ -146,7 +146,8 @@ describe('FHT Analyzer', () => {
                     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
                     <label>Account Manager</label>
                     <required>false</required>
-                    <trackHistory>true</trackHistory>
+                    <trackHistory>false</trackHistory>
+                    <trackFeedHistory>true</trackFeedHistory>
                     <trackTrending>false</trackTrending>
                     <type>Text</type>
                     <unique>false</unique>
@@ -176,7 +177,7 @@ describe('FHT Analyzer', () => {
             return set;
         });
 
-        let fhtAnalyzer = new FHTAnalyser();
+        let ftAnalyzer = new FTAnalyser();
         let sfpPackage: SfpPackage = {
             projectDirectory: '',
             packageDirectory: 'force-app',
@@ -193,18 +194,18 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
-        expect(sfpPackage['isFHTFieldFound']).toBe(true);
-        expect(sfpPackage['fhtFields']).toBeDefined();
-        let fhtFields = sfpPackage['fhtFields'];
-        expect(fhtFields.Account).toStrictEqual(['Name', 'Phone']);
-        expect(fhtFields.Contact).toStrictEqual(['Name', 'Phone']);
-        expect(fhtFields.Test__c).toStrictEqual(['AccountManager__c']);
+        sfpPackage = await ftAnalyzer.analyze(sfpPackage,set,new VoidLogger());
+        expect(sfpPackage['isFTFieldFound']).toBe(true);
+        expect(sfpPackage['ftFields']).toBeDefined();
+        let ftFields = sfpPackage['ftFields'];
+        expect(ftFields.Account).toStrictEqual(['Name', 'Phone']);
+        expect(ftFields.Contact).toStrictEqual(['Name', 'Phone']);
+        expect(ftFields.Test__c).toStrictEqual(['AccountManager__c']);
     });
 
-    it(' When a yaml is provided, package has no history enabled fields, a sfpPackage with combined additional properties should be created', async () => {
-        
-      
+    it(' When a yaml is provided, package has no feed enabled fields, a sfpPackage with combined additional properties should be created', async () => {
+
+
        isYamlFileFound = true;
 
         const set = new ComponentSet();
@@ -226,6 +227,7 @@ describe('FHT Analyzer', () => {
                   <label>Account Manager</label>
                   <required>false</required>
                   <trackHistory>false</trackHistory>
+                  <trackFeedHistory>false</trackFeedHistory>
                   <trackTrending>false</trackTrending>
                   <type>Text</type>
                   <unique>false</unique>
@@ -255,7 +257,7 @@ describe('FHT Analyzer', () => {
             return set;
         });
 
-        let fhtAnalyzer = new FHTAnalyser();
+        let ftAnalyzer = new FTAnalyser();
         let sfpPackage: SfpPackage = {
             projectDirectory: '',
             packageDirectory: 'force-app',
@@ -272,18 +274,18 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
-        expect(sfpPackage['isFHTFieldFound']).toBe(true);
-        expect(sfpPackage['fhtFields']).toBeDefined();
-        let fhtFields = sfpPackage['fhtFields'];
-        expect(fhtFields.Account).toStrictEqual(['Name', 'Phone']);
-        expect(fhtFields.Contact).toStrictEqual(['Name', 'Phone']);
-        expect(fhtFields).not.toHaveProperty('Test__c');
+        sfpPackage = await ftAnalyzer.analyze(sfpPackage,set,new VoidLogger());
+        expect(sfpPackage['isFTFieldFound']).toBe(true);
+        expect(sfpPackage['ftFields']).toBeDefined();
+        let ftFields = sfpPackage['ftFields'];
+        expect(ftFields.Account).toStrictEqual(['Name', 'Phone']);
+        expect(ftFields.Contact).toStrictEqual(['Name', 'Phone']);
+        expect(ftFields).not.toHaveProperty('Test__c');
     });
 
-    it(' When no yaml is provided, package has history enabled fields, a sfpPackage with combined additional properties should be created', async () => {
-        
-      
+    it(' When no yaml is provided, package has feed enabled fields, a sfpPackage with combined additional properties should be created', async () => {
+
+
         isYamlFileFound = false;
 
         const set = new ComponentSet();
@@ -304,7 +306,8 @@ describe('FHT Analyzer', () => {
                 <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
                 <label>Account Manager</label>
                 <required>false</required>
-                <trackHistory>true</trackHistory>
+                <trackHistory>false</trackHistory>
+                <trackFeedHistory>true</trackFeedHistory>
                 <trackTrending>false</trackTrending>
                 <type>Text</type>
                 <unique>false</unique>
@@ -334,7 +337,7 @@ describe('FHT Analyzer', () => {
             return set;
         });
 
-        let fhtAnalyzer = new FHTAnalyser();
+        let ftAnalyzer = new FTAnalyser();
         let sfpPackage: SfpPackage = {
             projectDirectory: '',
             packageDirectory: 'force-app',
@@ -351,10 +354,10 @@ describe('FHT Analyzer', () => {
                 return '';
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
-        expect(sfpPackage['isFHTFieldFound']).toBe(true);
-        expect(sfpPackage['fhtFields']).toBeDefined();
-        let fhtFields = sfpPackage['fhtFields'];
-        expect(fhtFields.Test__c).toStrictEqual(['AccountManager__c']);
+        sfpPackage = await ftAnalyzer.analyze(sfpPackage,set,new VoidLogger());
+        expect(sfpPackage['isFTFieldFound']).toBe(true);
+        expect(sfpPackage['ftFields']).toBeDefined();
+        let ftFields = sfpPackage['ftFields'];
+        expect(ftFields.Test__c).toStrictEqual(['AccountManager__c']);
     });
 });

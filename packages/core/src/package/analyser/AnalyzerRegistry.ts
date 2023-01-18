@@ -1,4 +1,5 @@
 import FHTAnalyser from './FHTAnalyzer';
+import FTAnalyser from './FTAnalyzer';
 import { PackageAnalyzer } from './PackageAnalyzer';
 
 export class AnalyzerRegistry {
@@ -6,8 +7,10 @@ export class AnalyzerRegistry {
         let packageAnalyzers: PackageAnalyzer[] = [];
 
         //TODO: Make dynamic
-        let fhtAnalzer = new FHTAnalyser();
-        packageAnalyzers.push(fhtAnalzer);
+        let fhtAnalyzer = new FHTAnalyser();
+        let ftAnalyser = new FTAnalyser();
+        packageAnalyzers.push(fhtAnalyzer);
+        packageAnalyzers.push(ftAnalyser);
 
         return packageAnalyzers;
     }
