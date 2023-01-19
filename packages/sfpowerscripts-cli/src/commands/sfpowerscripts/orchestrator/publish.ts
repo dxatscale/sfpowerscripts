@@ -353,7 +353,7 @@ export default class Promote extends SfpowerscriptsCommand {
     }
 
     private async pushGitTags(
-        succesfullyPublishedPackageNamesForTagging: {
+        sucessfullyPublishedPackages: {
             name: string;
             version: string;
             type: string;
@@ -363,20 +363,16 @@ export default class Promote extends SfpowerscriptsCommand {
     ) {
         SFPLogger.log(COLOR_KEY_MESSAGE('Pushing Git Tags to Repo'));
         if (this.flags.pushgittag) {
-            let tagsForPushing: {
-                name: string;
-            }[] = [];
-            for (let packageTag of succesfullyPublishedPackageNamesForTagging) {
-                tagsForPushing.push({
-                    name: packageTag.name
-                });
+            let tagsForPushing:string[]=[];
+            for (let succesfullyPublishedPackage of sucessfullyPublishedPackages) {
+                tagsForPushing.push(succesfullyPublishedPackage.tag);
             }
             await this.git.pushTags(tagsForPushing)
         }
     }
 
     private async createGitTags(
-        succesfullyPublishedPackageNamesForTagging: {
+        sucessfullyPublishedPackages: {
             name: string;
             version: string;
             type: string;
@@ -386,11 +382,11 @@ export default class Promote extends SfpowerscriptsCommand {
     ) {
         SFPLogger.log(COLOR_KEY_MESSAGE('Creating Git Tags in Repo'));
 
-        for (let packageTag of succesfullyPublishedPackageNamesForTagging) {
+        for (let sucessFullyPublishedPackage of sucessfullyPublishedPackages) {
             await this.git.addAnnotatedTag(
-                packageTag.tag,
-                `${packageTag.name} ${packageTag.type} Package ${packageTag.version}`,
-                packageTag.commitId
+                sucessFullyPublishedPackage.tag,
+                `${sucessFullyPublishedPackage.name} ${sucessFullyPublishedPackage.type} Package ${sucessFullyPublishedPackage.version}`,
+                sucessFullyPublishedPackage.commitId
             );
         }
     }
