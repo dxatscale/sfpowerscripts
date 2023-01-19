@@ -1,4 +1,5 @@
 {
   "commandDescription":"Shrink the dependency list in sfdx-project.json file for each package, remove duplicate dependencies that already exist in its dependent packages",
-  "devhubAliasFlagDescription":"Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
+  "devhubAliasFlagDescription":"Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task",
+  "overWriteProjectConfigFlagDescription":"Flag to overwrite existing sfdx-project.json file"
 }
