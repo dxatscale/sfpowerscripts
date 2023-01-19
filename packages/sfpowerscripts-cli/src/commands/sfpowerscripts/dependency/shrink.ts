@@ -75,6 +75,11 @@ export default class Shrink extends SfpowerscriptsCommand {
             if(this.flags.overwrite){
                 console.log(`Overwriting sfdx-project.json with shrunk project config file`);
                 projectConfigFilePath = `sfdx-project.json`;
+
+                let backupFilePath: string = path.join(defaultProjectConfigPath, `sfdx-project.json.bak`);
+                console.log(`Saving a backup to ${backupFilePath}`);
+                fs.copySync(projectConfigFilePath, backupFilePath);
+                
                 fs.writeFileSync(projectConfigFilePath, JSON.stringify(projectConfig, null, 4));
                 console.log('sfdx-project.json has been updated.')
             }else{
