@@ -87,31 +87,24 @@ export default class Git {
         }
     }
 
-    async pushTags(
-        tags?:{ 
-            name: string 
-        } [] 
-        ) {
-        if(!tags){
-            await this._git.pushTags();
-        }else{
-            for(let tag of tags){
-                await this._git.push('origin',tag.name)
+    async pushTags(tags?: string[]) {
+        if (!tags) await this._git.pushTags();
+        else {
+            for (let tag of tags) {
+                await this._git.push('origin', tag);
             }
-            
         }
     }
 
     async addAnnotatedTag(tagName: string, annotation: string, commitId?: string) {
         try {
             await new GitIdentity(this._git).setUsernameAndEmail();
-            if( !commitId ){
+            if (!commitId) {
                 await this._git.addAnnotatedTag(tagName, annotation);
-            }else{
-                const commands = ['tag', tagName , commitId , '-m' , annotation]
-                await this._git.raw(commands)
+            } else {
+                const commands = ['tag', tagName, commitId, '-m', annotation];
+                await this._git.raw(commands);
             }
-            
         } catch (error) {
             SFPLogger.log(
                 `Unable to commit file, probably due to no change or something else,Please try manually`,
@@ -161,10 +154,8 @@ export default class Git {
 
     static async initiateRepo(logger?: Logger, projectDir?: string) {
         let git = new Git(projectDir, logger);
-        if(projectDir)
-         await git.addSafeConfig(projectDir);
-        else
-        await git.addSafeConfig(process.cwd());
+        if (projectDir) await git.addSafeConfig(projectDir);
+        else await git.addSafeConfig(process.cwd());
         await git.getRemoteOriginUrl();
         return git;
     }

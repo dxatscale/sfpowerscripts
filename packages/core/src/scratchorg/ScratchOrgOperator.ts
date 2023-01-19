@@ -17,13 +17,14 @@ export default class ScratchOrgOperator {
     ): Promise<ScratchOrg> {
         SFPLogger.log('Parameters: ' + alias + ' ' + config_file_path + ' ' + expiry + ' ', LoggerLevel.TRACE);
 
+        SFPLogger.log(`Requesting Scratch Org ${alias}..`,LoggerLevel.INFO);
         let scatchOrgResult = await this.requestAScratchOrg(
             alias,
             config_file_path,
             Duration.days(expiry),
             Duration.minutes(waitTime)
         );
-        SFPLogger.log(JSON.stringify(scatchOrgResult), LoggerLevel.TRACE);
+        SFPLogger.log(JSON.stringify(scatchOrgResult),LoggerLevel.TRACE);
 
         //create scratchOrg object
         let scratchOrg: ScratchOrg = {
