@@ -7,4 +7,6 @@ export enum Stage {
     DEPLOY = 'deploy',
     PROMOTE = 'promote',
     PUBLISH = 'publish',
+    EXPAND = 'expand',
+    SHRINK = 'shrink', 
 }

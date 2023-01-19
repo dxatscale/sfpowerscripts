@@ -14,9 +14,9 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'expand_dependency');
+const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'shrink_dependency');
 
-export default class Expand extends SfpowerscriptsCommand {
+export default class Shrink extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresUsername = false;
@@ -67,13 +67,13 @@ export default class Expand extends SfpowerscriptsCommand {
                 projectConfig,
                 sfpOrg.getConnection()
             );
-            projectConfig = await transitiveDependencyResolver.resolveDependencies(Stage.EXPAND);
+            projectConfig = await transitiveDependencyResolver.resolveDependencies(Stage.SHRINK);
 
-            //Clean up temp directory
+            //Create temp directory if not exist
             if (!fs.existsSync(defaultProjectConfigPath)) fs.mkdirpSync(defaultProjectConfigPath);
 
             if(this.flags.overwrite){
-                console.log(`Overwriting sfdx-project.json with expanded project config file`);
+                console.log(`Overwriting sfdx-project.json with shrunk project config file`);
                 projectConfigFilePath = `sfdx-project.json`;
 
                 let backupFilePath: string = path.join(defaultProjectConfigPath, `sfdx-project.json.bak`);
@@ -83,13 +83,13 @@ export default class Expand extends SfpowerscriptsCommand {
                 fs.writeFileSync(projectConfigFilePath, JSON.stringify(projectConfig, null, 4));
                 console.log('sfdx-project.json has been updated.')
             }else{
-                projectConfigFilePath = path.join(defaultProjectConfigPath, `sfdx-project.exp.json`);
+                projectConfigFilePath = path.join(defaultProjectConfigPath, `sfdx-project.min.json`);
                 fs.writeFileSync(projectConfigFilePath, JSON.stringify(projectConfig, null, 4));
-                console.log(`Generated project config file has been saved to ${projectConfigFilePath}`);
+                console.log(`Shrunk project config file has been saved to ${projectConfigFilePath}`);
             }
 
         } catch (error) {
-            throw new Error('Unable to generate project config file:' + error);
+            throw new Error('Unable to shrink project config file:' + error);
         }
     }
 }
