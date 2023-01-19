@@ -361,10 +361,11 @@ export default class Promote extends SfpowerscriptsCommand {
             commitId: string;
         }[]
     ) {
-        SFPLogger.log(COLOR_KEY_MESSAGE('Pushing Git Tags to Repo'));
+     
         if (this.flags.pushgittag) {
             let tagsForPushing:string[]=[];
             for (let succesfullyPublishedPackage of sucessfullyPublishedPackages) {
+                SFPLogger.log(COLOR_KEY_MESSAGE(`Pushing Git Tags to Repo ${succesfullyPublishedPackage.tag}`));
                 tagsForPushing.push(succesfullyPublishedPackage.tag);
             }
             await this.git.pushTags(tagsForPushing)
@@ -380,9 +381,9 @@ export default class Promote extends SfpowerscriptsCommand {
             commitId: string;
         }[]
     ) {
-        SFPLogger.log(COLOR_KEY_MESSAGE('Creating Git Tags in Repo'));
-
+      
         for (let sucessFullyPublishedPackage of sucessfullyPublishedPackages) {
+            SFPLogger.log(COLOR_KEY_MESSAGE(`Creating Git Tags in Repo ${sucessFullyPublishedPackage.tag}`));
             await this.git.addAnnotatedTag(
                 sucessFullyPublishedPackage.tag,
                 `${sucessFullyPublishedPackage.name} ${sucessFullyPublishedPackage.type} Package ${sucessFullyPublishedPackage.version}`,
