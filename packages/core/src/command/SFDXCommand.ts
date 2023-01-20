@@ -11,6 +11,9 @@ export abstract class SFDXCommand {
 
     public async exec(quiet:boolean = true, timeout: number = 0, showProgress: boolean = false): Promise<any> {
         let command = this.getSFDXCommand();
+        //add log level to error
+        command += ' --loglevel=ERROR';
+        
         if (quiet) command += ` --json`;
         command += ' ' + this.getGeneratedParams();
 
