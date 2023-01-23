@@ -498,12 +498,24 @@
                     "description": "Disable Entitlement filtering in source package,which skips entitlements that are already in the target org",
                     "default": false
                 },
-                "enableTransitiveDependencyResolver": {
-                    "title": "Enable Transitive Dependency Resolver",
-                    "type": "boolean",
-                    "description": "Enable transitive dependency resolver to fix the missing dependencies through transitive relationship",
-                    "default": false
-                }
+                "transitiveDependencyResolver": {
+                    "type": "object",
+                    "title": "Scratch Org Definition Files",
+                    "description": "Map of packages to scratch org definition files filepaths",
+                    "properties": {
+                        "enableTransitiveDependencyResolver": {
+                            "title": "Enable Transitive Dependency Resolver",
+                            "type": "boolean",
+                            "description": "Enable transitive dependency resolver to fix the missing dependencies through transitive relationship",
+                            "default": false
+                        },
+                        "externalDependencies": {
+                            "type": "array",
+                            "title": "External dependencies",
+                            "description": "The dependency map of external packages in json format"
+                        }
+                    }
+                },
             }
         }
     }

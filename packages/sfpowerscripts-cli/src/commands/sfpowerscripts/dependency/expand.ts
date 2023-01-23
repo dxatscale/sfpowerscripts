@@ -67,7 +67,7 @@ export default class Expand extends SfpowerscriptsCommand {
                 projectConfig,
                 sfpOrg.getConnection()
             );
-            projectConfig = await transitiveDependencyResolver.resolveDependencies(Stage.EXPAND);
+            projectConfig = await transitiveDependencyResolver.resolveDependencies();
 
             //Clean up temp directory
             if (!fs.existsSync(defaultProjectConfigPath)) fs.mkdirpSync(defaultProjectConfigPath);

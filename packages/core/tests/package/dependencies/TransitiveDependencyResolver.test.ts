@@ -56,7 +56,7 @@ describe("Given a TransitiveDependencyResolver", () => {
 
   it("should resolve missing package dependencies with transitive dependency", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
-    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies('expand');
+    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies();
 
     let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "candidate-management");
     let tempDependency = packageDescriptor.dependencies.find(dependency => dependency.package === "temp");
@@ -65,21 +65,22 @@ describe("Given a TransitiveDependencyResolver", () => {
 
   it("should resolve package dependencies in the same order as its dependent packages", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
-    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies('expand');
+    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies();
 
     let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "candidate-management");
     let tempIndex = packageDescriptor.dependencies.findIndex(dependency => dependency.package === "temp");
     let baseIndex = packageDescriptor.dependencies.findIndex(dependency => dependency.package === "base");
-    expect(tempIndex).toBe(2);
-    expect(baseIndex).toBe(1);
+    expect(tempIndex).toBe(3);
+    expect(baseIndex).toBe(2);
   });
 
-  it("should shrink the dependencies that already exisit in its dependent package", async () => {
+  it("should expand the dependencies of external pacakges", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
-    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies('shrink');
+    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies();
 
     let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "contact-management");
-    expect(packageDescriptor.dependencies.length).toBe(1);
+    let externalDependencyIndex = packageDescriptor.dependencies.findIndex(dependency => dependency.package === "sfdc-framework");
+    expect(externalDependencyIndex).toBe(0);
 
   });
 
@@ -167,6 +168,20 @@ const projectConfig = {
     "tech-framework@2.0.0.38": '04t1P00000xxxxxx00',
     "candidate-management": '0Ho4a00000000xxxx1',
     "contact-management": '0Ho4a00000000xxxx2'
+  },
+  "plugins": {
+      "sfpowerscripts": {
+          "transitiveDependencyResolver": {
+              "enableTransitiveDependencyResolver": true,
+              "externalDependencies": {
+                  "tech-framework@2.0.0.38": [
+                      {
+                          "package": "sfdc-framework"
+                      }
+                  ]
+              }
+          }
+      }
   }
 };
 

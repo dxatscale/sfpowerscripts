@@ -1,4 +1,4 @@
-import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/dependency/TransitiveDependencyResolver';
+import ShrinkImpl from '../../../impl/dependency/ShrinkImpl';
 import { Messages } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
@@ -6,8 +6,7 @@ import { flags } from '@salesforce/command';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import * as fs from 'fs-extra';
 import path = require('path');
-import * as rimraf from 'rimraf';
-import { Stage } from '../../../impl/Stage';
+
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -63,11 +62,11 @@ export default class Shrink extends SfpowerscriptsCommand {
         try {
             //Validate dependencies in sfdx-project.json // Read Manifest
             let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
-            const transitiveDependencyResolver = new TransitiveDependencyResolver(
+            const shrinkImpl = new ShrinkImpl(
                 projectConfig,
                 sfpOrg.getConnection()
             );
-            projectConfig = await transitiveDependencyResolver.resolveDependencies(Stage.SHRINK);
+            projectConfig = await shrinkImpl.resolveDependencies();
 
             //Create temp directory if not exist
             if (!fs.existsSync(defaultProjectConfigPath)) fs.mkdirpSync(defaultProjectConfigPath);

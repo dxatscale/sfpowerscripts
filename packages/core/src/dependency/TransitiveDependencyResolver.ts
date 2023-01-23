@@ -1,31 +1,33 @@
 import ProjectConfig from '../project/ProjectConfig';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_ERROR } from '@dxatscale/sfp-logger';
-import QueryHelper from '../queryHelper/QueryHelper';
 import { Connection } from '@salesforce/core';
 import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
+import { captureRejectionSymbol } from 'events';
 const Table = require('cli-table');
 
 export default class TransitiveDependencyResolver {
     private dependencyMap;
     private updatedprojectConfig: any;
+    private externalDependencyMap: any = {};
 
     constructor(private projectConfig: ProjectConfig, private conn: Connection, private logger?: Logger) {}
-    public async resolveDependencies(mode: string): Promise<ProjectConfig> {
+    public async resolveDependencies(): Promise<ProjectConfig> {
         SFPLogger.log('Validating Project Dependencies...', LoggerLevel.INFO, this.logger);
 
         this.updatedprojectConfig = _.cloneDeep(this.projectConfig);
+
+        await this.fetchExternalDependencies(this.projectConfig);
+
         this.dependencyMap = await this.getAllPackageDependencyMap(this.projectConfig);
-        if( mode === 'expand'){
-            await this.expandDependencies(this.dependencyMap, this.projectConfig);
-        }else if( mode=== 'shrink'){
-            await this.shrinkDependencies(this.dependencyMap, this.projectConfig);
-        }
+
+        await this.expandDependencies(this.dependencyMap, this.projectConfig);
+
 
         return this.updatedprojectConfig;
     }
 
-    private getAllPackageDependencyMap(projectConfig: any): { [key: string]: Dependency[] } {
+    public getAllPackageDependencyMap(projectConfig: any): { [key: string]: Dependency[] } {
         let pkgWithDependencies = {};
         let packages = projectConfig.packageDirectories;
         for (let pkg of packages) {
@@ -33,6 +35,14 @@ export default class TransitiveDependencyResolver {
                 pkgWithDependencies[pkg.package] = pkg.dependencies;
             }
         }
+        console.log(this.externalDependencyMap)
+        if(this.externalDependencyMap){
+            console.log(Object.keys(this.externalDependencyMap))
+            for ( let pkg of Object.keys(this.externalDependencyMap)){
+                pkgWithDependencies[pkg] = this.externalDependencyMap[pkg];
+            }
+        }
+        console.log(pkgWithDependencies)
         return pkgWithDependencies;
     }
 
@@ -76,63 +86,10 @@ export default class TransitiveDependencyResolver {
             //Update project config
             await this.updateProjectConfig(pkg, uniqueDependencies);
 
-            //fetch dependency for external packages
-            if (
-                projectConfig.packageAliases &&
-                projectConfig.packageAliases[pkg] &&
-                projectConfig.packageAliases[pkg].startsWith('04t')
-            ) {
-                const packageDependencies = await this.fetchExternalDependencies(projectConfig.packageAliases[pkg]);
-                if (packageDependencies.length == uniqueDependencies.length) {
-                    SFPLogger.log('Dependencies verified and fixed', LoggerLevel.TRACE, this.logger);
-                } else if (packageDependencies.length > uniqueDependencies.length) {
-                    SFPLogger.log(`Missing dependencies on pkg ${pkg}`, LoggerLevel.TRACE, this.logger);
-                }
-            }
         }
     }
 
-    private async shrinkDependencies(dependencyMap: any, projectConfig: any) {
-        let pkgs = Object.keys(dependencyMap);
-        for (let pkg of pkgs) {
-            SFPLogger.log(
-                COLOR_HEADER(`cleaning up dependencies for package:`) + COLOR_KEY_MESSAGE(pkg),
-                LoggerLevel.TRACE,
-                this.logger
-            );
-            let dependenencies = dependencyMap[pkg];
-            let updatedDependencies = _.cloneDeep(dependenencies);
-            for (let dependency of dependencyMap[pkg]) {
-                if (dependencyMap[dependency.package]) {
-                    SFPLogger.log(
-                        `Shrinking ${dependencyMap[dependency.package].length} dependencies from package ${
-                            dependency.package
-                        }`,
-                        LoggerLevel.TRACE,
-                        this.logger
-                    );
-                    for (let temp of dependencyMap[dependency.package]) {
-                        for (let i = 0; i < updatedDependencies.length; i++) {
-                            if(updatedDependencies[i].package == temp.package){
-                                updatedDependencies.splice(i,1)
-                            }
-                          }
-                    }
-                } else {
-                    SFPLogger.log(
-                        `no dependency found for ${dependency.package} in the map`,
-                        LoggerLevel.TRACE,
-                        this.logger
-                    );
-                }
-            }
-            SFPLogger.log(`Dependencies resolved for ${pkg}`,LoggerLevel.INFO,this.logger)
-            SFPLogger.log(this.printDependencyTable(updatedDependencies).toString(), LoggerLevel.INFO,this.logger);
-            //Update project config
-            await this.updateProjectConfig(pkg, updatedDependencies);
-        }
-
-    }
+    
 
     private printDependencyTable(dependencies: any) {
         let tableHead = ['Dependency', 'Version Number'];
@@ -148,10 +105,12 @@ export default class TransitiveDependencyResolver {
         return table;
     }
 
-    private async fetchExternalDependencies(packageId: string) {
-        const query = `SELECT Dependencies FROM SubscriberPackageVersion WHERE Id='${packageId}'`;
-
-        return await QueryHelper.query<{ Dependencies: any }>(query, this.conn, true);
+    public async fetchExternalDependencies(projectConfig: any) {
+        if (projectConfig?.plugins?.sfpowerscripts?.transitiveDependencyResolver?.externalDependencies){
+            console.log(projectConfig.plugins.sfpowerscripts.transitiveDependencyResolver.externalDependencies)
+            this.externalDependencyMap =  projectConfig.plugins.sfpowerscripts.transitiveDependencyResolver.externalDependencies;
+            console.log(this.externalDependencyMap)
+        }
     }
 
     private async updateProjectConfig(packageName: string, fixedDependencies: any) {
