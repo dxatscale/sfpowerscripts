@@ -28,7 +28,7 @@ export default class GroupConsoleLogs {
         } else if (process.env.GITHUB_ACTION) {
             return `::group::${this.section}`;
         } else if (process.env.GITLAB_CI) {
-            return `\e[0Ksection_start:${Date.now()}:${this.section}\r\e[0K`;
+            return `\e[0Ksection_start:${Date.now()}:${this.section}\r\e[0K${this.section}`;
         } else if (process.env.SYSTEM_TEAMFOUNDATIONCOLLECTIONURI) {
             return `##[group]${this.section}`;
         } else if (GroupConsoleLogs.logGroupSymbols && GroupConsoleLogs.logGroupSymbols[0]) {
