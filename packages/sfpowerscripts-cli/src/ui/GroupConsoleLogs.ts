@@ -23,7 +23,7 @@ export default class GroupConsoleLogs {
     }
 
     private getSectionStart() {
-        if (process.env.BUILDKITE) {
+        if (process.env.BUILDKITE_BUILD_NUMBER) {
             return `--- ${this.section}`;
         } else if (process.env.GITHUB_ACTION) {
             return `::group::${this.section}`;
@@ -39,7 +39,7 @@ export default class GroupConsoleLogs {
     }
 
     private getSectionEnd() {
-        if (process.env.BUILDKITE) {
+        if (process.env.BUILDKITE_BUILD_NUMBER) {
             return undefined;
         } else if (process.env.GITHUB_ACTION) {
             return `::endgroup::`;
