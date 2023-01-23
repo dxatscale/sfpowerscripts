@@ -122,6 +122,8 @@ export default class BuildImpl {
         groupDependencyResolutionLogs.end();
 
 
+        let buildPackagesLogs = new GroupConsoleLogs("Building Packages",this.logger).begin();
+
         for await (const pkg of this.packagesToBeBuilt) {
             let type = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg).type;
             SFPStatsSender.logCount('build.scheduled.packages', {
@@ -195,10 +197,13 @@ export default class BuildImpl {
         //Other packages get added when each one in the first level finishes
         await this.recursiveAll(this.packageCreationPromises);
 
+        buildPackagesLogs.end();
+        
         return {
             generatedPackages: this.generatedPackages,
             failedPackages: this.failedPackages,
         };
+      
     }
 
     private createDiffPackageScheduledDisplayedAsATable(packagesToBeBuilt: Map<string, any>) {
