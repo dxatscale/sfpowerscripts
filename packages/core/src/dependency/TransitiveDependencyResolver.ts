@@ -4,6 +4,7 @@ import { Connection } from '@salesforce/core';
 import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
 import semver = require('semver');
+import convertBuildNumDotDelimToHyphen from '../utils/VersionNumberConverter';
 const Table = require('cli-table');
 
 export default class TransitiveDependencyResolver {
@@ -81,12 +82,12 @@ export default class TransitiveDependencyResolver {
             for (var j = 0; j < uniqueDependencies.length; j++){
                 if(uniqueDependencies[j].versionNumber){
                     // version = uniqueDependencies[j].versionNumber.split(".")
-                    let version = this.convertBuildNumDotDelimToHyphen(uniqueDependencies[j].versionNumber);
+                    let version = convertBuildNumDotDelimToHyphen(uniqueDependencies[j].versionNumber);
 
                     for(var i = j+1; i < uniqueDependencies.length; i++){
                         if(uniqueDependencies[j].package == uniqueDependencies[i].package){
 
-                            let versionToCompare = this.convertBuildNumDotDelimToHyphen(uniqueDependencies[i].versionNumber.);
+                            let versionToCompare = convertBuildNumDotDelimToHyphen(uniqueDependencies[i].versionNumber);
                             // replace existing packageInfo if package version number is newer
                             if (semver.lt(version, versionToCompare)) {
                                 uniqueDependencies.splice(i,1)
@@ -106,23 +107,7 @@ export default class TransitiveDependencyResolver {
     }
 
 
-    /**
-     * Converts build-number dot delimeter to hyphen
-     * If dot delimeter does not exist, returns input
-     * @param version
-     */
-    private convertBuildNumDotDelimToHyphen(version: string) {
-        let convertedVersion = version;
-
-        let indexOfBuildNumDelimiter = this.getIndexOfBuildNumDelimeter(version);
-        if (version[indexOfBuildNumDelimiter] === '.') {
-            convertedVersion =
-                version.substring(0, indexOfBuildNumDelimiter) + '-' + version.substring(indexOfBuildNumDelimiter + 1);
-        }
-        return convertedVersion;
-    }
-    
-
+   
     private printDependencyTable(dependencies: any) {
         let tableHead = ['Dependency', 'Version Number'];
         let table = new Table({

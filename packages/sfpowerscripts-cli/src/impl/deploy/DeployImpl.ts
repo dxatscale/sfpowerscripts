@@ -22,6 +22,7 @@ import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpP
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 import * as _ from 'lodash';
 import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
+import convertBuildNumDotDelimToHyphen from "@dxatscale/sfpowerscripts.core/lib/utils/VersionNumberConverter"
 
 const Table = require('cli-table');
 const retry = require('async-retry');
@@ -501,10 +502,10 @@ export default class DeployImpl {
 
         for (let sfpPackage of sfpPackages) {
             if (packagesToPackageInfo[sfpPackage.packageName]) {
-                let previousVersionNumber = this.convertBuildNumDotDelimToHyphen(
+                let previousVersionNumber = convertBuildNumDotDelimToHyphen(
                     packagesToPackageInfo[sfpPackage.packageName].sfpPackage.versionNumber
                 );
-                let currentVersionNumber = this.convertBuildNumDotDelimToHyphen(sfpPackage.versionNumber);
+                let currentVersionNumber = convertBuildNumDotDelimToHyphen(sfpPackage.versionNumber);
 
                 // replace existing packageInfo if package version number is newer
                 if (semver.gt(currentVersionNumber, previousVersionNumber)) {
@@ -523,40 +524,7 @@ export default class DeployImpl {
         return packagesToPackageInfo;
     }
 
-    /**
-     * Converts build-number dot delimeter to hyphen
-     * If dot delimeter does not exist, returns input
-     * @param version
-     */
-    private convertBuildNumDotDelimToHyphen(version: string) {
-        let convertedVersion = version;
-
-        let indexOfBuildNumDelimiter = this.getIndexOfBuildNumDelimeter(version);
-        if (version[indexOfBuildNumDelimiter] === '.') {
-            convertedVersion =
-                version.substring(0, indexOfBuildNumDelimiter) + '-' + version.substring(indexOfBuildNumDelimiter + 1);
-        }
-        return convertedVersion;
-    }
-
-    /**
-     * Get the index of the build-number delimeter
-     * Returns null if unable to find index of delimeter
-     * @param version
-     */
-    private getIndexOfBuildNumDelimeter(version: string) {
-        let numOfDelimetersTraversed: number = 0;
-        for (let i = 0; i < version.length; i++) {
-            if (!Number.isInteger(parseInt(version[i], 10))) {
-                numOfDelimetersTraversed++;
-            }
-            if (numOfDelimetersTraversed === 3) {
-                return i;
-            }
-        }
-        return null;
-    }
-
+   
     /**
      * Decider for which package installation type to run
      */
