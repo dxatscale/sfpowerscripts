@@ -35,14 +35,11 @@ export default class TransitiveDependencyResolver {
                 pkgWithDependencies[pkg.package] = pkg.dependencies;
             }
         }
-        console.log(this.externalDependencyMap)
         if(this.externalDependencyMap){
-            console.log(Object.keys(this.externalDependencyMap))
             for ( let pkg of Object.keys(this.externalDependencyMap)){
                 pkgWithDependencies[pkg] = this.externalDependencyMap[pkg];
             }
         }
-        console.log(pkgWithDependencies)
         return pkgWithDependencies;
     }
 
@@ -80,6 +77,25 @@ export default class TransitiveDependencyResolver {
             let uniqueDependencies = [
                 ...new Set(dependenencies.map((objects) => JSON.stringify(objects))),
             ].map((tmpString) => JSON.parse(tmpString));
+            for (var j = 0; j < uniqueDependencies.length; j++){
+                if(uniqueDependencies[j].package == 'core'){
+                }
+                if(uniqueDependencies[j].versionNumber){
+                    var version = uniqueDependencies[j].versionNumber.split(".")
+                    for(var i = j+1; i < uniqueDependencies.length; i++){
+                        if(uniqueDependencies[j].package == uniqueDependencies[i].package){
+                            var versionToCompare = uniqueDependencies[i].versionNumber.split(".")
+                            if(version[0] < versionToCompare[0]
+                                || version[1] < versionToCompare[1]
+                                || version[2] < versionToCompare[2]){
+                                    uniqueDependencies[j] = uniqueDependencies[i]
+                                }
+                            uniqueDependencies.splice(i,1)
+                        }
+                    }
+                }
+                
+            }
             dependencyMap[pkg] = uniqueDependencies;
             SFPLogger.log(`Dependencies resolved  for ${pkg}`,LoggerLevel.INFO,this.logger)
             SFPLogger.log(this.printDependencyTable(uniqueDependencies).toString(), LoggerLevel.INFO,this.logger);
@@ -107,9 +123,7 @@ export default class TransitiveDependencyResolver {
 
     public async fetchExternalDependencies(projectConfig: any) {
         if (projectConfig?.plugins?.sfpowerscripts?.transitiveDependencyResolver?.externalDependencies){
-            console.log(projectConfig.plugins.sfpowerscripts.transitiveDependencyResolver.externalDependencies)
             this.externalDependencyMap =  projectConfig.plugins.sfpowerscripts.transitiveDependencyResolver.externalDependencies;
-            console.log(this.externalDependencyMap)
         }
     }
 

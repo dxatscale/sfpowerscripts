@@ -510,7 +510,7 @@
                             "default": false
                         },
                         "externalDependencies": {
-                            "type": "array",
+                            "type": "object",
                             "title": "External dependencies",
                             "description": "The dependency map of external packages in json format"
                         }
