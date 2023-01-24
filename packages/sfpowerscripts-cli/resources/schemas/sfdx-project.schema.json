@@ -498,19 +498,17 @@
                     "description": "Disable Entitlement filtering in source package,which skips entitlements that are already in the target org",
                     "default": false
                 },
-                "transitiveDependencyResolver": {
-                    "type": "object",
-                    "title": "Scratch Org Definition Files",
-                    "description": "Map of packages to scratch org definition files filepaths",
-                    "properties": {
-                        "enableTransitiveDependencyResolver": {
-                            "title": "Enable Transitive Dependency Resolver",
-                            "type": "boolean",
-                            "description": "Enable transitive dependency resolver to fix the missing dependencies through transitive relationship",
-                            "default": false
-                        },
-                        "externalDependencyMap": {
-                            "patternProperties": {
+                "enableTransitiveDependencyResolver": {
+                    "title": "Enable Transitive Dependency Resolver",
+                    "type": "boolean",
+                    "description": "Enable transitive dependency resolver to fix the missing dependencies through transitive relationship",
+                    "default": false
+                },
+                "externalDependencyMap": {
+                    "title": "Map of external package and its dependencies",
+                    "type":"object",
+                    "description": "Use this map to define dependencies of unlocked packages built elsewhere, This information will be used by sfpowerscripts while expanding package dependencies",
+                   "patternProperties": {
                                 ".*": {
                                       "type": "array",
                                        "items": {
@@ -528,9 +526,6 @@
                                       
                                       }
                                   }
-                              }
-                        }
-                       
                     }
                 }
             }
