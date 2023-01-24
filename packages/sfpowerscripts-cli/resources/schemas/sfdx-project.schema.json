@@ -7,6 +7,11 @@
     "additionalProperties": false,
     "required": ["packageDirectories"],
     "properties": {
+        "$schema": {
+            "description": "Support editors like vscode to help with IntelliSense",
+            "type": "string",
+            "default": "https://raw.githubusercontent.com/dxatscale/sfpowerscripts/main/packages/sfpowerscripts-cli/resources/schemas/sfdx-project.schema.json"
+        },
         "packageDirectories": {
             "title": "Package Directories",
             "type": "array",
