@@ -509,13 +509,30 @@
                             "description": "Enable transitive dependency resolver to fix the missing dependencies through transitive relationship",
                             "default": false
                         },
-                        "externalDependencies": {
-                            "type": "array",
-                            "title": "External dependencies",
-                            "description": "The dependency map of external packages in json format"
+                        "externalDependencyMap": {
+                            "patternProperties": {
+                                ".*": {
+                                      "type": "array",
+                                       "items": {
+                                          "type": "object",
+                                          "additionalProperties": false,
+                                          "required": ["package"],
+                                          "properties": {
+                                              "package": {
+                                                  "type": "string"
+                                              },
+                                              "versionNumber": {
+                                                  "type": "string"
+                                              }
+                                          }
+                                      
+                                      }
+                                  }
+                              }
                         }
+                       
                     }
-                },
+                }
             }
         }
     }

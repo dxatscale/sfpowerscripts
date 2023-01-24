@@ -22,10 +22,8 @@ export default class ShrinkImpl {
           this.conn
       );
 
-        this.externalDependencyMap = await transitiveDependencyResolver.fetchExternalDependencies(this.projectConfig);
-
-        this.dependencyMap = await transitiveDependencyResolver.getAllPackageDependencyMap(this.projectConfig);
-
+        this.externalDependencyMap = await transitiveDependencyResolver.fetchExternalDependencies();
+        this.dependencyMap = await transitiveDependencyResolver.getAllPackageDependencyMap();
         await this.shrinkDependencies(this.dependencyMap);
 
 

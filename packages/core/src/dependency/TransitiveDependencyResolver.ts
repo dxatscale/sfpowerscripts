@@ -11,42 +11,40 @@ export default class TransitiveDependencyResolver {
     private updatedprojectConfig: any;
     private externalDependencyMap: any = {};
 
-    constructor(private projectConfig: ProjectConfig, private conn: Connection, private logger?: Logger) {}
+    constructor(private sfdxProjectConfig: any, private conn: Connection, private logger?: Logger) {}
     public async resolveDependencies(): Promise<ProjectConfig> {
         SFPLogger.log('Validating Project Dependencies...', LoggerLevel.INFO, this.logger);
 
-        this.updatedprojectConfig = _.cloneDeep(this.projectConfig);
+        this.updatedprojectConfig = _.cloneDeep(this.sfdxProjectConfig);
 
-        await this.fetchExternalDependencies(this.projectConfig);
+        await this.fetchExternalDependencies();
 
-        this.dependencyMap = await this.getAllPackageDependencyMap(this.projectConfig);
+        this.dependencyMap = await this.getAllPackageDependencyMap();
 
-        await this.expandDependencies(this.dependencyMap, this.projectConfig);
+        await this.expandDependencies(this.dependencyMap);
 
 
         return this.updatedprojectConfig;
     }
 
-    public getAllPackageDependencyMap(projectConfig: any): { [key: string]: Dependency[] } {
+    public getAllPackageDependencyMap(): { [key: string]: Dependency[] } {
         let pkgWithDependencies = {};
-        let packages = projectConfig.packageDirectories;
+        let packages = ProjectConfig.getAllPackageDirectoriesFromConfig(this.sfdxProjectConfig);
         for (let pkg of packages) {
             if (pkg.dependencies) {
                 pkgWithDependencies[pkg.package] = pkg.dependencies;
             }
         }
-        console.log(this.externalDependencyMap)
         if(this.externalDependencyMap){
-            console.log(Object.keys(this.externalDependencyMap))
+           
             for ( let pkg of Object.keys(this.externalDependencyMap)){
                 pkgWithDependencies[pkg] = this.externalDependencyMap[pkg];
             }
         }
-        console.log(pkgWithDependencies)
         return pkgWithDependencies;
     }
 
-    private async expandDependencies(dependencyMap: any, projectConfig: any) {
+    private async expandDependencies(dependencyMap: any) {
         let pkgs = Object.keys(dependencyMap);
         for (let pkg of pkgs) {
             SFPLogger.log(
@@ -105,11 +103,10 @@ export default class TransitiveDependencyResolver {
         return table;
     }
 
-    public async fetchExternalDependencies(projectConfig: any) {
-        if (projectConfig?.plugins?.sfpowerscripts?.transitiveDependencyResolver?.externalDependencies){
-            console.log(projectConfig.plugins.sfpowerscripts.transitiveDependencyResolver.externalDependencies)
-            this.externalDependencyMap =  projectConfig.plugins.sfpowerscripts.transitiveDependencyResolver.externalDependencies;
-            console.log(this.externalDependencyMap)
+    public async fetchExternalDependencies() {
+        if (this.sfdxProjectConfig.plugins?.sfpowerscripts?.transitiveDependencyResolver?.externalDependencyMap){
+            this.externalDependencyMap =  this.sfdxProjectConfig.plugins.sfpowerscripts.transitiveDependencyResolver.externalDependencyMap;
+            SFPLogger.log(JSON.stringify(this.externalDependencyMap),LoggerLevel.DEBUG,this.logger);
         }
     }
 

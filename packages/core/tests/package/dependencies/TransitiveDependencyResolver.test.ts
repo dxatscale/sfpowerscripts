@@ -74,7 +74,7 @@ describe("Given a TransitiveDependencyResolver", () => {
     expect(baseIndex).toBe(2);
   });
 
-  it("should expand the dependencies of external pacakges", async () => {
+  it("should expand the dependencies of external packages", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
     const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies();
 
@@ -173,7 +173,7 @@ const projectConfig = {
       "sfpowerscripts": {
           "transitiveDependencyResolver": {
               "enableTransitiveDependencyResolver": true,
-              "externalDependencies": {
+              "externalDependencyMap": {
                   "tech-framework@2.0.0.38": [
                       {
                           "package": "sfdc-framework"
