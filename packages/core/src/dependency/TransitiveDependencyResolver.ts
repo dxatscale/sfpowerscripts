@@ -3,7 +3,7 @@ import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_ERROR } from '@dx
 import { Connection } from '@salesforce/core';
 import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
-import { captureRejectionSymbol } from 'events';
+import semver = require('semver');
 const Table = require('cli-table');
 
 export default class TransitiveDependencyResolver {
@@ -78,6 +78,24 @@ export default class TransitiveDependencyResolver {
             let uniqueDependencies = [
                 ...new Set(dependenencies.map((objects) => JSON.stringify(objects))),
             ].map((tmpString) => JSON.parse(tmpString));
+            for (var j = 0; j < uniqueDependencies.length; j++){
+                if(uniqueDependencies[j].versionNumber){
+                    // version = uniqueDependencies[j].versionNumber.split(".")
+                    let version = this.convertBuildNumDotDelimToHyphen(uniqueDependencies[j].versionNumber);
+
+                    for(var i = j+1; i < uniqueDependencies.length; i++){
+                        if(uniqueDependencies[j].package == uniqueDependencies[i].package){
+
+                            let versionToCompare = this.convertBuildNumDotDelimToHyphen(uniqueDependencies[i].versionNumber.);
+                            // replace existing packageInfo if package version number is newer
+                            if (semver.lt(version, versionToCompare)) {
+                                uniqueDependencies.splice(i,1)
+                            }
+                        }
+                    }
+                }
+                
+            }
             dependencyMap[pkg] = uniqueDependencies;
             SFPLogger.log(`Dependencies resolved  for ${pkg}`,LoggerLevel.INFO,this.logger)
             SFPLogger.log(this.printDependencyTable(uniqueDependencies).toString(), LoggerLevel.INFO,this.logger);
@@ -87,6 +105,22 @@ export default class TransitiveDependencyResolver {
         }
     }
 
+
+    /**
+     * Converts build-number dot delimeter to hyphen
+     * If dot delimeter does not exist, returns input
+     * @param version
+     */
+    private convertBuildNumDotDelimToHyphen(version: string) {
+        let convertedVersion = version;
+
+        let indexOfBuildNumDelimiter = this.getIndexOfBuildNumDelimeter(version);
+        if (version[indexOfBuildNumDelimiter] === '.') {
+            convertedVersion =
+                version.substring(0, indexOfBuildNumDelimiter) + '-' + version.substring(indexOfBuildNumDelimiter + 1);
+        }
+        return convertedVersion;
+    }
     
 
     private printDependencyTable(dependencies: any) {
