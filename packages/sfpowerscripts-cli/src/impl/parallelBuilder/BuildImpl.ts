@@ -647,7 +647,8 @@ export default class BuildImpl {
     }
 
     private resolvePackageDependencies(projectConfig: any, connToDevHub: Connection){
-        let isDependencyResolverEnabled = projectConfig?.plugins?.sfpowerscripts?.enableTransitiveDependencyResolver
+        let isDependencyResolverEnabled = !projectConfig?.plugins?.sfpowerscripts?.disableTransitiveDependencyResolver
+       
         if(isDependencyResolverEnabled && connToDevHub){
             const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, connToDevHub,this.logger)
             return transitiveDependencyResolver.resolveDependencies()

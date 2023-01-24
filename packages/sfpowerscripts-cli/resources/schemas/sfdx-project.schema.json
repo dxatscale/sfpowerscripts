@@ -498,7 +498,7 @@
                     "description": "Disable Entitlement filtering in source package,which skips entitlements that are already in the target org",
                     "default": false
                 },
-                "enableTransitiveDependencyResolver": {
+                "disableTransitiveDependencyResolver": {
                     "title": "Enable Transitive Dependency Resolver",
                     "type": "boolean",
                     "description": "Enable transitive dependency resolver to fix the missing dependencies through transitive relationship",
