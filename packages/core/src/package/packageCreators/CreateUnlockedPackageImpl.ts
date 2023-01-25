@@ -91,6 +91,14 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
     async createPackage(sfpPackage: SfpPackage) {
         const sfProject = await SfProject.resolve(this.workingDirectory);
 
+        // fix for #1202
+        // bug packaging lib doesnt support unpackaged metadata from working directory which is not the root
+        // it keeps on searching for the unpackage in the root folder
+        // so fix up the path manually
+        let targetPackageDir = sfProject.getPackageDirectories()[0];
+        if(targetPackageDir['unpackagedMetadata'] )
+          targetPackageDir['unpackagedMetadata'] = { path:path.join(this.workingDirectory,'unpackagedMetadata')}
+
         let result = await PackageVersion.create(
             {
                 connection: this.devhubOrg.getConnection(),
