@@ -69,8 +69,9 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
         SFPLogger.log(`Package Id ${packageTypeInfo.Id}`, LoggerLevel.INFO, this.logger);
         SFPLogger.log('-------------------------', LoggerLevel.INFO, this.logger);
 
+    
         //cleanup sfpowerscripts constructs in working directory
-        this.deleteSFPowerscriptsAdditionsToManifest(this.workingDirectory);
+        this.deleteSFPowerscriptsAdditionsToProjectConfig(this.workingDirectory);
 
         //Resolve the package dependencies
         if (this.isOrgDependentPackage) {
@@ -167,6 +168,9 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
     }
 
     postCreatePackage(sfpPackage: SfpPackage) {
+        //copy the original config back as existing one would have cleaned up
+        fs.copyFileSync(path.join(this.workingDirectory, 'sfdx-project-bak.json'), path.join(this.workingDirectory, 'sfdx-project.json'));
+        fs.unlinkSync(path.join(this.workingDirectory, 'sfdx-project-bak.json'));
         if (sfpPackage.isDependencyValidated) {
             SFPStatsSender.logGauge('package.testcoverage', sfpPackage.test_coverage, {
                 package: sfpPackage.package_name,
@@ -181,12 +185,14 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
 
     printAdditionalPackageSpecificHeaders() {}
 
-    private deleteSFPowerscriptsAdditionsToManifest(workingDirectory: string) {
+    private deleteSFPowerscriptsAdditionsToProjectConfig(workingDirectory: string) {
         let projectManifestFromWorkingDirectory = ProjectConfig.getSFDXProjectConfig(workingDirectory);
         let packageDescriptorInWorkingDirectory = ProjectConfig.getPackageDescriptorFromConfig(
             this.sfpPackage.packageName,
             projectManifestFromWorkingDirectory
         );
+
+        fs.writeJsonSync(path.join(workingDirectory, 'sfdx-project-bak.json'), projectManifestFromWorkingDirectory);
 
         //Cleanup sfpowerscripts constructs
         if (this.isOrgDependentPackage) delete packageDescriptorInWorkingDirectory['dependencies'];
