@@ -5,6 +5,7 @@ import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
 import semver = require('semver');
 import convertBuildNumDotDelimToHyphen from '../utils/VersionNumberConverter';
+import QueryHelper from '../queryHelper/QueryHelper';
 const Table = require('cli-table');
 
 export default class TransitiveDependencyResolver {
@@ -28,7 +29,7 @@ export default class TransitiveDependencyResolver {
         return this.updatedprojectConfig;
     }
 
-    public getAllPackageDependencyMap(): { [key: string]: Dependency[] } {
+    public async getAllPackageDependencyMap(): Promise<{ [key: string]: Dependency[] }> {
         let pkgWithDependencies = {};
         let packages = ProjectConfig.getAllPackageDirectoriesFromConfig(this.sfdxProjectConfig);
         for (let pkg of packages) {
@@ -40,6 +41,32 @@ export default class TransitiveDependencyResolver {
            
             for ( let pkg of Object.keys(this.externalDependencyMap)){
                 pkgWithDependencies[pkg] = this.externalDependencyMap[pkg];
+            }
+        }
+        // fetch dependencies for the packages in package aliases from devhub
+        for( let pkg of Object.keys(this.sfdxProjectConfig.packageAliases)){
+            if (this.sfdxProjectConfig.packageAliases[pkg]?.startsWith('04t')){
+                var dependencies = []
+                const query = `SELECT Dependencies FROM SubscriberPackageVersion WHERE Id = '${this.sfdxProjectConfig.packageAliases[pkg]}'`;
+                const records: any = await QueryHelper.query<{ Id: string; Name: string }>(query, this.conn, true);
+
+                if( records[0].Dependencies != null){
+                    
+                    for( let dependencyId of records[0].Dependencies.ids){
+                        var packageName = dependencyId.subscriberPackageVersionId;
+                        for( let pkgAlias of Object.keys(this.sfdxProjectConfig.packageAliases)){
+                            if(this.sfdxProjectConfig.packageAliases[pkgAlias] == dependencyId.subscriberPackageVersionId){
+                                packageName = pkgAlias;
+                                break;
+                            }
+                        }
+                        const dependency = { "package": packageName}
+                        dependencies.push(dependency)
+                    }
+                    SFPLogger.log(`${records[0].Dependencies.ids.length} dependencies are found in DevHub for ${pkg}`,LoggerLevel.INFO,this.logger);
+
+                    pkgWithDependencies[pkg] = dependencies;
+                }
             }
         }
         return pkgWithDependencies;
@@ -81,15 +108,15 @@ export default class TransitiveDependencyResolver {
             ].map((tmpString) => JSON.parse(tmpString));
             for (var j = 0; j < uniqueDependencies.length; j++){
                 if(uniqueDependencies[j].versionNumber){
-                    // version = uniqueDependencies[j].versionNumber.split(".")
                     let version = convertBuildNumDotDelimToHyphen(uniqueDependencies[j].versionNumber);
 
                     for(var i = j+1; i < uniqueDependencies.length; i++){
                         if(uniqueDependencies[j].package == uniqueDependencies[i].package){
-
                             let versionToCompare = convertBuildNumDotDelimToHyphen(uniqueDependencies[i].versionNumber);
                             // replace existing packageInfo if package version number is newer
                             if (semver.lt(version, versionToCompare)) {
+                                uniqueDependencies.splice(j,1)
+                            }else{
                                 uniqueDependencies.splice(i,1)
                             }
                         }
