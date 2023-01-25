@@ -221,7 +221,10 @@ export abstract class InstallPackage {
                 this.logger,
                 preDeploymentScript,
                 this.sfpPackage.packageName,
-                this.sfpOrg.getUsername()
+                this.sfpOrg.getUsername(),
+                await this.sfpOrg.getAlias(),
+                this.sfpPackage.workingDirectory,
+                this.sfpPackage.sourceDir
             );
         }
     }
@@ -251,7 +254,10 @@ export abstract class InstallPackage {
                 this.logger,
                 postDeploymentScript,
                 this.sfpPackage.packageName,
-                this.sfpOrg.getUsername()
+                this.sfpOrg.getUsername(),
+                await this.sfpOrg.getAlias(),
+                this.sfpPackage.workingDirectory,
+                this.sfpPackage.sourceDir
             );
         }
     }
