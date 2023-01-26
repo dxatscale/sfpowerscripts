@@ -223,8 +223,9 @@ export abstract class InstallPackage {
                 this.sfpPackage.packageName,
                 this.sfpOrg.getUsername(),
                 await this.sfpOrg.getAlias(),
-                this.sfpPackage.workingDirectory,
-                this.sfpPackage.sourceDir
+                this.sfpPackage.sourceDir,
+                this.sfpPackage.packageDirectory
+
             );
         }
     }
@@ -256,8 +257,8 @@ export abstract class InstallPackage {
                 this.sfpPackage.packageName,
                 this.sfpOrg.getUsername(),
                 await this.sfpOrg.getAlias(),
-                this.sfpPackage.workingDirectory,
-                this.sfpPackage.sourceDir
+                this.sfpPackage.sourceDir,
+                this.sfpPackage.packageDirectory
             );
         }
     }
