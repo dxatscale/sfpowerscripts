@@ -12,6 +12,7 @@ export default class TransitiveDependencyResolver {
     private dependencyMap;
     private updatedprojectConfig: any;
     private externalDependencyMap: any = {};
+    private externalDependencies: Array<string> = []
 
     constructor(private sfdxProjectConfig: any, private conn: Connection, private logger?: Logger) {}
     public async resolveDependencies(): Promise<ProjectConfig> {
@@ -38,36 +39,30 @@ export default class TransitiveDependencyResolver {
             }
         }
         if(this.externalDependencyMap){
-           
             for ( let pkg of Object.keys(this.externalDependencyMap)){
                 pkgWithDependencies[pkg] = this.externalDependencyMap[pkg];
             }
         }
-        // fetch dependencies for the packages in package aliases from devhub
-        for( let pkg of Object.keys(this.sfdxProjectConfig.packageAliases)){
-            if (this.sfdxProjectConfig.packageAliases[pkg]?.startsWith('04t')){
-                var dependencies = []
-                const query = `SELECT Dependencies FROM SubscriberPackageVersion WHERE Id = '${this.sfdxProjectConfig.packageAliases[pkg]}'`;
-                const records: any = await QueryHelper.query<{ Id: string; Name: string }>(query, this.conn, true);
-
-                if( records[0].Dependencies != null){
-                    
-                    for( let dependencyId of records[0].Dependencies.ids){
-                        var packageName = dependencyId.subscriberPackageVersionId;
-                        for( let pkgAlias of Object.keys(this.sfdxProjectConfig.packageAliases)){
-                            if(this.sfdxProjectConfig.packageAliases[pkgAlias] == dependencyId.subscriberPackageVersionId){
-                                packageName = pkgAlias;
-                                break;
-                            }
-                        }
-                        const dependency = { "package": packageName}
-                        dependencies.push(dependency)
-                    }
-                    SFPLogger.log(`${records[0].Dependencies.ids.length} dependencies are found in DevHub for ${pkg}`,LoggerLevel.INFO,this.logger);
-
-                    pkgWithDependencies[pkg] = dependencies;
+        // identify external dependencies for the packages in package aliases
+        for( let pkgAlias of Object.keys(this.sfdxProjectConfig.packageAliases)){
+            var isInternalPackage = false
+            for (let pkg of packages) {
+                if( pkgAlias == pkg.package){
+                    isInternalPackage = true
+                    break
                 }
             }
+            if( !isInternalPackage){
+                this.externalDependencies.push(pkgAlias)
+            }            
+        }
+
+        if( this.externalDependencies.length > 0 ){
+            SFPLogger.log(`Detected ${this.externalDependencies.length} External Dependencies`,LoggerLevel.INFO,this.logger)
+            SFPLogger.log(this.printExternalDependencyTable(this.externalDependencies).toString(), LoggerLevel.INFO,this.logger);
+            //Update project config
+            await this.addExternalDependencyEntry();
+
         }
         return pkgWithDependencies;
     }
@@ -149,9 +144,23 @@ export default class TransitiveDependencyResolver {
         return table;
     }
 
+    private printExternalDependencyTable(externalDependencies: Array<string>) {
+        let tableHead = ['External Dependency'];
+        let table = new Table({
+            head: tableHead,
+        });
+        for (let dependency of externalDependencies) {
+            let item = [dependency];
+
+            table.push(item);
+        }
+
+        return table;
+    }
+
     public async fetchExternalDependencies() {
-        if (this.sfdxProjectConfig.plugins?.sfpowerscripts?.transitiveDependencyResolver?.externalDependencyMap){
-            this.externalDependencyMap =  this.sfdxProjectConfig.plugins.sfpowerscripts.transitiveDependencyResolver.externalDependencyMap;
+        if (this.sfdxProjectConfig.plugins?.sfpowerscripts?.externalDependencyMap){
+            this.externalDependencyMap =  this.sfdxProjectConfig.plugins.sfpowerscripts.externalDependencyMap;
             SFPLogger.log(JSON.stringify(this.externalDependencyMap),LoggerLevel.DEBUG,this.logger);
         }
     }
@@ -162,6 +171,16 @@ export default class TransitiveDependencyResolver {
                 return Object.assign(pkg, { dependencies: fixedDependencies });
             }
         });
+    }
+
+    private async addExternalDependencyEntry() {
+        for ( let dependency of this.externalDependencies){
+            if (!Object.keys(this.externalDependencyMap).includes(dependency)){
+                this.externalDependencyMap[dependency] = [{ "package": "", "versionNumber": ""}]
+            }
+
+        }
+        this.updatedprojectConfig.plugins.sfpowerscripts.externalDependencyMap = this.externalDependencyMap
     }
 }
 
