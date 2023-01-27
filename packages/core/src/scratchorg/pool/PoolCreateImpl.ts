@@ -183,9 +183,11 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         const rejectedScratchOrgs = scratchOrgCreationResults.filter(isRejected).map((p) => p.reason);
         for (const reason of rejectedScratchOrgs) {
             if (reason.message.includes(`The client has timed out`)) {
+                 //Display how many we were able to create
+               let elapsedTime = Date.now() - startTime;
                 SFPLogger.log(
-                    `A scratch org creation was rejected due to saleforce not responding within the set wait time of ${this.pool.waitTime} mins` +
-                        `You might need to inrease the wait time further and rety `
+                    `A scratch org creation was rejected due to saleforce not responding within the set wait time of ${this.pool.waitTime} mins \n` +
+                     `Time elasped so far ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))},You might need to inrease the wait time further and rety `
                 );
             } else SFPLogger.log(`A scratch org creation was rejected due to ${reason.message}`);
         }
