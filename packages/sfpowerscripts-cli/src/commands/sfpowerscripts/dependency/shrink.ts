@@ -19,15 +19,9 @@ export default class Shrink extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresUsername = false;
-    protected static requiresDevhubUsername = false;
     protected static requiresProject = false;
 
     protected static flagsConfig = {
-        devhubalias: flags.string({
-            char: 'v',
-            description: messages.getMessage('devhubAliasFlagDescription'),
-            default: 'HubOrg',
-        }),
         overwrite: flags.boolean({
             char: 'o',
             description: messages.getMessage('overWriteProjectConfigFlagDescription'),
@@ -58,13 +52,11 @@ export default class Shrink extends SfpowerscriptsCommand {
         let sfpOrg: SFPOrg;
         let defaultProjectConfigPath = './project-config';
         let projectConfigFilePath: string;
-        if (this.flags.devhubalias) sfpOrg = await SFPOrg.create({ aliasOrUsername: this.flags.devhubalias });
         try {
             //Validate dependencies in sfdx-project.json // Read Manifest
             let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
             const shrinkImpl = new ShrinkImpl(
-                projectConfig,
-                sfpOrg.getConnection()
+                projectConfig
             );
             projectConfig = await shrinkImpl.resolveDependencies();
 

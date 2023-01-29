@@ -118,7 +118,7 @@ export default class BuildImpl {
         
         //Fix transitive dependency gap
         let groupDependencyResolutionLogs = new GroupConsoleLogs("Resolving dependencies",this.logger).begin();
-        this.projectConfig = await this.resolvePackageDependencies(this.projectConfig, this.sfpOrg?.getConnection())
+        this.projectConfig = await this.resolvePackageDependencies(this.projectConfig)
         groupDependencyResolutionLogs.end();
 
 
@@ -646,11 +646,11 @@ export default class BuildImpl {
         return configFiles;
     }
 
-    private resolvePackageDependencies(projectConfig: any, connToDevHub: Connection){
+    private resolvePackageDependencies(projectConfig: any){
         let isDependencyResolverEnabled = !projectConfig?.plugins?.sfpowerscripts?.disableTransitiveDependencyResolver
        
-        if(isDependencyResolverEnabled && connToDevHub){
-            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, connToDevHub,this.logger)
+        if(isDependencyResolverEnabled){
+            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig,this.logger)
             return transitiveDependencyResolver.resolveDependencies()
         }else{
             return projectConfig

@@ -1,6 +1,5 @@
 import ProjectConfig from '../project/ProjectConfig';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_ERROR } from '@dxatscale/sfp-logger';
-import { Connection } from '@salesforce/core';
 import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
 import semver = require('semver');
@@ -14,7 +13,7 @@ export default class TransitiveDependencyResolver {
     private externalDependencyMap: any = {};
     private externalDependencies: Array<string> = []
 
-    constructor(private sfdxProjectConfig: any, private conn: Connection, private logger?: Logger) {}
+    constructor(private sfdxProjectConfig: any, private logger?: Logger) {}
     public async resolveDependencies(): Promise<ProjectConfig> {
         SFPLogger.log('Validating Project Dependencies...', LoggerLevel.INFO, this.logger);
 

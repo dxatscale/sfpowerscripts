@@ -6,8 +6,6 @@ import { flags } from '@salesforce/command';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import * as fs from 'fs-extra';
 import path = require('path');
-import * as rimraf from 'rimraf';
-import { Stage } from '../../../impl/Stage';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -24,11 +22,6 @@ export default class Expand extends SfpowerscriptsCommand {
     protected static requiresProject = false;
 
     protected static flagsConfig = {
-        devhubalias: flags.string({
-            char: 'v',
-            description: messages.getMessage('devhubAliasFlagDescription'),
-            default: 'HubOrg',
-        }),
         overwrite: flags.boolean({
             char: 'o',
             description: messages.getMessage('overWriteProjectConfigFlagDescription'),
@@ -59,13 +52,11 @@ export default class Expand extends SfpowerscriptsCommand {
         let sfpOrg: SFPOrg;
         let defaultProjectConfigPath = './project-config';
         let projectConfigFilePath: string;
-        if (this.flags.devhubalias) sfpOrg = await SFPOrg.create({ aliasOrUsername: this.flags.devhubalias });
         try {
             //Validate dependencies in sfdx-project.json // Read Manifest
             let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
             const transitiveDependencyResolver = new TransitiveDependencyResolver(
-                projectConfig,
-                sfpOrg.getConnection()
+                projectConfig
             );
             projectConfig = await transitiveDependencyResolver.resolveDependencies();
 
