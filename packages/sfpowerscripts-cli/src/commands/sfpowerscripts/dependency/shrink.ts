@@ -6,6 +6,7 @@ import { flags } from '@salesforce/command';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import * as fs from 'fs-extra';
 import path = require('path');
+import SFPLogger from '@dxatscale/sfp-logger';
 
 
 // Initialize Messages with the current plugin directory
@@ -13,13 +14,13 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'shrink_dependency');
+const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'dependency_shrink');
 
 export default class Shrink extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresUsername = false;
-    protected static requiresProject = false;
+    protected static requiresProject = true;
 
     protected static flagsConfig = {
         overwrite: flags.boolean({
@@ -49,7 +50,6 @@ export default class Shrink extends SfpowerscriptsCommand {
     };
 
     public async execute() {
-        let sfpOrg: SFPOrg;
         let defaultProjectConfigPath = './project-config';
         let projectConfigFilePath: string;
         try {
@@ -64,19 +64,19 @@ export default class Shrink extends SfpowerscriptsCommand {
             if (!fs.existsSync(defaultProjectConfigPath)) fs.mkdirpSync(defaultProjectConfigPath);
 
             if(this.flags.overwrite){
-                console.log(`Overwriting sfdx-project.json with shrunk project config file`);
+                SFPLogger.log(`Overwriting sfdx-project.json with shrunk project config file`);
                 projectConfigFilePath = `sfdx-project.json`;
 
                 let backupFilePath: string = path.join(defaultProjectConfigPath, `sfdx-project.json.bak`);
-                console.log(`Saving a backup to ${backupFilePath}`);
+                SFPLogger.log(`Saving a backup to ${backupFilePath}`);
                 fs.copySync(projectConfigFilePath, backupFilePath);
                 
                 fs.writeFileSync(projectConfigFilePath, JSON.stringify(projectConfig, null, 4));
-                console.log('sfdx-project.json has been updated.')
+                SFPLogger.log('sfdx-project.json has been updated.')
             }else{
                 projectConfigFilePath = path.join(defaultProjectConfigPath, `sfdx-project.min.json`);
                 fs.writeFileSync(projectConfigFilePath, JSON.stringify(projectConfig, null, 4));
-                console.log(`Shrunk project config file has been saved to ${projectConfigFilePath}`);
+                SFPLogger.log(`Shrunk project config file has been saved to ${projectConfigFilePath}`);
             }
 
         } catch (error) {

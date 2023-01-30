@@ -12,7 +12,7 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'expand_dependency');
+const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'dependency_expand');
 
 export default class Expand extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
