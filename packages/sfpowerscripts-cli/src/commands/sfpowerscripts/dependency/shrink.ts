@@ -19,8 +19,9 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'dependency_
 export default class Shrink extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
-    protected static requiresUsername = false;
+
     protected static requiresProject = true;
+    protected static requiresDevhubUsername = true;
 
     protected static flagsConfig = {
         overwrite: flags.boolean({
