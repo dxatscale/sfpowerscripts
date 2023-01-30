@@ -68,7 +68,8 @@
         "/messages",
         "/npm-shrinkwrap.json",
         "/scripts",
-        "/resources"
+        "/resources",
+        "/oclf.manifest.json"
     ],
     "homepage": "https://github.com/dxatscale/sfpowerscripts",
     "keywords": [
@@ -133,7 +134,7 @@
         "directory": "packages/sfpowerscripts-cli"
     },
     "scripts": {
-        "build": "npm run clean && npm run compile",
+        "build": "npm run clean && npm run compile && oclif manifest",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
         "compile": "tsc -b tsconfig.json",
         "snyk-protect": "snyk protect",
