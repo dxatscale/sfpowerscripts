@@ -174,7 +174,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         }
 
         function printArtifactVersions(installedArtifacts: any) {
-            let groupSection = new GroupConsoleLogs(`Artifacts installed in the Scratch Org`).begin();
+            let groupSection = new GroupConsoleLogs(`Artifacts installed in the Org ${this.orgAsSFPOrg.getUsername()}`).begin();
 
             InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
 
