@@ -3,8 +3,9 @@ import SFPLogger, { Logger, LoggerLevel, COLOR_KEY_MESSAGE } from '@dxatscale/sf
 
 export default class InstalledArtifactsDisplayer {
     public static printInstalledArtifacts(artifacts: any, logger: Logger) {
-        if (artifacts == null) return;
-
+        if (!artifacts) return;
+        else if(artifacts.length==0) return;
+     
         let table = new Table({
             head: ['Artifact', 'Version', 'Commit Id'],
         });
