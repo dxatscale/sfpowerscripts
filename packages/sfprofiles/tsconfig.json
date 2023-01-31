@@ -1,0 +1,19 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "outDir": "./lib",
+        "rootDir": "./src",
+        "skipLibCheck": true,
+        "declaration": true,
+        "noImplicitAny": false,
+        "lib": ["es6"],
+        "target": "es6",
+        "baseUrl": "src",
+        "paths": {
+            "@utils/*": ["utils/*"],
+            "@impl/*": ["impl/*"]
+        }
+    },
+    "exclude": ["node_modules", "dist", "tests"]
+}
