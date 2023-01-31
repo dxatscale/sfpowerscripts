@@ -153,7 +153,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         let packagesMappedToLastKnownCommitId: { [p: string]: string } = {};
         if (installedArtifacts != null) {
             packagesMappedToLastKnownCommitId = getPackagesToCommits(installedArtifacts);
-            printArtifactVersions(installedArtifacts);
+            printArtifactVersions(this.orgAsSFPOrg,installedArtifacts);
         }
         return packagesMappedToLastKnownCommitId;
 
@@ -173,8 +173,8 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             return packagesToCommits;
         }
 
-        function printArtifactVersions(installedArtifacts: any) {
-            let groupSection = new GroupConsoleLogs(`Artifacts installed in the Org ${this.orgAsSFPOrg.getUsername()}`).begin();
+        function printArtifactVersions(orgAsSFPOrg: SFPOrg,installedArtifacts: any) {
+            let groupSection = new GroupConsoleLogs(`Artifacts installed in the Org ${orgAsSFPOrg.getUsername()}`).begin();
 
             InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
 
