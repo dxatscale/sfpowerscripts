@@ -215,14 +215,16 @@ export abstract class InstallPackage {
             );
         }
 
+
         if (fs.existsSync(preDeploymentScript)) {
+            let alias =  await this.sfpOrg.getAlias();
             SFPLogger.log('Executing preDeployment script', LoggerLevel.INFO, this.logger);
             await ScriptExecutor.executeScript(
                 this.logger,
                 preDeploymentScript,
                 this.sfpPackage.packageName,
                 this.sfpOrg.getUsername(),
-                await this.sfpOrg.getAlias(),
+                alias?alias:this.sfpOrg.getUsername(),
                 this.sfpPackage.sourceDir,
                 this.sfpPackage.packageDirectory
 
@@ -251,12 +253,13 @@ export abstract class InstallPackage {
 
         if (fs.existsSync(postDeploymentScript)) {
             SFPLogger.log('Executing postDeployment script', LoggerLevel.INFO, this.logger);
+            let alias =  await this.sfpOrg.getAlias();
             await ScriptExecutor.executeScript(
                 this.logger,
                 postDeploymentScript,
                 this.sfpPackage.packageName,
                 this.sfpOrg.getUsername(),
-                await this.sfpOrg.getAlias(),
+                 alias?alias:this.sfpOrg.getUsername(),
                 this.sfpPackage.sourceDir,
                 this.sfpPackage.packageDirectory
             );
