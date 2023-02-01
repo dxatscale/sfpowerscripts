@@ -8,7 +8,7 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
     constructor(private scope: string, private npmrcPath: string) {
         
         //Check whether the user has already passed in @, and remove it
-        scope= scope.replace(/@/g, '').toLowerCase();
+        this.scope= this.scope.replace(/@/g, '').toLowerCase();
     
 
         if (this.npmrcPath) {
