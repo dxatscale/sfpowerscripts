@@ -11,7 +11,7 @@ export default class InstalledArtifactsDisplayer {
         });
 
         artifacts.forEach((artifact) => {
-            table.push([artifact.Name, artifact.Version__c, artifact.CommitId__c]);
+            table.push([artifact.Name, artifact.Version__c, artifact.CommitId__c?artifact.CommitId__c:""]);
         });
 
         SFPLogger.log(COLOR_KEY_MESSAGE('Artifacts installed in org:'), LoggerLevel.INFO, logger);
