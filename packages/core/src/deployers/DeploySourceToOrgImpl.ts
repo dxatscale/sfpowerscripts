@@ -6,19 +6,15 @@ import SFPLogger, {
     Logger,
     LoggerLevel,
 } from '@dxatscale/sfp-logger';
-import DeployErrorDisplayer from '../display/DeployErrorDisplayer';
+
 import { Duration } from '@salesforce/kit';
 import DeploymentExecutor, { DeploySourceResult } from './DeploymentExecutor';
 import {
-    CodeCoverageWarnings,
     ComponentSet,
     DeployResult,
-    Failures,
     MetadataApiDeployOptions,
     RequestStatus,
 } from '@salesforce/source-deploy-retrieve';
-import PackageComponentPrinter from '../display/PackageComponentPrinter';
-const Table = require('cli-table');
 import * as fs from 'fs-extra';
 import path from 'path';
 import SFPOrg from '../org/SFPOrg';
@@ -41,14 +37,6 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
         if (this.deploymentOptions.apiVersion) this.componentSet.sourceApiVersion = this.deploymentOptions.apiVersion;
 
-        let components = this.componentSet.getSourceComponents();
-
-        //Print components inside Component Set
-        PackageComponentPrinter.printComponentTable(components, this.logger);
-
-        //Display Options
-        this.printDeploymentOptions();
-
         //Get Deploy ID
         let result = await this.deploy(this.componentSet);
 
@@ -67,64 +55,29 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             if (result.response.status == RequestStatus.Canceled) {
                 deploySourceResult.message = `The deployment request ${result.response.id} was cancelled by ${result.response.canceledByName}`;
             } else {
-                deploySourceResult.message = await this.displayErrors(result);
+                deploySourceResult.message = this.handlErrorMesasge(result);
             }
+            deploySourceResult.response=result.response;
             deploySourceResult.result = false;
             deploySourceResult.deploy_id = result.response.id;
         }
         return deploySourceResult;
     }
 
-    private printDeploymentOptions() {
-        SFPLogger.log(
-            `${COLOR_HEADER(
-                `=================================================================================================`
-            )}`,
-            LoggerLevel.INFO,
-            this.logger
-        );
-        SFPLogger.log(`${COLOR_HEADER(`Deployment Options`)}`, LoggerLevel.INFO, this.logger);
-        SFPLogger.log(
-            `${COLOR_HEADER(
-                `=================================================================================================`
-            )}`,
-            LoggerLevel.INFO,
-            this.logger
-        );
-        SFPLogger.log(
-            `TestLevel: ${COLOR_KEY_MESSAGE(this.deploymentOptions.testLevel)}`,
-            LoggerLevel.INFO,
-            this.logger
-        );
-        if (this.deploymentOptions.testLevel == TestLevel.RunSpecifiedTests)
-            SFPLogger.log(
-                `Tests to be triggered: ${COLOR_KEY_MESSAGE(this.deploymentOptions.specifiedTests)}`,
-                LoggerLevel.INFO,
-                this.logger
-            );
 
-        SFPLogger.log(
-            `Ignore Warnings: ${COLOR_KEY_MESSAGE(this.deploymentOptions.ignoreWarnings)}`,
-            LoggerLevel.INFO,
-            this.logger
-        );
-
-        SFPLogger.log(`Roll Back on Error: ${COLOR_KEY_MESSAGE(this.deploymentOptions.rollBackOnError)}`, LoggerLevel.INFO, this.logger);
-
-        SFPLogger.log(
-            `API Version: ${COLOR_KEY_MESSAGE(this.deploymentOptions.apiVersion)}`,
-            LoggerLevel.INFO,
-            this.logger
-        );
-        SFPLogger.log(
-            `${COLOR_HEADER(
-                `=================================================================================================`
-            )}`,
-            LoggerLevel.INFO,
-            this.logger
-        );
+    private handlErrorMesasge(result: DeployResult):string
+    {
+        if (result.response.numberComponentErrors == 0) {
+            return 'Unable to fetch report, Check your org for details';
+        } else if (result.response.numberComponentErrors > 0) {
+            return result.response.errorMessage;
+        } else if (result.response.details.runTestResult) {
+            return 'Unable to deploy due to unsatisfactory code coverage and/or test failures';
+        } else {
+            return 'Unable to fetch report, Check your org for details';
+        }
     }
-
+    
     private writeResultToReport(result: DeployResult) {
         let deploymentReports = `.sfpowerscripts/mdapiDeployReports`;
         fs.mkdirpSync(deploymentReports);
@@ -132,69 +85,6 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             path.join(deploymentReports, `${result.response.id}.json`),
             JSON.stringify(this.formatResultAsJSON(result))
         );
-    }
-
-    private async displayErrors(result: DeployResult): Promise<string> {
-        SFPLogger.log(`Gathering Final Deployment Status`, null, this.logger);
-
-        if (result.response.numberComponentErrors == 0) {
-            return 'Unable to fetch report, Check your org for details';
-        } else if (result.response.numberComponentErrors > 0) {
-            DeployErrorDisplayer.printMetadataFailedToDeploy(result.response.details.componentFailures, this.logger);
-            return result.response.errorMessage;
-        } else if (result.response.details.runTestResult) {
-            if (result.response.details.runTestResult.codeCoverageWarnings) {
-                this.displayCodeCoverageWarnings(result.response.details.runTestResult.codeCoverageWarnings);
-            }
-
-            if (result.response.details.runTestResult.failures) {
-                this.displayTestFailures(result.response.details.runTestResult.failures);
-            }
-            return 'Unable to deploy due to unsatisfactory code coverage and/or test failures';
-        } else {
-            return 'Unable to fetch report, Check your org for details';
-        }
-    }
-
-    private displayCodeCoverageWarnings(codeCoverageWarnings: CodeCoverageWarnings | CodeCoverageWarnings[]) {
-        let table = new Table({
-            head: ['Name', 'Message'],
-        });
-
-        if (Array.isArray(codeCoverageWarnings)) {
-            codeCoverageWarnings.forEach((coverageWarningElement) => {
-                table.push([coverageWarningElement['name'], coverageWarningElement.message]);
-            });
-        } else {
-            table.push([codeCoverageWarnings['name'], codeCoverageWarnings.message]);
-        }
-
-        if (table.length > 1) {
-            SFPLogger.log(
-                'Unable to deploy due to unsatisfactory code coverage, Check the following classes:',
-                LoggerLevel.WARN,
-                this.logger
-            );
-            SFPLogger.log(table.toString(), LoggerLevel.WARN, this.logger);
-        }
-    }
-
-    private displayTestFailures(testFailures: Failures | Failures[]) {
-        let table = new Table({
-            head: ['Test Name', 'Method Name', 'Message'],
-        });
-
-        if (Array.isArray(testFailures)) {
-            testFailures.forEach((elem) => {
-                table.push([elem.name, elem.methodName, elem.message]);
-            });
-        } else {
-            table.push([testFailures.name, testFailures.methodName, testFailures.message]);
-        }
-        if (table.length > 1) {
-            SFPLogger.log('Unable to deploy due to test failures:', LoggerLevel.WARN, this.logger);
-            SFPLogger.log(table.toString(), LoggerLevel.WARN, this.logger);
-        }
     }
 
     private async buildDeploymentOptions(org: SFPOrg): Promise<MetadataApiDeployOptions> {

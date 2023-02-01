@@ -18,6 +18,8 @@ import getFormattedTime from '../../utils/GetFormattedTime';
 import { TestLevel } from '../../apextest/TestOptions';
 import { PostDeployersRegistry } from '../postDeployers/PostDeployersRegistry';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
+import PackageComponentPrinter from '../../display/PackageComponentPrinter';
+import DeployErrorDisplayer from '../../display/DeployErrorDisplayer';
 
 export class SfpPackageInstallationOptions {
     installationkey?: string;
@@ -215,19 +217,17 @@ export abstract class InstallPackage {
             );
         }
 
-
         if (fs.existsSync(preDeploymentScript)) {
-            let alias =  await this.sfpOrg.getAlias();
+            let alias = await this.sfpOrg.getAlias();
             SFPLogger.log('Executing preDeployment script', LoggerLevel.INFO, this.logger);
             await ScriptExecutor.executeScript(
                 this.logger,
                 preDeploymentScript,
                 this.sfpPackage.packageName,
                 this.sfpOrg.getUsername(),
-                alias?alias:this.sfpOrg.getUsername(),
+                alias ? alias : this.sfpOrg.getUsername(),
                 this.sfpPackage.sourceDir,
                 this.sfpPackage.packageDirectory
-
             );
         }
     }
@@ -253,13 +253,13 @@ export abstract class InstallPackage {
 
         if (fs.existsSync(postDeploymentScript)) {
             SFPLogger.log('Executing postDeployment script', LoggerLevel.INFO, this.logger);
-            let alias =  await this.sfpOrg.getAlias();
+            let alias = await this.sfpOrg.getAlias();
             await ScriptExecutor.executeScript(
                 this.logger,
                 postDeploymentScript,
                 this.sfpPackage.packageName,
                 this.sfpOrg.getUsername(),
-                 alias?alias:this.sfpOrg.getUsername(),
+                alias ? alias : this.sfpOrg.getUsername(),
                 this.sfpPackage.sourceDir,
                 this.sfpPackage.packageDirectory
             );
@@ -310,6 +310,10 @@ export abstract class InstallPackage {
                         this.options.apiVersion
                     );
 
+                    //Print components inside Component Set
+                    let components = modifiedPackage.componentSet.getSourceComponents();
+                    PackageComponentPrinter.printComponentTable(components, this.logger);
+
                     let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
                         this.sfpOrg,
                         modifiedPackage.location,
@@ -319,6 +323,9 @@ export abstract class InstallPackage {
                     );
 
                     result = await deploySourceToOrgImpl.exec();
+                    if (!result.result) {
+                        DeployErrorDisplayer.displayErrors(result.response, this.logger);
+                    }
                 } else {
                     SFPLogger.log(
                         `Post Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())} skipped or not enabled`,
