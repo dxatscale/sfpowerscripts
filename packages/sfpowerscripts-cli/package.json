@@ -134,7 +134,8 @@
         "directory": "packages/sfpowerscripts-cli"
     },
     "scripts": {
-        "build": "npm run clean && npm run compile && oclif manifest",
+        "build": "npm run clean && npm run compile",
+        "manifest":"oclif manifest",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
         "compile": "tsc -b tsconfig.json",
         "snyk-protect": "snyk protect",
