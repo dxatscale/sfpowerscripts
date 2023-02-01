@@ -10,18 +10,19 @@ export default class ShrinkImpl {
     private updatedprojectConfig: any;
     private externalDependencyMap: any = {};
 
-    constructor(private projectConfig: ProjectConfig, private logger?: Logger) {}
+    constructor(private projectConfig: ProjectConfig,private devhub_username: string, private logger?: Logger) {}
     public async resolveDependencies(): Promise<ProjectConfig> {
         SFPLogger.log('Shrinking Project Dependencies...', LoggerLevel.INFO, this.logger);
 
         this.updatedprojectConfig = _.cloneDeep(this.projectConfig);
         
         const transitiveDependencyResolver = new TransitiveDependencyResolver(
-          this.projectConfig
-      );
+          this.projectConfig,
+          this.devhub_username
+        );
 
         this.externalDependencyMap = await transitiveDependencyResolver.fetchExternalDependencies();
-        this.dependencyMap = await transitiveDependencyResolver.getAllPackageDependencyMap();
+        this.dependencyMap = await transitiveDependencyResolver.getAllPackageDependencyMap(this.updatedprojectConfig);
         await this.shrinkDependencies(this.dependencyMap);
 
 

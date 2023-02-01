@@ -4,7 +4,10 @@ import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
 import semver = require('semver');
 import convertBuildNumDotDelimToHyphen from '../utils/VersionNumberConverter';
+import { Connection } from '@salesforce/core';
+import ExternalPackage2DependencyResolver from '../package/dependencies/ExternalPackage2DependencyResolver';
 import QueryHelper from '../queryHelper/QueryHelper';
+import SFPOrg from '../org/SFPOrg';
 const Table = require('cli-table');
 
 export default class TransitiveDependencyResolver {
@@ -13,15 +16,15 @@ export default class TransitiveDependencyResolver {
     private externalDependencyMap: any = {};
     private externalDependencies: Array<string> = []
 
-    constructor(private sfdxProjectConfig: any, private logger?: Logger) {}
+    constructor(private sfdxProjectConfig: any, private devhub_username: string, private logger?: Logger) {}
     public async resolveDependencies(): Promise<ProjectConfig> {
         SFPLogger.log('Validating Project Dependencies...', LoggerLevel.INFO, this.logger);
 
-        this.updatedprojectConfig = _.cloneDeep(this.sfdxProjectConfig);
+        this.updatedprojectConfig =await  _.cloneDeep(this.sfdxProjectConfig);
 
         await this.fetchExternalDependencies();
 
-        this.dependencyMap = await this.getAllPackageDependencyMap();
+        this.dependencyMap = await this.getAllPackageDependencyMap(this.updatedprojectConfig);
 
         await this.expandDependencies(this.dependencyMap);
 
@@ -29,7 +32,7 @@ export default class TransitiveDependencyResolver {
         return this.updatedprojectConfig;
     }
 
-    public async getAllPackageDependencyMap(): Promise<{ [key: string]: Dependency[] }> {
+    public async getAllPackageDependencyMap(updatedprojectConfig: any): Promise<{ [key: string]: Dependency[] }> {
         let pkgWithDependencies = {};
         let packages = ProjectConfig.getAllPackageDirectoriesFromConfig(this.sfdxProjectConfig);
         for (let pkg of packages) {
@@ -43,24 +46,23 @@ export default class TransitiveDependencyResolver {
             }
         }
         // identify external dependencies for the packages in package aliases
-        for( let pkgAlias of Object.keys(this.sfdxProjectConfig.packageAliases)){
-            var isInternalPackage = false
-            for (let pkg of packages) {
-                if( pkgAlias == pkg.package){
-                    isInternalPackage = true
-                    break
-                }
-            }
-            if( !isInternalPackage){
-                this.externalDependencies.push(pkgAlias)
-            }            
+        let hubOrg = await SFPOrg.create({ aliasOrUsername: this.devhub_username });
+        let externalPackageResolver = new ExternalPackage2DependencyResolver(
+            hubOrg.getConnection(),
+            ProjectConfig.getSFDXProjectConfig(null),
+            null
+        );
+        let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies();
+
+
+        for( let externalPackage2 of externalPackage2s){
+            this.externalDependencies.push(externalPackage2.name)         
         }
 
         if( this.externalDependencies.length > 0 ){
             SFPLogger.log(`Detected ${this.externalDependencies.length} External Dependencies`,LoggerLevel.INFO,this.logger)
-            SFPLogger.log(this.printExternalDependencyTable(this.externalDependencies).toString(), LoggerLevel.INFO,this.logger);
             //Update project config
-            await this.addExternalDependencyEntry();
+            await this.addExternalDependencyEntry(updatedprojectConfig);
 
         }
         return pkgWithDependencies;
@@ -143,20 +145,6 @@ export default class TransitiveDependencyResolver {
         return table;
     }
 
-    private printExternalDependencyTable(externalDependencies: Array<string>) {
-        let tableHead = ['External Dependency'];
-        let table = new Table({
-            head: tableHead,
-        });
-        for (let dependency of externalDependencies) {
-            let item = [dependency];
-
-            table.push(item);
-        }
-
-        return table;
-    }
-
     public async fetchExternalDependencies() {
         if (this.sfdxProjectConfig.plugins?.sfpowerscripts?.externalDependencyMap){
             this.externalDependencyMap =  this.sfdxProjectConfig.plugins.sfpowerscripts.externalDependencyMap;
@@ -172,14 +160,14 @@ export default class TransitiveDependencyResolver {
         });
     }
 
-    private async addExternalDependencyEntry() {
+    private async addExternalDependencyEntry(updatedprojectConfig: any) {
         for ( let dependency of this.externalDependencies){
             if (!Object.keys(this.externalDependencyMap).includes(dependency)){
                 this.externalDependencyMap[dependency] = [{ "package": "", "versionNumber": ""}]
             }
 
         }
-        this.updatedprojectConfig.plugins.sfpowerscripts.externalDependencyMap = this.externalDependencyMap
+        updatedprojectConfig.plugins.sfpowerscripts.externalDependencyMap = this.externalDependencyMap
     }
 }
 

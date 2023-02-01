@@ -3,8 +3,7 @@ import { Messages } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { flags } from '@salesforce/command';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import * as fs from 'fs-extra';
+import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';import * as fs from 'fs-extra';
 import path = require('path');
 
 // Initialize Messages with the current plugin directory
@@ -17,9 +16,8 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'expand_depe
 export default class Expand extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
-    protected static requiresUsername = false;
-    protected static requiresDevhubUsername = false;
-    protected static requiresProject = false;
+    protected static requiresDevhubUsername = true;
+    protected static requiresProject = true;
 
     protected static flagsConfig = {
         overwrite: flags.boolean({
@@ -49,14 +47,14 @@ export default class Expand extends SfpowerscriptsCommand {
     };
 
     public async execute() {
-        let sfpOrg: SFPOrg;
         let defaultProjectConfigPath = './project-config';
         let projectConfigFilePath: string;
         try {
             //Validate dependencies in sfdx-project.json // Read Manifest
             let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
             const transitiveDependencyResolver = new TransitiveDependencyResolver(
-                projectConfig
+                projectConfig,
+                this.hubOrg.getUsername(),
             );
             projectConfig = await transitiveDependencyResolver.resolveDependencies();
 
@@ -64,19 +62,19 @@ export default class Expand extends SfpowerscriptsCommand {
             if (!fs.existsSync(defaultProjectConfigPath)) fs.mkdirpSync(defaultProjectConfigPath);
 
             if(this.flags.overwrite){
-                console.log(`Overwriting sfdx-project.json with expanded project config file`);
+                SFPLogger.log(`Overwriting sfdx-project.json with expanded project config file`,LoggerLevel.INFO)
                 projectConfigFilePath = `sfdx-project.json`;
 
                 let backupFilePath: string = path.join(defaultProjectConfigPath, `sfdx-project.json.bak`);
-                console.log(`Saving a backup to ${backupFilePath}`);
+                SFPLogger.log(`Saving a backup to ${backupFilePath}`,LoggerLevel.INFO)
                 fs.copySync(projectConfigFilePath, backupFilePath);
                 
                 fs.writeFileSync(projectConfigFilePath, JSON.stringify(projectConfig, null, 4));
-                console.log('sfdx-project.json has been updated.')
+                SFPLogger.log('sfdx-project.json has been updated.',LoggerLevel.INFO)
             }else{
                 projectConfigFilePath = path.join(defaultProjectConfigPath, `sfdx-project.exp.json`);
                 fs.writeFileSync(projectConfigFilePath, JSON.stringify(projectConfig, null, 4));
-                console.log(`Generated project config file has been saved to ${projectConfigFilePath}`);
+                SFPLogger.log(`Generated project config file has been saved to ${projectConfigFilePath}`,LoggerLevel.INFO)
             }
 
         } catch (error) {
