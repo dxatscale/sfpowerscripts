@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "20.16.5",
+    "version": "20.16.6",
     "author": "dxatscale",
     "release": "January 23",
     "bin": {
@@ -11,7 +11,7 @@
     "dependencies": {
         "@dxatscale/sfdc-soup": "^18.2.6",
         "@dxatscale/sfp-logger": "1.2.0",
-        "@dxatscale/sfpowerscripts.core": "33.13.3",
+        "@dxatscale/sfpowerscripts.core": "33.13.4",
         "@oclif/core": "1.10.0",
         "@oclif/plugin-help": "5.1.12",
         "@salesforce/command": "5.2.43",
@@ -135,7 +135,7 @@
     },
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "manifest":"oclif manifest",
+        "manifest": "oclif manifest",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
         "compile": "tsc -b tsconfig.json",
         "snyk-protect": "snyk protect",
