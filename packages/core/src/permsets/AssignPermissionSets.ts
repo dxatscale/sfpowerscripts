@@ -2,6 +2,7 @@ import { Connection } from '@salesforce/core';
 import child_process = require('child_process');
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import PermissionSetFetcher from './PermissionSetFetcher';
+import { ZERO_BORDER_TABLE } from '../display/TableConstants';
 const Table = require('cli-table');
 
 export default class AssignPermissionSets {
@@ -80,6 +81,7 @@ export default class AssignPermissionSets {
     private printPermsetAssignments(assignments: { username: string; permset: string }[]) {
         let table = new Table({
             head: ['Username', 'Permission Set Assignment'],
+            chars: ZERO_BORDER_TABLE
         });
 
         assignments.forEach((assignment) => {

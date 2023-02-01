@@ -9,6 +9,7 @@ import * as rimraf from 'rimraf';
 const Table = require('cli-table');
 import SFPLogger, { LoggerLevel, COLOR_SUCCESS } from '@dxatscale/sfp-logger';
 import lodash = require('lodash');
+import { ZERO_BORDER_TABLE } from '../../../ui/TableConstants';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -288,6 +289,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
             SFPLogger.log(`\n${report.data[i].filepath}`, LoggerLevel.INFO);
             let table = new Table({
                 head: ['Priority', 'Line Number', 'Rule', 'Description'],
+                chars: ZERO_BORDER_TABLE
             });
 
             report.data[i].violations.forEach((violation) => {

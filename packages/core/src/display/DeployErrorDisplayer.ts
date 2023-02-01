@@ -1,6 +1,7 @@
 const Table = require('cli-table');
 import { CodeCoverageWarnings, DeployMessage, Failures, MetadataApiDeployStatus } from '@salesforce/source-deploy-retrieve';
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import { ZERO_BORDER_TABLE } from './TableConstants';
 
 export default class DeployErrorDisplayer {
     private static printMetadataFailedToDeploy(componentFailures: DeployMessage | DeployMessage[], logger: Logger) {
@@ -8,6 +9,7 @@ export default class DeployErrorDisplayer {
 
         let table = new Table({
             head: ['Metadata Type', 'API Name', 'Problem Type', 'Problem'],
+            chars: ZERO_BORDER_TABLE
         });
 
         let pushComponentFailureIntoTable = (componentFailure) => {
@@ -83,6 +85,7 @@ export default class DeployErrorDisplayer {
     private static displayTestFailures(testFailures: Failures | Failures[], logger: Logger) {
         let table = new Table({
             head: ['Test Name', 'Method Name', 'Message'],
+            chars: ZERO_BORDER_TABLE
         });
 
         if (Array.isArray(testFailures)) {

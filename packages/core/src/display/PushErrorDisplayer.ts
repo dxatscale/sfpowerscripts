@@ -1,5 +1,6 @@
 const Table = require('cli-table');
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import { ZERO_BORDER_TABLE } from './TableConstants';
 
 export default class PushErrorDisplayer {
     public static printMetadataFailedToPush(error: any, packageLogger: Logger) {
@@ -10,6 +11,7 @@ export default class PushErrorDisplayer {
         if (error.name === 'sourceConflictDetected') {
             table = new Table({
                 head: ['State', 'API Name', 'Metadata Type', 'File Path'],
+                chars: ZERO_BORDER_TABLE
             });
 
             pushComponentFailureIntoTable = (componentFailure) => {

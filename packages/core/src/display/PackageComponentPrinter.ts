@@ -1,6 +1,7 @@
 const Table = require('cli-table');
 import { LazyCollection, SourceComponent } from '@salesforce/source-deploy-retrieve';
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import { ZERO_BORDER_TABLE } from './TableConstants';
 
 export default class PackageComponentPrinter {
     public static printComponentTable(components: LazyCollection<SourceComponent>, logger: Logger) {
@@ -9,6 +10,7 @@ export default class PackageComponentPrinter {
 
         let table = new Table({
             head: ['Metadata Type', 'API Name'],
+            chars: ZERO_BORDER_TABLE
         });
 
         let componentArray = components.toArray();
