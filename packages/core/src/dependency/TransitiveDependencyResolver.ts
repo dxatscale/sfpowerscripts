@@ -25,7 +25,7 @@ export default class TransitiveDependencyResolver {
 
         await this.fetchExternalDependencies();
 
-        this.dependencyMap = await this.getAllPackageDependencyMap();
+        this.dependencyMap = await this.getAllPackageDependencyMap(this.updatedprojectConfig);
 
         await this.expandDependencies(this.dependencyMap);
 
@@ -33,7 +33,7 @@ export default class TransitiveDependencyResolver {
         return this.updatedprojectConfig;
     }
 
-    public async getAllPackageDependencyMap(updatedprojectConfig?: any): Promise<{ [key: string]: Dependency[] }> {
+    public async getAllPackageDependencyMap(updatedprojectConfig: any): Promise<{ [key: string]: Dependency[] }> {
         let pkgWithDependencies = {};
         let packages = ProjectConfig.getAllPackageDirectoriesFromConfig(this.sfdxProjectConfig);
         for (let pkg of packages) {
@@ -60,7 +60,7 @@ export default class TransitiveDependencyResolver {
             this.externalDependencies.push(externalPackage2.name)         
         }
 
-        if( this.externalDependencies.length > 0  && updatedprojectConfig){
+        if( this.externalDependencies.length > 0){
             SFPLogger.log(`Detected ${this.externalDependencies.length} External Dependencies`,LoggerLevel.INFO,this.logger)
             //Update project config
             await this.addExternalDependencyEntry(updatedprojectConfig);
@@ -125,9 +125,12 @@ export default class TransitiveDependencyResolver {
             SFPLogger.log(`Dependencies resolved  for ${pkg}`,LoggerLevel.INFO,this.logger)
             SFPLogger.log(this.printDependencyTable(uniqueDependencies).toString(), LoggerLevel.INFO,this.logger);
             //Update project config
+
+            
             await this.updateProjectConfig(pkg, uniqueDependencies);
 
         }
+        await this.cleanupExternalDependencyMap();
     }
 
 
@@ -160,6 +163,20 @@ export default class TransitiveDependencyResolver {
                 return Object.assign(pkg, { dependencies: fixedDependencies });
             }
         });
+    }
+
+    private async cleanupExternalDependencyMap(){
+        if(this.updatedprojectConfig?.plugins?.sfpowerscripts?.externalDependencyMap){
+            const externalDependencyMap = this.updatedprojectConfig.plugins.sfpowerscripts.externalDependencyMap
+            for (let externalPackage of Object.keys(externalDependencyMap)){
+                if(externalDependencyMap[externalPackage][0].package == ""){
+                    delete externalDependencyMap[externalPackage];
+                }else if (externalDependencyMap[externalPackage][0].package != "" 
+                && externalDependencyMap[externalPackage][0].versionNumber == ""){
+                    delete externalDependencyMap[externalPackage][0].versionNumber;
+                }
+            }
+        }
     }
 
     private async addExternalDependencyEntry(updatedprojectConfig: any) {
