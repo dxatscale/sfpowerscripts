@@ -20,8 +20,7 @@ import { COLON_MIDDLE_BORDER_TABLE, ZERO_BORDER_TABLE } from '../../ui/TableCons
 import PackageDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/PackageDependencyResolver';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
-import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/dependency/TransitiveDependencyResolver';
-import { Connection } from '@salesforce/core';
+import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/TransitiveDependencyResolver';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 
 
@@ -652,7 +651,7 @@ export default class BuildImpl {
         let isDependencyResolverEnabled = !projectConfig?.plugins?.sfpowerscripts?.disableTransitiveDependencyResolver
        
         if(isDependencyResolverEnabled){
-            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig,this.props.devhubAlias,this.logger)
+            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig,this.sfpOrg.getConnection(),this.logger)
             return transitiveDependencyResolver.resolveDependencies()
         }else{
             return projectConfig

@@ -12,7 +12,7 @@ export default class ExternalPackage2DependencyResolver {
     //TOOD: Finalize Keys
     constructor(private conn: Connection, private projectConfig, private keys) {}
 
-    public async fetchExternalPackage2Dependencies(pkg?:string): Promise<Package2Detail[]> {
+    public async resolveExternalPackage2DependenciesToVersions(pkg?:string): Promise<Package2Detail[]> {
 
         //Do a dependency resolution first only for external dependencies
         //Resolve .LATEST to exact version numbers

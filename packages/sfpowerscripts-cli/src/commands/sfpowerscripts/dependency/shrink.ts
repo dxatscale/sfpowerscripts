@@ -57,7 +57,7 @@ export default class Shrink extends SfpowerscriptsCommand {
             let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
             const shrinkImpl = new ShrinkImpl(
                 projectConfig,
-                this.hubOrg.getUsername(),
+                this.hubOrg.getConnection(),
             );
             projectConfig = await shrinkImpl.resolveDependencies();
 

@@ -1,14 +1,13 @@
-import ProjectConfig from '../project/ProjectConfig';
+import ProjectConfig from '../../project/ProjectConfig';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_ERROR } from '@dxatscale/sfp-logger';
 import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
 import semver = require('semver');
-import convertBuildNumDotDelimToHyphen from '../utils/VersionNumberConverter';
+import convertBuildNumDotDelimToHyphen from '../../utils/VersionNumberConverter';
 import { Connection } from '@salesforce/core';
-import ExternalPackage2DependencyResolver from '../package/dependencies/ExternalPackage2DependencyResolver';
-import QueryHelper from '../queryHelper/QueryHelper';
-import SFPOrg from '../org/SFPOrg';
-import { ZERO_BORDER_TABLE } from '../display/TableConstants';
+import ExternalPackage2DependencyResolver from './ExternalPackage2DependencyResolver';
+import SFPOrg from '../../org/SFPOrg';
+import { ZERO_BORDER_TABLE } from '../../display/TableConstants';
 const Table = require('cli-table');
 
 export default class TransitiveDependencyResolver {
@@ -17,7 +16,7 @@ export default class TransitiveDependencyResolver {
     private externalDependencyMap: any = {};
     private externalDependencies: Array<string> = []
 
-    constructor(private sfdxProjectConfig: any, private devhub_username: string, private logger?: Logger) {}
+    constructor(private sfdxProjectConfig: any, private connToDevHub:Connection, private logger?: Logger) {}
     public async resolveDependencies(): Promise<ProjectConfig> {
         SFPLogger.log('Validating Project Dependencies...', LoggerLevel.INFO, this.logger);
 
@@ -46,14 +45,13 @@ export default class TransitiveDependencyResolver {
                 pkgWithDependencies[pkg] = this.externalDependencyMap[pkg];
             }
         }
-        // identify external dependencies for the packages in package aliases
-        let hubOrg = await SFPOrg.create({ aliasOrUsername: this.devhub_username });
+       
         let externalPackageResolver = new ExternalPackage2DependencyResolver(
-            hubOrg.getConnection(),
+            this.connToDevHub,
             ProjectConfig.getSFDXProjectConfig(null),
             null
         );
-        let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies();
+        let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions();
 
 
         for( let externalPackage2 of externalPackage2s){
@@ -122,7 +120,8 @@ export default class TransitiveDependencyResolver {
                 
             }
             dependencyMap[pkg] = uniqueDependencies;
-            SFPLogger.log(`Dependencies resolved  for ${pkg}`,LoggerLevel.INFO,this.logger)
+            
+            SFPLogger.log(`Dependencies resolved  for ${COLOR_HEADER(pkg)}`,LoggerLevel.INFO,this.logger)
             SFPLogger.log(this.printDependencyTable(uniqueDependencies).toString(), LoggerLevel.INFO,this.logger);
             //Update project config
 

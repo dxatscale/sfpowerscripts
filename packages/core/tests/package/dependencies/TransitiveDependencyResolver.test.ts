@@ -1,7 +1,7 @@
 import { jest, expect } from '@jest/globals';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
 import { Connection, AuthInfo } from '@salesforce/core';
-import TransitiveDependencyResolver from '../../../src/dependency/TransitiveDependencyResolver';
+import TransitiveDependencyResolver from '../../../src/package/dependencies/TransitiveDependencyResolver';
 const $$ = testSetup();
 
 const setupFakeConnection = async () => {

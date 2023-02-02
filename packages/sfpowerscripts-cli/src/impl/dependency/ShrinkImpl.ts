@@ -1,8 +1,9 @@
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/dependency/TransitiveDependencyResolver';
+import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/TransitiveDependencyResolver';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_ERROR } from '@dxatscale/sfp-logger';
 import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
+import { Connection } from '@salesforce/core';
 const Table = require('cli-table');
 
 export default class ShrinkImpl {
@@ -10,7 +11,7 @@ export default class ShrinkImpl {
     private updatedprojectConfig: any;
     private externalDependencyMap: any = {};
 
-    constructor(private projectConfig: ProjectConfig,private devhub_username: string, private logger?: Logger) {}
+    constructor(private projectConfig: ProjectConfig,private connToDevHub:Connection, private logger?: Logger) {}
     public async resolveDependencies(): Promise<ProjectConfig> {
         SFPLogger.log('Shrinking Project Dependencies...', LoggerLevel.INFO, this.logger);
 
@@ -18,7 +19,7 @@ export default class ShrinkImpl {
         
         const transitiveDependencyResolver = new TransitiveDependencyResolver(
           this.projectConfig,
-          this.devhub_username
+          this.connToDevHub
         );
 
         this.externalDependencyMap = await transitiveDependencyResolver.fetchExternalDependencies();

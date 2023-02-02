@@ -1,4 +1,4 @@
-import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/dependency/TransitiveDependencyResolver';
+import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/TransitiveDependencyResolver';
 import { Messages } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
@@ -55,7 +55,7 @@ export default class Expand extends SfpowerscriptsCommand {
             let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
             const transitiveDependencyResolver = new TransitiveDependencyResolver(
                 projectConfig,
-                this.hubOrg.getUsername(),
+                this.hubOrg.getConnection(),
             );
             projectConfig = await transitiveDependencyResolver.resolveDependencies();
 

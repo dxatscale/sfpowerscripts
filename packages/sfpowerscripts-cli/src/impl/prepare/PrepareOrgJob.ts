@@ -236,7 +236,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
             ProjectConfig.getSFDXProjectConfig(null),
             keys
         );
-        let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies(
+        let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions(
             sfpPackage?.packageName
         );
 

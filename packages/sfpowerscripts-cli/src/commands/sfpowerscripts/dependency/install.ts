@@ -58,7 +58,7 @@ export default class Install extends SfpowerscriptsCommand {
             ProjectConfig.getSFDXProjectConfig(null),
             this.flags.keys
         );
-        let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies();
+        let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions();
 
         SFPLogger.log(
             `Installing external package dependencies of this project  in ${username}`,
