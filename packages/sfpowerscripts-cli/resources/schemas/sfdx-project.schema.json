@@ -130,6 +130,9 @@
                     },
                     "checkpointForPrepare": {
                         "$ref": "#/definitions/packageDirectory.checkpointForPrepare"
+                    },
+                    "enableFHT": {
+                        "$ref": "#/definitions/packageDirectory.enableFHT"
                     }
                 }
             }
@@ -440,6 +443,18 @@
             "type": "boolean",
             "title": "Is an Checkpoint Package?",
             "description": "Fail the scratch org,if the any of the checkpoint package fails to deploy on prepare"
+        },
+        "packageDirectory.enableFHT": {
+            "type": "boolean",
+            "default" : true,
+            "title": "Enable Field History Tracking support?",
+            "description": "Enable automated update of field history tracking in the target org upon deployment"
+        },
+        "packageDirectory.enableFT": {
+            "type": "boolean",
+            "default" : true,
+            "title": "Enable Feed Tracking support?",
+            "description": "Enable automated update of feed tracking in the target org upon deployment"
         },
         "plugins.sfpowerscripts": {
             "type": "object",

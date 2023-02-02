@@ -20,6 +20,7 @@ import PoolFetchImpl from './PoolFetchImpl';
 import { values } from 'lodash';
 import { COLOR_SUCCESS } from '@dxatscale/sfp-logger';
 import { COLOR_ERROR } from '@dxatscale/sfp-logger';
+import getFormattedTime from '../../utils/GetFormattedTime';
 
 export default class PoolCreateImpl extends PoolBaseImpl {
     private limiter;
@@ -159,20 +160,15 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
         let scratchOrgPromises = new Array<Promise<ScratchOrg>>();
 
-
         const scratchOrgCreationLimiter = new Bottleneck({
             maxConcurrent: this.pool.batchSize,
-          });
+        });
 
-
+        let startTime = Date.now();
         for (let i = 1; i <= this.pool.to_allocate; i++) {
-           
-            let scratchOrgPromise: Promise<ScratchOrg> =scratchOrgCreationLimiter.schedule(()=>this.scratchOrgOperator.create(
-                `SO` + i,
-                this.pool.configFilePath,
-                this.pool.expiry,
-                this.pool.waitTime
-            ));
+            let scratchOrgPromise: Promise<ScratchOrg> = scratchOrgCreationLimiter.schedule(() =>
+                this.scratchOrgOperator.create(`SO` + i, this.pool.configFilePath, this.pool.expiry, this.pool.waitTime)
+            );
             scratchOrgPromises.push(scratchOrgPromise);
         }
 
@@ -186,12 +182,27 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         this.pool.scratchOrgs = scratchOrgCreationResults.filter(isFulfilled).map((p) => p.value);
         const rejectedScratchOrgs = scratchOrgCreationResults.filter(isRejected).map((p) => p.reason);
         for (const reason of rejectedScratchOrgs) {
-            SFPLogger.log(`A scratch org creation was rejected due to ${reason.message}`);
+            if (reason.message.includes(`The client has timed out`)) {
+                 //Display how many we were able to create
+               let elapsedTime = Date.now() - startTime;
+                SFPLogger.log(
+                    `A scratch org creation was rejected due to saleforce not responding within the set wait time of ${this.pool.waitTime} mins \n` +
+                     `Time elasped so far ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))},You might need to inrease the wait time further and rety `
+                );
+            } else SFPLogger.log(`A scratch org creation was rejected due to ${reason.message}`);
         }
 
         //Display how many we were able to create
-        SFPLogger.log(`Created ${COLOR_SUCCESS(this.pool.scratchOrgs.length)} of ${this.totalToBeAllocated} successfully with ${COLOR_ERROR(rejectedScratchOrgs.length)} failures `);
-        
+        let elapsedTime = Date.now() - startTime;
+        SFPLogger.log(
+            `Created ${COLOR_SUCCESS(this.pool.scratchOrgs.length)} of ${
+                this.totalToBeAllocated
+            } successfully with ${COLOR_ERROR(rejectedScratchOrgs.length)} failures in ${COLOR_KEY_MESSAGE(
+                getFormattedTime(elapsedTime)
+            )}`
+        );
+
+        SFPStatsSender.logElapsedTime(`pool.scratchorg.creation.time`,elapsedTime,{pool:this.pool.tag})
         //Splice scratchorgs that are having incorrect status of deleted , Why salesforce why??
         let index = this.pool.scratchOrgs.length;
         while (index--) {

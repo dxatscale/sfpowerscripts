@@ -6,6 +6,11 @@ import SFPLogger, { COLOR_WARNING } from '@dxatscale/sfp-logger';
 
 export class FetchAnArtifactFromNPM implements FetchAnArtifact {
     constructor(private scope: string, private npmrcPath: string) {
+        
+        //Check whether the user has already passed in @, and remove it
+        this.scope= this.scope.replace(/@/g, '').toLowerCase();
+    
+
         if (this.npmrcPath) {
             try {
                 fs.copyFileSync(this.npmrcPath, path.resolve('.npmrc'));

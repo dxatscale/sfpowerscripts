@@ -1,5 +1,6 @@
 import { RunAllTestsInPackageOptions, RunApexTestSuitesOption, TestOptions } from './TestOptions';
 import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from '@dxatscale/sfp-logger';
+import { ZERO_BORDER_TABLE } from '../display/TableConstants';
 
 const Table = require('cli-table');
 
@@ -11,6 +12,7 @@ export class TestReportDisplayer {
         SFPLogger.log('\n\n\n=== Test Summary', LoggerLevel.INFO, this.fileLogger);
         let table = new Table({
             head: ['Name', 'Value'],
+            chars: ZERO_BORDER_TABLE
         });
 
         if (
@@ -39,6 +41,7 @@ export class TestReportDisplayer {
 
         let table = new Table({
             head: ['Test Name', 'Outcome', 'Message', 'Runtime (ms)'],
+            chars: ZERO_BORDER_TABLE
         });
 
         this.apexTestReport.tests.forEach((test) => {
@@ -98,6 +101,7 @@ export class TestReportDisplayer {
     private printIndividualClassCoverage(individualClassCoverage: { name: string; coveredPercent: number }[]): string {
         let table = new Table({
             head: ['Class', 'Coverage Percent'],
+            chars: ZERO_BORDER_TABLE
         });
 
         individualClassCoverage.forEach((cls) => {

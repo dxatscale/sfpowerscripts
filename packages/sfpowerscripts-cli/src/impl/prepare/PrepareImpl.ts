@@ -24,6 +24,7 @@ import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/l
 import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
 import ReleaseDefinitionGenerator from '../release/ReleaseDefinitionGenerator';
 import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
+import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 
 const Table = require('cli-table');
 
@@ -134,6 +135,7 @@ export default class PrepareImpl {
                 'Installed/Requested Count',
                 'Last Installed Package',
             ],
+            chars: ZERO_BORDER_TABLE
         });
 
         for (const scratchOrg of pool.scratchOrgs) {

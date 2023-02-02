@@ -1,6 +1,7 @@
 import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { EOL } from 'os';
 import Package2Detail from '../package/Package2Detail';
+import { ZERO_BORDER_TABLE } from './TableConstants';
 const Table = require('cli-table');
 
 export default class ExternalDependencyDisplayer {
@@ -10,6 +11,7 @@ export default class ExternalDependencyDisplayer {
       if (this.externalPackage2s.length > 0) {
         let table = new Table({
             head: ['Order', 'Package', 'Version', 'Subscriber Version Id'],
+            chars: ZERO_BORDER_TABLE
         });
             let i = 0;
             for (const externalPackage of this.externalPackage2s) {

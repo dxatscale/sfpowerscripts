@@ -1,6 +1,7 @@
 const Table = require('cli-table');
 import SFPLogger, { Logger, LoggerLevel, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import Package2Detail from '../package/Package2Detail';
+import { ZERO_BORDER_TABLE } from './TableConstants';
 
 export default class InstalledPackagesDisplayer {
     public static printInstalledPackages(packages: Package2Detail[], logger: Logger) {
@@ -8,6 +9,7 @@ export default class InstalledPackagesDisplayer {
 
         let table = new Table({
             head: ['Package', 'Version', 'Type', 'isOrgDependent'],
+            chars: ZERO_BORDER_TABLE
         });
 
         packages.forEach((pkg) => {

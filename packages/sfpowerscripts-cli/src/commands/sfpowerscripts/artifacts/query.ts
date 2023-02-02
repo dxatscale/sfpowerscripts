@@ -3,6 +3,7 @@ import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import { LoggerLevel, Messages } from '@salesforce/core';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import SFPLogger, { ConsoleLogger } from '@dxatscale/sfp-logger';
+import { ZERO_BORDER_TABLE } from '../../../ui/TableConstants';
 const Table = require('cli-table');
 
 Messages.importMessagesDirectory(__dirname);
@@ -53,6 +54,7 @@ export default class Query extends SfpowerscriptsCommand {
                     'Type',
                     'Is Sfpowerscripts Installed',
                 ],
+                chars: ZERO_BORDER_TABLE
             });
             installedArtifacts.forEach((installedArtifact) => {
                 minTable.push([

@@ -83,12 +83,6 @@ export default class Prepare extends SfpowerscriptsCommand {
         try {
             let poolConfig: PoolConfig = fs.readJSONSync(this.flags.poolconfig);
             this.validatePoolConfig(poolConfig);
-
-            if (poolConfig.fetchArtifacts?.npm?.scope) {
-                if (poolConfig.fetchArtifacts.npm.scope.startsWith('@'))
-                    poolConfig.fetchArtifacts.npm.scope = poolConfig.fetchArtifacts.npm.scope.slice(1);
-            }
-
             //Assign Keys to the config
             if (this.flags.keys) poolConfig.keys = this.flags.keys;
 

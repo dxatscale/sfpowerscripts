@@ -1,5 +1,6 @@
 const Table = require('cli-table');
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import { ZERO_BORDER_TABLE } from './TableConstants';
 
 export default class PackageMetadataPrinter {
     public static printMetadataToDeploy(payload: any, logger: Logger) {
@@ -8,6 +9,7 @@ export default class PackageMetadataPrinter {
 
         let table = new Table({
             head: ['Metadata Type', 'API Name'],
+            chars: ZERO_BORDER_TABLE
         });
 
         let pushTypeMembersIntoTable = (type) => {

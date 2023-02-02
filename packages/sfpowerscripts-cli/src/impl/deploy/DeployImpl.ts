@@ -22,6 +22,7 @@ import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpP
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 import * as _ from 'lodash';
 import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
+import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import convertBuildNumDotDelimToHyphen from "@dxatscale/sfpowerscripts.core/lib/utils/VersionNumberConverter"
 
 const Table = require('cli-table');
@@ -408,6 +409,7 @@ export default class DeployImpl {
                 isBaselinOrgModeActivated ? 'Version in baseline org' : 'Version in org',
                 'To be installed?',
             ],
+            chars: ZERO_BORDER_TABLE
         });
 
         queue.forEach((pkg) => {
@@ -430,6 +432,7 @@ export default class DeployImpl {
                 'Incoming Version',
                 isBaselinOrgModeActivated ? 'Version in baseline org' : 'Version in org',
             ],
+            chars: ZERO_BORDER_TABLE
         });
 
         queue.forEach((pkg) => {
@@ -450,6 +453,7 @@ export default class DeployImpl {
         let groupSection = new GroupConsoleLogs(`Packages to be deployed`,this.props.packageLogger).begin();
         let table = new Table({
             head: ['Package', 'Version to be installed'],
+            chars: ZERO_BORDER_TABLE
         });
 
         queue.forEach((pkg) => {

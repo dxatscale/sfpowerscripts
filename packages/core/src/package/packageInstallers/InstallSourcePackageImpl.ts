@@ -1,7 +1,6 @@
 import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../deployers/DeploymentExecutor';
 import ReconcileProfileAgainstOrgImpl from '../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl';
 import DeployDestructiveManifestToOrgImpl from '../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl';
-import OrgDetailsFetcher, { OrgDetails } from '../../org/OrgDetailsFetcher';
 import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 const path = require('path');
@@ -16,6 +15,9 @@ import SFPOrg from '../../org/SFPOrg';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 import ProjectConfig from '../../project/ProjectConfig';
 import { DeploymentFilterRegistry } from '../deploymentFilters/DeploymentFilterRegistry';
+import DeploymentOptionDisplayer from '../../display/DeploymentOptionDisplayer';
+import PackageComponentPrinter from '../../display/PackageComponentPrinter';
+import DeployErrorDisplayer from '../../display/DeployErrorDisplayer';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;
@@ -146,6 +148,13 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                     };
                 }
 
+                //Print components inside Component Set
+                let components =  componentSet.getSourceComponents();
+                PackageComponentPrinter.printComponentTable(components, this.logger);
+                                    
+
+                DeploymentOptionDisplayer.printDeploymentOptions(deploymentOptions,this.logger);
+                
                 let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
                     this.sfpOrg,
                     this.sfpPackage.sourceDir,
@@ -171,6 +180,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                             );
                         }
                     } catch (error) {
+                        
                         SFPLogger.log(
                             'Failed to apply reconcile the second time, Partial Metadata applied',
                             LoggerLevel.INFO,
@@ -178,6 +188,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                         );
                     }
                 } else if (result.result === false) {
+                    DeployErrorDisplayer.displayErrors(result.response,this.logger);
                     throw new Error(result.message);
                 }
             }
@@ -379,6 +390,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 path.resolve(profileDeploymentStagingDirectory, sourceDirectory)
             );
 
+            DeploymentOptionDisplayer.printDeploymentOptions(deploymentOptions,this.logger);
             let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
                 this.sfpOrg,
                 this.sfpPackage.sourceDir,
@@ -389,6 +401,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
 
             if (!profileReconcile.result) {
+                DeployErrorDisplayer.displayErrors(profileReconcile.response,this.logger);
                 SFPLogger.log('Unable to deploy reconciled  profiles', LoggerLevel.INFO, this.logger);
             }
         }

@@ -4,6 +4,9 @@ import PasswordGenerator from './PasswordGenerator';
 import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { Duration } from '@salesforce/kit';
 import { ScratchOrgRequest } from '@salesforce/core';
+import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
+import getFormattedTime from '../utils/GetFormattedTime';
+import SFPStatsSender from '../stats/SFPStatsSender';
 const retry = require('async-retry');
 
 export default class ScratchOrgOperator {
@@ -17,14 +20,15 @@ export default class ScratchOrgOperator {
     ): Promise<ScratchOrg> {
         SFPLogger.log('Parameters: ' + alias + ' ' + config_file_path + ' ' + expiry + ' ', LoggerLevel.TRACE);
 
-        SFPLogger.log(`Requesting Scratch Org ${alias}..`,LoggerLevel.INFO);
+        let startTime = Date.now();
+        SFPLogger.log(`Requesting Scratch Org ${alias}..`, LoggerLevel.INFO);
         let scatchOrgResult = await this.requestAScratchOrg(
             alias,
             config_file_path,
             Duration.days(expiry),
             Duration.minutes(waitTime)
         );
-        SFPLogger.log(JSON.stringify(scatchOrgResult),LoggerLevel.TRACE);
+        SFPLogger.log(JSON.stringify(scatchOrgResult), LoggerLevel.TRACE);
 
         //create scratchOrg object
         let scratchOrg: ScratchOrg = {
@@ -32,6 +36,7 @@ export default class ScratchOrgOperator {
             orgId: scatchOrgResult.orgId,
             username: scatchOrgResult.username,
             loginURL: scatchOrgResult.loginURL,
+            elapsedTime: Date.now() - startTime,
         };
 
         try {
@@ -56,9 +61,12 @@ export default class ScratchOrgOperator {
         }
 
         SFPLogger.log(
-            `Creation request for Scratch Org  ${scratchOrg.alias}  is completed successfully`,
+            `Creation request for Scratch Org  ${scratchOrg.alias}  is completed successfully in  ${COLOR_KEY_MESSAGE(
+                getFormattedTime(scratchOrg.elapsedTime)
+            )}`,
             LoggerLevel.INFO
         );
+        SFPStatsSender.logElapsedTime(`scratchorg.creation.time`,scratchOrg.elapsedTime)
         return scratchOrg;
     }
 

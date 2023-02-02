@@ -19,3 +19,4 @@ packages/sfpowerscripts-cli/coverage
 packages/core/.sfpowerscripts/**
 
 coverage/**
+packages/sfpowerscripts-cli/oclif.manifest.json

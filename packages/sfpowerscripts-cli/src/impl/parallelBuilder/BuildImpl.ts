@@ -213,6 +213,7 @@ export default class BuildImpl {
         }
         let table = new Table({
             head: tableHead,
+            chars: ZERO_BORDER_TABLE
         });
         for (const pkg of packagesToBeBuilt.keys()) {
             let item = [
@@ -238,6 +239,7 @@ export default class BuildImpl {
         }
         let table = new Table({
             head: tableHead,
+            chars: ZERO_BORDER_TABLE
         });
         for (const pkg of this.packagesToBeBuilt) {
             let item = [pkg, 'Activated as part of all package build'];

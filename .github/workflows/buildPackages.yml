@@ -45,7 +45,9 @@ jobs:
 
 
       - name: 'Build  All  Packages'
-        run: npx lerna run build
+        run: |
+          npx lerna run build
+          npx lerna run manifest
 
 
       - name: 'Run Unit Tests'

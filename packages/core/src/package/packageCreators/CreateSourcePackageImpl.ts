@@ -6,6 +6,7 @@ import PackageEmptyChecker from '../validators/PackageEmptyChecker';
 import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
 import { CreatePackage } from './CreatePackage';
 import { PackageCreationParams } from '../SfpPackageBuilder';
+import { ZERO_BORDER_TABLE } from '../../display/TableConstants';
 const Table = require('cli-table');
 
 export default class CreateSourcePackageImpl extends CreatePackage {
@@ -120,6 +121,7 @@ export default class CreateSourcePackageImpl extends CreatePackage {
 
         let table = new Table({
             head: ['Class', 'Error'],
+            chars: ZERO_BORDER_TABLE
         });
 
         for (let fetchedClass of fetchedClasses) {
