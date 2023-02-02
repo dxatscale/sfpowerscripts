@@ -8,6 +8,7 @@ import { Connection } from '@salesforce/core';
 import ExternalPackage2DependencyResolver from '../package/dependencies/ExternalPackage2DependencyResolver';
 import QueryHelper from '../queryHelper/QueryHelper';
 import SFPOrg from '../org/SFPOrg';
+import { ZERO_BORDER_TABLE } from '../display/TableConstants';
 const Table = require('cli-table');
 
 export default class TransitiveDependencyResolver {
@@ -135,6 +136,7 @@ export default class TransitiveDependencyResolver {
         let tableHead = ['Dependency', 'Version Number'];
         let table = new Table({
             head: tableHead,
+            chars: ZERO_BORDER_TABLE
         });
         for (let dependency of dependencies) {
             let item = [dependency.package, dependency.versionNumber ? dependency.versionNumber : ''];

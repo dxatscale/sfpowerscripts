@@ -171,7 +171,7 @@ const projectConfig = {
   },
   "plugins": {
       "sfpowerscripts": {
-          "enableTransitiveDependencyResolver": true,
+          "disableTransitiveDependencyResolver": false,
           "transitiveDependencyResolver": {
               "externalDependencyMap": {
                   "tech-framework@2.0.0.38": [

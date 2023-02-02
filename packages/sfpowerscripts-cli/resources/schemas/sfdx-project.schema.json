@@ -514,7 +514,7 @@
                     "default": false
                 },
                 "disableTransitiveDependencyResolver": {
-                    "title": "Enable Transitive Dependency Resolver",
+                    "title": "Disable Transitive Dependency Resolver",
                     "type": "boolean",
                     "description": "Enable transitive dependency resolver to fix the missing dependencies through transitive relationship",
                     "default": false
