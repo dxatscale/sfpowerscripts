@@ -24,7 +24,7 @@ export default class TransitiveDependencyResolver {
 
         await this.fetchExternalDependencies();
 
-        this.dependencyMap = await this.getAllPackageDependencyMap(this.updatedprojectConfig);
+        this.dependencyMap = await this.getAllPackageDependencyMap();
 
         await this.expandDependencies(this.dependencyMap);
 
@@ -32,7 +32,7 @@ export default class TransitiveDependencyResolver {
         return this.updatedprojectConfig;
     }
 
-    public async getAllPackageDependencyMap(updatedprojectConfig: any): Promise<{ [key: string]: Dependency[] }> {
+    public async getAllPackageDependencyMap(updatedprojectConfig?: any): Promise<{ [key: string]: Dependency[] }> {
         let pkgWithDependencies = {};
         let packages = ProjectConfig.getAllPackageDirectoriesFromConfig(this.sfdxProjectConfig);
         for (let pkg of packages) {
@@ -59,7 +59,7 @@ export default class TransitiveDependencyResolver {
             this.externalDependencies.push(externalPackage2.name)         
         }
 
-        if( this.externalDependencies.length > 0 ){
+        if( this.externalDependencies.length > 0  && updatedprojectConfig){
             SFPLogger.log(`Detected ${this.externalDependencies.length} External Dependencies`,LoggerLevel.INFO,this.logger)
             //Update project config
             await this.addExternalDependencyEntry(updatedprojectConfig);
