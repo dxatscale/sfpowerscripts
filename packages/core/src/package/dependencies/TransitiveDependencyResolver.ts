@@ -22,7 +22,8 @@ export default class TransitiveDependencyResolver {
 
         this.updatedprojectConfig =await  _.cloneDeep(this.sfdxProjectConfig);
 
-        await this.fetchExternalDependencies();
+        //Read user provided external dependency map
+        this.externalDependencyMap =  ProjectConfig.fetchUserDefinedExternalDependencies(this.updateProjectConfig);
 
         this.dependencyMap = await this.getAllPackageDependencyMap(this.updatedprojectConfig);
 
@@ -149,13 +150,7 @@ export default class TransitiveDependencyResolver {
         return table;
     }
 
-    public async fetchExternalDependencies() {
-        if (this.sfdxProjectConfig.plugins?.sfpowerscripts?.externalDependencyMap){
-            this.externalDependencyMap =  this.sfdxProjectConfig.plugins.sfpowerscripts.externalDependencyMap;
-            SFPLogger.log(JSON.stringify(this.externalDependencyMap),LoggerLevel.DEBUG,this.logger);
-        }
-    }
-
+   
     private async updateProjectConfig(packageName: string, fixedDependencies: any) {
         this.updatedprojectConfig.packageDirectories.map((pkg) => {
             if (pkg.package == packageName) {

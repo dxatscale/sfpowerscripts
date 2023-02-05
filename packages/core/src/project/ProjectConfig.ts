@@ -1,4 +1,5 @@
 const fs = require("fs-extra");
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
 import { PackageType } from '../package/SfpPackage';
 let path = require('path');
@@ -249,4 +250,13 @@ export default class ProjectConfig {
         return ProjectConfig.cleanupPackagesFromProjectConfig(projectConfig,sfdxPackages);
     }
      
+
+    public static  async fetchUserDefinedExternalDependencies(projectConfig: any,) {
+        if (projectConfig.plugins?.sfpowerscripts?.externalDependencyMap){
+            let externalDependencyMap =  projectConfig.plugins.sfpowerscripts.externalDependencyMap;
+            SFPLogger.log(JSON.stringify(externalDependencyMap),LoggerLevel.DEBUG);
+            return externalDependencyMap;
+        }
+    }
+
 }
