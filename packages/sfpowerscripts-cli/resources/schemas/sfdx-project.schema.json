@@ -513,11 +513,35 @@
                     "description": "Disable Entitlement filtering in source package,which skips entitlements that are already in the target org",
                     "default": false
                 },
-                "enableTransitiveDependencyResolver": {
-                    "title": "Enable Transitive Dependency Resolver",
+                "disableTransitiveDependencyResolver": {
+                    "title": "Disable Transitive Dependency Resolver",
                     "type": "boolean",
                     "description": "Enable transitive dependency resolver to fix the missing dependencies through transitive relationship",
                     "default": false
+                },
+                "externalDependencyMap": {
+                    "title": "Map of external package and its dependencies",
+                    "type":"object",
+                    "description": "Use this map to define dependencies of unlocked packages built elsewhere, This information will be used by sfpowerscripts while expanding package dependencies",
+                   "patternProperties": {
+                                ".*": {
+                                      "type": "array",
+                                       "items": {
+                                          "type": "object",
+                                          "additionalProperties": false,
+                                          "required": ["package"],
+                                          "properties": {
+                                              "package": {
+                                                  "type": "string"
+                                              },
+                                              "versionNumber": {
+                                                  "type": "string"
+                                              }
+                                          }
+                                      
+                                      }
+                                  }
+                    }
                 }
             }
         }

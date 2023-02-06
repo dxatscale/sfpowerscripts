@@ -75,7 +75,7 @@ export default class PrepareImpl {
             projectConfig,
             this.pool.keys
         );
-        let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies();
+        let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions();
 
         //Display resolved dependencies
         let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s, new ConsoleLogger());
