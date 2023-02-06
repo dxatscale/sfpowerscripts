@@ -20,8 +20,7 @@ export default class ShrinkImpl {
         this.updatedprojectConfig = _.cloneDeep(this.projectConfig);
         
         const transitiveDependencyResolver = new TransitiveDependencyResolver(
-          this.projectConfig,
-          this.connToDevHub
+          this.projectConfig
         );
 
         this.dependencyMap = await transitiveDependencyResolver.resolveTransitiveDependencies();

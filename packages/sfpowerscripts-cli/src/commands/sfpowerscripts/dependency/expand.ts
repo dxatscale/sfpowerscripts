@@ -55,8 +55,7 @@ export default class Expand extends SfpowerscriptsCommand {
             //Validate dependencies in sfdx-project.json // Read Manifest
             let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
             const transitiveDependencyResolver = new TransitiveDependencyResolver(
-                projectConfig,
-                this.hubOrg.getConnection(),
+                projectConfig
             );
 
             

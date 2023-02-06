@@ -653,7 +653,7 @@ export default class BuildImpl {
         let isDependencyResolverEnabled = !projectConfig?.plugins?.sfpowerscripts?.disableTransitiveDependencyResolver
        
         if(isDependencyResolverEnabled){
-            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig,this.sfpOrg.getConnection(),this.logger)
+            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig,this.logger)
             let resolvedDependencyMap =  await transitiveDependencyResolver.resolveTransitiveDependencies();
             projectConfig = await ProjectConfig.updateProjectConfigWithDependencies(projectConfig,resolvedDependencyMap);
             projectConfig = await (new UserDefinedExternalDependency()).cleanupEntries(projectConfig);

@@ -55,7 +55,7 @@ describe("Given a TransitiveDependencyResolver", () => {
   })
 
   it("should resolve missing package dependencies with transitive dependency", async () => {
-    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
+    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig);
     let resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
 
     let dependencies =  resolvedDependencies.get('candidate-management');
@@ -64,7 +64,7 @@ describe("Given a TransitiveDependencyResolver", () => {
   });
 
   it("should resolve package dependencies in the same order as its dependent packages", async () => {
-    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
+    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig);
     const resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
     
     let baseIndex = resolvedDependencies.get('candidate-management')?.findIndex(dependency => dependency.package === "base");
@@ -77,7 +77,7 @@ describe("Given a TransitiveDependencyResolver", () => {
   });
 
   it("should expand the dependencies of external packages", async () => {
-    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
+    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig);
     const resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
     let externalDependencyIndex = resolvedDependencies.get('contact-management')?.findIndex(dependency => dependency.package === "sfdc-framework");
     expect(externalDependencyIndex).toBe(0);

@@ -8,7 +8,7 @@ import { Connection } from '@salesforce/core';
 import UserDefinedExternalDependencyMap from '../../project/UserDefinedExternalDependency';
 
 export default class TransitiveDependencyResolver {
-    constructor(private sfdxProjectConfig: any, private connToDevHub: Connection, private logger?: Logger) {}
+    constructor(private sfdxProjectConfig: any, private logger?: Logger) {}
 
     public async resolveTransitiveDependencies(): Promise<Map<string, { package: string; versionNumber?: string }[]>> {
         SFPLogger.log('Validating Project Dependencies...', LoggerLevel.INFO, this.logger);
