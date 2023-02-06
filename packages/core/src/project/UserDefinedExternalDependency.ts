@@ -54,5 +54,6 @@ export default class UserDefinedExternalDependencyMap {
                 }
             }
         }
+        return updatedProjectConfig;
     }
 }

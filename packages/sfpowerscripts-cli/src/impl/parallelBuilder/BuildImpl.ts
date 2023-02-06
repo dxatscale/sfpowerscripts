@@ -655,8 +655,8 @@ export default class BuildImpl {
         if(isDependencyResolverEnabled){
             const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig,this.sfpOrg.getConnection(),this.logger)
             let resolvedDependencyMap =  await transitiveDependencyResolver.resolveTransitiveDependencies();
-            projectConfig = ProjectConfig.updateProjectConfigWithDependencies(projectConfig,resolvedDependencyMap);
-            projectConfig = new UserDefinedExternalDependency().cleanupEntries(projectConfig);
+            projectConfig = await ProjectConfig.updateProjectConfigWithDependencies(projectConfig,resolvedDependencyMap);
+            projectConfig = await (new UserDefinedExternalDependency()).cleanupEntries(projectConfig);
             return projectConfig;
         }else{
             return projectConfig

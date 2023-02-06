@@ -13,12 +13,12 @@ export default class TransitiveDependencyResolver {
     public async resolveTransitiveDependencies(): Promise<Map<string, { package: string; versionNumber?: string }[]>> {
         SFPLogger.log('Validating Project Dependencies...', LoggerLevel.INFO, this.logger);
 
-        let updateProjectConfig = await _.cloneDeep(this.sfdxProjectConfig);
-
-        let pkgWithDependencies = ProjectConfig.getAllPackagesAndItsDependencies(updateProjectConfig);
+        let clonedProjectConfig = await _.cloneDeep(this.sfdxProjectConfig);      
+       clonedProjectConfig = await (new UserDefinedExternalDependencyMap()).cleanupEntries(clonedProjectConfig);
+        let pkgWithDependencies = ProjectConfig.getAllPackagesAndItsDependencies(clonedProjectConfig);
         pkgWithDependencies = this.fillDepsWithUserDefinedExternalDependencyMap(
             pkgWithDependencies,
-            new UserDefinedExternalDependencyMap().fetchDependencyEntries(updateProjectConfig)
+            new UserDefinedExternalDependencyMap().fetchDependencyEntries(clonedProjectConfig)
         );
         pkgWithDependencies = this.fillDepsTransitively(pkgWithDependencies);
 
