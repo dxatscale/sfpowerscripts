@@ -5,6 +5,7 @@ import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectCon
 import { flags } from '@salesforce/command';
 import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';import * as fs from 'fs-extra';
 import path = require('path');
+import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -57,7 +58,11 @@ export default class Expand extends SfpowerscriptsCommand {
                 projectConfig,
                 this.hubOrg.getConnection(),
             );
-            projectConfig = await transitiveDependencyResolver.resolveDependencies();
+
+            
+            let resolvedDependencyMap =  await transitiveDependencyResolver.resolveTransitiveDependencies();
+            projectConfig = ProjectConfig.updateProjectConfigWithDependencies(projectConfig,resolvedDependencyMap);
+            projectConfig = new UserDefinedExternalDependency().addDependencyEntries(projectConfig, this.hubOrg.getConnection());
 
             //Clean up temp directory
             if (!fs.existsSync(defaultProjectConfigPath)) fs.mkdirpSync(defaultProjectConfigPath);

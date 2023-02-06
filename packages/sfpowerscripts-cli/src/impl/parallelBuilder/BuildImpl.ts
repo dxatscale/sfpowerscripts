@@ -22,6 +22,8 @@ import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/TransitiveDependencyResolver';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
+import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
+
 
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
@@ -647,12 +649,15 @@ export default class BuildImpl {
         return configFiles;
     }
 
-    private resolvePackageDependencies(projectConfig: any){
+    private async resolvePackageDependencies(projectConfig: any){
         let isDependencyResolverEnabled = !projectConfig?.plugins?.sfpowerscripts?.disableTransitiveDependencyResolver
        
         if(isDependencyResolverEnabled){
             const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig,this.sfpOrg.getConnection(),this.logger)
-            return transitiveDependencyResolver.resolveDependencies()
+            let resolvedDependencyMap =  await transitiveDependencyResolver.resolveTransitiveDependencies();
+            projectConfig = ProjectConfig.updateProjectConfigWithDependencies(projectConfig,resolvedDependencyMap);
+            projectConfig = new UserDefinedExternalDependency().cleanupEntries(projectConfig);
+            return projectConfig;
         }else{
             return projectConfig
         }

@@ -6,6 +6,7 @@ import _ from 'lodash';
 import { Connection } from '@salesforce/core';
 const Table = require('cli-table');
 
+
 export default class ShrinkImpl {
     private dependencyMap;
     private updatedprojectConfig: any;
@@ -22,8 +23,7 @@ export default class ShrinkImpl {
           this.connToDevHub
         );
 
-        this.externalDependencyMap =  ProjectConfig.fetchUserDefinedExternalDependencies(this.projectConfig);
-        this.dependencyMap = await transitiveDependencyResolver.getAllPackageDependencyMap(this.updatedprojectConfig);
+        this.dependencyMap = await transitiveDependencyResolver.resolveTransitiveDependencies();
         await this.shrinkDependencies(this.dependencyMap);
 
 
