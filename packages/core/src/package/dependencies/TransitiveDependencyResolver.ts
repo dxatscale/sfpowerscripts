@@ -67,11 +67,11 @@ export default class TransitiveDependencyResolver {
             let uniqueDependencies = [
                 ...new Set(dependenencies.map((objects) => JSON.stringify(objects))),
             ].map((tmpString) => JSON.parse(tmpString));
-            for (var j = 0; j < uniqueDependencies.length; j++) {
+            for (let j = 0; j < uniqueDependencies.length; j++) {
                 if (uniqueDependencies[j].versionNumber) {
                     let version = convertBuildNumDotDelimToHyphen(uniqueDependencies[j].versionNumber);
 
-                    for (var i = j + 1; i < uniqueDependencies.length; i++) {
+                    for (let i = j + 1; i < uniqueDependencies.length; i++) {
                         if (uniqueDependencies[j].package == uniqueDependencies[i].package) {
                             let versionToCompare = convertBuildNumDotDelimToHyphen(uniqueDependencies[i].versionNumber);
                             // replace existing packageInfo if package version number is newer
