@@ -135,7 +135,7 @@ export default class Prepare extends SfpowerscriptsCommand {
                     )
                 );
 
-                await this.getCurrentRemainingNumberOfOrgsInPoolAndReport();
+                await this.getCurrentRemainingNumberOfOrgsInPoolAndReport(poolConfig);
 
                 SFPStatsSender.logGauge('prepare.succeededorgs', results.value.scratchOrgs.length, tags);
                 if (results.value.scratchOrgs.length > 0)
@@ -214,7 +214,7 @@ export default class Prepare extends SfpowerscriptsCommand {
         );
     }
 
-    private async getCurrentRemainingNumberOfOrgsInPoolAndReport() {
+    private async getCurrentRemainingNumberOfOrgsInPoolAndReport(poolConfig: PoolConfig) {
         try {
             const results = await new ScratchOrgInfoFetcher(this.hubOrg).getScratchOrgsByTag(
                 this.flags.tag,
@@ -222,11 +222,14 @@ export default class Prepare extends SfpowerscriptsCommand {
                 true
             );
 
+            let tags = {
+                stage: Stage.PREPARE,
+                poolName: poolConfig.tag,
+            };
+
             let availableSo = results.records.filter((soInfo) => soInfo.Allocation_status__c === 'Available');
 
-            SFPStatsSender.logGauge('pool.available', availableSo.length, {
-                poolName: this.flags.tag,
-            });
+            SFPStatsSender.logGauge('pool.available', availableSo.length, tags);
         } catch (error) {
             //do nothing, we are not reporting anything if anything goes wrong here
         }
