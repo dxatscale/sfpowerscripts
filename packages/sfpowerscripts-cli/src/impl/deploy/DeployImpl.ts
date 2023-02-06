@@ -21,9 +21,9 @@ import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPac
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 import * as _ from 'lodash';
-import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
+import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
-import convertBuildNumDotDelimToHyphen from "@dxatscale/sfpowerscripts.core/lib/utils/VersionNumberConverter"
+import convertBuildNumDotDelimToHyphen from '@dxatscale/sfpowerscripts.core/lib/utils/VersionNumberConverter';
 
 const Table = require('cli-table');
 const retry = require('async-retry');
@@ -51,7 +51,7 @@ export interface DeployProps {
     promotePackagesBeforeDeploymentToOrg?: string;
     devhubUserName?: string;
     disableArtifactCommit?: boolean;
-    selectiveComponentDeployment?:boolean;
+    selectiveComponentDeployment?: boolean;
 }
 
 export default class DeployImpl {
@@ -145,7 +145,17 @@ export default class DeployImpl {
                     sfdxProjectConfig
                 );
 
-                let groupSection = new GroupConsoleLogs(`Installing ${queue[i].packageName}`,this.props.packageLogger).begin();
+                let groupSection;
+                if (this.props.currentStage == Stage.VALIDATE) {
+                    groupSection = new GroupConsoleLogs(
+                        `Validating: ${i+1}/${queue.length}  ${queue[i].packageName}`,
+                        this.props.packageLogger
+                    ).begin();
+                } else
+                    groupSection = new GroupConsoleLogs(
+                        `Installing: ${i+1}/${queue.length}  ${queue[i].packageName}`,
+                        this.props.packageLogger
+                    ).begin();
                 this.displayHeader(sfpPackage, pkgDescriptor, queue[i].packageName);
 
                 let preHookStatus = await this._preDeployHook?.preDeployPackage(
@@ -401,7 +411,7 @@ export default class DeployImpl {
         packagesToPackageInfo: { [p: string]: PackageInfo },
         isBaselinOrgModeActivated: boolean
     ) {
-        let groupSection = new GroupConsoleLogs(`Full Deployment Breakdown`,this.props.packageLogger).begin();
+        let groupSection = new GroupConsoleLogs(`Full Deployment Breakdown`, this.props.packageLogger).begin();
         let maxTable = new Table({
             head: [
                 'Package',
@@ -409,7 +419,7 @@ export default class DeployImpl {
                 isBaselinOrgModeActivated ? 'Version in baseline org' : 'Version in org',
                 'To be installed?',
             ],
-            chars: ZERO_BORDER_TABLE
+            chars: ZERO_BORDER_TABLE,
         });
 
         queue.forEach((pkg) => {
@@ -425,14 +435,14 @@ export default class DeployImpl {
         SFPLogger.log(maxTable.toString(), LoggerLevel.INFO, this.props.packageLogger);
         groupSection.end();
 
-        groupSection = new GroupConsoleLogs(`Packages to be deployed`,this.props.packageLogger).begin();
+        groupSection = new GroupConsoleLogs(`Packages to be deployed`, this.props.packageLogger).begin();
         let minTable = new Table({
             head: [
                 'Package',
                 'Incoming Version',
                 isBaselinOrgModeActivated ? 'Version in baseline org' : 'Version in org',
             ],
-            chars: ZERO_BORDER_TABLE
+            chars: ZERO_BORDER_TABLE,
         });
 
         queue.forEach((pkg) => {
@@ -450,10 +460,10 @@ export default class DeployImpl {
     }
 
     private printArtifactVersions(queue: SfpPackage[], packagesToPackageInfo: { [p: string]: PackageInfo }) {
-        let groupSection = new GroupConsoleLogs(`Packages to be deployed`,this.props.packageLogger).begin();
+        let groupSection = new GroupConsoleLogs(`Packages to be deployed`, this.props.packageLogger).begin();
         let table = new Table({
             head: ['Package', 'Version to be installed'],
-            chars: ZERO_BORDER_TABLE
+            chars: ZERO_BORDER_TABLE,
         });
 
         queue.forEach((pkg) => {
@@ -528,7 +538,6 @@ export default class DeployImpl {
         return packagesToPackageInfo;
     }
 
-   
     /**
      * Decider for which package installation type to run
      */
