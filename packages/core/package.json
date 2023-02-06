@@ -14,7 +14,7 @@
         "compile": "tsc -b tsconfig.json",
         "clearCache": "jest --clearCache",
         "test": "FORCE_COLOR=true jest --silent --verbose true --coverage --detectOpenHandles",
-        "spec-test": "FORCE_COLOR=true jest -i packages/core/tests/package/analysers/FHTAnalyzer.test.ts --verbose true --coverage --detectOpenHandles"
+        "spec-test": "FORCE_COLOR=true jest -i tests/package/dependencies/TransitiveDependencyResolver.test.ts --verbose true --coverage --detectOpenHandles"
     },
     "engines": {
         "node": ">=14.0.0"
