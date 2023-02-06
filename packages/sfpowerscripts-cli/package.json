@@ -118,6 +118,20 @@
                     },
                     "repo": {
                         "description": "Commands to help with maintaing repository"
+                    },
+                    "dependency": {
+                        "description": "Commands to help with dependency management of a project",
+                        "subtopics": {
+                            "expand": {
+                                "description": "Expand the dependency list in sfdx-project.json file for each package, fix the gap of dependencies from its dependent packages"
+                            },
+                            "shrink": {
+                                "description": "Shrink the dependency list in sfdx-project.json file for each package, remove duplicate dependencies that already exist in its dependent packages"
+                            },
+                            "install": {
+                                "description": "Install all the external dependencies of a given project"
+                            }
+                        }
                     }
                 }
             }

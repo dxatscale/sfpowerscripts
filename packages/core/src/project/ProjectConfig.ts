@@ -76,7 +76,7 @@ export default class ProjectConfig {
         let packages = ProjectConfig.getAllPackageDirectoriesFromConfig(projectConfig);
         for (let pkg of packages) {
             if (pkg.dependencies) {
-                pkgWithDependencies[pkg.package] = pkg.dependencies;
+                pkgWithDependencies.set(pkg.package, pkg.dependencies);
             }
         }
         return pkgWithDependencies;
@@ -271,7 +271,7 @@ export default class ProjectConfig {
     ) {
         let updatedprojectConfig = await _.cloneDeep(projectConfig);
         updatedprojectConfig.packageDirectories.map((pkg) => {
-            return Object.assign(pkg, { dependencies: dependencyMap[pkg] });
+            return Object.assign(pkg, { dependencies: dependencyMap.get(pkg.package) });
         });
 
         return updatedprojectConfig;

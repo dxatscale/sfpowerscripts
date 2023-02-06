@@ -10,7 +10,7 @@ import ExternalPackage2DependencyResolver from '../package/dependencies/External
 export default class UserDefinedExternalDependencyMap {
    
 
-    public async fetchDependencyEntries(projectConfig: any) {
+    public  fetchDependencyEntries(projectConfig: any) {
         if (projectConfig.plugins?.sfpowerscripts?.externalDependencyMap) {
             let externalDependencyMap = projectConfig.plugins.sfpowerscripts.externalDependencyMap;
             SFPLogger.log(JSON.stringify(externalDependencyMap), LoggerLevel.DEBUG);

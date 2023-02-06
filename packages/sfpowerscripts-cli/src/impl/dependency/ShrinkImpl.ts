@@ -5,12 +5,13 @@ import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
 import { Connection } from '@salesforce/core';
 const Table = require('cli-table');
+import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
 
 
 export default class ShrinkImpl {
     private dependencyMap;
     private updatedprojectConfig: any;
-    private externalDependencyMap: any = {};
+
 
     constructor(private projectConfig: ProjectConfig,private connToDevHub:Connection, private logger?: Logger) {}
     public async resolveDependencies(): Promise<ProjectConfig> {
@@ -26,6 +27,7 @@ export default class ShrinkImpl {
         this.dependencyMap = await transitiveDependencyResolver.resolveTransitiveDependencies();
         await this.shrinkDependencies(this.dependencyMap);
 
+        this.updatedprojectConfig = new UserDefinedExternalDependency().addDependencyEntries(  this.updatedprojectConfig, this.connToDevHub);
 
         return this.updatedprojectConfig;
     }
@@ -64,26 +66,10 @@ export default class ShrinkImpl {
                     );
                 }
             }
-            SFPLogger.log(`Dependencies resolved for ${pkg}`,LoggerLevel.INFO,this.logger)
-            SFPLogger.log(this.printDependencyTable(updatedDependencies).toString(), LoggerLevel.INFO,this.logger);
             //Update project config
             await this.updateProjectConfig(pkg, updatedDependencies);
         }
 
-    }
-
-    private printDependencyTable(dependencies: any) {
-        let tableHead = ['Dependency', 'Version Number'];
-        let table = new Table({
-            head: tableHead,
-        });
-        for (let dependency of dependencies) {
-            let item = [dependency.package, dependency.versionNumber ? dependency.versionNumber : ''];
-
-            table.push(item);
-        }
-
-        return table;
     }
 
     private async updateProjectConfig(packageName: string, fixedDependencies: any) {

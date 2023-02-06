@@ -7,7 +7,6 @@ import convertBuildNumDotDelimToHyphen from '../../utils/VersionNumberConverter'
 import { Connection } from '@salesforce/core';
 import UserDefinedExternalDependencyMap from '../../project/UserDefinedExternalDependency';
 
-
 export default class TransitiveDependencyResolver {
     constructor(private sfdxProjectConfig: any, private connToDevHub: Connection, private logger?: Logger) {}
 
@@ -16,34 +15,32 @@ export default class TransitiveDependencyResolver {
 
         let updateProjectConfig = await _.cloneDeep(this.sfdxProjectConfig);
 
-        //Read all the packages and its dependencies as a map
         let pkgWithDependencies = ProjectConfig.getAllPackagesAndItsDependencies(updateProjectConfig);
-        pkgWithDependencies = this.expandDependenciesWithExternalDependencyMap(
+        pkgWithDependencies = this.fillDepsWithUserDefinedExternalDependencyMap(
             pkgWithDependencies,
             new UserDefinedExternalDependencyMap().fetchDependencyEntries(updateProjectConfig)
         );
-
-        pkgWithDependencies = this.expandAndDedupDependencies(pkgWithDependencies);
+        pkgWithDependencies = this.fillDepsTransitively(pkgWithDependencies);
 
         return pkgWithDependencies;
     }
 
-    private expandDependenciesWithExternalDependencyMap(
+    private fillDepsWithUserDefinedExternalDependencyMap(
         pkgWithDependencies: Map<string, { package: string; versionNumber?: string }[]>,
         externalDependencyMap: any
     ): Map<string, { package: string; versionNumber?: string }[]> {
         if (externalDependencyMap) {
             for (let pkg of Object.keys(externalDependencyMap)) {
-                pkgWithDependencies[pkg] = externalDependencyMap[pkg];
+                pkgWithDependencies.set(pkg , externalDependencyMap[pkg]);
             }
         }
         return pkgWithDependencies;
     }
 
-    private expandAndDedupDependencies(
+    private fillDepsTransitively(
         dependencyMap: Map<string, { package: string; versionNumber?: string }[]>
     ): Map<string, { package: string; versionNumber?: string }[]> {
-        let pkgs = dependencyMap.keys();
+        let pkgs = Array.from(dependencyMap.keys());
         for (let pkg of pkgs) {
             SFPLogger.log(
                 COLOR_HEADER(`fetching dependencies for package:`) + COLOR_KEY_MESSAGE(pkg),
@@ -51,12 +48,12 @@ export default class TransitiveDependencyResolver {
                 this.logger
             );
             let dependenencies: { package: string; versionNumber?: string }[] = [];
-            for (let dependency of dependencyMap[pkg]) {
-                if (dependencyMap[dependency.package]) {
+            for (let dependency of dependencyMap.get(pkg)) {
+                if (dependencyMap.get(dependency.package)) {
                     //push parents first
-                    dependenencies.push(dependencyMap[dependency.package]);
+                    dependenencies=dependenencies.concat(dependencyMap.get(dependency.package));
                     SFPLogger.log(
-                        `pushing ${dependencyMap[dependency.package].length} dependencies from package ${
+                        `pushing ${dependencyMap.get(dependency.package).length} dependencies from package ${
                             dependency.package
                         }`,
                         LoggerLevel.TRACE,
@@ -87,11 +84,8 @@ export default class TransitiveDependencyResolver {
                     }
                 }
             }
-            dependencyMap[pkg] = uniqueDependencies;
+            dependencyMap.set(pkg,uniqueDependencies)
         }
         return dependencyMap;
     }
-
-
 }
-

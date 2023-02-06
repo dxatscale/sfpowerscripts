@@ -61,8 +61,8 @@ export default class Expand extends SfpowerscriptsCommand {
 
             
             let resolvedDependencyMap =  await transitiveDependencyResolver.resolveTransitiveDependencies();
-            projectConfig = ProjectConfig.updateProjectConfigWithDependencies(projectConfig,resolvedDependencyMap);
-            projectConfig = new UserDefinedExternalDependency().addDependencyEntries(projectConfig, this.hubOrg.getConnection());
+            projectConfig = await ProjectConfig.updateProjectConfigWithDependencies(projectConfig,resolvedDependencyMap);
+            projectConfig = await (new UserDefinedExternalDependency()).addDependencyEntries(projectConfig, this.hubOrg.getConnection());
 
             //Clean up temp directory
             if (!fs.existsSync(defaultProjectConfigPath)) fs.mkdirpSync(defaultProjectConfigPath);
