@@ -1,7 +1,7 @@
 import { jest, expect } from '@jest/globals';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
 import { Connection, AuthInfo } from '@salesforce/core';
-import TransitiveDependencyResolver from '../../../src/dependency/TransitiveDependencyResolver';
+import TransitiveDependencyResolver from '../../../src/package/dependencies/TransitiveDependencyResolver';
 const $$ = testSetup();
 
 const setupFakeConnection = async () => {
@@ -56,30 +56,31 @@ describe("Given a TransitiveDependencyResolver", () => {
 
   it("should resolve missing package dependencies with transitive dependency", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
-    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies('expand');
+    let resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
 
-    let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "candidate-management");
-    let tempDependency = packageDescriptor.dependencies.find(dependency => dependency.package === "temp");
-    expect(tempDependency.versionNumber).toBe("1.0.0.LATEST");
+    let dependencies =  resolvedDependencies.get('candidate-management');
+    expect(dependencies?.find(dependency => dependency.package === "temp")).toBeTruthy();
+    expect(dependencies?.find(dependency => dependency.package === "temp")?.versionNumber).toBe("1.0.0.LATEST");
   });
 
   it("should resolve package dependencies in the same order as its dependent packages", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
-    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies('expand');
-
-    let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "candidate-management");
-    let tempIndex = packageDescriptor.dependencies.findIndex(dependency => dependency.package === "temp");
-    let baseIndex = packageDescriptor.dependencies.findIndex(dependency => dependency.package === "base");
-    expect(tempIndex).toBe(2);
-    expect(baseIndex).toBe(1);
+    const resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
+    
+    let baseIndex = resolvedDependencies.get('candidate-management')?.findIndex(dependency => dependency.package === "base");
+    expect(baseIndex).toBe(2);
+    let tempIndex = resolvedDependencies.get('candidate-management')?.findIndex(dependency => dependency.package === "temp");
+    expect(tempIndex).toBe(3);
+    let coreIndex = resolvedDependencies.get('candidate-management')?.findIndex(dependency => dependency.package === "core");
+    expect(coreIndex).toBe(4);
+    
   });
 
-  it("should shrink the dependencies that already exisit in its dependent package", async () => {
+  it("should expand the dependencies of external packages", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, conn);
-    const resolvedProjectConfig: any = await transitiveDependencyResolver.resolveDependencies('shrink');
-
-    let packageDescriptor = resolvedProjectConfig.packageDirectories.find((dir) => dir.package === "contact-management");
-    expect(packageDescriptor.dependencies.length).toBe(1);
+    const resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
+    let externalDependencyIndex = resolvedDependencies.get('contact-management')?.findIndex(dependency => dependency.package === "sfdc-framework");
+    expect(externalDependencyIndex).toBe(0);
 
   });
 
@@ -166,7 +167,20 @@ const projectConfig = {
   packageAliases: {
     "tech-framework@2.0.0.38": '04t1P00000xxxxxx00',
     "candidate-management": '0Ho4a00000000xxxx1',
-    "contact-management": '0Ho4a00000000xxxx2'
+    "contact-management": '0Ho4a00000000xxxx2',
+    "sfdc-framework":"04t1000x00x00x"
+  },
+  "plugins": {
+      "sfpowerscripts": {
+          "disableTransitiveDependencyResolver": false,
+              "externalDependencyMap": {
+                  "tech-framework@2.0.0.38": [
+                      {
+                          "package": "sfdc-framework"
+                      }
+                  ]
+              }
+      }
   }
 };
 

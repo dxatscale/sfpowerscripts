@@ -245,7 +245,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             ProjectConfig.getSFDXProjectConfig(null),
             this.props.keys
         );
-        let externalPackage2s = await externalPackageResolver.fetchExternalPackage2Dependencies(sfpPackage.packageName);
+        let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions(sfpPackage.packageName);
 
         SFPLogger.log(
             `Installing package dependencies of this ${sfpPackage.packageName}  in ${scratchOrgAsSFPOrg.getUsername()}`,
