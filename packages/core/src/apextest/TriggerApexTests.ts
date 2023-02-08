@@ -46,6 +46,8 @@ export default class TriggerApexTests {
         id: string;
         result: boolean;
         message: string;
+        testcoverage?:number,
+        package?:string,
     }> {
         let org = await Org.create({ aliasOrUsername: this.target_org });
         this.conn = org.getConnection();
@@ -169,6 +171,11 @@ export default class TriggerApexTests {
                     return {
                         result: coverageResults.result,
                         id: testResult.summary.testRunId,
+                        testcoverage:coverageResults.packageTestCoverage,
+                        package:
+                        this.testOptions instanceof RunAllTestsInPackageOptions
+                            ? this.testOptions.sfppackage.packageName
+                            : null,
                         message: coverageResults.message,
                     };
                 } else {
@@ -186,6 +193,11 @@ export default class TriggerApexTests {
                     return {
                         result: true,
                         id: testResult.summary.testRunId,
+                        testcoverage:Number.parseInt(testResult.summary.testRunCoverage),
+                        package:
+                        this.testOptions instanceof RunAllTestsInPackageOptions
+                            ? this.testOptions.sfppackage.packageName
+                            : null,
                         message: `Test execution succesfully completed`,
                     };
                 }

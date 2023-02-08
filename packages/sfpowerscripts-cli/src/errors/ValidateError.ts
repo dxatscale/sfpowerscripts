@@ -12,7 +12,7 @@ export default class ValidateError extends SfpowerscriptsError {
      */
     readonly cause: Error;
 
-    constructor(message: string, data: ValidateResult, cause?: Error) {
+    constructor(message: string, data?: ValidateResult, cause?: Error) {
         super(message);
 
         this.data = data;

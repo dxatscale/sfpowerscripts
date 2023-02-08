@@ -7,6 +7,10 @@ import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logge
 import ValidateError from '../../../errors/ValidateError';
 import ValidateResult from '../../../impl/validate/ValidateResult';
 import * as fs from 'fs-extra';
+import { Octokit } from 'octokit';
+import { DeploymentResult } from '../../../impl/deploy/DeployImpl';
+const markdownTable = require('markdown-table');
+
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
@@ -131,7 +135,6 @@ export default class Validate extends SfpowerscriptsCommand {
         SFPLogger.log(
             COLOR_HEADER(`Dependency Validation: ${this.flags.enabledependencyvalidation ? 'true' : 'false'}`)
         );
-       
 
         SFPLogger.log(
             COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
@@ -161,20 +164,33 @@ export default class Validate extends SfpowerscriptsCommand {
                 disableArtifactCommit: this.flags.disableartifactupdate,
             };
 
-            setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);
+            setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig, validateProps);
 
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
 
             validateResult = await validateImpl.exec();
 
+            if (validateResult.deploymentResult) {
+                let builDeployedPackageTableAsMarkdown = this.buildMarkdownDeployInfo(validateResult.deploymentResult);
+                await this.postToGiTHub("Results:\n\n  Execution:${x}\n\n  "+builDeployedPackageTableAsMarkdown);
+            } else {
+                await this.postToGiTHub(validateResult.message);
+            }
             SFPStatsSender.logCount('validate.succeeded', tags);
         } catch (error) {
             if (error instanceof ValidateError) {
                 validateResult = error.data;
-            } else SFPLogger.log(error.message);
+                let builDeployedPackageTableAsMarkdown = this.buildMarkdownDeployInfo(validateResult.deploymentResult);
+                await this.postToGiTHub(builDeployedPackageTableAsMarkdown);
+            } else 
+             {
+                await this.postToGiTHub(error.message);
+                SFPLogger.log(error.message);
+             }
 
             SFPStatsSender.logCount('validate.failed', tags);
 
+            await this.postToGiTHub(`Validation Failed with ${error.message}`);
             process.exitCode = 1;
         } finally {
             let totalElapsedTime: number = Date.now() - executionStartTime;
@@ -204,14 +220,14 @@ export default class Validate extends SfpowerscriptsCommand {
             }
         }
 
-        function setReleaseConfigForReleaseBasedModes(releaseconfigPath:string,validateProps: ValidateProps) {
-            if (validateProps.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
-                validateProps.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG) {
+        function setReleaseConfigForReleaseBasedModes(releaseconfigPath: string, validateProps: ValidateProps) {
+            if (
+                validateProps.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
+                validateProps.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
+            ) {
                 if (releaseconfigPath && fs.existsSync(releaseconfigPath)) {
                     validateProps.releaseConfigPath = releaseconfigPath;
-                }
-
-                else {
+                } else {
                     if (!releaseconfigPath)
                         throw new Error(`Release config is required when using validation by release config`);
                     else if (!fs.existsSync(releaseconfigPath))
@@ -219,5 +235,43 @@ export default class Validate extends SfpowerscriptsCommand {
                 }
             }
         }
+    }
+    buildMarkdownDeployInfo(deploymentResult: DeploymentResult) {
+       
+        let pkgTable = [['Name', 'Version Validated','Validated','Test Coverage','Passed Coverage Check']];
+        for (let pkg of deploymentResult.queue) {
+            pkgTable.push([
+                pkg.package_name,
+                pkg.versionNumber,
+                checkIsPackageDeployed(pkg.package_name)?":white_check_mark:":":x:",
+                String(pkg.test_coverage),
+                pkg.has_passed_coverage_check?":white_check_mark:":":x:"
+            ]);
+        }
+
+        return  markdownTable(pkgTable);
+        function checkIsPackageDeployed(name:string)
+        {
+            for (const deployedPkg of deploymentResult.deployed) {
+                if(name === deployedPkg.sfpPackage.package_name)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    async postToGiTHub(message: string) {
+        const octokit = new Octokit({
+            auth: process.env.GH_TOKEN,
+        });
+
+        let response = await octokit.rest.issues.createComment({
+            owner: process.env.GH_OWNER,
+            repo: process.env.GH_REPO,
+            issue_number: Number.parseInt(process.env.ISSUE_NUMBER),
+            body: message,
+        });
     }
 }

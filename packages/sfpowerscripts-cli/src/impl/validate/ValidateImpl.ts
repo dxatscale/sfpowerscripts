@@ -100,7 +100,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                 if (process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG)
                     scratchOrgUsername = process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG;
                 else scratchOrgUsername = await this.fetchScratchOrgFromPool(this.props.pools);
-            } else throw new Error(`Unknown mode ${this.props.validateAgainst}`);
+            } else throw new ValidateError(`Unknown mode ${this.props.validateAgainst}`);
 
             //Create Org
             this.orgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrgUsername });
@@ -118,7 +118,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
             if (deploymentResult.failed.length > 0 || deploymentResult.error)
-                throw new ValidateError('Validation failed', { deploymentResult });
+                throw new ValidateError('Validation failed', { deploymentResult: deploymentResult });
             else {
                 //Do dependency analysis
                 await this.dependencyAnalysis(this.orgAsSFPOrg, deploymentResult);
@@ -126,17 +126,17 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                 //Display impact analysis
                 await this.impactAnalysis(connToScratchOrg);
             }
-            return null; //TODO: Fix with actual object
+            return { deploymentResult: deploymentResult };
         } catch (error) {
             if (error.message?.includes(`No changes detected in the packages to be built`)) {
                 SFPLogger.log(
                     `WARNING: No changes detected in any of the packages, Validation is treated as a success`,
                     LoggerLevel.WARN
                 );
-                return;
-            } else if (error instanceof ValidateError) SFPLogger.log(`Error: ${error}`, LoggerLevel.DEBUG);
-            else SFPLogger.log(`Error: ${error}}`, LoggerLevel.ERROR);
-            throw error;
+                return { message: 'Validation skipped,as no change in package was detected' };
+            } else {
+                throw error;
+            }
         } finally {
             await this.handleScratchOrgStatus(scratchOrgUsername, deploymentResult, this.props.isDeleteScratchOrg);
         }
@@ -153,7 +153,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         let packagesMappedToLastKnownCommitId: { [p: string]: string } = {};
         if (installedArtifacts != null) {
             packagesMappedToLastKnownCommitId = getPackagesToCommits(installedArtifacts);
-            printArtifactVersions(this.orgAsSFPOrg,installedArtifacts);
+            printArtifactVersions(this.orgAsSFPOrg, installedArtifacts);
         }
         return packagesMappedToLastKnownCommitId;
 
@@ -173,8 +173,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             return packagesToCommits;
         }
 
-        function printArtifactVersions(orgAsSFPOrg: SFPOrg,installedArtifacts: any) {
-            let groupSection = new GroupConsoleLogs(`Artifacts installed in the Org ${orgAsSFPOrg.getUsername()}`).begin();
+        function printArtifactVersions(orgAsSFPOrg: SFPOrg, installedArtifacts: any) {
+            let groupSection = new GroupConsoleLogs(
+                `Artifacts installed in the Org ${orgAsSFPOrg.getUsername()}`
+            ).begin();
 
             InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
 
@@ -245,7 +247,9 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             ProjectConfig.getSFDXProjectConfig(null),
             this.props.keys
         );
-        let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions(sfpPackage.packageName);
+        let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions(
+            sfpPackage.packageName
+        );
 
         SFPLogger.log(
             `Installing package dependencies of this ${sfpPackage.packageName}  in ${scratchOrgAsSFPOrg.getUsername()}`,
@@ -273,7 +277,6 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         deploymentResult: DeploymentResult,
         isToDelete: boolean
     ) {
-
         //No scratch org available.. just return
         if (scratchOrgUsername == undefined) return;
 
@@ -413,7 +416,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         if (failedPackages.length > 0) throw new Error(`Failed to create source packages ${failedPackages}`);
 
         if (generatedPackages.length === 0) {
-            throw new Error(
+            throw new ValidateError(
                 `No changes detected in the packages to be built\nvalidate will only execute if there is a change in atleast one of the packages`
             );
         }
@@ -543,7 +546,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         if (scratchOrgUsername) return scratchOrgUsername;
         else
-            throw new Error(
+            throw new ValidateError(
                 `Failed to fetch scratch org from ${pools}, Are you sure you created this pool using a DevHub authenticated using auth:sfdxurl or auth:web or auth:accesstoken:store`
             );
     }
@@ -569,24 +572,27 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Its a scratch org fetched from pool.. install dependencies
         //Assume hubOrg will be available, no need to check
-         switch (this.props.validateAgainst) {
-             case ValidateAgainst.PRECREATED_POOL:
-                 if (
-                     this.props.validationMode == ValidationMode.THOROUGH ||
-                     this.props.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
-                 ) {
-                     await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
-                 }
-                 break;
-             case ValidateAgainst.PROVIDED_ORG:
-                 if (this.props.validationMode == ValidationMode.INDIVIDUAL) {
-                    if(this.props.hubOrg)
-                      await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
+        switch (this.props.validateAgainst) {
+            case ValidateAgainst.PRECREATED_POOL:
+                if (
+                    this.props.validationMode == ValidationMode.THOROUGH ||
+                    this.props.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
+                ) {
+                    await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
+                }
+                break;
+            case ValidateAgainst.PROVIDED_ORG:
+                if (this.props.validationMode == ValidationMode.INDIVIDUAL) {
+                    if (this.props.hubOrg) await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
                     else
-                     SFPLogger.log(`${COLOR_WARNING(`DevHub was not provided, will skip installing /updating external dependencies of this package`)}`,LoggerLevel.INFO)
-                 }
-
-         }
+                        SFPLogger.log(
+                            `${COLOR_WARNING(
+                                `DevHub was not provided, will skip installing /updating external dependencies of this package`
+                            )}`,
+                            LoggerLevel.INFO
+                        );
+                }
+        }
 
         return { isToFailDeployment: false };
     }
@@ -602,6 +608,8 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             if (packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
                 //Get Changed Components
                 const testResult = await this.triggerApexTests(sfpPackage, targetUsername, this.props, this.logger);
+                sfpPackage.test_coverage =testResult.testcoverage;
+                sfpPackage.has_passed_coverage_check = testResult.result
                 return { isToFailDeployment: !testResult.result, message: testResult.message };
             }
         }
@@ -617,6 +625,8 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         id: string;
         result: boolean;
         message: string;
+        testcoverage?:number,
+        package?:string,
     }> {
         if (sfpPackage.packageDescriptor.skipTesting) return { id: null, result: true, message: 'No Tests To Run' };
 

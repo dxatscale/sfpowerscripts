@@ -672,7 +672,7 @@ export interface PackageInfo {
 
 export interface DeploymentResult {
     scheduled: number;
-    queue: any[];
+    queue: SfpPackage[];
     packagesToPackageInfo: { [p: string]: PackageInfo };
     deployed: PackageInfo[];
     failed: PackageInfo[];

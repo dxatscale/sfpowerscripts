@@ -5,6 +5,9 @@ import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from '..
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
+import { DeploymentResult } from '../../../impl/deploy/DeployImpl';
+import { Octokit } from 'octokit';
+const markdownTable = require('markdown-table');
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -128,7 +131,13 @@ export default class Validate extends SfpowerscriptsCommand {
 
             setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
-            await validateImpl.exec();
+            let validateResult=await validateImpl.exec();
+            if (validateResult.deploymentResult) {
+                let builDeployedPackageTableAsMarkdown = this.buildMarkdownDeployInfo(validateResult.deploymentResult);
+                await this.postToGiTHub("Results:\n\n  Execution:${x}\n\n  "+builDeployedPackageTableAsMarkdown);
+            } else {
+                await this.postToGiTHub(validateResult.message);
+            }
         } catch (error) {
             console.log(error.message);
             process.exitCode = 1;
@@ -156,5 +165,45 @@ export default class Validate extends SfpowerscriptsCommand {
                 }
             }
         }
+    }
+
+    buildMarkdownDeployInfo(deploymentResult: DeploymentResult) {
+       
+        let pkgTable = [['Name', 'Version Validated','Validated','Test Coverage','Passed Coverage Check']];
+        for (let pkg of deploymentResult.queue) {
+            pkgTable.push([
+               pkg.package_name,
+               pkg.versionNumber,
+                checkIsPackageDeployed(pkg.package_name)?":white_check_mark:":":x:",
+                String(pkg.test_coverage),
+               pkg.has_passed_coverage_check?":white_check_mark:":":x:"
+            ]);
+        }
+
+        return  markdownTable(pkgTable);
+        function checkIsPackageDeployed(name:string)
+        {
+            for (const deployedPkg of deploymentResult.deployed) {
+                if(name === deployedPkg.sfpPackage.package_name)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+
+    async postToGiTHub(message: string) {
+        const octokit = new Octokit({
+            auth: process.env.GH_TOKEN,
+        });
+
+        let response = await octokit.rest.issues.createComment({
+            owner: process.env.GH_OWNER,
+            repo: process.env.GH_REPO,
+            issue_number: Number.parseInt(process.env.ISSUE_NUMBER),
+            body: message,
+        });
     }
 }
