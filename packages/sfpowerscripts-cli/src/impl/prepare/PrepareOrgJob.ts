@@ -394,7 +394,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
     public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, logger: Logger, deploymentStatus: string) {
         if (fs.existsSync(this.pool.postDeploymentScriptPath)) {
             SFPLogger.log(
-                `Executing pre script for ` + scratchOrg.alias + ', script path:' + this.pool.postDeploymentScriptPath,
+                `Executing post script for ` + scratchOrg.alias + ', script path:' + this.pool.postDeploymentScriptPath,
                 LoggerLevel.INFO
             );
             await ScriptExecutor.executeScript(
