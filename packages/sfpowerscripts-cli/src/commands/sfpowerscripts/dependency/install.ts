@@ -56,7 +56,7 @@ export default class Install extends SfpowerscriptsCommand {
         let externalPackageResolver = new ExternalPackage2DependencyResolver(
             this.hubOrg.getConnection(),
             ProjectConfig.getSFDXProjectConfig(null),
-            this.flags.keys
+            this.flags.installationkeys
         );
         let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions();
 
