@@ -13,6 +13,7 @@ import SFPOrg, { PackageTypeInfo } from '../../org/SFPOrg';
 import { PackageCreationParams } from '../SfpPackageBuilder';
 import { PackageVersion, PackageVersionCreateRequestResult } from '@salesforce/packaging';
 import { Duration } from '@salesforce/kit';
+import PackageDependencyDisplayer from '../../display/PackageDependencyDisplayer';
 const path = require('path');
 
 export default class CreateUnlockedPackageImpl extends CreatePackage {
@@ -88,24 +89,8 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
         }
 
         //Print Dependencies
-        printDependencies(sfpPackage, this.logger);
+        PackageDependencyDisplayer.printPackageDependencies(sfpPackage.dependencies,sfpPackage.projectConfig, this.logger);
 
-        function printDependencies(sfpPackage: SfpPackage, logger: Logger) {
-            if (Array.isArray(sfpPackage.dependencies)) {
-                SFPLogger.log(`Dependencies Resolved :`, LoggerLevel.INFO, logger);
-                for (let dependentPkg of sfpPackage.dependencies) {
-                    SFPLogger.log(
-                        `${dependentPkg.package} : ${
-                            dependentPkg.versionNumber
-                                ? dependentPkg.versionNumber
-                                : sfpPackage.projectConfig.packageAliases[dependentPkg.package]
-                        }`,
-                        LoggerLevel.INFO,
-                        logger
-                    );
-                }
-            }
-        }
     }
 
     async createPackage(sfpPackage: SfpPackage) {
