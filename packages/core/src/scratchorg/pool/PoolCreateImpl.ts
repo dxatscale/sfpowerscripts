@@ -114,7 +114,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             return err({
                 success: 0,
                 failed: this.pool.failedToCreate,
-                message: `All requested scratch orgs failed to provision, Please check your code or config \m Failed with ${error.message}`,
+                message: `All requested scratch orgs failed to provision, Please check your code or config \n Failed with ${error.message}`,
                 errorCode: PoolErrorCodes.UnableToProvisionAny,
             });
         }
