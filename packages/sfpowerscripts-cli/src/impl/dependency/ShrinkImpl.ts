@@ -5,8 +5,7 @@ import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
 import { Connection } from '@salesforce/core';
 const Table = require('cli-table');
-import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
-
+import UserDefinedExternalDependency from '@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency';
 
 export default class ShrinkImpl {
     private dependencyMap;
@@ -18,7 +17,7 @@ export default class ShrinkImpl {
         SFPLogger.log('Shrinking Project Dependencies...', LoggerLevel.INFO, this.logger);
 
         this.updatedprojectConfig = _.cloneDeep(this.projectConfig);
-        
+
         const transitiveDependencyResolver = new TransitiveDependencyResolver(
           this.projectConfig
         );
@@ -32,30 +31,30 @@ export default class ShrinkImpl {
     }
 
     private async shrinkDependencies(dependencyMap: any) {
-        let pkgs = Object.keys(dependencyMap);
+        let pkgs = dependencyMap.keys();
         for (let pkg of pkgs) {
             SFPLogger.log(
                 COLOR_HEADER(`cleaning up dependencies for package:`) + COLOR_KEY_MESSAGE(pkg),
                 LoggerLevel.TRACE,
                 this.logger
             );
-            let dependenencies = dependencyMap[pkg];
+            let dependenencies = dependencyMap.get(pkg);
             let updatedDependencies = _.cloneDeep(dependenencies);
-            for (let dependency of dependencyMap[pkg]) {
-                if (dependencyMap[dependency.package]) {
+            for (let dependency of dependencyMap.get(pkg)) {
+                if (dependencyMap.get(dependency.package)) {
                     SFPLogger.log(
-                        `Shrinking ${dependencyMap[dependency.package].length} dependencies from package ${
+                        `Shrinking ${dependencyMap.get(dependency.package).length} dependencies from package ${
                             dependency.package
                         }`,
                         LoggerLevel.TRACE,
                         this.logger
                     );
-                    for (let temp of dependencyMap[dependency.package]) {
+                    for (let temp of dependencyMap.get(dependency.package)) {
                         for (let i = 0; i < updatedDependencies.length; i++) {
-                            if(updatedDependencies[i].package == temp.package){
-                                updatedDependencies.splice(i,1)
+                            if (updatedDependencies[i].package == temp.package) {
+                                updatedDependencies.splice(i, 1);
                             }
-                          }
+                        }
                     }
                 } else {
                     SFPLogger.log(
