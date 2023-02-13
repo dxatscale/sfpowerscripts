@@ -1,7 +1,7 @@
 import ProjectConfig from '../../project/ProjectConfig';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_ERROR } from '@dxatscale/sfp-logger';
 import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
-import _ from 'lodash';
+import _, { uniq } from 'lodash';
 import semver = require('semver');
 import convertBuildNumDotDelimToHyphen from '../../utils/VersionNumberConverter';
 import { Connection } from '@salesforce/core';
@@ -13,8 +13,8 @@ export default class TransitiveDependencyResolver {
     public async resolveTransitiveDependencies(): Promise<Map<string, { package: string; versionNumber?: string }[]>> {
         SFPLogger.log('Validating Project Dependencies...', LoggerLevel.INFO, this.logger);
 
-        let clonedProjectConfig = await _.cloneDeep(this.sfdxProjectConfig);      
-       clonedProjectConfig = await (new UserDefinedExternalDependencyMap()).cleanupEntries(clonedProjectConfig);
+        let clonedProjectConfig = await _.cloneDeep(this.sfdxProjectConfig);
+        clonedProjectConfig = await new UserDefinedExternalDependencyMap().cleanupEntries(clonedProjectConfig);
         let pkgWithDependencies = ProjectConfig.getAllPackagesAndItsDependencies(clonedProjectConfig);
         pkgWithDependencies = this.fillDepsWithUserDefinedExternalDependencyMap(
             pkgWithDependencies,
@@ -31,7 +31,7 @@ export default class TransitiveDependencyResolver {
     ): Map<string, { package: string; versionNumber?: string }[]> {
         if (externalDependencyMap) {
             for (let pkg of Object.keys(externalDependencyMap)) {
-                pkgWithDependencies.set(pkg , externalDependencyMap[pkg]);
+                pkgWithDependencies.set(pkg, externalDependencyMap[pkg]);
             }
         }
         return pkgWithDependencies;
@@ -51,7 +51,7 @@ export default class TransitiveDependencyResolver {
             for (let dependency of dependencyMap.get(pkg)) {
                 if (dependencyMap.get(dependency.package)) {
                     //push parents first
-                    dependenencies=dependenencies.concat(dependencyMap.get(dependency.package));
+                    dependenencies = dependenencies.concat(dependencyMap.get(dependency.package));
                     SFPLogger.log(
                         `pushing ${dependencyMap.get(dependency.package).length} dependencies from package ${
                             dependency.package
@@ -76,16 +76,34 @@ export default class TransitiveDependencyResolver {
                             let versionToCompare = convertBuildNumDotDelimToHyphen(uniqueDependencies[i].versionNumber);
                             // replace existing packageInfo if package version number is newer
                             if (semver.lt(version, versionToCompare)) {
-                                uniqueDependencies.splice(j, 1);
+                               uniqueDependencies = this.swapAndDropArrayElement(uniqueDependencies,j,i);
+                                
                             } else {
                                 uniqueDependencies.splice(i, 1);
+                                i--;
                             }
                         }
                     }
                 }
+                //do a dedup again
+                uniqueDependencies = [
+                    ...new Set(uniqueDependencies.map((objects) => JSON.stringify(objects))),
+                ].map((tmpString) => JSON.parse(tmpString));
             }
-            dependencyMap.set(pkg,uniqueDependencies)
+            dependencyMap.set(pkg, uniqueDependencies);
         }
         return dependencyMap;
     }
+
+    private swapAndDropArrayElement<T>(arr: T[], i: number, j: number): T[] {
+        if (i < 0 || i >= arr.length || j < 0 || j >= arr.length) {
+          return arr;
+        }
+        
+        let newArr = [...arr];
+        [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+        return [...newArr.slice(0, j), ...newArr.slice(j + 1)];
+      }
+      
+      
 }
