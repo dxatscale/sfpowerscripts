@@ -203,7 +203,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
                     COLOR_SUCCESS(
                         `${buildExecResult.generatedPackages.length} packages created in ${COLOR_TIME(
                             getFormattedTime(totalElapsedTime)
-                        )} minutes with {${COLOR_ERROR(buildExecResult.failedPackages.length)}} errors}`
+                        )} minutes with q${COLOR_ERROR(buildExecResult.failedPackages.length)} errors`
                     )
                 );
 
