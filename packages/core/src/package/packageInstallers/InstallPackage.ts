@@ -40,7 +40,7 @@ export class SfpPackageInstallationOptions {
 }
 
 export abstract class InstallPackage {
-    private startTime: number;
+
     protected connection: Connection;
     protected packageDescriptor;
     protected packageDirectory;
@@ -55,9 +55,9 @@ export abstract class InstallPackage {
     ) {}
 
     public async exec(): Promise<PackageInstallationResult> {
-        try {
-            this.startTime = Date.now();
-
+        let startTime = Date.now();
+        let elapsedTime:number;
+        try {        
             this.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
                 this.sfpPackage.sourceDir,
                 this.sfpPackage.packageName
@@ -69,23 +69,31 @@ export abstract class InstallPackage {
                 if (!this.options.isDryRun) {
                     //Package Has Permission Set Group
                     await this.waitTillAllPermissionSetGroupIsUpdated();
-                    await this.preInstall();
+                    await this.assignPermsetsPreDeployment();
+                    await this.executePreDeploymentScripts();
                     await this.getPackageDirectoryForAliasifiedPackages();
                     await this.install();
-                    await this.postInstall();
+                    await this.assignPermsetsPostDeployment();
+                    await this.executePostDeployers();
+                    await this.executePostDeploymentScript();
                     await this.commitPackageInstallationStatus();
-                    this.sendMetricsWhenSuccessfullyInstalled();
+
+
+                    elapsedTime=Date.now()-startTime;
+                    this.sendMetricsWhenSuccessfullyInstalled(elapsedTime);
                 }
-                return { result: PackageInstallationStatus.Succeeded };
+                return { result: PackageInstallationStatus.Succeeded , elapsedTime:elapsedTime};
             } else {
                 SFPLogger.log('Skipping Package Installation', LoggerLevel.INFO, this.logger);
                 return { result: PackageInstallationStatus.Skipped };
             }
         } catch (error) {
-            this.sendMetricsWhenFailed();
+            elapsedTime=Date.now()-startTime;
+            this.sendMetricsWhenFailed(elapsedTime);
             return {
                 result: PackageInstallationStatus.Failed,
                 message: error.message,
+                elapsedTime:elapsedTime
             };
         }
     }
@@ -142,8 +150,7 @@ export abstract class InstallPackage {
         }
     }
 
-    private sendMetricsWhenFailed() {
-        let elapsedTime = Date.now() - this.startTime;
+    private sendMetricsWhenFailed(elapsedTime:number) {
         SFPLogger.log(
             `Package ${COLOR_KEY_MESSAGE(
                 this.sfpPackage.package_name
@@ -156,8 +163,7 @@ export abstract class InstallPackage {
         });
     }
 
-    private sendMetricsWhenSuccessfullyInstalled() {
-        let elapsedTime = Date.now() - this.startTime;
+    private sendMetricsWhenSuccessfullyInstalled(elapsedTime:number) {
         SFPLogger.log(
             `Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)} installation took ${COLOR_KEY_MESSAGE(
                 getFormattedTime(elapsedTime)
@@ -203,9 +209,9 @@ export abstract class InstallPackage {
         } else return true; // Always install packages if skipIfPackageInstalled is false
     }
 
-    public async preInstall() {
-        let preDeploymentScript: string = path.join(this.sfpPackage.sourceDir, `scripts`, `preDeployment`);
 
+    private async assignPermsetsPreDeployment()
+    {
         if (this.sfpPackage.assignPermSetsPreDeployment) {
             SFPLogger.log('Assigning permission sets before deployment:', LoggerLevel.INFO, this.logger);
 
@@ -216,7 +222,10 @@ export abstract class InstallPackage {
                 this.logger
             );
         }
+    }
 
+    public async executePreDeploymentScripts() {
+        let preDeploymentScript: string = path.join(this.sfpPackage.sourceDir, `scripts`, `preDeployment`);
         if (fs.existsSync(preDeploymentScript)) {
             let alias = await this.sfpOrg.getAlias();
             SFPLogger.log('Executing preDeployment script', LoggerLevel.INFO, this.logger);
@@ -234,9 +243,8 @@ export abstract class InstallPackage {
 
     abstract install();
 
-    public async postInstall() {
-        let postDeploymentScript: string = path.join(this.sfpPackage.sourceDir, `scripts`, `postDeployment`);
-
+    private async assignPermsetsPostDeployment()
+    {
         if (this.sfpPackage.assignPermSetsPostDeployment) {
             SFPLogger.log('Assigning permission sets after deployment:', LoggerLevel.INFO, this.logger);
 
@@ -247,10 +255,10 @@ export abstract class InstallPackage {
                 this.logger
             );
         }
+    }
 
-        //run all the post Deployers
-        await this.executePostDeployers();
-
+    public async executePostDeploymentScript() {
+        let postDeploymentScript: string = path.join(this.sfpPackage.sourceDir, `scripts`, `postDeployment`);
         if (fs.existsSync(postDeploymentScript)) {
             SFPLogger.log('Executing postDeployment script', LoggerLevel.INFO, this.logger);
             let alias = await this.sfpOrg.getAlias();
