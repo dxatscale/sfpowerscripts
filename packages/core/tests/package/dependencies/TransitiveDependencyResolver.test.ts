@@ -76,6 +76,23 @@ describe("Given a TransitiveDependencyResolver", () => {
     
   });
 
+
+  it("should resolve package dependencies with a higher version of a given package if a higher version is specified", async () => {
+    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig);
+    const resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
+    
+    let dependencies =  resolvedDependencies.get('quote-management');
+    expect(dependencies?.find(dependency => dependency.package === "core")?.versionNumber).toBe("1.2.0.LATEST");
+  
+  });
+
+  it("should have only one version of a package", async () => {
+    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig);
+    const resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
+    expect(verifyUniquePkgs(resolvedDependencies.get('quote-management'))).toBeTruthy();
+  
+  });
+
   it("should expand the dependencies of external packages", async () => {
     const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig);
     const resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
@@ -84,7 +101,19 @@ describe("Given a TransitiveDependencyResolver", () => {
 
   });
 
-
+  function verifyUniquePkgs(arr) {
+    let pkgs = {};
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i].hasOwnProperty('package')) {
+        if (pkgs.hasOwnProperty(arr[i].package)) {
+          return false;
+        }
+        pkgs[arr[i].package] = true;
+      }
+    }
+    return true;
+  }
+  
 
   // TODO: test cache
 });
@@ -159,7 +188,27 @@ const projectConfig = {
             versionNumber: '1.0.0.LATEST'
           },
         ]
-    }
+    },
+    {
+      path: 'packages/quote-management',
+      package: 'quote-management',
+      default: false,
+      versionName: 'quote-management-1.0.0',
+      versionNumber: '1.0.0.NEXT',
+      dependencies: [
+        {
+          package: 'tech-framework@2.0.0.38'
+        },
+        {
+          package: 'core',
+          versionNumber: '1.2.0.LATEST'
+        },
+        {
+          package: 'candidate-management',
+          versionNumber: '1.0.0.LATEST'
+        },
+      ]
+  }
   ],
   namespace: '',
   sfdcLoginUrl: 'https://login.salesforce.com',
