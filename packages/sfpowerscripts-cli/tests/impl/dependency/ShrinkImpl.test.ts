@@ -55,8 +55,8 @@ describe("Given a ShrinkImpl", () => {
   })
 
   it("should remove duplicate package dependencies from its dependent package", async () => {
-    const shrinkImpl = new ShrinkImpl(projectConfig, conn);
-    let resolvedDependencies = await shrinkImpl.resolveDependencies();
+    const shrinkImpl = new ShrinkImpl(conn);
+    let resolvedDependencies = await shrinkImpl.shrinkDependencies(projectConfig);
 
     let dependencies =  resolvedDependencies.packageDirectories?.find(pkg => pkg.package === "candidate-management")?.dependencies;
     let coreIndex = dependencies.findIndex(dependency => dependency.package === "core");
@@ -66,8 +66,8 @@ describe("Given a ShrinkImpl", () => {
   });
 
   it("should remove duplicate package dependencies from external dependency map", async () => {
-    const shrinkImpl = new ShrinkImpl(projectConfig, conn);
-    let resolvedDependencies = await shrinkImpl.resolveDependencies();
+    const shrinkImpl = new ShrinkImpl(conn);
+    let resolvedDependencies = await shrinkImpl.shrinkDependencies(projectConfig);
 
     let dependencies =  resolvedDependencies.packageDirectories?.find(pkg => pkg.package === "contact-management")?.dependencies;
     let coreIndex = dependencies.findIndex(dependency => dependency.package === "core");
