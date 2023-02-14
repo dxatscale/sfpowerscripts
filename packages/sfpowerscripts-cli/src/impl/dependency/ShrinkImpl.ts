@@ -14,7 +14,7 @@ export default class ShrinkImpl {
 
 
     constructor(private projectConfig: ProjectConfig,private connToDevHub:Connection, private logger?: Logger) {}
-    public async resolveDependencies(): Promise<ProjectConfig> {
+    public async resolveDependencies(): Promise<any> {
         SFPLogger.log('Shrinking Project Dependencies...', LoggerLevel.INFO, this.logger);
 
         this.updatedprojectConfig = _.cloneDeep(this.projectConfig);
