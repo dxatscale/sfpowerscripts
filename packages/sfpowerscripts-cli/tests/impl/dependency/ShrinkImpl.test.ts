@@ -1,7 +1,7 @@
 import { jest, expect } from '@jest/globals';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
 import { Connection, AuthInfo } from '@salesforce/core';
-import ShrinkImpl from '../../../src/Impl/dependency/ShrinkImpl';
+import ShrinkImpl from '../../../src/impl/dependency/ShrinkImpl';
 const $$ = testSetup();
 
 const setupFakeConnection = async () => {
