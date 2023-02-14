@@ -14,7 +14,6 @@ name: 'Release'
 on:
    push:
     branches:
-      - develop
       - main
     paths-ignore:
       - 'docs/**'

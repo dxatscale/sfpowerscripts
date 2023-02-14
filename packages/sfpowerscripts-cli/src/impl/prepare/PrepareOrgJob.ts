@@ -163,8 +163,8 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         logger: FileLogger,
         deploymentMode: DeploymentMode
     ) {
-        SFPLogger.log(`Deploying packages in the repo to ${scratchOrg.alias}`);
-        SFPLogger.log(`Deploying packages in the repo to ${scratchOrg.alias}`, LoggerLevel.INFO, logger);
+        SFPLogger.log(`Deploying packages  to ${scratchOrg.alias}`);
+        SFPLogger.log(`Deploying packages  to ${scratchOrg.alias}`, LoggerLevel.INFO, logger);
 
         let deployProps: DeployProps = {
             targetUsername: scratchOrg.username,
@@ -394,7 +394,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
     public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, logger: Logger, deploymentStatus: string) {
         if (fs.existsSync(this.pool.postDeploymentScriptPath)) {
             SFPLogger.log(
-                `Executing pre script for ` + scratchOrg.alias + ', script path:' + this.pool.postDeploymentScriptPath,
+                `Executing post script for ` + scratchOrg.alias + ', script path:' + this.pool.postDeploymentScriptPath,
                 LoggerLevel.INFO
             );
             await ScriptExecutor.executeScript(

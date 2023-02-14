@@ -57,9 +57,14 @@ jobs:
           images:  ghcr.io/${{ inputs.repo }}/${{ inputs.image }}
 
 
-    - name: 'Get package version'
+    - name: 'Get package version and name'
       run: |
         echo "PKG_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)" >> $GITHUB_ENV
+        RELEASE_NAME=$(jq -r ".release" packages/sfpowerscripts-cli/package.json)
+        RELEASE_NAME_AS_ARRAY=($RELEASE_NAME)
+        RELEASE_NAME=$(echo ${RELEASE_NAME_AS_ARRAY[0]} | cut -c1-3)${RELEASE_NAME_AS_ARRAY[1]}
+        echo "RELEASE_NAME=release-$RELEASE_NAME"  >> $GITHUB_ENV
+
 
     - name: Build and push
       id: docker_build
@@ -84,6 +89,19 @@ jobs:
          image: ${{ inputs.image }}
          existing-tag: ${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
          new-tag: ${{ github.ref_name }}
+         registry: ghcr.io
+         username:   ${{ secrets.username }}
+         token: ${{ secrets.token }}
+
+
+   #Tag the image as develop
+    - name: 'Tag Docker'
+      uses: ./.github/actions/tagDocker
+      with:
+         repo: ${{ inputs.repo }}
+         image: ${{ inputs.image }}
+         existing-tag: ${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
+         new-tag:  ${{ env.RELEASE_NAME }}
          registry: ghcr.io
          username:   ${{ secrets.username }}
          token: ${{ secrets.token }}

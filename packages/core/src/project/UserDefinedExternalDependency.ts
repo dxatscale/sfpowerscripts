@@ -16,6 +16,8 @@ export default class UserDefinedExternalDependencyMap {
             SFPLogger.log(JSON.stringify(externalDependencyMap), LoggerLevel.DEBUG);
             return externalDependencyMap;
         }
+        else
+         return {};
     }
 
     public async addDependencyEntries(projectConfig: any, connToDevHub: Connection) {

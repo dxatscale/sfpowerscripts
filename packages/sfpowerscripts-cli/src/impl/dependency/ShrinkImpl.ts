@@ -4,8 +4,7 @@ import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import _ from 'lodash';
 import { Connection } from '@salesforce/core';
 const Table = require('cli-table');
-import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
-
+import UserDefinedExternalDependency from '@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency';
 
 export default class ShrinkImpl {
     private dependencyMap;
@@ -17,7 +16,7 @@ export default class ShrinkImpl {
         SFPLogger.log('Shrinking Project Dependencies...', LoggerLevel.INFO, this.logger);
 
         this.updatedprojectConfig = _.cloneDeep(sfdxProjectConfig);
-        
+
         const transitiveDependencyResolver = new TransitiveDependencyResolver(
             sfdxProjectConfig
         );
@@ -32,6 +31,7 @@ export default class ShrinkImpl {
 
     private async resolveAndShrinkDependencies(dependencyMap: any) {
         let pkgs = [...dependencyMap.keys()];
+
         for (let pkg of pkgs) {
             SFPLogger.log(
                 COLOR_HEADER(`cleaning up dependencies for package:`) + COLOR_KEY_MESSAGE(pkg),
@@ -51,10 +51,10 @@ export default class ShrinkImpl {
                     );
                     for (let temp of dependencyMap.get(dependency.package)) {
                         for (let i = 0; i < updatedDependencies.length; i++) {
-                            if(updatedDependencies[i].package == temp.package){
-                                updatedDependencies.splice(i,1)
+                            if (updatedDependencies[i].package == temp.package) {
+                                updatedDependencies.splice(i, 1);
                             }
-                          }
+                        }
                     }
                 } else {
                     SFPLogger.log(

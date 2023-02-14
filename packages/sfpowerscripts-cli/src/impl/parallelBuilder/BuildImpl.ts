@@ -23,7 +23,7 @@ import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/TransitiveDependencyResolver';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
-
+import PackageDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/PackageDependencyDisplayer';
 
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
@@ -528,31 +528,9 @@ export default class BuildImpl {
             ).dependencies;
             if (packageDependencies && Array.isArray(packageDependencies) && packageDependencies.length > 0) {
                 SFPLogger.log(COLOR_HEADER(`  Resolved package dependencies:`));
-                this.printPackageDependencies(packageDependencies);
+                PackageDependencyDisplayer.printPackageDependencies(packageDependencies, this.projectConfig, new ConsoleLogger());
             }
         }
-    }
-
-    private printPackageDependencies(dependencies: { package: string; versionNumber?: string }[]) {
-        const table = new Table({
-            head: ['Package', 'Version'],
-            chars: ZERO_BORDER_TABLE,
-            style: { 'padding-left': 3 },
-        });
-
-        for (const dependency of dependencies) {
-            let versionNumber = 'N/A';
-
-            if (!dependency.versionNumber)
-                versionNumber = this.projectConfig.packageAliases[dependency.package]
-                    ? this.projectConfig.packageAliases[dependency.package]
-                    : 'N/A';
-            else versionNumber = dependency.versionNumber;
-
-            const row = [dependency.package, versionNumber];
-            table.push(row);
-        }
-        SFPLogger.log(table.toString());
     }
 
     private async createPackage(
