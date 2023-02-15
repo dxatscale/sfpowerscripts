@@ -104,7 +104,7 @@ export default class FHTEnabler implements PostDeployer {
             }
 
             return { location: fetchedCustomFields.location, componentSet: fetchedCustomFields.components };
-        } else SFPLogger.log(`No fields are required to be updated,skipping update of  Field History Tracking `, LoggerLevel.INFO, logger);
+        } else SFPLogger.log(`No fields are required to be updated, skipping update of Field History Tracking`, LoggerLevel.INFO, logger);
     }
 
     public getName(): string {
