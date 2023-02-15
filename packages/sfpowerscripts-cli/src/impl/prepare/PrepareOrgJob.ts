@@ -163,8 +163,8 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         logger: FileLogger,
         deploymentMode: DeploymentMode
     ) {
-        SFPLogger.log(`Deploying packages  to ${scratchOrg.alias}`);
-        SFPLogger.log(`Deploying packages  to ${scratchOrg.alias}`, LoggerLevel.INFO, logger);
+        SFPLogger.log(`Deploying packages to ${scratchOrg.alias}`);
+        SFPLogger.log(`Deploying packages to ${scratchOrg.alias}`, LoggerLevel.INFO, logger);
 
         let deployProps: DeployProps = {
             targetUsername: scratchOrg.username,

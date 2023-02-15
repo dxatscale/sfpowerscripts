@@ -248,7 +248,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions(sfpPackage.packageName);
 
         SFPLogger.log(
-            `Installing package dependencies of this ${sfpPackage.packageName}  in ${scratchOrgAsSFPOrg.getUsername()}`,
+            `Installing package dependencies of this ${sfpPackage.packageName} in ${scratchOrgAsSFPOrg.getUsername()}`,
             LoggerLevel.INFO,
             new ConsoleLogger()
         );
@@ -289,13 +289,13 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                     else
                         SFPLogger.log(
                             COLOR_WARNING(
-                                `Unable to return scratch org to pool,Please check permissions or update sfpower-pool-package to latest`
+                                `Unable to return scratch org to pool, Please check permissions or update sfpower-pool-package to latest`
                             )
                         );
                 } catch (error) {
                     SFPLogger.log(
                         COLOR_WARNING(
-                            `Unable to return scratch org to pool,Please check permissions or update sfpower-pool-package to latest`
+                            `Unable to return scratch org to pool, Please check permissions or update sfpower-pool-package to latest`
                         )
                     );
                 }
