@@ -1,4 +1,3 @@
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/TransitiveDependencyResolver';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_ERROR } from '@dxatscale/sfp-logger';
 import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
@@ -12,26 +11,27 @@ export default class ShrinkImpl {
     private updatedprojectConfig: any;
 
 
-    constructor(private projectConfig: ProjectConfig,private connToDevHub:Connection, private logger?: Logger) {}
-    public async resolveDependencies(): Promise<ProjectConfig> {
+    constructor(private connToDevHub:Connection, private logger?: Logger) {}
+    public async shrinkDependencies(sfdxProjectConfig: any): Promise<any> {
         SFPLogger.log('Shrinking Project Dependencies...', LoggerLevel.INFO, this.logger);
 
-        this.updatedprojectConfig = _.cloneDeep(this.projectConfig);
+        this.updatedprojectConfig = _.cloneDeep(sfdxProjectConfig);
 
         const transitiveDependencyResolver = new TransitiveDependencyResolver(
-          this.projectConfig
+            sfdxProjectConfig
         );
 
         this.dependencyMap = await transitiveDependencyResolver.resolveTransitiveDependencies();
-        await this.shrinkDependencies(this.dependencyMap);
+        await this.resolveAndShrinkDependencies(this.dependencyMap);
 
         this.updatedprojectConfig = new UserDefinedExternalDependency().addDependencyEntries(  this.updatedprojectConfig, this.connToDevHub);
 
         return this.updatedprojectConfig;
     }
 
-    private async shrinkDependencies(dependencyMap: any) {
-        let pkgs = dependencyMap.keys();
+    private async resolveAndShrinkDependencies(dependencyMap: any) {
+        let pkgs = [...dependencyMap.keys()];
+
         for (let pkg of pkgs) {
             SFPLogger.log(
                 COLOR_HEADER(`cleaning up dependencies for package:`) + COLOR_KEY_MESSAGE(pkg),

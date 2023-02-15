@@ -38,8 +38,8 @@ export default class PermissionSetGroupUpdateAwaiter {
                     break;
                 }
             } catch (error) {
-                console.log(error);
                 SFPLogger.log(`Unable to fetch permission group status ${error}`, LoggerLevel.TRACE, this.logger);
+                throw error;
             }
         }
     }
