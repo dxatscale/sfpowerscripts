@@ -50,7 +50,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
     protected async onExec(): Promise<Result<PoolConfig, PoolError>> {
         await this.hubOrg.refreshAuth();
 
-        let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = [];
+        const scriptExecPromises: Array<Promise<ScriptExecutionResult>> = [];
 
 
         //Clean up any orphanedOrgs
@@ -128,8 +128,8 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         }
 
         // Assign workers to executed scripts
-        for (let scratchOrg of this.pool.scratchOrgs) {
-            let result = this.scriptExecutorWrappedForBottleneck(scratchOrg, this.hubOrg.getUsername());
+        for (const scratchOrg of this.pool.scratchOrgs) {
+            const result = this.scriptExecutorWrappedForBottleneck(scratchOrg, this.hubOrg.getUsername());
             scriptExecPromises.push(result);
         }
 
@@ -157,7 +157,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
         async function recoverOrphanedScratchOrgs(hubOrg:Org) {
             SFPLogger.log(`${EOL}Recovering Orphaned Scratch Orgs`);
-            let deletedScratchOrgs = await new OrphanedOrgsDeleteImpl(hubOrg).execute();
+            const deletedScratchOrgs = await new OrphanedOrgsDeleteImpl(hubOrg).execute();
             if ((deletedScratchOrgs as Array<ScratchOrg>).length > 0) {
                 SFPLogger.log(`Recovered ${(deletedScratchOrgs as Array<ScratchOrg>).length} succesfully`);
             } else {
@@ -168,7 +168,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
     private async computeAllocation(): Promise<number> {
         //Compute current pool requirement
-        let activeCount = await this.scratchOrgInfoFetcher.getCountOfActiveScratchOrgsByTag(this.pool.tag);
+        const activeCount = await this.scratchOrgInfoFetcher.getCountOfActiveScratchOrgsByTag(this.pool.tag);
         return this.allocateScratchOrgsPerTag(this.limits.ActiveScratchOrgs.Remaining, activeCount, this.pool);
     }
 
@@ -205,7 +205,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         //Generate Scratch Orgs
         SFPLogger.log(COLOR_KEY_MESSAGE('Generate Scratch Orgs..'), LoggerLevel.INFO);
 
-        let scratchOrgPromises = new Array<Promise<ScratchOrg>>();
+        const scratchOrgPromises = new Array<Promise<ScratchOrg>>();
 
         const scratchOrgCreationLimiter = new Bottleneck({
             maxConcurrent: pool.batchSize,
@@ -213,9 +213,9 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
         addDescriptionToScratchOrg(pool);
 
-        let startTime = Date.now();
+        const startTime = Date.now();
         for (let i = 1; i <= pool.to_allocate; i++) {
-            let scratchOrgPromise: Promise<ScratchOrg> = scratchOrgCreationLimiter.schedule(() =>
+            const scratchOrgPromise: Promise<ScratchOrg> = scratchOrgCreationLimiter.schedule(() =>
                 scratchOrgOperator.create(`SO` + i, this.pool.configFilePath, this.pool.expiry, this.pool.waitTime)
             );
             scratchOrgPromises.push(scratchOrgPromise);
@@ -223,7 +223,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
         SFPLogger.log(`Waiting for all scratch org request to complete, Please wait`);
         //Wait for all orgs to be created
-        let scratchOrgCreationResults = await Promise.allSettled(scratchOrgPromises);
+        const scratchOrgCreationResults = await Promise.allSettled(scratchOrgPromises);
         //Only worry about scrath orgs that have suceeded
         const isFulfilled = <T>(p: PromiseSettledResult<T>): p is PromiseFulfilledResult<T> => p.status === 'fulfilled';
         const isRejected = <T>(p: PromiseSettledResult<T>): p is PromiseRejectedResult => p.status === 'rejected';
@@ -233,7 +233,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         for (const reason of rejectedScratchOrgs) {
             if (reason.message.includes(`The client has timed out`)) {
                 //Log how many we were able to create
-                let elapsedTime = Date.now() - startTime;
+                const elapsedTime = Date.now() - startTime;
                 SFPLogger.log(
                     `A scratch org creation was rejected due to saleforce not responding within the set wait time of ${pool.waitTime} mins \n` +
                         `Time elasped so far ${COLOR_KEY_MESSAGE(
@@ -244,7 +244,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         }
 
         //Log how many we were able to create
-        let elapsedTime = Date.now() - startTime;
+        const elapsedTime = Date.now() - startTime;
         SFPLogger.log(
             `Created ${COLOR_SUCCESS(scratchOrgs.length)} of ${pool.to_allocate} successfully with ${COLOR_ERROR(
                 rejectedScratchOrgs.length
@@ -257,7 +257,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             let index = scratchOrgs.length;
             while (index--) {
                 try {
-                    let orgDetails = await new OrgDetailsFetcher(scratchOrgs[index].username).getOrgDetails();
+                    const orgDetails = await new OrgDetailsFetcher(scratchOrgs[index].username).getOrgDetails();
                     if (orgDetails.status === 'Deleted') {
                         throw new Error(
                             `Throwing away scratch org ${this.pool.scratchOrgs[index].alias} as it has a status of deleted`
@@ -270,7 +270,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
             scratchOrgs = await this.scratchOrgInfoFetcher.getScratchOrgRecordId(scratchOrgs);
 
-            let scratchOrgInprogress = [];
+            const scratchOrgInprogress = [];
 
             scratchOrgs.forEach((scratchOrg) => {
                 scratchOrgInprogress.push({
@@ -291,11 +291,11 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
         function addDescriptionToScratchOrg(pool: PoolConfig) {
 
-            let configClonePath = path.join('.sfpowerscripts','scratchorg-configs',`${ makeFileId(8)}.json`);
+            const configClonePath = path.join('.sfpowerscripts','scratchorg-configs',`${ makeFileId(8)}.json`);
             fs.mkdirpSync('.sfpowerscripts/scratchorg-configs');
             fs.copyFileSync(pool.configFilePath,configClonePath);
 
-            let scratchOrgDefn = fs.readJSONSync(configClonePath);
+            const scratchOrgDefn = fs.readJSONSync(configClonePath);
             if (!scratchOrgDefn.description)
                 scratchOrgDefn.description = JSON.stringify({
                     requestedBy: 'sfpowerscripts',
@@ -316,11 +316,11 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         }
 
         function makeFileId(length): string {
-            var result = '';
-            var characters =
+            let result = '';
+            const characters =
                 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            var charactersLength = characters.length;
-            for (var i = 0; i < length; i++) {
+            const charactersLength = characters.length;
+            for (let i = 0; i < length; i++) {
                 result += characters.charAt(Math.floor(Math.random() * charactersLength));
             }
             return result;
@@ -351,7 +351,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         ).execute()) as ScratchOrg[];
         scratchOrgs = await scratchOrgInfoFetcher.getScratchOrgRecordId(scratchOrgs);
 
-        let scratchOrgInprogress = [];
+        const scratchOrgInprogress = [];
 
         if (scratchOrgs && scratchOrgs.length > 0) {
             scratchOrgs.forEach((scratchOrg) => {
@@ -381,7 +381,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
     ) {
         pool.failedToCreate = 0;
         for (let i = pool.scratchOrgs.length - 1; i >= 0; i--) {
-            let scratchOrg = pool.scratchOrgs[i];
+            const scratchOrg = pool.scratchOrgs[i];
             if (scratchOrg.isScriptExecuted) {
                 continue;
             }
@@ -394,7 +394,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             try {
                 //Delete scratchorgs that failed to execute script
 
-                let activeScratchOrgRecordId = await scratchOrgInfoFetcher.getActiveScratchOrgRecordIdGivenScratchOrg(
+                const activeScratchOrgRecordId = await scratchOrgInfoFetcher.getActiveScratchOrgRecordIdGivenScratchOrg(
                     scratchOrg.orgId
                 );
 
@@ -419,12 +419,12 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             LoggerLevel.INFO
         );
 
-        let startTime = Date.now();
-        let result = await this.poolScriptExecutor.execute(scratchOrg, this.hubOrg, this.logLevel);
+        const startTime = Date.now();
+        const result = await this.poolScriptExecutor.execute(scratchOrg, this.hubOrg, this.logLevel);
 
         if (result.isOk()) {
             scratchOrg.isScriptExecuted = true;
-            let submitInfoToPool = await this.scratchOrgInfoAssigner.setScratchOrgInfo({
+            const submitInfoToPool = await this.scratchOrgInfoAssigner.setScratchOrgInfo({
                 Id: scratchOrg.recordId,
                 Allocation_status__c: 'Available',
             });
