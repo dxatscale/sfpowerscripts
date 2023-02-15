@@ -1,7 +1,7 @@
 import { jest, expect } from '@jest/globals';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
 import { Connection, AuthInfo } from '@salesforce/core';
-import TransitiveDependencyResolver from '../../../src/package/dependencies/TransitiveDependencyResolver';
+import ShrinkImpl from '../../../src/impl/dependency/ShrinkImpl';
 const $$ = testSetup();
 
 const setupFakeConnection = async () => {
@@ -47,73 +47,35 @@ let conn: Connection;
 let gitTags;
 let response;
 
-describe("Given a TransitiveDependencyResolver", () => {
+describe("Given a ShrinkImpl", () => {
 
   beforeEach(async () => {
     conn = await setupFakeConnection();
 
   })
 
-  it("should resolve missing package dependencies with transitive dependency", async () => {
-    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig);
-    let resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
+  it("should remove duplicate package dependencies from its dependent package", async () => {
+    const shrinkImpl = new ShrinkImpl(conn);
+    let resolvedDependencies = await shrinkImpl.shrinkDependencies(projectConfig);
 
-    let dependencies =  resolvedDependencies.get('candidate-management');
-    expect(dependencies?.find(dependency => dependency.package === "temp")).toBeTruthy();
-    expect(dependencies?.find(dependency => dependency.package === "temp")?.versionNumber).toBe("1.0.0.LATEST");
+    let dependencies =  resolvedDependencies.packageDirectories?.find(pkg => pkg.package === "candidate-management")?.dependencies;
+    let coreIndex = dependencies.findIndex(dependency => dependency.package === "core");
+    expect(dependencies).toBeTruthy();
+    expect(dependencies?.length)?.toBe(2);
+    expect(coreIndex).toBe(1);
   });
 
-  it("should resolve package dependencies in the same order as its dependent packages", async () => {
-    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig);
-    const resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
-    
-    let baseIndex = resolvedDependencies.get('candidate-management')?.findIndex(dependency => dependency.package === "base");
-    expect(baseIndex).toBe(2);
-    let tempIndex = resolvedDependencies.get('candidate-management')?.findIndex(dependency => dependency.package === "temp");
-    expect(tempIndex).toBe(3);
-    let coreIndex = resolvedDependencies.get('candidate-management')?.findIndex(dependency => dependency.package === "core");
-    expect(coreIndex).toBe(4);
-    
+  it("should remove duplicate package dependencies from external dependency map", async () => {
+    const shrinkImpl = new ShrinkImpl(conn);
+    let resolvedDependencies = await shrinkImpl.shrinkDependencies(projectConfig);
+
+    let dependencies =  resolvedDependencies.packageDirectories?.find(pkg => pkg.package === "contact-management")?.dependencies;
+    let coreIndex = dependencies.findIndex(dependency => dependency.package === "core");
+    expect(dependencies).toBeTruthy();
+    expect(dependencies?.length)?.toBe(2);
+    expect(coreIndex).toBe(1);
   });
 
-
-  it("should resolve package dependencies with a higher version of a given package if a higher version is specified", async () => {
-    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig);
-    const resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
-    
-    let dependencies =  resolvedDependencies.get('quote-management');
-    expect(dependencies?.find(dependency => dependency.package === "core")?.versionNumber).toBe("1.2.0.LATEST");
-  
-  });
-
-  it("should have only one version of a package", async () => {
-    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig);
-    const resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
-    expect(verifyUniquePkgs(resolvedDependencies.get('quote-management'))).toBeTruthy();
-  
-  });
-
-  it("should expand the dependencies of external packages", async () => {
-    const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig);
-    const resolvedDependencies = await transitiveDependencyResolver.resolveTransitiveDependencies();
-    let externalDependencyIndex = resolvedDependencies.get('contact-management')?.findIndex(dependency => dependency.package === "sfdc-framework");
-    expect(externalDependencyIndex).toBe(0);
-
-  });
-
-  function verifyUniquePkgs(arr) {
-    let pkgs = {};
-    for (let i = 0; i < arr.length; i++) {
-      if (arr[i].hasOwnProperty('package')) {
-        if (pkgs.hasOwnProperty(arr[i].package)) {
-          return false;
-        }
-        pkgs[arr[i].package] = true;
-      }
-    }
-    return true;
-  }
-  
 
   // TODO: test cache
 });
@@ -148,6 +110,10 @@ const projectConfig = {
           versionNumber: '1.0.0.NEXT',
           dependencies: [
             {
+              package: 'base',
+              versionNumber: '1.0.2.LATEST'
+            },
+            {
               package: 'temp',
               versionNumber: '1.0.0.LATEST'
             }
@@ -162,6 +128,14 @@ const projectConfig = {
           dependencies: [
             {
               package: 'tech-framework@2.0.0.38'
+            },
+            {
+              package: 'base',
+              versionNumber: '1.0.2.LATEST'
+            },
+            {
+              package: 'temp',
+              versionNumber: '1.0.0.LATEST'
             },
             {
               package: 'core',
@@ -180,13 +154,20 @@ const projectConfig = {
             package: 'tech-framework@2.0.0.38'
           },
           {
-            package: 'core',
+            package: "sfdc-framework"
+          },
+          {
+            package: 'base',
+            versionNumber: '1.0.2.LATEST'
+          },
+          {
+            package: 'temp',
             versionNumber: '1.0.0.LATEST'
           },
           {
-            package: 'candidate-management',
+            package: 'core',
             versionNumber: '1.0.0.LATEST'
-          },
+          }
         ]
     },
     {
@@ -216,12 +197,15 @@ const projectConfig = {
   packageAliases: {
     "tech-framework@2.0.0.38": '04t1P00000xxxxxx00',
     "candidate-management": '0Ho4a00000000xxxx1',
+    "base": '0Ho4a00000000xxxx1',
+    "temp": '0Ho4a00000000xxxx1',
+    "core": '0Ho4a00000000xxxx1',
     "contact-management": '0Ho4a00000000xxxx2',
     "sfdc-framework":"04t1000x00x00x"
   },
   "plugins": {
       "sfpowerscripts": {
-          "disableTransitiveDependencyResolver": false,
+          "disableShrinkImpl": false,
               "externalDependencyMap": {
                   "tech-framework@2.0.0.38": [
                       {
