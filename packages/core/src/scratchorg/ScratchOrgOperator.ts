@@ -61,7 +61,7 @@ export default class ScratchOrgOperator {
         }
 
         SFPLogger.log(
-            `Creation request for Scratch Org  ${scratchOrg.alias}  is completed successfully in  ${COLOR_KEY_MESSAGE(
+            `Creation request for Scratch Org ${scratchOrg.alias} is completed successfully in ${COLOR_KEY_MESSAGE(
                 getFormattedTime(scratchOrg.elapsedTime)
             )}`,
             LoggerLevel.INFO
@@ -113,7 +113,7 @@ export default class ScratchOrgOperator {
    The Login url for this org is : ${scratchOrg.loginURL}\n
    Username: ${scratchOrg.username}\n
    Password: ${scratchOrg.password}\n
-   Please use sfdx force:auth:web:login -r ${scratchOrg.loginURL} -a <alias>  command to authenticate against this Scratch org</p>
+   Please use sfdx force:auth:web:login -r ${scratchOrg.loginURL} -a <alias> command to authenticate against this Scratch org</p>
    Thank you for using SFPLogger!`;
 
         const options = {
