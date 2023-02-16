@@ -74,7 +74,7 @@ export default class ScratchOrgInfoFetcher {
         return retry(
             async (bail) => {
                 let query;
-                    query = `SELECT Id, Pooltag__c,Description,ScratchOrg FROM ScratchOrgInfo WHERE Pooltag__c = null  AND Status = 'Active'`;
+                    query = `SELECT Id, Pooltag__c,SignupUsername,Description,ScratchOrg FROM ScratchOrgInfo WHERE Pooltag__c = null  AND Status = 'Active'`;
                 query = query + ORDER_BY_FILTER;
                 SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
                 const results = (await hubConn.query(query)) as any;

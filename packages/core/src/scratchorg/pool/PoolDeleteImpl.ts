@@ -4,6 +4,8 @@ import { PoolBaseImpl } from './PoolBaseImpl';
 import ScratchOrg from '../ScratchOrg';
 import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
 import ScratchOrgOperator from '../ScratchOrgOperator';
+import { Logger } from '@dxatscale/sfp-logger';
+import { LoggerLevel } from '@dxatscale/sfp-logger';
 
 export default class PoolDeleteImpl extends PoolBaseImpl {
     private tag: string;
@@ -11,7 +13,7 @@ export default class PoolDeleteImpl extends PoolBaseImpl {
     private allScratchOrgs: boolean;
     private inprogressonly: boolean;
 
-    public constructor(hubOrg: Org, tag: string, mypool: boolean, allScratchOrgs: boolean, inprogressonly: boolean) {
+    public constructor(hubOrg: Org, tag: string, mypool: boolean, allScratchOrgs: boolean, inprogressonly: boolean,private logger:Logger) {
         super(hubOrg);
         this.hubOrg = hubOrg;
         this.tag = tag;
@@ -52,7 +54,7 @@ export default class PoolDeleteImpl extends PoolBaseImpl {
                 if (activeScrathOrgs.records.length > 0) {
                     for (let scratchOrg of activeScrathOrgs.records) {
                         await new ScratchOrgOperator(this.hubOrg).delete(scratchOrg.Id);
-                        SFPLogger.log(`Scratch org with username ${scratchOrg.SignupUsername} is deleted successfully`);
+                        SFPLogger.log(`Scratch org with username ${scratchOrg.SignupUsername} is deleted successfully`,LoggerLevel.TRACE,this.logger);
                     }
                 }
             }

@@ -1,4 +1,4 @@
-import SFPLogger from '@dxatscale/sfp-logger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { Org } from '@salesforce/core';
 import { PoolBaseImpl } from './PoolBaseImpl';
 import ScratchOrg from '../ScratchOrg';
@@ -6,7 +6,7 @@ import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
 import ScratchOrgOperator from '../ScratchOrgOperator';
 
 export default class OrphanedOrgsDeleteImpl extends PoolBaseImpl {
-    public constructor(hubOrg: Org) {
+    public constructor(hubOrg: Org, private logger:Logger) {
         super(hubOrg);
         this.hubOrg = hubOrg;
     }
@@ -21,7 +21,8 @@ export default class OrphanedOrgsDeleteImpl extends PoolBaseImpl {
                 if (element.Description?.includes(`"requestedBy":"sfpowerscripts"`)) {
                     let soDetail: ScratchOrg = {};
                     soDetail.orgId = element.ScratchOrg;
-                    soDetail.status = 'Deleted';
+                    soDetail.username = element.SignupUsername;
+                    soDetail.status = 'recovered';
                     scratchOrgToDelete.push(soDetail);
                     scrathOrgIds.push(`'${element.Id}'`);
                 }
@@ -35,7 +36,7 @@ export default class OrphanedOrgsDeleteImpl extends PoolBaseImpl {
                 if (activeScrathOrgs.records.length > 0) {
                     for (let scratchOrg of activeScrathOrgs.records) {
                         await new ScratchOrgOperator(this.hubOrg).delete(scratchOrg.Id);
-                        SFPLogger.log(`Scratch org with username ${scratchOrg.SignupUsername} is recovered`);
+                        SFPLogger.log(`Scratch org with username ${scratchOrg.SignupUsername} is recovered`,LoggerLevel.TRACE,this.logger);
                     }
                 }
             }

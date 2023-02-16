@@ -53,11 +53,6 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         const scriptExecPromises: Array<Promise<ScriptExecutionResult>> = [];
 
 
-        //Clean up any orphanedOrgs
-        await recoverOrphanedScratchOrgs(this.hubOrg);
-
-
-
         //fetch current status limits
         this.limits = await new ScratchOrgLimitsFetcher(this.hubOrg).getScratchOrgLimits();
 
@@ -141,10 +136,6 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             this.scratchOrgInfoFetcher
         );
 
-        //Clean up any orphanedOrgs
-        await recoverOrphanedScratchOrgs(this.hubOrg);
-
-
         if (!this.pool.scratchOrgs || this.pool.scratchOrgs.length == 0) {
             return err({
                 success: 0,
@@ -155,15 +146,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         }
         return ok(this.pool);
 
-        async function recoverOrphanedScratchOrgs(hubOrg:Org) {
-            SFPLogger.log(`${EOL}Recovering Orphaned Scratch Orgs`);
-            const deletedScratchOrgs = await new OrphanedOrgsDeleteImpl(hubOrg).execute();
-            if ((deletedScratchOrgs as Array<ScratchOrg>).length > 0) {
-                SFPLogger.log(`Recovered ${(deletedScratchOrgs as Array<ScratchOrg>).length} succesfully`);
-            } else {
-                SFPLogger.log(`No Scratch Orgs found to be recovered${EOL}`);
-            }
-        }
+      
     }
 
     private async computeAllocation(): Promise<number> {
