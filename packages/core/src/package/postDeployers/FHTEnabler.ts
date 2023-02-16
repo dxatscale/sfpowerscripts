@@ -59,7 +59,7 @@ export default class FHTEnabler implements PostDeployer {
         });
         //Now query all the fields for this object where FHT is already enabled
         SFPLogger.log(
-            `Gathering fields which are already enabled wiith  trackHistor  target org....`,
+            `Gathering fields which are already enabled with trackHistory on target org....`,
             LoggerLevel.INFO,
             logger
         );
