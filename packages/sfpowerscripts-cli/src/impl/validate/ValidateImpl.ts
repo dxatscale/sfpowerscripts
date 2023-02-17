@@ -556,6 +556,8 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
             function printOrgInfo(scratchOrg:ScratchOrg): void {
 
+                let groupSection = new GroupConsoleLogs(`Display Org Info`).begin();
+
                 SFPLogger.log(
                     COLOR_HEADER(
                         `----------------------------------------------------------------------------------------------`
@@ -572,8 +574,13 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                 table.push([COLOR_HEADER(`Password`), COLOR_KEY_MESSAGE(scratchOrg.password)]);
                 table.push([COLOR_HEADER(`Auth URL`), COLOR_KEY_MESSAGE(scratchOrg.sfdxAuthUrl)]);
                 table.push([COLOR_HEADER(`Expiry`), COLOR_KEY_MESSAGE(scratchOrg.expiryDate)]);
-                
                 SFPLogger.log(table.toString(),LoggerLevel.INFO);
+
+
+                SFPLogger.log(COLOR_TRACE(`You may use the following commands to authenticate to the org`),LoggerLevel.INFO);
+                SFPLogger.log(COLOR_TRACE(`cat ${scratchOrg.sfdxAuthUrl} > ./authfile`),LoggerLevel.INFO);
+                SFPLogger.log(COLOR_TRACE(`sfdx auth sfdxurl store -a so -f authfile`),LoggerLevel.INFO);
+
 
                 SFPLogger.log(
                     COLOR_HEADER(
@@ -581,6 +588,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                     )
                 );
                 
+                groupSection.end();
             }
     }
 
