@@ -580,7 +580,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                 SFPLogger.log(COLOR_TRACE(`You may use the following commands to authenticate to the org`),LoggerLevel.INFO);
                 SFPLogger.log(COLOR_TRACE(`cat ${scratchOrg.sfdxAuthUrl} > ./authfile`),LoggerLevel.INFO);
                 SFPLogger.log(COLOR_TRACE(`sfdx auth sfdxurl store  --sfdxurlfile authfile`),LoggerLevel.INFO);
-                SFPLogger.log(COLOR_TRACE(`fdx force org open  --u ${scratchOrg.username}`),LoggerLevel.INFO);
+                SFPLogger.log(COLOR_TRACE(`sfdx force org open  --u ${scratchOrg.username}`),LoggerLevel.INFO);
 
                 SFPLogger.log(
                     COLOR_HEADER(
