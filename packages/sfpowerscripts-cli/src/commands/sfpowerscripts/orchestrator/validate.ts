@@ -48,6 +48,10 @@ export default class Validate extends SfpowerscriptsCommand {
             description: messages.getMessage('deleteScratchOrgFlagDescription'),
             default: false,
         }),
+        orginfo: flags.boolean({
+            description: messages.getMessage('orgInfoFlagDescription'),
+            default: false,
+        }),
         keys: flags.string({
             required: false,
             description: messages.getMessage('keysFlagDescription'),
@@ -159,6 +163,7 @@ export default class Validate extends SfpowerscriptsCommand {
                 isDependencyAnalysis: this.flags.enabledependencyvalidation,
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
+                orgInfo: this.flags.orginfo
             };
 
             setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);
