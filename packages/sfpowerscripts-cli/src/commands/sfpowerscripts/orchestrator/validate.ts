@@ -43,6 +43,10 @@ export default class Validate extends SfpowerscriptsCommand {
             description: messages.getMessage('coveragePercentFlagDescription'),
             default: 75,
         }),
+        disablesourcepkgoverride: flags.boolean({
+            description: messages.getMessage('disableSourcePackageOverride'),
+            default: false,
+        }),
         deletescratchorg: flags.boolean({
             char: 'x',
             description: messages.getMessage('deleteScratchOrgFlagDescription'),
@@ -163,7 +167,8 @@ export default class Validate extends SfpowerscriptsCommand {
                 isDependencyAnalysis: this.flags.enabledependencyvalidation,
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
-                orgInfo: this.flags.orginfo
+                orgInfo: this.flags.orginfo,
+                disableSourcePackageOverride : this.flags.disablesourcepkgoverride
             };
 
             setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);

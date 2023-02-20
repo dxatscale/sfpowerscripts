@@ -241,7 +241,7 @@ export default class PrepareImpl {
                 isDiffCheckEnabled: false,
                 buildNumber: 1,
                 executorcount: 10,
-                isBuildAllAsSourcePackages: true,
+                isBuildAllAsSourcePackages: this.pool.disableSourcePackageOverride?false:true,
                 branch: null,
                 currentStage: Stage.PREPARE,
             };

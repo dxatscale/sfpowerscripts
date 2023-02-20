@@ -107,6 +107,12 @@
             "description": "Execute a custom script before denpendencies install into a particular org",
             "type": "string"
         },
+        "disableSourcePackageOverride": {
+            "title": "Disable installation of unlocked packages as source package",
+            "description": "Prepare by default utilizes source package for installing unlocked packages to the scratchorg, disabling this flag will allow to install it ",
+            "type": "boolean",
+            "default":false
+        },
         "fetchArtifacts": {
             "title": "Fetch Artifacts using below mechanism",
             "description": "Fetch artifacts from artifact registry using below mechanism",

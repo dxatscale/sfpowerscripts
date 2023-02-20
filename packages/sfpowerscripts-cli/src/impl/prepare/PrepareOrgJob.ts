@@ -109,6 +109,12 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
                 deploymentMode = DeploymentMode.SOURCEPACKAGES;
             }
 
+
+            if(this.pool.disableSourcePackageOverride)
+            {
+                deploymentMode = DeploymentMode.NORMAL
+            }
+
             deploymentResult = await this.invokeDeployImpl(scratchOrg, hubOrg, logger, deploymentMode);
 
             SFPStatsSender.logGauge('prepare.packages.scheduled', deploymentResult.scheduled, {
