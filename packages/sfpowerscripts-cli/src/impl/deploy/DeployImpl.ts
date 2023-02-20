@@ -565,8 +565,8 @@ export default class DeployImpl {
         installationOptions.waitTime = waitTime;
         installationOptions.apiVersion = apiVersion;
         installationOptions.publishWaitTime = 60;
-        installationOptions.isInstallingForValidation =
-            this.props.currentStage === Stage.PREPARE || this.props.currentStage === Stage.VALIDATE;
+        installationOptions.isInstallingForValidation = this.props.deploymentMode != DeploymentMode.NORMAL &&
+            (this.props.currentStage === Stage.PREPARE || this.props.currentStage === Stage.VALIDATE);
         installationOptions.optimizeDeployment = this.isOptimizedDeploymentForSourcePackage(pkgDescriptor);
         installationOptions.skipTesting = skipTesting;
         installationOptions.deploymentType = deploymentType;

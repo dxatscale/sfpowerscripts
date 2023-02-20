@@ -22,6 +22,7 @@ export interface PoolConfig {
             scope: string;
         };
     };
+    disableSourcePackageOverride?:boolean;
     snapshotPool?:string;
     postDeploymentScriptPath: string;
     preDependencyInstallationScriptPath: string;

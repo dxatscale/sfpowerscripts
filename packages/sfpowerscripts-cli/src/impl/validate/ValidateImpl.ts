@@ -82,6 +82,7 @@ export interface ValidateProps {
     diffcheck?: boolean;
     disableArtifactCommit?: boolean;
     orgInfo?:boolean;
+    disableSourcePackageOverride?:boolean;
 }
 
 export default class ValidateImpl implements PostDeployHook, PreDeployHook {
@@ -326,7 +327,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             targetUsername: scratchOrgUsername,
             artifactDir: 'artifacts',
             waitTime: 120,
-            deploymentMode: DeploymentMode.SOURCEPACKAGES,
+            deploymentMode: this.props.disableSourcePackageOverride==true?DeploymentMode.NORMAL:DeploymentMode.SOURCEPACKAGES,
             isTestsToBeTriggered: true,
             skipIfPackageInstalled: false,
             logsGroupSymbol: this.props.logsGroupSymbol,
@@ -395,9 +396,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             waitTime: 120,
             isDiffCheckEnabled: this.props.diffcheck,
             isQuickBuild: true,
-            isBuildAllAsSourcePackages: true,
+            isBuildAllAsSourcePackages: !this.props.disableSourcePackageOverride,
             currentStage: Stage.VALIDATE,
             baseBranch: this.props.baseBranch,
+            devhubAlias: this.props.hubOrg.getUsername()
         };
 
         //Build DiffOptions
