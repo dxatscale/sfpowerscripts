@@ -36,7 +36,7 @@ export default class GroupConsoleLogs {
         } else if (GroupConsoleLogs.logGroupSymbols && GroupConsoleLogs.logGroupSymbols[0]) {
             return `${GroupConsoleLogs.logGroupSymbols[0]} ${this.section}`;
         } else {
-            return `${EOL} ⇨⇨⇨⇨⇨⇨${this.section}`;
+            return `${EOL}${COLOR_KEY_MESSAGE(this.section)}${EOL}`;
         }
     }
 
