@@ -5,7 +5,8 @@ export interface PreDeployHook {
     preDeployPackage(
         sfpPackage: SfpPackage,
         targetUsername: string,
+        deployedPackages?:SfpPackage[],
         devhubUserName?: string,
-        logger?:Logger
+        logger?:Logger,
     ): Promise<{ isToFailDeployment: boolean; message?: string }>;
 }

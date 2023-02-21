@@ -19,7 +19,7 @@ export default class ExternalDependencyDisplayer {
                     i++,
                     externalPackage.name,
                     externalPackage.versionNumber ? externalPackage.versionNumber : 'N/A',
-                    externalPackage.subscriberPackageVersionId,
+                    externalPackage.subscriberPackageVersionId ?  externalPackage.subscriberPackageVersionId:'N/A, Could be  part of current operation',
                 ]);
             }
             SFPLogger.log(EOL, LoggerLevel.INFO, this.logger);

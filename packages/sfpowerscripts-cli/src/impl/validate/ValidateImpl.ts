@@ -242,14 +242,20 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         else return new ChangedComponentsFetcher(this.props.baseBranch).fetch();
     }
 
-    private async installPackageDependencies(scratchOrgAsSFPOrg: SFPOrg, sfpPackage: SfpPackage) {
+    private async installPackageDependencies(scratchOrgAsSFPOrg: SFPOrg, sfpPackage: SfpPackage,deployedPackages?:SfpPackage[]) {
+
+        let deployedPackagesAsStringArray:Array<string> = [];
+        for (const deployedPackage of deployedPackages) {
+            deployedPackagesAsStringArray.push(deployedPackage.package_name);
+        }
+
         //Resolve external package dependencies
         let externalPackageResolver = new ExternalPackage2DependencyResolver(
             this.props.hubOrg.getConnection(),
-            ProjectConfig.getSFDXProjectConfig(null),
+            ProjectConfig.cleanupMPDFromProjectDirectory(null,sfpPackage.package_name),
             this.props.keys
         );
-        let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions(sfpPackage.packageName);
+        let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions([sfpPackage.packageName],deployedPackagesAsStringArray);
 
         SFPLogger.log(
             `Installing package dependencies of this ${sfpPackage.packageName} in ${scratchOrgAsSFPOrg.getUsername()}`,
@@ -611,6 +617,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     async preDeployPackage(
         sfpPackage: SfpPackage,
         targetUsername: string,
+        deployedPackages?:SfpPackage[],
         devhubUserName?: string
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Its a scratch org fetched from pool.. install dependencies
@@ -619,15 +626,16 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
              case ValidateAgainst.PRECREATED_POOL:
                  if (
                      this.props.validationMode == ValidationMode.THOROUGH ||
-                     this.props.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
+                     this.props.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG ||
+                     this.props.validationMode == ValidationMode.INDIVIDUAL
                  ) {
-                     await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
+                     await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage,deployedPackages);
                  }
                  break;
              case ValidateAgainst.PROVIDED_ORG:
                  if (this.props.validationMode == ValidationMode.INDIVIDUAL) {
                     if(this.props.hubOrg)
-                      await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage);
+                      await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage,deployedPackages);
                     else
                      SFPLogger.log(`${COLOR_WARNING(`DevHub was not provided, will skip installing /updating external dependencies of this package`)}`,LoggerLevel.INFO)
                  }
@@ -641,6 +649,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         sfpPackage: SfpPackage,
         packageInstallationResult: PackageInstallationResult,
         targetUsername: string,
+        deployedPackages?:SfpPackage[],
         devhubUserName?: string
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Trigger Tests after installation of each package
