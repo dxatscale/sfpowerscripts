@@ -4,6 +4,7 @@ import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage'
 import SfpPackage from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
 import InstallUnlockedPackageImpl from './InstallUnlockedPackageImpl';
+import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 
 export default class InstallUnlockedPackage extends InstallPackage {
     private packageVersionId;
@@ -20,7 +21,6 @@ export default class InstallUnlockedPackage extends InstallPackage {
     }
 
     public async install() {
-
         let installUnlockedPackageWrapper: InstallUnlockedPackageImpl = new InstallUnlockedPackageImpl(
             this.logger,
             this.sfpOrg.getUsername(),
@@ -41,10 +41,12 @@ export default class InstallUnlockedPackage extends InstallPackage {
         try {
             if (skipIfPackageInstalled) {
                 SFPLogger.log(
-                    `Checking Whether Package with ID ${
+                    `Checking whether package ${COLOR_KEY_MESSAGE(
+                        this.sfpPackage.package_name
+                    )} with ID ${COLOR_KEY_MESSAGE(
                         this.packageVersionId
-                    } is installed in ${this.sfpOrg.getUsername()}`,
-                    null,
+                    )} is installed in ${this.sfpOrg.getUsername()}`,
+                    LoggerLevel.INFO,
                     this.logger
                 );
                 let installedPackages = await this.sfpOrg.getAllInstalled2GPPackages();

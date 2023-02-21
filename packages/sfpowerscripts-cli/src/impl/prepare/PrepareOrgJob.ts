@@ -197,6 +197,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
     async preDeployPackage(
         sfpPackage: SfpPackage,
         targetUsername: string,
+        deployedPackages?:SfpPackage[],
         devhubUserName?: string,
         logger?: Logger
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
@@ -243,7 +244,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
             keys
         );
         let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions(
-            sfpPackage?.packageName
+            [sfpPackage?.packageName]
         );
 
         if (sfpPackage) {
