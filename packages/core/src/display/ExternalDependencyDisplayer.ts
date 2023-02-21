@@ -23,7 +23,7 @@ export default class ExternalDependencyDisplayer {
                 ]);
             }
             SFPLogger.log(EOL, LoggerLevel.INFO, this.logger);
-            SFPLogger.log(COLOR_KEY_MESSAGE(`Resolved Package Dependencies`), LoggerLevel.INFO, this.logger);
+            SFPLogger.log(COLOR_KEY_MESSAGE(`Resolved external package dependencies:`), LoggerLevel.INFO, this.logger);
             SFPLogger.log(table.toString(), LoggerLevel.INFO, this.logger);
         }
     }
