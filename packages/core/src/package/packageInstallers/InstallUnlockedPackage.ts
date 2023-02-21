@@ -52,7 +52,7 @@ export default class InstallUnlockedPackage extends InstallPackage {
                 let installedPackages = await this.sfpOrg.getAllInstalled2GPPackages();
 
                 let packageFound = installedPackages.find((installedPackage) => {
-                    return installedPackage.subscriberPackageVersionId === this.packageVersionId;
+                    return installedPackage.subscriberPackageVersionId.substring(0,14) === this.packageVersionId.substring(0,14);
                 });
 
                 if (packageFound) {
