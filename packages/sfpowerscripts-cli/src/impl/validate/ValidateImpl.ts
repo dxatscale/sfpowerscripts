@@ -81,8 +81,8 @@ export interface ValidateProps {
     isDependencyAnalysis?: boolean;
     diffcheck?: boolean;
     disableArtifactCommit?: boolean;
-    orgInfo?:boolean;
-    disableSourcePackageOverride?:boolean;
+    orgInfo?: boolean;
+    disableSourcePackageOverride?: boolean;
 }
 
 export default class ValidateImpl implements PostDeployHook, PreDeployHook {
@@ -103,7 +103,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             } else if (this.props.validateAgainst === ValidateAgainst.PRECREATED_POOL) {
                 if (process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG)
                     scratchOrgUsername = process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG;
-                else scratchOrgUsername = await this.fetchScratchOrgFromPool(this.props.pools,this.props.orgInfo);
+                else scratchOrgUsername = await this.fetchScratchOrgFromPool(this.props.pools, this.props.orgInfo);
             } else throw new Error(`Unknown mode ${this.props.validateAgainst}`);
 
             //Create Org
@@ -157,7 +157,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         let packagesMappedToLastKnownCommitId: { [p: string]: string } = {};
         if (installedArtifacts != null) {
             packagesMappedToLastKnownCommitId = getPackagesToCommits(installedArtifacts);
-            printArtifactVersions(this.orgAsSFPOrg,installedArtifacts);
+            printArtifactVersions(this.orgAsSFPOrg, installedArtifacts);
         }
         return packagesMappedToLastKnownCommitId;
 
@@ -177,8 +177,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             return packagesToCommits;
         }
 
-        function printArtifactVersions(orgAsSFPOrg: SFPOrg,installedArtifacts: any) {
-            let groupSection = new GroupConsoleLogs(`Artifacts installed in the Org ${orgAsSFPOrg.getUsername()}`).begin();
+        function printArtifactVersions(orgAsSFPOrg: SFPOrg, installedArtifacts: any) {
+            let groupSection = new GroupConsoleLogs(
+                `Artifacts installed in the Org ${orgAsSFPOrg.getUsername()}`
+            ).begin();
 
             InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
 
@@ -242,9 +244,13 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         else return new ChangedComponentsFetcher(this.props.baseBranch).fetch();
     }
 
-    private async installPackageDependencies(scratchOrgAsSFPOrg: SFPOrg, sfpPackage: SfpPackage,deployedPackages?:SfpPackage[]) {
-
-        let deployedPackagesAsStringArray:Array<string> = [];
+    private async installPackageDependencies(
+        sfdxProjectConfig: any,
+        scratchOrgAsSFPOrg: SFPOrg,
+        sfpPackage: SfpPackage,
+        deployedPackages?: SfpPackage[]
+    ) {
+        let deployedPackagesAsStringArray: Array<string> = [];
         for (const deployedPackage of deployedPackages) {
             deployedPackagesAsStringArray.push(deployedPackage.package_name);
         }
@@ -252,10 +258,13 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         //Resolve external package dependencies
         let externalPackageResolver = new ExternalPackage2DependencyResolver(
             this.props.hubOrg.getConnection(),
-            ProjectConfig.cleanupMPDFromProjectDirectory(null,sfpPackage.package_name),
+            sfdxProjectConfig,
             this.props.keys
         );
-        let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions([sfpPackage.packageName],deployedPackagesAsStringArray);
+        let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions(
+            [sfpPackage.packageName],
+            deployedPackagesAsStringArray
+        );
 
         SFPLogger.log(
             `Installing package dependencies of this ${sfpPackage.packageName} in ${scratchOrgAsSFPOrg.getUsername()}`,
@@ -283,7 +292,6 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         deploymentResult: DeploymentResult,
         isToDelete: boolean
     ) {
-
         //No scratch org available.. just return
         if (scratchOrgUsername == undefined) return;
 
@@ -320,7 +328,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             }
         }
         async function deleteScratchOrg(hubOrg: Org, scratchOrgUsername: string) {
-            SFPLogger.log(`Deleting scratch org ${scratchOrgUsername}`,LoggerLevel.INFO);
+            SFPLogger.log(`Deleting scratch org ${scratchOrgUsername}`, LoggerLevel.INFO);
             const poolOrgDeleteImpl = new PoolOrgDeleteImpl(hubOrg, scratchOrgUsername);
             await poolOrgDeleteImpl.execute();
         }
@@ -333,7 +341,8 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             targetUsername: scratchOrgUsername,
             artifactDir: 'artifacts',
             waitTime: 120,
-            deploymentMode: this.props.disableSourcePackageOverride==true?DeploymentMode.NORMAL:DeploymentMode.SOURCEPACKAGES,
+            deploymentMode:
+                this.props.disableSourcePackageOverride == true ? DeploymentMode.NORMAL : DeploymentMode.SOURCEPACKAGES,
             isTestsToBeTriggered: true,
             skipIfPackageInstalled: false,
             logsGroupSymbol: this.props.logsGroupSymbol,
@@ -405,7 +414,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             isBuildAllAsSourcePackages: !this.props.disableSourcePackageOverride,
             currentStage: Stage.VALIDATE,
             baseBranch: this.props.baseBranch,
-            devhubAlias: this.props.hubOrg.getUsername()
+            devhubAlias: this.props.hubOrg.getUsername(),
         };
 
         //Build DiffOptions
@@ -533,7 +542,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         }
     }
 
-    private async fetchScratchOrgFromPool(pools: string[],displayOrgInfo?:boolean): Promise<string> {
+    private async fetchScratchOrgFromPool(pools: string[], displayOrgInfo?: boolean): Promise<string> {
         let scratchOrgUsername: string;
 
         for (const pool of pools) {
@@ -546,11 +555,14 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             }
             if (scratchOrg && scratchOrg.status === 'Assigned') {
                 scratchOrgUsername = scratchOrg.username;
-                SFPLogger.log(COLOR_KEY_MESSAGE(`Fetched scratch org ${scratchOrgUsername} from ${COLOR_KEY_VALUE(pool)}`),LoggerLevel.INFO,this.logger);
-                
-                if(displayOrgInfo)
-                  printOrgInfo(scratchOrg);
-                 
+                SFPLogger.log(
+                    COLOR_KEY_MESSAGE(`Fetched scratch org ${scratchOrgUsername} from ${COLOR_KEY_VALUE(pool)}`),
+                    LoggerLevel.INFO,
+                    this.logger
+                );
+
+                if (displayOrgInfo) printOrgInfo(scratchOrg);
+
                 this.getCurrentRemainingNumberOfOrgsInPoolAndReport(scratchOrg.tag);
                 break;
             }
@@ -562,42 +574,43 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                 `Failed to fetch scratch org from ${pools}, Are you sure you created this pool using a DevHub authenticated using auth:sfdxurl or auth:web or auth:accesstoken:store`
             );
 
-            function printOrgInfo(scratchOrg:ScratchOrg): void {
+        function printOrgInfo(scratchOrg: ScratchOrg): void {
+            let groupSection = new GroupConsoleLogs(`Display Org Info`).begin();
 
-                let groupSection = new GroupConsoleLogs(`Display Org Info`).begin();
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `----------------------------------------------------------------------------------------------`
+                )
+            );
+            SFPLogger.log(COLOR_KEY_VALUE(`-- Org Details:--`));
+            const table = new Table({
+                chars: COLON_MIDDLE_BORDER_TABLE,
+                style: { 'padding-left': 2 },
+            });
+            table.push([COLOR_HEADER(`Org Id`), COLOR_KEY_MESSAGE(scratchOrg.orgId)]);
+            table.push([COLOR_HEADER(`Instance URL`), COLOR_KEY_MESSAGE(scratchOrg.instanceURL)]);
+            table.push([COLOR_HEADER(`Username`), COLOR_KEY_MESSAGE(scratchOrg.username)]);
+            table.push([COLOR_HEADER(`Password`), COLOR_KEY_MESSAGE(scratchOrg.password)]);
+            table.push([COLOR_HEADER(`Auth URL`), COLOR_KEY_MESSAGE(scratchOrg.sfdxAuthUrl)]);
+            table.push([COLOR_HEADER(`Expiry`), COLOR_KEY_MESSAGE(scratchOrg.expiryDate)]);
+            SFPLogger.log(table.toString(), LoggerLevel.INFO);
 
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `----------------------------------------------------------------------------------------------`
-                    )
-                );
-                SFPLogger.log(COLOR_KEY_VALUE(`-- Org Details:--`));
-                const table = new Table({
-                    chars: COLON_MIDDLE_BORDER_TABLE,
-                    style: { 'padding-left': 2 },
-                });
-                table.push([COLOR_HEADER(`Org Id`), COLOR_KEY_MESSAGE(scratchOrg.orgId)]);
-                table.push([COLOR_HEADER(`Instance URL`), COLOR_KEY_MESSAGE(scratchOrg.instanceURL)]); 
-                table.push([COLOR_HEADER(`Username`), COLOR_KEY_MESSAGE(scratchOrg.username)]);
-                table.push([COLOR_HEADER(`Password`), COLOR_KEY_MESSAGE(scratchOrg.password)]);
-                table.push([COLOR_HEADER(`Auth URL`), COLOR_KEY_MESSAGE(scratchOrg.sfdxAuthUrl)]);
-                table.push([COLOR_HEADER(`Expiry`), COLOR_KEY_MESSAGE(scratchOrg.expiryDate)]);
-                SFPLogger.log(table.toString(),LoggerLevel.INFO);
+            SFPLogger.log(
+                COLOR_TRACE(`You may use the following commands to authenticate to the org`),
+                LoggerLevel.INFO
+            );
+            SFPLogger.log(COLOR_TRACE(`cat ${scratchOrg.sfdxAuthUrl} > ./authfile`), LoggerLevel.INFO);
+            SFPLogger.log(COLOR_TRACE(`sfdx auth sfdxurl store  --sfdxurlfile authfile`), LoggerLevel.INFO);
+            SFPLogger.log(COLOR_TRACE(`sfdx force org open  --u ${scratchOrg.username}`), LoggerLevel.INFO);
 
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `----------------------------------------------------------------------------------------------`
+                )
+            );
 
-                SFPLogger.log(COLOR_TRACE(`You may use the following commands to authenticate to the org`),LoggerLevel.INFO);
-                SFPLogger.log(COLOR_TRACE(`cat ${scratchOrg.sfdxAuthUrl} > ./authfile`),LoggerLevel.INFO);
-                SFPLogger.log(COLOR_TRACE(`sfdx auth sfdxurl store  --sfdxurlfile authfile`),LoggerLevel.INFO);
-                SFPLogger.log(COLOR_TRACE(`sfdx force org open  --u ${scratchOrg.username}`),LoggerLevel.INFO);
-
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `----------------------------------------------------------------------------------------------`
-                    )
-                );
-                
-                groupSection.end();
-            }
+            groupSection.end();
+        }
     }
 
     private async getCurrentRemainingNumberOfOrgsInPoolAndReport(tag: string) {
@@ -617,30 +630,50 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     async preDeployPackage(
         sfpPackage: SfpPackage,
         targetUsername: string,
-        deployedPackages?:SfpPackage[],
+        deployedPackages?: SfpPackage[],
         devhubUserName?: string
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Its a scratch org fetched from pool.. install dependencies
         //Assume hubOrg will be available, no need to check
-         switch (this.props.validateAgainst) {
-             case ValidateAgainst.PRECREATED_POOL:
-                 if (
-                     this.props.validationMode == ValidationMode.THOROUGH ||
-                     this.props.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG ||
-                     this.props.validationMode == ValidationMode.INDIVIDUAL
-                 ) {
-                     await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage,deployedPackages);
-                 }
-                 break;
-             case ValidateAgainst.PROVIDED_ORG:
-                 if (this.props.validationMode == ValidationMode.INDIVIDUAL) {
-                    if(this.props.hubOrg)
-                      await this.installPackageDependencies(this.orgAsSFPOrg, sfpPackage,deployedPackages);
+        switch (this.props.validateAgainst) {
+            case ValidateAgainst.PRECREATED_POOL:
+                if (
+                    this.props.validationMode == ValidationMode.THOROUGH ||
+                    this.props.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
+                ) {
+                    await this.installPackageDependencies(
+                        ProjectConfig.getSFDXProjectConfig(null),
+                        this.orgAsSFPOrg,
+                        sfpPackage,
+                        deployedPackages
+                    );
+                } else if (this.props.validationMode == ValidationMode.INDIVIDUAL) {
+                    await this.installPackageDependencies(
+                        ProjectConfig.cleanupMPDFromProjectDirectory(null, sfpPackage.package_name),
+                        this.orgAsSFPOrg,
+                        sfpPackage,
+                        deployedPackages
+                    );
+                }
+                break;
+            case ValidateAgainst.PROVIDED_ORG:
+                if (this.props.validationMode == ValidationMode.INDIVIDUAL) {
+                    if (this.props.hubOrg)
+                        await this.installPackageDependencies(
+                            ProjectConfig.cleanupMPDFromProjectDirectory(null, sfpPackage.package_name),
+                            this.orgAsSFPOrg,
+                            sfpPackage,
+                            deployedPackages
+                        );
                     else
-                     SFPLogger.log(`${COLOR_WARNING(`DevHub was not provided, will skip installing /updating external dependencies of this package`)}`,LoggerLevel.INFO)
-                 }
-
-         }
+                        SFPLogger.log(
+                            `${COLOR_WARNING(
+                                `DevHub was not provided, will skip installing /updating external dependencies of this package`
+                            )}`,
+                            LoggerLevel.INFO
+                        );
+                }
+        }
 
         return { isToFailDeployment: false };
     }
@@ -649,7 +682,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         sfpPackage: SfpPackage,
         packageInstallationResult: PackageInstallationResult,
         targetUsername: string,
-        deployedPackages?:SfpPackage[],
+        deployedPackages?: SfpPackage[],
         devhubUserName?: string
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Trigger Tests after installation of each package
