@@ -70,6 +70,8 @@ export default class InstallUnlockedPackageCollection {
                 );
             }
         }
+
+        SFPLogger.log(`${EOL}`, LoggerLevel.INFO, this.logger);
     }
 
     /**
