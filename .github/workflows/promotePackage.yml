@@ -51,7 +51,7 @@ jobs:
           PKG_NAME=$(jq -r ".name" ${{ inputs.pathToPackageJson }})
           PKG_VERSION=$(jq -r ".version" ${{ inputs.pathToPackageJson }})
           npm dist-tag add $PKG_NAME@$PKG_VERSION ${{ inputs.version }}
-# just to be sure, npm does some time skip setting up tags
+          # just to be sure, npm does some time skip setting up tags
           npm dist-tag add $PKG_NAME@$PKG_VERSION ${{ inputs.version }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
