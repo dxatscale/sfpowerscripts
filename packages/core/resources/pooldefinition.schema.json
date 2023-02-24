@@ -92,6 +92,12 @@
             "type": "boolean",
             "default": "false"
         },
+        "maxRetryCount": {
+            "title": "Max Retry Count",
+            "description": "Maximum number of attempts sfpowerscripts should retry installation of packages on failed deployment",
+            "type": "number",
+            "default": "2"
+        },
         "snapshotPool": {
             "title": "Snapshot Pool",
             "description": "Use a pre-prepared pool to further add packages on top of it",
