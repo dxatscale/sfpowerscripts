@@ -52,6 +52,7 @@ export interface DeployProps {
     devhubUserName?: string;
     disableArtifactCommit?: boolean;
     selectiveComponentDeployment?: boolean;
+    maxRetryCount?:number;
 }
 
 export default class DeployImpl {
@@ -59,7 +60,12 @@ export default class DeployImpl {
     private _preDeployHook: PreDeployHook;
     private targetOrg: SFPOrg;
 
-    constructor(private props: DeployProps) {}
+    constructor(private props: DeployProps) {
+
+        //Set defaults
+        if(!this.props.maxRetryCount)
+         this.props.maxRetryCount = 1;
+    }
 
     public set postDeployHook(hook: PostDeployHook) {
         this._postDeployHook = hook;
@@ -176,7 +182,7 @@ export default class DeployImpl {
 
                 let isToBeRetried: boolean = this.props.isRetryOnFailure;
                 let packageInstallationResult: PackageInstallationResult = await retry(
-                    async (bail, count) => {
+                    async (bail, attemptCount) => {
                         try {
                             try {
                                 await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory, sfpPackage);
@@ -185,7 +191,7 @@ export default class DeployImpl {
                                 SFPLogger.log(`Package already prmomoted .. skipping`);
                             }
 
-                            this.displayRetryHeader(isToBeRetried, count);
+                            this.displayRetryHeader(isToBeRetried, attemptCount);
 
                             let installPackageResult = await this.installPackage(
                                 packageType,
@@ -200,9 +206,9 @@ export default class DeployImpl {
                             );
 
                             //Handle specific error condition which need a retry, overriding the set value
-                            isToBeRetried = handleRetryOnSpecificConditions(isToBeRetried, installPackageResult);
+                            isToBeRetried = handleRetryOnSpecificConditions(isToBeRetried, installPackageResult, attemptCount,this.props.maxRetryCount);
 
-                            if (isToBeRetried && count === 1) {
+                            if (isToBeRetried) {
                                 throw new Error(installPackageResult.message);
                             } else return installPackageResult;
                         } catch (error) {
@@ -220,13 +226,18 @@ export default class DeployImpl {
 
                         function handleRetryOnSpecificConditions(
                             isToBeRetried: boolean,
-                            installPackageResult: PackageInstallationResult
+                            installPackageResult: PackageInstallationResult,
+                            retryCount: number,
+                            maxRetryCount:number
                         ): boolean {
                             //override current value when encountering such issue
                             if (installPackageResult.result === PackageInstallationStatus.Failed) {
                                 if (installPackageResult.message?.includes('background job is being executed'))
                                     return true;
-                                else return isToBeRetried;
+                                else if (isToBeRetried && retryCount <= maxRetryCount )
+                                   return true;
+                                else 
+                                   return false;
                             } else return false;
                         }
                     },
