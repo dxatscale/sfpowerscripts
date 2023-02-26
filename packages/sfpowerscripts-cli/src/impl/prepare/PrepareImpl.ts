@@ -40,6 +40,8 @@ export default class PrepareImpl {
         if (this.pool.succeedOnDeploymentErrors === undefined) this.pool.succeedOnDeploymentErrors = true;
 
         if (!this.pool.waitTime) this.pool.waitTime = 6;
+
+        if (!this.pool.maxRetryCount) this.pool.maxRetryCount = 2;
     }
 
     public async exec() {
@@ -244,7 +246,7 @@ export default class PrepareImpl {
                 isDiffCheckEnabled: false,
                 buildNumber: 1,
                 executorcount: 10,
-                isBuildAllAsSourcePackages: true,
+                isBuildAllAsSourcePackages: this.pool.disableSourcePackageOverride?false:true,
                 branch: null,
                 currentStage: Stage.PREPARE,
             };

@@ -29,7 +29,7 @@ export default class PackageDependencyResolver {
     public async resolvePackageDependencyVersions() {
         for (const packageDirectory of this.projectConfig.packageDirectories) {
             if (this.packagesToBeResolved?.length > 0 && this.packagesToBeSkipped?.length > 0) {
-                throw Error(`Unsupported path.. Use only one at a time`);
+                throw Error(`Unsupported path.. Use only one of the options at any given time`);
             }
 
             if (this.packagesToBeSkipped && !this.packagesToBeSkipped.includes(packageDirectory.package)) {

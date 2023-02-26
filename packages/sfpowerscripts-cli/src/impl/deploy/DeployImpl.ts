@@ -52,6 +52,7 @@ export interface DeployProps {
     devhubUserName?: string;
     disableArtifactCommit?: boolean;
     selectiveComponentDeployment?: boolean;
+    maxRetryCount?:number;
 }
 
 export default class DeployImpl {
@@ -59,7 +60,12 @@ export default class DeployImpl {
     private _preDeployHook: PreDeployHook;
     private targetOrg: SFPOrg;
 
-    constructor(private props: DeployProps) {}
+    constructor(private props: DeployProps) {
+
+        //Set defaults
+        if(!this.props.maxRetryCount)
+         this.props.maxRetryCount = 1;
+    }
 
     public set postDeployHook(hook: PostDeployHook) {
         this._postDeployHook = hook;
@@ -148,12 +154,12 @@ export default class DeployImpl {
                 let groupSection;
                 if (this.props.currentStage == Stage.VALIDATE) {
                     groupSection = new GroupConsoleLogs(
-                        `Validating: ${i+1}/${queue.length}  ${queue[i].packageName}`,
+                        `Validating: ${i + 1}/${queue.length}  ${queue[i].packageName}`,
                         this.props.packageLogger
                     ).begin();
                 } else
                     groupSection = new GroupConsoleLogs(
-                        `Installing: ${i+1}/${queue.length}  ${queue[i].packageName}`,
+                        `Installing: ${i + 1}/${queue.length}  ${queue[i].packageName}`,
                         this.props.packageLogger
                     ).begin();
                 this.displayHeader(sfpPackage, pkgDescriptor, queue[i].packageName);
@@ -161,6 +167,7 @@ export default class DeployImpl {
                 let preHookStatus = await this._preDeployHook?.preDeployPackage(
                     sfpPackage,
                     this.props.targetUsername,
+                    sfpPackages,
                     this.props.devhubUserName,
                     this.props.packageLogger
                 );
@@ -173,8 +180,9 @@ export default class DeployImpl {
                     );
                 }
 
+                let isToBeRetried: boolean = this.props.isRetryOnFailure;
                 let packageInstallationResult: PackageInstallationResult = await retry(
-                    async (bail, count) => {
+                    async (bail, attemptCount) => {
                         try {
                             try {
                                 await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory, sfpPackage);
@@ -183,7 +191,7 @@ export default class DeployImpl {
                                 SFPLogger.log(`Package already prmomoted .. skipping`);
                             }
 
-                            this.displayRetryHeader(this.props.isRetryOnFailure, count);
+                            this.displayRetryHeader(isToBeRetried, attemptCount);
 
                             let installPackageResult = await this.installPackage(
                                 packageType,
@@ -197,22 +205,40 @@ export default class DeployImpl {
                                 sfpPackage.apiVersion || sfpPackage.payload?.Package?.version // Use package.xml version for backwards compat with old artifacts
                             );
 
-                            if (
-                                this.props.isRetryOnFailure &&
-                                installPackageResult.result === PackageInstallationStatus.Failed &&
-                                count === 1
-                            ) {
+                            //Handle specific error condition which need a retry, overriding the set value
+                            isToBeRetried = handleRetryOnSpecificConditions(isToBeRetried, installPackageResult, attemptCount,this.props.maxRetryCount);
+
+                            if (isToBeRetried) {
                                 throw new Error(installPackageResult.message);
                             } else return installPackageResult;
                         } catch (error) {
-                            if (!this.props.isRetryOnFailure) {
+                            if (isToBeRetried) {
+                                throw error;
+                            } else {
                                 // Any other exception, in regular cases dont retry, just bail out
                                 let failedPackageInstallationResult: PackageInstallationResult = {
                                     result: PackageInstallationStatus.Failed,
                                     message: error,
                                 };
                                 return failedPackageInstallationResult;
-                            } else throw error;
+                            }
+                        }
+
+                        function handleRetryOnSpecificConditions(
+                            isToBeRetried: boolean,
+                            installPackageResult: PackageInstallationResult,
+                            retryCount: number,
+                            maxRetryCount:number
+                        ): boolean {
+                            //override current value when encountering such issue
+                            if (installPackageResult.result === PackageInstallationStatus.Failed) {
+                                if (installPackageResult.message?.includes('background job is being executed'))
+                                    return true;
+                                else if (isToBeRetried && retryCount <= maxRetryCount )
+                                   return true;
+                                else 
+                                   return false;
+                            } else return false;
                         }
                     },
                     { retries: 1, minTimeout: 2000 }
@@ -230,6 +256,7 @@ export default class DeployImpl {
                     sfpPackage,
                     packageInstallationResult,
                     this.props.targetUsername,
+                    sfpPackages,
                     this.props.devhubUserName,
                     this.props.packageLogger
                 );
@@ -566,7 +593,8 @@ export default class DeployImpl {
         installationOptions.apiVersion = apiVersion;
         installationOptions.publishWaitTime = 60;
         installationOptions.isInstallingForValidation =
-            this.props.currentStage === Stage.PREPARE || this.props.currentStage === Stage.VALIDATE;
+            this.props.deploymentMode != DeploymentMode.NORMAL &&
+            (this.props.currentStage === Stage.PREPARE || this.props.currentStage === Stage.VALIDATE);
         installationOptions.optimizeDeployment = this.isOptimizedDeploymentForSourcePackage(pkgDescriptor);
         installationOptions.skipTesting = skipTesting;
         installationOptions.deploymentType = deploymentType;

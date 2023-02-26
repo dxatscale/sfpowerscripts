@@ -53,6 +53,11 @@ export default class Validate extends SfpowerscriptsCommand {
             char: 'v',
             description: messages.getMessage('devhubAliasFlagDescription')
         }),
+        disablesourcepkgoverride: flags.boolean({
+            description: messages.getMessage('disableSourcePackageOverride'),
+            default: false,
+            dependsOn:['devhubalias']
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -117,6 +122,7 @@ export default class Validate extends SfpowerscriptsCommand {
                 diffcheck: this.flags.diffcheck,
                 baseBranch: this.flags.basebranch,
                 disableArtifactCommit: this.flags.disableartifactupdate,
+                disableSourcePackageOverride: this.flags.disablesourcepkgoverride
             };
 
 
