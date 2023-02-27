@@ -1,0 +1,9 @@
+{
+  // "extends": [
+  //   "oclif",
+  //   "oclif-typescript"
+  // ],
+  "rules": {
+    "no-console": "off"
+  }
+}
