@@ -92,7 +92,7 @@
         "manifest": "oclif manifest",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
         "compile": "tsc -b tsconfig.json",
-        "prepack": "oclif-dev manifest && npm shrinkwrap"
+        "snyk-protect": "snyk protect"
     },
     "types": "lib/index.d.ts"
 }
