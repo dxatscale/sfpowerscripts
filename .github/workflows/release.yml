@@ -118,6 +118,17 @@ jobs:
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
     needs: [ build ]
+  
+  sfp-prod:
+    name: 'sfp prod'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'latest'
+      pathToPackageJson: 'packages/sfp-cli/package.json'
+      environment: sfp-prod
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    needs: [ build ]
 
   prod-docker:
     name: 'copy rc docker to prod'
