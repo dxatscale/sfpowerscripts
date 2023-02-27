@@ -69,7 +69,10 @@ export default class PrepareImpl {
             projectConfig = ProjectConfig.cleanupPackagesFromProjectDirectory(null, restrictedPackages);
         }
 
-        await this.getPackageArtifacts(restrictedPackages);
+        if (this.pool.installAll) {
+            await this.getPackageArtifacts(restrictedPackages);
+        }
+
         let checkpointPackages = this.getcheckPointPackages(new ConsoleLogger(), projectConfig);
 
         let externalPackageResolver = new ExternalPackage2DependencyResolver(
