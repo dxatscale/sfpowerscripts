@@ -5,6 +5,7 @@ import SfpPackage from '../SfpPackage';
 import SFPOrg from '../../org/SFPOrg';
 import InstallUnlockedPackageImpl from './InstallUnlockedPackageImpl';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
+import { EOL } from 'os';
 
 export default class InstallUnlockedPackage extends InstallPackage {
     private packageVersionId;
@@ -41,7 +42,7 @@ export default class InstallUnlockedPackage extends InstallPackage {
         try {
             if (skipIfPackageInstalled) {
                 SFPLogger.log(
-                    `Checking whether package ${COLOR_KEY_MESSAGE(
+                    `${EOL}Checking whether package ${COLOR_KEY_MESSAGE(
                         this.sfpPackage.package_name
                     )} with ID ${COLOR_KEY_MESSAGE(
                         this.packageVersionId

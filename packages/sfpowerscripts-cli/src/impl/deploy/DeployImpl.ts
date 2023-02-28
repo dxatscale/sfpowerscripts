@@ -188,7 +188,7 @@ export default class DeployImpl {
                                 await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory, sfpPackage);
                             } catch (error) {
                                 //skip packages already promoted
-                                SFPLogger.log(`Package already prmomoted .. skipping`);
+                                SFPLogger.log(`Package already promoted .. skipping`,LoggerLevel.INFO);
                             }
 
                             this.displayRetryHeader(isToBeRetried, attemptCount);
