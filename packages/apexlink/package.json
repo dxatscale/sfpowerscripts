@@ -36,6 +36,8 @@
     "build": "npm run clean && npm run compile",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json",
+    "clearCache": "jest --clearCache",
+    "test": "FORCE_COLOR=true jest --silent --verbose true --coverage --detectOpenHandles",
     "spec-test": "FORCE_COLOR=true jest -i packages/apexlink/tests/ApexDependencyCheckImpl.test.ts --verbose true --coverage --detectOpenHandles"
 },
   "bugs": {
