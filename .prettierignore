@@ -14,7 +14,6 @@ packages/sfpowerscripts-cli/coverage
 packages/core/resources
 packages/sfp-cli/resources
 packages/sfpowerscripts-cli/resources
-.dependency-cruiser.js
 .github
 decision records
 demoreel
