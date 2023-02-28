@@ -23,6 +23,8 @@ import PackageVersionLister from '@dxatscale/sfpowerscripts.core/lib/package/ver
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import ExecuteCommand from '@dxatscale/sfpowerscripts.core/lib/command/commandExecutor/ExecuteCommand';
 import { LoggerLevel } from '@dxatscale/sfp-logger';
+import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
@@ -67,6 +69,12 @@ export default class Promote extends SfpowerscriptsCommand {
         gittag: flags.boolean({
             description: messages.getMessage('gitTagFlagDescription'),
             default: false,
+        }),
+        limit: flags.number({
+            description: messages.getMessage('limitFlagDescription'),
+        }),
+        daysToKeep: flags.number({
+            description: messages.getMessage('daysToKeepFlagDescription'),
         }),
         pushgittag: flags.boolean({
             description: messages.getMessage('gitPushTagFlagDescription'),
@@ -222,6 +230,17 @@ export default class Promote extends SfpowerscriptsCommand {
                 await this.createGitTags(succesfullyPublishedPackageNamesForTagging);
                 await this.pushGitTags(succesfullyPublishedPackageNamesForTagging);
             }
+
+
+            if (this.flags.daysToKeep && this.flags.limit) {
+                await this.deleteGitTagsOlderThan(this.flags.daysToKeep, this.flags.limit);
+            } else if (this.flags.daysToKeep) {
+                await this.deleteGitTagsOlderThan(succesfullyPublishedPackageNamesForTagging, this.flags.daysToKeep);
+            } else if (this.flags.limit) {
+                await this.deleteExcessGitTags(succesfullyPublishedPackageNamesForTagging, this.flags.limit);
+            }
+
+
         } catch (err) {
             SFPLogger.log(err.message);
 
@@ -361,7 +380,7 @@ export default class Promote extends SfpowerscriptsCommand {
             commitId: string;
         }[]
     ) {
-     
+
         if (this.flags.pushgittag) {
             let tagsForPushing:string[]=[];
             for (let succesfullyPublishedPackage of sucessfullyPublishedPackages) {
@@ -381,7 +400,7 @@ export default class Promote extends SfpowerscriptsCommand {
             commitId: string;
         }[]
     ) {
-      
+
         for (let sucessFullyPublishedPackage of sucessfullyPublishedPackages) {
             SFPLogger.log(COLOR_KEY_MESSAGE(`Creating Git Tags in Repo ${sucessFullyPublishedPackage.tag}`));
             await this.git.addAnnotatedTag(
@@ -391,6 +410,50 @@ export default class Promote extends SfpowerscriptsCommand {
             );
         }
     }
+
+    //Exclude the latest git tag up to a specified number of tags, and then deletes the excess tags that exceed that limit.
+    private async deleteExcessGitTags( tags: {
+        name: string;
+        version: string;
+        type: string;
+        tag: string;
+        commitId: string;
+    }[], limit: number) {
+            //const pkgs = ProjectConfig.getAllPackages(this.git.getRepositoryPath());
+            const tagsToDelete: string[] = [];
+
+            await Promise.all(tags.map(async (tag) => {
+                const gitTags = new GitTags(this.git, tag.name);
+                const tags = await gitTags.limitTags(limit);
+                tagsToDelete.push(...tags);
+              }));
+
+            SFPLogger.log(COLOR_KEY_MESSAGE(`Deleting old Git Tags`));
+            await this.git.pushTags(['--delete', ...tagsToDelete])
+        }
+
+    //Deletes Git tags that are older than a specified number of days.
+    private async deleteGitTagsOlderThan( tags: {
+        name: string;
+        version: string;
+        type: string;
+        tag: string;
+        commitId: string;
+    }[], daysToKeep: number
+    , limit?: number) {
+        const pkgs = ProjectConfig.getAllPackages(this.git.getRepositoryPath());
+        const tagsToDelete: string[] = [];
+
+        await Promise.all(tags.map(async (tag) => {
+            const gitTags = new GitTags(this.git, tag.name);
+            const tags = await gitTags.filteredOldTags(daysToKeep, limit);
+            tagsToDelete.push(...tags);
+          }));
+
+        SFPLogger.log(COLOR_KEY_MESSAGE(`Deleting Git Tags older than ${daysToKeep} in Repo`));
+        await this.git.pushTags(['--delete', ...tagsToDelete])
+    }
+
 
     private isPackageVersionIdReleased(packageVersionList: any, packageVersionId: string): boolean {
         let packageVersion = packageVersionList.find((pkg) => {

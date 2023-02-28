@@ -11,5 +11,7 @@
     "scopeFlagDescription": "(required for NPM) User or Organisation scope of the NPM package",
     "npmTagFlagDescription": "Add an optional distribution tag to NPM packages. If not provided, the 'latest' tag is set to the published version.",
     "npmrcPathFlagDescription": "Path to .npmrc file used for authentication to registry. If left blank, defaults to home directory",
-    "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol."
+    "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.",
+    "daysToKeepFlagDescription": "Specify the number of days to keep a Git tag before automatically deleting",
+    "limitFlagDescription": " Specify the number of most recent tags to keep, deleting any older tags beyond that limit."
 }
