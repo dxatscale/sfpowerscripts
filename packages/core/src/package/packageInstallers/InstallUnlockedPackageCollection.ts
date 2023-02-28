@@ -88,7 +88,7 @@ export default class InstallUnlockedPackageCollection {
         try {
             if (skipIfPackageInstalled) {
                 SFPLogger.log(
-                    `Checking whether package  ${COLOR_KEY_MESSAGE(pacakgeName)} with ID ${COLOR_KEY_MESSAGE(
+                    `${EOL}Checking whether package  ${COLOR_KEY_MESSAGE(pacakgeName)} with ID ${COLOR_KEY_MESSAGE(
                         packageVersionId)}is installed in ${this.sfpOrg.getUsername()}`,
                     LoggerLevel.INFO,
                     this.logger
