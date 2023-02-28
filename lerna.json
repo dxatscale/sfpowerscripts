@@ -1,20 +1,14 @@
 {
     "packages": [
-        "packages/sfplogger",
-        "packages/sfdx-process-wrapper",
-        "packages/apexlink",
-        "packages/sfpconsole",
-        "packages/forcemula",
-        "packages/sfdc-soup",
-        "packages/core",
-        "packages/sfpowerscripts-cli",
-        "packages/sfp-cli"
+        "packages/*"
     ],
     "version": "independent",
     "command": {
         "publish": {
             "yes": true,
-            "ignoreChanges": ["*.md"],
+            "ignoreChanges": [
+                "*.md"
+            ],
             "registry": "https://registry.npmjs.org",
             "message": "chore(publish): update versions and publish to npm"
         }

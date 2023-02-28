@@ -5,7 +5,9 @@
         "outDir": "./lib",
         "rootDir": "./src",
         "skipLibCheck": true,
-        "declarationMap": true
+        "declarationMap": true,
+        "baseUrl": "/src",
+        "paths": {}
     },
     "exclude": ["node_modules", "dist", "tests"]
 }

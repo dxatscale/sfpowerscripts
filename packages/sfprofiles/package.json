@@ -1,5 +1,5 @@
 {
-    "name": "sfprofiles",
+    "name": "@dxatscale/sfprofiles",
     "version": "1.0.0",
     "description": "Salesforce Profile management",
     "keywords": [
@@ -29,6 +29,7 @@
         "build": "npm run clean && npm run compile",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
         "compile": "tsc -b tsconfig.json",
+        "compile:dev": "tsc -p . --sourcemap",
         "clearCache": "jest --clearCache",
         "test": "FORCE_COLOR=true jest --silent --verbose true --coverage --detectOpenHandles",
         "spec-test": "FORCE_COLOR=true jest -i packages/core/tests/package/analysers/FHTAnalyzer.test.ts --verbose true --coverage --detectOpenHandles"
@@ -49,8 +50,8 @@
         "@types/lodash": "^4.14.191",
         "@types/mocha": "9.1.0",
         "@types/rimraf": "^3.0.2",
-        "@typescript-eslint/eslint-plugin": "^5.54.0",
-        "@typescript-eslint/parser": "^5.54.0",
+        "@typescript-eslint/eslint-plugin": "^5.53.0",
+        "@typescript-eslint/parser": "^5.53.0",
         "babel-jest": "27.5.1",
         "eslint": "^8.33.0",
         "jest": "27.5.1",
