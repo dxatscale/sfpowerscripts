@@ -1,4 +1,4 @@
-import ExecuteCommand from '@dxatscale/sfpowerscripts.core/lib/command/commandExecutor/ExecuteCommand';
+import  ExecuteCommand  from "@dxatscale/sfdx-process-wrapper/lib/commandExecutor/ExecuteCommand"
 import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_KEY_VALUE } from '@dxatscale/sfp-logger/lib/SFPLogger';
 import { WorkItem } from '../../types/WorkItem';
 import child_process = require('child_process');

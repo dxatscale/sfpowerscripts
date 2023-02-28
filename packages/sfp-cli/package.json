@@ -11,6 +11,7 @@
     "dependencies": {
         "@dxatscale/sfp-logger": "1.2.0",
         "@dxatscale/sfpowerscripts": "^20.25.4",
+        "@dxatscale/sfdx-process-wrapper":"0.0.1",
         "@dxatscale/sfpowerscripts.core": "33.21.2",
         "@oclif/command": "^1.8.0",
         "@oclif/config": "1.18.3",

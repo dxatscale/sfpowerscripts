@@ -1,4 +1,4 @@
-import { SFDXCommand } from '@dxatscale/sfpowerscripts.core/lib/command/SFDXCommand';
+import { SFDXCommand } from '@dxatscale/sfdx-process-wrapper/lib/SFDXCommand';
 
 export default class OrgAuth extends SFDXCommand {
     public constructor(private instanceURL?: string) {

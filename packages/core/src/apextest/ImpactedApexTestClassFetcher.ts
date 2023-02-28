@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import ApexLinkCheckImpl from '../apexLinkWrapper/ApexLinkCheckImpl';
+import ApexDepedencyCheckImpl from "@dxatscale/apexlink/lib/ApexDepedencyCheckImpl"
 import Component from '../dependency/Component';
 import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import SfpPackage from '../package/SfpPackage';
@@ -21,8 +21,8 @@ export default class ImpactedApexTestClassFetcher {
 
         SFPLogger.log(`Computing impacted apex class and associated tests`, LoggerLevel.INFO, this.logger);
 
-        let apexLinkImpl = new ApexLinkCheckImpl(this.sfpPackage.workingDirectory, this.logger, this.loglevel);
-        let dependencies = (await apexLinkImpl.exec()).dependencies;
+        let apexLinkImpl = new ApexDepedencyCheckImpl(this.logger,this.sfpPackage.workingDirectory);
+        let dependencies = (await apexLinkImpl.execute()).dependencies;
 
         SFPLogger.log(`Dependencies: ${JSON.stringify(dependencies)}`, LoggerLevel.TRACE,this.logger);
 
