@@ -232,7 +232,7 @@ export default class DeployImpl {
                         ): boolean {
                             //override current value when encountering such issue
                             if (installPackageResult.result === PackageInstallationStatus.Failed) {
-                                if (installPackageResult.message?.includes('background job is being executed'))
+                                if (installPackageResult.message?.includes('ongoing background job'))
                                     return true;
                                 else if (isToBeRetried && retryCount <= maxRetryCount )
                                    return true;
