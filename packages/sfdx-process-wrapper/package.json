@@ -1,6 +1,6 @@
 {
   "name": "@dxatscale/sfdx-process-wrapper",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Wraps around SFDXCommand to exeute it using a subprocess",
   "author": "azlam-abdulsalam <azlam.abdulsalam@accenture.com>",
   "homepage": "https://github.com/dxatscale/sfpowerscripts#readme",
@@ -11,7 +11,7 @@
     "lib": "lib"
   },
   "dependencies": {
-    "@dxatscale/sfp-logger":"1.2.0"
+    "@dxatscale/sfp-logger": "1.2.0"
   },
   "files": [
     "lib"
@@ -24,7 +24,7 @@
     "build": "npm run clean && npm run compile",
     "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
     "compile": "tsc -b tsconfig.json"
-},
+  },
   "bugs": {
     "url": "https://github.com/dxatscale/sfpowerscripts/issues"
   }

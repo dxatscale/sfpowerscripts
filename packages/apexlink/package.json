@@ -1,6 +1,6 @@
 {
   "name": "@dxatscale/apexlink",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Wrappers around @nawforce's apexlink java pom ",
   "author": "azlam-abdulsalam <azlam.abdulsalam@accenture.com>",
   "homepage": "https://github.com/dxatscale/sfpowerscripts",
@@ -12,9 +12,9 @@
     "/jars"
   ],
   "dependencies": {
-    "find-java-home":"2.0.0",
-    "@dxatscale/sfdx-process-wrapper":"0.0.1",
-    "@dxatscale/sfp-logger": "1.2.0"
+    "@dxatscale/sfdx-process-wrapper": "0.0.2",
+    "@dxatscale/sfp-logger": "1.2.0",
+    "find-java-home": "2.0.0"
   },
   "devDependencies": {
     "@babel/core": "7.18.2",
@@ -27,7 +27,7 @@
     "ts-jest": "^27.1.4",
     "ts-node": "10.7.0",
     "typescript": "^4.1.3"
-},
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dxatscale/sfpowerscripts.git"
@@ -39,7 +39,7 @@
     "clearCache": "jest --clearCache",
     "test": "FORCE_COLOR=true jest --silent --verbose true --coverage --detectOpenHandles",
     "spec-test": "FORCE_COLOR=true jest -i packages/apexlink/tests/ApexDependencyCheckImpl.test.ts --verbose true --coverage --detectOpenHandles"
-},
+  },
   "bugs": {
     "url": "https://github.com/dxatscale/sfpowerscripts/issues"
   }
