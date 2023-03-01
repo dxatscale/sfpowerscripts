@@ -1,5 +1,5 @@
 import { LoggerLevel, Org } from '@salesforce/core';
-import { isNullOrUndefined } from 'util';
+
 let retry = require('async-retry');
 import SFPLogger from '@dxatscale/sfp-logger';
 
@@ -8,7 +8,7 @@ export async function getUserEmail(username: string, hubOrg: Org) {
 
     return retry(
         async (bail) => {
-            if (isNullOrUndefined(username)) {
+            if (!username) {
                 bail(new Error('username cannot be null. provide a valid username'));
                 return;
             }
