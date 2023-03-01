@@ -2,7 +2,7 @@
   "name": "@dxatscale/apexlink",
   "version": "0.0.3",
   "description": "Wrappers around @nawforce's apexlink java pom ",
-  "author": "azlam-abdulsalam <azlam.abdulsalam@accenture.com>",
+  "author": "dxatscale",
   "homepage": "https://github.com/dxatscale/sfpowerscripts",
   "license": "MIT",
   "main": "lib/index",
@@ -31,6 +31,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dxatscale/sfpowerscripts.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "npm run clean && npm run compile",
