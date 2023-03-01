@@ -2,7 +2,7 @@
   "name": "@dxatscale/sfdx-process-wrapper",
   "version": "0.0.3",
   "description": "Wraps around SFDXCommand to exeute it using a subprocess",
-  "author": "azlam-abdulsalam <azlam.abdulsalam@accenture.com>",
+  "author": "dxatscale",
   "homepage": "https://github.com/dxatscale/sfpowerscripts#readme",
   "license": "MIT",
   "main": "lib/index",
@@ -25,6 +25,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dxatscale/sfpowerscripts.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "npm run clean && npm run compile",
