@@ -11,6 +11,7 @@ import { Duration } from '@salesforce/kit';
 import DeploymentExecutor, { DeploySourceResult } from './DeploymentExecutor';
 import {
     ComponentSet,
+    DeployMessage,
     DeployResult,
     MetadataApiDeployOptions,
     RequestStatus,
@@ -57,27 +58,58 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
             } else {
                 deploySourceResult.message = this.handlErrorMesasge(result);
             }
-            deploySourceResult.response=result.response;
+            deploySourceResult.response = result.response;
             deploySourceResult.result = false;
             deploySourceResult.deploy_id = result.response.id;
         }
         return deploySourceResult;
     }
 
-
-    private handlErrorMesasge(result: DeployResult):string
-    {
+    private handlErrorMesasge(result: DeployResult): string {
         if (result.response.numberComponentErrors == 0) {
             return 'Unable to fetch report, Check your org for details';
         } else if (result.response.numberComponentErrors > 0) {
-            return result.response.errorMessage;
+            return this.constructComponentErrorMessage(result.response.details.componentFailures, this.logger);
         } else if (result.response.details.runTestResult) {
             return 'Unable to deploy due to unsatisfactory code coverage and/or test failures';
         } else {
             return 'Unable to fetch report, Check your org for details';
         }
     }
-    
+
+    private constructComponentErrorMessage(componentFailures: DeployMessage | DeployMessage[], logger: Logger) {
+        let errorMessage = `Unable to deploy due to failure in some components, check log for details`;
+
+        if (componentFailures === null || componentFailures === undefined) return;
+
+        if (componentFailures instanceof Array) {
+            //Search for other scenarios and if background Job is being executed, override the error message
+            for (let failure of componentFailures) {
+                let scenario = classifyErrorScenarios(failure);
+                if (scenario == `BackgroundJob`) {
+                    errorMessage = `Unable to deploy due to an ongoing background job from a previous package`;
+                    break;
+                }
+            }
+        } else {
+            let failure = componentFailures;
+            let scenario = classifyErrorScenarios(failure);
+            if (scenario == `BackgroundJob`) {
+                errorMessage = `Unable to deploy due to an ongoing background job from a previous package`;
+            }
+        }
+
+        function classifyErrorScenarios(failure: DeployMessage) {
+            let scenario = `Component Error`;
+            //Override if background job is being executed
+            if (failure.problem.includes(`background job is being executed`)) {
+                scenario = `BackgroundJob`;
+            }
+            return scenario;
+        }
+        return errorMessage;
+    }
+
     private writeResultToReport(result: DeployResult) {
         let deploymentReports = `.sfpowerscripts/mdapiDeployReports`;
         fs.mkdirpSync(deploymentReports);
