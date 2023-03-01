@@ -21,7 +21,7 @@ import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
 import GroupConsoleLogs from '../../../ui/GroupConsoleLogs';
 import PackageVersionLister from '@dxatscale/sfpowerscripts.core/lib/package/version/PackageVersionLister';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import ExecuteCommand from '@dxatscale/sfpowerscripts.core/lib/command/commandExecutor/ExecuteCommand';
+import ExecuteCommand from '@dxatscale/sfdx-process-wrapper/lib/commandExecutor/ExecuteCommand';
 import { LoggerLevel } from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);

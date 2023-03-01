@@ -1,4 +1,5 @@
-import { SFDXCommand } from '@dxatscale/sfpowerscripts.core/lib/command/SFDXCommand';
+import { SFDXCommand } from '@dxatscale/sfdx-process-wrapper/lib/SFDXCommand';
+
 
 export default class OrgDelete extends SFDXCommand {
     public constructor(private aliasOrUsername?: string, private devHubUserName?: string) {

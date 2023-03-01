@@ -1,4 +1,4 @@
-import ExecuteCommand from '../command/commandExecutor/ExecuteCommand';
+import ExecuteCommand from '@dxatscale/sfdx-process-wrapper/lib/commandExecutor/ExecuteCommand';
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import defaultShell from '../utils/DefaultShell';
 
