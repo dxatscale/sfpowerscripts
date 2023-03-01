@@ -1,0 +1,31 @@
+{
+  "name": "@dxatscale/sfdx-process-wrapper",
+  "version": "0.0.1",
+  "description": "Wraps around SFDXCommand to exeute it using a subprocess",
+  "author": "azlam-abdulsalam <azlam.abdulsalam@accenture.com>",
+  "homepage": "https://github.com/dxatscale/sfpowerscripts#readme",
+  "license": "MIT",
+  "main": "lib/index",
+  "types": "lib/index",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "@dxatscale/sfp-logger":"1.2.0"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dxatscale/sfpowerscripts.git"
+  },
+  "scripts": {
+    "build": "npm run clean && npm run compile",
+    "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
+    "compile": "tsc -b tsconfig.json"
+},
+  "bugs": {
+    "url": "https://github.com/dxatscale/sfpowerscripts/issues"
+  }
+}

@@ -10,8 +10,9 @@
     "bugs": "https://github.com/dxatscale/sfpowerscripts/issues",
     "dependencies": {
         "@dxatscale/sfp-logger": "1.2.0",
-        "@dxatscale/sfpowerscripts": "20.25.6",
+        "@dxatscale/sfdx-process-wrapper":"0.0.1",
         "@dxatscale/sfpowerscripts.core": "33.21.3",
+        "@dxatscale/sfpowerscripts": "20.25.6",
         "@oclif/command": "^1.8.0",
         "@oclif/config": "1.18.3",
         "@oclif/parser": "^3.8.5",
