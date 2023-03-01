@@ -57,6 +57,10 @@ export default class Validate extends SfpowerscriptsCommand {
             description: messages.getMessage('disableSourcePackageOverride'),
             dependsOn:['devhubalias']
         }),
+        disableparalleltesting: flags.boolean({
+            description: messages.getMessage('disableParallelTestingFlagDescription'),
+            default: false,
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -121,7 +125,8 @@ export default class Validate extends SfpowerscriptsCommand {
                 diffcheck: this.flags.diffcheck,
                 baseBranch: this.flags.basebranch,
                 disableArtifactCommit: this.flags.disableartifactupdate,
-                disableSourcePackageOverride: this.flags.disablesourcepkgoverride
+                disableSourcePackageOverride: this.flags.disablesourcepkgoverride,
+                disableParallelTestExecution: this.flags.disableparalleltesting
             };
 
 

@@ -83,6 +83,7 @@ export interface ValidateProps {
     disableArtifactCommit?: boolean;
     orgInfo?: boolean;
     disableSourcePackageOverride?: boolean;
+    disableParallelTestExecution?: boolean;
 }
 
 export default class ValidateImpl implements PostDeployHook, PreDeployHook {
@@ -414,7 +415,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             isBuildAllAsSourcePackages: !this.props.disableSourcePackageOverride,
             currentStage: Stage.VALIDATE,
             baseBranch: this.props.baseBranch,
-            devhubAlias: this.props.hubOrg.getUsername(),
+            devhubAlias: this.props.hubOrg?.getUsername(),
         };
 
         //Build DiffOptions
@@ -726,6 +727,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         if (testOptions == undefined) {
             return { id: null, result: true, message: 'No Tests To Run' };
         }
+
+        //override any behaviour if the override is from the deploy props
+        if(this.props.disableParallelTestExecution)
+            testOptions.synchronous = true;
 
         displayTestHeader(sfpPackage);
 
