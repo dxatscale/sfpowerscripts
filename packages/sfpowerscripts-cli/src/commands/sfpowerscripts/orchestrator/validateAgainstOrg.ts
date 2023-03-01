@@ -55,7 +55,6 @@ export default class Validate extends SfpowerscriptsCommand {
         }),
         disablesourcepkgoverride: flags.boolean({
             description: messages.getMessage('disableSourcePackageOverride'),
-            default: false,
             dependsOn:['devhubalias']
         }),
         loglevel: flags.enum({
