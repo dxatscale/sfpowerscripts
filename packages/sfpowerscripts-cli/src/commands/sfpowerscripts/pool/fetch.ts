@@ -13,6 +13,7 @@ import { COLOR_HEADER } from '@dxatscale/sfp-logger';
 import { COLOR_SUCCESS } from '@dxatscale/sfp-logger';
 import { COLOR_TIME } from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
+import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -21,7 +22,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'scratchorg_poolFetch');
 
-export default class Fetch extends SfdxCommand {
+export default class Fetch extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresDevhubUsername = true;
@@ -81,7 +82,7 @@ export default class Fetch extends SfdxCommand {
         }),
     };
 
-    public async run(): Promise<AnyJson> {
+    public async execute(): Promise<AnyJson> {
         const fetchStartTime: number = Date.now();
 
         if (!fs.existsSync('sfdx-project.json'))
