@@ -1,6 +1,6 @@
 {
   "name": "@dxatscale/sfdx-process-wrapper",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Wraps around SFDXCommand to exeute it using a subprocess",
   "author": "dxatscale",
   "homepage": "https://github.com/dxatscale/sfpowerscripts#readme",
@@ -15,9 +15,9 @@
     "fs-extra": "^9.1.0"
   },
   "devDependencies": {
+    "@types/fs-extra": "^9.0.11",
     "@types/node": "^10",
-    "typescript": "^4.0.2",
-    "@types/fs-extra": "^9.0.11"
+    "typescript": "^4.0.2"
   },
   "files": [
     "lib"
