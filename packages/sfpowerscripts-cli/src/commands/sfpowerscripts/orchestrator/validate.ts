@@ -74,6 +74,10 @@ export default class Validate extends SfpowerscriptsCommand {
         tag: flags.string({
             description: messages.getMessage('tagFlagDescription'),
         }),
+        disableparalleltesting: flags.boolean({
+            description: messages.getMessage('disableParallelTestingFlagDescription'),
+            default: false,
+        }),
         disablediffcheck: flags.boolean({
             description: messages.getMessage('disableDiffCheckFlagDescription'),
             default: false,
@@ -168,7 +172,8 @@ export default class Validate extends SfpowerscriptsCommand {
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
                 orgInfo: this.flags.orginfo,
-                disableSourcePackageOverride : this.flags.disablesourcepkgoverride
+                disableSourcePackageOverride : this.flags.disablesourcepkgoverride,
+                disableParallelTestExecution: this.flags.disableparalleltesting
             };
 
             setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);
