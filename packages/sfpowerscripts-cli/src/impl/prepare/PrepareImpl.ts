@@ -25,6 +25,7 @@ import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/disp
 import ReleaseDefinitionGenerator from '../release/ReleaseDefinitionGenerator';
 import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
+import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 
 const Table = require('cli-table');
 
@@ -203,6 +204,9 @@ export default class PrepareImpl {
 
         let artifactFetcher: FetchAnArtifact;
         if (this.pool.fetchArtifacts) {
+            
+            let fetchArtifactsLogGroup = new GroupConsoleLogs(`Fetching Artifacts`); 
+            fetchArtifactsLogGroup.begin();
             artifactFetcher = new FetchArtifactSelector(
                 this.pool.fetchArtifacts.artifactFetchScript,
                 this.pool.fetchArtifacts.npm?.scope,
@@ -225,17 +229,21 @@ export default class PrepareImpl {
                     );
                 }
             }
+            fetchArtifactsLogGroup.end();
         } else {
+            let buildArtifactsLogGroup = new GroupConsoleLogs(`Building Artifacts`); 
+            buildArtifactsLogGroup.begin();
             //Build All Artifacts
-            console.log('\n');
-            console.log(
+            SFPLogger.log(`${EOL}`);
+            SFPLogger.log(
                 '-------------------------------------WARNING!!!!------------------------------------------------'
-            );
-            console.log('Building packages, as script to fetch artifacts was not provided');
-            console.log('This is not ideal, as the artifacts are  built from the current head of the provided branch');
-            console.log('Pools should be prepared with previously validated packages');
-            console.log(
-                '------------------------------------------------------------------------------------------------'
+            ,LoggerLevel.WARN);
+            SFPLogger.log('Building packages, as script to fetch artifacts was not provided',LoggerLevel.WARN);
+            SFPLogger.log('This is not ideal, as the artifacts are  built from the current head of the provided branch',LoggerLevel.WARN);
+            SFPLogger.log('Pools should be prepared with previously validated packages',LoggerLevel.WARN);
+            SFPLogger.log(
+                '------------------------------------------------------------------------------------------------',
+                LoggerLevel.WARN
             );
 
             let buildProps: BuildProps = {
@@ -261,6 +269,7 @@ export default class PrepareImpl {
                 await ArtifactGenerator.generateArtifact(generatedPackage, process.cwd(), 'artifacts');
                 this.artifactFetchedCount++;
             }
+            buildArtifactsLogGroup.end();
         }
 
         function isPkgToBeInstalled(pkg, restrictedPackages?: string[]): boolean {
