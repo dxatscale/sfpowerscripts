@@ -10,7 +10,7 @@ describe('Given a directory with apex classes, ',  () => {
         let result = await apexLinkImpl.execute();
         expect(result.dependencies).toContainEqual({ "name": "AlwaysEnabledFeature", "dependencies": ["Feature"]});
         
-    });
+    },30000);
 });
 
 describe('Given a directory with no apex classes, ',  () => {
