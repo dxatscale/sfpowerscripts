@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfp-cli",
     "description": "Developer CLI for Salesforce programs following the DX@Scale model",
-    "version": "4.1.4",
+    "version": "4.1.5",
     "author": "dxatscale",
     "release": "February 23",
     "bin": {
@@ -88,7 +88,7 @@
         "directory": "packages/sfp-cli"
     },
     "scripts": {
-        "version":"npm shrinkwrap",
+        "version": "npm shrinkwrap",
         "build": "npm run clean && npm run compile",
         "manifest": "oclif manifest",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
