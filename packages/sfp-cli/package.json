@@ -88,6 +88,7 @@
         "directory": "packages/sfp-cli"
     },
     "scripts": {
+        "version":"npm shrinkwrap",
         "build": "npm run clean && npm run compile",
         "manifest": "oclif manifest",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
