@@ -4,7 +4,7 @@
     "title": "sfpowerscripts DX Project File",
     "description": "The properties and shape of the SFDX project enhanced for sfpowerscripts",
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "required": ["packageDirectories"],
     "properties": {
         "$schema": {
@@ -35,7 +35,7 @@
                     "versionNumber": ["package"]
                 },
                 "required": ["path"],
-                "additionalProperties": false,
+                "additionalProperties": true,
                 "properties": {
                     "ancestorId": {
                         "$ref": "#/definitions/packageDirectory.ancestorId"

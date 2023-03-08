@@ -56,10 +56,9 @@ export default class Shrink extends SfpowerscriptsCommand {
             //Validate dependencies in sfdx-project.json // Read Manifest
             let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
             const shrinkImpl = new ShrinkImpl(
-                projectConfig,
                 this.hubOrg.getConnection(),
             );
-            projectConfig = await shrinkImpl.resolveDependencies();
+            projectConfig = await shrinkImpl.shrinkDependencies(projectConfig);
 
             //Create temp directory if not exist
             if (!fs.existsSync(defaultProjectConfigPath)) fs.mkdirpSync(defaultProjectConfigPath);

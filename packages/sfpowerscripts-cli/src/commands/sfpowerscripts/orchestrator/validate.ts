@@ -43,9 +43,17 @@ export default class Validate extends SfpowerscriptsCommand {
             description: messages.getMessage('coveragePercentFlagDescription'),
             default: 75,
         }),
+        disablesourcepkgoverride: flags.boolean({
+            description: messages.getMessage('disableSourcePackageOverride'),
+            default: false,
+        }),
         deletescratchorg: flags.boolean({
             char: 'x',
             description: messages.getMessage('deleteScratchOrgFlagDescription'),
+            default: false,
+        }),
+        orginfo: flags.boolean({
+            description: messages.getMessage('orgInfoFlagDescription'),
             default: false,
         }),
         keys: flags.string({
@@ -65,6 +73,10 @@ export default class Validate extends SfpowerscriptsCommand {
         }),
         tag: flags.string({
             description: messages.getMessage('tagFlagDescription'),
+        }),
+        disableparalleltesting: flags.boolean({
+            description: messages.getMessage('disableParallelTestingFlagDescription'),
+            default: false,
         }),
         disablediffcheck: flags.boolean({
             description: messages.getMessage('disableDiffCheckFlagDescription'),
@@ -159,6 +171,9 @@ export default class Validate extends SfpowerscriptsCommand {
                 isDependencyAnalysis: this.flags.enabledependencyvalidation,
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
+                orgInfo: this.flags.orginfo,
+                disableSourcePackageOverride : this.flags.disablesourcepkgoverride,
+                disableParallelTestExecution: this.flags.disableparalleltesting
             };
 
             setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);

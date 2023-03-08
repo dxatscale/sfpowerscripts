@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import SFDMURunImpl from '../../sfdmuwrapper/SFDMURunImpl';
 import VlocityPackDeployImpl from '../../vlocitywrapper/VlocityPackDeployImpl';
-import { SFDXCommand } from '../../command/SFDXCommand';
+import { SFDXCommand } from '@dxatscale/sfdx-process-wrapper/lib/SFDXCommand';
 const path = require('path');
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';

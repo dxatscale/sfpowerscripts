@@ -31,15 +31,15 @@ export default class PermissionSetGroupUpdateAwaiter {
                     await delay(this.intervalBetweenRepeats);
                 } else {
                     SFPLogger.log(
-                        `Proceeding with deployment,as no PermissionSetGroups are being updated`,
+                        `Proceeding with deployment, as no PermissionSetGroups are being updated`,
                         LoggerLevel.INFO,
                         this.logger
                     );
                     break;
                 }
             } catch (error) {
-                console.log(error);
                 SFPLogger.log(`Unable to fetch permission group status ${error}`, LoggerLevel.TRACE, this.logger);
+                throw error;
             }
         }
     }

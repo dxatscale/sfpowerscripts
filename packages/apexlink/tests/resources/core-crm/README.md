@@ -1,0 +1,1 @@
+A folder to house all the core model of your org which is shared with all other domains.

@@ -1,8 +1,10 @@
- import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import Package2Detail from '../Package2Detail';
 import InstallUnlockedPackageImpl from './InstallUnlockedPackageImpl';
 import SFPOrg from '../../org/SFPOrg';
 import { SfpPackageInstallationOptions } from './InstallPackage';
+import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
+import { EOL } from 'os';
 
 export default class InstallUnlockedPackageCollection {
     private installedPackages: Package2Detail[];
@@ -15,8 +17,13 @@ export default class InstallUnlockedPackageCollection {
     ) {
         this.installedPackages = await this.sfpOrg.getAllInstalled2GPPackages();
 
+        SFPLogger.log(`${EOL}`, LoggerLevel.INFO, this.logger);
+
         for (const package2 of package2s) {
-            if (this.isPackageToBeInstalled(skipIfInstalled, package2.subscriberPackageVersionId)) {
+            if (
+                package2.subscriberPackageVersionId &&
+                this.isPackageToBeInstalled(skipIfInstalled, package2.subscriberPackageVersionId, package2.name)
+            ) {
                 SFPLogger.log(
                     `Installing Package ${package2.name} in ${this.sfpOrg.getUsername()}`,
                     LoggerLevel.INFO,
@@ -29,8 +36,7 @@ export default class InstallUnlockedPackageCollection {
                     new SfpPackageInstallationOptions(),
                     package2.name
                 );
-                if(package2.key)
-                installUnlockedPackageImpl.setInstallationKey(package2.key);
+                if (package2.key) installUnlockedPackageImpl.setInstallationKey(package2.key);
                 try {
                     await installUnlockedPackageImpl.install();
                 } catch (error) {
@@ -45,8 +51,7 @@ export default class InstallUnlockedPackageCollection {
                             this.logger
                         );
                         continue;
-                    } else
-                    {
+                    } else {
                         SFPLogger.log(
                             `Unable to install ${package2.name}  in ${this.sfpOrg.getUsername()} due to ${message}`,
                             LoggerLevel.ERROR,
@@ -57,12 +62,16 @@ export default class InstallUnlockedPackageCollection {
                 }
             } else {
                 SFPLogger.log(
-                    `Skipping Installing of package ${package2.name} in ${this.sfpOrg.getUsername()}`,
-                    LoggerLevel.INFO,
+                    `Skipping Installing of package ${COLOR_KEY_MESSAGE(
+                        package2.name
+                    )} in ${this.sfpOrg.getUsername()}`,
+                    LoggerLevel.WARN,
                     this.logger
                 );
             }
         }
+
+        SFPLogger.log(`${EOL}`, LoggerLevel.INFO, this.logger);
     }
 
     /**
@@ -71,17 +80,22 @@ export default class InstallUnlockedPackageCollection {
      * @param skipIfPackageInstalled
      * @returns
      */
-    protected isPackageToBeInstalled(skipIfPackageInstalled: boolean, packageVersionId: string): boolean {
+    protected isPackageToBeInstalled(
+        skipIfPackageInstalled: boolean,
+        packageVersionId: string,
+        pacakgeName?: string
+    ): boolean {
         try {
             if (skipIfPackageInstalled) {
                 SFPLogger.log(
-                    `Checking Whether Package with ID ${packageVersionId} is installed in ${this.sfpOrg.getUsername()}`,
-                    null,
+                    `${EOL}Checking whether package  ${COLOR_KEY_MESSAGE(pacakgeName)} with ID ${COLOR_KEY_MESSAGE(
+                        packageVersionId)}is installed in ${this.sfpOrg.getUsername()}`,
+                    LoggerLevel.INFO,
                     this.logger
                 );
 
                 let packageFound = this.installedPackages.find((installedPackage) => {
-                    return installedPackage.subscriberPackageVersionId === packageVersionId;
+                    return installedPackage.subscriberPackageVersionId.substring(0,14) === packageVersionId.substring(0,14);
                 });
 
                 if (packageFound) {

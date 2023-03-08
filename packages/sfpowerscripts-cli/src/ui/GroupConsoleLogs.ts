@@ -1,4 +1,6 @@
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
+import { EOL } from 'os';
 
 //TODO: Move to sfpconsole package
 export default class GroupConsoleLogs {
@@ -34,7 +36,7 @@ export default class GroupConsoleLogs {
         } else if (GroupConsoleLogs.logGroupSymbols && GroupConsoleLogs.logGroupSymbols[0]) {
             return `${GroupConsoleLogs.logGroupSymbols[0]} ${this.section}`;
         } else {
-            return undefined;
+            return `${EOL}${COLOR_KEY_MESSAGE(this.section)}${EOL}`;
         }
     }
 
@@ -50,7 +52,7 @@ export default class GroupConsoleLogs {
         } else if (GroupConsoleLogs.logGroupSymbols && GroupConsoleLogs.logGroupSymbols[1]) {
             return `${GroupConsoleLogs.logGroupSymbols[1]}`;
         } else {
-            return undefined;
+            return `${EOL}`;
         }
     }
 }

@@ -7,6 +7,7 @@ export interface PostDeployHook {
         sfpPackage: SfpPackage,
         packageInstallationResult: PackageInstallationResult,
         targetUsername: string,
+        deployedPackages?:SfpPackage[],
         devhubUserName?: string,
         logger?:Logger
     ): Promise<{ isToFailDeployment: boolean; message?: string }>;
