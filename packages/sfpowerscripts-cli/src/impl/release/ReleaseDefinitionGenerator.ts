@@ -138,12 +138,15 @@ export default class ReleaseDefinitionGenerator {
                     artifacts[sfdxPackage] = version;
                 }
             } catch (error) {
-                SFPLogger.log(
-                    `Unable to capture version of ${sfdxPackage} due to ${error}`,
-                    LoggerLevel.WARN,
-                    this.logger
-                );
-                continue;
+                if (this.inMemoryMode) {
+                    artifacts[sfdxPackage] = 'unavailable';
+               } else {
+                   SFPLogger.log(
+                       `Unable to capture version of ${sfdxPackage} due to ${error}`,
+                       LoggerLevel.WARN,
+                       this.logger
+                   );
+               }
             }
         }
 
