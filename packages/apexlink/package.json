@@ -1,6 +1,6 @@
 {
   "name": "@dxatscale/apexlink",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Wrappers around @nawforce's apexlink java pom ",
   "author": "dxatscale",
   "homepage": "https://github.com/dxatscale/sfpowerscripts",
