@@ -241,7 +241,7 @@ export default class DeployImpl {
                             } else return false;
                         }
                     },
-                    { retries: 1, minTimeout: 2000 }
+                    { retries: 10, minTimeout: 2000 }
                 );
 
                 if (packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
