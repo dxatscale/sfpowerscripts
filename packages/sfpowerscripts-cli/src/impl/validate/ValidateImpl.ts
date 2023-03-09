@@ -47,9 +47,8 @@ import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/l
 import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
 import { PreDeployHook } from '../deploy/PreDeployHook';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
-import ReleaseDefinitionGenerator from '../release/ReleaseDefinitionGenerator';
-import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
 import { COLON_MIDDLE_BORDER_TABLE } from '../../ui/TableConstants';
+import ReleaseConfig from '../release/ReleaseConfig';
 const Table = require('cli-table');
 
 export enum ValidateAgainst {
@@ -423,7 +422,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         buildProps.diffOptions = diffOptions;
 
         //Compute packages to be included
-        buildProps.includeOnlyPackages = await computePackagesIfReleaseDefnIsProvided(this.props);
+        buildProps.includeOnlyPackages =  fetchPackagesAsPerReleaseConfig(this.logger,this.props);
         if (buildProps.includeOnlyPackages) {
             printIncludeOnlyPackages(buildProps.includeOnlyPackages);
         }
@@ -455,25 +454,14 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         return generatedPackages;
 
-        async function computePackagesIfReleaseDefnIsProvided(props: ValidateProps) {
+        function fetchPackagesAsPerReleaseConfig(logger:Logger,props: ValidateProps) {
             if (
                 props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
                 props.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
             ) {
-                //Generate release definition
-                let releaseDefinitionGenerator: ReleaseDefinitionGenerator = new ReleaseDefinitionGenerator(
-                    new ConsoleLogger(),
-                    'HEAD',
-                    props.releaseConfigPath,
-                    'validate',
-                    'test',
-                    undefined,
-                    true,
-                    false,
-                    true
-                );
-                let releaseDefinition = (await releaseDefinitionGenerator.exec()) as ReleaseDefinitionSchema;
-                return Object.keys(releaseDefinition.artifacts);
+               
+                let releaseConfig:ReleaseConfig = new ReleaseConfig(logger, props.releaseConfigPath);
+                return releaseConfig.getPackagesAsPerReleaseConfig();
             }
         }
 
