@@ -177,7 +177,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
             artifactDir: 'artifacts',
             waitTime: 120,
             currentStage: Stage.PREPARE,
-            packageLogger: logger,
+            logger: logger,
             isTestsToBeTriggered: false,
             skipIfPackageInstalled: true,
             deploymentMode: deploymentMode,

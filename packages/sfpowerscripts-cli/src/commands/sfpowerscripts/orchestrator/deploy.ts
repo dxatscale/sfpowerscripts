@@ -74,6 +74,9 @@ export default class Deploy extends SfpowerscriptsCommand {
             char: 'g',
             description: messages.getMessage('logsGroupSymbolFlagDescription'),
         }),
+        releaseconfig: flags.string({
+            description: messages.getMessage('configFileFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -102,6 +105,7 @@ export default class Deploy extends SfpowerscriptsCommand {
         SFPLogger.log(COLOR_HEADER(`Skip Packages If Already Installed: ${this.flags.skipifalreadyinstalled}`));
         SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${this.flags.artifactdir}`));
         SFPLogger.log(COLOR_HEADER(`Target Environment: ${this.flags.targetorg}`));
+        if(this.flags.releaseconfig) SFPLogger.log(COLOR_HEADER(`Filter according to: ${this.flags.releaseconfig}`));
         if (this.flags.baselineorg) SFPLogger.log(COLOR_HEADER(`Baselined Against Org: ${this.flags.baselineorg}`));
         SFPLogger.log(
             COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
@@ -129,6 +133,7 @@ export default class Deploy extends SfpowerscriptsCommand {
             currentStage: Stage.DEPLOY,
             baselineOrg: this.flags.baselineorg,
             isRetryOnFailure: this.flags.retryonfailure,
+            releaseConfigPath: this.flags.releaseconfig,
         };
 
         try {
