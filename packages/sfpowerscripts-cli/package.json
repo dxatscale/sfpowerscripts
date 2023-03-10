@@ -4,7 +4,7 @@
     "version": "20.27.0",
     "license": "MIT",
     "author": "dxatscale",
-    "release": "February 23",
+    "release": "March 23",
     "bin": {
         "readVars": "./scripts/readVars.sh"
     },
