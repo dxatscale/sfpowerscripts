@@ -6,8 +6,7 @@ import retry from 'async-retry';
 import Passwordgenerateimpl from '@impl/user/passwordgenerateimpl';
 import queryApi from '../utils/queryExecutor';
 import child_process from 'child_process';
-import { SaveResult } from 'jsforce';
-import { Connection } from 'jsforce/connection';
+import { Connection, SaveResult } from 'jsforce';
 
 const ORDER_BY_FILTER = ' ORDER BY CreatedDate ASC';
 export default class ScratchOrgUtils {

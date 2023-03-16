@@ -1,6 +1,6 @@
 import { flags, FlagsConfig, SfdxResult, SfdxCommand } from '@salesforce/command';
 import { AnyJson } from '@salesforce/ts-types';
-import { Messages, Org } from '@salesforce/core';
+import { Messages, Org }  from '@salesforce/core';
 import * as _ from 'lodash';
 import { Sfpowerkit } from '@dxatscale/sfprofiles/lib/utils/sfpowerkit';
 import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
@@ -8,6 +8,7 @@ import { METADATA_INFO } from '@dxatscale/sfprofiles/lib/impl/metadata/metadataI
 import * as path from 'path';
 import ProfileReconcile from '@dxatscale/sfprofiles/lib/impl/source/profileReconcile';
 import MetadataFiles from '@dxatscale/sfprofiles/lib/impl/metadata/metadataFiles';
+import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -16,7 +17,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'profile_reconcile');
 
-export default class Reconcile extends SfdxCommand {
+export default class Reconcile extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
@@ -95,7 +96,7 @@ export default class Reconcile extends SfdxCommand {
         },
     };
 
-    public async run(): Promise<AnyJson> {
+    public async execute(): Promise<AnyJson> {
         let argFolder = this.flags.folder;
         let argProfileList = this.flags.profilelist;
 

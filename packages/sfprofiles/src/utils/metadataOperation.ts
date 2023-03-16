@@ -1,4 +1,4 @@
-import { Connection } from 'jsforce/connection';
+import { Connection } from 'jsforce';
 import { Sfpowerkit } from '@utils/sfpowerkit';
 import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
 import retry from 'async-retry';

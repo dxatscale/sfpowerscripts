@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-array-constructor */
 import Profile, { ProfileObjectPermissions, ProfileUserPermission } from '../schema';
 import { Connection } from 'jsforce';
-import { MetadataInfo } from 'jsforce';
+import { MetadataInfo } from '../metadataInfo';
 import * as _ from 'lodash';
 import MetadataRetriever from './metadataRetriever';
 import QueryExecutor from '@utils/queryExecutor';
@@ -38,7 +38,7 @@ export default class ProfileRetriever {
     public async loadProfiles(profileNames: string[]): Promise<MetadataInfo[]> {
         let profilePermissions = await this.fetchPermissionsWithValue(profileNames);
 
-        let profiles = (await this.conn.metadata.readSync('Profile', profileNames)) as any;
+        let profiles = (await this.conn.metadata.read('Profile', profileNames)) as any;
         if (Array.isArray(profiles)) {
             for (let i = 0; i < profiles.length; i++) {
                 await this.handlePermissions(profiles[i], profilePermissions);

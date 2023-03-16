@@ -2,7 +2,8 @@
 import { Logger, SfdxError } from '@salesforce/core';
 import getDefaults from '@utils/getDefaults';
 import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
-import { Connection, DescribeMetadataResult, FileProperties } from 'jsforce';
+import { FileProperties, DescribeMetadataResult } from 'jsforce/lib/api/metadata';
+import { Connection } from 'jsforce';
 import { chunkArray } from '@utils/chunkArray';
 // import { ProgressBar } from '../../../ui/progressBar';
 import GetDefaults from '@utils/getDefaults';

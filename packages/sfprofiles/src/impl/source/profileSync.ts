@@ -4,7 +4,6 @@ import Profile from '@impl/metadata/schema';
 import * as _ from 'lodash';
 import ProfileActions, { ProfileStatus, ProfileSourceFile } from './profileActions';
 import ProfileWriter from '@impl/metadata/writer/profileWriter';
-// import { ProgressBar } from '../../../ui/progressBar';
 import MetadataRetriever from '@impl/metadata/retriever/metadataRetriever';
 import { registry } from '@salesforce/source-deploy-retrieve';
 import * as path from 'path';

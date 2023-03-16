@@ -1,4 +1,4 @@
-import { SfdxProject } from '@salesforce/core';
+import { SfProject } from '@salesforce/core';
 import { UX } from '@salesforce/command';
 import chalk from 'chalk';
 import * as fs from 'fs-extra';
@@ -64,8 +64,8 @@ export class Sfpowerkit {
     public static async getProjectDirectories() {
         if (!Sfpowerkit.projectDirectories) {
             Sfpowerkit.projectDirectories = [];
-            const dxProject = await SfdxProject.resolve();
-            const project = await dxProject.retrieveSfdxProjectJson();
+            const dxProject = await SfProject.resolve();
+            const project = await dxProject.retrieveSfProjectJson();
             const packages = (project.getPackageDirectoriesSync()) || [];
             packages.forEach((element) => {
                 Sfpowerkit.projectDirectories.push(element.path);
@@ -89,8 +89,8 @@ export class Sfpowerkit {
 
     public static async getConfig() {
         if (!Sfpowerkit.pluginConfig) {
-            const dxProject = await SfdxProject.resolve();
-            const project = await dxProject.retrieveSfdxProjectJson();
+            const dxProject = await SfProject.resolve();
+            const project = await dxProject.retrieveSfProjectJson();
             const plugins = project.get('plugins') || {};
             const sfpowerkitConfig = plugins['sfpowerkit'];
             Sfpowerkit.pluginConfig = sfpowerkitConfig || {};
@@ -103,8 +103,8 @@ export class Sfpowerkit {
 
     public static async getApiVersion(): Promise<any> {
         if (!Sfpowerkit.sourceApiVersion) {
-            const dxProject = await SfdxProject.resolve();
-            const project = await dxProject.retrieveSfdxProjectJson();
+            const dxProject = await SfProject.resolve();
+            const project = await dxProject.retrieveSfProjectJson();
             Sfpowerkit.sourceApiVersion = project.get('sourceApiVersion');
         }
         return Sfpowerkit.sourceApiVersion;

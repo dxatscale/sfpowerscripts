@@ -3,7 +3,7 @@ import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
 import * as path from 'path';
 import FileUtils from '@utils/fileutils';
 import { retrieveMetadata } from '@utils/retrieveMetadata';
-import { Connection, Org, SfdxProject } from '@salesforce/core';
+import { Connection, Org, SfProject } from '@salesforce/core';
 import ProfileRetriever from '@impl/metadata/retriever/profileRetriever';
 import { ComponentSet, MetadataResolver, registry, SourceComponent } from '@salesforce/source-deploy-retrieve';
 import { META_XML_SUFFIX } from '@salesforce/source-deploy-retrieve/lib/src/common';
@@ -117,7 +117,7 @@ export default abstract class ProfileActions {
 
         //If packageDirectories are not mentioned, fetch all package directories
         if (!packageDirectories || packageDirectories.length == 0) {
-            const project = await SfdxProject.resolve();
+            const project = await SfProject.resolve();
             packageDirectories = new Array<string>();
             for (const packageDirectory of project.getPackageDirectories()) {
                 packageDirectories.push(packageDirectory.path);
