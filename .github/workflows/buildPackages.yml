@@ -46,7 +46,6 @@ jobs:
 
       - name: 'Build  All  Packages'
         run: |
-          npx lerna version --conventional-commits --yes --no-changelog
           npx lerna run build
           npx lerna run manifest
 
