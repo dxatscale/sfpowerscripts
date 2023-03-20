@@ -17,7 +17,7 @@ export default class Build extends BuildBase {
         return Stage.BUILD;
     }
 
-    getBuildImplementer(): BuildImpl {
+    getBuildProps(): BuildProps {
         let buildProps: BuildProps = {
             configFilePath: this.flags.configfilepath,
             devhubAlias: this.flags.devhubalias,
@@ -31,11 +31,14 @@ export default class Build extends BuildBase {
             currentStage: Stage.BUILD,
             isBuildAllAsSourcePackages: false,
             diffOptions: {
-                useLatestGitTags:true,
-                skipPackageDescriptorChange:false
-            }
+                useLatestGitTags: true,
+                skipPackageDescriptorChange: false,
+            },
         };
+        return buildProps;
+    }
 
+    getBuildImplementer(buildProps: BuildProps): BuildImpl {
         let buildImpl = new BuildImpl(buildProps);
         return buildImpl;
     }
