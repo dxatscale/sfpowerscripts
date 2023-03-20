@@ -70,11 +70,11 @@ export default class Promote extends SfpowerscriptsCommand {
             description: messages.getMessage('gitTagFlagDescription'),
             default: false,
         }),
-        limit: flags.number({
-            description: messages.getMessage('limitFlagDescription'),
+        gittaglimit: flags.number({
+            description: messages.getMessage('gitTagLimitFlagDescription'),
         }),
-        daysToKeep: flags.number({
-            description: messages.getMessage('daysToKeepFlagDescription'),
+        gittagage: flags.number({
+            description: messages.getMessage('gitTagAgeFlagDescription'),
         }),
         pushgittag: flags.boolean({
             description: messages.getMessage('gitPushTagFlagDescription'),
@@ -233,11 +233,11 @@ export default class Promote extends SfpowerscriptsCommand {
 
 
             if (this.flags.daysToKeep && this.flags.limit) {
-                await this.deleteGitTagsOlderThan(this.flags.daysToKeep, this.flags.limit);
-            } else if (this.flags.daysToKeep) {
-                await this.deleteGitTagsOlderThan(succesfullyPublishedPackageNamesForTagging, this.flags.daysToKeep);
-            } else if (this.flags.limit) {
-                await this.deleteExcessGitTags(succesfullyPublishedPackageNamesForTagging, this.flags.limit);
+                await this.deleteGitTagsOlderThan(this.flags.gittagage, this.flags.gittaglimit);
+            } else if (this.flags.gittagage) {
+                await this.deleteGitTagsOlderThan(succesfullyPublishedPackageNamesForTagging, this.flags.gittagage);
+            } else if (this.flags.gittaglimit) {
+                await this.deleteExcessGitTags(succesfullyPublishedPackageNamesForTagging, this.flags.gittaglimit);
             }
 
 
