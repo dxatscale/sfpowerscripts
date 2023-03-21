@@ -28,7 +28,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
-        "compile": "tsc -b tsconfig.json",
+        "compile": "tsc -b tsconfig.json && tsc-alias -p tsconfig.json",
         "compile:dev": "tsc -p . --sourcemap",
         "clearCache": "jest --clearCache",
         "test": "FORCE_COLOR=true jest --silent --verbose true --coverage --detectOpenHandles",
@@ -56,7 +56,8 @@
         "jest": "27.5.1",
         "lodash": "^4.17.21",
         "ts-jest": "^27.1.4",
-        "ts-node": "9.1.1",
+        "ts-node": "^9.1.1",
+        "tsc-alias": "^1.8.3",
         "typescript": "^4.9.5"
     },
     "dependencies": {
@@ -64,7 +65,8 @@
         "@salesforce/command": "5.2.43",
         "@salesforce/core": "3.33.1",
         "@salesforce/source-deploy-retrieve": "^7.7.6",
-        "chalk": "^5.2.0",
+        "better-sqlite3": "^7.5.0",
+        "chalk": "^4.1.0",
         "diff-match-patch": "^1.0.5",
         "fs-extra": "^11.1.0",
         "jsforce": "^2.0.0-beta.20",
@@ -73,7 +75,6 @@
         "request-promise-native": "^1.0.9",
         "rimraf": "^4.1.2",
         "simple-git": "^3.16.0",
-        "ts-node": "9.1.1",
         "tslib": "2.1.0",
         "xml2js": "^0.4.23"
     }
