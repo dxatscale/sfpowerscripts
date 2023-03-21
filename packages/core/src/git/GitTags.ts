@@ -87,4 +87,46 @@ export default class GitTags {
 
         return packageVersionNumber;
     }
+
+
+    public async filteredOldTags(daysToKeep: number, limit: number): Promise<string[]> {
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+
+        let rawTags = await this.listTagsOnBranch();
+        const tags: string[] = await this.getTagsWithTimestamps(rawTags)
+
+        const filteredTags = tags
+          .slice(0, Math.abs(limit) * -1)
+          .map(tagStr => {
+            const [name, timestampStr] = tagStr.split(' ');
+            const timestamp = parseInt(timestampStr, 10);
+            return { name, timestamp };
+          })
+          .filter(tag => {
+            const daysSinceTag = (currentTimestamp - tag.timestamp) / 86400;
+            return tag.name && daysSinceTag > daysToKeep;
+          });
+
+        return filteredTags.map(tag => tag.name);
+    }
+
+
+
+    private async getTagsWithTimestamps(tags: string[]): Promise<string[]> {
+        const timestampPromises: Promise<number>[] = [];
+
+        // Create an array of promises that will get the tagger date for each tag
+        tags.forEach((tag: string) => {
+        timestampPromises.push(
+            this.git.log(['--format=%at', `refs/tags/${tag}`])
+            .then((output: string[]) => parseInt(output[0].trim(), 10))
+        );
+        });
+
+        // Wait for all promises to resolve and format the output
+        const timestamps: number[] = await Promise.all(timestampPromises);
+        const tagsWithTimestamp = tags.map((tag: string, index: number) => `${tag} ${timestamps[index]}`);
+        return tagsWithTimestamp
+    }
+
 }
