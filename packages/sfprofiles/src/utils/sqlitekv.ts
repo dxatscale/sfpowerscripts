@@ -2,7 +2,7 @@
 //Original Author Nick Vissari
 
 'use strict';
-const better_sqlite3 = require('better-sqlite3');
+import better_sqlite3 from 'better-sqlite3';
 
 export default class SQLITEKeyValue {
     private sqlite;
