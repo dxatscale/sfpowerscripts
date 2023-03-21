@@ -427,12 +427,13 @@ export default class Promote extends SfpowerscriptsCommand {
                 tagsToDelete.push(...tags);
               }));
 
-              SFPLogger.log(COLOR_KEY_MESSAGE('Removing the following Git tag(s):'));
-              for(let tag of tagsToDelete){
-                  SFPLogger.log(COLOR_KEY_MESSAGE(tag));
-              }
-              await this.git.deleteTags(tagsToDelete)
-
+              if (tagsToDelete.length > 0) {
+                SFPLogger.log(COLOR_KEY_MESSAGE('Removing the following Git tag(s):'));
+                for (let tag of tagsToDelete) {
+                    SFPLogger.log(COLOR_KEY_MESSAGE(tag));
+                }
+                await this.git.deleteTags(tagsToDelete);
+            }
         }
 
     //Deletes Git tags that are older than a specified number of days.
@@ -453,11 +454,14 @@ export default class Promote extends SfpowerscriptsCommand {
             tagsToDelete.push(...tags);
           }));
 
-        SFPLogger.log(COLOR_KEY_MESSAGE('Removing the following Git tag(s):'));
-        for(let tag of tagsToDelete){
-            SFPLogger.log(COLOR_KEY_MESSAGE(tag));
+          if (tagsToDelete.length > 0) {
+            SFPLogger.log(COLOR_KEY_MESSAGE('Removing the following Git tag(s):'));
+            for (let tag of tagsToDelete) {
+                SFPLogger.log(COLOR_KEY_MESSAGE(tag));
+            }
+            await this.git.deleteTags(tagsToDelete);
         }
-        await this.git.deleteTags(tagsToDelete)
+
     }
 
 
