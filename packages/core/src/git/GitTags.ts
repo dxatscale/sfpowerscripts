@@ -89,14 +89,35 @@ export default class GitTags {
     }
 
 
-    public async filteredOldTags(daysToKeep: number, limit: number): Promise<string[]> {
+    public async limitTags(limit: number): Promise<string[]>{
+        let rawTags = await this.listTagsOnBranch();
+
+        if (rawTags.length <= limit) {
+            return [];
+        }
+
+        const tags:string [] = rawTags.slice(0, Math.abs(limit) * -1);
+        return tags;
+    }
+
+
+    public async filteredOldTags(daysToKeep: number, limit?: number): Promise<string[]> {
         const currentTimestamp = Math.floor(Date.now() / 1000);
 
-        let rawTags = await this.listTagsOnBranch();
-        const tags: string[] = await this.getTagsWithTimestamps(rawTags)
+        let rawTags: string[];
+        if (limit) {
+            rawTags = await this.limitTags(limit);
+        } else {
+            rawTags = await this.listTagsOnBranch();
+        }
+
+        if (rawTags.length < 0) {
+            return [];
+        }
+
+        let tags: string[] = await this.getTagsWithTimestamps(rawTags);
 
         const filteredTags = tags
-          .slice(0, Math.abs(limit) * -1)
           .map(tagStr => {
             const [name, timestampStr] = tagStr.split(' ');
             const timestamp = parseInt(timestampStr, 10);
@@ -109,8 +130,6 @@ export default class GitTags {
 
         return filteredTags.map(tag => tag.name);
     }
-
-
 
     private async getTagsWithTimestamps(tags: string[]): Promise<string[]> {
         const timestampPromises: Promise<number>[] = [];
