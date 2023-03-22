@@ -231,8 +231,8 @@ export default class Promote extends SfpowerscriptsCommand {
             }
 
 
-            if (this.flags.daysToKeep && this.flags.limit) {
-                await this.deleteGitTagsOlderThan(this.flags.gittagage, this.flags.gittaglimit);
+            if (this.flags.gittagage && this.flags.gittaglimit) {
+                await this.deleteGitTagsOlderThan(succesfullyPublishedPackageNamesForTagging, this.flags.gittagage, this.flags.gittaglimit);
             } else if (this.flags.gittagage) {
                 await this.deleteGitTagsOlderThan(succesfullyPublishedPackageNamesForTagging, this.flags.gittagage);
             } else if (this.flags.gittaglimit) {
