@@ -445,7 +445,7 @@ export default class Promote extends SfpowerscriptsCommand {
         commitId: string;
     }[], daysToKeep: number
     , limit?: number) {
-        //const pkgs = ProjectConfig.getAllPackages(this.git.getRepositoryPath());
+       
         const tagsToDelete: string[] = [];
 
         await Promise.all(tags.map(async (tag) => {
