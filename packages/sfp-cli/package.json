@@ -19,7 +19,7 @@
         "@oclif/plugin-plugins": "^2.2.2",
         "@oclif/plugin-update": "^1.5.0",
         "@oclif/plugin-warn-if-update-available": "^1.7.0",
-        "@salesforce/core": "3.33.1",
+        "@salesforce/core": "3.34.1",
         "@salesforce/source-deploy-retrieve": "7.7.6",
         "@salesforce/source-tracking": "2.2.17",
         "adm-zip": "^0.5.9",
