@@ -95,7 +95,7 @@ export default class InstallUnlockedPackageCollection {
                 );
 
                 let packageFound = this.installedPackages.find((installedPackage) => {
-                    return installedPackage.subscriberPackageVersionId.substring(0,14) === packageVersionId.substring(0,14);
+                    return installedPackage.subscriberPackageVersionId.substring(0,15) === packageVersionId.substring(0,15);
                 });
 
                 if (packageFound) {
