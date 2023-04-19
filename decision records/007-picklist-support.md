@@ -1,7 +1,7 @@
-# Picklist Support
+# Upgrade Picklist while deploying unlocked
 
-* Status: New
-* Deciders:
+* Status:  Decided
+* Deciders: Azlam, Rody, Meng
 * Date: 07/03/2023
 
 
@@ -31,3 +31,8 @@ Option 2: Using API calls to update only the picklist values
 ### Issues/Challenges with the solution:
 - An option should be provided to allow user to turn off this feature
 - Only existing picklists are covered as new picklists will always be deployed
+
+
+Decision:
+
+Option 2 has been selected for implementation
