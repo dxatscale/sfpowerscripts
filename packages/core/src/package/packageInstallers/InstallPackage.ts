@@ -20,6 +20,7 @@ import { PostDeployersRegistry } from '../postDeployers/PostDeployersRegistry';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 import PackageComponentPrinter from '../../display/PackageComponentPrinter';
 import DeployErrorDisplayer from '../../display/DeployErrorDisplayer';
+import { PreDeployersRegistry } from '../preDeployer/PreDeployersRegistry';
 
 export class SfpPackageInstallationOptions {
     installationkey?: string;
@@ -230,6 +231,9 @@ export abstract class InstallPackage {
                 this.sfpPackage.packageDirectory
             );
         }
+
+        //run all the pre Deployers
+        await this.executePreDeployers();
     }
 
     abstract install();
@@ -341,6 +345,51 @@ export abstract class InstallPackage {
                 );
                 SFPLogger.log(
                     `Post Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())} skipped due to error`,
+                    LoggerLevel.INFO,
+                    this.logger
+                );
+            }
+        }
+    }
+
+    private async executePreDeployers() {
+        SFPLogger.log(`Executing Pre Deployers`, LoggerLevel.INFO, this.logger);
+
+        //Gather componentSet
+        let componentSet = ComponentSet.fromSource(
+            path.join(this.sfpPackage.projectDirectory, this.sfpPackage.packageDirectory)
+        );
+
+        for (const preDeployer of PreDeployersRegistry.getPreDeployers()) {
+            try {
+                if (await preDeployer.isEnabled(this.sfpPackage, this.connection, this.logger)) {
+                    SFPLogger.log(
+                        `Executing Pre Deployer ${COLOR_KEY_MESSAGE(preDeployer.getName())}`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
+
+                    await preDeployer.execute(
+                        componentSet,
+                        this.connection,
+                        this.logger
+                    );
+
+                } else {
+                    SFPLogger.log(
+                        `Pre Deployer ${COLOR_KEY_MESSAGE(preDeployer.getName())} skipped or not enabled`,
+                        LoggerLevel.INFO,
+                        this.logger
+                    );
+                }
+            } catch (error) {
+                SFPLogger.log(
+                    `Unable to process pre deploy for ${preDeployer.getName()} due to ${error.message}`,
+                    LoggerLevel.WARN,
+                    this.logger
+                );
+                SFPLogger.log(
+                    `Pre Deployer ${COLOR_KEY_MESSAGE(preDeployer.getName())} skipped due to error`,
                     LoggerLevel.INFO,
                     this.logger
                 );
