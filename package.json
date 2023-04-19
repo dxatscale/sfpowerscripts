@@ -1,9 +1,9 @@
 {
     "name": "sfpowerscripts",
     "private": true,
+    "license": "MIT",
     "scripts": {
-        "format": "npx prettier --write .",
-        "deps":" depcruise --exclude '(node_modules|tests|resources|coverage|lib|index.ts|.babel.config.js|jest.config.js)' --ts-pre-compilation-deps --output-type dot  packages | dot -T svg > dependencygraph.svg"
+        "format": "npx prettier --write ."
     },
     "devDependencies": {
         "@commitlint/cli": "^15.0.0",

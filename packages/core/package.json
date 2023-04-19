@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfpowerscripts.core",
-    "version": "33.16.2",
+    "version": "33.23.2",
     "description": "Core Module used by sfpowerscripts",
     "main": "lib/index",
     "types": "lib/index",
@@ -13,19 +13,20 @@
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
         "compile": "tsc -b tsconfig.json",
         "clearCache": "jest --clearCache",
-        "test": "FORCE_COLOR=true jest --silent --verbose true --coverage --detectOpenHandles",
-        "spec-test": "FORCE_COLOR=true jest -i tests/package/dependencies/TransitiveDependencyResolver.test.ts --verbose true --coverage --detectOpenHandles"
+        "test": "FORCE_COLOR=true jest --silent --verbose true --coverage --detectOpenHandles"
     },
     "engines": {
         "node": ">=14.0.0"
     },
     "dependencies": {
+        "@dxatscale/apexlink": "^0.1.1",
         "@dxatscale/sfdc-soup": "^18.2.6",
+        "@dxatscale/sfdx-process-wrapper": "0.1.0",
         "@dxatscale/sfp-logger": "1.2.0",
         "@newrelic/telemetry-sdk": "^0.6.0",
         "@salesforce/apex-node": "1.1.0",
         "@salesforce/command": "5.2.43",
-        "@salesforce/core": "3.33.1",
+        "@salesforce/core": "3.34.1",
         "@salesforce/packaging": "1.2.2",
         "@salesforce/source-deploy-retrieve": "7.7.6",
         "@salesforce/source-tracking": "2.2.17",

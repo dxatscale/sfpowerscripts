@@ -138,6 +138,15 @@ export default class ClientSourceTracking {
                         );
                     } else SFPLogger.log(`Encountered data package... skipping`, LoggerLevel.INFO, this.logger);
                 } catch (error) {
+                    if(error.message.includes)
+                    {
+                    SFPLogger.log(
+                        ` sfpowerscripts is unable to sync the package ${artifact.name}${EOL}, 
+                          as it not able to find the find equivalent git references`,
+                        LoggerLevel.ERROR,
+                        this.logger);
+                    }
+                    else    
                     SFPLogger.log(
                         `Unable to update local source tracking due to ${error.message}`,
                         LoggerLevel.INFO,
@@ -157,6 +166,17 @@ export default class ClientSourceTracking {
                 path.join(this.sfdxOrgIdDir, 'localSourceTracking')
             );
         } catch (error) {
+
+            if(error.message.includes(`reference is not a tree`))
+            {
+                SFPLogger.log(
+                    `sfpowerscripts is unable to sync this repository, 
+                     as it not able to find the matching git references${EOL}
+                     Are you sure this pool was created from the same repository?`,
+                    LoggerLevel.ERROR,
+                    this.logger);
+            }
+            else
             SFPLogger.log(
                 `Unable to update local source tracking due to ${error.message}`,
                 LoggerLevel.ERROR,

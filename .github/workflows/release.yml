@@ -14,7 +14,6 @@ name: 'Release'
 on:
    push:
     branches:
-      - develop
       - main
     paths-ignore:
       - 'docs/**'
@@ -67,7 +66,7 @@ jobs:
       environment: sfpowerscripts-alpha
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    needs: [ build-docker ]
+    needs: [ build ]
   
   alpha-docker:
     name: 'promote docker to alpha'
@@ -80,7 +79,7 @@ jobs:
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
-    needs: [ sfpowerscripts-alpha ]
+    needs: [ build-docker ]
 
 
   sfpowerscripts-beta:
@@ -92,7 +91,7 @@ jobs:
       environment: sfpowerscripts-beta
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    needs: [ build-docker ]
+    needs: [ build ]
   
   beta-docker:
     name: 'promote docker to beta'
@@ -105,7 +104,7 @@ jobs:
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
-    needs: [ sfpowerscripts-beta ]
+    needs: [ build-docker ]
  
 
 
@@ -118,7 +117,18 @@ jobs:
       environment: sfpowerscripts-prod
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
-    needs: [ build-docker ]
+    needs: [ build ]
+  
+  sfp-prod:
+    name: 'sfp prod'
+    uses: ./.github/workflows/promotePackage.yml
+    with:
+      version: 'latest'
+      pathToPackageJson: 'packages/sfp-cli/package.json'
+      environment: sfp-prod
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+    needs: [ build ]
 
   prod-docker:
     name: 'copy rc docker to prod'
@@ -130,6 +140,6 @@ jobs:
       token: ${{ secrets.DOCKER_SECRET }}
       signing_secret: ${{ secrets.SIGNING_SECRET }}
       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
-    needs: [ sfpowerscripts-prod ]
+    needs: [ build-docker ]
 
 

@@ -59,7 +59,7 @@ export default class FHTEnabler implements PostDeployer {
         });
         //Now query all the fields for this object where FHT is already enabled
         SFPLogger.log(
-            `Gathering fields which are already enabled wiith  trackHistor  target org....`,
+            `Gathering fields which are already enabled with trackHistory on target org....`,
             LoggerLevel.INFO,
             logger
         );
@@ -104,7 +104,7 @@ export default class FHTEnabler implements PostDeployer {
             }
 
             return { location: fetchedCustomFields.location, componentSet: fetchedCustomFields.components };
-        } else SFPLogger.log(`No fields are required to be updated,skipping update of  Field History Tracking `, LoggerLevel.INFO, logger);
+        } else SFPLogger.log(`No fields are required to be updated, skipping update of Field History Tracking`, LoggerLevel.INFO, logger);
     }
 
     public getName(): string {

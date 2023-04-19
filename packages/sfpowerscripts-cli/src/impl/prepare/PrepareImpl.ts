@@ -25,6 +25,9 @@ import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/disp
 import ReleaseDefinitionGenerator from '../release/ReleaseDefinitionGenerator';
 import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
+import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
+import ReleaseConfig from '../release/ReleaseConfig';
+import { COLOR_KEY_VALUE } from '@dxatscale/sfp-logger';
 
 const Table = require('cli-table');
 
@@ -40,6 +43,8 @@ export default class PrepareImpl {
         if (this.pool.succeedOnDeploymentErrors === undefined) this.pool.succeedOnDeploymentErrors = true;
 
         if (!this.pool.waitTime) this.pool.waitTime = 6;
+
+        if (!this.pool.maxRetryCount) this.pool.maxRetryCount = 2;
     }
 
     public async exec() {
@@ -67,7 +72,10 @@ export default class PrepareImpl {
             projectConfig = ProjectConfig.cleanupPackagesFromProjectDirectory(null, restrictedPackages);
         }
 
-        await this.getPackageArtifacts(restrictedPackages);
+        if (this.pool.installAll) {
+            await this.getPackageArtifacts(restrictedPackages);
+        }
+
         let checkpointPackages = this.getcheckPointPackages(new ConsoleLogger(), projectConfig);
 
         let externalPackageResolver = new ExternalPackage2DependencyResolver(
@@ -198,6 +206,9 @@ export default class PrepareImpl {
 
         let artifactFetcher: FetchAnArtifact;
         if (this.pool.fetchArtifacts) {
+            
+            let fetchArtifactsLogGroup = new GroupConsoleLogs(`Fetching Artifacts`); 
+            fetchArtifactsLogGroup.begin();
             artifactFetcher = new FetchArtifactSelector(
                 this.pool.fetchArtifacts.artifactFetchScript,
                 this.pool.fetchArtifacts.npm?.scope,
@@ -220,17 +231,21 @@ export default class PrepareImpl {
                     );
                 }
             }
+            fetchArtifactsLogGroup.end();
         } else {
+            let buildArtifactsLogGroup = new GroupConsoleLogs(`Building Artifacts`); 
+            buildArtifactsLogGroup.begin();
             //Build All Artifacts
-            console.log('\n');
-            console.log(
+            SFPLogger.log(`${EOL}`);
+            SFPLogger.log(
                 '-------------------------------------WARNING!!!!------------------------------------------------'
-            );
-            console.log('Building packages, as script to fetch artifacts was not provided');
-            console.log('This is not ideal, as the artifacts are  built from the current head of the provided branch');
-            console.log('Pools should be prepared with previously validated packages');
-            console.log(
-                '------------------------------------------------------------------------------------------------'
+            ,LoggerLevel.WARN);
+            SFPLogger.log('Building packages, as script to fetch artifacts was not provided',LoggerLevel.WARN);
+            SFPLogger.log('This is not ideal, as the artifacts are  built from the current head of the provided branch',LoggerLevel.WARN);
+            SFPLogger.log('Pools should be prepared with previously validated packages',LoggerLevel.WARN);
+            SFPLogger.log(
+                '------------------------------------------------------------------------------------------------',
+                LoggerLevel.WARN
             );
 
             let buildProps: BuildProps = {
@@ -241,11 +256,13 @@ export default class PrepareImpl {
                 isDiffCheckEnabled: false,
                 buildNumber: 1,
                 executorcount: 10,
-                isBuildAllAsSourcePackages: true,
+                isBuildAllAsSourcePackages: this.pool.disableSourcePackageOverride?false:true,
                 branch: null,
                 currentStage: Stage.PREPARE,
             };
 
+            buildProps = includeOnlyPackagesAsPerReleaseConfig(this.pool.releaseConfigFile, buildProps);
+            
             let buildImpl = new BuildImpl(buildProps);
             let { generatedPackages, failedPackages } = await buildImpl.exec();
 
@@ -256,6 +273,7 @@ export default class PrepareImpl {
                 await ArtifactGenerator.generateArtifact(generatedPackage, process.cwd(), 'artifacts');
                 this.artifactFetchedCount++;
             }
+            buildArtifactsLogGroup.end();
         }
 
         function isPkgToBeInstalled(pkg, restrictedPackages?: string[]): boolean {
@@ -269,6 +287,25 @@ export default class PrepareImpl {
 
             if (restrictedPackages) return restrictedPackages.includes(pkg.package);
             else return true;
+        }
+
+
+        function includeOnlyPackagesAsPerReleaseConfig(releaseConfigFilePath:string,buildProps: BuildProps,logger?:Logger): BuildProps {
+            if (releaseConfigFilePath) {
+            let releaseConfig:ReleaseConfig = new ReleaseConfig(logger, releaseConfigFilePath);
+             buildProps.includeOnlyPackages = releaseConfig.getPackagesAsPerReleaseConfig();
+             printIncludeOnlyPackages(buildProps.includeOnlyPackages);
+            }
+            return buildProps;
+    
+    
+            function printIncludeOnlyPackages(includeOnlyPackages: string[]) {
+                SFPLogger.log(
+                    COLOR_KEY_MESSAGE(`Build will include the below packages as per inclusive filter`),
+                    LoggerLevel.INFO
+                );
+                SFPLogger.log(COLOR_KEY_VALUE(`${includeOnlyPackages.toString()}`), LoggerLevel.INFO);
+            }
         }
     }
 }

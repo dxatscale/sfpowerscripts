@@ -22,6 +22,7 @@ export interface PoolConfig {
             scope: string;
         };
     };
+    disableSourcePackageOverride?:boolean;
     snapshotPool?:string;
     postDeploymentScriptPath: string;
     preDependencyInstallationScriptPath: string;
@@ -33,6 +34,7 @@ export interface PoolConfig {
     to_satisfy_max?: number;
     scratchOrgs?: ScratchOrg[];
     failedToCreate?: number;
+    maxRetryCount?:number;
 
 
 }

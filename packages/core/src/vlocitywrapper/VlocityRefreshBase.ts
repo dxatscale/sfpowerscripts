@@ -1,5 +1,5 @@
 import path from 'path';
-import { SFDXCommand } from '../command/SFDXCommand';
+import { SFDXCommand } from '@dxatscale/sfdx-process-wrapper/lib/SFDXCommand';
 import { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 
 export default class VlocityRefreshBase extends SFDXCommand {

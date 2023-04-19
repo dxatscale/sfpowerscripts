@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>AccountNumber2__c</fullName>
+    <description>Account number</description>
+    <externalId>false</externalId>
+    <inlineHelpText>The account number 2</inlineHelpText>
+    <label>Account Number2</label>
+    <length>225</length>
+    <required>false</required>
+    <trackHistory>true</trackFeedHistory>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

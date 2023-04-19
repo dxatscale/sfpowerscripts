@@ -17,10 +17,11 @@ import { EOL } from 'os';
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import ScratchOrgOperator from '../ScratchOrgOperator';
 import PoolFetchImpl from './PoolFetchImpl';
-import { values } from 'lodash';
 import { COLOR_SUCCESS } from '@dxatscale/sfp-logger';
 import { COLOR_ERROR } from '@dxatscale/sfp-logger';
 import getFormattedTime from '../../utils/GetFormattedTime';
+import OrphanedOrgsDeleteImpl from './OrphanedOrgsDeleteImpl';
+import path from 'path';
 
 export default class PoolCreateImpl extends PoolBaseImpl {
     private limiter;
@@ -49,7 +50,8 @@ export default class PoolCreateImpl extends PoolBaseImpl {
     protected async onExec(): Promise<Result<PoolConfig, PoolError>> {
         await this.hubOrg.refreshAuth();
 
-        let scriptExecPromises: Array<Promise<ScriptExecutionResult>> = [];
+        const scriptExecPromises: Array<Promise<ScriptExecutionResult>> = [];
+
 
         //fetch current status limits
         this.limits = await new ScratchOrgLimitsFetcher(this.hubOrg).getScratchOrgLimits();
@@ -66,53 +68,75 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         fs.mkdirpSync('script_exec_outputs');
 
         //Compute allocation
-        if (!this.pool.snapshotPool) {
-            SFPLogger.log(COLOR_KEY_MESSAGE('Computing Allocation..'), LoggerLevel.INFO);
-            try {
-                this.totalToBeAllocated = await this.computeAllocation();
-            } catch (error) {
-                return err({
-                    success: 0,
-                    failed: 0,
-                    message: `Unable to access fields on ScratchOrgInfo, Please check the profile being used`,
-                    errorCode: PoolErrorCodes.PrerequisiteMissing,
-                });
-            }
-
-            if (this.totalToBeAllocated === 0) {
-                if (this.limits.ActiveScratchOrgs.Remaining > 0) {
+        try {
+            if (!this.pool.snapshotPool) {
+                SFPLogger.log(COLOR_KEY_MESSAGE('Computing Allocation..'), LoggerLevel.INFO);
+                try {
+                    this.totalToBeAllocated = await this.computeAllocation();
+                } catch (error) {
                     return err({
                         success: 0,
                         failed: 0,
-                        message: `The tag provided ${this.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`,
-                        errorCode: PoolErrorCodes.Max_Capacity,
-                    });
-                } else {
-                    return err({
-                        success: 0,
-                        failed: 0,
-                        message: `There is no capacity to create a pool at this time, Please try again later`,
-                        errorCode: PoolErrorCodes.No_Capacity,
+                        message: `Unable to access fields on ScratchOrgInfo, Please check the profile being used`,
+                        errorCode: PoolErrorCodes.PrerequisiteMissing,
                     });
                 }
-            }
 
-            //Generate Scratch Orgs
-            await this.generateScratchOrgs();
-        } else {
-            await this.fetchScratchOrgsFromSnapshotPool();
+                if (this.totalToBeAllocated === 0) {
+                    if (this.limits.ActiveScratchOrgs.Remaining > 0) {
+                        return err({
+                            success: 0,
+                            failed: 0,
+                            message: `The tag provided ${this.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`,
+                            errorCode: PoolErrorCodes.Max_Capacity,
+                        });
+                    } else {
+                        return err({
+                            success: 0,
+                            failed: 0,
+                            message: `There is no capacity to create a pool at this time, Please try again later`,
+                            errorCode: PoolErrorCodes.No_Capacity,
+                        });
+                    }
+                }
+
+                //Generate Scratch Orgs
+                this.pool.scratchOrgs = await this.generateScratchOrgs(
+                    this.pool,
+                    this.scratchOrgOperator,
+                    this.scratchOrgInfoAssigner
+                );
+            } else {
+                this.pool.scratchOrgs = await this.fetchScratchOrgsFromSnapshotPool(
+                    this.pool,
+                    this.scratchOrgInfoFetcher,
+                    this.scratchOrgInfoAssigner
+                );
+            }
+        } catch (error) {
+            return err({
+                success: 0,
+                failed: this.pool.failedToCreate,
+                message: `All requested scratch orgs failed to provision, Please check your code or config \n Failed with ${error.message}`,
+                errorCode: PoolErrorCodes.UnableToProvisionAny,
+            });
         }
+
         // Assign workers to executed scripts
-        for (let scratchOrg of this.pool.scratchOrgs) {
-            let result = this.scriptExecutorWrappedForBottleneck(scratchOrg, this.hubOrg.getUsername());
+        for (const scratchOrg of this.pool.scratchOrgs) {
+            const result = this.scriptExecutorWrappedForBottleneck(scratchOrg, this.hubOrg.getUsername());
             scriptExecPromises.push(result);
         }
 
         await Promise.all(scriptExecPromises);
 
-        await this.finalizeGeneratedScratchOrgs();
+        this.pool = await this.finalizeGeneratedScratchOrgs(
+            this.pool,
+            this.scratchOrgOperator,
+            this.scratchOrgInfoFetcher
+        );
 
-        if (this.pool.scratchOrgs.length == 0) {
+        if (!this.pool.scratchOrgs || this.pool.scratchOrgs.length == 0) {
             return err({
                 success: 0,
                 failed: this.pool.failedToCreate,
@@ -121,11 +145,13 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             });
         }
         return ok(this.pool);
+
+      
     }
 
     private async computeAllocation(): Promise<number> {
         //Compute current pool requirement
-        let activeCount = await this.scratchOrgInfoFetcher.getCountOfActiveScratchOrgsByTag(this.pool.tag);
+        const activeCount = await this.scratchOrgInfoFetcher.getCountOfActiveScratchOrgsByTag(this.pool.tag);
         return this.allocateScratchOrgsPerTag(this.limits.ActiveScratchOrgs.Remaining, activeCount, this.pool);
     }
 
@@ -154,76 +180,82 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         return pool.to_allocate;
     }
 
-    private async generateScratchOrgs() {
+    private async generateScratchOrgs(
+        pool: PoolConfig,
+        scratchOrgOperator: ScratchOrgOperator,
+        scratchOrgInfoAssigner: ScratchOrgInfoAssigner
+    ) {
         //Generate Scratch Orgs
         SFPLogger.log(COLOR_KEY_MESSAGE('Generate Scratch Orgs..'), LoggerLevel.INFO);
 
-        let scratchOrgPromises = new Array<Promise<ScratchOrg>>();
+        const scratchOrgPromises = new Array<Promise<ScratchOrg>>();
 
         const scratchOrgCreationLimiter = new Bottleneck({
-            maxConcurrent: this.pool.batchSize,
+            maxConcurrent: pool.batchSize,
         });
 
-        let startTime = Date.now();
-        for (let i = 1; i <= this.pool.to_allocate; i++) {
-            let scratchOrgPromise: Promise<ScratchOrg> = scratchOrgCreationLimiter.schedule(() =>
-                this.scratchOrgOperator.create(`SO` + i, this.pool.configFilePath, this.pool.expiry, this.pool.waitTime)
+        addDescriptionToScratchOrg(pool);
+
+        const startTime = Date.now();
+        for (let i = 1; i <= pool.to_allocate; i++) {
+            const scratchOrgPromise: Promise<ScratchOrg> = scratchOrgCreationLimiter.schedule(() =>
+                scratchOrgOperator.create(`SO` + i, this.pool.configFilePath, this.pool.expiry, this.pool.waitTime)
             );
             scratchOrgPromises.push(scratchOrgPromise);
         }
 
         SFPLogger.log(`Waiting for all scratch org request to complete, Please wait`);
         //Wait for all orgs to be created
-        let scratchOrgCreationResults = await Promise.allSettled(scratchOrgPromises);
+        const scratchOrgCreationResults = await Promise.allSettled(scratchOrgPromises);
         //Only worry about scrath orgs that have suceeded
         const isFulfilled = <T>(p: PromiseSettledResult<T>): p is PromiseFulfilledResult<T> => p.status === 'fulfilled';
         const isRejected = <T>(p: PromiseSettledResult<T>): p is PromiseRejectedResult => p.status === 'rejected';
 
-        this.pool.scratchOrgs = scratchOrgCreationResults.filter(isFulfilled).map((p) => p.value);
+        let scratchOrgs = scratchOrgCreationResults.filter(isFulfilled).map((p) => p.value);
         const rejectedScratchOrgs = scratchOrgCreationResults.filter(isRejected).map((p) => p.reason);
         for (const reason of rejectedScratchOrgs) {
             if (reason.message.includes(`The client has timed out`)) {
-                 //Display how many we were able to create
-               let elapsedTime = Date.now() - startTime;
+                //Log how many we were able to create
+                const elapsedTime = Date.now() - startTime;
                 SFPLogger.log(
-                    `A scratch org creation was rejected due to saleforce not responding within the set wait time of ${this.pool.waitTime} mins \n` +
-                     `Time elasped so far ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))},You might need to inrease the wait time further and rety `
+                    `A scratch org creation was rejected due to saleforce not responding within the set wait time of ${pool.waitTime} mins \n` +
+                        `Time elasped so far ${COLOR_KEY_MESSAGE(
+                            getFormattedTime(elapsedTime)
+                        )},You might need to inrease the wait time further and rety `
                 );
             } else SFPLogger.log(`A scratch org creation was rejected due to ${reason.message}`);
         }
 
-        //Display how many we were able to create
-        let elapsedTime = Date.now() - startTime;
+        //Log how many we were able to create
+        const elapsedTime = Date.now() - startTime;
         SFPLogger.log(
-            `Created ${COLOR_SUCCESS(this.pool.scratchOrgs.length)} of ${
-                this.totalToBeAllocated
-            } successfully with ${COLOR_ERROR(rejectedScratchOrgs.length)} failures in ${COLOR_KEY_MESSAGE(
-                getFormattedTime(elapsedTime)
-            )}`
+            `Created ${COLOR_SUCCESS(scratchOrgs.length)} of ${pool.to_allocate} successfully with ${COLOR_ERROR(
+                rejectedScratchOrgs.length
+            )} failures in ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`
         );
 
-        SFPStatsSender.logElapsedTime(`pool.scratchorg.creation.time`,elapsedTime,{pool:this.pool.tag})
-        //Splice scratchorgs that are having incorrect status of deleted , Why salesforce why??
-        let index = this.pool.scratchOrgs.length;
-        while (index--) {
-            try {
-                let orgDetails = await new OrgDetailsFetcher(this.pool.scratchOrgs[index].username).getOrgDetails();
-                if (orgDetails.status === 'Deleted') {
-                    throw new Error(
-                        `Throwing away scratch org ${this.pool.scratchOrgs[index].alias} as it has a status of deleted`
-                    );
+        SFPStatsSender.logElapsedTime(`pool.scratchorg.creation.time`, elapsedTime, { pool: pool.tag });
+        if (scratchOrgs && scratchOrgs.length > 0) {
+            //Splice scratchorgs that are having incorrect status of deleted , Why salesforce why??
+            let index = scratchOrgs.length;
+            while (index--) {
+                try {
+                    const orgDetails = await new OrgDetailsFetcher(scratchOrgs[index].username).getOrgDetails();
+                    if (orgDetails.status === 'Deleted') {
+                        throw new Error(
+                            `Throwing away scratch org ${this.pool.scratchOrgs[index].alias} as it has a status of deleted`
+                        );
+                    }
+                } catch (error) {
+                    scratchOrgs.splice(index, 1);
                 }
-            } catch (error) {
-                this.pool.scratchOrgs.splice(index, 1);
             }
-        }
 
-        this.pool.scratchOrgs = await this.scratchOrgInfoFetcher.getScratchOrgRecordId(this.pool.scratchOrgs);
+            scratchOrgs = await this.scratchOrgInfoFetcher.getScratchOrgRecordId(scratchOrgs);
 
-        let scratchOrgInprogress = [];
+            const scratchOrgInprogress = [];
 
-        if (this.pool.scratchOrgs) {
-            this.pool.scratchOrgs.forEach((scratchOrg) => {
+            scratchOrgs.forEach((scratchOrg) => {
                 scratchOrgInprogress.push({
                     Id: scratchOrg.recordId,
                     Pooltag__c: this.pool.tag,
@@ -235,19 +267,61 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
             if (scratchOrgInprogress.length > 0) {
                 //set pool tag
-                await this.scratchOrgInfoAssigner.setScratchOrgInfo(scratchOrgInprogress);
+                await scratchOrgInfoAssigner.setScratchOrgInfo(scratchOrgInprogress);
             }
+            return scratchOrgs;
+        } else throw new Error(`No scratch orgs were sucesfully generated`);
+
+        function addDescriptionToScratchOrg(pool: PoolConfig) {
+
+            const configClonePath = path.join('.sfpowerscripts','scratchorg-configs',`${ makeFileId(8)}.json`);
+            fs.mkdirpSync('.sfpowerscripts/scratchorg-configs');
+            fs.copyFileSync(pool.configFilePath,configClonePath);
+
+            const scratchOrgDefn = fs.readJSONSync(configClonePath);
+            if (!scratchOrgDefn.description)
+                scratchOrgDefn.description = JSON.stringify({
+                    requestedBy: 'sfpowerscripts',
+                    pool: pool.tag,
+                    requestedAt: new Date().toISOString(),
+                });
+            else
+                scratchOrgDefn.description = scratchOrgDefn.description.concat(
+                    ' ',
+                    JSON.stringify({
+                        requestedBy: 'sfpowerscripts',
+                        pool: pool.tag,
+                        requestedAt: new Date().toISOString(),
+                    })
+                );
+            fs.writeJSONSync(configClonePath, scratchOrgDefn, { spaces: 4 });
+            pool.configFilePath = configClonePath;
+        }
+
+        function makeFileId(length): string {
+            let result = '';
+            const characters =
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const charactersLength = characters.length;
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return result;
         }
     }
 
-    private async fetchScratchOrgsFromSnapshotPool() {
+    private async fetchScratchOrgsFromSnapshotPool(
+        pool: PoolConfig,
+        scratchOrgInfoFetcher: ScratchOrgInfoFetcher,
+        scratchOrgInfoAssigner: ScratchOrgInfoAssigner
+    ) {
         //Generate Scratch Orgs
         SFPLogger.log(
             COLOR_KEY_MESSAGE(`Fetching Scratch Orgs from snapshot pool ${this.pool.snapshotPool}`),
             LoggerLevel.INFO
         );
 
-        this.pool.scratchOrgs = (await new PoolFetchImpl(
+        let scratchOrgs = (await new PoolFetchImpl(
             this.hubOrg,
             this.pool.snapshotPool,
             false,
@@ -258,12 +332,12 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             true,
             this.pool.maxAllocation
         ).execute()) as ScratchOrg[];
-        this.pool.scratchOrgs = await this.scratchOrgInfoFetcher.getScratchOrgRecordId(this.pool.scratchOrgs);
+        scratchOrgs = await scratchOrgInfoFetcher.getScratchOrgRecordId(scratchOrgs);
 
-        let scratchOrgInprogress = [];
+        const scratchOrgInprogress = [];
 
-        if (this.pool.scratchOrgs) {
-            this.pool.scratchOrgs.forEach((scratchOrg) => {
+        if (scratchOrgs && scratchOrgs.length > 0) {
+            scratchOrgs.forEach((scratchOrg) => {
                 scratchOrgInprogress.push({
                     Id: scratchOrg.recordId,
                     Pooltag__c: this.pool.tag,
@@ -275,15 +349,22 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
             if (scratchOrgInprogress.length > 0) {
                 //set pool tag
-                await this.scratchOrgInfoAssigner.setScratchOrgInfo(scratchOrgInprogress);
+                await scratchOrgInfoAssigner.setScratchOrgInfo(scratchOrgInprogress);
             }
+            return scratchOrgs;
+        } else {
+            throw new Error('No scratch orgs were found to be fetched');
         }
     }
 
-    private async finalizeGeneratedScratchOrgs() {
-        this.pool.failedToCreate = 0;
-        for (let i = this.pool.scratchOrgs.length - 1; i >= 0; i--) {
-            let scratchOrg = this.pool.scratchOrgs[i];
+    private async finalizeGeneratedScratchOrgs(
+        pool: PoolConfig,
+        scratchOrgOperator: ScratchOrgOperator,
+        scratchOrgInfoFetcher: ScratchOrgInfoFetcher
+    ) {
+        pool.failedToCreate = 0;
+        for (let i = pool.scratchOrgs.length - 1; i >= 0; i--) {
+            const scratchOrg = pool.scratchOrgs[i];
             if (scratchOrg.isScriptExecuted) {
                 continue;
             }
@@ -296,11 +377,11 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             try {
                 //Delete scratchorgs that failed to execute script
 
-                let activeScratchOrgRecordId = await this.scratchOrgInfoFetcher.getActiveScratchOrgRecordIdGivenScratchOrg(
+                const activeScratchOrgRecordId = await scratchOrgInfoFetcher.getActiveScratchOrgRecordIdGivenScratchOrg(
                     scratchOrg.orgId
                 );
 
-                await this.scratchOrgOperator.delete([activeScratchOrgRecordId]);
+                await scratchOrgOperator.delete([activeScratchOrgRecordId]);
                 console.log(`Succesfully deleted scratchorg ${scratchOrg.username}`);
             } catch (error) {
                 SFPLogger.log(
@@ -309,9 +390,10 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 );
             }
 
-            this.pool.failedToCreate += 1;
-            this.pool.scratchOrgs.splice(i, 1);
+            pool.failedToCreate += 1;
+            pool.scratchOrgs.splice(i, 1);
         }
+        return pool;
     }
 
     private async scriptExecutor(scratchOrg: ScratchOrg): Promise<ScratchOrg> {
@@ -320,12 +402,12 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             LoggerLevel.INFO
         );
 
-        let startTime = Date.now();
-        let result = await this.poolScriptExecutor.execute(scratchOrg, this.hubOrg, this.logLevel);
+        const startTime = Date.now();
+        const result = await this.poolScriptExecutor.execute(scratchOrg, this.hubOrg, this.logLevel);
 
         if (result.isOk()) {
             scratchOrg.isScriptExecuted = true;
-            let submitInfoToPool = await this.scratchOrgInfoAssigner.setScratchOrgInfo({
+            const submitInfoToPool = await this.scratchOrgInfoAssigner.setScratchOrgInfo({
                 Id: scratchOrg.recordId,
                 Allocation_status__c: 'Available',
             });

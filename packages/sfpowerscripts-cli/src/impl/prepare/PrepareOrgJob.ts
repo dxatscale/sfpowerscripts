@@ -109,6 +109,12 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
                 deploymentMode = DeploymentMode.SOURCEPACKAGES;
             }
 
+
+            if(this.pool.disableSourcePackageOverride)
+            {
+                deploymentMode = DeploymentMode.NORMAL
+            }
+
             deploymentResult = await this.invokeDeployImpl(scratchOrg, hubOrg, logger, deploymentMode);
 
             SFPStatsSender.logGauge('prepare.packages.scheduled', deploymentResult.scheduled, {
@@ -163,15 +169,15 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         logger: FileLogger,
         deploymentMode: DeploymentMode
     ) {
-        SFPLogger.log(`Deploying packages in the repo to ${scratchOrg.alias}`);
-        SFPLogger.log(`Deploying packages in the repo to ${scratchOrg.alias}`, LoggerLevel.INFO, logger);
+        SFPLogger.log(`Deploying packages to ${scratchOrg.alias}`);
+        SFPLogger.log(`Deploying packages to ${scratchOrg.alias}`, LoggerLevel.INFO, logger);
 
         let deployProps: DeployProps = {
             targetUsername: scratchOrg.username,
             artifactDir: 'artifacts',
             waitTime: 120,
             currentStage: Stage.PREPARE,
-            packageLogger: logger,
+            logger: logger,
             isTestsToBeTriggered: false,
             skipIfPackageInstalled: true,
             deploymentMode: deploymentMode,
@@ -191,6 +197,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
     async preDeployPackage(
         sfpPackage: SfpPackage,
         targetUsername: string,
+        deployedPackages?:SfpPackage[],
         devhubUserName?: string,
         logger?: Logger
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
@@ -237,7 +244,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
             keys
         );
         let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions(
-            sfpPackage?.packageName
+            [sfpPackage?.packageName]
         );
 
         if (sfpPackage) {
@@ -394,7 +401,7 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
     public async postInstallScript(scratchOrg: ScratchOrg, hubOrg: Org, logger: Logger, deploymentStatus: string) {
         if (fs.existsSync(this.pool.postDeploymentScriptPath)) {
             SFPLogger.log(
-                `Executing pre script for ` + scratchOrg.alias + ', script path:' + this.pool.postDeploymentScriptPath,
+                `Executing post script for ` + scratchOrg.alias + ', script path:' + this.pool.postDeploymentScriptPath,
                 LoggerLevel.INFO
             );
             await ScriptExecutor.executeScript(

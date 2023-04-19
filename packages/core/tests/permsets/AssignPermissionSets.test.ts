@@ -1,5 +1,5 @@
 import child_process = require('child_process');
-import AssignPermissionSets from '../../src/permsets/AssignPermissionSets';
+import AssignPermissionSetsImpl from '../../src/permsets/AssignPermissionSetsImpl';
 import { jest, expect } from '@jest/globals';
 import { VoidLogger } from '@dxatscale/sfp-logger';
 import { AuthInfo, Connection } from '@salesforce/core';
@@ -70,7 +70,7 @@ describe('Given a set of permsets, assign it to the user who is deploying the pa
             authInfo: await AuthInfo.create({ username: testData.username }),
         });
 
-        let assignPermSetImpl: AssignPermissionSets = new AssignPermissionSets(
+        let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
             connection,
             ['test1', 'test2'],
             null,
@@ -115,7 +115,7 @@ describe('Given a set of permsets, assign it to the user who is deploying the pa
             authInfo: await AuthInfo.create({ username: testData.username }),
         });
 
-        let assignPermSetImpl: AssignPermissionSets = new AssignPermissionSets(
+        let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
             connection,
             ['test1', 'test2'],
             null,
@@ -160,7 +160,7 @@ describe('Given a set of permsets, assign it to the user who is deploying the pa
             authInfo: await AuthInfo.create({ username: testData.username }),
         });
 
-        let assignPermSetImpl: AssignPermissionSets = new AssignPermissionSets(
+        let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
             connection,
             ['test1', 'test2'],
             null,

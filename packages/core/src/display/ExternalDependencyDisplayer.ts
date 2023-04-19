@@ -19,11 +19,11 @@ export default class ExternalDependencyDisplayer {
                     i++,
                     externalPackage.name,
                     externalPackage.versionNumber ? externalPackage.versionNumber : 'N/A',
-                    externalPackage.subscriberPackageVersionId,
+                    externalPackage.subscriberPackageVersionId ?  externalPackage.subscriberPackageVersionId:'N/A, Could be  part of current operation',
                 ]);
             }
             SFPLogger.log(EOL, LoggerLevel.INFO, this.logger);
-            SFPLogger.log(COLOR_KEY_MESSAGE(`Resolved Package Dependencies`), LoggerLevel.INFO, this.logger);
+            SFPLogger.log(COLOR_KEY_MESSAGE(`Resolved external package dependencies:`), LoggerLevel.INFO, this.logger);
             SFPLogger.log(table.toString(), LoggerLevel.INFO, this.logger);
         }
     }

@@ -4,7 +4,6 @@ import _ from 'lodash';
 import Package2VersionFetcher from '../version/Package2VersionFetcher';
 import Package2Detail from '../Package2Detail';
 
-
 /**
  * Resolves external package dependency versions to their subscriber version
  */
@@ -12,16 +11,20 @@ export default class ExternalPackage2DependencyResolver {
     //TOOD: Finalize Keys
     constructor(private conn: Connection, private projectConfig, private keys) {}
 
-    public async resolveExternalPackage2DependenciesToVersions(pkg?:string): Promise<Package2Detail[]> {
-
+    public async resolveExternalPackage2DependenciesToVersions(
+        packagesToBeResolved?: string[],
+        packagesToBeSkipped?: string[],
+        isDependencyValidated?: boolean
+    ): Promise<Package2Detail[]> {
+        if (isDependencyValidated == undefined) isDependencyValidated = true;
         //Do a dependency resolution first only for external dependencies
         //Resolve .LATEST to exact version numbers
         let revisedProjectConfig = await new PackageDependencyResolver(
             this.conn,
             this.projectConfig,
+            packagesToBeSkipped,
             null,
-            pkg?[pkg]:null,
-            true
+            isDependencyValidated
         ).resolvePackageDependencyVersions();
 
         let packageVersions: Package2Detail[] = [];
@@ -33,29 +36,38 @@ export default class ExternalPackage2DependencyResolver {
         }
 
         //Resolve provided version Number to SubscriberVersionId
-        for (const packageDirectory of revisedProjectConfig.packageDirectories) {
-
-            if(pkg && packageDirectory.package!=pkg)
+        for (const sfdxPackage of revisedProjectConfig.packageDirectories) {
+           
+            if(packagesToBeResolved && !packagesToBeResolved.includes(sfdxPackage.package))
               continue;
 
-            if (packageDirectory.dependencies && Array.isArray(packageDirectory.dependencies)) {
-                for (let i = 0; i < packageDirectory.dependencies.length; i++) {
-                    let dependency = packageDirectory.dependencies[i];
+            if (sfdxPackage.dependencies && Array.isArray(sfdxPackage.dependencies)) {
+                for (let i = 0; i < sfdxPackage.dependencies.length; i++) {
+                    let dependency = sfdxPackage.dependencies[i];
+
+                    if (packagesToBeSkipped && packagesToBeSkipped.includes(dependency.package)) 
+                    {
+                        let dependendentPackage: Package2Detail = { name: dependency.package };
+                        packageVersions.push(dependendentPackage);
+                        continue;
+                    }
+
                     if (!packageVersions.find((elem) => elem.name == dependency.package)) {
                         let dependendentPackage: Package2Detail = { name: dependency.package };
                         if (dependency.versionNumber) {
-                            dependendentPackage.versionNumber=dependency.versionNumber;
+                            dependendentPackage.versionNumber = dependency.versionNumber;
                             let packageVersion = await packageVersionFetcher.fetchByPackage2Id(
                                 revisedProjectConfig.packageAliases[dependendentPackage.name],
                                 dependendentPackage.versionNumber,
                                 true
                             );
-                            dependendentPackage.subscriberPackageVersionId=
+                            dependendentPackage.subscriberPackageVersionId =
                                 packageVersion[0].SubscriberPackageVersionId;
                         } else {
-                            dependendentPackage.subscriberPackageVersionId = revisedProjectConfig.packageAliases[dependendentPackage.name];
+                            dependendentPackage.subscriberPackageVersionId =
+                                revisedProjectConfig.packageAliases[dependendentPackage.name];
                         }
-                        if(packagesToKeys?.[dependendentPackage.name]){
+                        if (packagesToKeys?.[dependendentPackage.name]) {
                             dependendentPackage.key = packagesToKeys[dependency.package];
                         }
                         packageVersions.push(dependendentPackage);
@@ -66,13 +78,12 @@ export default class ExternalPackage2DependencyResolver {
         return packageVersions;
     }
 
-
     /**
      * Parse keys in string format "packageA:key packageB:key packageC:key"
      * Returns map of packages to keys
      * @param keys
      */
-     private parseKeys(keys: string) {
+    private parseKeys(keys: string) {
         let output: { [p: string]: string } = {};
 
         keys = keys.trim();
@@ -90,4 +101,3 @@ export default class ExternalPackage2DependencyResolver {
         return output;
     }
 }
-
