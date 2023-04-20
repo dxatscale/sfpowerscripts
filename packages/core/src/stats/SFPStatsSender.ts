@@ -5,6 +5,7 @@ import { NativeMetricSender } from './NativeMetricSender';
 import { DataDogMetricsSender } from './nativeMetricSenderImpl/DataDogMetricSender';
 import { Logger } from '@dxatscale/sfp-logger';
 import { NewRelicMetricSender } from './nativeMetricSenderImpl/NewRelicMetricSender';
+import { SplunkMetricSender } from './nativeMetricSenderImpl/SplunkMetricSender';
 
 export default class SFPStatsSender {
     private static client: StatsD;
@@ -30,6 +31,11 @@ export default class SFPStatsSender {
 
             case 'NewRelic':
                 this.nativeMetricsSender = new NewRelicMetricSender(logger);
+                this.nativeMetricsSender.initialize(apiHost, apiKey);
+                break;
+                
+            case 'Splunk':
+                this.nativeMetricsSender = new SplunkMetricSender(logger);
                 this.nativeMetricsSender.initialize(apiHost, apiKey);
                 break;
 

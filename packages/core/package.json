@@ -48,6 +48,7 @@
         "rimraf": "^3.0.2",
         "semver": "7.3.7",
         "simple-git": "3.16.0",
+        "splunk-logging": "^0.11.1",
         "tar": "^6.1.9",
         "tmp": "^0.2.1"
     },
@@ -60,6 +61,7 @@
         "@types/datadog-metrics": "^0.6.1",
         "@types/jest": "^27.5.0",
         "@types/mocha": "9.1.0",
+        "@types/splunk-logging": "^0.11.1",
         "babel-jest": "27.5.1",
         "jest": "27.5.1",
         "ts-jest": "^27.1.4",
