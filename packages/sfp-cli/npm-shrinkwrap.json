@@ -1,17 +1,17 @@
 {
     "name": "@dxatscale/sfp-cli",
-    "version": "5.0.0",
+    "version": "5.0.1",
     "lockfileVersion": 2,
     "requires": true,
     "packages": {
         "": {
             "name": "@dxatscale/sfp-cli",
-            "version": "5.0.0",
+            "version": "5.0.1",
             "license": "MIT",
             "dependencies": {
                 "@dxatscale/sfdx-process-wrapper": "0.1.0",
                 "@dxatscale/sfp-logger": "1.2.0",
-                "@dxatscale/sfpowerscripts.core": "33.23.2",
+                "@dxatscale/sfpowerscripts.core": "33.23.3",
                 "@oclif/command": "^1.8.0",
                 "@oclif/config": "1.18.3",
                 "@oclif/parser": "^3.8.5",
@@ -14397,8 +14397,7 @@
             }
         },
         "@dxatscale/sfpowerscripts.core": {
-            "version": "33.23.2",
-            "resolved": "https://registry.npmjs.org/@dxatscale/sfpowerscripts.core/-/sfpowerscripts.core-33.23.2.tgz",
+            "version": "https://registry.npmjs.org/@dxatscale/sfpowerscripts.core/-/sfpowerscripts.core-33.23.2.tgz",
             "integrity": "sha512-Qrv0gA2GA0GQmuDvhdndC4/W8fexOc9Zc6ae/yKiyH18HPLAwdH+H1Z0OuQrdCR7EZWW4rKzafCOqhkBOLZ0aw==",
             "requires": {
                 "@dxatscale/apexlink": "^0.1.1",
