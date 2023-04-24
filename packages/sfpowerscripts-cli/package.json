@@ -1,10 +1,10 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "20.30.4",
+    "version": "21.0.0",
     "license": "MIT",
     "author": "dxatscale",
-    "release": "March 23",
+    "release": "April 23",
     "bin": {
         "readVars": "./scripts/readVars.sh"
     },
