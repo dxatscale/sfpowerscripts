@@ -40,7 +40,7 @@ export default class FHTEnabler implements PostDeployer {
             apiVersion:apiVersion,
             testLevel : TestLevel.RunSpecifiedTests,
             specifiedTests :'skip',
-            rollBackOnError:false
+            rollBackOnError:true
         }
     }
 
