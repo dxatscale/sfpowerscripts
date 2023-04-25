@@ -38,7 +38,7 @@ export default class FTEnabler implements PostDeployer {
             apiVersion:apiVersion,
             testLevel : TestLevel.RunSpecifiedTests,
             specifiedTests :'skip',
-            rollBackOnError:false
+            rollBackOnError:true
         }
     }
 

@@ -153,7 +153,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 PackageComponentPrinter.printComponentTable(components, this.logger);
                                     
 
-                DeploymentOptionDisplayer.printDeploymentOptions(deploymentOptions,this.logger);
+                if(!this.options.isInstallingForValidation)
+                  DeploymentOptionDisplayer.printDeploymentOptions(deploymentOptions,this.logger);
                 
                 let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
                     this.sfpOrg,
