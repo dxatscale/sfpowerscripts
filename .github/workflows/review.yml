@@ -18,7 +18,7 @@ jobs:
         steps:
           - uses: rome/setup-rome@v0.4
             with:
-              version: 12.0.0
+              version: latest
           - uses: actions/checkout@v2
           - run: rome ci .
 
