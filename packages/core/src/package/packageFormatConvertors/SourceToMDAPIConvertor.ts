@@ -22,14 +22,14 @@ export default class SourceToMDAPIConvertor {
             resolvedSourceDirectory = path.resolve(this.projectDirectory, this.sourceDirectory);
 
         //Build component set from provided source directory
-        let componentSet = ComponentSet.fromSource({
+        const componentSet = ComponentSet.fromSource({
             fsPaths: [resolvedSourceDirectory],
         });
 
         if (this.sourceApiVersion) componentSet.sourceApiVersion = this.sourceApiVersion;
 
         const converter = new MetadataConverter();
-        let convertResult = await converter.convert(componentSet, "metadata", {
+        const convertResult = await converter.convert(componentSet, "metadata", {
             type: "directory",
             outputDirectory: mdapiDir,
         });
@@ -40,11 +40,11 @@ export default class SourceToMDAPIConvertor {
     }
 
     private makefolderid(length): string {
-        var result = "";
-        var characters =
+        let result = "";
+        const characters =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        var charactersLength = characters.length;
-        for (var i = 0; i < length; i++) {
+        const charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return result;

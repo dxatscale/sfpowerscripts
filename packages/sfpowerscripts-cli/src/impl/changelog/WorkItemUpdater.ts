@@ -9,15 +9,15 @@ export default class WorkItemUpdater {
      */
     update(): void {
         for (const workItemFilter of this.workItemFilters) {
-            let workItemFilterRegex: RegExp = RegExp(workItemFilter, "gi");
+            const workItemFilterRegex: RegExp = RegExp(workItemFilter, "gi");
             SFPLogger.log(`Matching...${workItemFilterRegex}`, LoggerLevel.INFO, this.logger);
 
-            for (let artifact of this.latestRelease["artifacts"]) {
-                for (let commit of artifact["commits"]) {
-                    let commitMessage: String = commit["message"] + "\n" + commit["body"];
-                    let workItems: RegExpMatchArray = commitMessage.match(workItemFilterRegex);
+            for (const artifact of this.latestRelease["artifacts"]) {
+                for (const commit of artifact["commits"]) {
+                    const commitMessage: string = commit["message"] + "\n" + commit["body"];
+                    const workItems: RegExpMatchArray = commitMessage.match(workItemFilterRegex);
                     if (workItems) {
-                        for (let item of workItems) {
+                        for (const item of workItems) {
                             if (this.latestRelease["workItems"][item] == null) {
                                 this.latestRelease["workItems"][item] = new Set<string>();
                                 this.latestRelease["workItems"][item].add(commit["commitId"].slice(0, 8));
@@ -32,7 +32,7 @@ export default class WorkItemUpdater {
 
         // Convert each work item Set to Array
         // Enables JSON stringification of work item
-        for (let key in this.latestRelease["workItems"]) {
+        for (const key in this.latestRelease["workItems"]) {
             this.latestRelease.workItems[key] = Array.from(this.latestRelease.workItems[key]);
         }
     }

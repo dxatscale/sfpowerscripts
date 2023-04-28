@@ -5,7 +5,7 @@ import OrgsUpdater from "./OrgsUpdater";
 import ReadPackageChangelog from "./ReadPackageChangelog";
 import * as fs from "fs-extra";
 import SfpPackage from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
-var hash = require("object-hash");
+const hash = require("object-hash");
 
 export default class ReleaseChangelogUpdater {
     constructor(
@@ -25,16 +25,16 @@ export default class ReleaseChangelogUpdater {
             buildNumber = 1;
         }
 
-        let latestRelease: Release = this.initLatestRelease(this.releaseName, buildNumber, this.artifactsToSfpPackage);
+        const latestRelease: Release = this.initLatestRelease(this.releaseName, buildNumber, this.artifactsToSfpPackage);
 
-        let releaseWithMatchingHashId = this.findRelease(this.releaseChangelog.releases, latestRelease.hashId);
+        const releaseWithMatchingHashId = this.findRelease(this.releaseChangelog.releases, latestRelease.hashId);
         if (!releaseWithMatchingHashId) {
             let artifactsToLatestCommitId: { [P: string]: string };
             if (this.releaseChangelog.releases.length > 0) {
                 artifactsToLatestCommitId = this.getArtifactsToLatestCommitId(this.releaseChangelog, latestRelease);
             }
 
-            let readPackageChangelog: ReadPackageChangelog = (changelogFilePath: string) => {
+            const readPackageChangelog: ReadPackageChangelog = (changelogFilePath: string) => {
                 return JSON.parse(fs.readFileSync(changelogFilePath, "utf8"));
             };
 
@@ -70,11 +70,11 @@ export default class ReleaseChangelogUpdater {
      * @returns
      */
     private getArtifactsToLatestCommitId(releaseChangelog: ReleaseChangelog, latestRelease: Release) {
-        let artifactsToLatestCommitId: { [P: string]: string } = {};
+        const artifactsToLatestCommitId: { [P: string]: string } = {};
 
-        for (let latestReleaseArtifact of latestRelease.artifacts) {
+        for (const latestReleaseArtifact of latestRelease.artifacts) {
             loopThroughReleases: for (let i = releaseChangelog.releases.length - 1; i >= 0; i--) {
-                for (let artifact of releaseChangelog.releases[i].artifacts) {
+                for (const artifact of releaseChangelog.releases[i].artifacts) {
                     if (artifact.name === latestReleaseArtifact.name) {
                         latestReleaseArtifact.from = artifact.to;
                         artifactsToLatestCommitId[latestReleaseArtifact.name] = artifact.latestCommitId;
@@ -96,7 +96,7 @@ export default class ReleaseChangelogUpdater {
      */
     private findRelease(releases: Release[], hashId: string): Release {
         if (releases.length > 0) {
-            for (let release of releases) {
+            for (const release of releases) {
                 if (release.hashId === hashId) {
                     return release;
                 }
@@ -117,7 +117,7 @@ export default class ReleaseChangelogUpdater {
         buildNumber: number,
         artifactsToSfpPackage: { [p: string]: SfpPackage },
     ): Release {
-        let latestRelease: Release = {
+        const latestRelease: Release = {
             names: [releaseName],
             buildNumber: buildNumber,
             workItems: {},
@@ -125,8 +125,8 @@ export default class ReleaseChangelogUpdater {
             hashId: undefined,
         };
 
-        for (let sfpPackage of Object.values(artifactsToSfpPackage)) {
-            let artifact: Artifact = {
+        for (const sfpPackage of Object.values(artifactsToSfpPackage)) {
+            const artifact: Artifact = {
                 name: sfpPackage.packageName,
                 from: undefined,
                 to: sfpPackage.sourceVersion?.slice(0, 8),
